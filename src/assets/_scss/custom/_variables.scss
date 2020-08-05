@@ -1,0 +1,63 @@
+//
+// Custom Variables
+//
+// Here you can add your own variables overrides
+//
+// The file is included before any other variable file,
+// so you can override them because they all use !default
+// --------------------------------------------------
+
+// For example, changing the primary color
+// $dark: #324856;
+$border-radius: 10px;
+
+$modal-sm: 379px;
+
+$modal-backdrop-bg: #1d3144;
+$modal-backdrop-opacity: 0.7;
+
+$text-color-light: #0a2540;
+$text-color-dark: #cdd1d6;
+
+$text-muted-light: #6b7c93;
+$text-muted-dark: #cdd1d6;
+
+$text-link-light: #0f59d1;
+$text-link-dark: #0f59d1;
+
+$block-bg-blue: #f7f9fc;
+$block-border-blue: #e6ebf2;
+
+.text-light {
+  color: $text-color-light !important;
+}
+
+.text-dark {
+  color: $text-color-dark !important;
+}
+
+.text-muted-light {
+  color: $text-muted-light !important;
+}
+
+.text-muted-dark {
+  color: $text-muted-dark !important;
+}
+
+.text-link-light {
+  color: $text-link-light !important;
+}
+
+.text-link-dark {
+  color: $text-link-dark !important;
+}
+
+.block-light-blue-light {
+  background-color: $block-bg-blue !important;
+  border: $block-border-blue 1px solid !important;
+}
+
+.block-light-blue-dark {
+  background-color: $modal-backdrop-bg !important;
+  border: $modal-backdrop-bg 1px solid !important;
+}

@@ -1,0 +1,75 @@
+// Colors
+
+$theme-colors: map-merge(
+  (
+    "primary-light": lighten($primary, 15%),
+    "primary-lighter": lighten($primary, 28%),
+    "primary-dark": darken($primary, 3%),
+    "primary-darker": darken($primary, 5%),
+    "success-light": #e0f5e9,
+    "info-light": #edf6fd,
+    "warning-light": #fdf3e5,
+    "danger-light": #f9eae8
+  ),
+  $theme-colors
+);
+
+$body-bg-dark: darken($body-bg, 4%);
+$body-bg-light: lighten($body-bg, 1.5%);
+
+$body-color-dark: #373737 !default;
+$body-color-light: $body-bg-dark !default;
+
+// Paragraphs
+
+$paragraph-line-height: 1.6;
+$paragraph-line-height-lg: 1.8;
+
+// Fonts
+
+$font-size-root: 16px;
+$enable-text-optimize-legibility: true; // you can set it to false to increase rendering performance
+
+// Z-index master list additions
+
+$zindex-block-pinned: $zindex-fixed + 1 !default;
+$zindex-sidebar: $zindex-fixed + 2 !default;
+$zindex-page-overlay: $zindex-fixed + 3 !default;
+$zindex-side-overlay: $zindex-fixed + 4 !default;
+$zindex-block-fullscreen: $zindex-fixed + 5 !default;
+
+// Header
+
+$header-height: 3.75rem !default; // Best values > 3rem and < 5rem
+$header-bg: $white !default;
+$header-dark-bg: theme-color("primary") !default;
+
+// Sidebar and Side Overlay
+
+$sidebar-bg: $white !default;
+$sidebar-dark-bg: theme-color("primary-darker") !default;
+$sidebar-width: 230px !default;
+$sidebar-mini-width: 60px !default;
+
+$side-overlay-bg: $white !default;
+$side-overlay-width: 320px !default;
+
+$side-transition: 0.28s ease-out !default;
+
+// Main Navigation
+
+$main-nav-transition: 0.25s ease-out !default;
+
+// Layout Spaces
+
+$space-base: 1.875rem !default; // Content padding
+$space-mobile: 1rem !default; // Content padding in mobile
+$space-side: 1.25rem !default; // Content padding inside side content
+$space-row-gutter-tiny: 0.375rem !default; // Row with tiny gutter
+$space-block: 1.25rem !default; // Block padding
+$space-boxed: 1280px !default; // Boxed content max width
+$space-narrow: 95% !default; // Narrow content max width
+
+// Third Party
+
+$fa-font-path: "../fonts/fontawesome" !default;

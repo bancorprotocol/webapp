@@ -1,0 +1,38 @@
+//
+// Buttons
+// --------------------------------------------------
+
+.btn {
+  font-family: $font-family-base;
+
+  &.btn-square {
+    border-radius: 0;
+  }
+  &.btn-rounded {
+    border-radius: 2rem;
+  }
+
+  .si,
+  .fa {
+    position: relative;
+    top: 1px;
+  }
+
+  &.btn-sm .fa {
+    top: 0;
+  }
+}
+
+// Used for buttons that adapt to light/dark header and sidebar variations
+.btn-dual {
+  @include button-dual-variant(white, #3a5363, #3a5363);
+}
+
+.page-header-dark #page-header .btn-dual,
+.sidebar-dark #sidebar .btn-dual {
+  @include button-dual-variant(
+    $white,
+    lighten(theme-color("primary-darker"), 9%),
+    lighten(theme-color("primary-darker"), 9%)
+  );
+}

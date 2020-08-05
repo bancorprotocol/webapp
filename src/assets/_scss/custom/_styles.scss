@@ -1,0 +1,59 @@
+//
+// Custom Main
+//
+// Added own styles or override existing ones
+//
+// This file is included last, so you have access
+// to all Bootstrap and Core functions/mixins/styles etc
+// --------------------------------------------------
+
+.cursor {
+  cursor: pointer;
+}
+
+// Block Modes
+.block {
+  &.block-mode-loading {
+    > .block-header,
+    > .block-content,
+    > .nav-tabs {
+      opacity: 0;
+    }
+    &::after {
+      content: "";
+      background: url("../media/icons/circle-notch.svg") no-repeat 50% 50%;
+      background-size: 24px;
+    }
+  }
+
+  &.block-shadow {
+    box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.05), 0 0px 16px 0 rgba(0, 73, 219, 0.1);
+  }
+}
+
+.bn-onboard-modal {
+  font-family: "Arial" !important;
+}
+.bn-onboard-modal-content {
+  font-family: "Arial" !important;
+}
+
+.bn-onboard-custom.bn-onboard-modal {
+  z-index: 99;
+}
+
+.btn {
+  border: none !important;
+
+  &.block-rounded {
+    border-radius: $border-radius !important;
+  }
+}
+
+.modal .modal-content {
+  border-radius: $border-radius !important;
+}
+
+.form-control-alt-light, .form-control-alt-dark {
+  height: 44px;
+}

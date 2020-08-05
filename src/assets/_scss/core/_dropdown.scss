@@ -1,0 +1,12 @@
+//
+// Dropdown
+// --------------------------------------------------
+
+.dropdown-menu {
+    box-shadow: $dropdown-box-shadow;
+    border-radius: $border-radius;
+    border: none;
+    &.dropdown-menu-lg {
+        min-width: 300px;
+    }
+}

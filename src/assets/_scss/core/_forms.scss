@@ -1,0 +1,78 @@
+//
+// Forms
+// --------------------------------------------------
+
+.form-control {
+    font-family: $font-family-base;
+
+    // Alternative Style
+    &.form-control-alt-light {
+        border-color: #eeeeee;
+        background-color: #eeeeee;
+        transition: none;
+
+        &:focus {
+            border-color: #e2e2e2;
+            background-color: #e2e2e2;
+            box-shadow: none;
+        }
+
+        &.is-valid {
+            border-color: theme-color("success-light");
+            background-color: theme-color("success-light");
+
+            &:focus {
+                border-color: lighten(theme-color("success-light"), 2%);
+                background-color: lighten(theme-color("success-light"), 2%);
+            }
+        }
+
+        &.is-invalid {
+            border-color: theme-color("danger-light");
+            background-color: theme-color("danger-light");
+
+
+            &:focus {
+                border-color: lighten(theme-color("danger-light"), 2%);
+                background-color: lighten(theme-color("danger-light"), 2%);
+            }
+        }
+    }
+
+    // Alternative Style
+    &.form-control-alt-dark {
+        color: white;
+        font-weight: normal;
+        border-color: #1c344e;
+        background-color: #1c344e;
+        transition: none;
+
+        &:focus {
+            color: white;
+            border-color: rgba(28, 52, 78, 0.6);
+            background-color: rgba(28, 52, 78, 0.6);
+            box-shadow: none;
+        }
+
+        &.is-valid {
+            border-color: theme-color("success-light");
+            background-color: theme-color("success-light");
+
+            &:focus {
+                border-color: lighten(theme-color("success-light"), 2%);
+                background-color: lighten(theme-color("success-light"), 2%);
+            }
+        }
+
+        &.is-invalid {
+            border-color: theme-color("danger-light");
+            background-color: theme-color("danger-light");
+
+
+            &:focus {
+                border-color: lighten(theme-color("danger-light"), 2%);
+                background-color: lighten(theme-color("danger-light"), 2%);
+            }
+        }
+    }
+}

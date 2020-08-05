@@ -1,0 +1,90 @@
+<template>
+  <base-modal id="modal-join-pool" title="Select a Pool" size="sm">
+    <div>
+      <b-row>
+        <b-col class="mb-3">
+          <b-input-group>
+            <b-form-input
+              v-model="tokenSearch"
+              placeholder="Search"
+              class="form-control-alt"
+            ></b-form-input>
+          </b-input-group>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col cols="12">
+          <span
+            class="text-uppercase font-w500 font-size-12"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            Pool Name
+          </span>
+        </b-col>
+        <b-col
+          cols="12"
+          v-for="pool in searchedPools"
+          :key="pool.id"
+          class="my-3 cursor"
+        >
+          <select-pool-row @click.native="selectPool(pool)" :pool="pool" />
+        </b-col>
+      </b-row>
+    </div>
+  </base-modal>
+</template>
+
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+import { vxm } from "@/store/";
+import { ViewRelay } from "@/types/bancor";
+import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
+import BaseModal from "@/components/common-v2/BaseModal.vue";
+
+@Component({
+  components: { BaseModal, SelectPoolRow }
+})
+export default class ModalJoinPool extends Vue {
+  tokenSearch: string = "";
+
+  selectPool(pool: ViewRelay): void {
+    this.$router.push({
+      name: "PoolAction",
+      params: {
+        poolAction: this.$route.params.poolAction
+          ? this.$route.params.poolAction
+          : "add",
+        account: pool.id
+      }
+    });
+    this.$bvModal.hide("modal-join-pool");
+  }
+
+  get searchedPools() {
+    return this.tokenSearch
+      ? this.pools.filter(pool =>
+          pool.reserves
+            .map(reserve => reserve.symbol)
+            .join("/")
+            .toLowerCase()
+            .includes(this.tokenSearch.toLowerCase())
+        )
+      : this.pools;
+  }
+
+  get pools(): ViewRelay[] {
+    return vxm.bancor.relays.filter(relay => relay.addLiquiditySupported);
+  }
+
+  get darkMode(): boolean {
+    return vxm.general.darkMode;
+  }
+
+  created() {}
+}
+</script>
+<style lang="scss">
+.modal-body {
+  padding-top: 0 !important;
+}
+</style>

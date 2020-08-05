@@ -1,0 +1,132 @@
+<template>
+  <div>
+    <label-content-split :label="label" class="mb-1">
+      <span
+        @click="tokenAmount = balance"
+        v-if="isAuthenticated"
+        class="font-size-12 font-w500 cursor"
+      >
+        Balance: {{ formattedBalance }}
+        {{ usdValue ? usdValue : "" }}
+      </span>
+    </label-content-split>
+
+    <b-input-group>
+      <b-form-input
+        type="text"
+        debounce="500"
+        v-model="tokenAmount"
+        :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
+        placeholder="Enter Amount"
+        :state="errorState"
+        :disabled="disabled"
+      ></b-form-input>
+
+      <b-input-group-append :class="{ cursor: pool || dropdown }">
+        <div
+          class="rounded-right d-flex align-items-center px-2"
+          :class="darkMode ? 'bg-body-dark' : 'bg-light'"
+        >
+          <div
+            v-if="token"
+            @click="openSwapModal"
+            class="d-flex align-items-center"
+          >
+            <img
+              class="img-avatar img-avatar32 border-colouring bg-white mr-1"
+              :src="token.logo"
+              alt="Token Logo"
+            />
+            <span
+              class="px-1 font-size-14 font-w600"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+            >
+              {{ token.symbol }}
+            </span>
+            <font-awesome-icon v-if="dropdown" icon="caret-down" />
+          </div>
+
+          <div v-else>
+            <pool-logos
+              @click.native="$bvModal.show('modal-join-pool')"
+              :pool="pool"
+              :dropdown="true"
+            />
+          </div>
+        </div>
+      </b-input-group-append>
+
+      <b-form-invalid-feedback
+        v-if="errorMsg !== null"
+        id="input-live-feedback"
+        class="input-field-error"
+      >
+        {{ errorMsg }}
+      </b-form-invalid-feedback>
+    </b-input-group>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
+import { vxm } from "@/store/";
+import { ViewRelay, ViewReserve } from "@/types/bancor";
+import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import PoolLogos from "@/components/common/PoolLogos.vue";
+import numeral from "numeral";
+
+@Component({
+  components: { PoolLogos, LabelContentSplit }
+})
+export default class TokenInputField extends Vue {
+  @Prop() name?: string;
+  @Prop() label!: string;
+  @Prop() token?: ViewReserve;
+  @Prop() pool?: ViewRelay;
+  @Prop() balance!: string;
+  @Prop() usdValue?: number;
+  @PropSync("amount", { type: String }) tokenAmount!: string;
+  @Prop({ default: false }) dropdown!: boolean;
+  @Prop({ default: false }) ignoreError!: boolean;
+  @Prop({ default: "" }) errorMsg!: string;
+  @Prop({ default: false }) disabled!: boolean;
+  numeral = numeral;
+
+  get formattedBalance() {
+    const balance = parseFloat(this.balance);
+    if (!balance || balance === 0) return "0";
+    else if (balance < 0.000001) return "< 0.000001";
+    else if (balance > 1000) return "~" + numeral(balance).format("0,0.0000");
+    else return "~" + numeral(balance).format("0,0.000000");
+  }
+
+  get errorState() {
+    if (!this.isAuthenticated) return null;
+    else {
+      if (this.errorMsg === "") return null;
+      else return false;
+    }
+  }
+
+  openSwapModal() {
+    if (this.dropdown && this.name) this.$emit("open-swap-modal", this.name);
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode;
+  }
+
+  get isAuthenticated() {
+    return vxm.wallet.isAuthenticated;
+  }
+}
+</script>
+
+<style lang="scss">
+.input-field-error {
+  border: 1px #de4a5c solid !important;
+  background: #fff5f6;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+</style>

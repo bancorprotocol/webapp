@@ -1,0 +1,19 @@
+//
+// Text emphasis
+// --------------------------------------------------
+
+@mixin text-emphasis-variant($parent, $color, $redundantarg: false) {
+    #{$parent} {
+        color: $color !important;
+    }
+
+    a#{$parent} {
+        &.link-fx::before {
+            background-color: $color;
+        }
+
+        @include hover-focus {
+            color: darken($color, 20%) !important;
+        }
+    }
+}

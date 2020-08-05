@@ -1,0 +1,38 @@
+//
+// Buttons
+// --------------------------------------------------
+
+// Used for buttons that adapt to light/dark header and sidebar variations
+@mixin button-dual-variant($color, $background, $border) {
+    color: $color;
+    background-color: $background;
+    border-color: $border;
+
+    &:hover,
+    &:focus,
+    &.focus {
+        color: $color;
+        background-color: darken($background, 8%);
+        border-color: darken($border, 12%);
+        box-shadow: none;
+    }
+
+    &.disabled,
+    &:disabled {
+        background-color: transparent;
+        border-color: transparent;
+    }
+
+    &:active,
+    &.active {
+        color: $color;
+        background-color: darken($background, 18%);
+        border-color: darken($border, 22%);
+    }
+
+    .show > &.dropdown-toggle {
+        color: $color;
+        background-color: $background;
+        border-color: $background;
+    }
+}

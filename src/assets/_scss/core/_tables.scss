@@ -1,0 +1,19 @@
+//
+// Tables
+// --------------------------------------------------
+
+.table {
+  thead th {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-sm;
+    text-transform: uppercase;
+    letter-spacing: 0.0625rem;
+  }
+}
+
+.table-vcenter {
+  th,
+  td {
+    vertical-align: middle;
+  }
+}
