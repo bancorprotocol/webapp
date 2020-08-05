@@ -5,9 +5,7 @@
     :size="size"
     centered
     hide-footer
-    :content-class="
-      darkMode ? 'bg-block-dark base-modal' : 'bg-block-light base-modal'
-    "
+    :content-class="contentClass"
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
@@ -59,11 +57,20 @@ export default class BaseModal extends Vue {
   @Prop() title!: string;
   @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
   @PropSync("search", { type: String }) searchField?: string;
+  @Prop({ default: false }) fixedHeight!: boolean;
 
   tokenSearch: string = "";
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
+  }
+
+  get contentClass() {
+    return [
+      { "base-modal": this.fixedHeight },
+      { "bg-block-dark": this.darkMode },
+      { "bg-block-light": !this.darkMode }
+    ];
   }
 
   onHide(event: any) {

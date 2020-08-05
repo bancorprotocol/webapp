@@ -18,7 +18,6 @@
         v-model="tokenAmount"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
-        :state="errorState"
         :disabled="disabled"
       ></b-form-input>
 
@@ -56,13 +55,13 @@
         </div>
       </b-input-group-append>
 
-      <b-form-invalid-feedback
-        v-if="errorMsg !== null"
+      <div
+        v-if="errorMsg !== ''"
         id="input-live-feedback"
-        class="input-field-error"
+        class="input-field-error text-danger w-100 mt-2 font-size-12 font-w700"
       >
         {{ errorMsg }}
-      </b-form-invalid-feedback>
+      </div>
     </b-input-group>
   </div>
 </template>
