@@ -58,7 +58,7 @@
       <div
         v-if="errorMsg !== ''"
         id="input-live-feedback"
-        class="input-field-error text-danger w-100 mt-2 font-size-12 font-w700"
+        class="input-field-error text-danger w-100 mt-1 font-size-12 font-w700"
       >
         {{ errorMsg }}
       </div>
@@ -121,11 +121,4 @@ export default class TokenInputField extends Vue {
 }
 </script>
 
-<style lang="scss">
-.input-field-error {
-  border: 1px #de4a5c solid !important;
-  background: #fff5f6;
-  border-radius: 8px;
-  padding: 0.5rem;
-}
-</style>
+<style lang="scss"></style>

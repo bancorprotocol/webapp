@@ -78,7 +78,7 @@
     </div>
 
     <div v-if="exitFee !== 0">
-      <p class="input-field-error text-danger font-w600">
+      <p class="input-field-error text-danger font-size-12 font-w700">
         Pool is not balanced. Recommended to wait until it will be balanced.
       </p>
     </div>
@@ -291,11 +291,4 @@ export default class PoolActionsRemoveV2 extends Vue {
 }
 </script>
 
-<style lang="scss">
-.input-field-error {
-  border: 1px #de4a5c solid !important;
-  background: #fff5f6;
-  border-radius: 8px;
-  padding: 0.5rem;
-}
-</style>
+<style lang="scss"></style>

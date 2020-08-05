@@ -42,8 +42,11 @@
         <b-col
           v-if="!searchedTokens.length"
           class="text-center font-size-16 font-w500 mt-3"
-          >No results found.</b-col
         >
+          <span :class="darkMode ? 'text-dark' : 'text-light'">
+            No results found.
+          </span>
+        </b-col>
       </b-row>
     </div>
   </base-modal>
