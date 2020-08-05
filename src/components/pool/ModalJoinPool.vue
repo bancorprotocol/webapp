@@ -4,6 +4,7 @@
     :search.sync="tokenSearch"
     title="Select a Pool"
     size="sm"
+    v-on:on-hide-modal="tokenSearch = ''"
   >
     <div>
       <b-row>
@@ -23,6 +24,11 @@
         >
           <select-pool-row @click.native="selectPool(pool)" :pool="pool" />
         </b-col>
+        <b-col
+          v-if="!searchedPools.length"
+          class="text-center font-size-16 font-w500 mt-3"
+          >No results found.</b-col
+        >
       </b-row>
     </div>
   </base-modal>
