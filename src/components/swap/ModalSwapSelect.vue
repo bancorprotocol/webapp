@@ -4,6 +4,7 @@
     size="sm"
     :search.sync="tokenSearch"
     title="Select a Token"
+    v-on:on-hide-modal="tokenSearch = ''"
   >
     <div>
       <b-row>
@@ -37,7 +38,11 @@
             <span class="font-w500 font-size-12">{{ token.balance }}</span>
           </div>
         </b-col>
-        <b-col v-if="!searchedTokens.length">No results found.</b-col>
+        <b-col
+          v-if="!searchedTokens.length"
+          class="text-center font-size-16 font-w500 mt-3"
+          >No results found.</b-col
+        >
       </b-row>
     </div>
   </base-modal>

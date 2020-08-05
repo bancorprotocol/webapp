@@ -5,7 +5,9 @@
     :size="size"
     centered
     hide-footer
-    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
+    :content-class="
+      darkMode ? 'bg-block-dark base-modal' : 'bg-block-light base-modal'
+    "
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
@@ -74,5 +76,16 @@ export default class BaseModal extends Vue {
 <style lang="scss">
 .modal-body {
   padding-top: 0 !important;
+}
+.base-modal {
+  @media (min-width: 900px) and (max-width: 50000px) {
+    height: 60vh !important;
+  }
+
+  @media (min-width: 500px) and (max-width: 899px) {
+    height: 70vh !important;
+  }
+
+  height: 90vh !important;
 }
 </style>
