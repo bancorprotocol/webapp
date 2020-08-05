@@ -1,10 +1,10 @@
-name: Deploy Production to Firebase
+name: Deploy Staging to Firebase
 
 on:
   push:
-    branches: [ master ]
+    branches: [ staging ]
   pull_request:
-    branches: [ master ]
+    branches: [ staging ]
 
 jobs:
   build-and-deploy:
@@ -31,6 +31,6 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --project bancor-v2 --only hosting:production
+          args: deploy --project bancor-v2 --only hosting:staging
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
