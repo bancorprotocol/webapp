@@ -8,8 +8,7 @@ on:
 
 jobs:
   create-envfile:
-    name: Set Environment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - name: Create .env file
       uses: SpicyPizza/create-envfile@v1
@@ -27,6 +26,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - env:
+          SUPER_SECRET: ${{ secrets.SuperSecret }}
       - name: Checkout Repo
         uses: actions/checkout@v2
         with:
@@ -55,6 +56,6 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting:staging
+          args: deploy --project staging
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
