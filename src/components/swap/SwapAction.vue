@@ -25,12 +25,13 @@
     <token-input-field
       label="To (Estimated)"
       :amount.sync="amount2"
+      @update:amount="sanitizeAmount"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
       name="token2"
       v-on:open-swap-modal="openModal"
-      :disabled="true"
+      :disabled="false"
     />
     <modal-swap-select name="token2" />
 
@@ -139,6 +140,10 @@ export default class SwapAction extends Vue {
 
   openModal(name: string) {
     this.$bvModal.show(name);
+  }
+
+  sanitizeAmount(amount: string) {
+    this.setDefault()
   }
 
   invertSelection() {
