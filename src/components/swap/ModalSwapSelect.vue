@@ -1,17 +1,11 @@
 <template>
-  <base-modal :id="name" size="sm" title="Select a Token">
+  <base-modal
+    :id="name"
+    size="sm"
+    :search.sync="tokenSearch"
+    title="Select a Token"
+  >
     <div>
-      <b-row>
-        <b-col class="mb-3">
-          <b-input-group>
-            <b-form-input
-              v-model="tokenSearch"
-              placeholder="Search"
-              class="form-control-alt"
-            ></b-form-input>
-          </b-input-group>
-        </b-col>
-      </b-row>
       <b-row>
         <b-col cols="12">
           <span

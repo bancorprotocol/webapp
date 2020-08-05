@@ -11,17 +11,34 @@
     @hide="onHide"
   >
     <template slot="modal-header">
-      <span
-        class="font-size-14 font-w600"
-        :class="darkMode ? 'text-dark' : 'text-light'"
-        >{{ title }}</span
-      >
-      <font-awesome-icon
-        class="cursor font-size-lg"
-        :class="darkMode ? 'text-dark' : 'text-light'"
-        @click="$bvModal.hide(id)"
-        icon="times"
-      />
+      <div class="w-100">
+        <b-row>
+          <b-col cols="12" class="d-flex justify-content-between mb-2">
+            <span
+              class="font-size-14 font-w600"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+              >{{ title }}</span
+            >
+            <font-awesome-icon
+              class="cursor font-size-lg"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+              @click="$bvModal.hide(id)"
+              icon="times"
+            />
+          </b-col>
+        </b-row>
+        <b-row v-if="searchField !== undefined">
+          <b-col cols="12">
+            <b-input-group>
+              <b-form-input
+                v-model="searchField"
+                placeholder="Search"
+                class="form-control-alt"
+              ></b-form-input>
+            </b-input-group>
+          </b-col>
+        </b-row>
+      </div>
     </template>
 
     <slot></slot>
@@ -29,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, PropSync, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
 @Component({
@@ -39,6 +56,7 @@ export default class BaseModal extends Vue {
   @Prop() id!: string;
   @Prop() title!: string;
   @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
+  @PropSync("search", { type: String }) searchField?: string;
 
   tokenSearch: string = "";
 
