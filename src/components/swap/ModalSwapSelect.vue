@@ -5,6 +5,7 @@
     :search.sync="tokenSearch"
     title="Select a Token"
     v-on:on-hide-modal="tokenSearch = ''"
+    :fixed-height="true"
   >
     <div>
       <b-row>

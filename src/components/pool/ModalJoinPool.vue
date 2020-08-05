@@ -5,6 +5,7 @@
     title="Select a Pool"
     size="sm"
     v-on:on-hide-modal="tokenSearch = ''"
+    :fixed-height="true"
   >
     <div>
       <b-row>
