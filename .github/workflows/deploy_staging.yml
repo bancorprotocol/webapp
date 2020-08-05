@@ -39,6 +39,6 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: firebase deploy --project bancor-v2-beta
+          args: deploy --project bancor-v2-beta
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
