@@ -6,6 +6,9 @@
     centered
     hide-footer
     :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
+    @close="onHide"
+    @cancel="onHide"
+    @hide="onHide"
   >
     <template slot="modal-header">
       <span
@@ -41,6 +44,10 @@ export default class BaseModal extends Vue {
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
+  }
+
+  onHide(event: any) {
+    this.$emit("on-hide-modal");
   }
 
   created() {}

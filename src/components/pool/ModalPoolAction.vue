@@ -1,5 +1,9 @@
 <template>
-  <base-modal id="modal-pool-action" title="You will receive">
+  <base-modal
+    id="modal-pool-action"
+    v-on:on-hide-modal="setDefault"
+    title="You will receive"
+  >
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)" class="w-100">
         <b-col
