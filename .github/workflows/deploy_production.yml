@@ -1,49 +1,36 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Deploy Production to Firebase
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:   
-  build:
-    name: Build
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
         with:
-          ref: master
+          ref: staging
       - name: Install Dependencies
         run: yarn
       - name: Build
+        env:
+          VUE_APP_I18N_LOCALE: "en"
+          VUE_APP_I18N_FALLBACK_LOCALE: "en"
+          VUE_APP_MULTICONTRACT: "bancorcnvrtr"
+          VUE_APP_SMARTTOKENCONTRACT: "smarttokens1"
+          VUE_APP_USDSTABLE: "stable.sx"
+          VUE_APP_NETWORKCONTRACT: "thisisbancor"
+          VUE_APP_AFFILIATE: ${{ secrets.VUE_APP_AFFILIATE }}
+          VUE_APP_BLOCKNATIVE: ${{ secrets.VUE_APP_BLOCKNATIVE }}
         run: yarn build
-      - name: Archive Production Artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: dist
-          path: dist
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
-      - name: Download Artifact
-        uses: actions/download-artifact@master
-        with:
-          name: dist
-          path: dist
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: firebase deploy --only hosting:bancor-v2
+          args: deploy --project bancor-v2 --only hosting:production
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
