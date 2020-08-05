@@ -33,7 +33,9 @@
               <b-form-input
                 v-model="searchField"
                 placeholder="Search"
-                class="form-control-alt"
+                :class="
+                  darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'
+                "
               ></b-form-input>
             </b-input-group>
           </b-col>
