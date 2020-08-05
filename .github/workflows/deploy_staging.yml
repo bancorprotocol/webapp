@@ -6,7 +6,23 @@ on:
   pull_request:
     branches: [ staging ]
 
-jobs:   
+jobs:
+  create-envfile:
+    name: Set Environment
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create .env file
+      uses: SpicyPizza/create-envfile@v1
+      with:
+        envkey_VUE_APP_I18N_LOCALE: "en"
+        envkey_VUE_APP_I18N_FALLBACK_LOCALE: "en"
+        envkey_VUE_APP_MULTICONTRACT: "bancorcnvrtr"
+        envkey_VUE_APP_SMARTTOKENCONTRACT: "smarttokens1"
+        envkey_VUE_APP_USDSTABLE: "stable.sx"
+        envkey_VUE_APP_NETWORKCONTRACT: "thisisbancor"
+        envkey_VUE_APP_AFFILIATE: ${{ secrets.VUE_APP_AFFILIATE }}
+        envkey_VUE_APP_BLOCKNATIVE: ${{ secrets.VUE_APP_BLOCKNATIVE }}
+        file_name: .env
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -39,6 +55,6 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --project bancor-v2-beta
+          args: deploy --only hosting:staging
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
