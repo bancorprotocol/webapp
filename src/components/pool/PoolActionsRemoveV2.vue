@@ -291,11 +291,4 @@ export default class PoolActionsRemoveV2 extends Vue {
 }
 </script>
 
-<style lang="scss">
-.input-field-error {
-  border: 1px #de4a5c solid !important;
-  background: #fff5f6;
-  border-radius: 8px;
-  padding: 0.5rem;
-}
-</style>
+<style lang="scss"></style>
