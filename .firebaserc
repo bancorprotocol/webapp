@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "bancor-v2": {
+      "hosting": {
+        "production": [
+          "bancor-v2"
+        ],
+        "staging": [
+          "bancor-v2-beta"
+        ]
+      }
+    }
+  }
+}
