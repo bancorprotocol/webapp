@@ -73,6 +73,7 @@ import { ViewRelay, ViewReserve } from "@/types/bancor";
 import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import numeral from "numeral";
+import {formatNumber} from "@/api/helpers";
 
 @Component({
   components: { PoolLogos, LabelContentSplit }
@@ -92,12 +93,16 @@ export default class TokenInputField extends Vue {
   numeral = numeral;
 
   get formattedBalance() {
-    const balance = parseFloat(this.balance);
-    if (!balance || balance === 0) return "0";
-    else if (balance < 0.000001) return "< 0.000001";
-    else if (balance > 1000) return "~" + numeral(balance).format("0,0.0000");
-    else return "~" + numeral(balance).format("0,0.000000");
+    return formatNumber(parseFloat(this.balance), 6).toString()
   }
+
+  // get formattedBalance() {
+  //   const balance = parseFloat(this.balance);
+  //   if (!balance || balance === 0) return "0";
+  //   else if (balance < 0.000001) return "< 0.000001";
+  //   else if (balance > 1000) return "~" + numeral(balance).format("0,0.0000");
+  //   else return "~" + numeral(balance).format("0,0.000000");
+  // }
 
   get errorState() {
     if (!this.isAuthenticated) return null;

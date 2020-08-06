@@ -110,13 +110,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   get share() {
-    if (this.shareOfPool === 0) return "0";
-    else {
-      const share = this.shareOfPool;
-      if (share < 0.00001) return "< 0.00001";
-      else if (share < 1) return numeral(share).format("0.00000");
-      else return numeral(share).format("0.00");
-    }
+    return formatNumber(this.shareOfPool, 6)
   }
 
   get shareBlockItems() {

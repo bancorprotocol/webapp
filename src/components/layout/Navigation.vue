@@ -11,13 +11,13 @@
           <router-link :to="{ name: 'Swap' }">
             <img
               v-if="darkMode"
-              src="@/assets/media/logos/bancor-white.png"
+              src="@/assets/media/logos/bancor-white2.png"
               height="35px"
               class="mb-1"
             />
             <img
               v-else
-              src="@/assets/media/logos/bancor-black.png"
+              src="@/assets/media/logos/bancor-black2.png"
               height="35px"
               class="mb-1"
             />
