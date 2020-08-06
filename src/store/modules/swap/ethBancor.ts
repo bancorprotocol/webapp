@@ -4758,12 +4758,13 @@ export class EthBancorModule
             !relay.balances.reserves.every(reserve => reserve.weiAmount !== "0")
         );
         if (relaysWithNoBalances.length > 0) {
+          const moreThanOne = relayBalances.length > 1;
           throw new Error(
-            `Pool${
-              relaysWithNoBalances.length > 1 ? "s" : ""
-            } ${relaysWithNoBalances
+            `Pool${moreThanOne ? "s" : ""} ${relaysWithNoBalances
               .map(x => x.relay.id)
-              .join(" ")} do not have a reserve balance on both sides`
+              .join(" ")} do${
+              moreThanOne ? "" : "es"
+            } not have a reserve balance on both sides`
           );
         } else {
           throw new Error(e);

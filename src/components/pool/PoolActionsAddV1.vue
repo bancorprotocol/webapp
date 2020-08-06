@@ -251,7 +251,6 @@ export default class PoolActionsAddV1 extends Vue {
         id: this.pool.id,
         reserve: { id: this.reserveTwo.id, amount: this.amount2 }
       });
-      console.log(results, "are the results");
       if (typeof results.opposingAmount !== "undefined") {
         this.amount1 = results.opposingAmount;
       }
