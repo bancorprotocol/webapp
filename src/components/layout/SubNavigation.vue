@@ -1,5 +1,5 @@
 <template>
-  <div class="w-100 text-center mt-2">
+  <div class="w-100 text-center mt-2 mb-3">
     <b-row>
       <b-col cols="6" class="pr-1">
         <b-btn
