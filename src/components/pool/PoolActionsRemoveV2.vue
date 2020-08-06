@@ -111,7 +111,6 @@ import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import PlainTokenInputField from "@/components/common/PlainTokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolActionsPercentages from "@/components/pool/PoolActionsPercentages.vue";
@@ -136,7 +135,6 @@ interface PoolTokenUI {
     ModalPoolAction,
     PoolActionsPercentages,
     LabelContentSplit,
-    PlainTokenInputField,
     PoolLogos,
     MainButton
   }

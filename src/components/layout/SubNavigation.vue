@@ -30,7 +30,6 @@
         </b-btn>
       </b-col>
     </b-row>
-    <hr :class="darkMode ? 'hr-dark' : 'hr-light'" />
   </div>
 </template>
 

@@ -5,6 +5,7 @@
         :withdraw-liquidity="withdrawLiquidity"
         :v2="pool.v2"
       />
+      <hr :class="darkMode ? 'hr-dark' : 'hr-light'" />
     </template>
 
     <div v-if="!withdrawLiquidity">
