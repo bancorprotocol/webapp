@@ -43,7 +43,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
-import BaseModal from "@/components/common-v2/BaseModal.vue";
+import BaseModal from "@/components/common/BaseModal.vue";
 
 @Component({
   components: { BaseModal, SelectPoolRow }

@@ -78,7 +78,6 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
-import ModalTx from "@/components/modals/ModalTx.vue";
 import { vxm } from "@/store/";
 import { WalletProvider } from "eos-transit";
 import wait from "waait";
@@ -87,8 +86,7 @@ import ModalJoinPool from "@/components/pool/ModalJoinPool.vue";
 @Component({
   components: {
     ModalJoinPool,
-    ModalLogin,
-    ModalTx
+    ModalLogin
   }
 })
 export default class App extends Vue {

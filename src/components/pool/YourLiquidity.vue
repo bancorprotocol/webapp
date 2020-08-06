@@ -54,7 +54,7 @@
 <script lang="ts">
 import { Watch, Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { PoolTokenPosition, ViewRelay, ViewReserve } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";
 import numeral from "numeral";

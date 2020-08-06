@@ -68,11 +68,11 @@
 import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay, ViewReserve } from "@/types/bancor";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
-import AlertBlock from "@/components/common-v2/AlertBlock.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
   components: { AlertBlock, PoolLogos, LabelContentSplit }

@@ -86,12 +86,12 @@
 <script lang="ts">
 import { Watch, Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import BaseModal from "@/components/common-v2/BaseModal.vue";
+import BaseModal from "@/components/common/BaseModal.vue";
 import { Step, ViewRelay, ViewReserve, ViewToken } from "@/types/bancor";
-import ActionModalStatus from "@/components/common-v2/ActionModalStatus.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
-import BancorCheckbox from "@/components/common-v2/BancorCheckbox.vue";
+import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import numeral from "numeral";
 @Component({
   components: {

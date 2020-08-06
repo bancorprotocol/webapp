@@ -79,15 +79,15 @@ import {
   ViewReserve
 } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import TokenInputField from "@/components/common-v2/TokenInputField.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
-import RateShareBlock from "@/components/common-v2/RateShareBlock.vue";
+import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber } from "@/api/helpers";
 import { namespace } from "vuex-class";
 import numeral from "numeral";
-import AlertBlock from "@/components/common-v2/AlertBlock.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 const bancor = namespace("bancor");
 

@@ -2,7 +2,6 @@ import Vue from "vue";
 import Router from "vue-router";
 import Data from "@/views/Data.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
-import HeroCreate from "@/components/hero/sub/HeroCreate.vue";
 import Navigation from "@/components/layout/Navigation.vue";
 import { services } from "@/api/helpers";
 import PoolHome from "@/components/pool/PoolHome.vue";
@@ -35,14 +34,6 @@ export const router = new Router({
       components: {
         Nav: Navigation,
         default: PageNotFound
-      }
-    },
-    {
-      path: "/:service/create",
-      name: "Create",
-      components: {
-        Nav: Navigation,
-        Hero: HeroCreate
       }
     },
     {

@@ -57,7 +57,7 @@
 <script lang="ts">
 import { Watch, Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import BaseModal from "@/components/common-v2/BaseModal.vue";
+import BaseModal from "@/components/common/BaseModal.vue";
 import { ViewRelay, ViewToken } from "@/types/bancor";
 import { formatNumber } from "@/api/helpers";
 
