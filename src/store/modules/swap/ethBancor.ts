@@ -2542,7 +2542,7 @@ export class EthBancorModule
   ): Promise<OpposingLiquid> {
     const relay = await this.chainLinkRelayById(opposingWithdraw.id);
 
-    const suggestedWithdrawDec = opposingWithdraw.reserve.amount;
+    const suggestedPoolTokenWithdrawDec = opposingWithdraw.reserve.amount;
 
     const [[stakedAndReserveWeight]] = (await this.smartMulti([
       stakedAndReserveHandler([
@@ -2554,21 +2554,28 @@ export class EthBancorModule
       ])
     ])) as [StakedAndReserve[]];
 
-    const [biggerWeight, smallerWeight] = stakedAndReserveWeight.reserves
-      .map(reserve => ({
-        ...reserve,
-        decReserveWeight: new BigNumber(reserve.reserveWeight).div(oneMillion),
-        token: findOrThrow(relay.reserves, r =>
-          compareString(r.contract, reserve.reserveAddress)
-        )
-      }))
-      .sort((a, b) => b.decReserveWeight.minus(a.reserveWeight).toNumber());
+    const matchedWeights = stakedAndReserveWeight.reserves.map(reserve => ({
+      reserveWeight: reserve.reserveWeight,
+      stakedBalance: reserve.stakedBalance,
+      decReserveWeight: new BigNumber(reserve.reserveWeight).div(oneMillion),
+      reserveToken: findOrThrow(relay.reserves, r =>
+        compareString(r.contract, reserve.reserveAddress)
+      ),
+      poolToken: findOrThrow(relay.anchor.poolTokens, poolToken =>
+        compareString(reserve.poolTokenAddress, poolToken.poolToken.contract)
+      )
+    }));
+
+    const [biggerWeight, smallerWeight] = matchedWeights.sort((a, b) =>
+      b.decReserveWeight.minus(a.reserveWeight).toNumber()
+    );
 
     const weightsEqualOneMillion = new BigNumber(biggerWeight.reserveWeight)
       .plus(smallerWeight.reserveWeight)
       .eq(oneMillion);
     if (!weightsEqualOneMillion)
       throw new Error("Was expecting reserve weights to equal 100%");
+
     const distanceFromMiddle = biggerWeight.decReserveWeight.minus(0.5);
 
     const adjustedBiggerWeight = new BigNumber(biggerWeight.stakedBalance).div(
@@ -2580,34 +2587,33 @@ export class EthBancorModule
 
     const singleUnitCosts = [
       {
-        id: biggerWeight.reserveAddress,
+        id: biggerWeight.reserveToken.contract,
         amount: shrinkToken(
           adjustedBiggerWeight.toString(),
-          biggerWeight.token.decimals
+          biggerWeight.reserveToken.decimals
         )
       },
       {
-        id: smallerWeight.reserveAddress,
+        id: smallerWeight.reserveToken.contract,
         amount: shrinkToken(
           adjustedSmallerWeight.toString(),
-          smallerWeight.token.decimals
+          smallerWeight.reserveToken.decimals
         )
       }
     ];
 
-    const sameReserve = findOrThrow([biggerWeight, smallerWeight], weight =>
-      compareString(weight.reserveAddress, opposingWithdraw.reserve.id)
+    const sameReserve = findOrThrow(matchedWeights, weight =>
+      compareString(weight.reserveToken.contract, opposingWithdraw.reserve.id)
     );
 
-    const shareOfPool =
-      Number(opposingWithdraw.reserve.amount) /
-      Number(
-        shrinkToken(sameReserve.stakedBalance, sameReserve.token.decimals)
-      );
+    const shareOfPool = new BigNumber(suggestedPoolTokenWithdrawDec).div(shrinkToken(
+      sameReserve.stakedBalance,
+      sameReserve.reserveToken.decimals
+    )).toNumber()
 
     const suggestedWithdrawWei = expandToken(
-      suggestedWithdrawDec,
-      sameReserve.token.decimals
+      suggestedPoolTokenWithdrawDec,
+      sameReserve.poolToken.poolToken.decimals
     );
 
     const [
@@ -2616,12 +2622,12 @@ export class EthBancorModule
     ] = await Promise.all([
       this.removeLiquidityReturn({
         converterAddress: relay.contract,
-        poolTokenContract: sameReserve.poolTokenAddress,
+        poolTokenContract: sameReserve.poolToken.poolToken.contract,
         poolTokenWei: suggestedWithdrawWei
       }),
       liquidationLimit({
         converterContract: relay.contract,
-        poolTokenAddress: sameReserve.poolTokenAddress
+        poolTokenAddress: sameReserve.poolToken.poolToken.contract
       })
     ]);
 
@@ -2640,7 +2646,7 @@ export class EthBancorModule
 
     const removeLiquidityReturnDec = shrinkToken(
       returnAmountWei,
-      sameReserve.token.decimals
+      sameReserve.reserveToken.decimals
     );
 
     const result = {
@@ -2649,7 +2655,7 @@ export class EthBancorModule
       singleUnitCosts,
       withdrawFee: feePercent,
       expectedReturn: {
-        id: sameReserve.token.contract,
+        id: sameReserve.reserveToken.contract,
         amount: String(Number(removeLiquidityReturnDec))
       }
     };
@@ -3118,12 +3124,11 @@ export class EthBancorModule
       );
       if (!poolToken)
         throw new Error("Client side error - failed finding pool token");
-      if (poolToken.poolToken.decimals !== matchedBalances[0].decimals)
-        throw new Error("Client side decimal rounding issue");
+
       const minimumReturnWei = new BigNumber(reserveToken.weiAmount)
         .times(0.98)
         .toString();
-      console.log(minimumReturnWei, "is minimum return wei");
+
       txHash = await this.addLiquidityV2({
         converterAddress,
         reserve: reserveToken,
