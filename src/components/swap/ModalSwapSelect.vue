@@ -37,7 +37,7 @@
               />
               <span class="font-w600 font-size-14">{{ token.symbol }}</span>
             </div>
-            <span class="font-w500 font-size-12">{{
+            <span v-if="isAuthenticated" class="font-w500 font-size-12">{{
               formattedBalance(token.balance)
             }}</span>
           </div>
@@ -50,7 +50,7 @@
             :small="true"
           />
         </b-col>
-        <b-col cols="6">
+        <b-col cols="6" class="mb-3">
           <main-button
             v-if="currentStep > 1"
             @click.native="currentStep--"
@@ -91,6 +91,10 @@ export default class ModalSwapSelect extends Vue {
 
   get totalTokens() {
     return this.searchedTokens.length;
+  }
+
+  get isAuthenticated() {
+    return vxm.wallet.isAuthenticated;
   }
 
   selectToken(token: ViewToken): void {

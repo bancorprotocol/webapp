@@ -34,7 +34,7 @@
             :small="true"
           />
         </b-col>
-        <b-col cols="6">
+        <b-col cols="6" class="mb-3">
           <main-button
             v-if="currentStep > 1"
             @click.native="currentStep--"
