@@ -968,17 +968,6 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
     _ => ethReserveToken
   );
 
-  const symbolOveride = updateArray(
-    ethHardCode,
-    token => typeof token.symbol == "undefined" || token.symbol == "",
-    token => ({
-      ...token,
-      symbol: tokenMeta.find(meta =>
-        compareString(token.contract, meta.contract)
-      )!.symbol
-    })
-  );
-
   const decimalIsWrong = (decimals: number | undefined) =>
     typeof decimals == "undefined" || Number.isNaN(decimals);
 
@@ -3740,7 +3729,6 @@ export class EthBancorModule
     console.log({ overWroteVersions });
     const passedFirstHalfs = overWroteVersions
       .filter(hasTwoConnectors)
-      .filter(reservesInTokenMeta(this.tokenMeta))
       .filter(
         relay =>
           this.currentNetwork == EthNetworks.Ropsten ||
