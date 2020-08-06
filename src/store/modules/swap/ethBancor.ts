@@ -685,7 +685,7 @@ const sortSmartTokenAddressesByHighestLiquidity = (
 
 interface EthOpposingLiquid {
   smartTokenAmount: ViewAmount;
-  opposingAmount: string;
+  opposingAmount?: string;
   shareOfPool: number;
   singleUnitCosts: ViewAmount[];
 }
@@ -2163,6 +2163,14 @@ export class EthBancorModule
       [tokenSymbol]
     );
 
+    const reserveBalancesAboveZero = reserves.every(reserve =>
+      new BigNumber(reserve.weiAmount).gt(0)
+    );
+
+    if (!reserveBalancesAboveZero) {
+      throw new Error("NoReserveBalances");
+    }
+
     const sameReserveWei = expandToken(tokenAmount, sameReserve.decimals);
 
     const opposingAmount = calculateOppositeFundRequirement(
@@ -2606,10 +2614,14 @@ export class EthBancorModule
       compareString(weight.reserveToken.contract, opposingWithdraw.reserve.id)
     );
 
-    const shareOfPool = new BigNumber(suggestedPoolTokenWithdrawDec).div(shrinkToken(
-      sameReserve.stakedBalance,
-      sameReserve.reserveToken.decimals
-    )).toNumber()
+    const shareOfPool = new BigNumber(suggestedPoolTokenWithdrawDec)
+      .div(
+        shrinkToken(
+          sameReserve.stakedBalance,
+          sameReserve.reserveToken.decimals
+        )
+      )
+      .toNumber();
 
     const suggestedWithdrawWei = expandToken(
       suggestedPoolTokenWithdrawDec,
@@ -4193,20 +4205,15 @@ export class EthBancorModule
       console.log("trying...");
       console.timeEnd("timeToGetToInitialBulk");
       console.time("initialPools");
-      const x = await this.addPoolsBulk(initialLoad);
+      const x = await this.addPoolsBulk([
+        ...initialLoad,
+        {
+          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+          converterAddress: "0x222b06E3392998911A79C51Ee64b4aabE1653537"
+        }
+      ]);
       console.timeEnd("initialPools");
       console.log("finished add pools...", x);
-
-      try {
-        await this.addPoolsBulk([
-          {
-            anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-            converterAddress: "0x222b06E3392998911A79C51Ee64b4aabE1653537"
-          }
-        ]);
-      } catch (e) {
-        console.log(e, "was e");
-      }
 
       if (remainingLoad.length > 0) {
         const banned = [
@@ -4675,64 +4682,96 @@ export class EthBancorModule
     console.log(path, "is the path");
 
     const fromWei = expandToken(amount, fromTokenDecimals);
-    const wei = await this.getReturnByPath({
-      path,
-      amount: fromWei
-    });
-    const weiNumber = new BigNumber(wei);
-
-    const userReturnRate = buildRate(new BigNumber(fromWei), weiNumber);
-
-    let slippage: number | undefined;
     try {
-      const contract = buildConverterContract(relays[0].contract);
-      const fromReserveBalanceWei = await contract.methods
-        .getConnectorBalance(fromTokenContract)
-        .call();
+      const wei = await this.getReturnByPath({
+        path,
+        amount: fromWei
+      });
+      const weiNumber = new BigNumber(wei);
 
-      const smallPortionOfReserveBalance = new BigNumber(
-        fromReserveBalanceWei
-      ).times(0.00001);
+      const userReturnRate = buildRate(new BigNumber(fromWei), weiNumber);
 
-      if (smallPortionOfReserveBalance.isLessThan(fromWei)) {
-        const smallPortionOfReserveBalanceWei = smallPortionOfReserveBalance.toFixed(
-          0
-        );
+      let slippage: number | undefined;
+      try {
+        const contract = buildConverterContract(relays[0].contract);
+        const fromReserveBalanceWei = await contract.methods
+          .getConnectorBalance(fromTokenContract)
+          .call();
 
-        const smallPortionReturn = await this.getReturnByPath({
-          path,
-          amount: smallPortionOfReserveBalanceWei
-        });
+        const smallPortionOfReserveBalance = new BigNumber(
+          fromReserveBalanceWei
+        ).times(0.00001);
 
-        const tinyReturnRate = buildRate(
-          new BigNumber(smallPortionOfReserveBalanceWei),
-          new BigNumber(smallPortionReturn)
-        );
+        if (smallPortionOfReserveBalance.isLessThan(fromWei)) {
+          const smallPortionOfReserveBalanceWei = smallPortionOfReserveBalance.toFixed(
+            0
+          );
 
-        // const x = await this.testWeiReturns({
-        //   path,
-        //   amounts: [
-        //     {
-        //       label: "smallReturn",
-        //       weiAmount: smallPortionOfReserveBalanceWei
-        //     },
-        //     { label: "userReturn", weiAmount: fromWei }
-        //   ]
-        // });
-        const slippageNumber = calculateSlippage(
-          tinyReturnRate,
-          userReturnRate
-        );
-        slippage = slippageNumber.toNumber();
+          const smallPortionReturn = await this.getReturnByPath({
+            path,
+            amount: smallPortionOfReserveBalanceWei
+          });
+
+          const tinyReturnRate = buildRate(
+            new BigNumber(smallPortionOfReserveBalanceWei),
+            new BigNumber(smallPortionReturn)
+          );
+
+          // const x = await this.testWeiReturns({
+          //   path,
+          //   amounts: [
+          //     {
+          //       label: "smallReturn",
+          //       weiAmount: smallPortionOfReserveBalanceWei
+          //     },
+          //     { label: "userReturn", weiAmount: fromWei }
+          //   ]
+          // });
+          const slippageNumber = calculateSlippage(
+            tinyReturnRate,
+            userReturnRate
+          );
+          slippage = slippageNumber.toNumber();
+        }
+      } catch (e) {
+        console.warn("Failed calculating slippage", e.message);
       }
-    } catch (e) {
-      console.warn("Failed calculating slippage", e.message);
-    }
 
-    return {
-      amount: shrinkToken(wei, toTokenDecimals),
-      slippage
-    };
+      return {
+        amount: shrinkToken(wei, toTokenDecimals),
+        slippage
+      };
+    } catch (e) {
+      if (
+        e.message.includes(
+          `Returned values aren't valid, did it run Out of Gas? You might also see this error if you are not using the correct ABI for the contract you are retrieving data from`
+        )
+      ) {
+        const relayBalances = await Promise.all(
+          relays.map(async relay => ({
+            relay,
+            balances: await this.fetchRelayBalances(relay.id)
+          }))
+        );
+        const relaysWithNoBalances = relayBalances.filter(
+          relay =>
+            !relay.balances.reserves.every(reserve => reserve.weiAmount !== "0")
+        );
+        if (relaysWithNoBalances.length > 0) {
+          throw new Error(
+            `Pool${
+              relaysWithNoBalances.length > 1 ? "s" : ""
+            } ${relaysWithNoBalances
+              .map(x => x.relay.id)
+              .join(" ")} do not have a reserve balance on both sides`
+          );
+        } else {
+          throw new Error(e);
+        }
+      } else {
+        throw new Error(e);
+      }
+    }
   }
 
   @action async getCost({ fromId, to }: ProposedToTransaction) {
