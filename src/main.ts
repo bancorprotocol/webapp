@@ -17,8 +17,6 @@ import {
   FontAwesomeLayersText
 } from "@fortawesome/vue-fontawesome";
 // @ts-ignore
-import Ripple from "vue-ripple-directive";
-// @ts-ignore
 import VueFuse from "vue-fuse";
 import ImageFallback from "vue-image-fallback";
 import { sync } from "vuex-router-sync";
@@ -53,10 +51,6 @@ Vue.use(
 );
 
 Vue.use(VueFuse);
-
-Ripple.color = "rgba(255, 255, 255, 0.35)";
-Ripple.zIndex = 1055;
-Vue.directive("ripple", Ripple);
 
 Vue.use(BootstrapVue);
 Vue.use(ImageFallback);
