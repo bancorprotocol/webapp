@@ -57,7 +57,7 @@
       </b-input-group-append>
 
       <div
-        v-if="errorMsg !== ''"
+        v-if="isAuthenticated && errorMsg !== ''"
         id="input-live-feedback"
         class="input-field-error text-danger w-100 mt-1 font-size-12 font-w700"
       >
