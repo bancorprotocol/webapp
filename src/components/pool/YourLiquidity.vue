@@ -58,7 +58,7 @@ import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
 import { PoolTokenPosition, ViewRelay, ViewReserve } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";
 import numeral from "numeral";
-import {formatNumber} from "@/api/helpers";
+import { formatNumber } from "@/api/helpers";
 
 @Component({
   components: { LabelContentSplit, MainButton }
@@ -73,7 +73,7 @@ export default class YourLiquidity extends Vue {
   }
 
   formattedBalance(amount: string) {
-    return formatNumber(parseFloat(amount), 6)
+    return formatNumber(parseFloat(amount), 6);
   }
 
   getPoolLabel(reserves: ViewReserve[]) {

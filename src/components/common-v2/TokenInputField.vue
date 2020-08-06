@@ -19,6 +19,7 @@
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
         :disabled="disabled"
+        @keypress="isNumber($event)"
       ></b-form-input>
 
       <b-input-group-append :class="{ cursor: pool || dropdown }">
@@ -73,7 +74,7 @@ import { ViewRelay, ViewReserve } from "@/types/bancor";
 import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import numeral from "numeral";
-import {formatNumber} from "@/api/helpers";
+import { formatNumber } from "@/api/helpers";
 
 @Component({
   components: { PoolLogos, LabelContentSplit }
@@ -93,22 +94,16 @@ export default class TokenInputField extends Vue {
   numeral = numeral;
 
   get formattedBalance() {
-    return formatNumber(parseFloat(this.balance), 6).toString()
+    return formatNumber(parseFloat(this.balance), 6).toString();
   }
 
-  // get formattedBalance() {
-  //   const balance = parseFloat(this.balance);
-  //   if (!balance || balance === 0) return "0";
-  //   else if (balance < 0.000001) return "< 0.000001";
-  //   else if (balance > 1000) return "~" + numeral(balance).format("0,0.0000");
-  //   else return "~" + numeral(balance).format("0,0.000000");
-  // }
-
-  get errorState() {
-    if (!this.isAuthenticated) return null;
-    else {
-      if (this.errorMsg === "") return null;
-      else return false;
+  isNumber(evt: any) {
+    evt = evt ? evt : window.event;
+    let charCode = evt.which ? evt.which : evt.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
+      evt.preventDefault();
+    } else {
+      return true;
     }
   }
 
