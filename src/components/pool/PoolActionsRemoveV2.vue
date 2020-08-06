@@ -77,11 +77,12 @@
       </label-content-split>
     </div>
 
-    <div v-if="exitFee !== 0">
-      <p class="input-field-error text-danger font-size-12 font-w700">
-        Pool is not balanced. Recommended to wait until it will be balanced.
-      </p>
-    </div>
+    <alert-block
+      v-if="exitFee !== 0"
+      variant="error"
+      msg="Pool is not balanced. Recommended to wait until it will be balanced."
+      class="mb-3"
+    />
 
     <main-button
       label="Remove"
@@ -118,6 +119,7 @@ import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { compareString } from "../../api/helpers";
 import TokenInputField from "@/components/common-v2/TokenInputField.vue";
 import BigNumber from "bignumber.js";
+import AlertBlock from "@/components/common-v2/AlertBlock.vue";
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -129,6 +131,7 @@ interface PoolTokenUI {
 
 @Component({
   components: {
+    AlertBlock,
     TokenInputField,
     ModalPoolAction,
     PoolActionsPercentages,

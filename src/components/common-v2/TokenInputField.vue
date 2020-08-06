@@ -55,14 +55,11 @@
           </div>
         </div>
       </b-input-group-append>
-
-      <div
+      <alert-block
         v-if="isAuthenticated && errorMsg !== ''"
-        id="input-live-feedback"
-        class="input-field-error text-danger w-100 mt-1 font-size-12 font-w700"
-      >
-        {{ errorMsg }}
-      </div>
+        variant="error"
+        :msg="errorMsg"
+      />
     </b-input-group>
   </div>
 </template>
@@ -75,9 +72,10 @@ import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
+import AlertBlock from "@/components/common-v2/AlertBlock.vue";
 
 @Component({
-  components: { PoolLogos, LabelContentSplit }
+  components: { AlertBlock, PoolLogos, LabelContentSplit }
 })
 export default class TokenInputField extends Vue {
   @Prop() name?: string;

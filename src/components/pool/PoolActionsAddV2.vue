@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label-content-split label="Pool" class="my-4">
+    <label-content-split label="Selected Pool" class="my-3">
       <pool-logos
         @click.native="$bvModal.show('modal-join-pool')"
         :pool="pool"
@@ -8,7 +8,13 @@
       />
     </label-content-split>
 
-    <label-content-split label="Select a Token" class="mb-3">
+    <alert-block
+      variant="info"
+      title="This is a new V2 beta version of Bancor."
+      msg="You can add liquidity with only one token at a time."
+    />
+
+    <label-content-split label="Select a Token" class="my-3">
       <b-form-group class="m-0" :class="darkMode ? 'text-dark' : 'text-light'">
         <b-form-radio-group
           id="radio-group"
@@ -81,11 +87,13 @@ import RateShareBlock from "@/components/common-v2/RateShareBlock.vue";
 import { compareString, formatNumber } from "@/api/helpers";
 import { namespace } from "vuex-class";
 import numeral from "numeral";
+import AlertBlock from "@/components/common-v2/AlertBlock.vue";
 
 const bancor = namespace("bancor");
 
 @Component({
   components: {
+    AlertBlock,
     RateShareBlock,
     ModalPoolAction,
     LabelContentSplit,
