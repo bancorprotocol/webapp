@@ -36,7 +36,7 @@
               />
               <span class="font-w600 font-size-14">{{ token.symbol }}</span>
             </div>
-            <span class="font-w500 font-size-12">{{ token.balance }}</span>
+            <span class="font-w500 font-size-12">{{ formattedBalance(token.balance) }}</span>
           </div>
         </b-col>
         <b-col
@@ -57,6 +57,7 @@ import { Watch, Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import BaseModal from "@/components/common-v2/BaseModal.vue";
 import { ViewRelay, ViewToken } from "@/types/bancor";
+import {formatNumber} from "@/api/helpers";
 
 @Component({
   components: { BaseModal }
@@ -104,6 +105,10 @@ export default class ModalSwapSelect extends Vue {
       }
     }
     this.$bvModal.hide(this.name);
+  }
+
+  formattedBalance(num: number = 0) {
+    return formatNumber(num, 8)
   }
 
   get searchedTokens() {
