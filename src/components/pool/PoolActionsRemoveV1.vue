@@ -209,7 +209,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   }
 
   async tokenOneChanged(tokenAmount: string) {
-    if (tokenAmount === "") {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
       this.setDefault();
       return;
     }
@@ -234,7 +234,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   }
 
   async tokenTwoChanged(tokenAmount: string) {
-    if (tokenAmount === "") {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
       this.setDefault();
       return;
     }

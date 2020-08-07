@@ -14,6 +14,7 @@
     <b-input-group>
       <b-form-input
         type="text"
+        :debounce="300"
         v-model="tokenAmount"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"

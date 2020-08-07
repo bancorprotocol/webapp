@@ -208,7 +208,7 @@ export default class SwapAction extends Vue {
   }
 
   async updatePriceReturn(amount: string) {
-    if (!amount || amount === "0") {
+    if (!amount || amount === "0" || amount === '.') {
       this.setDefault();
       return;
     }

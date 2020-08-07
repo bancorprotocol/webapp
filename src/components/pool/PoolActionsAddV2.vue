@@ -179,6 +179,7 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   async loadPrices(amount: string) {
+    if (amount === '.') return
     this.errorMsg = ""
     try {
       const results = await this.calculateOpposingDeposit({
