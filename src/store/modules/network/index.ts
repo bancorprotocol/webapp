@@ -12,7 +12,7 @@ const VuexModule = createModule({
 });
 
 export class NetworkModule extends VuexModule.With({ namespaced: "network/" }) {
-  chains = ["eos", "eth", "usds"];
+  chains = ["eos", "eth"];
 
   get currentNetwork() {
     // @ts-ignore

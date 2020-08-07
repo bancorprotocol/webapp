@@ -82,11 +82,6 @@ const defaultPaths = [
     moduleId: "eth",
     base: ethReserveAddress,
     quote: "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"
-  },
-  {
-    moduleId: "usds",
-    base: buildTokenId({ contract: "eosdtsttoken", symbol: "EOSDT" }),
-    quote: buildTokenId({ contract: "tethertether", symbol: "USDT" })
   }
 ];
 
