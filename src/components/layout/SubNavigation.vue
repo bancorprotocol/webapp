@@ -1,5 +1,5 @@
 <template>
-  <div class="w-100 text-center mt-2">
+  <div class="w-100 text-center mt-2 mb-3">
     <b-row>
       <b-col cols="6" class="pr-1">
         <b-btn
@@ -30,7 +30,6 @@
         </b-btn>
       </b-col>
     </b-row>
-    <hr :class="darkMode ? 'hr-dark' : 'hr-light'" />
   </div>
 </template>
 
@@ -62,11 +61,6 @@ const defaultPaths = [
     moduleId: "eth",
     base: ethReserveAddress,
     quote: "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"
-  },
-  {
-    moduleId: "usds",
-    base: buildTokenId({ contract: "eosdtsttoken", symbol: "EOSDT" }),
-    quote: buildTokenId({ contract: "tethertether", symbol: "USDT" })
   }
 ];
 

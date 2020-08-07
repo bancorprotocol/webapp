@@ -72,10 +72,10 @@
 import { Watch, Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
-import TokenInputField from "@/components/common-v2/TokenInputField.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewReserve, ViewToken } from "@/types/bancor";
 import ModalSwapSelect from "@/components/swap/ModalSwapSelect.vue";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { compareString, findOrThrow } from "@/api/helpers";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral"

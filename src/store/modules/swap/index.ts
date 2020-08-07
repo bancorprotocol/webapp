@@ -49,10 +49,6 @@ const moduleIds: { label: string; id: string }[] = [
   {
     label: "ETH",
     id: "eth"
-  },
-  {
-    label: "USDⓈ",
-    id: "usds"
   }
 ];
 

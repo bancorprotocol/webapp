@@ -106,14 +106,8 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import numeral from "numeral";
-import SortIcons from "@/components/common/SortIcons.vue";
-import {
-  TokenPrice,
-  SimpleToken,
-  SimpleTokenWithMarketData
-} from "@/types/bancor";
 const {
   ContentLoader,
   FacebookLoader,
@@ -135,8 +129,7 @@ import { vxm } from "@/store";
     CodeLoader,
     BulletListLoader,
     InstagramLoader,
-    ListLoader,
-    SortIcons
+    ListLoader
   }
 })
 export default class TokensTable extends Vue {

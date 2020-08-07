@@ -7,10 +7,10 @@
     <div class="text-center mb-5">
       <img
         v-if="darkMode"
-        src="@/assets/media/logos/bancor-white.png"
+        src="@/assets/media/logos/bancor-white2.png"
         height="85px"
       />
-      <img v-else src="@/assets/media/logos/bancor-black.png" height="85px" />
+      <img v-else src="@/assets/media/logos/bancor-black2.png" height="85px" />
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
           style="display: block; width: 2rem; height: 2rem;"
@@ -78,7 +78,6 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
-import ModalTx from "@/components/modals/ModalTx.vue";
 import { vxm } from "@/store/";
 import { WalletProvider } from "eos-transit";
 import wait from "waait";
@@ -87,8 +86,7 @@ import ModalJoinPool from "@/components/pool/ModalJoinPool.vue";
 @Component({
   components: {
     ModalJoinPool,
-    ModalLogin,
-    ModalTx
+    ModalLogin
   }
 })
 export default class App extends Vue {

@@ -14,11 +14,11 @@
     <b-input-group>
       <b-form-input
         type="text"
-        debounce="500"
         v-model="tokenAmount"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
         :disabled="disabled"
+        @keypress="isNumber($event)"
       ></b-form-input>
 
       <b-input-group-append :class="{ cursor: pool || dropdown }">
@@ -54,14 +54,11 @@
           </div>
         </div>
       </b-input-group-append>
-
-      <div
-        v-if="errorMsg !== ''"
-        id="input-live-feedback"
-        class="input-field-error text-danger w-100 mt-1 font-size-12 font-w700"
-      >
-        {{ errorMsg }}
-      </div>
+      <alert-block
+        v-if="isAuthenticated && errorMsg !== ''"
+        variant="error"
+        :msg="errorMsg"
+      />
     </b-input-group>
   </div>
 </template>
@@ -70,12 +67,13 @@
 import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay, ViewReserve } from "@/types/bancor";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import numeral from "numeral";
+import { formatNumber } from "@/api/helpers";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
-  components: { PoolLogos, LabelContentSplit }
+  components: { AlertBlock, PoolLogos, LabelContentSplit }
 })
 export default class TokenInputField extends Vue {
   @Prop() name?: string;
@@ -89,21 +87,24 @@ export default class TokenInputField extends Vue {
   @Prop({ default: false }) ignoreError!: boolean;
   @Prop({ default: "" }) errorMsg!: string;
   @Prop({ default: false }) disabled!: boolean;
-  numeral = numeral;
 
   get formattedBalance() {
-    const balance = parseFloat(this.balance);
-    if (!balance || balance === 0) return "0";
-    else if (balance < 0.000001) return "< 0.000001";
-    else if (balance > 1000) return "~" + numeral(balance).format("0,0.0000");
-    else return "~" + numeral(balance).format("0,0.000000");
+    return formatNumber(parseFloat(this.balance), 6).toString();
   }
 
-  get errorState() {
-    if (!this.isAuthenticated) return null;
-    else {
-      if (this.errorMsg === "") return null;
-      else return false;
+  isNumber(evt: any) {
+    evt = evt ? evt : window.event;
+    let charCode = evt.which ? evt.which : evt.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
+      evt.preventDefault();
+    } else {
+      if (charCode === 46) {
+        if (this.tokenAmount.includes(".") || this.tokenAmount.length < 1)
+          evt.preventDefault();
+        else {
+          return true;
+        }
+      } else return true;
     }
   }
 

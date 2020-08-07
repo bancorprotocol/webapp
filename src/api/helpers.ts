@@ -110,6 +110,7 @@ const replaceLastChar = (str: string, char: string) => {
 };
 
 export const formatNumber = (num: number, size: number = 4) => {
+  if (num === 0) return 0;
   const reduced = num.toFixed(size);
   const isZero = Number(reduced) == 0;
   if (isZero) {
@@ -489,8 +490,7 @@ export const services: Service[] = [
   {
     namespace: "eth",
     features: [Feature.Trade, Feature.Liquidity, Feature.CreatePool]
-  },
-  { namespace: "usds", features: [Feature.Trade] }
+  }
 ];
 
 export interface ReserveTableRow {
