@@ -99,8 +99,7 @@ export default class TokenInputField extends Vue {
       evt.preventDefault();
     } else {
       if (charCode === 46) {
-        if (this.tokenAmount.includes(".") || this.tokenAmount.length < 1)
-          evt.preventDefault();
+        if (this.tokenAmount.includes(".")) evt.preventDefault();
         else {
           return true;
         }
