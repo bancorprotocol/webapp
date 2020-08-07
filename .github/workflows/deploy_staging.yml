@@ -2,7 +2,7 @@ name: Deploy Staging to Firebase
 
 on:
   push:
-    branches: [ staging ]
+    branches: [staging]
 
 jobs:
   build-and-deploy:
@@ -21,7 +21,6 @@ jobs:
           VUE_APP_I18N_FALLBACK_LOCALE: "en"
           VUE_APP_MULTICONTRACT: "bancorcnvrtr"
           VUE_APP_SMARTTOKENCONTRACT: "smarttokens1"
-          VUE_APP_USDSTABLE: "stable.sx"
           VUE_APP_NETWORKCONTRACT: "thisisbancor"
           VUE_APP_AFFILIATE: ${{ secrets.VUE_APP_AFFILIATE }}
           VUE_APP_BLOCKNATIVE: ${{ secrets.VUE_APP_BLOCKNATIVE }}
