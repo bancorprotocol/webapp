@@ -2,7 +2,7 @@
   <b-dropdown
     id="dropdown-settings"
     right
-    variant="light"
+    variant="white"
     size="sm"
     toggle-class="block-rounded"
     no-caret

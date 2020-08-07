@@ -77,6 +77,7 @@ import wait from "waait";
 import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/singleContractTx";
+import BigNumber from "bignumber.js";
 
 const compareAgnosticToBalanceParam = (
   agnostic: AgnosticToken,
@@ -937,10 +938,12 @@ export class EosBancorModule
           contract,
           symbol
         });
+        const tokenBalanceString =
+          tokenBalance && new BigNumber(tokenBalance.balance).toString();
         return {
           ...token,
           name: tokenMeta.name,
-          balance: tokenBalance && Number(tokenBalance.balance),
+          balance: tokenBalanceString,
           logo: tokenMeta.logo
         };
       });

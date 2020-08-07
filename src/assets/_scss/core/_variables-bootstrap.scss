@@ -27,6 +27,7 @@ $warning:       #f3b760 !default;
 $danger:        #d26a5c !default;
 $light:         #eeeeee !default;
 $dark:          #1c344e !default;
+$white: #ffffff !default;
 
 $theme-colors: (
     "primary":    $primary,
@@ -36,7 +37,8 @@ $theme-colors: (
     "warning":    $warning,
     "danger":     $danger,
     "light":      $light,
-    "dark":       $dark
+    "dark":       $dark,
+    "white":      $white
 ) !default;
 
 

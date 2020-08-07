@@ -11,7 +11,8 @@
       v-on:open-swap-modal="openModal"
       :error-msg="errorToken1"
     />
-    <modal-swap-select name="token1" />
+
+    <modal-select-token name="token1" v-on:select-token="selectToken" />
 
     <div class="text-center my-3">
       <font-awesome-icon
@@ -33,7 +34,7 @@
       v-on:open-swap-modal="openModal"
       :disabled="false"
     />
-    <modal-swap-select name="token2" />
+    <modal-select-token name="token2" v-on:select-token="selectToken" />
 
     <div class="my-3">
       <label-content-split label="Rate" :value="rate" class="mb-2" />
@@ -73,18 +74,17 @@ import { Watch, Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
-import { ViewReserve, ViewToken } from "@/types/bancor";
-import ModalSwapSelect from "@/components/swap/ModalSwapSelect.vue";
+import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { compareString, findOrThrow } from "@/api/helpers";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral"
+import ModalSelectToken from "@/components/modals/ModalSelectToken.vue";
 
 @Component({
   components: {
+    ModalSelectToken,
     ModalSwapAction,
     LabelContentSplit,
-    ModalSwapSelect,
     TokenInputField,
     MainButton
   }
@@ -140,6 +140,47 @@ export default class SwapAction extends Vue {
 
   openModal(name: string) {
     this.$bvModal.show(name);
+  }
+
+  selectToken(token: { token: ViewToken, name: string }): void {
+    if (token.name === "token1") {
+      if (token.token.id === this.$route.query.to) {
+        this.$router.push({
+          name: "Swap",
+          query: {
+            from: this.$route.query.to,
+            to: this.$route.query.from
+          }
+        });
+      } else {
+        this.$router.push({
+          name: "Swap",
+          query: {
+            from: token.token.id,
+            to: this.$route.query.to
+          }
+        });
+      }
+    } else {
+      if (token.token.id === this.$route.query.from) {
+        this.$router.push({
+          name: "Swap",
+          query: {
+            from: this.$route.query.to,
+            to: this.$route.query.from
+          }
+        });
+      } else {
+        this.$router.push({
+          name: "Swap",
+          query: {
+            from: this.$route.query.from,
+            to: token.token.id
+          }
+        });
+      }
+    }
+    this.$bvModal.hide(token.name);
   }
 
   sanitizeAmount(amount: string) {
