@@ -181,7 +181,7 @@ export interface ViewToken {
   logo: string;
   change24h?: number;
   volume24h?: number;
-  balance?: number;
+  balance?: string;
   precision?: number;
 }
 
@@ -347,7 +347,7 @@ export interface ModalChoice {
   id: string;
   symbol: string;
   contract: string;
-  balance?: number;
+  balance?: string;
   img: string;
   usdValue?: number;
 }

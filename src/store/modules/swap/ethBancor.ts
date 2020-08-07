@@ -1525,28 +1525,34 @@ export class EthBancorModule
       }))
       .filter(offer => offer.meta);
 
-    return addedMeta.map(meta => ({
-      id: meta.meta.id,
-      contract: meta.meta.contract,
-      img: meta.meta.image,
-      symbol: meta.meta.symbol,
-      balance:
-        this.tokenBalance(meta.meta.contract) &&
-        this.tokenBalance(meta.meta.contract)!.balance,
-      usdValue: meta.value
-    }));
+    return addedMeta.map(meta => {
+      const balance = this.tokenBalance(meta.meta.contract);
+      const stringBalance =
+        balance && new BigNumber(balance.balance).toString();
+      return {
+        id: meta.meta.id,
+        contract: meta.meta.contract,
+        img: meta.meta.image,
+        symbol: meta.meta.symbol,
+        balance: stringBalance,
+        usdValue: meta.value
+      };
+    });
   }
 
   get newPoolTokenChoices() {
     return (networkToken: string): ModalChoice[] => {
       const tokenChoices = this.tokenMeta
         .map(meta => metaToModalChoice(meta))
-        .map(modalChoice => ({
-          ...modalChoice,
-          balance:
-            this.tokenBalance(modalChoice.contract) &&
-            this.tokenBalance(modalChoice.contract)!.balance
-        }))
+        .map(modalChoice => {
+          const balance = this.tokenBalance(modalChoice.contract);
+          const stringBalance =
+            balance && new BigNumber(balance.balance).toString();
+          return {
+            ...modalChoice,
+            balance: stringBalance
+          };
+        })
         .filter(meta =>
           this.newNetworkTokenChoices.some(
             networkChoice => !compareString(networkChoice.id, meta.id)
