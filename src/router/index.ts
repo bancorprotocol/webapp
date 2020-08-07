@@ -1,16 +1,7 @@
 import Vue from "vue";
 import Router from "vue-router";
-import Wallet from "@/views/Wallet.vue";
-import WalletAccount from "@/views/WalletAccount.vue";
-import Tokens from "@/views/Tokens.vue";
-import Relays from "@/views/Relays.vue";
 import Data from "@/views/Data.vue";
-import RelayDetail from "@/views/RelayDetail.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
-import HeroConvert from "@/components/hero/sub/HeroConvert.vue";
-import HeroTransfer from "@/components/hero/sub/HeroTransfer.vue";
-import HeroRelay from "@/components/hero/sub/HeroRelay.vue";
-import HeroCreate from "@/components/hero/sub/HeroCreate.vue";
 import Navigation from "@/components/layout/Navigation.vue";
 import { services } from "@/api/helpers";
 import PoolHome from "@/components/pool/PoolHome.vue";
@@ -25,7 +16,6 @@ const PREFERRED_SERVICE = "preferredService";
 export const router = new Router({
   mode: "history",
   base: process.env.BASE_URL,
-  //linkExactActiveClass: "active",
   scrollBehavior(to, from, savedPosition) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -45,42 +35,6 @@ export const router = new Router({
         Nav: Navigation,
         default: PageNotFound
       }
-    },
-    {
-      path: "/:service/create",
-      name: "Create",
-      components: {
-        Nav: Navigation,
-        Hero: HeroCreate
-      }
-    },
-    {
-      path: "/:service/transfer/:id",
-      name: "Transfer",
-      components: {
-        Nav: Navigation,
-        default: WalletAccount,
-        Hero: HeroTransfer
-      },
-      props: true
-    },
-    {
-      path: "/:service/wallet",
-      name: "Wallet",
-      components: {
-        Nav: Navigation,
-        default: Wallet
-      }
-    },
-    {
-      path: "/:service/wallet/:account",
-      name: "WalletAccount",
-      components: {
-        Nav: Navigation,
-        Hero: HeroTransfer,
-        default: WalletAccount
-      },
-      props: true
     },
     {
       path: "/:service/pool",
@@ -107,39 +61,6 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/pools",
-      name: "Relays",
-      components: {
-        Nav: Navigation,
-        Hero: HeroRelay
-      },
-      props: true,
-      meta: {
-        feature: "Liquidity"
-      }
-    },
-    {
-      path: "/:service/pools/:account/detail",
-      name: "RelayDetail",
-      components: {
-        Nav: Navigation,
-        Hero: HeroRelay
-      },
-      props: true
-    },
-    {
-      path: "/:service/pools/:account",
-      name: "Relay",
-      components: {
-        Nav: Navigation,
-        Hero: HeroRelay
-      },
-      props: true,
-      meta: {
-        feature: "Liquidity"
-      }
-    },
-    {
       path: "/:service/swap",
       name: "Swap",
       components: {
@@ -151,18 +72,6 @@ export const router = new Router({
         feature: "Trade"
       }
     },
-    // {
-    //   path: "/:service",
-    //   name: "Tokens",
-    //   components: {
-    //     Nav: Navigation,
-    //     Hero: HeroConvert
-    //   },
-    //   props: true,
-    //   meta: {
-    //     feature: "Trade"
-    //   }
-    // },
     {
       path: "/:service/data",
       name: "Data",

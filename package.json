@@ -70,7 +70,6 @@
     "vue-image-fallback": "^1.0.0",
     "vue-property-decorator": "^8.2.2",
     "vue-qrcode-reader": "^2.1.1",
-    "vue-ripple-directive": "^2.0.1",
     "vue-router": "^3.2.0",
     "vuex": "^3.4.0",
     "vuex-class": "^0.3.2",
