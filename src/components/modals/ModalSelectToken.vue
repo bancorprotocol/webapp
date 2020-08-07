@@ -23,7 +23,7 @@
           v-for="token in searchedTokens.slice(0, currentStep * perStep)"
           :key="token.id"
           class="my-3 cursor"
-          @click="selectToken(token)"
+          @click="$emit('select-token', { token, name })"
         >
           <div
             class="d-flex align-items-center justify-content-between"
@@ -82,7 +82,7 @@ import MainButton from "@/components/common/Button.vue";
 @Component({
   components: { BaseModal, MainButton }
 })
-export default class ModalSwapSelect extends Vue {
+export default class ModalSelectToken extends Vue {
   @Prop({ default: "modal-swap-select" }) name!: string;
   tokenSearch: string = "";
 
@@ -97,49 +97,8 @@ export default class ModalSwapSelect extends Vue {
     return vxm.wallet.isAuthenticated;
   }
 
-  selectToken(token: ViewToken): void {
-    if (this.name === "token1") {
-      if (token.id === this.$route.query.to) {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.to,
-            to: this.$route.query.from
-          }
-        });
-      } else {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: token.id,
-            to: this.$route.query.to
-          }
-        });
-      }
-    } else {
-      if (token.id === this.$route.query.from) {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.to,
-            to: this.$route.query.from
-          }
-        });
-      } else {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.from,
-            to: token.id
-          }
-        });
-      }
-    }
-    this.$bvModal.hide(this.name);
-  }
-
-  formattedBalance(num: number = 0) {
-    return formatNumber(num, 8);
+  formattedBalance(num: string = "0") {
+    return formatNumber(parseFloat(num), 8);
   }
 
   get searchedTokens() {
