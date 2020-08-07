@@ -14,7 +14,6 @@
     <b-input-group>
       <b-form-input
         type="text"
-        debounce="500"
         v-model="tokenAmount"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
@@ -70,7 +69,6 @@ import { vxm } from "@/store/";
 import { ViewRelay, ViewReserve } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 
@@ -89,7 +87,6 @@ export default class TokenInputField extends Vue {
   @Prop({ default: false }) ignoreError!: boolean;
   @Prop({ default: "" }) errorMsg!: string;
   @Prop({ default: false }) disabled!: boolean;
-  numeral = numeral;
 
   get formattedBalance() {
     return formatNumber(parseFloat(this.balance), 6).toString();
@@ -101,7 +98,13 @@ export default class TokenInputField extends Vue {
     if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
       evt.preventDefault();
     } else {
-      return true;
+      if (charCode === 46) {
+        if (this.tokenAmount.includes(".") || this.tokenAmount.length < 1)
+          evt.preventDefault();
+        else {
+          return true;
+        }
+      } else return true;
     }
   }
 
