@@ -138,8 +138,8 @@ export default class ModalSwapSelect extends Vue {
     this.$bvModal.hide(this.name);
   }
 
-  formattedBalance(num: number = 0) {
-    return formatNumber(num, 8);
+  formattedBalance(num: string = "0") {
+    return formatNumber(parseFloat(num), 8);
   }
 
   get searchedTokens() {
