@@ -249,7 +249,7 @@ export interface ViewModalToken {
   id: string;
   symbol: string;
   img: string;
-  balance?: number;
+  balance?: string;
 }
 
 export interface SlippageTolerance {

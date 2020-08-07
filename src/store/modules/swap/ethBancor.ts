@@ -1941,6 +1941,7 @@ export class EthBancorModule
                 compareString(feed.tokenId, reserve.contract)
             )!;
           const balance = this.tokenBalance(reserve.contract);
+          const balanceString = balance && new BigNumber(balance.balance).toString()
           return {
             id: reserve.contract,
             precision: reserve.decimals,
@@ -1953,7 +1954,7 @@ export class EthBancorModule
             logo: image,
             ...(relayFeed.change24H && { change24h: relayFeed.change24H }),
             ...(relayFeed.volume24H && { volume24h: relayFeed.volume24H }),
-            ...(balance && { balance: balance.balance })
+            ...(balance && { balance: balanceString })
           };
         })
       )
