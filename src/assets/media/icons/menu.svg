@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16" height="12" viewBox="0 0 16 12">
+    <defs>
+        <path id="qlakzuoxma" d="M339.8 79c-.442 0-.8.362-.8.81 0 .447.358.809.8.809h14.4c.442 0 .8-.362.8-.81 0-.447-.358-.809-.8-.809h-14.4zm0 4.857c-.442 0-.8.363-.8.81 0 .447.358.81.8.81h14.4c.442 0 .8-.363.8-.81 0-.447-.358-.81-.8-.81h-14.4zm0 4.857c-.442 0-.8.363-.8.81 0 .447.358.81.8.81h14.4c.442 0 .8-.363.8-.81 0-.447-.358-.81-.8-.81h-14.4z"/>
+    </defs>
+    <g fill="none" fill-rule="evenodd" transform="translate(-339 -79)">
+        <use fill="#0A2540" fill-rule="nonzero" xlink:href="#qlakzuoxma"/>
+    </g>
+</svg>
