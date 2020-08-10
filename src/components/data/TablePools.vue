@@ -9,10 +9,8 @@
         :fields="fields"
         :filter="filter"
         :filter-function="onPoolFilter"
-        sort-by="liqDepth"
         :current-page="currentPage"
         :per-page="perPage"
-        :sort-desc="true"
         primary-key="id"
         :table-busy="loadingPools"
       >

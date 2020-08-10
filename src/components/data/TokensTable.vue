@@ -143,7 +143,7 @@ export default class TokensTable extends Vue {
   numeral = numeral;
 
   currentPage = 1;
-  perPage = 7;
+  perPage = 25;
 
   get pagesTotal() {
     return Math.ceil(this.tokens.length / this.perPage);
