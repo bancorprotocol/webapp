@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="loading && !error"
+    v-if="loading"
     class="loading d-flex justify-content-center align-items-center"
     :class="darkMode ? 'bg-body-dark' : 'bg-body-light'"
   >
@@ -151,8 +151,9 @@ export default class App extends Vue {
       // if (provider) vxm.eosWallet.initLogin(provider);
     }
     vxm.general.setLanguage();
-    vxm.general.getUserCountry();
-    this.loadBancor();
+    await vxm.general.getUserCountry();
+    if (this.$route.name === "404") this.loading = false;
+    else await this.loadBancor();
   }
 }
 </script>

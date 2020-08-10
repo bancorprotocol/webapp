@@ -8,7 +8,7 @@
     <b-navbar class="navBar">
       <div class="d-flex justify-content-between container-xl">
         <b-navbar-brand class="pb-1" style="width: 250px">
-          <router-link :to="{ name: 'Swap' }">
+          <a :href="getRootUrl">
             <img
               v-if="darkMode"
               src="@/assets/media/logos/bancor-white2.png"
@@ -21,7 +21,7 @@
               height="35px"
               class="mb-1"
             />
-          </router-link>
+          </a>
         </b-navbar-brand>
 
         <div class="d-flex justify-content-end" style="width: 250px">
@@ -76,6 +76,12 @@ export default class Navigation extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  get getRootUrl() {
+    const host = window.location.hostname;
+    if (host === "localhost") return "http://localhost:8080";
+    else return "https://" + host;
   }
 
   created() {
