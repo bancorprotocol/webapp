@@ -56,7 +56,6 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { namespace } from "vuex-class";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
-import numeral from "numeral";
 import { compareString, formatNumber } from "../../api/helpers";
 
 const bancor = namespace("bancor");

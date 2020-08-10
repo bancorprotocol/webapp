@@ -57,7 +57,6 @@ import { vxm } from "@/store";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { PoolTokenPosition, ViewRelay, ViewReserve } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";
-import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
 
 @Component({
