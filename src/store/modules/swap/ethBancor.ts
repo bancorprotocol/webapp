@@ -3431,7 +3431,6 @@ export class EthBancorModule
         return [reserve, Number(decNumber)] as [Token, number];
       });
 
-      console.log(reservesBalances, "are balances");
       const [
         [networkReserve, networkReserveAmount],
         [tokenReserve, tokenAmount]
