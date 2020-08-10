@@ -124,11 +124,6 @@ export class BancorModule extends VuexModule.With({
     return vxm[`${this.currentNetwork}Bancor`]["relays"];
   }
 
-  get convertibleTokens() {
-    // @ts-ignore
-    return vxm[`${this.currentNetwork}Bancor`]["convertibleTokens"];
-  }
-
   get moreTokensAvailable() {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["moreTokensAvailable"];
