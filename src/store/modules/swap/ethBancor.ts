@@ -350,6 +350,8 @@ const decodeHex = (hex: string, type: string | any[]) => {
   }
 };
 
+const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
+
 const relayTemplate = (): AbiTemplate => {
   const contract = buildV28ConverterContract();
   return {
@@ -443,6 +445,13 @@ const decodeCallGroup = <T>(
     data: obj
   };
 };
+
+const notBlackListed = (blackListedAnchors: string[]) => (
+  converterAnchor: ConverterAndAnchor
+) =>
+  !blackListedAnchors.some(black =>
+    compareString(black, converterAnchor.anchorAddress)
+  );
 
 const createCallGroup = (
   template: AbiEncodedTemplate,
@@ -972,7 +981,7 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
     typeof decimals == "undefined" || Number.isNaN(decimals);
 
   const missingDecimals = updateArray(
-    symbolOveride,
+    ethHardCode,
     token => decimalIsWrong(token.decimals),
     missingDecimal => {
       const meta = tokenMeta.find(x =>
@@ -1133,13 +1142,6 @@ const removeLeadingZeros = (hexString: string) => {
 
 const zeroAddress: string = "0x0000000000000000000000000000000000000000";
 
-const relayReservesIncludedInTokenMeta = (tokenMeta: TokenMeta[]) => (
-  relay: Relay
-) =>
-  relay.reserves.every(reserve =>
-    tokenMeta.some(meta => compareString(reserve.contract, meta.contract))
-  );
-
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
   new Decimal(percent).times(existingSupply).toFixed(0);
 
@@ -1262,7 +1264,7 @@ const getTokenMeta = async (currentNetwork: EthNetworks) => {
       (x): TokenMeta => ({
         ...x,
         id: x.contract,
-        image: "https://ropsten.etherscan.io/images/main/empty-token.png",
+        image: defaultImage,
         name: x.symbol
       })
     );
@@ -1920,7 +1922,16 @@ export class EthBancorModule
       )
       .flatMap(relay =>
         relay.reserves.map(reserve => {
-          const { name, image } = this.tokenMetaObj(reserve.contract);
+          let namee: string;
+          let logo: string;
+          try {
+            const { name, image } = this.tokenMetaObj(reserve.contract);
+            namee = name;
+            logo = image;
+          } catch {
+            namee = reserve.symbol;
+            logo = defaultImage;
+          }
           const relayFeed = this.relayFeed
             .slice()
             .sort(sortFeedByExtraProps)
@@ -1930,17 +1941,18 @@ export class EthBancorModule
                 compareString(feed.tokenId, reserve.contract)
             )!;
           const balance = this.tokenBalance(reserve.contract);
-          const balanceString = balance && new BigNumber(balance.balance).toString()
+          const balanceString =
+            balance && new BigNumber(balance.balance).toString();
           return {
             id: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
-            name,
+            name: namee,
             ...(relayFeed.costByNetworkUsd && {
               price: relayFeed.costByNetworkUsd
             }),
             liqDepth: relayFeed.liqDepth,
-            logo: image,
+            logo,
             ...(relayFeed.change24H && { change24h: relayFeed.change24H }),
             ...(relayFeed.volume24H && { volume24h: relayFeed.volume24H }),
             ...(balance && { balance: balanceString })
@@ -2033,12 +2045,18 @@ export class EthBancorModule
         return {
           id: poolContainerAddress,
           reserves: [networkReserve, tokenReserve].map(reserve => {
-            const meta = this.tokenMetaObj(reserve.contract);
+            let logo: string;
+            try {
+              const { image } = this.tokenMetaObj(reserve.contract);
+              logo = image;
+            } catch (e) {
+              logo = defaultImage;
+            }
             return {
               reserveWeight: reserve.reserveWeight,
               id: reserve.contract,
               reserveId: poolContainerAddress + reserve.contract,
-              logo: [meta.image],
+              logo: [logo],
               symbol: reserve.symbol,
               contract: reserve.contract,
               smartTokenSymbol: poolContainerAddress
@@ -2079,12 +2097,18 @@ export class EthBancorModule
         return {
           id: relay.anchor.contract,
           reserves: [networkReserve, tokenReserve].map(reserve => {
-            const meta = this.tokenMetaObj(reserve.contract);
+            let logo: string;
+            try {
+              const meta = this.tokenMetaObj(reserve.contract);
+              logo = meta.image;
+            } catch (e) {
+              logo = defaultImage;
+            }
             return {
               id: reserve.contract,
               reserveWeight: reserve.reserveWeight,
               reserveId: relay.anchor.contract + reserve.contract,
-              logo: [meta.image],
+              logo: [logo],
               symbol: reserve.symbol,
               contract: reserve.contract,
               smartTokenSymbol: relay.anchor.contract
@@ -4152,12 +4176,6 @@ export class EthBancorModule
 
       const blackListedAnchors = ["0x7Ef1fEDb73BD089eC1010bABA26Ca162DFa08144"];
 
-      const notBlackListed = (blackListedAnchors: string[]) => (
-        converterAnchor: ConverterAndAnchor
-      ) =>
-        !blackListedAnchors.some(black =>
-          compareString(black, converterAnchor.anchorAddress)
-        );
       const passedAnchorAndConvertersMatched = anchorAndConvertersMatched.filter(
         notBlackListed(blackListedAnchors)
       );
@@ -4406,9 +4424,9 @@ export class EthBancorModule
   @action async focusSymbol(id: string) {
     if (!this.isAuthenticated) return;
     const tokenContractAddress = findOrThrow(
-      this.tokenMeta,
-      meta => compareString(meta.id, id),
-      `failed to find this token contract address in meta (${id})`
+      this.tokens,
+      token => compareString(token.contract, id),
+      `failed to find this token contract address (${id})`
     ).contract;
     const balance = await vxm.ethWallet.getBalance({
       accountHolder: this.isAuthenticated,
