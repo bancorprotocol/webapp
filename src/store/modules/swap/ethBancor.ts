@@ -599,6 +599,9 @@ const assertChainlink = (relay: Relay): ChainLinkRelay => {
   throw new Error("Not a chainlink relay");
 };
 
+const generateEtherscanLink = (txHash: string) =>
+  `https://etherscan.io/tx/${txHash}`;
+
 interface AnchorProps {
   anchor: Anchor;
   converterType: PoolType;
@@ -1822,7 +1825,10 @@ export class EthBancorModule
     this.spamBalances(reserves.map(reserve => reserve.contract));
     wait(5000).then(() => this.init());
 
-    return txId;
+    return {
+      txId,
+      blockExplorerLink: generateEtherscanLink(txId)
+    };
   }
 
   @action async approveTokenWithdrawals(
@@ -2977,7 +2983,10 @@ export class EthBancorModule
     ];
     this.spamBalances(tokenAddressesChanged);
 
-    return hash;
+    return {
+      txId: hash,
+      blockExplorerLink: generateEtherscanLink(hash)
+    };
   }
 
   @action async mintEthErc(ethDec: string) {
@@ -3231,7 +3240,10 @@ export class EthBancorModule
       ...anchorTokens
     ];
     this.spamBalances(tokenAddressesChanged);
-    return txHash;
+    return {
+      txId: txHash,
+      blockExplorerLink: generateEtherscanLink(txHash)
+    };
   }
 
   @action async spamBalances(tokenAddresses: string[]) {
@@ -4598,7 +4610,10 @@ export class EthBancorModule
         this.getUserBalance({ tokenContractAddress: contract })
       )
     );
-    return confirmedHash;
+    return {
+      txId: confirmedHash,
+      blockExplorerLink: generateEtherscanLink(confirmedHash)
+    };
   }
 
   @action async triggerApprovalIfRequired({
