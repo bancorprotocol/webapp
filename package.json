@@ -64,7 +64,6 @@
     "vue-chartjs-typescript": "^3.3.3",
     "vue-class-component": "^7.2.3",
     "vue-content-loader": "^0.2.2",
-    "vue-fuse": "^2.1.0",
     "vue-gtag": "^1.8.0",
     "vue-i18n": "^8.14.1",
     "vue-image-fallback": "^1.0.0",

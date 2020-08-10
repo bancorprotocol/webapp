@@ -11,19 +11,12 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
-import {
-  FontAwesomeIcon,
-  FontAwesomeLayers,
-  FontAwesomeLayersText
-} from "@fortawesome/vue-fontawesome";
-// @ts-ignore
-import VueFuse from "vue-fuse";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import ImageFallback from "vue-image-fallback";
 import { sync } from "vuex-router-sync";
 
 import * as firebase from "firebase/app";
 import "firebase/analytics";
-// @ts-ignore
 import VueGtag from "vue-gtag";
 
 const firebaseConfig = {
@@ -38,9 +31,6 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-// firebase.analytics();
-
-// Vue.prototype.$analytics = firebase.analytics();
 
 Vue.use(
   VueGtag,
@@ -50,16 +40,12 @@ Vue.use(
   router
 );
 
-Vue.use(VueFuse);
-
 Vue.use(BootstrapVue);
 Vue.use(ImageFallback);
 
 library.add(fas, far, fab);
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
-Vue.component("font-awesome-layers", FontAwesomeLayers);
-Vue.component("font-awesome-layers-text", FontAwesomeLayersText);
 
 Vue.config.productionTip = false;
 
