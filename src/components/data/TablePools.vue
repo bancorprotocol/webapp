@@ -8,6 +8,7 @@
         :items="tokens"
         :fields="fields"
         :filter="filter"
+        :filter-function="onPoolFilter"
         sort-by="liqDepth"
         :current-page="currentPage"
         :per-page="perPage"
@@ -114,6 +115,7 @@ import { LiquidityModule, ViewRelay } from "@/types/bancor";
 import Velocity from "velocity-animate";
 import { namespace } from "vuex-class";
 import PoolLogos from "@/components/common/PoolLogos.vue";
+import { compareString } from "../../api/helpers";
 
 const bancor = namespace("bancor");
 
@@ -212,6 +214,16 @@ export default class TablePools extends Vue {
           "..." +
           ethAddress.substring(ethAddress.length - 6, ethAddress.length)
       : ethAddress;
+  }
+
+  onPoolFilter(pool: ViewRelay, searchString: string) {
+    const reserveSymbols = pool.reserves.map(reserve =>
+      reserve.symbol.toLowerCase()
+    );
+    const splitted = searchString.split("/");
+    return splitted.every(symbol =>
+      reserveSymbols.some(reserveSymbol => reserveSymbol.includes(symbol))
+    );
   }
 
   get focusDoesExist() {

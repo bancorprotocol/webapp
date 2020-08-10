@@ -34,7 +34,7 @@
                 "
                 @click="tokensTable = !tokensTable"
                 class="block-rounded"
-                >Pairs</b-btn
+                >Pools</b-btn
               >
             </div>
             <b-form-input
