@@ -4,13 +4,13 @@
       <b-table
         id="tokens-table"
         :dark="darkMode ? true : false"
-        striped
         :items="tokens"
         :fields="fields"
         :filter="filter"
         primary-key="id"
         :current-page="currentPage"
         :per-page="perPage"
+        head-variant="tableHeader"
       >
         <template v-slot:head(change24h)="data">
           <span class="cursor text-center">{{ data.label }}</span>
@@ -60,7 +60,7 @@
                 from: data.item.id
               }
             }"
-            variant="primary"
+            variant="third"
           >
             Trade
           </b-btn>
@@ -296,6 +296,16 @@ table#tokens-table .flip-list-move {
 
 .index-header {
   min-width: 15px;
+}
+
+.thead-tableHeader {
+  background-color: #f7f9fc !important;
+}
+
+.btn-third {
+  background-color: white !important;
+  border-radius: 8px !important;
+  border: #d0d7df 1px solid !important;
 }
 
 @keyframes fa-blink {
