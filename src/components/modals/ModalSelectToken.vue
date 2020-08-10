@@ -3,6 +3,7 @@
     :id="name"
     size="sm"
     :search.sync="tokenSearch"
+    @update:search="currentStep = 1"
     title="Select a Token"
     v-on:on-hide-modal="tokenSearch = ''"
     :fixed-height="true"
@@ -19,10 +20,10 @@
         </b-col>
         <b-col
           cols="12"
-          v-for="token in searchedTokens"
+          v-for="token in searchedTokens.slice(0, currentStep * perStep)"
           :key="token.id"
           class="my-3 cursor"
-          @click="selectToken(token)"
+          @click="$emit('select-token', { token, name })"
         >
           <div
             class="d-flex align-items-center justify-content-between"
@@ -36,8 +37,26 @@
               />
               <span class="font-w600 font-size-14">{{ token.symbol }}</span>
             </div>
-            <span class="font-w500 font-size-12">{{ token.balance }}</span>
+            <span v-if="isAuthenticated" class="font-w500 font-size-12">{{
+              formattedBalance(token.balance)
+            }}</span>
           </div>
+        </b-col>
+        <b-col cols="6" class="mb-3">
+          <main-button
+            v-if="totalTokens > perStep * currentStep"
+            @click.native="currentStep++"
+            label="more"
+            :small="true"
+          />
+        </b-col>
+        <b-col cols="6" class="mb-3">
+          <main-button
+            v-if="currentStep > 1"
+            @click.native="currentStep--"
+            label="less"
+            :small="true"
+          />
         </b-col>
         <b-col
           v-if="!searchedTokens.length"
@@ -55,55 +74,31 @@
 <script lang="ts">
 import { Watch, Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import BaseModal from "@/components/common-v2/BaseModal.vue";
+import BaseModal from "@/components/common/BaseModal.vue";
 import { ViewRelay, ViewToken } from "@/types/bancor";
+import { formatNumber } from "@/api/helpers";
+import MainButton from "@/components/common/Button.vue";
 
 @Component({
-  components: { BaseModal }
+  components: { BaseModal, MainButton }
 })
-export default class ModalSwapSelect extends Vue {
+export default class ModalSelectToken extends Vue {
   @Prop({ default: "modal-swap-select" }) name!: string;
   tokenSearch: string = "";
 
-  selectToken(token: ViewToken): void {
-    if (this.name === "token1") {
-      if (token.id === this.$route.query.to) {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.to,
-            to: this.$route.query.from
-          }
-        });
-      } else {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: token.id,
-            to: this.$route.query.to
-          }
-        });
-      }
-    } else {
-      if (token.id === this.$route.query.from) {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.to,
-            to: this.$route.query.from
-          }
-        });
-      } else {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.from,
-            to: token.id
-          }
-        });
-      }
-    }
-    this.$bvModal.hide(this.name);
+  perStep = 30;
+  currentStep = 1;
+
+  get totalTokens() {
+    return this.searchedTokens.length;
+  }
+
+  get isAuthenticated() {
+    return vxm.wallet.isAuthenticated;
+  }
+
+  formattedBalance(num: string = "0") {
+    return formatNumber(parseFloat(num), 8);
   }
 
   get searchedTokens() {

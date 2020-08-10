@@ -129,9 +129,9 @@ import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { LiquidityModule, ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import TokenInputField from "@/components/common-v2/TokenInputField.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolActionsPercentages from "@/components/pool/PoolActionsPercentages.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { namespace } from "vuex-class";
@@ -209,7 +209,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   }
 
   async tokenOneChanged(tokenAmount: string) {
-    if (tokenAmount === "") {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
       this.setDefault();
       return;
     }
@@ -234,7 +234,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   }
 
   async tokenTwoChanged(tokenAmount: string) {
-    if (tokenAmount === "") {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
       this.setDefault();
       return;
     }

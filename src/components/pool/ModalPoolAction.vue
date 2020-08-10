@@ -117,15 +117,14 @@ import {
   ViewReserve
 } from "@/types/bancor";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
-import BaseModal from "@/components/common-v2/BaseModal.vue";
-import TokenBlock from "@/components/common/TokenBlock.vue";
+import BaseModal from "@/components/common/BaseModal.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import MainButton from "@/components/common/Button.vue";
 
 import { namespace } from "vuex-class";
-import ActionModalStatus from "@/components/common-v2/ActionModalStatus.vue";
-import BancorCheckbox from "@/components/common-v2/BancorCheckbox.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import numeral from "numeral";
 
 const bancor = namespace("bancor");
@@ -136,7 +135,6 @@ const bancor = namespace("bancor");
     ActionModalStatus,
     AdvancedBlockItem,
     PoolLogos,
-    TokenBlock,
     BaseModal,
     SelectPoolRow,
     MainButton

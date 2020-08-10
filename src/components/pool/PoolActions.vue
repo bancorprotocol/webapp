@@ -2,7 +2,7 @@
   <content-block>
     <template slot="header">
       <pool-actions-header
-        :withdraw-liquidity="withdrawLiquidity"
+        :title="(withdrawLiquidity ? 'Remove' : 'Add') + ' Liquidity'"
         :v2="pool.v2"
       />
     </template>

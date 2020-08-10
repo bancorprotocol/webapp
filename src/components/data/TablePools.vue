@@ -113,19 +113,11 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import SortIcons from "@/components/common/SortIcons.vue";
-import {
-  TokenPrice,
-  TradingModule,
-  LiquidityModule,
-  ViewRelay
-} from "@/types/bancor";
-import { multiContract } from "@/api/multiContractTx";
+import { LiquidityModule, ViewRelay } from "@/types/bancor";
 import Velocity from "velocity-animate";
-import { State, Getter, Action, namespace } from "vuex-class";
-import _ from "lodash";
+import { namespace } from "vuex-class";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 
 const bancor = namespace("bancor");
@@ -134,8 +126,7 @@ const numeral = require("numeral");
 
 @Component({
   components: {
-    PoolLogos,
-    SortIcons
+    PoolLogos
   }
 })
 export default class TablePools extends Vue {

@@ -11,13 +11,13 @@
           <router-link :to="{ name: 'Swap' }">
             <img
               v-if="darkMode"
-              src="@/assets/media/logos/bancor-white.png"
+              src="@/assets/media/logos/bancor-white2.png"
               height="35px"
               class="mb-1"
             />
             <img
               v-else
-              src="@/assets/media/logos/bancor-black.png"
+              src="@/assets/media/logos/bancor-black2.png"
               height="35px"
               class="mb-1"
             />
@@ -28,7 +28,7 @@
           <b-navbar-nav class="mr-2">
             <b-btn
               @click="loginAction"
-              variant="light"
+              variant="white"
               class="block-rounded"
               size="sm"
               v-b-tooltip.hover
@@ -55,94 +55,9 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import wait from "waait";
-import { router } from "@/router";
-import { sync } from "vuex-router-sync";
-import {
-  services,
-  Feature,
-  buildTokenId,
-  compareString,
-  findOrThrow
-} from "@/api/helpers";
-import { store } from "../../store";
-import { ModuleParam } from "../../types/bancor";
-import { ethReserveAddress } from "../../api/eth/ethAbis";
-import { Route } from "vue-router";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
 
-const defaultPaths = [
-  {
-    moduleId: "eos",
-    base: buildTokenId({ contract: "bntbntbntbnt", symbol: "BNT" }),
-    quote: buildTokenId({ contract: "eosio.token", symbol: "EOS" })
-  },
-  {
-    moduleId: "eth",
-    base: ethReserveAddress,
-    quote: "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"
-  },
-  {
-    moduleId: "usds",
-    base: buildTokenId({ contract: "eosdtsttoken", symbol: "EOSDT" }),
-    quote: buildTokenId({ contract: "tethertether", symbol: "USDT" })
-  }
-];
-
-const appendBaseQuoteQuery = (base: string, quote: string, route: Route) => ({
-  name: route.name,
-  params: route.params,
-  query: { base, quote }
-});
-
-const extendRouter = (moduleId: string) => {
-  const path = findOrThrow(
-    defaultPaths,
-    path => compareString(moduleId, path.moduleId),
-    `failed to find default path for unknown service`
-  );
-
-  return {
-    query: {
-      base: path.base,
-      quote: path.quote
-    },
-    params: {
-      service: moduleId
-    }
-  };
-};
-
-const addDefaultQueryParams = (to: Route): any => {
-  const path = findOrThrow(
-    defaultPaths,
-    path => compareString(to.params.service, path.moduleId),
-    `failed to find default path for unknown service`
-  );
-
-  return appendBaseQuoteQuery(path.base, path.quote, to);
-};
-
-const defaultModuleParams = (moduleId: string): ModuleParam => {
-  const path = findOrThrow(
-    defaultPaths,
-    path => compareString(moduleId, path.moduleId),
-    `failed to find default path for unknown service`
-  );
-
-  return {
-    tradeQuery: {
-      base: path.base,
-      quote: path.quote
-    }
-  };
-};
-
-const createDirectRoute = (name: string, params?: any) => ({
-  name,
-  ...(params && { params })
-});
 @Component({
   components: { BancorMenu, SettingsMenu }
 })
@@ -161,89 +76,6 @@ export default class Navigation extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
-  }
-
-  get navItems() {
-    return [
-      {
-        label: "Convert",
-        destination: createDirectRoute("Tokens"),
-        render: this.selectedService!.features.includes(0),
-        disabled: false,
-        icon: "exchange-alt",
-        active: this.$route.name == "Tokens"
-      },
-      {
-        label: "Pools",
-        destination: createDirectRoute("Relays"),
-        render: this.selectedService!.features.includes(2),
-        disabled: false,
-        icon: "swimming-pool",
-        active: this.$route.name == "Relay" || this.$route.name == "Relays"
-      },
-      {
-        label: "Create",
-        destination: createDirectRoute("Create"),
-        disabled: !this.isAuthenticated,
-        icon: "plus",
-        render: this.selectedService!.features.includes(3),
-        active: this.$route.name == "Create"
-      },
-      ...[
-        this.selectedService!.features.includes(1)
-          ? this.isAuthenticated
-            ? {
-                label: "Wallet",
-                destination: createDirectRoute("WalletAccount", {
-                  account: this.isAuthenticated
-                }),
-                icon: "wallet",
-                active: this.$route.name == "Wallet",
-                disabled: false,
-                render: true
-              }
-            : {
-                label: "Wallet",
-                destination: createDirectRoute("Wallet"),
-                icon: "wallet",
-                active: this.$route.name == "Wallet",
-                disabled: false,
-                render: true
-              }
-          : []
-      ]
-      // @ts-ignore
-    ].filter(route => route.render);
-  }
-
-  set selected(newSelection: string) {
-    this.loadNewModule(newSelection);
-  }
-
-  async loadNewModule(moduleId: string) {
-    const module = findOrThrow(vxm.bancor.modules, module =>
-      compareString(module.id, moduleId)
-    );
-    const moduleAlreadyLoaded = module.loaded;
-
-    await vxm.bancor.initialiseModule({
-      moduleId,
-      resolveWhenFinished: !moduleAlreadyLoaded,
-      params: defaultModuleParams(moduleId)
-    });
-    this.$router.push({ name: "Tokens", ...extendRouter(moduleId) });
-  }
-
-  get options() {
-    return vxm.bancor.modules.map(module => ({
-      text: module.label,
-      value: module.id,
-      disabled: module.loading
-    }));
-  }
-
-  get selectedService() {
-    return services.find(service => service.namespace == this.selectedNetwork);
   }
 
   created() {
@@ -318,12 +150,6 @@ export default class Navigation extends Vue {
     return vxm.wallet.isAuthenticated;
   }
 
-  createRelay() {
-    this.$router.push({
-      name: "Create"
-    });
-  }
-
   async loginActionEos() {
     const status = this.loginButtonLabel;
     if (status === "Connect Wallet") {
@@ -347,8 +173,8 @@ export default class Navigation extends Vue {
 
   async loginAction() {
     const wallet = this.selectedWallet;
-    if (wallet == "eos") this.loginActionEos();
-    else this.loginActionEth();
+    if (wallet == "eos") await this.loginActionEos();
+    else await this.loginActionEth();
   }
 }
 </script>

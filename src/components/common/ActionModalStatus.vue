@@ -67,8 +67,6 @@ export default class ActionModalStatus extends Vue {
   get explorerLink() {
     switch (this.currentNetwork) {
       case "eos":
-      case "usds":
-        return `https://bloks.io/transaction/${this.success}`;
       case "eth":
         return `https://etherscan.io/tx/${this.success}`;
       default:
@@ -79,8 +77,6 @@ export default class ActionModalStatus extends Vue {
   get explorerName() {
     switch (this.currentNetwork) {
       case "eos":
-      case "usds":
-        return `Bloks.io`;
       case "eth":
         return `Etherscan`;
       default:

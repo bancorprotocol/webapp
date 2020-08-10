@@ -5,9 +5,16 @@
       @click="$router.push({ name: 'Pool' })"
       class="cursor"
     />
-    <span>{{ withdrawLiquidity ? "Remove" : "Add" }} Liquidity</span>
+    <span
+      class="font-size-14 font-w600"
+      :class="darkMode ? 'text-dark' : 'text-light'"
+    >
+      {{ title }}
+    </span>
     <div class="d-flex align-items-center">
-      <b-badge variant="primary" class="px-2">{{ v2 ? "V2" : "V1" }}</b-badge>
+      <b-badge v-if="v2 !== null" variant="primary" class="px-2">{{
+        v2 ? "V2" : "V1"
+      }}</b-badge>
     </div>
   </div>
 </template>
@@ -18,8 +25,12 @@ import { vxm } from "@/store/";
 
 @Component
 export default class PoolActionsHeader extends Vue {
-  @Prop() withdrawLiquidity!: boolean;
-  @Prop() v2!: boolean;
+  @Prop() title!: string;
+  @Prop({ default: null }) v2!: boolean | null;
+
+  get darkMode() {
+    return vxm.general.darkMode;
+  }
 }
 </script>
 

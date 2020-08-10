@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label-content-split label="Pool" class="my-4">
+    <label-content-split label="Selected Pool" class="my-3">
       <pool-logos
         @click.native="$bvModal.show('modal-join-pool')"
         :pool="pool"
@@ -8,7 +8,13 @@
       />
     </label-content-split>
 
-    <label-content-split label="Select a Token" class="mb-3">
+    <alert-block
+      variant="info"
+      title="This is a new V2 beta version of Bancor."
+      msg="You can add liquidity with only one token at a time."
+    />
+
+    <label-content-split label="Select a Token" class="my-3">
       <b-form-group class="m-0" :class="darkMode ? 'text-dark' : 'text-light'">
         <b-form-radio-group
           id="radio-group"
@@ -73,19 +79,21 @@ import {
   ViewReserve
 } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import TokenInputField from "@/components/common-v2/TokenInputField.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
-import RateShareBlock from "@/components/common-v2/RateShareBlock.vue";
+import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber } from "@/api/helpers";
 import { namespace } from "vuex-class";
 import numeral from "numeral";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 const bancor = namespace("bancor");
 
 @Component({
   components: {
+    AlertBlock,
     RateShareBlock,
     ModalPoolAction,
     LabelContentSplit,
@@ -152,15 +160,6 @@ export default class PoolActionsAddV2 extends Vue {
       ];
     }
   }
-  get share() {
-    if (this.shareOfPool === 0) return "0";
-    else {
-      const share = this.shareOfPool;
-      if (share < 0.00001) return "< 0.00001";
-      else if (share < 1) return numeral(share).format("0.00000");
-      else return numeral(share).format("0.00");
-    }
-  }
 
   setSingleUnitCosts(units: ViewAmount[]) {
     const items = units.map(unit => {
@@ -180,6 +179,7 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   async loadPrices(amount: string) {
+    if (amount === '.') return
     this.errorMsg = ""
     try {
       const results = await this.calculateOpposingDeposit({

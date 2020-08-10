@@ -50,12 +50,12 @@ import {
   ViewAmount
 } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import TokenInputField from "@/components/common-v2/TokenInputField.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
-import LabelContentSplit from "@/components/common-v2/LabelContentSplit.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { namespace } from "vuex-class";
-import RateShareBlock from "@/components/common-v2/RateShareBlock.vue";
+import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import numeral from "numeral";
 import { compareString, formatNumber } from "../../api/helpers";
 
@@ -110,13 +110,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   get share() {
-    if (this.shareOfPool === 0) return "0";
-    else {
-      const share = this.shareOfPool;
-      if (share < 0.00001) return "< 0.00001";
-      else if (share < 1) return numeral(share).format("0.00000");
-      else return numeral(share).format("0.00");
-    }
+    return formatNumber(this.shareOfPool, 6)
   }
 
   get shareBlockItems() {
@@ -189,7 +183,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async tokenOneChanged(tokenAmount: string) {
-    if (tokenAmount === "") {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === '.') {
       this.setDefault();
       return;
     }
@@ -241,7 +235,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async tokenTwoChanged(tokenAmount: string) {
-    if (tokenAmount === "") {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === '.') {
       this.setDefault();
       return;
     }
