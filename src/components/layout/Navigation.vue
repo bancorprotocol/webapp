@@ -57,6 +57,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
+import { getRootUrl } from "@/api/helpers";
 
 @Component({
   components: { BancorMenu, SettingsMenu }
@@ -79,9 +80,7 @@ export default class Navigation extends Vue {
   }
 
   get getRootUrl() {
-    const host = window.location.hostname;
-    if (host === "localhost") return "http://localhost:8080";
-    else return "https://" + host;
+    return getRootUrl();
   }
 
   created() {
