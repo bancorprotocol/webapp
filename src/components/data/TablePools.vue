@@ -4,7 +4,6 @@
       <b-table
         id="relays-table"
         :dark="darkMode ? true : false"
-        striped
         :items="tokens"
         :fields="fields"
         :filter="filter"
