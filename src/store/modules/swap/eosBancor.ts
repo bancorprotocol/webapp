@@ -1247,10 +1247,6 @@ export class EosBancorModule
 
   @action async loadMoreTokens(tokenIds?: string[]) {}
 
-  get convertibleTokens() {
-    return this.tokens.map(token => ({ ...token, img: token.logo }));
-  }
-
   @action async init(param?: ModuleParam) {
     console.count("eosInit");
     console.time("eos");

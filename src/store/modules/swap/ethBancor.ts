@@ -1941,7 +1941,8 @@ export class EthBancorModule
                 compareString(feed.tokenId, reserve.contract)
             )!;
           const balance = this.tokenBalance(reserve.contract);
-          const balanceString = balance && new BigNumber(balance.balance).toString()
+          const balanceString =
+            balance && new BigNumber(balance.balance).toString();
           return {
             id: reserve.contract,
             precision: reserve.decimals,
@@ -3435,18 +3436,6 @@ export class EthBancorModule
     });
   }
 
-  get convertibleTokens() {
-    return this.convertibleTokenAddresses
-      .map(
-        convertibleToken =>
-          this.tokenMeta.find(meta =>
-            compareString(convertibleToken, meta.contract)
-          )!
-      )
-      .filter(Boolean)
-      .map(meta => ({ ...meta, img: meta.image }));
-  }
-
   @action async loadMoreTokens(tokenIds?: string[]) {
     if (tokenIds && tokenIds.length > 0) {
       const anchorAddresses = await Promise.all(
@@ -3475,11 +3464,6 @@ export class EthBancorModule
 
   @action async refresh() {
     console.log("refresh called on eth bancor, doing nothing");
-  }
-
-  @action async fetchConvertibleTokens(networkContract: string) {
-    const contract = await buildRegistryContract(networkContract);
-    return contract.methods.getConvertibleTokens().call();
   }
 
   @mutation setRegisteredAnchorAddresses(addresses: string[]) {
@@ -4135,16 +4119,12 @@ export class EthBancorModule
       console.timeEnd("FirstPromise");
 
       console.time("SecondPromise");
-      const [registeredAnchorAddresses, convertibleTokens] = await Promise.all([
-        this.fetchAnchorAddresses(contractAddresses.BancorConverterRegistry),
-        this.fetchConvertibleTokens(contractAddresses.BancorConverterRegistry)
-      ]);
+      const registeredAnchorAddresses = await this.fetchAnchorAddresses(
+        contractAddresses.BancorConverterRegistry
+      );
       console.timeEnd("SecondPromise");
 
-      console.log({ registeredAnchorAddresses, convertibleTokens });
-
       this.setRegisteredAnchorAddresses(registeredAnchorAddresses);
-      this.setConvertibleTokenAddresses(convertibleTokens);
 
       console.time("ThirdPromise");
       const [

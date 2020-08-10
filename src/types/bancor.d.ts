@@ -260,7 +260,6 @@ export interface TradingModule {
   init: (param?: ModuleParam) => Promise<void>;
   readonly token: (arg0: string) => ViewToken;
   readonly tokens: ViewToken[];
-  readonly convertibleTokens: ViewModalToken[];
   readonly moreTokensAvailable: boolean;
   readonly loadingTokens: boolean;
   refreshBalances: (symbols?: BaseToken[]) => Promise<void>;
