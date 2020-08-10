@@ -65,7 +65,6 @@
     "vue-content-loader": "^0.2.2",
     "vue-gtag": "^1.8.0",
     "vue-i18n": "^8.14.1",
-    "vue-image-fallback": "^1.0.0",
     "vue-property-decorator": "^8.2.2",
     "vue-qrcode-reader": "^2.1.1",
     "vue-router": "^3.2.0",

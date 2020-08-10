@@ -11,7 +11,6 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import ImageFallback from "vue-image-fallback";
 import { sync } from "vuex-router-sync";
 
 import * as firebase from "firebase/app";
@@ -40,7 +39,6 @@ Vue.use(
 );
 
 Vue.use(BootstrapVue);
-Vue.use(ImageFallback);
 
 library.add(fas, fab);
 

@@ -17145,11 +17145,6 @@ vue-i18n@^8.0.0, vue-i18n@^8.14.1:
   resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-8.15.0.tgz#9b11ef8e7a124f67cdf788c8c90a81f3606240ed"
   integrity sha512-juJ/avAP39bOMycC+qQDLJ8U9z9LtLF/9PsRoJLBSfsYZo9bqYntyyX5QPicwlb1emJKjgxhZ3YofHiQcXBu0Q==
 
-vue-image-fallback@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/vue-image-fallback/-/vue-image-fallback-1.0.0.tgz#9a9dad7cd8675aa8709ba6f606e7937b77c4cbd8"
-  integrity sha512-pcuzGlKeEOEJSdH+EJhY6/A0kL0UoxUL8wP29klrQjbBQzfA78YwNsYBhrk2Q92l1DGt9F7BMpk8jq/wXKe60Q==
-
 vue-jest@^3.0.5:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/vue-jest/-/vue-jest-3.0.5.tgz#d6f124b542dcbff207bf9296c19413f4c40b70c9"
