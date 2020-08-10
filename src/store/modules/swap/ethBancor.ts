@@ -2706,8 +2706,6 @@ export class EthBancorModule
       feeAmountWei
     );
 
-    console.log({ returnAmountWei, feeAmountWei }, "xxx");
-
     const feePercent = new BigNumber(feeAmountWei)
       .div(noFeeLiquidityReturn)
       .toNumber();
@@ -3882,7 +3880,6 @@ export class EthBancorModule
 
     console.timeEnd("secondWaterfall");
 
-    console.log("yyy", { verifiedV2Pools, confirmedTokenMatch });
     const v2Pools = verifiedV2Pools.map(
       (pool): ChainLinkRelay => {
         const rawPool = findOrThrow(
