@@ -870,22 +870,6 @@ const hasTwoConnectors = (relay: RefinedAbiRelay) => {
   return test;
 };
 
-const reservesInTokenMeta = (meta: TokenMeta[]) => (relay: RefinedAbiRelay) => {
-  const test = relay.reserves.filter(reserveAddress =>
-    meta.some(meta => compareString(meta.contract, reserveAddress))
-  );
-  if (test.length == relay.reserves.length) return true;
-  const difference = differenceWith(relay.reserves, test, compareString);
-  console.warn(
-    "Dropping",
-    relay.anchorAddress,
-    `because ${
-      difference.length == 1 ? "one" : "all"
-    } of it's reserves are not included in token meta - ${difference.join(" ")}`
-  );
-  return false;
-};
-
 const networkTokenIncludedInReserves = (networkTokenAddresses: string[]) => (
   relay: RefinedAbiRelay
 ) => {
@@ -1003,7 +987,28 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
     }
   ).filter(token => !decimalIsWrong(token.decimals));
 
-  const addedEth = [...missingDecimals, ethReserveToken];
+  const missingSymbol = updateArray(
+    missingDecimals,
+    token => !token.symbol,
+    tokenWithoutSymbol => {
+      const meta = tokenMeta.find(x =>
+        compareString(x.contract, tokenWithoutSymbol.contract)
+      )!;
+      if (meta.symbol) {
+        return {
+          ...tokenWithoutSymbol,
+          symbol: meta.symbol
+        };
+      } else {
+        console.warn("Dropping", tokenWithoutSymbol, "due to no symbol");
+        return {
+          ...tokenWithoutSymbol
+        };
+      }
+    }
+  ).filter(token => token.symbol);
+
+  const addedEth = [...missingSymbol, ethReserveToken];
   const uniqueTokens = uniqWith(addedEth, (a, b) =>
     compareString(a.contract, b.contract)
   );
@@ -1012,7 +1017,13 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
     compareString(a.contract, b.contract)
   );
   if (difference.length > 0) {
-    console.warn("Polish tokens is dropping", difference, "tokens");
+    console.warn(
+      "Polish tokens is dropping",
+      difference,
+      "tokens",
+      "sending back",
+      uniqueTokens
+    );
   }
   return uniqueTokens;
 };
@@ -1680,11 +1691,15 @@ export class EthBancorModule
       )
     );
 
-    const networkToken = findOrThrow(this.tokenMeta, meta =>
-      compareString(meta.id, networkReserve.id)
+    const networkToken = findOrThrow(
+      this.tokenMeta,
+      meta => compareString(meta.id, networkReserve.id),
+      "failed to find network token"
     );
-    const reserveToken = findOrThrow(this.tokenMeta, meta =>
-      compareString(meta.id, tokenReserve.id)
+    const reserveToken = findOrThrow(
+      this.tokenMeta,
+      meta => compareString(meta.id, tokenReserve.id),
+      "failed to find reserve token"
     );
 
     const networkSymbol = networkToken.symbol;
@@ -2270,8 +2285,10 @@ export class EthBancorModule
       .map(reserve => ({
         ...reserve,
         decReserveWeight: new BigNumber(reserve.reserveWeight).div(oneMillion),
-        token: findOrThrow(relay.reserves, r =>
-          compareString(r.contract, reserve.reserveAddress)
+        token: findOrThrow(
+          relay.reserves,
+          r => compareString(r.contract, reserve.reserveAddress),
+          "failed to find token for weight"
         )
       }))
       .sort((a, b) => b.decReserveWeight.minus(a.reserveWeight).toNumber());
@@ -2307,8 +2324,11 @@ export class EthBancorModule
       }
     ];
 
-    const sameReserve = findOrThrow([biggerWeight, smallerWeight], weight =>
-      compareString(weight.reserveAddress, opposingDeposit.reserve.id)
+    const sameReserve = findOrThrow(
+      [biggerWeight, smallerWeight],
+      weight =>
+        compareString(weight.reserveAddress, opposingDeposit.reserve.id),
+      "failed to find same reserve"
     );
 
     const shareOfPool =
@@ -2404,8 +2424,10 @@ export class EthBancorModule
   }
 
   @action async relayById(relayId: string) {
-    return findOrThrow(this.relaysList, relay =>
-      compareString(relay.id, relayId)
+    return findOrThrow(
+      this.relaysList,
+      relay => compareString(relay.id, relayId),
+      "failed to find relay by id"
     );
   }
 
@@ -2498,8 +2520,11 @@ export class EthBancorModule
         return {
           ...reserveAndPool,
           poolUserBalance: Number(poolUserBalance),
-          reserveToken: findOrThrow(relay.reserves, reserve =>
-            compareString(reserve.contract, reserveAndPool.reserveId)
+          reserveToken: findOrThrow(
+            relay.reserves,
+            reserve =>
+              compareString(reserve.contract, reserveAndPool.reserveId),
+            "failed to find reserve token"
           )
         };
       })
@@ -2586,11 +2611,16 @@ export class EthBancorModule
       reserveWeight: reserve.reserveWeight,
       stakedBalance: reserve.stakedBalance,
       decReserveWeight: new BigNumber(reserve.reserveWeight).div(oneMillion),
-      reserveToken: findOrThrow(relay.reserves, r =>
-        compareString(r.contract, reserve.reserveAddress)
+      reserveToken: findOrThrow(
+        relay.reserves,
+        r => compareString(r.contract, reserve.reserveAddress),
+        "failed to find reserve token"
       ),
-      poolToken: findOrThrow(relay.anchor.poolTokens, poolToken =>
-        compareString(reserve.poolTokenAddress, poolToken.poolToken.contract)
+      poolToken: findOrThrow(
+        relay.anchor.poolTokens,
+        poolToken =>
+          compareString(reserve.poolTokenAddress, poolToken.poolToken.contract),
+        "failed to find pool token"
       )
     }));
 
@@ -2630,8 +2660,14 @@ export class EthBancorModule
       }
     ];
 
-    const sameReserve = findOrThrow(matchedWeights, weight =>
-      compareString(weight.reserveToken.contract, opposingWithdraw.reserve.id)
+    const sameReserve = findOrThrow(
+      matchedWeights,
+      weight =>
+        compareString(
+          weight.reserveToken.contract,
+          opposingWithdraw.reserve.id
+        ),
+      "failed to find same reserve"
     );
 
     const shareOfPool = new BigNumber(suggestedPoolTokenWithdrawDec)
@@ -2852,8 +2888,10 @@ export class EthBancorModule
     let hash: string;
     if (postV28 && relay.converterType == PoolType.ChainLink) {
       const v2Relay = await this.chainLinkRelayById(relayId);
-      const poolToken = findOrThrow(v2Relay.anchor.poolTokens, poolToken =>
-        compareString(poolToken.reserveId, withdraw.id)
+      const poolToken = findOrThrow(
+        v2Relay.anchor.poolTokens,
+        poolToken => compareString(poolToken.reserveId, withdraw.id),
+        "failed to find pool token"
       );
 
       const poolTokenWeiAmount = expandToken(
@@ -3348,13 +3386,6 @@ export class EthBancorModule
     this.relayFeed = Object.freeze(allFeeds);
   }
 
-  @action async fetchBancorUsdPriceOfBnt() {
-    const tokens = await ethBancorApi.getTokens();
-    const usdPriceOfBnt = findOrThrow(tokens, token => token.code == "BNT")
-      .price;
-    return usdPriceOfBnt;
-  }
-
   @action async fetchUsdPriceOfBnt() {
     const price = await vxm.bancor.fetchUsdPriceOfBnt();
     this.setBntUsdPrice(price);
@@ -3400,6 +3431,7 @@ export class EthBancorModule
         return [reserve, Number(decNumber)] as [Token, number];
       });
 
+      console.log(reservesBalances, "are balances");
       const [
         [networkReserve, networkReserveAmount],
         [tokenReserve, tokenAmount]
@@ -3694,27 +3726,21 @@ export class EthBancorModule
       item => item.converterAddress
     );
 
-    console.time("firstWaterfall");
-
-    console.log("Started 1st section");
     const [firstHalfs, poolAndSmartTokens] = (await this.smartMulti([
       relayHandler(allConverters),
       miniPoolHandler(allAnchors)
     ])) as [AbiRelay[], AbiCentralPoolToken[]];
 
-    console.log("Ended 1st section");
-    console.log({ firstHalfs, poolAndSmartTokens });
-
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
     );
 
-    console.log({ poolTokenAddresses, smartTokens }, "are through");
-
     const polished: RefinedAbiRelay[] = firstHalfs.map(half => ({
       ...half,
-      anchorAddress: findOrThrow(convertersAndAnchors, item =>
-        compareString(item.converterAddress, half.converterAddress)
+      anchorAddress: findOrThrow(
+        convertersAndAnchors,
+        item => compareString(item.converterAddress, half.converterAddress),
+        "failed to find anchor address"
       ).anchorAddress,
       reserves: [half.connectorToken1, half.connectorToken2] as [
         string,
@@ -3723,8 +3749,6 @@ export class EthBancorModule
       version: Number(half.version),
       converterType: determineConverterType(half.converterType)
     }));
-
-    console.log({ polished });
 
     const overWroteVersions = updateArray(
       polished,
@@ -3740,7 +3764,6 @@ export class EthBancorModule
       })
     );
 
-    console.log({ overWroteVersions });
     const passedFirstHalfs = overWroteVersions
       .filter(hasTwoConnectors)
       .filter(
@@ -3748,8 +3771,6 @@ export class EthBancorModule
           this.currentNetwork == EthNetworks.Ropsten ||
           networkTokenIncludedInReserves(networkTokenAddresses)(relay)
       );
-
-    console.log({ passedFirstHalfs });
 
     const verifiedV1Pools = passedFirstHalfs.filter(
       half => half.converterType == PoolType.Traditional
@@ -3816,6 +3837,19 @@ export class EthBancorModule
       allTokens
     );
 
+    console.log(
+      "xxx",
+      polishedReserveAndPoolTokens.filter(
+        x =>
+          !(
+            x.symbol &&
+            typeof x.decimals !== "undefined" &&
+            x.network &&
+            x.contract
+          )
+      )
+    );
+
     console.log({
       reserveAndPoolTokens,
       polishedReserveAndPoolTokens,
@@ -3825,8 +3859,10 @@ export class EthBancorModule
 
     const matched = stakedAndReserveWeights.map(relay => ({
       ...relay,
-      anchorAddress: findOrThrow(convertersAndAnchors, item =>
-        compareString(item.converterAddress, relay.converterAddress)
+      anchorAddress: findOrThrow(
+        convertersAndAnchors,
+        item => compareString(item.converterAddress, relay.converterAddress),
+        "failed to match anchor address"
       ).anchorAddress,
       reserves: relay.reserves.map(reserve => ({
         ...reserve,
@@ -3847,10 +3883,13 @@ export class EthBancorModule
 
     console.timeEnd("secondWaterfall");
 
+    console.log("yyy", { verifiedV2Pools, confirmedTokenMatch });
     const v2Pools = verifiedV2Pools.map(
       (pool): ChainLinkRelay => {
-        const rawPool = findOrThrow(confirmedTokenMatch, match =>
-          compareString(match.converterAddress, pool.converterAddress)
+        const rawPool = findOrThrow(
+          confirmedTokenMatch,
+          match => compareString(match.converterAddress, pool.converterAddress),
+          "failed to find raw pool"
         );
 
         return {
@@ -4165,8 +4204,10 @@ export class EthBancorModule
       });
 
       const requiredAnchors = bareMinimumAnchorAddresses.map(anchor =>
-        findOrThrow(passedAnchorAndConvertersMatched, item =>
-          compareString(item.anchorAddress, anchor)
+        findOrThrow(
+          passedAnchorAndConvertersMatched,
+          item => compareString(item.anchorAddress, anchor),
+          "failed to find required anchors"
         )
       );
 
