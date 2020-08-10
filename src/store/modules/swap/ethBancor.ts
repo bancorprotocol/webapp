@@ -3834,26 +3834,6 @@ export class EthBancorModule
       allTokens
     );
 
-    console.log(
-      "xxx",
-      polishedReserveAndPoolTokens.filter(
-        x =>
-          !(
-            x.symbol &&
-            typeof x.decimals !== "undefined" &&
-            x.network &&
-            x.contract
-          )
-      )
-    );
-
-    console.log({
-      reserveAndPoolTokens,
-      polishedReserveAndPoolTokens,
-      v1ReserveBalances,
-      stakedAndReserveWeights
-    });
-
     const matched = stakedAndReserveWeights.map(relay => ({
       ...relay,
       anchorAddress: findOrThrow(
