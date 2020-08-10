@@ -26,9 +26,9 @@
         ><font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
         Bancor Swap</b-dropdown-item
       >
-      <b-dropdown-item disabled :to="{ name: 'Data' }"
+      <b-dropdown-item :to="{ name: 'Data' }"
         ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
-        Data (Coming Soon)</b-dropdown-item
+        Data</b-dropdown-item
       >
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')"
         ><font-awesome-icon icon="times" class="mr-2" fixed-width /> Bancor

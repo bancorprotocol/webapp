@@ -21,11 +21,6 @@
             <strong>Loading...</strong>
           </div>
         </template>
-        <template v-if="morePoolsAvailable" v-slot:custom-foot>
-          <b-button :disabled="loadingPools" @click="loadMorePools"
-            >Load more...
-          </b-button>
-        </template>
         <template v-slot:table-colgroup>
           <col key="symbol" style="width: 260px;" />
           <col key="smart" style="width: 200px;" />
@@ -138,7 +133,7 @@ export default class TablePools extends Vue {
   @bancor.Getter loadingPools!: LiquidityModule["loadingPools"];
 
   currentPage = 1;
-  perPage = 7;
+  perPage = 25;
 
   get pagesTotal() {
     return Math.ceil(this.tokens.length / this.perPage);
