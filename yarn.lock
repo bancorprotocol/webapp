@@ -2437,11 +2437,6 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
-"@popperjs/core@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.4.0.tgz#0e1bdf8d021e7ea58affade33d9d607e11365915"
-  integrity sha512-NMrDy6EWh9TPdSRiHmHH2ye1v5U0gBD7pRYwSwJvomx7Bm4GG04vu63dYiVzebLOx2obPpJugew06xVP0Nk7hA==
-
 "@portis/eos@^1.0.0-beta.2":
   version "1.0.0-beta.3"
   resolved "https://registry.yarnpkg.com/@portis/eos/-/eos-1.0.0-beta.3.tgz#8214b273c99f01688f1ad7cf13851356c46d1db8"
