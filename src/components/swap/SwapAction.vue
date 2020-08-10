@@ -284,15 +284,6 @@ export default class SwapAction extends Vue {
     return vxm.bancor.token(this.token2.id).balance ?? "0";
   }
 
-  // async loadBalances() {
-  //   this.balance1 = vxm.bancor.token(this.token1.id).balance;
-  //   this.balance2 = vxm.bancor.token(this.token2.id).balance;
-  // }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
   @Watch("$route.query")
   async onTokenChange(query: any) {
     try {
