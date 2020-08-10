@@ -79,17 +79,6 @@ import TablePools from "@/components/data/TablePools.vue";
     Statistics,
     ContentBlock,
     TokensTable
-  },
-  created() {
-    console.log("created called!!!!!");
-  },
-  beforeUpdate() {
-    console.log("beforeUpdate");
-    console.time("render");
-  },
-  updated() {
-    console.log("ABC");
-    console.timeEnd("render");
   }
 })
 export default class Data extends Vue {
