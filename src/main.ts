@@ -13,8 +13,8 @@ import { fab } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
 
-import * as firebase from "firebase/app";
-import "firebase/analytics";
+import { firebase } from "@firebase/app";
+import "@firebase/analytics";
 import VueGtag from "vue-gtag";
 
 const firebaseConfig = {
