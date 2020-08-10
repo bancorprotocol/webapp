@@ -39,9 +39,13 @@
         <h3 :class="darkMode ? 'text-body-dark' : 'text-body-light'">
           Transaction Submitted
         </h3>
-        <a :href="explorerLink" target="_blank" class="text-primary">
-          View {{ success.substring(0, 6) }} TX on
-          {{ explorerName }}
+        <a
+          :href="success.blockExplorerLink"
+          target="_blank"
+          class="text-primary"
+        >
+          View TX Details for ID {{ success.txId.substring(0, 6) }} on
+          {{ explorerName }}.
         </a>
       </h6>
     </b-col>
@@ -52,6 +56,7 @@
 import { Prop, Component, Vue, PropSync, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { namespace } from "vuex-class";
+import { TxResponse } from "@/types/bancor";
 
 const bancor = namespace("bancor");
 
@@ -60,27 +65,18 @@ export default class ActionModalStatus extends Vue {
   @bancor.Getter currentNetwork!: string;
 
   @Prop() error?: string;
-  @Prop() success?: string;
+  @Prop() success?: TxResponse | null;
   @Prop({ default: "Wait for your Wallet to prompt and continue there" })
   stepDescription!: string;
-
-  get explorerLink() {
-    switch (this.currentNetwork) {
-      case "eos":
-      case "eth":
-        return `https://etherscan.io/tx/${this.success}`;
-      default:
-        return `https://bloks.io/transaction/${this.success}`;
-    }
-  }
 
   get explorerName() {
     switch (this.currentNetwork) {
       case "eos":
+        return `EOSX.io`;
       case "eth":
         return `Etherscan`;
       default:
-        return `Bloks.io`;
+        return `Block Explorer`;
     }
   }
 

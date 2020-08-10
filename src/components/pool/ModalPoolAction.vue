@@ -113,6 +113,7 @@ import {
   LiquidityModule,
   LiquidityParams,
   Step,
+  TxResponse,
   ViewRelay,
   ViewReserve
 } from "@/types/bancor";
@@ -150,7 +151,7 @@ export default class ModalPoolAction extends Vue {
   numeral = numeral;
 
   txBusy = false;
-  success = "";
+  success: TxResponse | null = null;
   error = "";
   sections: Step[] = [];
   stepIndex = 0;
@@ -184,7 +185,7 @@ export default class ModalPoolAction extends Vue {
   setDefault() {
     this.sections = [];
     this.error = "";
-    this.success = "";
+    this.success = null;
     this.notUsState = false;
   }
 
@@ -195,7 +196,7 @@ export default class ModalPoolAction extends Vue {
   async initAction() {
     if (this.success) {
       this.$bvModal.hide("modal-pool-action");
-      this.success = "";
+      this.success = null;
       await this.$router.push({ name: "Pool" });
       return;
     }
