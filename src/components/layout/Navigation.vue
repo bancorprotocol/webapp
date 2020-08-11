@@ -80,10 +80,6 @@ export default class Navigation extends Vue {
     return vxm.general.darkMode;
   }
 
-  get getRootUrl() {
-    return getRootUrl();
-  }
-
   created() {
     vxm.ethWallet.checkAlreadySignedIn();
   }
