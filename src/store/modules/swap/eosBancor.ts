@@ -58,10 +58,10 @@ import {
   number_to_asset,
   Sym
 } from "eos-common";
-import { multiContract } from "@/api/multiContractTx";
+import { multiContract } from "@/api/eos/multiContractTx";
 import { multiContractAction } from "@/contracts/multi";
 import { vxm } from "@/store";
-import { rpc } from "@/api/rpc";
+import { rpc } from "@/api/eos/rpc";
 import {
   findCost,
   relaysToConvertPaths,
@@ -72,12 +72,12 @@ import {
   calculateFundReturn,
   TokenAmount,
   findNewPath
-} from "@/api/eosBancorCalc";
+} from "@/api/eos/eosBancorCalc";
 import _, { uniqWith } from "lodash";
 import wait from "waait";
 import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
-import { liquidateAction } from "@/api/singleContractTx";
+import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
 
 const compareAgnosticToBalanceParam = (

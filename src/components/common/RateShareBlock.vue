@@ -35,11 +35,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { OpposingLiquid, ViewRelay } from "@/types/bancor";
-import numeral from "numeral";
 
 interface Item {
   label: string;

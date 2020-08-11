@@ -140,7 +140,7 @@ export default class App extends Vue {
   }
 
   async created() {
-    const darkMode = localStorage.getItem("darkMode") === "true" ? true : false;
+    const darkMode = localStorage.getItem("darkMode") === "true";
     if (darkMode) vxm.general.toggleDarkMode();
 
     const autoLogin = localStorage.getItem("autoLogin");

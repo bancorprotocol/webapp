@@ -1,5 +1,5 @@
 import Vue from "vue";
-import Router from "vue-router";
+import Router, { Route } from "vue-router";
 import Data from "@/views/Data.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import Navigation from "@/components/layout/Navigation.vue";
@@ -107,6 +107,33 @@ export const router = new Router({
       props: true,
       meta: {
         feature: "Liquidity"
+      }
+    },
+    {
+      path: "/:service",
+      props: true,
+      redirect: (to: Route) => {
+        const foundService = services.find(
+          service => service.namespace == to.params.service
+        );
+        return foundService ? `/${foundService.namespace}/swap` : "/404";
+      }
+    },
+    {
+      path: "*",
+      redirect: `/${defaultModule}`
+    },
+    {
+      path: "/",
+      redirect: () => {
+        const preferredService = localStorage.getItem(PREFERRED_SERVICE);
+        if (preferredService) {
+          const foundService = services.find(
+            service => service.namespace == preferredService
+          );
+          if (foundService) return `/${foundService.namespace}/swap`;
+        }
+        return `/${defaultModule}/swap`;
       }
     }
   ]
