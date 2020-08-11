@@ -124,8 +124,4 @@ export default class TokenInputField extends Vue {
 }
 </script>
 
-<style lang="scss">
-.no-border-left {
-  border-left: 0 !important;
-}
-</style>
+<style lang="scss"></style>
