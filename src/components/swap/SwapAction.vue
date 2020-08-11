@@ -79,6 +79,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral"
 import ModalSelectToken from "@/components/modals/ModalSelectToken.vue";
+import { formatNumber } from "@/api/helpers"
 
 @Component({
   components: {
@@ -107,8 +108,10 @@ export default class SwapAction extends Vue {
   numeral = numeral;
 
   get rate() {
-    if (this.amount1 && this.amount2) return "1 " + this.token1.symbol + " = " + (parseFloat(this.amount2) / parseFloat(this.amount1)) + " " + this.token2.symbol
-    else return "1 " + this.token1.symbol + " = " + this.initialRate + " " + this.token2.symbol
+    let rate = ""
+    if (this.amount1 && this.amount2) rate = formatNumber((parseFloat(this.amount2) / parseFloat(this.amount1)), 9)
+    else rate = formatNumber(parseFloat(this.initialRate), 9)
+    return "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
   }
 
   get disableButton() {
