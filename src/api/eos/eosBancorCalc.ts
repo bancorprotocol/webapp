@@ -1,7 +1,7 @@
 import { Decimal } from "decimal.js";
 import { Asset, asset_to_number, Sym as Symbol, Sym, asset } from "eos-common";
 import _ from "lodash";
-import { compareString } from "./helpers";
+import { compareString } from "../helpers";
 
 export type EosAccount = string;
 

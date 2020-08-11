@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import parse from "csv-parse/lib/sync";
 import { RawRow, HistoryRow } from "@/types/bancor.d.ts";
 

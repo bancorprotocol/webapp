@@ -78,7 +78,7 @@
     </div>
 
     <alert-block
-      v-if="exitFee !== 0"
+      v-if="exitFee > 0.1"
       variant="error"
       msg="Pool is not balanced. Recommended to wait until it will be balanced."
       class="mb-3"

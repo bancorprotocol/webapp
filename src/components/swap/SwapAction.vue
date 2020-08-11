@@ -284,15 +284,6 @@ export default class SwapAction extends Vue {
     return vxm.bancor.token(this.token2.id).balance ?? "0";
   }
 
-  // async loadBalances() {
-  //   this.balance1 = vxm.bancor.token(this.token1.id).balance;
-  //   this.balance2 = vxm.bancor.token(this.token2.id).balance;
-  // }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
   @Watch("$route.query")
   async onTokenChange(query: any) {
     try {
@@ -314,8 +305,8 @@ export default class SwapAction extends Vue {
       await this.onTokenChange(this.$route.query);
     else {
       const defaultQuery = {
-        from: vxm.bancor.tokens[0].id,
-        to: vxm.bancor.tokens[1].id
+        from: vxm.bancor.tokens[1].id,
+        to: vxm.bancor.tokens[0].id
       }
       if (this.$route.query.from) defaultQuery.from = this.$route.query.from
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to

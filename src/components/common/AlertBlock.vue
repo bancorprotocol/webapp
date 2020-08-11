@@ -15,7 +15,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
-@Component({})
+@Component
 export default class AlertBlock extends Vue {
   @Prop({ default: "info" }) variant!: "info" | "error";
   @Prop() title?: string;
@@ -23,10 +23,6 @@ export default class AlertBlock extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
-  }
-
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
   }
 }
 </script>

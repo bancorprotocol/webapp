@@ -86,7 +86,6 @@ import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber } from "@/api/helpers";
 import { namespace } from "vuex-class";
-import numeral from "numeral";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 
 const bancor = namespace("bancor");

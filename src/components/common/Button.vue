@@ -1,8 +1,8 @@
 <template>
   <b-btn
     :variant="variant"
-    class="block-rounded btn-block"
-    :class="{ 'btn-large': large, 'btn-sm': small }"
+    class="block-rounded"
+    :class="{ 'btn-large': large, 'btn-sm': small, 'btn-block': block }"
     :disabled="disabled || loading"
   >
     <font-awesome-icon v-if="loading" icon="circle-notch" spin />
@@ -23,6 +23,7 @@ export default class MainButton extends Vue {
   @Prop({ default: false }) disabled!: boolean;
   @Prop({ default: false }) small!: boolean;
   @Prop({ default: false }) loading!: boolean;
+  @Prop({ default: true }) block!: boolean;
 
   get darkMode() {
     return vxm.general.darkMode;

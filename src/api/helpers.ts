@@ -3,7 +3,7 @@ import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
 import Onboard from "bnc-onboard";
 import { Asset, asset_to_number, Sym, number_to_asset } from "eos-common";
-import { rpc } from "./rpc";
+import { rpc } from "./eos/rpc";
 import {
   TokenBalances,
   EosMultiRelay,
@@ -728,8 +728,20 @@ export const rebuildFromIndex = <T>(
   indexes: [number, number][]
 ): T[][] => indexes.map(([before, after]) => arr.slice(before, after));
 
-export const getCountryCode = () => {
+export const getCountryCode = async () => {
   return fetch(`https://ipapi.co/json`, { referrerPolicy: "no-referrer" })
     .then(res => res.json())
-    .then(res => res.country_code_iso3);
+    .then(res => res.country_code_iso3 as string);
+};
+
+export const getRootUrl = () => {
+  const host = window.location.hostname;
+  if (host === "localhost") return "http://localhost:8080";
+  else return "https://" + host;
+};
+
+export const getRootUrl = () => {
+  const host = window.location.hostname;
+  if (host === "localhost") return "http://localhost:8080";
+  else return "https://" + host;
 };
