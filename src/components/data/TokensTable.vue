@@ -4,13 +4,13 @@
       <b-table
         id="tokens-table"
         :dark="darkMode ? true : false"
-        striped
         :items="tokens"
         :fields="fields"
         :filter="filter"
         primary-key="id"
         :current-page="currentPage"
         :per-page="perPage"
+        head-variant="tableHeader"
       >
         <template v-slot:head(change24h)="data">
           <span class="cursor text-center">{{ data.label }}</span>
@@ -60,7 +60,7 @@
                 from: data.item.id
               }
             }"
-            variant="primary"
+            :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           >
             Trade
           </b-btn>
@@ -290,36 +290,11 @@ export default class TokensTable extends Vue {
 </script>
 
 <style lang="scss">
-table#tokens-table .flip-list-move {
-  transition: transform 0.5s;
-}
-
 .index-header {
   min-width: 15px;
 }
 
-@keyframes fa-blink {
-  0% {
-    opacity: 1;
-  }
-  25% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  75% {
-    opacity: 0.75;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-.fa-blink {
-  -webkit-animation: fa-blink 0.55s linear infinite;
-  -moz-animation: fa-blink 0.55s linear infinite;
-  -ms-animation: fa-blink 0.55s linear infinite;
-  -o-animation: fa-blink 0.55s linear infinite;
-  animation: fa-blink 0.55s linear infinite;
+.thead-tableHeader {
+  background-color: #f7f9fc !important;
 }
 </style>

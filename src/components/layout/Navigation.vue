@@ -190,16 +190,6 @@ export default class Navigation extends Vue {
   margin-bottom: unset;
 }
 
-.btn-branded {
-  color: grey !important;
-  background-color: #1b262e !important;
-}
-
-.btn-branded:hover {
-  color: black !important;
-  background-color: #fa932b !important;
-}
-
 @media (max-width: 768px) {
   .networks {
     margin-top: 15px;
@@ -238,6 +228,5 @@ export default class Navigation extends Vue {
 
 label.active {
   color: black !important;
-  background-color: #d18235 !important;
 }
 </style>

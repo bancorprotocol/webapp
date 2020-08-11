@@ -7,6 +7,119 @@
 // to all Bootstrap and Core functions/mixins/styles etc
 // --------------------------------------------------
 
+.primary-light {
+  background: $text-link-light !important;
+}
+
+.primary-dark {
+  background: $text-link-light !important;
+}
+
+.bg-body-light {
+  background: #f8f9fd !important;
+}
+
+.bg-body-dark {
+  background: #1c344e !important;
+}
+
+.bg-block-light {
+  background: $white !important;
+}
+
+.bg-light {
+  background: #eeeeee !important;
+}
+
+.bg-block-dark {
+  background: #0a2540 !important;
+}
+
+//.text-muted-light {
+//  color: rgba(87, 87, 87, 0.7) !important;
+//  font-weight: bold;
+//}
+//
+//.text-muted-dark {
+//  color: rgba(255, 255, 255, 0.5) !important;
+//  font-weight: bold;
+//}
+
+.text-body-light {
+  color: rgba(87, 87, 87, 0.85) !important;
+  font-weight: bold;
+}
+
+.text-body-dark {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: bold;
+}
+
+.text-light {
+  color: $text-color-light !important;
+}
+
+.text-dark {
+  color: $text-color-dark !important;
+}
+
+.text-muted-light {
+  color: $text-muted-light !important;
+}
+
+.text-muted-dark {
+  color: $text-muted-dark !important;
+}
+
+.text-link-light {
+  color: $text-link-light !important;
+}
+
+.text-link-dark {
+  color: $text-link-dark !important;
+}
+
+.block-light-blue-light {
+  background-color: $block-bg-blue !important;
+  border: $block-border-blue 1px solid !important;
+}
+
+.block-light-blue-dark {
+  background-color: $modal-backdrop-bg !important;
+  border: $modal-backdrop-bg 1px solid !important;
+}
+.alert-info-light {
+  border: 1px $text-info-light solid !important;
+  background: $bg-info-light;
+  border-radius: 8px;
+  padding: 1rem;
+  color: $text-info-light;
+}
+
+.alert-info-dark {
+  border: 1px $text-info-dark solid !important;
+  background: $bg-info-dark;
+  border-radius: 8px;
+  padding: 1rem;
+  color: $text-info-dark;
+}
+
+.alert-error-light {
+  border: 1px $text-error-light solid !important;
+  background: $bg-error-light;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: $text-error-light;
+}
+
+.alert-error-dark {
+  border: 1px $text-error-dark solid !important;
+  background: $bg-error-dark;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: $text-error-dark;
+}
+
 .cursor {
   cursor: pointer;
 }
@@ -27,7 +140,8 @@
   }
 
   &.block-shadow {
-    box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.05), 0 0px 16px 0 rgba(0, 73, 219, 0.1);
+    box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.05),
+      0 0px 16px 0 rgba(0, 73, 219, 0.1);
   }
 }
 
@@ -43,10 +157,16 @@
 }
 
 .btn {
-  border: none !important;
-
   &.block-rounded {
     border-radius: $border-radius !important;
+  }
+
+  &.btn-outline-gray {
+    color: $text-color-light !important;
+  }
+
+  &.btn-outline-gray-dark {
+    color: $text-color-dark !important;
   }
 }
 
@@ -54,6 +174,17 @@
   border-radius: $border-radius !important;
 }
 
-.form-control-alt-light, .form-control-alt-dark {
-  height: 44px;
+.form-control-alt-light,
+.form-control-alt-dark {
+  height: 48px;
+  background-color: transparent !important;
+  font-size: 14px;
+}
+
+.form-control-alt-light {
+  border: 1px solid $gray-border !important;
+}
+
+.form-control-alt-dark {
+  border: 1px solid $gray-border-dark !important;
 }

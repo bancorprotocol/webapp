@@ -17,35 +17,34 @@
         </content-block>
       </b-col>
       <b-col>
-        <content-block title="Data Table">
+        <content-block>
           <div>
             <div class="mb-3">
-              <b-btn
-                :variant="
-                  !tokensTable ? (darkMode ? 'dark' : 'light') : 'primary'
-                "
-                @click="tokensTable = !tokensTable"
-                class="block-rounded mr-2"
-                >Tokens</b-btn
-              >
-              <b-btn
-                :variant="
-                  tokensTable ? (darkMode ? 'dark' : 'light') : 'primary'
-                "
-                @click="tokensTable = !tokensTable"
-                class="block-rounded"
-                >Pools</b-btn
-              >
+              <b-row>
+                <b-col cols="9">
+                  <b-form-radio-group
+                    size="sm"
+                    id="brothers"
+                    button-variant="branded"
+                    v-model="selected"
+                    :options="options"
+                    buttons
+                  />
+                </b-col>
+                <b-col>
+                  <b-form-input
+                    :class="
+                      !darkMode
+                        ? 'form-control-alt-light'
+                        : 'form-control-alt-dark'
+                    "
+                    debounce="500"
+                    v-model="filter"
+                    placeholder="Search Token"
+                  ></b-form-input>
+                </b-col>
+              </b-row>
             </div>
-            <b-form-input
-              class="mb-3"
-              :class="
-                !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
-              "
-              debounce="500"
-              v-model="filter"
-              placeholder="Search Token"
-            ></b-form-input>
             <keep-alive>
               <table-pools v-if="!tokensTable" :filter="filter" />
               <tokens-table
@@ -82,13 +81,47 @@ import TablePools from "@/components/data/TablePools.vue";
   }
 })
 export default class Data extends Vue {
-  tokensTable: boolean = true;
+  selected: string = "tokens";
   filter: string = "";
 
   get darkMode() {
     return vxm.general.darkMode;
   }
+
+  get tokensTable() {
+    return this.selected == "tokens";
+  }
+
+  get options() {
+    return [
+      {
+        text: "Tokens",
+        value: "tokens"
+      },
+      {
+        text: "Pools",
+        value: "pools"
+      }
+    ];
+  }
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+#brothers .active {
+  border-bottom: 2px solid #0f59d1 !important;
+  color: #0f59d1 !important;
+  border-radius: 0 !important;
+}
+
+.btn-branded {
+  margin-right: 24px;
+  padding-bottom: 14px !important;
+  border-radius: 0;
+  color: #6b7c93;
+}
+
+.btn-branded .active {
+  border-bottom: 7px solid blue;
+}
+</style>

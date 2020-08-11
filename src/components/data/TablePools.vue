@@ -4,7 +4,6 @@
       <b-table
         id="relays-table"
         :dark="darkMode ? true : false"
-        striped
         :items="tokens"
         :fields="fields"
         :filter="filter"
@@ -13,6 +12,7 @@
         :per-page="perPage"
         primary-key="id"
         :table-busy="loadingPools"
+        head-variant="tableHeader"
       >
         <template v-slot:table-busy>
           <div class="text-center my-2">
@@ -60,7 +60,7 @@
                 from: data.item.reserves[1].id
               }
             }"
-            variant="primary"
+            :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           >
             Trade
           </b-btn>
@@ -289,7 +289,11 @@ export default class TablePools extends Vue {
 </script>
 
 <style lang="scss">
-table#relays-table .flip-list-move {
-  transition: transform 0.5s;
+.index-header {
+  min-width: 15px;
+}
+
+.thead-tableHeader {
+  background-color: #f7f9fc !important;
 }
 </style>
