@@ -176,5 +176,15 @@
 
 .form-control-alt-light,
 .form-control-alt-dark {
-  height: 44px;
+  height: 48px;
+  background-color: transparent !important;
+  font-size: 14px;
+}
+
+.form-control-alt-light {
+  border: 1px solid $gray-border !important;
+}
+
+.form-control-alt-dark {
+  border: 1px solid $gray-border-dark !important;
 }

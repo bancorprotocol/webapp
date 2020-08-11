@@ -16,6 +16,7 @@
         type="text"
         :debounce="300"
         v-model="tokenAmount"
+        style="border-right: 0 !important;"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
         :disabled="disabled"
@@ -25,7 +26,8 @@
       <b-input-group-append :class="{ cursor: pool || dropdown }">
         <div
           class="rounded-right d-flex align-items-center px-2"
-          :class="darkMode ? 'bg-body-dark' : 'bg-light'"
+          :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
+          style="border-left: 0 !important;"
         >
           <div
             v-if="token"
@@ -122,4 +124,8 @@ export default class TokenInputField extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.no-border-left {
+  border-left: 0 !important;
+}
+</style>

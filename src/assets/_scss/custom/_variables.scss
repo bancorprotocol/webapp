@@ -10,9 +10,10 @@
 // For example, changing the primary color
 // $dark: #324856;
 $primary: #0f59d1 !default;
+$gray-border: #e6ebf2 !default;
+$gray-border-dark: #1f3a55 !default;
 
 $border-radius: 10px;
-
 $modal-sm: 379px;
 
 $modal-backdrop-bg: #1d3144;
@@ -27,15 +28,17 @@ $text-muted-dark: #cdd1d6;
 $text-link-light: $primary;
 $text-link-dark: $primary;
 
+$text-info-light: $primary;
+$text-info-dark: $primary;
+
 $text-error-light: #de4a5c;
 $text-error-dark: #de4a5c;
 
 $bg-error-light: rgba($text-error-light, 0.1);
 $bg-error-dark: rgba($text-error-light, 0.1);
-$text-info-light: $primary;
-$text-info-dark: $primary;
+
 $bg-info-light: rgba($text-info-light, 0.1);
 $bg-info-dark: rgba($text-info-light, 0.1);
 
 $block-bg-blue: #f7f9fc;
-$block-border-blue: #e6ebf2;
+$block-border-blue: $gray-border;
