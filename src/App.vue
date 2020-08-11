@@ -152,8 +152,8 @@ export default class App extends Vue {
     }
     vxm.general.setLanguage();
     await vxm.general.getUserCountry();
+    await this.loadBancor();
     if (this.$route.name === "404") this.loading = false;
-    else await this.loadBancor();
   }
 }
 </script>
