@@ -60,7 +60,7 @@
                 from: data.item.id
               }
             }"
-            variant="third"
+            :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           >
             Trade
           </b-btn>
@@ -290,46 +290,11 @@ export default class TokensTable extends Vue {
 </script>
 
 <style lang="scss">
-table#tokens-table .flip-list-move {
-  transition: transform 0.5s;
-}
-
 .index-header {
   min-width: 15px;
 }
 
 .thead-tableHeader {
   background-color: #f7f9fc !important;
-}
-
-.btn-third {
-  background-color: white !important;
-  border-radius: 8px !important;
-  border: #d0d7df 1px solid !important;
-}
-
-@keyframes fa-blink {
-  0% {
-    opacity: 1;
-  }
-  25% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  75% {
-    opacity: 0.75;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-.fa-blink {
-  -webkit-animation: fa-blink 0.55s linear infinite;
-  -moz-animation: fa-blink 0.55s linear infinite;
-  -ms-animation: fa-blink 0.55s linear infinite;
-  -o-animation: fa-blink 0.55s linear infinite;
-  animation: fa-blink 0.55s linear infinite;
 }
 </style>
