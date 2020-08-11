@@ -29,7 +29,9 @@
       class="d-flex justify-content-center align-items-center mt-3"
     >
       <main-button
-        @click.native="goToRootUrl()"
+        @click.native="
+          $router.push({ name: 'Swap', params: { service: selectedNetwork } })
+        "
         class="px-5 mt-2"
         label="Go to homepage"
         :active="true"
@@ -44,7 +46,6 @@
 import { Prop, Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
-import { getRootUrl } from "@/api/helpers";
 
 @Component({
   components: {
@@ -52,12 +53,12 @@ import { getRootUrl } from "@/api/helpers";
   }
 })
 export default class PageNotFound extends Vue {
-  get darkMode() {
-    return vxm.general.darkMode;
+  get selectedNetwork() {
+    return vxm.bancor.currentNetwork;
   }
 
-  goToRootUrl() {
-    window.location.replace(getRootUrl());
+  get darkMode() {
+    return vxm.general.darkMode;
   }
 }
 </script>
