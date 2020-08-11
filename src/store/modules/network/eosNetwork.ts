@@ -11,7 +11,7 @@ import { getBalance, getTokenBalances, compareString, compareToken } from "@/api
 import { vxm } from "@/store";
 
 import _ from "lodash";
-import { multiContract } from "@/api/multiContractTx";
+import { multiContract } from "@/api/eos/multiContractTx";
 import wait from "waait";
 import { Asset, asset_to_number, number_to_asset, Sym } from "eos-common";
 
