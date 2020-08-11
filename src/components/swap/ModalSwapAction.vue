@@ -87,7 +87,13 @@
 import { Watch, Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import BaseModal from "@/components/common/BaseModal.vue";
-import { Step, ViewRelay, ViewReserve, ViewToken } from "@/types/bancor";
+import {
+  Step,
+  TxResponse,
+  ViewRelay,
+  ViewReserve,
+  ViewToken
+} from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
@@ -110,7 +116,7 @@ export default class ModalSwapAction extends Vue {
   @Prop() advancedBlockItems!: any[];
 
   txBusy = false;
-  success = "";
+  success: TxResponse | null = null;
   error = "";
   sections: Step[] = [];
   stepIndex = 0;
@@ -138,14 +144,14 @@ export default class ModalSwapAction extends Vue {
   setDefault() {
     this.sections = [];
     this.error = "";
-    this.success = "";
+    this.success = null;
     this.notUsState = false;
   }
 
   async initAction() {
     if (this.success) {
       this.$bvModal.hide("modal-swap-action");
-      this.success = "";
+      this.success = null;
       return;
     }
 

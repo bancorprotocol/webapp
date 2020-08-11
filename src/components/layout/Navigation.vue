@@ -8,7 +8,7 @@
     <b-navbar class="navBar">
       <div class="d-flex justify-content-between container-xl">
         <b-navbar-brand class="pb-1" style="width: 250px">
-          <router-link :to="{ name: 'Swap' }">
+          <a :href="getRootUrl">
             <img
               v-if="darkMode"
               src="@/assets/media/logos/bancor-white2.png"
@@ -21,7 +21,7 @@
               height="35px"
               class="mb-1"
             />
-          </router-link>
+          </a>
         </b-navbar-brand>
 
         <div class="d-flex justify-content-end" style="width: 250px">
@@ -57,6 +57,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
+import { getRootUrl } from "@/api/helpers";
 
 @Component({
   components: { BancorMenu, SettingsMenu }
@@ -76,6 +77,10 @@ export default class Navigation extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  get getRootUrl() {
+    return getRootUrl();
   }
 
   created() {

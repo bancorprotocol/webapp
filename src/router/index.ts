@@ -7,6 +7,7 @@ import { services } from "@/api/helpers";
 import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
+import CreateHome from "@/views/CreateHome.vue";
 
 Vue.use(Router);
 
@@ -28,6 +29,24 @@ export const router = new Router({
     });
   },
   routes: [
+    {
+      path: "*",
+      redirect: `/404`
+    },
+    {
+      path: "/",
+      name: "Root",
+      redirect: () => {
+        const preferredService = localStorage.getItem(PREFERRED_SERVICE);
+        if (preferredService) {
+          const foundService = services.find(
+            service => service.namespace == preferredService
+          );
+          if (foundService) return `/${foundService.namespace}/swap`;
+        }
+        return `/${defaultModule}/swap`;
+      }
+    },
     {
       path: "/404",
       name: "404",
@@ -55,10 +74,16 @@ export const router = new Router({
         Nav: Navigation,
         Hero: PoolActions
       },
-      props: true,
-      meta: {
-        feature: "Liquidity"
-      }
+      props: true
+    },
+    {
+      path: "/:service/pool/create",
+      name: "PoolCreate",
+      components: {
+        Nav: Navigation,
+        Hero: CreateHome
+      },
+      props: true
     },
     {
       path: "/:service/swap",
@@ -82,23 +107,6 @@ export const router = new Router({
       props: true,
       meta: {
         feature: "Liquidity"
-      }
-    },
-    {
-      path: "*",
-      redirect: `/${defaultModule}`
-    },
-    {
-      path: "/",
-      redirect: () => {
-        const preferredService = localStorage.getItem(PREFERRED_SERVICE);
-        if (preferredService) {
-          const foundService = services.find(
-            service => service.namespace == preferredService
-          );
-          if (foundService) return `/${foundService.namespace}/swap`;
-        }
-        return `/${defaultModule}/swap`;
       }
     }
   ]

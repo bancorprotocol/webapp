@@ -733,3 +733,9 @@ export const getCountryCode = () => {
     .then(res => res.json())
     .then(res => res.country_code_iso3);
 };
+
+export const getRootUrl = () => {
+  const host = window.location.hostname;
+  if (host === "localhost") return "http://localhost:8080";
+  else return "https://" + host;
+};
