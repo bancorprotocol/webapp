@@ -44,7 +44,6 @@
 import { Prop, Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
-import { getRootUrl } from "@/api/helpers";
 
 @Component({
   components: {
