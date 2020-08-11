@@ -739,3 +739,9 @@ export const getRootUrl = () => {
   if (host === "localhost") return "http://localhost:8080";
   else return "https://" + host;
 };
+
+export const getRootUrl = () => {
+  const host = window.location.hostname;
+  if (host === "localhost") return "http://localhost:8080";
+  else return "https://" + host;
+};
