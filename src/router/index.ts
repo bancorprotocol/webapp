@@ -74,7 +74,10 @@ export const router = new Router({
         Nav: Navigation,
         Hero: PoolActions
       },
-      props: true
+      props: true,
+      meta: {
+        feature: "Liquidity"
+      }
     },
     {
       path: "/:service/pool/create",
