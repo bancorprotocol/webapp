@@ -87,7 +87,7 @@ import TablePools from "@/components/data/TablePools.vue";
   }
 })
 export default class Data extends Vue {
-  selected: string = "tokens";
+  selected: string = "pools";
   filter: string = "";
 
   get darkMode() {
@@ -101,12 +101,12 @@ export default class Data extends Vue {
   get options() {
     return [
       {
-        text: "Tokens",
-        value: "tokens"
-      },
-      {
         text: "Pools",
         value: "pools"
+      },
+      {
+        text: "Tokens",
+        value: "tokens"
       }
     ];
   }

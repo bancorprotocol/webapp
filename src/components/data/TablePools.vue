@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>
+    <div class="font-size-14 font-w600">
       <b-table
         id="relays-table"
         :dark="darkMode ? true : false"
@@ -23,8 +23,8 @@
         </template>
         <template v-slot:cell(symbol)="data">
           <div class="d-flex align-items-center">
-            <pool-logos :pool="data.item" class="font-size-16 font-w700" />
-            <b-badge variant="primary">
+            <pool-logos :pool="data.item" />
+            <b-badge variant="primary" class="px-2">
               {{ data.item.v2 ? "V2" : "V1" }}</b-badge
             >
           </div>
@@ -140,28 +140,30 @@ export default class TablePools extends Vue {
       key: "symbol",
       sortable: true,
       label: "Token",
-      tdClass: ["tokenss", "align-middle"]
+      tdClass: ["tokenss", "align-middle"],
+      thClass: "table-head"
     },
     {
       key: "liqDepth",
       sortable: true,
       label: "Liquidity Depth",
-      class: ["text-left", "font-w700"],
-      tdClass: ["align-middle"],
+      thClass: "table-head",
+      tdClass: ["align-middle", "text-light"],
       formatter: (value: any) =>
         value ? numeral(value).format("$0,0.00") : "Not Available"
     },
     {
       key: "fee",
       sortable: true,
-      class: ["text-left", "font-w700"],
-      tdClass: ["align-middle"],
+      class: ["text-left"],
+      tdClass: ["align-middle", "text-light"],
+      thClass: "table-head",
       formatter: (value: string) => numeral(value).format("0.00%")
     },
     {
       key: "ratio",
-      tdClass: ["align-middle"],
-      class: "noWrap",
+      tdClass: ["align-middle", "text-light"],
+      thClass: "table-head",
       formatter: (value: any, key: any, item: ViewRelay) =>
         item.reserves
           .map(reserve => Number.parseInt(String(reserve.reserveWeight * 100)))
@@ -171,7 +173,8 @@ export default class TablePools extends Vue {
       key: "actions",
       label: "Actions",
       class: ["text-left", "actions-column"],
-      tdClass: ["align-middle", "text-right"]
+      tdClass: ["align-middle", "text-right"],
+      thClass: "table-head"
     }
   ];
 
@@ -209,5 +212,11 @@ export default class TablePools extends Vue {
 }
 .thead-tableHeader {
   background-color: #f7f9fc !important;
+}
+
+.table-head {
+  color: #6b7c93 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
 }
 </style>

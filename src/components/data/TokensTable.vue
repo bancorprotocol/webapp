@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="table-responsive">
+    <div class="table-responsive font-size-14 font-w600">
       <b-table
         id="tokens-table"
         :dark="darkMode ? true : false"
@@ -13,7 +13,7 @@
         head-variant="tableHeader"
       >
         <template v-slot:head(change24h)="data">
-          <span class="cursor text-center">{{ data.label }}</span>
+          <span class="cursor">{{ data.label }}</span>
         </template>
         <template v-slot:cell(index)="data">
           {{ data.index + 1 }}
@@ -26,17 +26,21 @@
               alt="Token Logo"
               style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08); border: solid 1px #e6ebf2;"
             />
-            <span>{{ data.item.symbol }}</span>
+            <span :class="darkMode ? 'text-dark' : 'text-light'">{{
+              data.item.symbol
+            }}</span>
           </div>
         </template>
         <template v-slot:cell(change24h)="data">
           <span
             :class="
               data.item.change24h == null
-                ? ''
+                ? darkMode
+                  ? 'text-dark'
+                  : 'text-light'
                 : data.item.change24h > 0
-                ? `text-success font-w700`
-                : 'text-danger font-w700'
+                ? `text-success `
+                : 'text-danger '
             "
             >{{
               data.item.change24h == null
@@ -46,7 +50,7 @@
           >
         </template>
         <template v-slot:cell(price)="data">
-          <span class="font-w700">
+          <span :class="darkMode ? 'text-dark' : 'text-light'">
             <span v-if="data.item.price < 100">{{
               numeral(data.item.price).format("$0,0.0000")
             }}</span>
@@ -152,20 +156,21 @@ export default class TokensTable extends Vue {
       key: "symbol",
       sortable: true,
       label: "Name",
-      tdClass: ["align-middle"]
+      tdClass: ["align-middle"],
+      thClass: "text-left table-head"
     },
     {
       key: "change24h",
       sortable: true,
       label: "24H Change",
-      thClass: "text-left",
+      thClass: "text-left table-head",
       tdClass: ["text-left", "align-middle"]
     },
     {
       key: "price",
       sortable: true,
       label: "Price USD",
-      thClass: "text-left",
+      thClass: "text-left table-head",
       tdClass: ["text-left", "align-middle"],
       formatter: (value: any, key: any, item: any) =>
         numeral(value).format("$0,0.0000")
@@ -174,8 +179,12 @@ export default class TokensTable extends Vue {
       key: "volume24h",
       sortable: true,
       label: "24H Volume",
-      thClass: "text-left",
-      tdClass: ["text-left", "align-middle"],
+      thClass: "text-left table-head",
+      tdClass: [
+        "text-left",
+        "align-middle",
+        this.darkMode ? "text-dark" : "text-light"
+      ],
       formatter: (value: any, key: any, item: any) =>
         value == null || value == undefined
           ? "N/A"
@@ -185,15 +194,19 @@ export default class TokensTable extends Vue {
       key: "liqDepth",
       sortable: true,
       label: "Liquidity Depth",
-      thClass: "text-left",
-      tdClass: ["text-left", "align-middle"],
+      thClass: "text-left table-head",
+      tdClass: [
+        "text-left",
+        "align-middle",
+        this.darkMode ? "text-dark" : "text-light"
+      ],
       formatter: (value: any, key: any, item: any) =>
         numeral(value).format("$0,0.00")
     },
     {
       key: "actions",
       label: "Actions",
-      thClass: "text-left",
+      thClass: "text-left table-head",
       thStyle: "width: 120px",
       tdClass: ["text-right", "align-middle"]
     }
@@ -222,5 +235,11 @@ export default class TokensTable extends Vue {
 <style lang="scss">
 .thead-tableHeader {
   background-color: #f7f9fc !important;
+}
+
+.table-head {
+  color: #6b7c93 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
 }
 </style>
