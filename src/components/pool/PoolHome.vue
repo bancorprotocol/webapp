@@ -1,6 +1,6 @@
 <template>
   <div>
-    <content-block class="mb-3">
+    <content-block class="mb-3" :shadow="true">
       <template slot="header">
         <sub-navigation />
       </template>

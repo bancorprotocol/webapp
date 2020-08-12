@@ -24,6 +24,7 @@
               class="img-avatar img-avatar32 mr-2"
               :src="data.item.logo"
               alt="Token Logo"
+              style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08); border: solid 1px #e6ebf2;"
             />
             <span>{{ data.item.symbol }}</span>
           </div>

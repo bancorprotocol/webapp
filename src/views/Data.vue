@@ -2,7 +2,7 @@
   <b-container fluid="xl" class="px-xl-0">
     <b-row>
       <b-col cols="12">
-        <content-block title="Statistics">
+        <content-block title="Statistics" :shadow-light="true">
           <statistics />
         </content-block>
       </b-col>
@@ -17,34 +17,40 @@
         </content-block>
       </b-col>
       <b-col>
-        <content-block>
+        <content-block :px0="true" :shadow-light="true" :no-header="true">
           <div>
-            <div class="mb-3">
-              <b-row>
-                <b-col cols="9">
-                  <b-form-radio-group
-                    size="sm"
-                    id="brothers"
-                    button-variant="branded"
-                    v-model="selected"
-                    :options="options"
-                    buttons
-                  />
-                </b-col>
-                <b-col>
-                  <b-form-input
-                    :class="
-                      !darkMode
-                        ? 'form-control-alt-light'
-                        : 'form-control-alt-dark'
-                    "
-                    debounce="500"
-                    v-model="filter"
-                    placeholder="Search Token"
-                  ></b-form-input>
-                </b-col>
-              </b-row>
-            </div>
+            <b-row class="mx-2 mt-2">
+              <b-col sm="6" md="8" xl="9" class="d-flex align-items-end">
+                <b-form-radio-group
+                  size="sm"
+                  id="brothers"
+                  button-variant="branded"
+                  v-model="selected"
+                  :options="options"
+                  buttons
+                />
+              </b-col>
+              <b-col
+                sm="6"
+                md="4"
+                xl="3"
+                class="pr-sm-1 d-flex align-items-center"
+              >
+                <b-form-input
+                  :class="
+                    !darkMode
+                      ? 'form-control-alt-light'
+                      : 'form-control-alt-dark'
+                  "
+                  debounce="500"
+                  v-model="filter"
+                  placeholder="Search Token"
+                  class="mb-1"
+                  style="height: 32px"
+                ></b-form-input>
+              </b-col>
+            </b-row>
+
             <keep-alive>
               <table-pools v-if="!tokensTable" :filter="filter" />
               <tokens-table
