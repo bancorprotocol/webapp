@@ -60,6 +60,7 @@
                 from: data.item.id
               }
             }"
+            class="btn-block"
             :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           >
             Trade
@@ -134,11 +135,7 @@ import { vxm } from "@/store";
 })
 export default class TokensTable extends Vue {
   @Prop(Boolean) loading?: boolean;
-  @Prop(Boolean) scrollToTop?: boolean;
-
   @Prop({ default: "" }) filter!: string;
-
-  small = false;
 
   numeral = numeral;
 
@@ -148,28 +145,6 @@ export default class TokensTable extends Vue {
   get pagesTotal() {
     return Math.ceil(this.tokens.length / this.perPage);
   }
-
-  transProps = {
-    name: "flip-list"
-  };
-  transHandler = {
-    beforeEnter: function(el: any) {
-      el.style.opacity = 0;
-      el.style.height = 0;
-    },
-    enter: function(el: any, done: any) {
-      var delay = el.dataset.index * 150;
-      setTimeout(function() {
-        Velocity(el, { opacity: 1, height: "1.6em" }, { complete: done });
-      }, delay);
-    },
-    leave: function(el: any, done: any) {
-      var delay = el.dataset.index * 150;
-      setTimeout(function() {
-        Velocity(el, { opacity: 0, height: 0 }, { complete: done });
-      }, delay);
-    }
-  };
 
   fields = [
     {
@@ -182,15 +157,15 @@ export default class TokensTable extends Vue {
       key: "change24h",
       sortable: true,
       label: "24H Change",
-      thClass: "text-right",
-      tdClass: ["text-right", "align-middle"]
+      thClass: "text-left",
+      tdClass: ["text-left", "align-middle"]
     },
     {
       key: "price",
       sortable: true,
       label: "Price USD",
-      thClass: "text-right",
-      tdClass: ["text-right", "align-middle"],
+      thClass: "text-left",
+      tdClass: ["text-left", "align-middle"],
       formatter: (value: any, key: any, item: any) =>
         numeral(value).format("$0,0.0000")
     },
@@ -198,8 +173,8 @@ export default class TokensTable extends Vue {
       key: "volume24h",
       sortable: true,
       label: "24H Volume",
-      thClass: "text-right",
-      tdClass: ["text-right", "align-middle"],
+      thClass: "text-left",
+      tdClass: ["text-left", "align-middle"],
       formatter: (value: any, key: any, item: any) =>
         value == null || value == undefined
           ? "N/A"
@@ -209,15 +184,16 @@ export default class TokensTable extends Vue {
       key: "liqDepth",
       sortable: true,
       label: "Liquidity Depth",
-      thClass: "text-right",
-      tdClass: ["text-right", "align-middle"],
+      thClass: "text-left",
+      tdClass: ["text-left", "align-middle"],
       formatter: (value: any, key: any, item: any) =>
         numeral(value).format("$0,0.00")
     },
     {
       key: "actions",
       label: "Actions",
-      thClass: "text-right",
+      thClass: "text-left",
+      thStyle: "width: 120px",
       tdClass: ["text-right", "align-middle"]
     }
   ];
@@ -230,26 +206,8 @@ export default class TokensTable extends Vue {
     return vxm.bancor.tokens;
   }
 
-  initAction(action: "convert" | "transfer", symbol: string) {
-    if (this.scrollToTop) {
-      window.scroll({
-        top: 0,
-        left: 0,
-        behavior: "smooth"
-      });
-    }
-    this.$emit(action, symbol);
-  }
-
   get filteredFields() {
-    const small = this.small
-      ? this.fields.filter(field =>
-          ["key", "volume24h", "index", "name"].every(
-            fieldName => fieldName !== field.key
-          )
-        )
-      : this.fields;
-    const hasKeys = small.filter(field => {
+    const hasKeys = this.fields.filter(field => {
       if (field.key == "index" || field.key == "actions") return true;
       return this.tokens.some((token: any) =>
         new Object(token).hasOwnProperty(field.key)
@@ -257,43 +215,10 @@ export default class TokensTable extends Vue {
     });
     return hasKeys;
   }
-
-  handleResize() {
-    this.small = window.innerWidth < 768;
-  }
-
-  onConvert(symbolName: string) {
-    const { query, params } = this.$route;
-    const { base, quote } = query;
-    this.$router.push({
-      name: "Tokens",
-      query: {
-        ...query,
-        quote: symbolName,
-        ...(base == symbolName && { base: quote })
-      }
-    });
-  }
-
-  onTransfer(symbolName: string) {
-    this.$router.push({
-      name: "Transfer",
-      params: { symbolName }
-    });
-  }
-
-  created() {
-    window.addEventListener("resize", this.handleResize);
-    this.handleResize();
-  }
 }
 </script>
 
 <style lang="scss">
-.index-header {
-  min-width: 15px;
-}
-
 .thead-tableHeader {
   background-color: #f7f9fc !important;
 }
