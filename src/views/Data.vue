@@ -3,7 +3,7 @@
     <b-row>
       <b-col cols="12">
         <content-block title="Statistics" :shadow-light="true">
-          <statistics />
+          <statistics class="mt-3" />
         </content-block>
       </b-col>
       <b-col v-if="false" md="6">
@@ -19,7 +19,7 @@
       <b-col>
         <content-block :px0="true" :shadow-light="true" :no-header="true">
           <div>
-            <b-row class="mx-2 mt-2">
+            <b-row class="mx-2 pt-2">
               <b-col sm="6" md="8" xl="9" class="d-flex align-items-end">
                 <b-form-radio-group
                   size="sm"
@@ -53,12 +53,7 @@
 
             <keep-alive>
               <table-pools v-if="!tokensTable" :filter="filter" />
-              <tokens-table
-                v-else
-                scrollToTop
-                :loading="false"
-                :filter="filter"
-              />
+              <tokens-table v-else :filter="filter" />
             </keep-alive>
           </div>
         </content-block>

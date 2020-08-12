@@ -9,11 +9,15 @@
       { 'bg-block-light': !darkMode }
     ]"
   >
-    <div v-if="noHeader" class="block-header p-0"></div>
-    <div v-else-if="title" class="block-header">
+    <div v-if="noHeader"></div>
+    <div
+      v-else-if="title"
+      class="block-header"
+      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+    >
       <h3
-        class="block-title"
-        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+        class="m-0 p-0 my-2 font-size-16 font-w600"
+        :class="darkMode ? 'text-dark' : 'text-light'"
       >
         {{ title }}
       </h3>
@@ -45,4 +49,14 @@ export default class ContentBlock extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+@import "@/assets/_scss/custom/_variables";
+
+.border-bottom-light {
+  border-bottom: 1px solid $gray-border;
+}
+
+.border-bottom-dark {
+  border-bottom: 1px solid $gray-border-dark;
+}
+</style>
