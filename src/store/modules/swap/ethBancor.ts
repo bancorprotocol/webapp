@@ -83,7 +83,8 @@ import {
   isEqual,
   zip,
   differenceBy,
-  flatMap
+  flatMap,
+  add
 } from "lodash";
 import {
   buildNetworkContract,
@@ -115,6 +116,7 @@ import { priorityEthPools } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { openDB, DBSchema } from "idb/with-async-ittr.js";
+import { MultiCall as Derp } from "eth-multicall";
 
 const calculatePoolTokenWithdrawalWei = (
   poolToken: Token,
@@ -279,6 +281,28 @@ const relayTemplate = (): AbiTemplate => {
     conversionFee: contract.methods.conversionFee(),
     connectorToken1: contract.methods.connectorTokens(0),
     connectorToken2: contract.methods.connectorTokens(1)
+  };
+};
+
+const relayShape = (converterAddress: string) => {
+  const contract = buildV28ConverterContract(converterAddress);
+  return {
+    owner: contract.methods.owner(),
+    converterType: contract.methods.converterType(),
+    version: contract.methods.version(),
+    connectorTokenCount: contract.methods.connectorTokenCount(),
+    conversionFee: contract.methods.conversionFee(),
+    connectorToken1: contract.methods.connectorTokens(0),
+    connectorToken2: contract.methods.connectorTokens(1)
+  };
+};
+
+const poolTokenShape = (address: string) => {
+  const contract = buildContainerContract(address);
+  return {
+    symbol: contract.methods.symbol(),
+    decimals: contract.methods.decimals(),
+    poolTokens: contract.methods.poolTokens()
   };
 };
 
@@ -3655,10 +3679,27 @@ export class EthBancorModule
       item => item.converterAddress
     );
 
-    const [firstHalfs, poolAndSmartTokens] = (await this.smartMulti([
+    const multi = new Derp(web3, "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2");
+
+    const [rawRelays, poolTokens] = await multi.all([
+      allConverters.map(relayShape),
+      allAnchors.map(poolTokenShape)
+    ]);
+
+    const firstHalfs = rawRelays.map(
+      (rawRelay): AbiRelay =>
+        (({
+          ...rawRelay,
+          converterAddress: rawRelay._originAddress
+        } as unknown) as AbiRelay)
+    );
+
+    console.log(firstHalfs, "should be first halfs");
+
+    const [poolAndSmartTokens] = (await this.smartMulti([
       relayHandler(allConverters),
       miniPoolHandler(allAnchors)
-    ])) as [AbiRelay[], AbiCentralPoolToken[]];
+    ])) as [AbiCentralPoolToken[]];
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
