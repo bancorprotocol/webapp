@@ -2343,10 +2343,10 @@ export class EthBancorModule
       keepWei
     });
     const currentBalance = this.tokenBalance(tokenContractAddress);
-    if (currentBalance && currentBalance.balance !== balance) {
+    if (currentBalance && currentBalance.balance !== balance && !keepWei) {
       this.updateBalance([tokenContractAddress, Number(balance)]);
     }
-    if (Number(balance) > 0) {
+    if (Number(balance) > 0 && !keepWei) {
       this.updateBalance([tokenContractAddress, Number(balance)]);
     }
     return balance;
