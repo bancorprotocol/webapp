@@ -851,19 +851,22 @@ const stakedAndReserveHandler = (
 
     const data = decoded.data;
     console.log(data, "is data");
+
     return {
       converterAddress: decoded.originAddress,
       reserves: [
         {
           reserveAddress: data.primaryReserveToken,
           stakedBalance: data.reserveOneStakedBalance,
-          reserveWeight: data.effectiveReserveWeights[0],
+          reserveWeight:
+            data.effectiveReserveWeights && data.effectiveReserveWeights[0],
           poolTokenAddress: data.poolTokenOne
         },
         {
           reserveAddress: data.secondaryReserveToken,
           stakedBalance: data.reserveTwoStakedBalance,
-          reserveWeight: data.effectiveReserveWeights[1],
+          reserveWeight:
+            data.effectiveReserveWeights && data.effectiveReserveWeights[1],
           poolTokenAddress: data.poolTokenTwo
         }
       ]
@@ -2340,10 +2343,10 @@ export class EthBancorModule
       keepWei
     });
     const currentBalance = this.tokenBalance(tokenContractAddress);
-    if (currentBalance && currentBalance.balance !== balance) {
+    if (currentBalance && currentBalance.balance !== balance && !keepWei) {
       this.updateBalance([tokenContractAddress, Number(balance)]);
     }
-    if (Number(balance) > 0) {
+    if (Number(balance) > 0 && !keepWei) {
       this.updateBalance([tokenContractAddress, Number(balance)]);
     }
     return balance;
@@ -3699,6 +3702,15 @@ export class EthBancorModule
         relay =>
           this.currentNetwork == EthNetworks.Ropsten ||
           networkTokenIncludedInReserves(networkTokenAddresses)(relay)
+      )
+      .filter(half =>
+        poolTokenAddresses.some(poolTokenAddress =>
+          compareString(poolTokenAddress.anchorAddress, half.anchorAddress)
+        )
+          ? poolTokenAddresses.find(poolTokenAddress =>
+              compareString(poolTokenAddress.anchorAddress, half.anchorAddress)
+            )!.poolTokenAddresses.length == 2
+          : true
       );
 
     const verifiedV1Pools = passedFirstHalfs.filter(
@@ -3797,7 +3809,7 @@ export class EthBancorModule
         const rawPool = findOrThrow(
           confirmedTokenMatch,
           match => compareString(match.converterAddress, pool.converterAddress),
-          "failed to find raw pool"
+          `failed to find raw pool ${pool.converterAddress}`
         );
 
         return {
