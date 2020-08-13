@@ -1,5 +1,5 @@
 <template>
-  <content-block>
+  <content-block :shadow="true">
     <template slot="header">
       <pool-actions-header
         :title="(withdrawLiquidity ? 'Remove' : 'Add') + ' Liquidity'"

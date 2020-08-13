@@ -1,51 +1,66 @@
 <template>
-  <div class="parent container-fluid">
-    <div
-      class="content container-fluid d-flex flex-column align-items-center w-100"
-    >
-      <font-awesome-icon
-        icon="poo"
-        class="fa-2x text-black cursor"
-        size="10x"
+  <b-row>
+    <b-col cols="12" class="d-flex justify-content-center align-items-center">
+      <img
+        :src="
+          require('@/assets/media/photos/404-page' +
+            (darkMode ? '-dark' : '') +
+            '.svg')
+        "
+        class="mt-5"
       />
-      <h1>That's a 404</h1>
-      <p>
-        Page not found.
-      </p>
-    </div>
-  </div>
+    </b-col>
+    <b-col
+      cols="12"
+      class="d-flex justify-content-center align-items-center mt-3"
+    >
+      <span class="text-primary font-size-24 font-w600">Page not found</span>
+    </b-col>
+    <b-col
+      cols="12"
+      class="d-flex justify-content-center align-items-center mt-3"
+    >
+      <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400"
+        >The page you're looking for is not available.</span
+      >
+    </b-col>
+    <b-col
+      cols="12"
+      class="d-flex justify-content-center align-items-center mt-3"
+    >
+      <main-button
+        @click.native="
+          $router.push({ name: 'Swap', params: { service: selectedNetwork } })
+        "
+        class="px-5 mt-2"
+        label="Go to homepage"
+        :active="true"
+        :large="true"
+        :block="false"
+      />
+    </b-col>
+  </b-row>
 </template>
 
 <script lang="ts">
 import { Prop, Component, Vue } from "vue-property-decorator";
+import { vxm } from "@/store";
+import MainButton from "@/components/common/Button.vue";
 
-@Component
-export default class PageNotFound extends Vue {}
+@Component({
+  components: {
+    MainButton
+  }
+})
+export default class PageNotFound extends Vue {
+  get selectedNetwork() {
+    return vxm.bancor.currentNetwork;
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode;
+  }
+}
 </script>
 
-<style lang="scss" scoped>
-.parent {
-  margin: 20px;
-  max-width: 80%;
-  display: flex;
-  align-self: center;
-}
-
-.content {
-  background-color: white;
-  padding: 15px;
-  min-width: 100px;
-}
-
-.wrapper {
-  padding: 20px;
-}
-
-.text {
-  color: white;
-}
-
-.orange {
-  color: #d18235;
-}
-</style>
+<style lang="scss" scoped></style>

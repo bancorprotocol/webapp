@@ -1,5 +1,5 @@
 import Vue from "vue";
-import Router from "vue-router";
+import Router, { Route } from "vue-router";
 import Data from "@/views/Data.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import Navigation from "@/components/layout/Navigation.vue";
@@ -7,6 +7,7 @@ import { services } from "@/api/helpers";
 import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
+import CreateHome from "@/views/CreateHome.vue";
 
 Vue.use(Router);
 
@@ -28,6 +29,24 @@ export const router = new Router({
     });
   },
   routes: [
+    {
+      path: "*",
+      redirect: `/404`
+    },
+    {
+      path: "/",
+      name: "Root",
+      redirect: () => {
+        const preferredService = localStorage.getItem(PREFERRED_SERVICE);
+        if (preferredService) {
+          const foundService = services.find(
+            service => service.namespace == preferredService
+          );
+          if (foundService) return `/${foundService.namespace}/swap`;
+        }
+        return `/${defaultModule}/swap`;
+      }
+    },
     {
       path: "/404",
       name: "404",
@@ -61,6 +80,15 @@ export const router = new Router({
       }
     },
     {
+      path: "/:service/pool/create",
+      name: "PoolCreate",
+      components: {
+        Nav: Navigation,
+        Hero: CreateHome
+      },
+      props: true
+    },
+    {
       path: "/:service/swap",
       name: "Swap",
       components: {
@@ -76,6 +104,7 @@ export const router = new Router({
       path: "/:service/data",
       redirect: "/404",
       name: "Data",
+      redirect: "/404",
       components: {
         Nav: Navigation,
         default: Data
@@ -83,6 +112,16 @@ export const router = new Router({
       props: true,
       meta: {
         feature: "Liquidity"
+      }
+    },
+    {
+      path: "/:service",
+      props: true,
+      redirect: (to: Route) => {
+        const foundService = services.find(
+          service => service.namespace == to.params.service
+        );
+        return foundService ? `/${foundService.namespace}/swap` : "/404";
       }
     },
     {

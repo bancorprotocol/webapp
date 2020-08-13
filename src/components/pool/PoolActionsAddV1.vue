@@ -268,10 +268,6 @@ export default class PoolActionsAddV1 extends Vue {
     this.rateLoading = false;
   }
 
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
   async initialLoadPrices() {
     const results = await this.calculateOpposingDeposit({
       id: this.pool.id,

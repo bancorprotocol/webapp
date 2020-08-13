@@ -1,4 +1,4 @@
-import { ethReserveAddress } from "./eth/ethAbis";
+import { ethReserveAddress } from "./ethAbis";
 
 export interface DictionaryItem {
   smartTokenAddress: string;

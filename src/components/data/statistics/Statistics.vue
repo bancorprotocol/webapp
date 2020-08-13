@@ -30,7 +30,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import StatisticsDataBlock from "@/components/data/StatisticsDataBlock.vue";
+import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import numeral from "numeral";
 
 @Component({

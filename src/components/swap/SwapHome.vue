@@ -1,6 +1,6 @@
 <template>
   <div>
-    <content-block class="mb-3">
+    <content-block class="mb-3" :shadow="true">
       <template slot="header">
         <sub-navigation />
       </template>
@@ -13,8 +13,7 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Vue } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import SubNavigation from "@/components/layout/SubNavigation.vue";
 import SwapAction from "@/components/swap/SwapAction.vue";
@@ -26,12 +25,7 @@ import SwapAction from "@/components/swap/SwapAction.vue";
     ContentBlock
   }
 })
-export default class SwapHome extends Vue {
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-  created() {}
-}
+export default class SwapHome extends Vue {}
 </script>
 
 <style scoped lang="scss"></style>
