@@ -104,7 +104,6 @@ export const router = new Router({
       path: "/:service/data",
       redirect: "/404",
       name: "Data",
-      redirect: "/404",
       components: {
         Nav: Navigation,
         default: Data
