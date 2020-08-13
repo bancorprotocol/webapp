@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TableHeader, {
   ViewTableFields
@@ -55,6 +55,8 @@ import TableActionButtons from "@/components/common/TableActionButtons.vue";
   }
 })
 export default class TableTokens extends Vue {
+  @Prop() filter!: string;
+
   numeral = numeral;
 
   sortBy: string = "liqDepth";
@@ -96,10 +98,13 @@ export default class TableTokens extends Vue {
 
   get tokens() {
     const tokens = vxm.bancor.tokens;
-    const result = sort(tokens)[this.descOrder ? "desc" : "asc"](
+    const filtered = tokens.filter((t: ViewToken) =>
+      t.symbol.includes(this.filter.toUpperCase())
+    );
+    const sorted = sort(filtered)[this.descOrder ? "desc" : "asc"](
       (t: any) => t[this.sortBy]
     );
-    return result as ViewToken[];
+    return sorted as ViewToken[];
   }
 
   get filteredTokens() {

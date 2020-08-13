@@ -8,7 +8,7 @@
       />
       <tbody>
         <tr
-          v-for="pool in filteredPools"
+          v-for="pool in paginatedPools"
           :key="pool.id"
           class="font-w600 font-size-14"
           :class="darkMode ? 'text-dark' : 'text-light'"
@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TableHeader, {
   ViewTableFields
@@ -56,33 +56,14 @@ import TableActionButtons from "@/components/common/TableActionButtons.vue";
   }
 })
 export default class TablePools extends Vue {
+  @Prop() filter!: string;
+
   numeral = numeral;
 
   sortBy: string = "liqDepth";
   descOrder: boolean = true;
   currentPage = 1;
   perPage = 25;
-
-  ratio(pool: ViewRelay) {
-    return pool.reserves
-      .map(reserve => Number.parseInt(String(reserve.reserveWeight * 100)))
-      .join("-");
-  }
-
-  get pools() {
-    const tokens = vxm.bancor.relays;
-    const result = sort(tokens)[this.descOrder ? "desc" : "asc"](
-      (t: any) => t[this.sortBy]
-    );
-    return result as ViewRelay[];
-  }
-
-  get filteredPools() {
-    return this.pools.slice(
-      this.currentPage * this.perPage - this.perPage,
-      this.currentPage * this.perPage
-    );
-  }
 
   get fields(): ViewTableFields[] {
     return [
@@ -109,6 +90,30 @@ export default class TablePools extends Vue {
         width: "300px"
       }
     ];
+  }
+
+  ratio(pool: ViewRelay) {
+    return pool.reserves
+      .map(reserve => Number.parseInt(String(reserve.reserveWeight * 100)))
+      .join("-");
+  }
+
+  get pools() {
+    const pools = vxm.bancor.relays;
+    const filtered = pools.filter((t: ViewRelay) =>
+      t.symbol.includes(this.filter.toUpperCase())
+    );
+    const sorted = sort(filtered)[this.descOrder ? "desc" : "asc"](
+      (t: any) => t[this.sortBy]
+    );
+    return sorted as ViewRelay[];
+  }
+
+  get paginatedPools() {
+    return this.pools.slice(
+      this.currentPage * this.perPage - this.perPage,
+      this.currentPage * this.perPage
+    );
   }
 
   get darkMode() {

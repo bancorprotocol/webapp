@@ -12,22 +12,13 @@
         />
       </b-col>
       <b-col sm="6" md="4" xl="3" class="pr-sm-1 d-flex align-items-center">
-        <b-form-input
-          :class="
-            !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
-          "
-          debounce="500"
-          v-model="filter"
-          placeholder="Search Token"
-          class="mb-1"
-          style="height: 32px"
-        ></b-form-input>
+        <search-input-field :value.sync="search" />
       </b-col>
     </b-row>
     <div class="table-responsive">
       <keep-alive>
-        <table-pools v-if="!tokensTable" :filter="filter" />
-        <table-tokens v-else :filter="filter" />
+        <table-pools v-if="!tokensTable" :filter="search" />
+        <table-tokens v-else :filter="search" />
       </keep-alive>
     </div>
   </div>
@@ -38,16 +29,18 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TablePools from "@/components/data/data-tables/TablePools.vue";
 import TableTokens from "@/components/data/data-tables/TableTokens.vue";
+import SearchInputField from "@/components/common/SearchInputField.vue";
 
 @Component({
   components: {
     TablePools,
-    TableTokens
+    TableTokens,
+    SearchInputField
   }
 })
 export default class DataTable extends Vue {
   selected: string = "pools";
-  filter: string = "";
+  search: string = "";
 
   get darkMode() {
     return vxm.general.darkMode;
