@@ -20,6 +20,9 @@
       >{{ pool.reserves[0].symbol }}/{{ pool.reserves[1].symbol }}</span
     >
     <font-awesome-icon v-if="dropdown" icon="caret-down" />
+    <b-badge v-if="version" class="badge-v2 text-primary px-2">{{
+      pool.v2 ? "V2" : "V1"
+    }}</b-badge>
   </div>
   <div
     v-else-if="token"
@@ -35,7 +38,6 @@
     <span class="ml-2 mr-2">{{ token.symbol }}</span>
     <font-awesome-icon v-if="dropdown" icon="caret-down" />
   </div>
-  <div v-else>error</div>
 </template>
 
 <script lang="ts">
@@ -51,6 +53,7 @@ export default class PoolLogos extends Vue {
   @Prop() token?: ViewToken;
   @Prop({ default: false }) dropdown!: boolean;
   @Prop({ default: true }) cursor!: boolean;
+  @Prop({ default: false }) version!: boolean;
 
   get darkMode() {
     return vxm.general.darkMode;
@@ -61,5 +64,10 @@ export default class PoolLogos extends Vue {
 <style scoped lang="scss">
 .overlap {
   margin-left: -10px;
+}
+
+.badge-v2 {
+  font-size: 12px !important;
+  background-color: #e9f2fd !important;
 }
 </style>

@@ -13,7 +13,9 @@
           class="font-w600 font-size-14"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          <td scope="row"><pool-logos :pool="pool" :cursor="false" /></td>
+          <td scope="row">
+            <pool-logos :pool="pool" :cursor="false" :version="true" />
+          </td>
           <td>{{ numeral(pool.liqDepth).format("$0,0.00") }}</td>
           <td>{{ numeral(pool.fee).format("0.00%") }}</td>
           <!-- <td>{{ ratio(pool) }}</td> -->
