@@ -193,3 +193,30 @@
 .form-control-alt-dark {
   border: 1px solid $gray-border-dark !important;
 }
+
+.table {
+  td {
+    @extend .align-middle;
+    border-top: none;
+    border-bottom: 1px solid $gray-border;
+  }
+
+  th {
+    border-top: 1px solid $gray-border;
+    border-bottom: 1px solid $gray-border !important;
+  }
+}
+
+.dark-table {
+  @extend .table;
+
+  td {
+    border-top: none;
+    border-bottom: 1px solid $gray-border-dark;
+  }
+
+  th {
+    border-top: 1px solid $gray-border-dark;
+    border-bottom: 1px solid $gray-border-dark !important;
+  }
+}
