@@ -194,7 +194,7 @@ export default class TablePools extends Vue {
     const reserveSymbols = pool.reserves.map(reserve =>
       reserve.symbol.toLowerCase()
     );
-    const splitted = searchString.split("/");
+    const splitted = searchString.toLowerCase().split("/");
     return splitted.every(symbol =>
       reserveSymbols.some(reserveSymbol => reserveSymbol.includes(symbol))
     );
