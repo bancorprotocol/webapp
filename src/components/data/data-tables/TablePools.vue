@@ -16,30 +16,8 @@
           <td scope="row"><pool-logos :pool="pool" :cursor="false" /></td>
           <td>{{ numeral(pool.liqDepth).format("$0,0.00") }}</td>
           <td>{{ numeral(pool.fee).format("0.00%") }}</td>
-          <!-- <td>
-                {{ ratio(pool) }}
-              </td> -->
-          <td class="action-column">
-            <b-row>
-              <b-col cols="7" class="pr-0">
-                <b-btn
-                  variant="primary"
-                  class="btn-block mr-2"
-                  style="min-width: 130px"
-                >
-                  Add Liquidity
-                </b-btn>
-              </b-col>
-              <b-col cols="5" class="pl-2">
-                <b-btn
-                  :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-                  class="btn-block"
-                >
-                  Trade
-                </b-btn>
-              </b-col>
-            </b-row>
-          </td>
+          <!-- <td>{{ ratio(pool) }}</td> -->
+          <td><table-action-buttons :pool="pool" /></td>
         </tr>
       </tbody>
     </table>
@@ -64,13 +42,15 @@ import numeral from "numeral";
 import ColoredPercentage from "@/components/common/ColoredPercentage.vue";
 import sort from "fast-sort";
 import TablePagination from "@/components/common/TablePagination.vue";
+import TableActionButtons from "@/components/common/TableActionButtons.vue";
 
 @Component({
   components: {
     TableHeader,
     PoolLogos,
     ColoredPercentage,
-    TablePagination
+    TablePagination,
+    TableActionButtons
   }
 })
 export default class TablePools extends Vue {

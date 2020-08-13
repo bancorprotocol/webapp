@@ -18,14 +18,7 @@
           <td>{{ numeral(token.price).format("$0.0000") }}</td>
           <td>{{ numeral(token.volume24h).format("$0,0.00") }}</td>
           <td>{{ numeral(token.liqDepth).format("$0,0.00") }}</td>
-          <td class="action-column">
-            <b-btn
-              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-              class="btn-block"
-            >
-              Trade
-            </b-btn>
-          </td>
+          <td><table-action-buttons :token="token" /></td>
         </tr>
       </tbody>
     </table>
@@ -50,13 +43,15 @@ import numeral from "numeral";
 import ColoredPercentage from "@/components/common/ColoredPercentage.vue";
 import sort from "fast-sort";
 import TablePagination from "@/components/common/TablePagination.vue";
+import TableActionButtons from "@/components/common/TableActionButtons.vue";
 
 @Component({
   components: {
     TableHeader,
     PoolLogos,
     ColoredPercentage,
-    TablePagination
+    TablePagination,
+    TableActionButtons
   }
 })
 export default class TableTokens extends Vue {
@@ -66,21 +61,6 @@ export default class TableTokens extends Vue {
   descOrder: boolean = true;
   currentPage = 1;
   perPage = 25;
-
-  get tokens() {
-    const tokens = vxm.bancor.tokens;
-    const result = sort(tokens)[this.descOrder ? "desc" : "asc"](
-      (t: any) => t[this.sortBy]
-    );
-    return result as ViewToken[];
-  }
-
-  get filteredTokens() {
-    return this.tokens.slice(
-      this.currentPage * this.perPage - this.perPage,
-      this.currentPage * this.perPage
-    );
-  }
 
   get fields(): ViewTableFields[] {
     return [
@@ -112,6 +92,21 @@ export default class TableTokens extends Vue {
         label: "Actions"
       }
     ];
+  }
+
+  get tokens() {
+    const tokens = vxm.bancor.tokens;
+    const result = sort(tokens)[this.descOrder ? "desc" : "asc"](
+      (t: any) => t[this.sortBy]
+    );
+    return result as ViewToken[];
+  }
+
+  get filteredTokens() {
+    return this.tokens.slice(
+      this.currentPage * this.perPage - this.perPage,
+      this.currentPage * this.perPage
+    );
   }
 
   get darkMode() {
