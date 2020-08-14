@@ -320,6 +320,20 @@ const v2PoolBalanceTemplate = (reserves: string[]): AbiTemplate => {
   };
 };
 
+const v2PoolBalanceShape = (contractAddress: string, reserves: string[]) => {
+  const contract = buildV2Converter(contractAddress);
+  const [reserveOne, reserveTwo] = reserves;
+  return {
+    primaryReserveToken: contract.methods.primaryReserveToken(),
+    secondaryReserveToken: contract.methods.secondaryReserveToken(),
+    poolTokenOne: contract.methods.poolToken(reserveOne),
+    poolTokenTwo: contract.methods.poolToken(reserveTwo),
+    reserveOneStakedBalance: contract.methods.reserveStakedBalance(reserveOne),
+    reserveTwoStakedBalance: contract.methods.reserveStakedBalance(reserveTwo),
+    effectiveReserveWeights: contract.methods.effectiveReserveWeights()
+  };
+};
+
 const miniPoolTokenTemplate = (): AbiTemplate => {
   const contract = buildContainerContract();
   return {
@@ -1027,6 +1041,15 @@ const miniPoolHandler = (anchorAddresses: string[]): Handler => {
   return { finisher, callGroups };
 };
 
+const tokenShape = (contractAddress: string) => {
+  const contract = buildTokenContract(contractAddress);
+  const template = {
+    symbol: contract.methods.symbol(),
+    decimals: contract.methods.decimals()
+  };
+  return template;
+};
+
 const tokenHandler = (tokenAddresses: string[]): Handler => {
   const contract = buildTokenContract();
   const template: AbiTemplate = {
@@ -1053,6 +1076,15 @@ const tokenHandler = (tokenAddresses: string[]): Handler => {
   return {
     finisher,
     callGroups
+  };
+};
+
+const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
+  const contract = buildConverterContract(contractAddress);
+  const [reserveOne, reserveTwo] = reserves;
+  return {
+    reserveOne: contract.methods.getConnectorBalance(reserveOne),
+    reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
   };
 };
 
@@ -3682,12 +3714,14 @@ export class EthBancorModule
       item => item.converterAddress
     );
 
+    console.count("x");
     const multi = new Derp(web3, "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2");
 
-    const [rawRelays, poolTokens] = await multi.all([
+    const [rawRelays, poolAndSmartTokens] = (await multi.all([
       allConverters.map(relayShape),
       allAnchors.map(poolTokenShape)
-    ]);
+    ])) as [any[], AbiCentralPoolToken[]];
+    console.count("x");
 
     const firstHalfs = rawRelays.map(
       (rawRelay): AbiRelay =>
@@ -3696,13 +3730,7 @@ export class EthBancorModule
           converterAddress: rawRelay._originAddress
         } as unknown) as AbiRelay)
     );
-
-    console.log(firstHalfs, "should be first halfs");
-
-    const [poolAndSmartTokens] = (await this.smartMulti([
-      relayHandler(allConverters),
-      miniPoolHandler(allAnchors)
-    ])) as [AbiCentralPoolToken[]];
+    console.count("x");
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
@@ -3723,6 +3751,7 @@ export class EthBancorModule
       converterType: determineConverterType(half.converterType)
     }));
 
+    console.count("x");
     const overWroteVersions = updateArray(
       polished,
       relay =>
@@ -3736,7 +3765,15 @@ export class EthBancorModule
         )!.version
       })
     );
+    console.count("x");
 
+    console.log(
+      "before passed",
+      overWroteVersions,
+      "are overWroteVersions",
+      poolTokenAddresses,
+      "are pool token addresses"
+    );
     const passedFirstHalfs = overWroteVersions
       .filter(hasTwoConnectors)
       .filter(
@@ -3753,6 +3790,9 @@ export class EthBancorModule
             )!.poolTokenAddresses.length == 2
           : true
       );
+
+    console.log("got to passed");
+    console.count("x");
 
     const verifiedV1Pools = passedFirstHalfs.filter(
       half => half.converterType == PoolType.Traditional
@@ -3776,6 +3816,8 @@ export class EthBancorModule
         meta => compareString(address, meta.contract) && meta.precision
       );
 
+    console.count("x");
+
     const allTokensRequired = [
       ...reserveTokens,
       ...poolTokenAddresses.flatMap(pool => pool.poolTokenAddresses)
@@ -3784,7 +3826,6 @@ export class EthBancorModule
     const tokenAddressesKnown = allTokensRequired.filter(
       tokenInMeta(this.tokenMeta)
     );
-    console.log(tokenAddressesKnown.length, "saved on requests");
     const tokensKnown = tokenAddressesKnown.map(address => {
       const meta = tokenInMeta(this.tokenMeta)(address)!;
       return metaToTokenAssumedPrecision(meta);
@@ -3794,12 +3835,11 @@ export class EthBancorModule
       tokenAddressesKnown,
       compareString
     );
-    console.log("fetching", tokenAddressesMissing, "addresses missing");
 
     const [
-      reserveAndPoolTokens,
-      v1ReserveBalances,
-      stakedAndReserveWeights
+      reserveAndPoolTokens2,
+      v1ReserveBalances2,
+      stakedAndReserveWeights2
     ] = (await this.smartMulti([
       tokenHandler(tokenAddressesMissing),
       reserveBalanceHandler(verifiedV1Pools),
@@ -3812,7 +3852,40 @@ export class EthBancorModule
       )
     ])) as [Token[], DecodedResult<RawAbiReserveBalance>[], StakedAndReserve[]];
 
+    console.count("x");
+
+    const [
+      reserveAndPoolTokens,
+      v1ReserveBalances,
+      stakedAndReserveWeights
+    ] = ((await multi.all([
+      tokenAddressesMissing.map(tokenShape),
+      verifiedV1Pools.map(v1Pool =>
+        reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
+      ),
+      verifiedV2Pools.map(pool =>
+        v2PoolBalanceShape(pool.converterAddress, pool.reserves)
+      )
+    ])) as [unknown, unknown, unknown]) as [
+      Token[],
+      DecodedResult<RawAbiReserveBalance>[],
+      StakedAndReserve[]
+    ];
+
+    console.count("x");
+
+    const reserve = isEqual(reserveAndPoolTokens2, reserveAndPoolTokens);
+    const reserveBalances = isEqual(v1ReserveBalances2, v1ReserveBalances);
+    const v2Balances = isEqual(
+      stakedAndReserveWeights2,
+      stakedAndReserveWeights
+    );
+    console.log({ reserve, reserveBalances, v2Balances }, "is a dream");
+
+    console.count("x");
+
     const allTokens = [...reserveAndPoolTokens, ...tokensKnown];
+    console.count("x");
 
     const polishedReserveAndPoolTokens = polishTokens(
       this.tokenMeta,
