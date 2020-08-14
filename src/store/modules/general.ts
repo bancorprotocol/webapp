@@ -35,7 +35,7 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   ];
 
   get isCountryBanned() {
-    return !!this.bannedCountries.find(
+    return this.bannedCountries.some(
       (code: string) => this.countryCode === code
     );
   }

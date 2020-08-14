@@ -29,7 +29,8 @@ import {
   TokenBalanceParam,
   TokenBalanceReturn,
   UserPoolBalances,
-  PoolTokenPosition
+  PoolTokenPosition,
+  TxResponse
 } from "@/types/bancor";
 import { bancorApi, ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -57,10 +58,10 @@ import {
   number_to_asset,
   Sym
 } from "eos-common";
-import { multiContract } from "@/api/multiContractTx";
+import { multiContract } from "@/api/eos/multiContractTx";
 import { multiContractAction } from "@/contracts/multi";
 import { vxm } from "@/store";
-import { rpc } from "@/api/rpc";
+import { rpc } from "@/api/eos/rpc";
 import {
   findCost,
   relaysToConvertPaths,
@@ -71,12 +72,12 @@ import {
   calculateFundReturn,
   TokenAmount,
   findNewPath
-} from "@/api/eosBancorCalc";
+} from "@/api/eos/eosBancorCalc";
 import _, { uniqWith } from "lodash";
 import wait from "waait";
 import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
-import { liquidateAction } from "@/api/singleContractTx";
+import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
 
 const compareAgnosticToBalanceParam = (
@@ -178,6 +179,8 @@ const reservesIncludeTokenMetaDry = (tokenMeta: TokenMeta[]) => (
     );
   return status;
 };
+
+const generateEosxLink = (txId: string) => `https://www.eosx.io/tx/${txId}`;
 
 const compareEosMultiToDry = (multi: EosMultiRelay, dry: DryRelay) =>
   compareString(
@@ -771,7 +774,12 @@ export class EosBancorModule
       fee
     );
     const txRes = await this.triggerTx([updateFeeAction]);
-    return txRes.transaction_id as string;
+    const txId = txRes.transaction_id as string;
+
+    return {
+      txId,
+      blockExplorerLink: generateEosxLink(txId)
+    };
   }
 
   @action async removeRelay(id: string) {
@@ -783,7 +791,13 @@ export class EosBancorModule
     );
     const txRes = await this.triggerTx(nukeRelayActions);
     this.waitAndUpdate();
-    return txRes.transaction_id as string;
+
+    const txId = txRes.transaction_id as string;
+
+    return {
+      txId,
+      blockExplorerLink: generateEosxLink(txId)
+    };
   }
 
   @action async updateOwner({ id, newOwner }: NewOwnerParams) {
@@ -793,10 +807,13 @@ export class EosBancorModule
       newOwner
     );
     const txRes = await this.triggerTx([updateOwnerAction]);
-    return txRes.transaction_id as string;
+    return {
+      txId: txRes.transaction_id,
+      blockExplorerLink: generateEosxLink(txRes.transaction_id)
+    };
   }
 
-  @action async createPool(poolParams: CreatePoolParams): Promise<string> {
+  @action async createPool(poolParams: CreatePoolParams): Promise<TxResponse> {
     const reserveAssets = await Promise.all(
       poolParams.reserves.map(async reserve => {
         const data = this.tokenMetaObj(reserve.id);
@@ -836,8 +853,13 @@ export class EosBancorModule
       poolParams.fee
     );
 
-    const res = await this.triggerTx(actions!);
-    return res.transaction_id;
+    const txRes = await this.triggerTx(actions!);
+    const txId = txRes.transaction_id as string;
+
+    return {
+      txId,
+      blockExplorerLink: generateEosxLink(txId)
+    };
   }
 
   get tokenMetaObj() {
@@ -1626,7 +1648,13 @@ export class EosBancorModule
     });
 
     vxm.eosNetwork.pingTillChange({ originalBalances });
-    return finalState.txRes.transaction_id as string;
+
+    const txId = finalState.txRes.transaction_id as string;
+
+    return {
+      txId,
+      blockExplorerLink: generateEosxLink(txId)
+    };
   }
 
   @action async fetchBankBalances({
@@ -1700,7 +1728,7 @@ export class EosBancorModule
     reserves,
     id: relayId,
     onUpdate
-  }: LiquidityParams): Promise<string> {
+  }: LiquidityParams) {
     const relay = await this.relayById(relayId);
 
     const supply = await fetchTokenStats(
@@ -1754,7 +1782,11 @@ export class EosBancorModule
       );
       lastTxId = txRes.transaction_id as string;
     }
-    return lastTxId;
+
+    return {
+      txId: lastTxId,
+      blockExplorerLink: generateEosxLink(lastTxId)
+    };
   }
 
   @action async removeLiquidity({
@@ -1800,7 +1832,11 @@ export class EosBancorModule
     vxm.eosNetwork.pingTillChange({ originalBalances });
     this.waitAndUpdate(6000);
 
-    return txRes.transaction_id as string;
+    const txId = txRes.transaction_id as string;
+    return {
+      txId,
+      blockExplorerLink: generateEosxLink(txId)
+    };
   }
 
   @action async waitAndUpdate(time: number = 4000) {
@@ -2164,7 +2200,10 @@ export class EosBancorModule
       tokenIds: [from.id, to.id]
     });
 
-    return txRes.transaction_id;
+    return {
+      txId: txRes.transaction_id,
+      blockExplorerLink: generateEosxLink(txRes.transaction_id)
+    };
   }
 
   @action async generateOpenActions({

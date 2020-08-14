@@ -256,6 +256,11 @@ export interface SlippageTolerance {
   readonly slippageTolerance: number;
   setSlippageTolerance: (tolerance: number) => Promise<void>;
 }
+
+export interface TxResponse {
+  txId: string;
+  blockExplorerLink: string;
+}
 export interface TradingModule {
   init: (param?: ModuleParam) => Promise<void>;
   readonly token: (arg0: string) => ViewToken;
@@ -264,7 +269,7 @@ export interface TradingModule {
   readonly loadingTokens: boolean;
   refreshBalances: (symbols?: BaseToken[]) => Promise<void>;
   onAuthChange: (address: string) => Promise<void>;
-  convert: (propose: ProposedConvertTransaction) => Promise<string>;
+  convert: (propose: ProposedConvertTransaction) => Promise<TxResponse>;
   focusSymbol: (symbolName: string) => Promise<void>;
   getReturn: (propose: ProposedFromTransaction) => Promise<ConvertReturn>;
   getCost: (propose: ProposedToTransaction) => Promise<ConvertReturn>;
@@ -302,15 +307,15 @@ export interface LiquidityModule {
   calculateOpposingDeposit: (
     opposingDeposit: OpposingLiquidParams
   ) => Promise<OpposingLiquid>;
-  updateFee?: (fee: FeeParams) => Promise<string>;
-  updateOwner?: (fee: NewOwnerParams) => Promise<string>;
+  updateFee?: (fee: FeeParams) => Promise<TxResponse>;
+  updateOwner?: (fee: NewOwnerParams) => Promise<TxResponse>;
   calculateOpposingWithdraw: (
     opposingWithdraw: OpposingLiquidParams
   ) => Promise<OpposingLiquid>;
   getUserBalances: (relayId: string) => Promise<UserPoolBalances>;
-  removeLiquidity: (params: LiquidityParams) => Promise<string>;
-  addLiquidity: (params: LiquidityParams) => Promise<string>;
-  removeRelay?: (symbolName: string) => Promise<string>;
+  removeLiquidity: (params: LiquidityParams) => Promise<TxResponse>;
+  addLiquidity: (params: LiquidityParams) => Promise<TxResponse>;
+  removeRelay?: (symbolName: string) => Promise<TxResponse>;
 }
 
 export interface TokenMeta {
@@ -370,7 +375,7 @@ export interface CreatePoolModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly newPoolTokenChoices: (networkToken: string) => ModalChoice[];
   readonly newNetworkTokenChoices: ModalChoice[];
-  createPool: (param: CreatePoolParams) => Promise<string>;
+  createPool: (param: CreatePoolParams) => Promise<TxResponse>;
 }
 
 export interface HistoryModule {

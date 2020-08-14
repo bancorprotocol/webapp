@@ -98,10 +98,6 @@ export default class YourLiquidity extends Vue {
       }
     });
   }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

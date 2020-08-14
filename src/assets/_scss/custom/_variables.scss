@@ -9,8 +9,11 @@
 
 // For example, changing the primary color
 // $dark: #324856;
-$border-radius: 10px;
+$primary: #0f59d1 !default;
+$gray-border: #e6ebf2 !default;
+$gray-border-dark: #1f3a55 !default;
 
+$border-radius: 10px;
 $modal-sm: 379px;
 
 $modal-backdrop-bg: #1d3144;
@@ -22,82 +25,20 @@ $text-color-dark: #cdd1d6;
 $text-muted-light: #6b7c93;
 $text-muted-dark: #cdd1d6;
 
-$text-link-light: #0f59d1;
-$text-link-dark: #0f59d1;
+$text-link-light: $primary;
+$text-link-dark: $primary;
+
+$text-info-light: $primary;
+$text-info-dark: $primary;
 
 $text-error-light: #de4a5c;
 $text-error-dark: #de4a5c;
+
 $bg-error-light: rgba($text-error-light, 0.1);
 $bg-error-dark: rgba($text-error-light, 0.1);
-$text-info-light: #0f59d1;
-$text-info-dark: #0f59d1;
+
 $bg-info-light: rgba($text-info-light, 0.1);
 $bg-info-dark: rgba($text-info-light, 0.1);
 
 $block-bg-blue: #f7f9fc;
-$block-border-blue: #e6ebf2;
-
-.text-light {
-  color: $text-color-light !important;
-}
-
-.text-dark {
-  color: $text-color-dark !important;
-}
-
-.text-muted-light {
-  color: $text-muted-light !important;
-}
-
-.text-muted-dark {
-  color: $text-muted-dark !important;
-}
-
-.text-link-light {
-  color: $text-link-light !important;
-}
-
-.text-link-dark {
-  color: $text-link-dark !important;
-}
-
-.block-light-blue-light {
-  background-color: $block-bg-blue !important;
-  border: $block-border-blue 1px solid !important;
-}
-
-.block-light-blue-dark {
-  background-color: $modal-backdrop-bg !important;
-  border: $modal-backdrop-bg 1px solid !important;
-}
-.alert-info-light {
-  border: 1px $text-info-light solid !important;
-  background: $bg-info-light;
-  border-radius: 8px;
-  padding: 1rem;
-  color: $text-info-light;
-}
-
-.alert-info-dark {
-  border: 1px $text-info-dark solid !important;
-  background: $bg-info-dark;
-  border-radius: 8px;
-  padding: 1rem;
-  color: $text-info-dark;
-}
-
-.alert-error-light {
-  border: 1px $text-error-light solid !important;
-  background: $bg-error-light;
-  border-radius: 8px;
-  padding: 0.5rem;
-  color: $text-error-light;
-}
-
-.alert-error-dark {
-  border: 1px $text-error-dark solid !important;
-  background: $bg-error-dark;
-  border-radius: 8px;
-  padding: 0.5rem;
-  color: $text-error-dark;
-}
+$block-border-blue: $gray-border;

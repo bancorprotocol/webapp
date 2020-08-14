@@ -1,6 +1,6 @@
 <template>
   <div>
-    <content-block class="mb-3">
+    <content-block class="mb-3" :shadow="true">
       <template slot="header">
         <sub-navigation />
       </template>
@@ -18,7 +18,7 @@
     </content-block>
     <div v-if="false" class="d-flex justify-content-center">
       <router-link
-        :to="{ name: 'Create' }"
+        :to="{ name: 'PoolCreate' }"
         class="cursor font-w700 mb-3"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >

@@ -113,7 +113,6 @@ import {
   LiquidityModule,
   LiquidityParams,
   Step,
-  TxResponse,
   ViewRelay,
   ViewReserve
 } from "@/types/bancor";
@@ -141,7 +140,7 @@ const bancor = namespace("bancor");
     MainButton
   }
 })
-export default class ModalPoolAction extends Vue {
+export default class ModalCreateAction extends Vue {
   @bancor.Action addLiquidity!: LiquidityModule["addLiquidity"];
   @bancor.Action removeLiquidity!: LiquidityModule["removeLiquidity"];
 
@@ -151,7 +150,7 @@ export default class ModalPoolAction extends Vue {
   numeral = numeral;
 
   txBusy = false;
-  success: TxResponse | null = null;
+  success = "";
   error = "";
   sections: Step[] = [];
   stepIndex = 0;
@@ -185,7 +184,7 @@ export default class ModalPoolAction extends Vue {
   setDefault() {
     this.sections = [];
     this.error = "";
-    this.success = null;
+    this.success = "";
     this.notUsState = false;
   }
 
@@ -196,7 +195,7 @@ export default class ModalPoolAction extends Vue {
   async initAction() {
     if (this.success) {
       this.$bvModal.hide("modal-pool-action");
-      this.success = null;
+      this.success = "";
       await this.$router.push({ name: "Pool" });
       return;
     }
