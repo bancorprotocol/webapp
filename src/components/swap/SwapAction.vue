@@ -231,7 +231,10 @@ export default class SwapAction extends Vue {
         this.fee = reward.fee;
       }
       this.amount2 = reward.amount;
-      this.errorToken1 = this.balance1 < amount ? "Token balance is currently insufficient" : "";
+      console.log(`Balance is currently known as balance1: ${this.balance1} ${amount} was just pushed`)
+      const raiseError = Number(this.balance1) < Number(amount);
+      console.log(raiseError, 'is the status of raise error')
+      this.errorToken1 = raiseError ? "Token balance is currently insufficient" : "";
       this.errorToken2 = "";
     } catch (e) {
       this.errorToken1 = e.message;
@@ -249,36 +252,6 @@ export default class SwapAction extends Vue {
     this.errorToken1 = "";
   }
 
-  async updatePriceCost(amount: string) {
-    if (!amount || amount === "0") {
-      this.setDefault();
-      return;
-    }
-    try {
-      this.rateLoading = true
-      const reward = await vxm.bancor.getCost({
-        to: {
-          id: this.token2.id,
-          amount: this.amount2
-        },
-        fromId: this.token1.id
-      });
-      if (reward.slippage) {
-        this.slippage = reward.slippage;
-      }
-      if (reward.fee) {
-        this.fee = reward.fee;
-      }
-      this.amount1 = reward.amount;
-      this.errorToken1 = this.balance1 < this.amount1 ? "Token balance is currently insufficient" : "";
-      this.errorToken2 = "";
-    } catch (e) {
-      this.errorToken1 = "";
-      this.errorToken2 = e.message;
-    } finally {
-      this.rateLoading = false
-    }
-  }
   get balance1() {
     return vxm.bancor.token(this.token1.id).balance ?? "0";
   }
@@ -299,8 +272,9 @@ export default class SwapAction extends Vue {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
+    const raiseError = Number(this.balance1) < Number(this.amount1);
+    console.log('route query watcher is passing updatePriceReturn', this.amount1, raiseError, 'is raise error status')
     await this.updatePriceReturn(this.amount1);
-    //await this.loadBalances();
   }
 
   async created() {

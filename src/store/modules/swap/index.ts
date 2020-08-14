@@ -14,7 +14,8 @@ import {
   UserPoolBalances,
   OpposingLiquid,
   PoolTokenPosition,
-  ViewRelay
+  ViewRelay,
+  ViewToken
 } from "@/types/bancor";
 import { vxm } from "@/store";
 import { store } from "../../../store";
@@ -114,7 +115,7 @@ export class BancorModule extends VuexModule.With({
     return vxm[`${this.currentNetwork}Bancor`]["supportedFeatures"];
   }
 
-  get token() {
+  get token(): (tokenId: string) => ViewToken {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["token"];
   }
