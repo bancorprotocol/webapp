@@ -4,15 +4,20 @@
     :class="[
       { 'block-rounded': rounded },
       { 'block-shadow': shadow },
+      { 'block-shadow-light': shadowLight },
       { 'bg-block-dark': darkMode },
       { 'bg-block-light': !darkMode }
     ]"
   >
-    <div v-if="noHeader" class="block-header p-0"></div>
-    <div v-else-if="title" class="block-header">
+    <div v-if="noHeader"></div>
+    <div
+      v-else-if="title"
+      class="block-header"
+      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+    >
       <h3
-        class="block-title"
-        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+        class="m-0 p-0 my-2 font-size-16 font-w600"
+        :class="darkMode ? 'text-dark' : 'text-light'"
       >
         {{ title }}
       </h3>
@@ -20,7 +25,7 @@
     <div v-else class="block-header">
       <slot name="header"></slot>
     </div>
-    <div class="block-content pb-3 pt-0">
+    <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
       <slot></slot>
     </div>
   </div>
@@ -34,7 +39,9 @@ export default class ContentBlock extends Vue {
   @Prop() title?: string;
   @Prop({ default: false }) noHeader?: boolean;
   @Prop({ default: true }) rounded?: boolean;
-  @Prop({ default: true }) shadow?: boolean;
+  @Prop({ default: false }) shadow?: boolean;
+  @Prop({ default: false }) shadowLight?: boolean;
+  @Prop({ default: false }) px0?: boolean;
 
   get darkMode() {
     return vxm.general.darkMode;
@@ -42,4 +49,14 @@ export default class ContentBlock extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+@import "@/assets/_scss/custom/_variables";
+
+.border-bottom-light {
+  border-bottom: 1px solid $gray-border;
+}
+
+.border-bottom-dark {
+  border-bottom: 1px solid $gray-border-dark;
+}
+</style>
