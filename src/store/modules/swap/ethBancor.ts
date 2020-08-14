@@ -4562,7 +4562,7 @@ export class EthBancorModule
       tokenAddress
     });
 
-    if (Number(currentApprovedBalance) >= Number(amount)) return;
+    if (new BigNumber(currentApprovedBalance).gte(amount)) return;
 
     const nullingTxRequired = fromWei(currentApprovedBalance) !== "0";
     if (nullingTxRequired) {
