@@ -49,10 +49,6 @@ import {
   reserveIncludedInRelay,
   sortAlongSide,
   RelayWithReserveBalances,
-  createIndexes,
-  rebuildFromIndex,
-  ConverterV2Row,
-  buildTokenId,
   sortByLiqDepth
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
@@ -116,20 +112,29 @@ import { priorityEthPools } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { openDB, DBSchema } from "idb/with-async-ittr.js";
-import { MultiCall as Derp } from "eth-multicall";
+import { MultiCall as Derp, ShapeWithLabel } from "eth-multicall";
 
-const calculatePoolTokenWithdrawalWei = (
-  poolToken: Token,
-  reserveToken: Token,
-  reserveDecAmount: string
-): string => {
-  if (poolToken.decimals == reserveToken.decimals) {
-    return expandToken(reserveDecAmount, poolToken.decimals);
-  }
-  const precisionDifference = poolToken.decimals - reserveToken.decimals;
-  const expansion = poolToken.decimals - precisionDifference;
-  return expandToken(reserveDecAmount, expansion);
-};
+const rawAbiV2ToStacked = (
+  rawAbiV2: RawAbiV2PoolBalances
+): StakedAndReserve => ({
+  converterAddress: rawAbiV2.converterAddress,
+  reserves: [
+    {
+      reserveAddress: rawAbiV2.primaryReserveToken,
+      stakedBalance: rawAbiV2.reserveOneStakedBalance,
+      reserveWeight:
+        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[0],
+      poolTokenAddress: rawAbiV2.poolTokenOne
+    },
+    {
+      reserveAddress: rawAbiV2.secondaryReserveToken,
+      stakedBalance: rawAbiV2.reserveTwoStakedBalance,
+      reserveWeight:
+        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[1],
+      poolTokenAddress: rawAbiV2.poolTokenTwo
+    }
+  ]
+});
 
 const getAnchorTokenAddresses = (relay: Relay): string[] => {
   if (relay.converterType == PoolType.ChainLink) {
@@ -209,6 +214,11 @@ const buildRelayFeedChainkLink = ({
     const reserveBalances = relay.reserves;
     const reserveWeights = relay.reserves.map(balance => balance.reserveWeight);
 
+    const noReserveWeights = reserveWeights.every(
+      weight => typeof weight == "undefined"
+    );
+    if (noReserveWeights) return [];
+
     const [secondaryReserveToken, primaryReserveToken] = sortByNetworkTokens(
       reserveBalances,
       reserve => reserve.token.symbol
@@ -221,7 +231,7 @@ const buildRelayFeedChainkLink = ({
       primaryReserveDecWeight,
       secondaryReserveDecWeight
     ] = reserveWeights.map(weightPpm =>
-      new BigNumber(weightPpm).div(oneMillion)
+      new BigNumber(weightPpm as string).div(oneMillion)
     );
 
     const secondarysPrice =
@@ -253,40 +263,13 @@ const buildRelayFeedChainkLink = ({
   });
 };
 
-const decodeHex = (hex: string, type: string | any[]) => {
-  const typeIsArray = Array.isArray(type);
-  try {
-    if (typeIsArray) {
-      return web3.eth.abi.decodeParameters(type as any[], hex);
-    } else {
-      return web3.eth.abi.decodeParameter(type as string, hex);
-    }
-  } catch (e) {
-    console.warn(
-      `Failed to decode hex ${hex} treating it as type ${type}. ${e.message}`
-    );
-    return undefined;
-  }
-};
-
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
-
-const relayTemplate = (): AbiTemplate => {
-  const contract = buildV28ConverterContract();
-  return {
-    owner: contract.methods.owner(),
-    converterType: contract.methods.converterType(),
-    version: contract.methods.version(),
-    connectorTokenCount: contract.methods.connectorTokenCount(),
-    conversionFee: contract.methods.conversionFee(),
-    connectorToken1: contract.methods.connectorTokens(0),
-    connectorToken2: contract.methods.connectorTokens(1)
-  };
-};
+const ORIGIN_ADDRESS = "originAddress";
 
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
   return {
+    converterAddress: ORIGIN_ADDRESS,
     owner: contract.methods.owner(),
     converterType: contract.methods.converterType(),
     version: contract.methods.version(),
@@ -302,21 +285,8 @@ const poolTokenShape = (address: string) => {
   return {
     symbol: contract.methods.symbol(),
     decimals: contract.methods.decimals(),
-    poolTokens: contract.methods.poolTokens()
-  };
-};
-
-const v2PoolBalanceTemplate = (reserves: string[]): AbiTemplate => {
-  const contract = buildV2Converter();
-  const [reserveOne, reserveTwo] = reserves;
-  return {
-    primaryReserveToken: contract.methods.primaryReserveToken(),
-    secondaryReserveToken: contract.methods.secondaryReserveToken(),
-    poolTokenOne: contract.methods.poolToken(reserveOne),
-    poolTokenTwo: contract.methods.poolToken(reserveTwo),
-    reserveOneStakedBalance: contract.methods.reserveStakedBalance(reserveOne),
-    reserveTwoStakedBalance: contract.methods.reserveStakedBalance(reserveTwo),
-    effectiveReserveWeights: contract.methods.effectiveReserveWeights()
+    poolTokens: contract.methods.poolTokens(),
+    contract: ORIGIN_ADDRESS
   };
 };
 
@@ -324,6 +294,7 @@ const v2PoolBalanceShape = (contractAddress: string, reserves: string[]) => {
   const contract = buildV2Converter(contractAddress);
   const [reserveOne, reserveTwo] = reserves;
   return {
+    converterAddress: ORIGIN_ADDRESS,
     primaryReserveToken: contract.methods.primaryReserveToken(),
     secondaryReserveToken: contract.methods.secondaryReserveToken(),
     poolTokenOne: contract.methods.poolToken(reserveOne),
@@ -333,23 +304,6 @@ const v2PoolBalanceShape = (contractAddress: string, reserves: string[]) => {
     effectiveReserveWeights: contract.methods.effectiveReserveWeights()
   };
 };
-
-const miniPoolTokenTemplate = (): AbiTemplate => {
-  const contract = buildContainerContract();
-  return {
-    symbol: contract.methods.symbol(),
-    decimals: contract.methods.decimals(),
-    poolTokens: contract.methods.poolTokens()
-  };
-};
-
-interface AbiTemplate {
-  [key: string]: CallReturn<any>;
-}
-
-interface AbiEncodedTemplate {
-  [key: string]: string;
-}
 
 interface DecodedResult<T> {
   originAddress: string;
@@ -361,46 +315,6 @@ interface TokenWei {
   weiAmount: string;
 }
 
-const decodeCallGroup = <T>(
-  template: AbiTemplate,
-  calls: MultiCallReturn[]
-): DecodedResult<T> => {
-  const originAddress = calls[0][0];
-  const allSame = calls.every(([address]) => address == originAddress);
-  if (!allSame)
-    throw new Error("Was expecting all origin addresses to be the same");
-
-  const props = Object.keys(template);
-  if (props.length !== calls.length)
-    throw new Error("Was expecting as many calls as props");
-
-  const methods: { name: string; type: string | string[] }[] = props.map(
-    prop => ({
-      name: prop,
-      type:
-        template[prop]._method.outputs.length == 1
-          ? template[prop]._method.outputs[0].type
-          : template[prop]._method.outputs.map(x => x.type)
-    })
-  );
-
-  const obj = methods.reduce(
-    (acc, item, index) => {
-      const [originAddress, res] = calls[index];
-      return {
-        ...acc,
-        [item.name]: res.success ? decodeHex(res.data, item.type) : undefined
-      };
-    },
-    {} as T
-  );
-
-  return {
-    originAddress,
-    data: obj
-  };
-};
-
 const notBlackListed = (blackListedAnchors: string[]) => (
   converterAnchor: ConverterAndAnchor
 ) =>
@@ -408,18 +322,12 @@ const notBlackListed = (blackListedAnchors: string[]) => (
     compareString(black, converterAnchor.anchorAddress)
   );
 
-const createCallGroup = (
-  template: AbiEncodedTemplate,
-  originAddress: string
-): MultiCall[] =>
-  Object.keys(template).map(key => [originAddress, template[key]]);
-
 interface RawV2Pool {
   reserves: {
     token: Token;
     reserveAddress: string;
     stakedBalance: string;
-    reserveWeight: string;
+    reserveWeight: string | undefined;
     poolTokenAddress: string;
   }[];
   converterAddress: string;
@@ -487,6 +395,7 @@ interface AbiRelay extends RawAbiRelay {
 }
 
 interface RawAbiToken {
+  contract: string;
   symbol: string;
   decimals: string;
 }
@@ -665,165 +574,22 @@ interface EthOpposingLiquid {
   singleUnitCosts: ViewAmount[];
 }
 
-interface Handler {
-  finisher: (multiCalls: MultiCallReturn[]) => unknown;
-  callGroups: MultiCall[][];
-}
-
 interface RawAbiV2PoolBalances {
+  converterAddress: string;
   poolTokenOne: string;
   poolTokenTwo: string;
   primaryReserveToken: string;
   secondaryReserveToken: string;
   reserveOneStakedBalance: string;
   reserveTwoStakedBalance: string;
-  effectiveReserveWeights: { 0: string; 1: string };
+  effectiveReserveWeights: { 0: string; 1: string } | undefined;
 }
 
-type OriginAndTemplate = [string, AbiTemplate];
-
-const arrToObject = (arr: { encoded: string; key: string }[]) =>
-  arr.reduce((acc, item) => {
-    return {
-      ...acc,
-      [item.key]: item.encoded
-    };
-  }, {});
-
-const matchKeyOrdering = (sortedOrder: string[], obj: any) => {
-  const newObj = sortedOrder.reduce(
-    (acc, item) => ({
-      ...acc,
-      [item]: obj[item]
-    }),
-    {}
-  );
-
-  const testKeys = Object.keys(newObj);
-  const correct = isEqual(sortedOrder, testKeys);
-  if (!correct) {
-    throw new Error("does not match key ordering");
-  }
-  return newObj;
-};
-
-const createCallGroups = (
-  originAndTemplates: OriginAndTemplate[]
-): MultiCall[][] => {
-  if (originAndTemplates.length == 0) return [];
-  const [firstOrigin, firstTemplate] = originAndTemplates[0];
-  const templateOrder = Object.keys(firstTemplate);
-  const methodsArr = Object.keys(firstTemplate).map(key => ({
-    method: firstTemplate[key],
-    key
-  }));
-  const noArgMethods = methodsArr.filter(
-    template => template.method.arguments.length == 0
-  );
-  const argMethods = methodsArr.filter(
-    template => template.method.arguments.length > 0
-  );
-  const sameArgMethods = argMethods.filter(method => {
-    const allMethods = originAndTemplates.map(
-      ([_, methods]) => methods[method.key]
-    );
-    const firstArgs = allMethods[0].arguments;
-    return allMethods.every(method => isEqual(method.arguments, firstArgs));
-  });
-
-  const staticMethods = [...noArgMethods, ...sameArgMethods];
-  const dynamicMethods = differenceBy(methodsArr, staticMethods, "key");
-  if (staticMethods.length + dynamicMethods.length !== methodsArr.length)
-    throw new Error("Failed filtering methods");
-
-  const staticEncoded = staticMethods.map(method => ({
-    key: method.key,
-    encoded: method.method.encodeABI()
-  }));
-
-  const dynamic = originAndTemplates.map(([originAddress, abiTemplate]) => {
-    const dynamicEncoded = dynamicMethods.map(dynamicMethod => ({
-      encoded: abiTemplate[dynamicMethod.key].encodeABI(),
-      key: dynamicMethod.key
-    }));
-    return {
-      templatesArray: [...dynamicEncoded, ...staticEncoded],
-      originAddress
-    };
-  });
-
-  const objectBase = dynamic.map(d => ({
-    originAddress: d.originAddress,
-    data: arrToObject(d.templatesArray)
-  }));
-
-  const multiCalls = objectBase.map(obj =>
-    createCallGroup(
-      matchKeyOrdering(templateOrder, obj.data),
-      obj.originAddress
-    )
-  );
-  return multiCalls;
-};
-
-const relayHandler = (converterAddresses: string[]): Handler => {
-  const template = relayTemplate();
-
-  const originAndTemplates: OriginAndTemplate[] = converterAddresses.map(
-    address => [address, template]
-  );
-  const callGroups = createCallGroups(originAndTemplates);
-
-  const finisher = (callGroupRes: MultiCallReturn[]): unknown => {
-    const decoded = decodeCallGroup<RawAbiRelay>(template, callGroupRes);
-    return {
-      ...decoded.data,
-      converterAddress: decoded.originAddress
-    };
-  };
-
-  return {
-    finisher,
-    callGroups
-  };
-};
-
 interface RawAbiReserveBalance {
+  converterAddress: string;
   reserveOne: string;
   reserveTwo: string;
 }
-
-const reserveBalanceHandler = (
-  relays: {
-    converterAddress: string;
-    reserves: [string, string];
-    version: number;
-  }[]
-): Handler => {
-  const template = reserveBalanceTemplate([
-    ethReserveAddress,
-    ethReserveAddress
-  ]);
-
-  const originAndTemplates: OriginAndTemplate[] = relays.map(relay => [
-    relay.converterAddress,
-    reserveBalanceTemplate(relay.reserves)
-  ]);
-  const callGroups = createCallGroups(originAndTemplates);
-
-  const finisher = (callGroupsRes: MultiCallReturn[]) => {
-    const decoded = decodeCallGroup<RawAbiReserveBalance>(
-      template,
-      callGroupsRes
-    );
-    return decoded;
-  };
-
-  return {
-    callGroups,
-    finisher
-  };
-};
 
 const hasTwoConnectors = (relay: RefinedAbiRelay) => {
   const test = relay.connectorTokenCount == "2";
@@ -858,63 +624,10 @@ interface StakedAndReserve {
   reserves: {
     reserveAddress: string;
     stakedBalance: string;
-    reserveWeight: string;
+    reserveWeight: string | undefined;
     poolTokenAddress: string;
   }[];
 }
-
-const stakedAndReserveHandler = (
-  relays: {
-    converterAdress: string;
-    reserveOne: string;
-    reserveTwo: string;
-  }[]
-): Handler => {
-  const template = v2PoolBalanceTemplate([
-    ethReserveAddress,
-    ethReserveAddress
-  ]);
-
-  const originAndTemplates: OriginAndTemplate[] = relays.map(relay => [
-    relay.converterAdress,
-    v2PoolBalanceTemplate([relay.reserveOne, relay.reserveTwo])
-  ]);
-  const callGroups = createCallGroups(originAndTemplates);
-
-  const finisher = (callGroupsRes: MultiCallReturn[]) => {
-    const decoded = decodeCallGroup<RawAbiV2PoolBalances>(
-      template,
-      callGroupsRes
-    );
-
-    const data = decoded.data;
-    console.log(data, "is data");
-
-    return {
-      converterAddress: decoded.originAddress,
-      reserves: [
-        {
-          reserveAddress: data.primaryReserveToken,
-          stakedBalance: data.reserveOneStakedBalance,
-          reserveWeight:
-            data.effectiveReserveWeights && data.effectiveReserveWeights[0],
-          poolTokenAddress: data.poolTokenOne
-        },
-        {
-          reserveAddress: data.secondaryReserveToken,
-          stakedBalance: data.reserveTwoStakedBalance,
-          reserveWeight:
-            data.effectiveReserveWeights && data.effectiveReserveWeights[1],
-          poolTokenAddress: data.poolTokenTwo
-        }
-      ]
-    };
-  };
-  return {
-    callGroups,
-    finisher
-  };
-};
 
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
@@ -1016,82 +729,21 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
   return { smartTokens, poolTokenAddresses };
 };
 
-const nameOriginAs = <T>(propertyName: string, obj: DecodedResult<T>) => ({
-  ...obj.data,
-  [propertyName]: obj.originAddress
-});
-
-const miniPoolHandler = (anchorAddresses: string[]): Handler => {
-  const template = miniPoolTokenTemplate();
-
-  const originAndTemplates: OriginAndTemplate[] = anchorAddresses.map(
-    address => [address, template]
-  );
-  const callGroups = createCallGroups(originAndTemplates);
-
-  const finisher = (callGroupsRes: MultiCallReturn[]): unknown => {
-    const decoded = decodeCallGroup<RawAbiCentralPoolToken>(
-      template,
-      callGroupsRes
-    );
-
-    return nameOriginAs("contract", decoded);
-  };
-
-  return { finisher, callGroups };
-};
-
 const tokenShape = (contractAddress: string) => {
   const contract = buildTokenContract(contractAddress);
   const template = {
+    contract: ORIGIN_ADDRESS,
     symbol: contract.methods.symbol(),
     decimals: contract.methods.decimals()
   };
   return template;
 };
 
-const tokenHandler = (tokenAddresses: string[]): Handler => {
-  const contract = buildTokenContract();
-  const template: AbiTemplate = {
-    symbol: contract.methods.symbol(),
-    decimals: contract.methods.decimals()
-  };
-
-  const originAndTemplates: OriginAndTemplate[] = tokenAddresses.map(
-    address => [address, template]
-  );
-  const callGroups = createCallGroups(originAndTemplates);
-
-  const finisher = (callGroupsRes: MultiCallReturn[]): Token => {
-    const decoded = decodeCallGroup<RawAbiToken>(template, callGroupsRes);
-
-    return {
-      contract: decoded.originAddress,
-      symbol: decoded.data.symbol,
-      decimals: Number(decoded.data.decimals),
-      network: "ETH"
-    };
-  };
-
-  return {
-    finisher,
-    callGroups
-  };
-};
-
 const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
   const contract = buildConverterContract(contractAddress);
   const [reserveOne, reserveTwo] = reserves;
   return {
-    reserveOne: contract.methods.getConnectorBalance(reserveOne),
-    reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
-  };
-};
-
-const reserveBalanceTemplate = (reserves: string[]) => {
-  const contract = buildConverterContract();
-  const [reserveOne, reserveTwo] = reserves;
-  return {
+    converterAddress: ORIGIN_ADDRESS,
     reserveOne: contract.methods.getConnectorBalance(reserveOne),
     reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
   };
@@ -2249,6 +1901,21 @@ export class EthBancorModule
     return poolType == PoolType.ChainLink;
   }
 
+  @action async fetchV2PoolBalances(
+    relay: ChainLinkRelay
+  ): Promise<StakedAndReserve> {
+    const [[poolBalace]] = ((await this.multi([
+      [
+        v2PoolBalanceShape(
+          relay.contract,
+          relay.reserves.map(reserve => reserve.contract)
+        )
+      ]
+    ])) as unknown) as [RawAbiV2PoolBalances][];
+
+    return rawAbiV2ToStacked(poolBalace);
+  }
+
   @action async calculateOpposingDepositV2(
     opposingDeposit: OpposingLiquidParams
   ): Promise<OpposingLiquid> {
@@ -2256,30 +1923,28 @@ export class EthBancorModule
 
     const suggestedDepositDec = opposingDeposit.reserve.amount;
 
-    const [[stakedAndReserveWeight]] = (await this.smartMulti([
-      stakedAndReserveHandler([
-        {
-          converterAdress: relay.contract,
-          reserveOne: relay.reserves[0].contract,
-          reserveTwo: relay.reserves[1].contract
-        }
-      ])
-    ])) as [StakedAndReserve[]];
+    const stakedAndReserveWeight = await this.fetchV2PoolBalances(relay);
 
     const [biggerWeight, smallerWeight] = stakedAndReserveWeight.reserves
       .map(reserve => ({
         ...reserve,
-        decReserveWeight: new BigNumber(reserve.reserveWeight).div(oneMillion),
+        decReserveWeight: new BigNumber(reserve.reserveWeight as string).div(
+          oneMillion
+        ),
         token: findOrThrow(
           relay.reserves,
           r => compareString(r.contract, reserve.reserveAddress),
           "failed to find token for weight"
         )
       }))
-      .sort((a, b) => b.decReserveWeight.minus(a.reserveWeight).toNumber());
+      .sort((a, b) =>
+        b.decReserveWeight.minus(a.reserveWeight as string).toNumber()
+      );
 
-    const weightsEqualOneMillion = new BigNumber(biggerWeight.reserveWeight)
-      .plus(smallerWeight.reserveWeight)
+    const weightsEqualOneMillion = new BigNumber(
+      biggerWeight.reserveWeight as string
+    )
+      .plus(smallerWeight.reserveWeight as string)
       .eq(oneMillion);
     if (!weightsEqualOneMillion)
       throw new Error("Was expecting reserve weights to equal 100%");
@@ -2582,20 +2247,14 @@ export class EthBancorModule
 
     const suggestedPoolTokenWithdrawDec = opposingWithdraw.reserve.amount;
 
-    const [[stakedAndReserveWeight]] = (await this.smartMulti([
-      stakedAndReserveHandler([
-        {
-          converterAdress: relay.contract,
-          reserveOne: relay.reserves[0].contract,
-          reserveTwo: relay.reserves[1].contract
-        }
-      ])
-    ])) as [StakedAndReserve[]];
+    const stakedAndReserveWeight = await this.fetchV2PoolBalances(relay);
 
     const matchedWeights = stakedAndReserveWeight.reserves.map(reserve => ({
       reserveWeight: reserve.reserveWeight,
       stakedBalance: reserve.stakedBalance,
-      decReserveWeight: new BigNumber(reserve.reserveWeight).div(oneMillion),
+      decReserveWeight: new BigNumber(reserve.reserveWeight as string).div(
+        oneMillion
+      ),
       reserveToken: findOrThrow(
         relay.reserves,
         r => compareString(r.contract, reserve.reserveAddress),
@@ -2610,11 +2269,13 @@ export class EthBancorModule
     }));
 
     const [biggerWeight, smallerWeight] = matchedWeights.sort((a, b) =>
-      b.decReserveWeight.minus(a.reserveWeight).toNumber()
+      b.decReserveWeight.minus(a.reserveWeight as string).toNumber()
     );
 
-    const weightsEqualOneMillion = new BigNumber(biggerWeight.reserveWeight)
-      .plus(smallerWeight.reserveWeight)
+    const weightsEqualOneMillion = new BigNumber(
+      biggerWeight.reserveWeight as string
+    )
+      .plus(smallerWeight.reserveWeight as string)
       .eq(oneMillion);
     if (!weightsEqualOneMillion)
       throw new Error("Was expecting reserve weights to equal 100%");
@@ -3610,8 +3271,6 @@ export class EthBancorModule
   }): Promise<MultiCallReturn[]> {
     const networkVars = getNetworkVariables(this.currentNetwork as EthNetworks);
     const multiContract = buildMultiCallContract(networkVars.multiCall);
-    console.count("MultiCall");
-    console.log("Calls Amount", calls.length);
 
     const res = await multiContract.methods.aggregate(calls, strict).call();
 
@@ -3622,88 +3281,10 @@ export class EthBancorModule
     return matched;
   }
 
-  x = {
-    calls: [] as MultiCall[],
-    depth: 9999
-  };
-
-  @mutation recordDepthError({
-    calls,
-    depth
-  }: {
-    calls: MultiCall[];
-    depth: number;
-  }) {
-    if (depth < this.x.depth) {
-      console.log("recording depth change");
-      this.x = { calls, depth };
-    } else {
-      console.log("ignoring depth change");
-    }
-  }
-
-  // @ts-ignore
-  @action async multiCallInChunks({
-    chunkSizes,
-    flatCalls
-  }: {
-    chunkSizes: number[];
-    flatCalls: MultiCall[];
-  }) {
-    for (const chunkSize of chunkSizes) {
-      const chunked: MultiCall[][] = chunk(flatCalls, chunkSize);
-      try {
-        // @ts-ignore
-        const oneByOne = await Promise.all(
-          chunked.map(async callGroup => {
-            try {
-              return await this.fetchWithMultiCall({ calls: callGroup });
-            } catch (e) {
-              this.recordDepthError({ calls: callGroup, depth: chunkSize });
-              const currentIndex = chunkSizes.indexOf(chunkSize);
-              if (currentIndex == 0) {
-                console.error("Chunk attempt failed", callGroup);
-                throw new Error("Ran out of chunks to try");
-              }
-              const smallerChunkSize = chunkSizes.slice(currentIndex);
-              return await this.multiCallInChunks({
-                flatCalls: callGroup,
-                chunkSizes: smallerChunkSize
-              });
-            }
-          })
-        );
-
-        return oneByOne.flat(1);
-      } catch (e) {
-        console.log("Failed, trying again with next chunk");
-      }
-    }
-    throw new Error("Multi call in chunks failed");
-  }
-
-  @action async multiCallSmart(
-    calls: MultiCall[][]
-  ): Promise<MultiCallReturn[][]> {
-    if (!calls || calls.length == 0) {
-      return [];
-    }
-
-    const indexes = createIndexes(calls);
-    const flattened = calls.flat(1);
-    // try {
-    //   console.log("making direct request amount of...", flattened.length);
-    //   const rawRes = await this.fetchWithMultiCall({ calls: flattened });
-    //   const reJoined = rebuildFromIndex(rawRes, indexes);
-    //   console.count("FirstGO");
-    //   return reJoined;
-    // } catch (e) {
-    const secondTry = await this.multiCallInChunks({
-      chunkSizes: [5000, 150, 45, 15, 5],
-      flatCalls: flattened
-    });
-    return rebuildFromIndex(secondTry, indexes);
-    // }
+  @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
+    const networkVars = getNetworkVariables(this.currentNetwork);
+    const multi = new Derp(web3, networkVars.multiCall);
+    return multi.all(groupsOfShapes);
   }
 
   @action async addPoolsV2(
@@ -3714,29 +3295,16 @@ export class EthBancorModule
       item => item.converterAddress
     );
 
-    console.count("x");
-    const multi = new Derp(web3, "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2");
-
-    const [rawRelays, poolAndSmartTokens] = (await multi.all([
+    const [rawRelays, poolAndSmartTokens] = ((await this.multi([
       allConverters.map(relayShape),
       allAnchors.map(poolTokenShape)
-    ])) as [any[], AbiCentralPoolToken[]];
-    console.count("x");
-
-    const firstHalfs = rawRelays.map(
-      (rawRelay): AbiRelay =>
-        (({
-          ...rawRelay,
-          converterAddress: rawRelay._originAddress
-        } as unknown) as AbiRelay)
-    );
-    console.count("x");
+    ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
     );
 
-    const polished: RefinedAbiRelay[] = firstHalfs.map(half => ({
+    const polished: RefinedAbiRelay[] = rawRelays.map(half => ({
       ...half,
       anchorAddress: findOrThrow(
         convertersAndAnchors,
@@ -3751,7 +3319,6 @@ export class EthBancorModule
       converterType: determineConverterType(half.converterType)
     }));
 
-    console.count("x");
     const overWroteVersions = updateArray(
       polished,
       relay =>
@@ -3765,15 +3332,7 @@ export class EthBancorModule
         )!.version
       })
     );
-    console.count("x");
 
-    console.log(
-      "before passed",
-      overWroteVersions,
-      "are overWroteVersions",
-      poolTokenAddresses,
-      "are pool token addresses"
-    );
     const passedFirstHalfs = overWroteVersions
       .filter(hasTwoConnectors)
       .filter(
@@ -3790,9 +3349,6 @@ export class EthBancorModule
             )!.poolTokenAddresses.length == 2
           : true
       );
-
-    console.log("got to passed");
-    console.count("x");
 
     const verifiedV1Pools = passedFirstHalfs.filter(
       half => half.converterType == PoolType.Traditional
@@ -3816,8 +3372,6 @@ export class EthBancorModule
         meta => compareString(address, meta.contract) && meta.precision
       );
 
-    console.count("x");
-
     const allTokensRequired = [
       ...reserveTokens,
       ...poolTokenAddresses.flatMap(pool => pool.poolTokenAddresses)
@@ -3837,28 +3391,10 @@ export class EthBancorModule
     );
 
     const [
-      reserveAndPoolTokens2,
-      v1ReserveBalances2,
-      stakedAndReserveWeights2
-    ] = (await this.smartMulti([
-      tokenHandler(tokenAddressesMissing),
-      reserveBalanceHandler(verifiedV1Pools),
-      stakedAndReserveHandler(
-        verifiedV2Pools.map(pool => ({
-          converterAdress: pool.converterAddress,
-          reserveOne: pool.connectorToken1,
-          reserveTwo: pool.connectorToken2
-        }))
-      )
-    ])) as [Token[], DecodedResult<RawAbiReserveBalance>[], StakedAndReserve[]];
-
-    console.count("x");
-
-    const [
-      reserveAndPoolTokens,
+      reserveAndPoolTokensAbi,
       v1ReserveBalances,
-      stakedAndReserveWeights
-    ] = ((await multi.all([
+      v2PoolReserveBalances
+    ] = ((await this.multi([
       tokenAddressesMissing.map(tokenShape),
       verifiedV1Pools.map(v1Pool =>
         reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
@@ -3867,25 +3403,25 @@ export class EthBancorModule
         v2PoolBalanceShape(pool.converterAddress, pool.reserves)
       )
     ])) as [unknown, unknown, unknown]) as [
-      Token[],
-      DecodedResult<RawAbiReserveBalance>[],
-      StakedAndReserve[]
+      RawAbiToken[],
+      RawAbiReserveBalance[],
+      RawAbiV2PoolBalances[]
     ];
 
-    console.count("x");
-
-    const reserve = isEqual(reserveAndPoolTokens2, reserveAndPoolTokens);
-    const reserveBalances = isEqual(v1ReserveBalances2, v1ReserveBalances);
-    const v2Balances = isEqual(
-      stakedAndReserveWeights2,
-      stakedAndReserveWeights
+    const stakedAndReserveWeights = v2PoolReserveBalances.map(
+      rawAbiV2ToStacked
     );
-    console.log({ reserve, reserveBalances, v2Balances }, "is a dream");
 
-    console.count("x");
+    const reserveAndPoolTokens = reserveAndPoolTokensAbi.map(
+      (token): Token => ({
+        contract: token.contract,
+        decimals: Number(token.decimals),
+        network: "ETH",
+        symbol: token.symbol
+      })
+    );
 
     const allTokens = [...reserveAndPoolTokens, ...tokensKnown];
-    console.count("x");
 
     const polishedReserveAndPoolTokens = polishTokens(
       this.tokenMeta,
@@ -3947,7 +3483,10 @@ export class EthBancorModule
           owner: pool.owner,
           reserves: rawPool.reserves.map(reserve => ({
             ...reserve.token,
-            reserveWeight: Number(reserve.reserveWeight) / oneMillion.toNumber()
+            reserveWeight:
+              typeof reserve.reserveWeight !== "undefined"
+                ? Number(reserve.reserveWeight) / oneMillion.toNumber()
+                : undefined
           })),
           version: String(pool.version),
           fee: Number(pool.conversionFee) / 10000
@@ -3972,7 +3511,7 @@ export class EthBancorModule
         decimals: Number(smartToken.decimals)
       });
       const reserveBalances = v1ReserveBalances.find(reserve =>
-        compareString(reserve.originAddress, converterAddress)
+        compareString(reserve.converterAddress, converterAddress)
       )!;
       if (!reserveBalances) {
         console.count("DropDueToNoReserveBalances");
@@ -3981,11 +3520,11 @@ export class EthBancorModule
       const zippedReserveBalances = [
         {
           contract: polishedHalf.connectorToken1,
-          amount: reserveBalances.data.reserveOne
+          amount: reserveBalances.reserveOne
         },
         {
           contract: polishedHalf.connectorToken2,
-          amount: reserveBalances.data.reserveTwo
+          amount: reserveBalances.reserveTwo
         }
       ];
       const reserveTokens = zippedReserveBalances.map(
@@ -4127,21 +3666,6 @@ export class EthBancorModule
     }
   }
 
-  @action async smartMulti(handlers: Handler[]) {
-    const allCallGroups = handlers.map(callSection => callSection.callGroups);
-    const indexes = createIndexes(allCallGroups);
-    const flattened = allCallGroups.flat(1);
-    const allCalls = await this.multiCallSmart(flattened);
-
-    const rebuilt = rebuildFromIndex(allCalls, indexes);
-
-    const res = handlers.map((handler, index) =>
-      rebuilt[index].flatMap(handler.finisher)
-    );
-
-    return res;
-  }
-
   @action async init(params?: ModuleParam) {
     console.log(params, "was init param on eth");
     console.time("ethResolved");
@@ -4182,12 +3706,7 @@ export class EthBancorModule
         .then(tokens => {
           bancorApiTokens = tokens;
         })
-        .catch(e => [] as TokenPrice[]);
-
-      getTokenMeta(currentNetwork).then(meta => {
-        this.setTokenMeta(meta);
-      });
-      this.fetchUsdPriceOfBnt();
+        .catch(_ => {});
 
       fetchSmartTokens()
         .then(availableSmartTokenHistories =>
@@ -4196,6 +3715,10 @@ export class EthBancorModule
           )
         )
         .catch(_ => {});
+
+      getTokenMeta(currentNetwork).then(this.setTokenMeta);
+      this.fetchUsdPriceOfBnt();
+
       console.time("FirstPromise");
       let [contractAddresses] = await Promise.all([
         this.fetchContractAddresses(networkVariables.contractRegistry)
