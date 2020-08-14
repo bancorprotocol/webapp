@@ -72,23 +72,12 @@ import Decimal from "decimal.js";
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import wait from "waait";
-import {
-  uniqWith,
-  chunk,
-  differenceWith,
-  isEqual,
-  zip,
-  differenceBy,
-  flatMap,
-  add
-} from "lodash";
+import { uniqWith, differenceWith, zip } from "lodash";
 import {
   buildNetworkContract,
-  buildV2PoolsContainer,
   buildRegistryContract,
   buildV28ConverterContract,
   buildV2Converter,
-  buildMultiCallContract,
   buildContainerContract,
   buildConverterContract,
   buildTokenContract
@@ -112,7 +101,7 @@ import { priorityEthPools } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { openDB, DBSchema } from "idb/with-async-ittr.js";
-import { MultiCall as Derp, ShapeWithLabel } from "eth-multicall";
+import { MultiCall, ShapeWithLabel } from "eth-multicall";
 
 const rawAbiV2ToStacked = (
   rawAbiV2: RawAbiV2PoolBalances
@@ -154,8 +143,6 @@ interface MyDB extends DBSchema {
     value: ConverterAndAnchor;
   };
 }
-
-type MultiCallReturn = [string, { success: boolean; data: string }];
 
 interface RefinedAbiRelay {
   anchorAddress: string;
@@ -305,11 +292,6 @@ const v2PoolBalanceShape = (contractAddress: string, reserves: string[]) => {
   };
 };
 
-interface DecodedResult<T> {
-  originAddress: string;
-  data: T;
-}
-
 interface TokenWei {
   tokenContract: string;
   weiAmount: string;
@@ -420,14 +402,6 @@ interface ConverterAndAnchor {
   converterAddress: string;
   anchorAddress: string;
 }
-interface Method {
-  type?: string | string[];
-  name: string;
-  method: string;
-  methodName: string;
-}
-
-type MultiCall = [string, string];
 
 const networkTokenAddresses = [
   "0x309627af60F0926daa6041B8279484312f2bf060",
@@ -3262,28 +3236,14 @@ export class EthBancorModule
     }
   }
 
-  @action async fetchWithMultiCall({
-    calls,
-    strict = false
-  }: {
-    calls: MultiCall[];
-    strict?: boolean;
-  }): Promise<MultiCallReturn[]> {
-    const networkVars = getNetworkVariables(this.currentNetwork as EthNetworks);
-    const multiContract = buildMultiCallContract(networkVars.multiCall);
-
-    const res = await multiContract.methods.aggregate(calls, strict).call();
-
-    const matched = zip(
-      calls.map(([address]) => address),
-      res.returnData
-    ) as MultiCallReturn[];
-    return matched;
-  }
-
   @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
     const networkVars = getNetworkVariables(this.currentNetwork);
-    const multi = new Derp(web3, networkVars.multiCall);
+    const multi = new MultiCall(web3, networkVars.multiCall, [
+      600,
+      100,
+      50,
+      10
+    ]);
     return multi.all(groupsOfShapes);
   }
 
@@ -3857,13 +3817,10 @@ export class EthBancorModule
 
     this.setLoadingPools(true);
 
-    const chunked = chunk(convertersAndAnchors, 30);
     const tokenAddresses: string[][] = [];
 
-    const res = await Promise.all(chunked.map(this.addPoolsV2));
-    const pools = flatMap(res, "pools");
-    const reserveFeeds = flatMap(res, "reserveFeeds");
-    // for (const chunk of chunked) {
+    const { pools, reserveFeeds } = await this.addPoolsV2(convertersAndAnchors);
+
     const poolsFailed = differenceWith(convertersAndAnchors, pools, (a, b) =>
       compareString(a.anchorAddress, b.id)
     );
@@ -3877,7 +3834,6 @@ export class EthBancorModule
       .flatMap(tokensInRelay)
       .map(token => token.contract);
     tokenAddresses.push(tokensInChunk);
-    // }
     if (this.isAuthenticated) {
       const toFetch = uniqWith(tokenAddresses.flat(), compareString);
       this.fetchBulkTokenBalances(toFetch);
