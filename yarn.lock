@@ -15731,13 +15731,6 @@ swarm-js@^0.1.40:
     tar "^4.0.2"
     xhr-request "^1.0.1"
 
-sxjs@^2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/sxjs/-/sxjs-2.2.4.tgz#f4009eae809f793dad138fe5179de5d4e7cad2f8"
-  integrity sha512-qyZzebXUZezrGx2KfST1KvnEaNR8MfgtvlBb21qAiuDUBk6qQ8mCSiltqL06art9GZhMQ2RXOQ3jnNiQ+kKMVg==
-  dependencies:
-    eos-common "^0.8.0"
-
 symbol-tree@^3.2.2:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.4.tgz#430637d248ba77e078883951fb9aa0eed7c63fa2"

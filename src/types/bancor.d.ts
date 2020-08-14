@@ -1,4 +1,3 @@
-import { Tokens, Token } from "sxjs";
 import { Contract, ContractSendMethod } from "web3-eth-contract";
 
 export interface TokenPrice {
@@ -498,13 +497,6 @@ export interface ETH {
   price: Price;
 }
 
-export interface EthplorerBalance {
-  address: string;
-  ETH: ETH;
-  countTxs: number;
-  tokens: Token[];
-}
-
 export interface kv {
   [symcode: string]: number;
 }
@@ -528,12 +520,4 @@ export enum Feature {
 export interface Service {
   namespace: string;
   features: Feature[];
-}
-
-export interface ModulePool extends Token {
-  volume24h: number;
-}
-
-export interface ModulePools {
-  [symcode: string]: ModulePool;
 }

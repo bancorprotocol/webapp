@@ -54,7 +54,6 @@
     "lodash": "^4.17.15",
     "lodash.debounce": "^4.0.8",
     "numeral": "^2.0.6",
-    "sxjs": "^2.2.4",
     "velocity-animate": "^1.5.2",
     "vue": "^2.6.11",
     "vue-analytics": "^5.17.2",
