@@ -195,18 +195,34 @@ export default class PoolActionsAddV1 extends Vue {
       if (typeof results.opposingAmount !== "undefined") {
         this.amount2 = results.opposingAmount;
       }
-      this.token1Error =
-        this.balance1 < tokenAmount ? "Insufficient balance" : "";
+
+      const raiseToken1InsufficientBalance = Number(this.balance1) < Number(tokenAmount);
+      console.log(this.balance1, 'is token1 balance', tokenAmount, 'is token amount', raiseToken1InsufficientBalance, 'is error flag');
+      this.token1Error = raiseToken1InsufficientBalance ? "Insufficient balance" : "";
+
+      const raiseToken2InsufficientBalance = Number(this.balance2) < Number(this.amount2);
+      console.log(this.balance2, 'is token2 balance', this.amount2, 'is already set amount2', raiseToken2InsufficientBalance, 'is error flag');
+
       this.token2Error =
-        this.balance2 < this.amount2 ? "Insufficient balance" : "";
+        raiseToken2InsufficientBalance ? "Insufficient balance" : "";
+
       this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);
     } catch (e) {
       if (e.message == "NoReserveBalances") {
+
+      const raiseToken1InsufficientBalance = Number(this.balance1) < Number(tokenAmount);
+      console.log(this.balance1, 'is token1 balance', tokenAmount, 'is token amount', raiseToken1InsufficientBalance, 'is error flag', 'on NoReserveBalances');
         this.token1Error =
-          this.balance1 < tokenAmount ? "Insufficient balance" : "";
+          raiseToken1InsufficientBalance ? "Insufficient balance" : "";
+
+
+      const raiseToken2InsufficientBalance = Number(this.balance2) < Number(this.amount2);
+      console.log(this.balance2, 'is token2 balance', this.amount2, 'is already set amount2', raiseToken2InsufficientBalance, 'is error flag', 'on NoReserveBalances');
+
+
         this.token2Error =
-          this.balance2 < this.amount2 ? "Insufficient balance" : "";
+          raiseToken2InsufficientBalance ? "Insufficient balance" : "";
         this.shareOfPool = 100;
       } else {
         this.token1Error = e.message;
