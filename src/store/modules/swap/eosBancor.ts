@@ -744,9 +744,9 @@ export class EosBancorModule
   @action async fetchTokenBalancesIfPossible(tokens: TokenBalanceParam[]) {
     if (!this.isAuthenticated) return;
     const tokensFetched = this.currentUserBalances;
-    const allTokens = _.uniqBy(
+    const allTokens = _.uniqWith(
       this.relaysList.flatMap(relay => relay.reserves),
-      "id"
+      (a, b) => compareString(a.id, b.id)
     );
     const tokenBalancesNotYetFetched = _.differenceWith(
       allTokens,
