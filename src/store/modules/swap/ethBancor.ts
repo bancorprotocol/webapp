@@ -1617,19 +1617,17 @@ export class EthBancorModule
 
   get chainkLinkRelays(): ViewRelay[] {
     return (this.relaysList.filter(isChainLink) as ChainLinkRelay[])
-      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta))
+      .filter(relay =>
+        relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
+      )
       .map(relay => {
-        const [networkReserve, tokenReserve] = sortByNetworkTokens(
-          relay.reserves,
-          reserve => reserve.symbol
-        );
+        const [networkReserve, tokenReserve] = relay.reserves;
 
         const { poolContainerAddress } = relay.anchor;
 
         return {
           id: poolContainerAddress,
-          reserves: [networkReserve, tokenReserve].map(reserve => {
-
+          reserves: relay.reserves.map(reserve => {
             return {
               reserveWeight: reserve.reserveWeight,
               id: reserve.contract,
@@ -1654,12 +1652,11 @@ export class EthBancorModule
 
   get traditionalRelays(): ViewRelay[] {
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
-      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta))
+      .filter(relay =>
+        relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
+      )
       .map(relay => {
-        const [networkReserve, tokenReserve] = sortByNetworkTokens(
-          relay.reserves,
-          reserve => reserve.symbol
-        );
+        const [networkReserve, tokenReserve] = relay.reserves;
 
         const smartTokenSymbol = relay.anchor.symbol;
         const hasHistory = this.availableHistories.some(history =>
@@ -1668,7 +1665,7 @@ export class EthBancorModule
 
         return {
           id: relay.anchor.contract,
-          reserves: [networkReserve, tokenReserve].map(reserve => {
+          reserves: relay.reserves.map(reserve => {
             return {
               id: reserve.contract,
               reserveWeight: reserve.reserveWeight,
@@ -3869,20 +3866,23 @@ export class EthBancorModule
       compareRelayById
     ).map(relay => ({
       ...relay,
-      reserves: updateArray(
-        relay.reserves,
-        reserve => !reserve.meta,
-        reserve => {
-          const meta = this.tokenMeta.find(meta =>
-            compareString(reserve.contract, meta.contract)
-          );
-          return {
-            ...reserve,
-            meta: {
-              logo: (meta && meta.image) || defaultImage
-            }
-          };
-        }
+      reserves: sortByNetworkTokens(
+        updateArray(
+          relay.reserves,
+          reserve => !reserve.meta,
+          reserve => {
+            const meta = this.tokenMeta.find(meta =>
+              compareString(reserve.contract, meta.contract)
+            );
+            return {
+              ...reserve,
+              meta: {
+                logo: (meta && meta.image) || defaultImage
+              }
+            };
+          }
+        ),
+        reserve => reserve.symbol
       )
     }));
     console.log(
