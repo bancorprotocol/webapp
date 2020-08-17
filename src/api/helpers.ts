@@ -376,6 +376,7 @@ interface TokenWithWeight extends Token {
   reserveFeed?: ReserveFeed;
   meta?: {
     logo: string;
+    name?: string;
   };
 }
 export interface Relay {

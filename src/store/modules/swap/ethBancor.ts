@@ -1520,19 +1520,12 @@ export class EthBancorModule
   get tokens(): ViewToken[] {
     console.time("tokens");
     const ret = this.relaysList
-      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed))
+      .filter(relay =>
+        relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
+      )
       .flatMap(relay =>
         relay.reserves.map(reserve => {
-          let namee: string;
-          let logo: string;
-          try {
-            const { name, image } = this.tokenMetaObj(reserve.contract);
-            namee = name;
-            logo = image;
-          } catch {
-            namee = reserve.symbol;
-            logo = defaultImage;
-          }
+          const { logo, name } = reserve.meta!;
           const balance = this.tokenBalance(reserve.contract);
           const balanceString =
             balance && new BigNumber(balance.balance).toString();
@@ -1542,7 +1535,7 @@ export class EthBancorModule
             id: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
-            name: namee,
+            name: name || reserve.symbol,
             ...(reserveFeed.costByNetworkUsd && {
               price: reserveFeed.costByNetworkUsd
             }),
@@ -3877,7 +3870,8 @@ export class EthBancorModule
             return {
               ...reserve,
               meta: {
-                logo: (meta && meta.image) || defaultImage
+                logo: (meta && meta.image) || defaultImage,
+                ...(meta && meta!.name && { name: meta.name })
               }
             };
           }
