@@ -289,6 +289,16 @@ interface PoolTokenPosition {
   }[];
 }
 
+export interface ReserveFeed {
+  liqDepth: number;
+  poolId: string;
+  reserveAddress: string;
+  costByNetworkUsd?: number;
+  change24H?: number;
+  volume24H?: number;
+  priority: number;
+}
+
 export interface LiquidityModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly primaryReserveChoices: (secondaryChoiceId: string) => ModalChoice[];

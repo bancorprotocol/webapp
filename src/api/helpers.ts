@@ -14,6 +14,7 @@ import {
   Step,
   OnUpdate,
   ViewToken,
+  ReserveFeed,
   ModalChoice
 } from "@/types/bancor";
 import Web3 from "web3";
@@ -372,6 +373,7 @@ export type Anchor = SmartToken | PoolContainer;
 
 interface TokenWithWeight extends Token {
   reserveWeight: number | undefined;
+  reserveFeed?: ReserveFeed;
 }
 export interface Relay {
   id: string;

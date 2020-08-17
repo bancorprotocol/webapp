@@ -22,6 +22,7 @@ import {
   ModuleParam,
   ConvertReturn,
   UserPoolBalances,
+  ReserveFeed,
   PoolTokenPosition
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
@@ -189,58 +190,62 @@ const buildRelayFeedChainkLink = ({
 }: {
   relays: RawV2Pool[];
   usdPriceOfBnt: number;
-}): ReserveFeed[] => {
-  return relays.flatMap(relay => {
-    const reserveBalances = relay.reserves;
-    const reserveWeights = relay.reserves.map(balance => balance.reserveWeight);
+}) => relays.flatMap(relay => buildReserveFeedsChainlink(relay, usdPriceOfBnt));
 
-    const noReserveWeights = reserveWeights.every(
-      weight => typeof weight == "undefined"
-    );
-    if (noReserveWeights) return [];
+const buildReserveFeedsChainlink = (
+  relay: RawV2Pool,
+  usdPriceOfBnt: number
+): ReserveFeed[] => {
+  const reserveBalances = relay.reserves;
+  const reserveWeights = relay.reserves.map(balance => balance.reserveWeight);
 
-    const [secondaryReserveToken, primaryReserveToken] = sortByNetworkTokens(
-      reserveBalances,
-      reserve => reserve.token.symbol
-    ).map(token => ({
-      ...token,
-      decAmount: Number(shrinkToken(token.stakedBalance, token.token.decimals))
-    }));
+  const noReserveWeights = reserveWeights.every(
+    weight => typeof weight == "undefined"
+  );
+  if (noReserveWeights) return [];
 
-    const [
-      primaryReserveDecWeight,
-      secondaryReserveDecWeight
-    ] = reserveWeights.map(weightPpm =>
-      new BigNumber(weightPpm as string).div(oneMillion)
-    );
+  const [secondaryReserveToken, primaryReserveToken] = sortByNetworkTokens(
+    reserveBalances,
+    reserve => reserve.token.symbol
+  ).map(token => ({
+    ...token,
+    decAmount: Number(shrinkToken(token.stakedBalance, token.token.decimals))
+  }));
 
-    const secondarysPrice =
-      secondaryReserveToken.token.symbol == "USDB" ? 1 : usdPriceOfBnt;
-    const secondarysLiqDepth =
-      secondaryReserveToken.decAmount * secondarysPrice;
+  const [
+    primaryReserveDecWeight,
+    secondaryReserveDecWeight
+  ] = reserveWeights.map(weightPpm =>
+    new BigNumber(weightPpm as string).div(oneMillion)
+  );
 
-    const wholeLiquidityDepth = new BigNumber(secondarysLiqDepth).div(
-      secondaryReserveDecWeight
-    );
-    const primaryLiquidityDepth = wholeLiquidityDepth.minus(secondarysLiqDepth);
+  const secondarysPrice =
+    secondaryReserveToken.token.symbol == "USDB" ? 1 : usdPriceOfBnt;
+  const secondarysLiqDepth = secondaryReserveToken.decAmount * secondarysPrice;
 
-    return [
-      {
-        tokenId: primaryReserveToken.token.contract,
-        poolId: relay.anchorAddress,
-        liqDepth: primaryLiquidityDepth.toNumber(),
-        costByNetworkUsd: primaryLiquidityDepth
-          .div(secondaryReserveToken.decAmount)
-          .toNumber()
-      },
-      {
-        tokenId: secondaryReserveToken.token.contract,
-        poolId: relay.anchorAddress,
-        liqDepth: secondarysLiqDepth,
-        costByNetworkUsd: secondarysPrice
-      }
-    ];
-  });
+  const wholeLiquidityDepth = new BigNumber(secondarysLiqDepth).div(
+    secondaryReserveDecWeight
+  );
+  const primaryLiquidityDepth = wholeLiquidityDepth.minus(secondarysLiqDepth);
+
+  return [
+    {
+      reserveAddress: primaryReserveToken.token.contract,
+      poolId: relay.anchorAddress,
+      priority: 10,
+      liqDepth: primaryLiquidityDepth.toNumber(),
+      costByNetworkUsd: primaryLiquidityDepth
+        .div(secondaryReserveToken.decAmount)
+        .toNumber()
+    },
+    {
+      reserveAddress: secondaryReserveToken.token.contract,
+      poolId: relay.anchorAddress,
+      priority: 10,
+      liqDepth: secondarysLiqDepth,
+      costByNetworkUsd: secondarysPrice
+    }
+  ];
 };
 
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
@@ -310,14 +315,7 @@ interface RawV2Pool {
 }
 
 interface V2Response {
-  reserveFeeds: (
-    | {
-        tokenId: string;
-        poolId: string;
-        costByNetworkUsd: number;
-        liqDepth: number;
-      }
-    | ReserveFeed)[];
+  reserveFeeds: ReserveFeed[];
   pools: (RelayWithReserveBalances | ChainLinkRelay)[];
 }
 
@@ -719,16 +717,14 @@ const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
 const relayIncludesAtLeastOneNetworkToken = (relay: Relay) =>
   relay.reserves.some(reserve => networkTokens.includes(reserve.symbol));
 
-const compareRelayFeed = (a: ReserveFeed, b: ReserveFeed) =>
-  compareString(a.poolId, b.poolId) && compareString(a.tokenId, b.tokenId);
-
 const tokenPriceToFeed = (
   tokenAddress: string,
   smartTokenAddress: string,
   usdPriceOfEth: number,
   tokenPrice: TokenPrice
 ): ReserveFeed => ({
-  tokenId: tokenAddress,
+  priority: 5,
+  reserveAddress: tokenAddress,
   poolId: smartTokenAddress,
   costByNetworkUsd: tokenPrice.price,
   liqDepth: tokenPrice.liquidityDepth * usdPriceOfEth * 2,
@@ -913,15 +909,6 @@ const getTokenMeta = async (currentNetwork: EthNetworks) => {
 
 const compareRelayById = (a: Relay, b: Relay) => compareString(a.id, b.id);
 
-interface ReserveFeed {
-  poolId: string;
-  tokenId: string;
-  liqDepth: number;
-  costByNetworkUsd?: number;
-  change24H?: number;
-  volume24H?: number;
-}
-
 const VuexModule = createModule({
   strict: false
 });
@@ -934,7 +921,6 @@ export class EthBancorModule
   loadingPools: boolean = true;
 
   bancorApiTokens: TokenPrice[] = [];
-  relayFeed: readonly ReserveFeed[] = [];
   relaysList: readonly Relay[] = [];
   tokenBalances: { id: string; balance: string }[] = [];
   bntUsdPrice: number = 0;
@@ -1230,7 +1216,6 @@ export class EthBancorModule
   }
 
   @mutation resetData() {
-    this.relayFeed = [];
     this.relaysList = [];
     this.tokenBalances = [];
     this.initiated = false;
@@ -1535,15 +1520,7 @@ export class EthBancorModule
   get tokens(): ViewToken[] {
     console.time("tokens");
     const ret = this.relaysList
-      .filter(relay =>
-        relay.reserves.every(reserve =>
-          this.relayFeed.some(
-            relayFeed =>
-              compareString(relayFeed.tokenId, reserve.contract) &&
-              compareString(relayFeed.poolId, relay.id)
-          )
-        )
-      )
+      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed))
       .flatMap(relay =>
         relay.reserves.map(reserve => {
           let namee: string;
@@ -1556,29 +1533,23 @@ export class EthBancorModule
             namee = reserve.symbol;
             logo = defaultImage;
           }
-          const relayFeed = this.relayFeed
-            .slice()
-            .sort(sortFeedByExtraProps)
-            .find(
-              feed =>
-                compareString(feed.poolId, relay.id) &&
-                compareString(feed.tokenId, reserve.contract)
-            )!;
           const balance = this.tokenBalance(reserve.contract);
           const balanceString =
             balance && new BigNumber(balance.balance).toString();
+
+          const reserveFeed = reserve.reserveFeed!;
           return {
             id: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
             name: namee,
-            ...(relayFeed.costByNetworkUsd && {
-              price: relayFeed.costByNetworkUsd
+            ...(reserveFeed.costByNetworkUsd && {
+              price: reserveFeed.costByNetworkUsd
             }),
-            liqDepth: relayFeed.liqDepth,
+            liqDepth: reserveFeed.liqDepth,
             logo,
-            ...(relayFeed.change24H && { change24h: relayFeed.change24H }),
-            ...(relayFeed.volume24H && { volume24h: relayFeed.volume24H }),
+            ...(reserveFeed.change24H && { change24h: reserveFeed.change24H }),
+            ...(reserveFeed.volume24H && { volume24h: reserveFeed.volume24H }),
             ...(balance && { balance: balanceString })
           };
         })
@@ -1646,18 +1617,12 @@ export class EthBancorModule
 
   get chainkLinkRelays(): ViewRelay[] {
     return (this.relaysList.filter(isChainLink) as ChainLinkRelay[])
-      .filter(relay =>
-        this.relayFeed.some(feed => compareString(feed.poolId, relay.id))
-      )
+      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed))
       .map(relay => {
         const [networkReserve, tokenReserve] = sortByNetworkTokens(
           relay.reserves,
           reserve => reserve.symbol
         );
-        const relayFeed = this.relayFeed
-          .slice()
-          .sort(sortFeedByExtraProps)
-          .find(feed => compareString(feed.poolId, relay.id))!;
 
         const { poolContainerAddress } = relay.anchor;
 
@@ -1682,7 +1647,7 @@ export class EthBancorModule
             };
           }),
           fee: relay.fee / 100,
-          liqDepth: relayFeed.liqDepth,
+          liqDepth: relay.reserves[0].reserveFeed!.liqDepth,
           owner: relay.owner,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
@@ -1695,18 +1660,12 @@ export class EthBancorModule
 
   get traditionalRelays(): ViewRelay[] {
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
-      .filter(relay =>
-        this.relayFeed.some(feed => compareString(feed.poolId, relay.id))
-      )
+      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed))
       .map(relay => {
         const [networkReserve, tokenReserve] = sortByNetworkTokens(
           relay.reserves,
           reserve => reserve.symbol
         );
-        const relayFeed = this.relayFeed
-          .slice()
-          .sort(sortFeedByExtraProps)
-          .find(feed => compareString(feed.poolId, relay.id))!;
 
         const smartTokenSymbol = relay.anchor.symbol;
         const hasHistory = this.availableHistories.some(history =>
@@ -1734,7 +1693,7 @@ export class EthBancorModule
             };
           }),
           fee: relay.fee / 100,
-          liqDepth: relayFeed.liqDepth,
+          liqDepth: networkReserve.reserveFeed!.liqDepth,
           owner: relay.owner,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
@@ -2994,9 +2953,40 @@ export class EthBancorModule
     }
   }
 
-  @mutation updateRelayFeeds(feeds: ReserveFeed[]) {
-    const allFeeds = [...feeds, ...this.relayFeed];
-    this.relayFeed = Object.freeze(allFeeds);
+  @action async updateRelayFeeds(feeds: ReserveFeed[]) {
+    const potentialRelaysToMutate = this.relaysList.filter(relay =>
+      feeds.some(feed => compareString(feed.poolId, relay.id))
+    );
+    const relaysToMutate = potentialRelaysToMutate.filter(relay =>
+      relay.reserves.some(reserve => {
+        const feed = feeds.find(feed =>
+          compareString(reserve.contract, feed.reserveAddress)
+        );
+        if (feed && !reserve.reserveFeed) return true;
+        if (!feed) return false;
+        const existingFeed = reserve.reserveFeed!;
+        if (existingFeed) return feed.priority < existingFeed.priority;
+      })
+    );
+
+    if (relaysToMutate.length > 0) {
+      const updatedRelays = relaysToMutate.map(relay => ({
+        ...relay,
+        reserves: relay.reserves.map(reserve => {
+          const feed = feeds.find(
+            feed =>
+              compareString(feed.reserveAddress, reserve.contract) &&
+              compareString(feed.poolId, relay.id)
+          );
+          return {
+            ...reserve,
+            reserveFeed: feed
+          };
+        })
+      }));
+
+      this.updateRelays(updatedRelays);
+    }
   }
 
   @action async fetchUsdPriceOfBnt() {
@@ -3032,7 +3022,7 @@ export class EthBancorModule
   }: {
     relays: RelayWithReserveBalances[];
     usdPriceOfBnt: number;
-  }) {
+  }): Promise<ReserveFeed[]> {
     return relays.flatMap(relay => {
       const reservesBalances = relay.reserves.map(reserve => {
         const reserveBalance = findOrThrow(
@@ -3062,16 +3052,18 @@ export class EthBancorModule
           : networkReserveAmount * usdPriceOfBnt) * 2;
       return [
         {
-          tokenId: tokenReserve.contract,
+          reserveAddress: tokenReserve.contract,
           poolId: relay.id,
           costByNetworkUsd: main,
-          liqDepth
+          liqDepth,
+          priority: 10
         },
         {
-          tokenId: networkReserve.contract,
+          reserveAddress: networkReserve.contract,
           poolId: relay.id,
           liqDepth,
-          costByNetworkUsd: reverse * main
+          costByNetworkUsd: reverse * main,
+          priority: 10
         }
       ];
     });
@@ -3780,7 +3772,7 @@ export class EthBancorModule
       }
       this.moduleInitiated();
 
-      if (this.relaysList.length < 1 || this.relayFeed.length < 2) {
+      if (this.relaysList.length < 1) {
         console.error("Init resolved with less than 2 relay feeds or 1 relay.");
       }
       console.timeEnd("ethResolved");
