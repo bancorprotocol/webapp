@@ -289,22 +289,6 @@ export const fetchTokenStats = async (
   };
 };
 
-export const retryPromise = async <T>(
-  promise: () => Promise<T>,
-  maxAttempts = 10,
-  interval = 1000
-): Promise<T> => {
-  return new Promise(async (resolve, reject) => {
-    for (let i = 0; i < maxAttempts; i++) {
-      try {
-        return resolve(await promise());
-      } catch (e) {
-        await wait(interval);
-        if (i == maxAttempts) reject(e);
-      }
-    }
-  });
-};
 const isValidBalance = (data: any): boolean =>
   typeof data.contract == "string" &&
   typeof data.symbol == "string" &&
@@ -321,15 +305,6 @@ export const getTokenBalances = async (
     ...res.data,
     tokens: res.data.tokens.filter(isValidBalance)
   };
-};
-
-export const identifyVersionBySha3ByteCodeHash = (sha3Hash: string): string => {
-  if (
-    sha3Hash ==
-    "0xf0a5de528f6d887b14706f0e66b20bee0d4c81078b6de9f395250e287e09e55f"
-  )
-    return "11";
-  throw new Error("Failed to identify version of Pool");
 };
 
 export type EosAccount = string;
