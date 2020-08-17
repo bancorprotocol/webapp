@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
 import Onboard from "bnc-onboard";
-import { Asset, asset_to_number, Sym, number_to_asset } from "eos-common";
+import { Asset, Sym, number_to_asset } from "eos-common";
 import { rpc } from "./eos/rpc";
 import {
   TokenBalances,
@@ -18,7 +18,6 @@ import {
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
-import wait from "waait";
 import { buildConverterContract } from "./eth/contractTypes";
 import { shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
@@ -67,26 +66,6 @@ interface TraditionalStat {
   supply: Asset;
   max_supply: Asset;
 }
-
-export const getSxContracts = async () => {
-  const res = (await rpc.get_table_rows({
-    code: "registry.sx",
-    table: "swap",
-    scope: "registry.sx"
-  })) as {
-    rows: {
-      contract: string;
-      ext_tokens: { sym: string; contract: string }[];
-    }[];
-  };
-  return res.rows.map(set => ({
-    contract: set.contract,
-    tokens: set.ext_tokens.map(token => ({
-      contract: token.contract,
-      symbol: new Sym(token.sym).code().to_string()
-    }))
-  }));
-};
 
 export const findOrThrow = <T>(
   arr: readonly T[],
