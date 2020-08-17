@@ -1955,11 +1955,9 @@ export class EthBancorModule
       "failed to find same reserve"
     );
 
-    const shareOfPool =
-      Number(opposingDeposit.reserve.amount) /
-      Number(
-        shrinkToken(sameReserve.stakedBalance, sameReserve.token.decimals)
-      );
+    const shareOfPool = new BigNumber(opposingDeposit.reserve.amount)
+      .div(shrinkToken(sameReserve.stakedBalance, sameReserve.token.decimals))
+      .toNumber();
 
     const suggestedDepositWei = expandToken(
       suggestedDepositDec,
@@ -2040,7 +2038,7 @@ export class EthBancorModule
     const currentBalance = this.tokenBalance(tokenContractAddress);
     const balanceDifferentToAlreadyStored =
       currentBalance && currentBalance.balance !== balance && !keepWei;
-    const balanceNotStoredAndNotZero = balance !== "0" && !keepWei;
+    const balanceNotStoredAndNotZero = new BigNumber(balance).gt(0) && !keepWei;
 
     if (balanceDifferentToAlreadyStored || balanceNotStoredAndNotZero) {
       this.updateBalance([tokenContractAddress, balance]);
@@ -2566,11 +2564,13 @@ export class EthBancorModule
           return {
             tokenAddress: reserve.contract,
             minimumReturnWei: expandToken(
-              Number(
+              new BigNumber(
                 reserveBalances.find(balance =>
                   compareString(balance.id, reserve.contract)
                 )!.amount
-              ) * 0.98,
+              )
+                .times(0.98)
+                .toNumber(),
               reserve.decimals
             )
           };
@@ -3978,7 +3978,9 @@ export class EthBancorModule
     const newBalances = this.tokenBalances.filter(
       balance => !compareString(balance.id, id)
     );
-    newBalances.push({ id, balance });
+    if (new BigNumber(balance).gt(0)) {
+      newBalances.push({ id, balance });
+    }
     this.tokenBalances = newBalances;
   }
 
@@ -3994,10 +3996,9 @@ export class EthBancorModule
       .balanceOf(this.isAuthenticated)
       .call();
 
-    const currentBalanceDec = Number(shrinkToken(currentBalance, 18));
-    const numberBalance = Number(decString);
+    const currentBalanceDec = shrinkToken(currentBalance, 18);
 
-    const mintingRequired = numberBalance > currentBalanceDec;
+    const mintingRequired = new BigNumber(decString).gt(currentBalanceDec);
     if (mintingRequired) {
       return this.mintEthErc(decString);
     }
