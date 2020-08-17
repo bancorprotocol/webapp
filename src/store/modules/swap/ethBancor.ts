@@ -943,7 +943,7 @@ export class EthBancorModule
   bancorApiTokens: TokenPrice[] = [];
   relayFeed: readonly ReserveFeed[] = [];
   relaysList: readonly Relay[] = [];
-  tokenBalances: { id: string; balance: number }[] = [];
+  tokenBalances: { id: string; balance: string }[] = [];
   bntUsdPrice: number = 0;
   tokenMeta: TokenMeta[] = [];
   availableHistories: string[] = [];
@@ -985,7 +985,7 @@ export class EthBancorModule
     const allIouTokens = this.relaysList.flatMap(iouTokensInRelay);
     const existingBalances = this.tokenBalances.filter(
       balance =>
-        balance.balance > 0 &&
+        balance.balance !== "0" &&
         allIouTokens.some(iouToken =>
           compareString(balance.id, iouToken.contract)
         )
@@ -2038,11 +2038,12 @@ export class EthBancorModule
       keepWei
     });
     const currentBalance = this.tokenBalance(tokenContractAddress);
-    if (currentBalance && currentBalance.balance !== balance && !keepWei) {
-      this.updateBalance([tokenContractAddress, Number(balance)]);
-    }
-    if (Number(balance) > 0 && !keepWei) {
-      this.updateBalance([tokenContractAddress, Number(balance)]);
+    const balanceDifferentToAlreadyStored =
+      currentBalance && currentBalance.balance !== balance && !keepWei;
+    const balanceNotStoredAndNotZero = balance !== "0" && !keepWei;
+
+    if (balanceDifferentToAlreadyStored || balanceNotStoredAndNotZero) {
+      this.updateBalance([tokenContractAddress, balance]);
     }
     return balance;
   }
@@ -3965,7 +3966,7 @@ export class EthBancorModule
       accountHolder: this.isAuthenticated,
       tokenContractAddress
     });
-    this.updateBalance([id!, Number(balance)]);
+    this.updateBalance([id!, balance]);
 
     const tokenTracked = this.tokens.find(token => compareString(token.id, id));
     if (!tokenTracked) {
@@ -3973,7 +3974,7 @@ export class EthBancorModule
     }
   }
 
-  @mutation updateBalance([id, balance]: [string, number]) {
+  @mutation updateBalance([id, balance]: [string, string]) {
     const newBalances = this.tokenBalances.filter(
       balance => !compareString(balance.id, id)
     );
