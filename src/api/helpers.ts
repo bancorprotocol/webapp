@@ -374,6 +374,9 @@ export type Anchor = SmartToken | PoolContainer;
 interface TokenWithWeight extends Token {
   reserveWeight: number | undefined;
   reserveFeed?: ReserveFeed;
+  meta?: {
+    logo: string;
+  };
 }
 export interface Relay {
   id: string;

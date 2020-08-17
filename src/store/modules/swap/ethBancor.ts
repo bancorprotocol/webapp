@@ -1617,7 +1617,7 @@ export class EthBancorModule
 
   get chainkLinkRelays(): ViewRelay[] {
     return (this.relaysList.filter(isChainLink) as ChainLinkRelay[])
-      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed))
+      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta))
       .map(relay => {
         const [networkReserve, tokenReserve] = sortByNetworkTokens(
           relay.reserves,
@@ -1629,18 +1629,12 @@ export class EthBancorModule
         return {
           id: poolContainerAddress,
           reserves: [networkReserve, tokenReserve].map(reserve => {
-            let logo: string;
-            try {
-              const { image } = this.tokenMetaObj(reserve.contract);
-              logo = image;
-            } catch (e) {
-              logo = defaultImage;
-            }
+
             return {
               reserveWeight: reserve.reserveWeight,
               id: reserve.contract,
               reserveId: poolContainerAddress + reserve.contract,
-              logo: [logo],
+              logo: [reserve.meta!.logo],
               symbol: reserve.symbol,
               contract: reserve.contract,
               smartTokenSymbol: poolContainerAddress
@@ -1660,7 +1654,7 @@ export class EthBancorModule
 
   get traditionalRelays(): ViewRelay[] {
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
-      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed))
+      .filter(relay => relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta))
       .map(relay => {
         const [networkReserve, tokenReserve] = sortByNetworkTokens(
           relay.reserves,
@@ -1675,18 +1669,11 @@ export class EthBancorModule
         return {
           id: relay.anchor.contract,
           reserves: [networkReserve, tokenReserve].map(reserve => {
-            let logo: string;
-            try {
-              const meta = this.tokenMetaObj(reserve.contract);
-              logo = meta.image;
-            } catch (e) {
-              logo = defaultImage;
-            }
             return {
               id: reserve.contract,
               reserveWeight: reserve.reserveWeight,
               reserveId: relay.anchor.contract + reserve.contract,
-              logo: [logo],
+              logo: [reserve.meta!.logo],
               symbol: reserve.symbol,
               contract: reserve.contract,
               smartTokenSymbol: relay.anchor.contract
@@ -3880,7 +3867,24 @@ export class EthBancorModule
     const meshedRelays = uniqWith(
       [...relays, ...this.relaysList],
       compareRelayById
-    );
+    ).map(relay => ({
+      ...relay,
+      reserves: updateArray(
+        relay.reserves,
+        reserve => !reserve.meta,
+        reserve => {
+          const meta = this.tokenMeta.find(meta =>
+            compareString(reserve.contract, meta.contract)
+          );
+          return {
+            ...reserve,
+            meta: {
+              logo: (meta && meta.image) || defaultImage
+            }
+          };
+        }
+      )
+    }));
     console.log(
       "vuex given",
       relays.length,
