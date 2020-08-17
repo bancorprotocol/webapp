@@ -1982,24 +1982,28 @@ export class EosBancorModule
     return {
       opposingAmount: String(asset_to_number(opposingAsset)),
       shareOfPool: percent,
-      singleUnitCosts: [
-        {
-          id: tokenAmountToId(sameReserve),
-          amount: String(
-            asset_to_number(
-              singleUnitCost(sameReserve.amount, opposingReserve.amount)
+      singleUnitCosts: sortAlongSide(
+        [
+          {
+            id: tokenAmountToId(opposingReserve),
+            amount: String(
+              asset_to_number(
+                singleUnitCost(sameReserve.amount, opposingReserve.amount)
+              )
             )
-          )
-        },
-        {
-          id: tokenAmountToId(opposingReserve),
-          amount: String(
-            asset_to_number(
-              singleUnitCost(opposingReserve.amount, sameReserve.amount)
+          },
+          {
+            id: tokenAmountToId(sameReserve),
+            amount: String(
+              asset_to_number(
+                singleUnitCost(opposingReserve.amount, sameReserve.amount)
+              )
             )
-          )
-        }
-      ],
+          }
+        ],
+        unitCost => unitCost.id,
+        relay.reserves.map(x => x.id)
+      ),
       smartTokenAmount: lowerAsset
     };
   }

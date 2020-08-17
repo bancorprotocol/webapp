@@ -1837,24 +1837,19 @@ export class EthBancorModule
       .div(opposingReserve.weiAmount)
       .toString();
 
-    console.log(
-      opposingReserve.weiAmount,
-      sameReserve.weiAmount,
-      "should be wei amounts",
-      sameReserveCostDec,
-      opposingReserveCostDec
-    );
-
     const res = {
       opposingAmount: shrinkToken(opposingAmount, opposingReserve.decimals),
       smartTokenAmount: { id: smartTokenAddress, amount: fundReward },
       shareOfPool,
-      singleUnitCosts: [
-        { id: sameReserve.contract, amount: sameReserveCostDec },
-        { id: opposingReserve.contract, amount: opposingReserveCostDec }
-      ]
+      singleUnitCosts: sortAlongSide(
+        [
+          { id: sameReserve.contract, amount: sameReserveCostDec },
+          { id: opposingReserve.contract, amount: opposingReserveCostDec }
+        ],
+        unitCost => unitCost.id,
+        relay.reserves.map(reserve => reserve.contract)
+      )
     };
-    console.log("v1 add liquidity sending back", res);
     return res;
   }
 
