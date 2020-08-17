@@ -22,7 +22,6 @@ import {
   ModuleParam,
   ConvertReturn,
   UserPoolBalances,
-  CallReturn,
   PoolTokenPosition
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
@@ -40,7 +39,6 @@ import {
   EthNetworks,
   PoolType,
   Anchor,
-  PoolToken,
   TraditionalRelay,
   ChainLinkRelay,
   SmartToken,
@@ -54,7 +52,6 @@ import {
 import { ContractSendMethod } from "web3-eth-contract";
 import {
   ABIContractRegistry,
-  ABIConverterRegistry,
   ethErc20WrapperContract,
   ethReserveAddress
 } from "@/api/eth/ethAbis";
@@ -90,11 +87,7 @@ import {
   TokenSymbol
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
-import {
-  getSmartTokenHistory,
-  fetchSmartTokens,
-  HistoryItem
-} from "@/api/eth/zumZoom";
+import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import { priorityEthPools } from "./staticRelays";
