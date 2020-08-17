@@ -1620,17 +1620,15 @@ export class EthBancorModule
 
         return {
           id: poolContainerAddress,
-          reserves: relay.reserves.map(reserve => {
-            return {
-              reserveWeight: reserve.reserveWeight,
-              id: reserve.contract,
-              reserveId: poolContainerAddress + reserve.contract,
-              logo: [reserve.meta!.logo],
-              symbol: reserve.symbol,
-              contract: reserve.contract,
-              smartTokenSymbol: poolContainerAddress
-            };
-          }),
+          reserves: relay.reserves.map(reserve => ({
+            reserveWeight: reserve.reserveWeight,
+            id: reserve.contract,
+            reserveId: poolContainerAddress + reserve.contract,
+            logo: [reserve.meta!.logo],
+            symbol: reserve.symbol,
+            contract: reserve.contract,
+            smartTokenSymbol: poolContainerAddress
+          })),
           fee: relay.fee / 100,
           liqDepth: relay.reserves[0].reserveFeed!.liqDepth,
           owner: relay.owner,
@@ -1658,17 +1656,15 @@ export class EthBancorModule
 
         return {
           id: relay.anchor.contract,
-          reserves: relay.reserves.map(reserve => {
-            return {
-              id: reserve.contract,
-              reserveWeight: reserve.reserveWeight,
-              reserveId: relay.anchor.contract + reserve.contract,
-              logo: [reserve.meta!.logo],
-              symbol: reserve.symbol,
-              contract: reserve.contract,
-              smartTokenSymbol: relay.anchor.contract
-            };
-          }),
+          reserves: relay.reserves.map(reserve => ({
+            id: reserve.contract,
+            reserveWeight: reserve.reserveWeight,
+            reserveId: relay.anchor.contract + reserve.contract,
+            logo: [reserve.meta!.logo],
+            symbol: reserve.symbol,
+            contract: reserve.contract,
+            smartTokenSymbol: relay.anchor.contract
+          })),
           fee: relay.fee / 100,
           liqDepth: networkReserve.reserveFeed!.liqDepth,
           owner: relay.owner,
