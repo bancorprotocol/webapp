@@ -357,6 +357,14 @@ interface LiqDepth {
   liqDepth: number;
 }
 
+export const assetToDecNumberString = (asset: Asset): string =>
+  asset.to_string().split(" ")[0];
+
+export const decNumberStringToAsset = (
+  decNumberString: string,
+  symbolName: string
+): Asset => new Asset(`${decNumberString} ${symbolName}`);
+
 export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
   if (isNaN(a.liqDepth) && isNaN(b.liqDepth)) return 0;
   if (isNaN(a.liqDepth)) return 1;
@@ -546,13 +554,14 @@ export const buildTokenId = ({ contract, symbol }: BaseToken): string =>
 export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
   const contractName = process.env.VUE_APP_MULTICONTRACT!;
 
+  if (!contractName) throw new Error("Failed to find multi contract name");
   const rawRelays: {
     rows: ConverterV2Row[];
     more: boolean;
   } = await rpc.get_table_rows({
-    code: process.env.VUE_APP_MULTICONTRACT,
+    code: contractName,
     table: "converter.v2",
-    scope: process.env.VUE_APP_MULTICONTRACT,
+    scope: contractName,
     limit: 99
   });
   if (rawRelays.more) {
@@ -584,7 +593,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
       }),
       contract: value.contract,
       network: "eos",
-      amount: asset_to_number(new Asset(value.quantity))
+      amount: assetToDecNumberString(new Asset(value.quantity))
     })),
     contract: contractName,
     owner: relay.owner,
@@ -596,7 +605,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
         symbol: symToBaseSymbol(new Sym(relay.currency)).symbol
       }),
       contract: smartTokenContract!,
-      amount: 0,
+      amount: "0",
       network: "eos"
     },
     fee: relay.fee / 1000000

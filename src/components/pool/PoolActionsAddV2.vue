@@ -128,10 +128,12 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   get balanceError() {
+    const balanceError = Number(this.balance) < Number(this.amount)
+    console.log(this.balance, 'was balance', this.amount, 'was amount', balanceError, 'was balance error');
     if (!this.isAuthenticated) return ""
     else if (this.amount === "") return ""
     else if (this.errorMsg !== "") return this.errorMsg
-    else if (this.balance < this.amount) return "Insufficient balance"
+    else if (balanceError) return "Insufficient balance"
     else return ""
   }
 

@@ -22,7 +22,6 @@ import {
   ModuleParam,
   ConvertReturn,
   UserPoolBalances,
-  CallReturn,
   PoolTokenPosition
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
@@ -40,7 +39,6 @@ import {
   EthNetworks,
   PoolType,
   Anchor,
-  PoolToken,
   TraditionalRelay,
   ChainLinkRelay,
   SmartToken,
@@ -54,7 +52,6 @@ import {
 import { ContractSendMethod } from "web3-eth-contract";
 import {
   ABIContractRegistry,
-  ABIConverterRegistry,
   ethErc20WrapperContract,
   ethReserveAddress
 } from "@/api/eth/ethAbis";
@@ -90,11 +87,7 @@ import {
   TokenSymbol
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
-import {
-  getSmartTokenHistory,
-  fetchSmartTokens,
-  HistoryItem
-} from "@/api/eth/zumZoom";
+import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import { priorityEthPools } from "./staticRelays";
@@ -943,7 +936,7 @@ export class EthBancorModule
   bancorApiTokens: TokenPrice[] = [];
   relayFeed: readonly ReserveFeed[] = [];
   relaysList: readonly Relay[] = [];
-  tokenBalances: { id: string; balance: number }[] = [];
+  tokenBalances: { id: string; balance: string }[] = [];
   bntUsdPrice: number = 0;
   tokenMeta: TokenMeta[] = [];
   availableHistories: string[] = [];
@@ -985,7 +978,7 @@ export class EthBancorModule
     const allIouTokens = this.relaysList.flatMap(iouTokensInRelay);
     const existingBalances = this.tokenBalances.filter(
       balance =>
-        balance.balance > 0 &&
+        balance.balance !== "0" &&
         allIouTokens.some(iouToken =>
           compareString(balance.id, iouToken.contract)
         )
@@ -1955,11 +1948,9 @@ export class EthBancorModule
       "failed to find same reserve"
     );
 
-    const shareOfPool =
-      Number(opposingDeposit.reserve.amount) /
-      Number(
-        shrinkToken(sameReserve.stakedBalance, sameReserve.token.decimals)
-      );
+    const shareOfPool = new BigNumber(opposingDeposit.reserve.amount)
+      .div(shrinkToken(sameReserve.stakedBalance, sameReserve.token.decimals))
+      .toNumber();
 
     const suggestedDepositWei = expandToken(
       suggestedDepositDec,
@@ -2038,11 +2029,12 @@ export class EthBancorModule
       keepWei
     });
     const currentBalance = this.tokenBalance(tokenContractAddress);
-    if (currentBalance && currentBalance.balance !== balance && !keepWei) {
-      this.updateBalance([tokenContractAddress, Number(balance)]);
-    }
-    if (Number(balance) > 0 && !keepWei) {
-      this.updateBalance([tokenContractAddress, Number(balance)]);
+    const balanceDifferentToAlreadyStored =
+      currentBalance && currentBalance.balance !== balance && !keepWei;
+    const balanceNotStoredAndNotZero = new BigNumber(balance).gt(0) && !keepWei;
+
+    if (balanceDifferentToAlreadyStored || balanceNotStoredAndNotZero) {
+      this.updateBalance([tokenContractAddress, balance]);
     }
     return balance;
   }
@@ -2565,11 +2557,13 @@ export class EthBancorModule
           return {
             tokenAddress: reserve.contract,
             minimumReturnWei: expandToken(
-              Number(
+              new BigNumber(
                 reserveBalances.find(balance =>
                   compareString(balance.id, reserve.contract)
                 )!.amount
-              ) * 0.98,
+              )
+                .times(0.98)
+                .toNumber(),
               reserve.decimals
             )
           };
@@ -3965,7 +3959,7 @@ export class EthBancorModule
       accountHolder: this.isAuthenticated,
       tokenContractAddress
     });
-    this.updateBalance([id!, Number(balance)]);
+    this.updateBalance([id!, balance]);
 
     const tokenTracked = this.tokens.find(token => compareString(token.id, id));
     if (!tokenTracked) {
@@ -3973,11 +3967,13 @@ export class EthBancorModule
     }
   }
 
-  @mutation updateBalance([id, balance]: [string, number]) {
+  @mutation updateBalance([id, balance]: [string, string]) {
     const newBalances = this.tokenBalances.filter(
       balance => !compareString(balance.id, id)
     );
-    newBalances.push({ id, balance });
+    if (new BigNumber(balance).gt(0)) {
+      newBalances.push({ id, balance });
+    }
     this.tokenBalances = newBalances;
   }
 
@@ -3993,10 +3989,9 @@ export class EthBancorModule
       .balanceOf(this.isAuthenticated)
       .call();
 
-    const currentBalanceDec = Number(shrinkToken(currentBalance, 18));
-    const numberBalance = Number(decString);
+    const currentBalanceDec = shrinkToken(currentBalance, 18);
 
-    const mintingRequired = numberBalance > currentBalanceDec;
+    const mintingRequired = new BigNumber(decString).gt(currentBalanceDec);
     if (mintingRequired) {
       return this.mintEthErc(decString);
     }
@@ -4155,7 +4150,7 @@ export class EthBancorModule
       tokenAddress
     });
 
-    if (Number(currentApprovedBalance) >= Number(amount)) return;
+    if (new BigNumber(currentApprovedBalance).gte(amount)) return;
 
     const nullingTxRequired = fromWei(currentApprovedBalance) !== "0";
     if (nullingTxRequired) {

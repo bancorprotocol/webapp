@@ -7,13 +7,13 @@ import {
   TransferParam,
   TokenBalance
 } from "@/types/bancor";
-import { getBalance, getTokenBalances, compareString, compareToken } from "@/api/helpers";
+import { getBalance, getTokenBalances, compareString, compareToken, assetToDecNumberString } from "@/api/helpers";
 import { vxm } from "@/store";
 
 import _ from "lodash";
 import { multiContract } from "@/api/eos/multiContractTx";
 import wait from "waait";
-import { Asset, asset_to_number, number_to_asset, Sym } from "eos-common";
+import { Asset, number_to_asset, Sym } from "eos-common";
 
 
 const requiredProps = ["balance", "contract", "symbol"];
@@ -131,7 +131,7 @@ export class EosNetworkModule
     const balances = await Promise.all(
       tokens.map(async token => {
         const balance = await getBalance(token.contract, token.symbol, token.precision);
-        return { ...token, balance: asset_to_number(new Asset(balance)) };
+        return { ...token, balance: assetToDecNumberString(new Asset(balance)) };
       })
     );
     return balances;
