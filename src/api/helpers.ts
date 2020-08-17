@@ -554,13 +554,14 @@ export const buildTokenId = ({ contract, symbol }: BaseToken): string =>
 export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
   const contractName = process.env.VUE_APP_MULTICONTRACT!;
 
+  if (!contractName) throw new Error("Failed to find multi contract name");
   const rawRelays: {
     rows: ConverterV2Row[];
     more: boolean;
   } = await rpc.get_table_rows({
-    code: process.env.VUE_APP_MULTICONTRACT,
+    code: contractName,
     table: "converter.v2",
-    scope: process.env.VUE_APP_MULTICONTRACT,
+    scope: contractName,
     limit: 99
   });
   if (rawRelays.more) {
