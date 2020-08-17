@@ -2329,7 +2329,7 @@ export class EthBancorModule
       withdrawFee: feePercent,
       expectedReturn: {
         id: sameReserve.reserveToken.contract,
-        amount: String(Number(removeLiquidityReturnDec))
+        amount: removeLiquidityReturnDec
       }
     };
     console.log(result, "was the result");
