@@ -1875,14 +1875,14 @@ export class EthBancorModule
       "failed to find same reserve"
     );
 
-    const shareOfPool = new BigNumber(opposingDeposit.reserve.amount)
-      .div(shrinkToken(sameReserve.stakedBalance, sameReserve.token.decimals))
-      .toNumber();
-
     const suggestedDepositWei = expandToken(
       suggestedDepositDec,
       sameReserve.token.decimals
     );
+
+    const shareOfPool = new BigNumber(suggestedDepositWei)
+      .div(sameReserve.stakedBalance)
+      .toNumber();
 
     const v2Converter = buildV2Converter(relay.contract);
     const maxStakingEnabled = await v2Converter.methods

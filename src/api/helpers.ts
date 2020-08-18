@@ -22,6 +22,7 @@ import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
 import { buildConverterContract } from "./eth/contractTypes";
 import { shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
+import numeral from "numeral";
 
 export const networkTokens = ["BNT", "USDB"];
 
@@ -98,6 +99,9 @@ export const formatNumber = (num: number, size: number = 4) => {
   }
   return reduced;
 };
+
+export const formatPercent = (decNumber: number) =>
+  numeral(decNumber).format("0.00%");
 
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
