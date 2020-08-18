@@ -66,7 +66,7 @@ th {
   }
 
   &-dark {
-    background-color: $primary;
+    background-color: $gray-border-dark;
     color: $text-muted-dark !important;
   }
 }

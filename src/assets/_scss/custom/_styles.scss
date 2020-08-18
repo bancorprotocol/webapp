@@ -188,10 +188,20 @@
 
 .form-control-alt-light {
   border: 1px solid $gray-border !important;
+
+  &::placeholder {
+    color: $gray-placeholder;
+    opacity: 1; /* Firefox */
+  }
 }
 
 .form-control-alt-dark {
   border: 1px solid $gray-border-dark !important;
+
+  &::placeholder {
+    color: $gray-placeholder-dark;
+    opacity: 1; /* Firefox */
+  }
 }
 
 .table {
