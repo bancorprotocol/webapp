@@ -26,19 +26,11 @@
         >
           <select-pool-row @click.native="selectPool(pool)" :pool="pool" />
         </b-col>
-        <b-col cols="6" class="mb-3">
+        <b-col cols="12" class="mb-3 text-center">
           <main-button
             v-if="totalPools > perStep * currentStep"
             @click.native="currentStep++"
             label="more"
-            :small="true"
-          />
-        </b-col>
-        <b-col cols="6" class="mb-3">
-          <main-button
-            v-if="currentStep > 1"
-            @click.native="currentStep--"
-            label="less"
             :small="true"
           />
         </b-col>
