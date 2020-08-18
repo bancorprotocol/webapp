@@ -52,7 +52,7 @@
 
     <main-button
       @click.native="initConvert()"
-      label="Continue"
+      :label="swapButtonLabel"
       :active="true"
       :large="true"
       :loading="rateLoading"
@@ -118,6 +118,11 @@ export default class SwapAction extends Vue {
     if (!this.isAuthenticated) return false
     else if (this.amount1 && this.amount2 && !this.errorToken1 && !this.errorToken2) return false
     else return true
+  }
+
+  get swapButtonLabel() {
+    if (!this.amount1) return 'Enter an Amount'
+    else return 'Swap'
   }
 
   get advancedBlockItems() {
