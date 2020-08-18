@@ -3126,8 +3126,8 @@ export class EthBancorModule
         throw new Error("Client side error - failed finding pool token");
 
       const minimumReturnWei = new BigNumber(reserveToken.weiAmount)
-        .times(0.98)
-        .toString();
+        .times(0.9)
+        .toFixed(0);
 
       txHash = await this.addLiquidityV2({
         converterAddress,
