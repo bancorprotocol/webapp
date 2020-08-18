@@ -55,7 +55,8 @@ export default class TableActionButtons extends Vue {
 
 <style lang="scss">
 .table-button {
-  font-size: 14px;
+  font-size: 14px !important;
+  font-weight: 500 !important;
   width: 132px;
   padding: 9px 0px 9px 0px !important;
 }
