@@ -428,8 +428,8 @@ const assertChainlink = (relay: Relay): ChainLinkRelay => {
   throw new Error("Not a chainlink relay");
 };
 
-const generateEtherscanLink = (txHash: string) =>
-  `https://etherscan.io/tx/${txHash}`;
+const generateEtherscanLink = (txHash: string, ropsten: boolean = false) =>
+  `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
 
 interface AnchorProps {
   anchor: Anchor;
@@ -1407,8 +1407,15 @@ export class EthBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEtherscanLink(txId)
+      blockExplorerLink: await this.createExplorerLink(txId)
     };
+  }
+
+  @action async createExplorerLink(txHash: string) {
+    return generateEtherscanLink(
+      txHash,
+      this.currentNetwork == EthNetworks.Ropsten
+    );
   }
 
   @action async approveTokenWithdrawals(
@@ -2517,7 +2524,7 @@ export class EthBancorModule
 
     return {
       txId: hash,
-      blockExplorerLink: generateEtherscanLink(hash)
+      blockExplorerLink: await this.createExplorerLink(hash)
     };
   }
 
@@ -2774,7 +2781,7 @@ export class EthBancorModule
     this.spamBalances(tokenAddressesChanged);
     return {
       txId: txHash,
-      blockExplorerLink: generateEtherscanLink(txHash)
+      blockExplorerLink: await this.createExplorerLink(txHash)
     };
   }
 
@@ -4110,7 +4117,7 @@ export class EthBancorModule
     );
     return {
       txId: confirmedHash,
-      blockExplorerLink: generateEtherscanLink(confirmedHash)
+      blockExplorerLink: await this.createExplorerLink(confirmedHash)
     };
   }
 
