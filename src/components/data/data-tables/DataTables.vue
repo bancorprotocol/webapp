@@ -4,7 +4,7 @@
       <search-input-field :value.sync="search" />
     </div>
 
-    <b-tabs no-fade>
+    <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
       <b-tab title="Pools" active>
         <table-pools :filter="search" />
       </b-tab>

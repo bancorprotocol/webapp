@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="table-responsive">
     <table :class="darkMode ? 'dark-table' : 'table'">
       <table-header
         :fields="fields"
@@ -73,25 +73,27 @@ export default class TableTokens extends Vue {
       {
         label: "24h Change",
         key: "change24h",
-        width: "135px"
+        minWidth: "135px"
       },
       {
         label: "Price USD",
         key: "price",
-        width: "120px"
+        minWidth: "120px"
       },
       {
         label: "24h Volume",
         key: "volume24h",
-        width: "120px"
+        minWidth: "120px"
       },
       {
         label: "Liquidity Depth",
         key: "liqDepth",
-        width: "160px"
+        minWidth: "160px"
       },
       {
-        label: "Actions"
+        label: "Actions",
+        minWidth: "150px",
+        maxWidth: "150px"
       }
     ];
   }

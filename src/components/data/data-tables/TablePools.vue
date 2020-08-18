@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="table-responsive">
     <table :class="darkMode ? 'dark-table' : 'table'">
       <table-header
         :fields="fields"
@@ -74,20 +74,21 @@ export default class TablePools extends Vue {
       {
         label: "Liquidity Depth",
         key: "liqDepth",
-        width: "160px"
+        minWidth: "160px"
       },
       {
         label: "Fee",
         key: "fee",
-        width: "80px"
+        minWidth: "80px"
       },
       // {
       //   label: "Ratio",
-      //   width: "80px"
+      //   minWidth: "80px"
       // },
       {
         label: "Actions",
-        width: "300px"
+        minWidth: "300px",
+        maxWidth: "300px"
       }
     ];
   }
