@@ -10,7 +10,7 @@
         }
       }"
       variant="primary"
-      class="mr-2 table-button"
+      class="mr-3 table-button"
     >
       Add Liquidity
     </b-btn>

@@ -87,8 +87,8 @@ export default class TablePools extends Vue {
       // },
       {
         label: "Actions",
-        minWidth: "300px",
-        maxWidth: "300px"
+        minWidth: "310px",
+        maxWidth: "310px"
       }
     ];
   }
