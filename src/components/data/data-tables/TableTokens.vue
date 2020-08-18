@@ -92,8 +92,8 @@ export default class TableTokens extends Vue {
       },
       {
         label: "Actions",
-        minWidth: "150px",
-        maxWidth: "150px"
+        minWidth: "160px",
+        maxWidth: "160px"
       }
     ];
   }

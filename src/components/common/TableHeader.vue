@@ -48,8 +48,9 @@ export default class TableHeader extends Vue {
 
   getWidthStyle(column: ViewTableFields) {
     let styleString = "";
-    if (column.minWidth) styleString = "min-width: " + column.minWidth + ";";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
+    if (column.minWidth)
+      styleString = styleString + "min-width: " + column.minWidth + ";";
     return styleString;
   }
 
