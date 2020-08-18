@@ -2739,7 +2739,7 @@ export class EthBancorModule
 
       const minimumReturnWei = new BigNumber(reserveToken.weiAmount)
         .times(0.98)
-        .toString();
+        .toFixed(0, BigNumber.ROUND_DOWN);
 
       txHash = await this.addLiquidityV2({
         converterAddress,
