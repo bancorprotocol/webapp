@@ -539,6 +539,24 @@ interface EthOpposingLiquid {
   singleUnitCosts: ViewAmount[];
 }
 
+const buildSingleUnitCosts = (
+  reserveOneSupply: ViewAmount,
+  reserveTwoSupply: ViewAmount
+) => {
+  const reserveTwoCost = new BigNumber(reserveOneSupply.amount)
+    .div(reserveTwoSupply.amount)
+    .toString();
+
+  const reserveOneCost = new BigNumber(reserveTwoSupply.amount)
+    .div(reserveOneSupply.amount)
+    .toString();
+
+  return [
+    { id: reserveTwoSupply.id, amount: reserveTwoCost },
+    { id: reserveOneSupply.id, amount: reserveOneCost }
+  ];
+};
+
 interface RawAbiV2PoolBalances {
   converterAddress: string;
   poolTokenOne: string;
@@ -1768,23 +1786,26 @@ export class EthBancorModule
     );
     const shareOfPool = fundRewardDec / smartSupplyDec;
 
-    const sameReserveCostDec = new BigNumber(opposingReserve.weiAmount)
-      .div(sameReserve.weiAmount)
-      .toString();
+    const opposingReserveSupplyDec = shrinkToken(
+      opposingReserve.weiAmount,
+      opposingReserve.decimals
+    );
+    const sameReserveSupplyDec = shrinkToken(
+      sameReserve.weiAmount,
+      sameReserve.decimals
+    );
 
-    const opposingReserveCostDec = new BigNumber(sameReserve.weiAmount)
-      .div(opposingReserve.weiAmount)
-      .toString();
+    const singleUnitCosts = buildSingleUnitCosts(
+      { id: opposingReserve.contract, amount: opposingReserveSupplyDec },
+      { id: sameReserve.contract, amount: sameReserveSupplyDec }
+    );
 
     const res = {
       opposingAmount: shrinkToken(opposingAmount, opposingReserve.decimals),
       smartTokenAmount: { id: smartTokenAddress, amount: fundReward },
       shareOfPool,
       singleUnitCosts: sortAlongSide(
-        [
-          { id: sameReserve.contract, amount: sameReserveCostDec },
-          { id: opposingReserve.contract, amount: opposingReserveCostDec }
-        ],
+        singleUnitCosts,
         unitCost => unitCost.id,
         relay.reserves.map(reserve => reserve.contract)
       )
@@ -1858,7 +1879,7 @@ export class EthBancorModule
       smallerWeight.stakedBalance
     ).div(new BigNumber(1).plus(distanceFromMiddle));
 
-    const singleUnitCosts = [
+    const singleUnitCosts = buildSingleUnitCosts(
       {
         id: biggerWeight.reserveAddress,
         amount: shrinkToken(
@@ -1873,7 +1894,7 @@ export class EthBancorModule
           smallerWeight.token.decimals
         )
       }
-    ];
+    );
 
     const sameReserve = findOrThrow(
       [biggerWeight, smallerWeight],
@@ -2189,22 +2210,26 @@ export class EthBancorModule
       smallerWeight.stakedBalance
     ).div(new BigNumber(1).plus(distanceFromMiddle));
 
-    const singleUnitCosts = [
-      {
-        id: biggerWeight.reserveToken.contract,
-        amount: shrinkToken(
-          adjustedBiggerWeight.toString(),
-          biggerWeight.reserveToken.decimals
-        )
-      },
-      {
-        id: smallerWeight.reserveToken.contract,
-        amount: shrinkToken(
-          adjustedSmallerWeight.toString(),
-          smallerWeight.reserveToken.decimals
-        )
-      }
-    ];
+    const singleUnitCosts = sortAlongSide(
+      buildSingleUnitCosts(
+        {
+          id: biggerWeight.reserveToken.contract,
+          amount: shrinkToken(
+            adjustedBiggerWeight.toString(),
+            biggerWeight.reserveToken.decimals
+          )
+        },
+        {
+          id: smallerWeight.reserveToken.contract,
+          amount: shrinkToken(
+            adjustedSmallerWeight.toString(),
+            smallerWeight.reserveToken.decimals
+          )
+        }
+      ),
+      unitCost => unitCost.id,
+      relay.reserves.map(x => x.contract)
+    );
 
     const sameReserve = findOrThrow(
       matchedWeights,

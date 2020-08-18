@@ -109,7 +109,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   get share() {
-    return formatNumber(this.shareOfPool, 6)
+    return formatPercent(this.shareOfPool)
   }
 
   get shareBlockItems() {
@@ -118,7 +118,7 @@ export default class PoolActionsAddV1 extends Vue {
         ...this.singleUnitCosts,
         {
           id: "poolShare",
-          title: `${formatPercent(this.shareOfPool)}%`,
+          title: formatPercent(this.shareOfPool),
           label: "Share of Pool"
         }
       ];
@@ -160,7 +160,7 @@ export default class PoolActionsAddV1 extends Vue {
       },
       {
         label: "Share of Pool",
-        value: this.share + "%"
+        value: this.share
       }
     ];
   }
