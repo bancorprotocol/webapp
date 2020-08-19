@@ -120,6 +120,9 @@
           </b-btn>
         </div>
       </b-dropdown-text>
+      <div class="font-size-12 text-muted-light text-center font-w400">
+        Version {{ appVersion }}
+      </div>
     </b-dropdown-group>
   </b-dropdown>
 </template>
@@ -146,6 +149,12 @@ export default class SettingsMenu extends Vue {
 
   setSlippage(slippage: number) {
     vxm.bancor.setSlippageTolerance(slippage);
+  }
+
+  get appVersion() {
+    return JSON.parse(
+      unescape(escape(JSON.stringify(require("../../../package.json"))))
+    ).version;
   }
 
   async changeModule(id: string) {

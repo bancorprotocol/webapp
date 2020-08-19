@@ -1,12 +1,13 @@
 <template>
-  <div class="d-flex justify-content-center align-items-center mt-3">
+  <div
+    class="d-flex justify-content-center align-items-center mt-3 font-size-14 font-w500"
+  >
     <div
       :class="current > 1 ? 'cursor' : ''"
       @click="current > 1 ? current-- : null"
     >
       <font-awesome-icon
         icon="long-arrow-alt-left"
-        size="2x"
         :class="
           current === 1
             ? darkMode
@@ -23,7 +24,6 @@
     >
       <font-awesome-icon
         icon="long-arrow-alt-right"
-        size="2x"
         :class="
           current === pagesTotal
             ? darkMode

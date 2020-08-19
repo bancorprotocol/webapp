@@ -7,13 +7,13 @@
         :key="column.label"
         scope="col"
         :class="column.key ? 'cursor' : ''"
-        :style="column.width ? 'min-width: ' + column.width : ''"
+        :style="getWidthStyle(column)"
       >
         {{ column.label }}
         <font-awesome-icon
           v-if="column.key && column.key === sortByKey"
           :icon="desc ? 'caret-down' : 'caret-up'"
-          class="text-primary"
+          :class="darkMode ? 'text-white' : 'text-primary'"
         />
       </th>
     </tr>
@@ -27,7 +27,8 @@ import { vxm } from "@/store";
 export interface ViewTableFields {
   label: string;
   key?: string;
-  width?: string;
+  minWidth?: string;
+  maxWidth?: string;
 }
 
 @Component({
@@ -43,6 +44,14 @@ export default class TableHeader extends Vue {
       if (this.sortByKey === column.key) this.desc = !this.desc;
       else this.sortByKey = column.key;
     } else return;
+  }
+
+  getWidthStyle(column: ViewTableFields) {
+    let styleString = "";
+    if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
+    if (column.minWidth)
+      styleString = styleString + "min-width: " + column.minWidth + ";";
+    return styleString;
   }
 
   get darkMode() {
@@ -66,7 +75,7 @@ th {
   }
 
   &-dark {
-    background-color: $primary;
+    background-color: $gray-border-dark;
     color: $text-muted-dark !important;
   }
 }
