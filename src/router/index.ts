@@ -82,6 +82,7 @@ export const router = new Router({
     {
       path: "/:service/pool/create",
       name: "PoolCreate",
+      redirect: "/404",
       components: {
         Nav: Navigation,
         Hero: CreateHome
@@ -103,6 +104,7 @@ export const router = new Router({
     {
       path: "/:service/data",
       name: "Data",
+      redirect: "/404",
       components: {
         Nav: Navigation,
         default: Data
