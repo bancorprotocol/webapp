@@ -23,6 +23,7 @@ import { buildConverterContract } from "./eth/contractTypes";
 import { shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
+import BigNumber from "bignumber.js";
 
 export const networkTokens = ["BNT", "USDB"];
 
@@ -90,9 +91,10 @@ const replaceLastChar = (str: string, char: string) => {
   return str.slice(0, str.length - 1) + char;
 };
 
-export const formatNumber = (num: number, size: number = 4) => {
-  if (num === 0) return "0";
-  const reduced = num.toFixed(size);
+export const formatNumber = (num: number | string, size: number = 4) => {
+  const bigNum = new BigNumber(num);
+  if (bigNum.eq(0)) return "0";
+  const reduced = bigNum.toFixed(size);
   const isZero = Number(reduced) == 0;
   if (isZero) {
     return `< ${replaceLastChar(reduced, "1")}`;
