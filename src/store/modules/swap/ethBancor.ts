@@ -63,7 +63,8 @@ import {
   getConvertersByAnchors,
   getAnchors,
   getConvertibleTokenAnchors,
-  conversionPath
+  conversionPath,
+  getTokenSupplyWei
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, isAddress, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
@@ -2769,8 +2770,21 @@ export class EthBancorModule
       if (!poolToken)
         throw new Error("Client side error - failed finding pool token");
 
-      const minimumReturnWei = new BigNumber(reserveToken.weiAmount)
-        .times(0.9)
+      const [stakedReserveBalance, poolTokenSupply] = await Promise.all([
+        this.fetchStakedReserveBalance({
+          converterAddress: chainLinkRelay.contract,
+          reserveTokenAddress: reserveToken.tokenContract
+        }),
+        getTokenSupplyWei(poolToken.poolToken.contract)
+      ]);
+
+      const expectedPoolTokenReturnWei = new BigNumber(poolTokenSupply)
+        .div(stakedReserveBalance)
+        .times(reserveToken.weiAmount)
+        .toFixed(0);
+
+      const minimumReturnWei = new BigNumber(expectedPoolTokenReturnWei)
+        .times(0.98)
         .toFixed(0);
 
       txHash = await this.addLiquidityV2({
