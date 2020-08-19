@@ -115,7 +115,7 @@ export default class SwapAction extends Vue {
   }
 
   get disableButton() {
-    if (!this.isAuthenticated) return false
+    if (!this.isAuthenticated && this.amount1) return false
     else if (this.amount1 && this.amount2 && !this.errorToken1 && !this.errorToken2) return false
     else return true
   }
