@@ -694,8 +694,14 @@ export interface TickerPrice {
   symbol: string;
 }
 
-export const getCountryCode = async () => {
-  return fetch(`https://ipapi.co/json`, { referrerPolicy: "no-referrer" })
-    .then(res => res.json())
-    .then(res => res.country_code_iso3 as string);
+export const getCountryCode = async (): Promise<string> => {
+  try {
+    const res: AxiosResponse<any> = await axios.get("https://ipapi.co/json");
+    const code = res.data.country_code_iso3;
+    if (code) return code;
+    else return "UNKOWN";
+  } catch (e) {
+    console.error(e);
+    return "UNKOWN";
+  }
 };
