@@ -8,6 +8,16 @@ export interface DictionaryItem {
 
 export const ethBancorApiDictionary: DictionaryItem[] = [
   {
+    tokenId: "5b27eb593751b7bb8dad1735",
+    smartTokenAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+    tokenAddress: "0x514910771af9ca656af840dff83e8264ecf986ca"
+  },
+  {
+    tokenId: "5b27eb613751b7bb8dad1750",
+    smartTokenAddress: "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
+    tokenAddress: "0x408e41876cccdc0f92210600ef50372656052a38"
+  },
+  {
     smartTokenAddress: "0x7f8c53072d9b809a108b1a9d677bcc3b7b3f844e",
     tokenId: "5e70d03c6ea615ea174b74a8",
     tokenAddress: "0xa3d58c4e56fedcae3a7c43a725aee9a71f0ece4e"

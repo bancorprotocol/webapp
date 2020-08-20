@@ -48,7 +48,8 @@ import {
   reserveIncludedInRelay,
   sortAlongSide,
   RelayWithReserveBalances,
-  sortByLiqDepth
+  sortByLiqDepth,
+  matchReserveFeed
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -71,7 +72,7 @@ import Decimal from "decimal.js";
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import wait from "waait";
-import { uniqWith, differenceWith, zip } from "lodash";
+import { uniqWith, differenceWith, zip, partition } from "lodash";
 import {
   buildNetworkContract,
   buildRegistryContract,
@@ -97,6 +98,11 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { openDB, DBSchema } from "idb/with-async-ittr.js";
 import { MultiCall, ShapeWithLabel } from "eth-multicall";
+
+const compareRelayByReserves = (a: Relay, b: Relay) =>
+  a.reserves.every(reserve =>
+    b.reserves.some(r => compareString(reserve.contract, r.contract))
+  );
 
 const rawAbiV2ToStacked = (
   rawAbiV2: RawAbiV2PoolBalances
@@ -1656,7 +1662,10 @@ export class EthBancorModule
             smartTokenSymbol: poolContainerAddress
           })),
           fee: relay.fee / 100,
-          liqDepth: relay.reserves[0].reserveFeed!.liqDepth,
+          liqDepth: relay.reserves.reduce(
+            (acc, item) => acc + item.reserveFeed!.liqDepth,
+            0
+          ),
           owner: relay.owner,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
@@ -1692,7 +1701,10 @@ export class EthBancorModule
             smartTokenSymbol: relay.anchor.contract
           })),
           fee: relay.fee / 100,
-          liqDepth: networkReserve.reserveFeed!.liqDepth,
+          liqDepth: relay.reserves.reduce(
+            (acc, item) => acc + item.reserveFeed!.liqDepth,
+            0
+          ),
           owner: relay.owner,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
@@ -2888,27 +2900,13 @@ export class EthBancorModule
     return tokens;
   }
 
-  @action async buildPossibleReserveFeedsFromBancorApi(relays: Relay[]) {
-    const feeds = await this.possibleRelayFeedsFromBancorApi(relays);
-    const noFeedsCreated = feeds.length == 0;
-    if (noFeedsCreated && this.currentNetwork == EthNetworks.Mainnet) {
-      console.warn(
-        `Failed to create any feeds from the Bancor API after passing it ${relays.length} relays.`
-      );
-    }
-    this.updateRelayFeeds(feeds);
-  }
-
-  @action async possibleRelayFeedsFromBancorApi(
-    relays: Relay[]
+  @action async addPossiblePropsFromBancorApi(
+    reserveFeeds: ReserveFeed[]
   ): Promise<ReserveFeed[]> {
-    const traditionalRelays = relays.filter(
-      isTraditional
-    ) as TraditionalRelay[];
     try {
       const tokens = this.bancorApiTokens;
       if (!tokens || tokens.length == 0) {
-        throw new Error("No bancor tokens available...");
+        return reserveFeeds;
       }
       const ethUsdPrice = findOrThrow(
         tokens,
@@ -2917,62 +2915,42 @@ export class EthBancorModule
       ).price;
       console.log(ethUsdPrice, "is the eth USD price");
 
-      return traditionalRelays
-        .filter(relay => {
-          const dictionaryItems = ethBancorApiDictionary.filter(catalog =>
-            compareString(relay.anchor.contract, catalog.smartTokenAddress)
-          );
-          return tokens.some(token =>
-            dictionaryItems.some(dic => compareString(dic.tokenId, token.id))
-          );
-        })
-        .flatMap(relay =>
-          relay.reserves.map(reserve => {
-            const foundDictionaries = ethBancorApiDictionary.filter(catalog =>
-              compareString(catalog.smartTokenAddress, relay.anchor.contract)
-            );
-
-            const bancorIdRelayDictionary =
-              foundDictionaries.length == 1
-                ? foundDictionaries[0]
-                : foundDictionaries.find(dictionary =>
-                    compareString(reserve.contract, dictionary.tokenAddress)
-                  )!;
-            const tokenPrice = tokens.find(token =>
-              compareString(token.id, bancorIdRelayDictionary.tokenId)
-            )!;
-
-            const relayFeed = tokenPriceToFeed(
-              reserve.contract,
-              relay.anchor.contract,
-              ethUsdPrice,
-              tokenPrice
-            );
-
-            if (
-              compareString(
-                bancorIdRelayDictionary.tokenAddress,
-                reserve.contract
-              )
-            ) {
-              return relayFeed;
-            } else {
-              return {
-                ...relayFeed,
-                costByNetworkUsd: undefined,
-                change24H: undefined,
-                volume24H: undefined
-              };
-            }
-          })
+      const [bancorCovered, notCovered] = partition(reserveFeeds, feed => {
+        const inDictionary = ethBancorApiDictionary.find(
+          matchReserveFeed(feed)
         );
+        if (!inDictionary) return false;
+        return tokens.some(token => token.id == inDictionary.tokenId);
+      });
+
+      const newBancorCovered = bancorCovered.map(reserveFeed => {
+        const dictionary = findOrThrow(
+          ethBancorApiDictionary,
+          matchReserveFeed(reserveFeed)
+        );
+        const tokenPrice = findOrThrow(
+          tokens,
+          token => token.id == dictionary.tokenId
+        );
+
+        return {
+          ...reserveFeed,
+          change24H: tokenPrice.change24h,
+          volume24H: tokenPrice.volume24h.USD,
+          costByNetworkUsd: reserveFeed.costByNetworkUsd || tokenPrice.price
+        };
+      });
+
+      return [...newBancorCovered, ...notCovered];
     } catch (e) {
       console.warn(`Failed utilising Bancor API: ${e.message}`);
-      return [];
+      return reserveFeeds;
     }
   }
 
-  @action async updateRelayFeeds(feeds: ReserveFeed[]) {
+  @action async updateRelayFeeds(suggestedFeeds: ReserveFeed[]) {
+    const feeds = suggestedFeeds;
+
     const potentialRelaysToMutate = this.relaysList.filter(relay =>
       feeds.some(feed => compareString(feed.poolId, relay.id))
     );
@@ -3065,10 +3043,10 @@ export class EthBancorModule
       const reverse = tokenAmount / networkReserveAmount;
       const main = networkReserveIsUsd ? dec : dec * usdPriceOfBnt;
 
-      const liqDepth =
-        (networkReserveIsUsd
-          ? networkReserveAmount
-          : networkReserveAmount * usdPriceOfBnt) * 2;
+      const liqDepth = networkReserveIsUsd
+        ? networkReserveAmount
+        : networkReserveAmount * usdPriceOfBnt;
+
       return [
         {
           reserveAddress: tokenReserve.contract,
@@ -3828,8 +3806,9 @@ export class EthBancorModule
       poolsFailed.map(failedPool => failedPool.anchorAddress)
     );
     this.updateRelays(pools);
-    this.buildPossibleReserveFeedsFromBancorApi(pools);
-    this.updateRelayFeeds(reserveFeeds);
+    this.updateRelayFeeds(
+      await this.addPossiblePropsFromBancorApi(reserveFeeds)
+    );
     const tokensInChunk = pools
       .flatMap(tokensInRelay)
       .map(token => token.contract);
@@ -4242,10 +4221,20 @@ export class EthBancorModule
       toTokenContract
     );
 
+    const relaysByLiqDepth = this.relays.sort(
+      sortByLiqDepth
+    );
+    const relaysList = sortAlongSide(
+      this.relaysList,
+      relay => relay.id,
+      relaysByLiqDepth.map(relay => relay.id)
+    );
+    const eliminatedRelays = uniqWith(relaysList, compareRelayByReserves);
+
     const relays = await this.findPath({
       fromId: from.id,
       toId,
-      relays: this.relaysList
+      relays: eliminatedRelays
     });
 
     const path = generateEthPath(fromToken.symbol, relays.map(relayToMinimal));
