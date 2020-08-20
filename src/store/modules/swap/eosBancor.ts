@@ -49,7 +49,9 @@ import {
   viewTokenToModalChoice,
   reserveIncludedInEosRelay,
   sortAlongSide,
-  sortByLiqDepth
+  sortByLiqDepth,
+  assetToDecNumberString,
+  decNumberStringToAsset
 } from "@/api/helpers";
 import {
   Sym as Symbol,
@@ -119,7 +121,7 @@ const getSymbolName = (tokenSymbol: TokenSymbol) =>
   tokenSymbol.symbol.code().to_string();
 
 const relayHasReserveBalances = (relay: EosMultiRelay) =>
-  relay.reserves.every(reserve => reserve.amount > 0);
+  relay.reserves.every(reserve => new BigNumber(reserve.amount).gt(0));
 
 const reservesIncludeTokenMeta = (tokenMeta: TokenMeta[]) => (
   relay: EosMultiRelay
@@ -299,10 +301,7 @@ export interface ViewTokenMinusLogo {
 }
 
 const agnosticToAsset = (agnostic: AgnosticToken): Asset =>
-  number_to_asset(
-    agnostic.amount,
-    new Sym(agnostic.symbol, agnostic.precision)
-  );
+  decNumberStringToAsset(agnostic.amount, agnostic.symbol);
 
 const agnosticToTokenAmount = (agnostic: AgnosticToken): TokenAmount => ({
   contract: agnostic.contract,
@@ -357,7 +356,7 @@ const calculatePriceBothWays = (
     throw new Error(
       "Failed to determine USD price, was not passed in known prices"
     );
-  if (reserves.some(reserve => reserve.amount == 0))
+  if (reserves.some(reserve => new BigNumber(reserve.amount).eq(0)))
     throw new Error("One of more of the reserves passed has a zero balance");
 
   const [reserveOne, reserveTwo] = reserves;
@@ -492,10 +491,7 @@ const eosMultiToHydrated = (relay: EosMultiRelay): HydratedRelay => ({
   reserves: relay.reserves.map(
     (reserve): TokenAmount => ({
       contract: reserve.contract,
-      amount: number_to_asset(
-        reserve.amount,
-        new Symbol(reserve.symbol, reserve.precision)
-      )
+      amount: decNumberStringToAsset(reserve.amount, reserve.symbol)
     })
   ),
   contract: relay.contract,
@@ -563,13 +559,15 @@ export class EosBancorModule
         ["addLiquidity", () => true],
         [
           "removeLiquidity",
-          relay => relay.reserves.some(reserve => reserve.amount > 0)
+          relay =>
+            relay.reserves.some(reserve => new BigNumber(reserve.amount).gt(0))
         ],
         ["setFee", isOwner],
         ["changeOwner", isOwner],
         [
           "deleteRelay",
-          relay => relay.reserves.every(reserve => reserve.amount == 0)
+          relay =>
+            relay.reserves.every(reserve => new BigNumber(reserve.amount).eq(0))
         ]
       ];
       return features
@@ -746,9 +744,9 @@ export class EosBancorModule
   @action async fetchTokenBalancesIfPossible(tokens: TokenBalanceParam[]) {
     if (!this.isAuthenticated) return;
     const tokensFetched = this.currentUserBalances;
-    const allTokens = _.uniqBy(
+    const allTokens = _.uniqWith(
       this.relaysList.flatMap(relay => relay.reserves),
-      "id"
+      (a, b) => compareString(a.id, b.id)
     );
     const tokenBalancesNotYetFetched = _.differenceWith(
       allTokens,
@@ -1494,7 +1492,7 @@ export class EosBancorModule
             owner: relay.contract,
             smartToken: {
               id: smartTokenId,
-              amount: 0,
+              amount: "0",
               contract: relay.smartToken.contract,
               precision: 4,
               network: "eos",
@@ -1510,7 +1508,7 @@ export class EosBancorModule
               precision: reserve.amount.symbol.precision(),
               contract: reserve.contract,
               symbol: assetToSymbolName(reserve.amount),
-              amount: asset_to_number(reserve.amount)
+              amount: assetToDecNumberString(reserve.amount)
             }))
           };
         }
@@ -1904,14 +1902,16 @@ export class EosBancorModule
     ]);
 
     const smartSupply = asset_to_number(supply.supply);
-    const percent = smartTokenBalance.balance / smartSupply;
+    const percent = new BigNumber(smartTokenBalance.balance).div(smartSupply);
 
     const maxWithdrawals: ViewAmount[] = reserves.map(reserve => ({
       id: buildTokenId({
         contract: reserve.contract,
         symbol: reserve.amount.symbol.code().to_string()
       }),
-      amount: String(asset_to_number(reserve.amount) * percent)
+      amount: new BigNumber(asset_to_number(reserve.amount))
+        .times(percent)
+        .toString()
     }));
 
     return {
@@ -1982,24 +1982,28 @@ export class EosBancorModule
     return {
       opposingAmount: String(asset_to_number(opposingAsset)),
       shareOfPool: percent,
-      singleUnitCosts: [
-        {
-          id: tokenAmountToId(sameReserve),
-          amount: String(
-            asset_to_number(
-              singleUnitCost(sameReserve.amount, opposingReserve.amount)
+      singleUnitCosts: sortAlongSide(
+        [
+          {
+            id: tokenAmountToId(opposingReserve),
+            amount: String(
+              asset_to_number(
+                singleUnitCost(sameReserve.amount, opposingReserve.amount)
+              )
             )
-          )
-        },
-        {
-          id: tokenAmountToId(opposingReserve),
-          amount: String(
-            asset_to_number(
-              singleUnitCost(opposingReserve.amount, sameReserve.amount)
+          },
+          {
+            id: tokenAmountToId(sameReserve),
+            amount: String(
+              asset_to_number(
+                singleUnitCost(opposingReserve.amount, sameReserve.amount)
+              )
             )
-          )
-        }
-      ],
+          }
+        ],
+        unitCost => unitCost.id,
+        relay.reserves.map(x => x.id)
+      ),
       smartTokenAmount: lowerAsset
     };
   }

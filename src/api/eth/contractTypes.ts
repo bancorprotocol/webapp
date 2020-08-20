@@ -1,5 +1,6 @@
 import { ContractSendMethod } from "web3-eth-contract";
-import { CallReturn, ContractMethods } from "@/types/bancor.d.ts";
+import { ContractMethods } from "@/types/bancor.d.ts";
+import { CallReturn } from "eth-multicall";
 import {
   ABIConverter,
   ABISmartToken,

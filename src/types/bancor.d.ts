@@ -1,4 +1,3 @@
-import { Tokens, Token } from "sxjs";
 import { Contract, ContractSendMethod } from "web3-eth-contract";
 
 export interface TokenPrice {
@@ -43,7 +42,7 @@ export interface HistoryRow {
 export interface TokenBalance {
   symbol: string;
   precision: number;
-  amount: number;
+  amount: string;
   contract: string;
 }
 
@@ -182,7 +181,7 @@ export interface ViewToken {
   change24h?: number;
   volume24h?: number;
   balance?: string;
-  precision?: number;
+  precision: number;
 }
 
 interface TokenWithLogo extends AgnosticToken {
@@ -195,7 +194,7 @@ export interface ViewReserve {
   logo: string[];
   symbol: string;
   contract: string;
-  balance?: number;
+  balance?: string;
   reserveWeight: number;
 }
 
@@ -283,11 +282,21 @@ export interface UserPoolBalances {
 
 interface PoolTokenPosition {
   relay: ViewRelay;
-  smartTokenAmount?: number;
+  smartTokenAmount?: string;
   poolTokens?: {
     reserveId: string;
-    balance: number;
+    balance: string;
   }[];
+}
+
+export interface ReserveFeed {
+  liqDepth: number;
+  poolId: string;
+  reserveAddress: string;
+  costByNetworkUsd?: number;
+  change24H?: number;
+  volume24H?: number;
+  priority: number;
 }
 
 export interface LiquidityModule {
@@ -334,7 +343,7 @@ export interface AgnosticToken {
   precision: number;
   symbol: string;
   network: string;
-  amount: number;
+  amount: string;
 }
 
 export interface EosMultiRelay {
@@ -427,7 +436,7 @@ interface TransferParam {
 }
 
 export interface TokenBalanceReturn extends TokenBalanceParam {
-  balance: number;
+  balance: string;
 }
 
 interface TokenQueries extends TokenBalanceParam {
@@ -498,13 +507,6 @@ export interface ETH {
   price: Price;
 }
 
-export interface EthplorerBalance {
-  address: string;
-  ETH: ETH;
-  countTxs: number;
-  tokens: Token[];
-}
-
 export interface kv {
   [symcode: string]: number;
 }
@@ -528,12 +530,4 @@ export enum Feature {
 export interface Service {
   namespace: string;
   features: Feature[];
-}
-
-export interface ModulePool extends Token {
-  volume24h: number;
-}
-
-export interface ModulePools {
-  [symcode: string]: ModulePool;
 }

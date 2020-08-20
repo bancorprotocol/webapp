@@ -95,10 +95,7 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    vxm.ethBancor.updateBalance([
-      ethReserveAddress,
-      Number(fromWei(nativeBalance))
-    ]);
+    vxm.ethBancor.updateBalance([ethReserveAddress, fromWei(nativeBalance)]);
   }
 
   @action async checkAlreadySignedIn() {
@@ -117,7 +114,7 @@ export class EthereumModule extends VuexModule.With({
     accountHolder: EthAddress;
     tokenContractAddress: EthAddress;
     keepWei?: boolean;
-  }) {
+  }): Promise<string> {
     if (!accountHolder || !tokenContractAddress)
       throw new Error(
         "Cannot get balance without both the account holder and token contract address"
@@ -130,12 +127,11 @@ export class EthereumModule extends VuexModule.With({
       compareString(tokenContractAddress, ethReserveAddress)
     ) {
       const weiBalance = await web3.eth.getBalance(accountHolder);
-      return Number(fromWei(weiBalance));
+      return fromWei(weiBalance);
     } else {
       if (!tokenContractAddress)
         throw new Error("tokenContractAddress is falsy");
       const tokenContract = new web3.eth.Contract(
-        // @ts-ignore
         ABISmartToken,
         tokenContractAddress
       );
@@ -145,7 +141,7 @@ export class EthereumModule extends VuexModule.With({
         tokenContract.methods.balanceOf(accountHolder).call() as string
       ]);
       if (keepWei) return weiBalance;
-      return Number(shrinkToken(weiBalance, Number(decimals)));
+      return shrinkToken(weiBalance, Number(decimals));
     }
   }
 

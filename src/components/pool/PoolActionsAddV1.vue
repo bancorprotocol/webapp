@@ -56,7 +56,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { namespace } from "vuex-class";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
-import { compareString, formatNumber } from "../../api/helpers";
+import { compareString, formatNumber, formatPercent } from "../../api/helpers";
 
 const bancor = namespace("bancor");
 
@@ -109,7 +109,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   get share() {
-    return formatNumber(this.shareOfPool, 6)
+    return formatPercent(this.shareOfPool)
   }
 
   get shareBlockItems() {
@@ -118,7 +118,7 @@ export default class PoolActionsAddV1 extends Vue {
         ...this.singleUnitCosts,
         {
           id: "poolShare",
-          title: `${formatNumber(this.shareOfPool)}%`,
+          title: formatPercent(this.shareOfPool),
           label: "Share of Pool"
         }
       ];
@@ -160,7 +160,7 @@ export default class PoolActionsAddV1 extends Vue {
       },
       {
         label: "Share of Pool",
-        value: this.share + "%"
+        value: this.share
       }
     ];
   }
