@@ -117,7 +117,10 @@ export default class PoolActionsAddV2 extends Vue {
 
   errorMsg = ""
 
-  poolClosed = true;
+  get poolClosed() {
+    if (this.pool.v2) return true
+    else return false
+  }
 
   get supplyButtonLabel() {
     if (this.poolClosed) return "Deposits Closed"
