@@ -99,6 +99,11 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { openDB, DBSchema } from "idb/with-async-ittr.js";
 import { MultiCall, ShapeWithLabel } from "eth-multicall";
 
+const compareRelayByReserves = (a: Relay, b: Relay) =>
+  a.reserves.every(reserve =>
+    b.reserves.some(r => compareString(reserve.contract, r.contract))
+  );
+
 const rawAbiV2ToStacked = (
   rawAbiV2: RawAbiV2PoolBalances
 ): StakedAndReserve => ({
@@ -4216,10 +4221,20 @@ export class EthBancorModule
       toTokenContract
     );
 
+    const relaysByLiqDepth = this.relays.sort(
+      sortByLiqDepth
+    );
+    const relaysList = sortAlongSide(
+      this.relaysList,
+      relay => relay.id,
+      relaysByLiqDepth.map(relay => relay.id)
+    );
+    const eliminatedRelays = uniqWith(relaysList, compareRelayByReserves);
+
     const relays = await this.findPath({
       fromId: from.id,
       toId,
-      relays: this.relaysList
+      relays: eliminatedRelays
     });
 
     const path = generateEthPath(fromToken.symbol, relays.map(relayToMinimal));

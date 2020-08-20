@@ -341,7 +341,7 @@ export const matchReserveFeed = (reserveFeed: ReserveFeed) => (
   compareString(dict.tokenAddress, reserveFeed.reserveAddress);
 
 export const sortAlongSide = <T>(
-  arr: T[],
+  arr: readonly T[],
   selector: (item: T) => string,
   sortedArr: string[]
 ): T[] => {
