@@ -84,7 +84,7 @@ import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
-import { compareString, formatNumber } from "@/api/helpers";
+import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import { namespace } from "vuex-class";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 
@@ -146,7 +146,7 @@ export default class PoolActionsAddV2 extends Vue {
         ...this.singleUnitCosts,
         {
           id: "poolShare",
-          title: `${formatNumber(this.shareOfPool)}%`,
+          title: formatPercent(this.shareOfPool),
           label: "Share of Pool"
         }
       ];
@@ -216,7 +216,7 @@ export default class PoolActionsAddV2 extends Vue {
       },
       {
         label: "Share of Pool",
-        value: `${formatNumber(this.shareOfPool)}%`
+        value: formatPercent(this.shareOfPool)
       }
     ];
   }

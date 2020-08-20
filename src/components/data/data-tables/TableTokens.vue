@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="table-responsive">
     <table :class="darkMode ? 'dark-table' : 'table'">
       <table-header
         :fields="fields"
@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TableHeader, {
   ViewTableFields
@@ -55,6 +55,8 @@ import TableActionButtons from "@/components/common/TableActionButtons.vue";
   }
 })
 export default class TableTokens extends Vue {
+  @Prop() filter!: string;
+
   numeral = numeral;
 
   sortBy: string = "liqDepth";
@@ -71,35 +73,40 @@ export default class TableTokens extends Vue {
       {
         label: "24h Change",
         key: "change24h",
-        width: "135px"
+        minWidth: "135px"
       },
       {
         label: "Price USD",
         key: "price",
-        width: "120px"
+        minWidth: "120px"
       },
       {
         label: "24h Volume",
         key: "volume24h",
-        width: "120px"
+        minWidth: "120px"
       },
       {
         label: "Liquidity Depth",
         key: "liqDepth",
-        width: "160px"
+        minWidth: "160px"
       },
       {
-        label: "Actions"
+        label: "Actions",
+        minWidth: "160px",
+        maxWidth: "160px"
       }
     ];
   }
 
   get tokens() {
     const tokens = vxm.bancor.tokens;
-    const result = sort(tokens)[this.descOrder ? "desc" : "asc"](
+    const filtered = tokens.filter((t: ViewToken) =>
+      t.symbol.includes(this.filter.toUpperCase())
+    );
+    const sorted = sort(filtered)[this.descOrder ? "desc" : "asc"](
       (t: any) => t[this.sortBy]
     );
-    return result as ViewToken[];
+    return sorted as ViewToken[];
   }
 
   get filteredTokens() {

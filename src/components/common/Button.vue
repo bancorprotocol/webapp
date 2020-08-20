@@ -1,14 +1,19 @@
 <template>
-  <b-btn
-    :variant="variant"
-    class="block-rounded"
-    :class="{ 'btn-large': large, 'btn-sm': small, 'btn-block': block }"
-    :disabled="disabled || loading"
-  >
-    <font-awesome-icon v-if="loading" icon="circle-notch" spin />
-    <span v-else-if="label">{{ label }}</span>
-    <slot v-else></slot>
-  </b-btn>
+  <div :class="darkMode ? 'btn-disabled-dark' : 'btn-disabled-light'">
+    <b-btn
+      :variant="variant"
+      class="block-rounded border-0"
+      :class="{
+        'btn-large': large,
+        'btn-sm': small,
+        'btn-block': block
+      }"
+      :disabled="disabled"
+    >
+      <span v-if="label">{{ label }}</span>
+      <slot v-else></slot>
+    </b-btn>
+  </div>
 </template>
 
 <script lang="ts">
@@ -36,7 +41,23 @@ export default class MainButton extends Vue {
 </script>
 
 <style lang="scss">
+@import "@/assets/_scss/custom/_variables";
+
 .btn-large {
   height: 49px !important;
+}
+
+.btn-disabled-light {
+  button:disabled,
+  button[disabled] {
+    background-color: $gray-placeholder !important;
+  }
+}
+
+.btn-disabled-dark {
+  button:disabled,
+  button[disabled] {
+    background-color: $gray-border-dark !important;
+  }
 }
 </style>

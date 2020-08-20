@@ -2564,6 +2564,11 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.144.tgz#12e57fc99064bce45e5ab3c8bc4783feb75eab8e"
   integrity sha512-ogI4g9W5qIQQUhXAclq6zhqgqNUr7UlFaqDHbch7WLSLeeM/7d3CRaw7GLajxvyFvhJqw4Rpcz5bhoaYtIx6Tg==
 
+"@types/lodash@^4.14.159":
+  version "4.14.159"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.159.tgz#61089719dc6fdd9c5cb46efc827f2571d1517065"
+  integrity sha512-gF7A72f7WQN33DpqOWw9geApQPh4M3PxluMtaHxWHXEGSN12/WbcEk/eNSqWNQcQhF66VSZ06vCF94CrHwXJDg==
+
 "@types/minimatch@*":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
@@ -7706,6 +7711,15 @@ eth-lib@^0.1.26:
     ws "^3.0.0"
     xhr-request-promise "^0.1.2"
 
+eth-multicall@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/eth-multicall/-/eth-multicall-1.0.8.tgz#413cef425b4438cc6dd197381e24f0c87c651260"
+  integrity sha512-uqn+L26rgICMOFv1g4l56/NT+bpXO0paqMQCZ1Oesx/xBBW78Xq0O8aFKtjmQE/QNykjZt75s87zFzED/8G5jg==
+  dependencies:
+    "@types/lodash" "^4.14.159"
+    lodash "^4.17.19"
+    web3 "^1.2.11"
+
 eth-query@^2.0.2, eth-query@^2.1.0, eth-query@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/eth-query/-/eth-query-2.1.2.tgz#d6741d9000106b51510c72db92d6365456a6da5e"
@@ -11315,6 +11329,11 @@ lodash@^4.0.0, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.1
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+
+lodash@^4.17.19:
+  version "4.17.20"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
+  integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
 
 log-symbols@^2.2.0:
   version "2.2.0"
@@ -15711,13 +15730,6 @@ swarm-js@^0.1.40:
     setimmediate "^1.0.5"
     tar "^4.0.2"
     xhr-request "^1.0.1"
-
-sxjs@^2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/sxjs/-/sxjs-2.2.4.tgz#f4009eae809f793dad138fe5179de5d4e7cad2f8"
-  integrity sha512-qyZzebXUZezrGx2KfST1KvnEaNR8MfgtvlBb21qAiuDUBk6qQ8mCSiltqL06art9GZhMQ2RXOQ3jnNiQ+kKMVg==
-  dependencies:
-    eos-common "^0.8.0"
 
 symbol-tree@^3.2.2:
   version "3.2.4"

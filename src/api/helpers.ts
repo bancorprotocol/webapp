@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
 import Onboard from "bnc-onboard";
-import { Asset, asset_to_number, Sym, number_to_asset } from "eos-common";
+import { Asset, Sym, number_to_asset } from "eos-common";
 import { rpc } from "./eos/rpc";
 import {
   TokenBalances,
@@ -14,14 +14,16 @@ import {
   Step,
   OnUpdate,
   ViewToken,
+  ReserveFeed,
   ModalChoice
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
-import wait from "waait";
 import { buildConverterContract } from "./eth/contractTypes";
 import { shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
+import numeral from "numeral";
+import BigNumber from "bignumber.js";
 
 export const networkTokens = ["BNT", "USDB"];
 
@@ -68,26 +70,6 @@ interface TraditionalStat {
   max_supply: Asset;
 }
 
-export const getSxContracts = async () => {
-  const res = (await rpc.get_table_rows({
-    code: "registry.sx",
-    table: "swap",
-    scope: "registry.sx"
-  })) as {
-    rows: {
-      contract: string;
-      ext_tokens: { sym: string; contract: string }[];
-    }[];
-  };
-  return res.rows.map(set => ({
-    contract: set.contract,
-    tokens: set.ext_tokens.map(token => ({
-      contract: token.contract,
-      symbol: new Sym(token.sym).code().to_string()
-    }))
-  }));
-};
-
 export const findOrThrow = <T>(
   arr: readonly T[],
   iteratee: (obj: T, index: number, arr: readonly T[]) => unknown,
@@ -109,15 +91,19 @@ const replaceLastChar = (str: string, char: string) => {
   return str.slice(0, str.length - 1) + char;
 };
 
-export const formatNumber = (num: number, size: number = 4) => {
-  if (num === 0) return "0";
-  const reduced = num.toFixed(size);
+export const formatNumber = (num: number | string, size: number = 4) => {
+  const bigNum = new BigNumber(num);
+  if (bigNum.eq(0)) return "0";
+  const reduced = bigNum.toFixed(size);
   const isZero = Number(reduced) == 0;
   if (isZero) {
     return `< ${replaceLastChar(reduced, "1")}`;
   }
   return reduced;
 };
+
+export const formatPercent = (decNumber: number) =>
+  numeral(decNumber).format("0.00%");
 
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
@@ -289,22 +275,6 @@ export const fetchTokenStats = async (
   };
 };
 
-export const retryPromise = async <T>(
-  promise: () => Promise<T>,
-  maxAttempts = 10,
-  interval = 1000
-): Promise<T> => {
-  return new Promise(async (resolve, reject) => {
-    for (let i = 0; i < maxAttempts; i++) {
-      try {
-        return resolve(await promise());
-      } catch (e) {
-        await wait(interval);
-        if (i == maxAttempts) reject(e);
-      }
-    }
-  });
-};
 const isValidBalance = (data: any): boolean =>
   typeof data.contract == "string" &&
   typeof data.symbol == "string" &&
@@ -321,15 +291,6 @@ export const getTokenBalances = async (
     ...res.data,
     tokens: res.data.tokens.filter(isValidBalance)
   };
-};
-
-export const identifyVersionBySha3ByteCodeHash = (sha3Hash: string): string => {
-  if (
-    sha3Hash ==
-    "0xf0a5de528f6d887b14706f0e66b20bee0d4c81078b6de9f395250e287e09e55f"
-  )
-    return "11";
-  throw new Error("Failed to identify version of Pool");
 };
 
 export type EosAccount = string;
@@ -356,6 +317,14 @@ export interface PoolToken {
 interface LiqDepth {
   liqDepth: number;
 }
+
+export const assetToDecNumberString = (asset: Asset): string =>
+  asset.to_string().split(" ")[0];
+
+export const decNumberStringToAsset = (
+  decNumberString: string,
+  symbolName: string
+): Asset => new Asset(`${decNumberString} ${symbolName}`);
 
 export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
   if (isNaN(a.liqDepth) && isNaN(b.liqDepth)) return 0;
@@ -409,7 +378,12 @@ export type SmartToken = Token;
 export type Anchor = SmartToken | PoolContainer;
 
 interface TokenWithWeight extends Token {
-  reserveWeight: number;
+  reserveWeight: number | undefined;
+  reserveFeed?: ReserveFeed;
+  meta?: {
+    logo: string;
+    name?: string;
+  };
 }
 export interface Relay {
   id: string;
@@ -546,13 +520,14 @@ export const buildTokenId = ({ contract, symbol }: BaseToken): string =>
 export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
   const contractName = process.env.VUE_APP_MULTICONTRACT!;
 
+  if (!contractName) throw new Error("Failed to find multi contract name");
   const rawRelays: {
     rows: ConverterV2Row[];
     more: boolean;
   } = await rpc.get_table_rows({
-    code: process.env.VUE_APP_MULTICONTRACT,
+    code: contractName,
     table: "converter.v2",
-    scope: process.env.VUE_APP_MULTICONTRACT,
+    scope: contractName,
     limit: 99
   });
   if (rawRelays.more) {
@@ -584,7 +559,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
       }),
       contract: value.contract,
       network: "eos",
-      amount: asset_to_number(new Asset(value.quantity))
+      amount: assetToDecNumberString(new Asset(value.quantity))
     })),
     contract: contractName,
     owner: relay.owner,
@@ -596,7 +571,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
         symbol: symToBaseSymbol(new Sym(relay.currency)).symbol
       }),
       contract: smartTokenContract!,
-      amount: 0,
+      amount: "0",
       network: "eos"
     },
     fee: relay.fee / 1000000
@@ -711,22 +686,6 @@ export interface TickerPrice {
   sell: number;
   symbol: string;
 }
-
-type indexSet = [number, number];
-
-export const createIndexes = (data: any[][]): indexSet[] =>
-  data.reduce(
-    (acc, item) => ({
-      lastIndex: acc.lastIndex + item.length,
-      built: acc.built.concat([[acc.lastIndex, acc.lastIndex + item.length]])
-    }),
-    { lastIndex: 0, built: [] as indexSet[] }
-  ).built;
-
-export const rebuildFromIndex = <T>(
-  arr: T[],
-  indexes: [number, number][]
-): T[][] => indexes.map(([before, after]) => arr.slice(before, after));
 
 export const getCountryCode = async () => {
   return fetch(`https://ipapi.co/json`, { referrerPolicy: "no-referrer" })

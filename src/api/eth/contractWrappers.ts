@@ -99,3 +99,8 @@ export const conversionPath = async ({
   const networkContract = buildNetworkContract(networkContractAddress);
   return networkContract.methods.conversionPath(from, to).call();
 };
+
+export const getTokenSupplyWei = async (tokenContractAddress: string) => {
+  const contract = buildTokenContract(tokenContractAddress);
+  return contract.methods.totalSupply().call();
+};
