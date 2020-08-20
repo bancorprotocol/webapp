@@ -54,11 +54,11 @@
 
     <main-button
       @click.native="initAction"
-      label="Supply"
+      :label="supplyButtonLabel"
       :active="true"
       :large="true"
       class="mt-3"
-      :disabled="!amount || balanceError !== ''"
+      :disabled="poolClosed || !amount || balanceError !== ''"
       :loading="rateLoading"
     />
     <modal-pool-action
@@ -117,12 +117,21 @@ export default class PoolActionsAddV2 extends Vue {
 
   errorMsg = ""
 
+  poolClosed = true;
+
+  get supplyButtonLabel() {
+    if (this.poolClosed) return "Deposits Closed"
+    else if (this.amount === "") return "Enter an amount"
+    else return "Supply"
+  }
+
   get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
+    if (this.poolClosed) return
+    else if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
     //@ts-ignore
     else await this.promptAuth();
   }
@@ -132,6 +141,7 @@ export default class PoolActionsAddV2 extends Vue {
     console.log(this.balance, 'was balance', this.amount, 'was amount', balanceError, 'was balance error');
     if (!this.isAuthenticated) return ""
     else if (this.amount === "") return ""
+    else if (this.poolClosed) return ""
     else if (this.errorMsg !== "") return this.errorMsg
     else if (balanceError) return "Insufficient balance"
     else return ""
