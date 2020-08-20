@@ -24,6 +24,7 @@ import { shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
+import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 
 export const networkTokens = ["BNT", "USDB"];
 
@@ -332,6 +333,12 @@ export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
   if (isNaN(b.liqDepth)) return -1;
   return b.liqDepth - a.liqDepth;
 };
+
+export const matchReserveFeed = (reserveFeed: ReserveFeed) => (
+  dict: DictionaryItem
+) =>
+  compareString(dict.smartTokenAddress, reserveFeed.poolId) &&
+  compareString(dict.tokenAddress, reserveFeed.reserveAddress);
 
 export const sortAlongSide = <T>(
   arr: T[],
