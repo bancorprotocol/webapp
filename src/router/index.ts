@@ -102,9 +102,8 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/data",
+      path: "/:service/super-secret-data",
       name: "Data",
-      redirect: "/404",
       components: {
         Nav: Navigation,
         default: Data
