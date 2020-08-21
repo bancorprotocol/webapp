@@ -97,7 +97,7 @@ import { priorityEthPools } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { openDB, DBSchema } from "idb/with-async-ittr.js";
-import { MultiCall, ShapeWithLabel } from "eth-multicall";
+import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 
 const compareRelayByReserves = (a: Relay, b: Relay) =>
   a.reserves.every(reserve =>
@@ -106,25 +106,42 @@ const compareRelayByReserves = (a: Relay, b: Relay) =>
 
 const rawAbiV2ToStacked = (
   rawAbiV2: RawAbiV2PoolBalances
-): StakedAndReserve => ({
-  converterAddress: rawAbiV2.converterAddress,
-  reserves: [
-    {
-      reserveAddress: rawAbiV2.secondaryReserveToken,
-      stakedBalance: rawAbiV2.reserveOneStakedBalance,
-      reserveWeight:
-        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[1],
-      poolTokenAddress: rawAbiV2.reserveOnePoolToken
-    },
-    {
-      reserveAddress: rawAbiV2.primaryReserveToken,
-      stakedBalance: rawAbiV2.reserveTwoStakedBalance,
-      reserveWeight:
-        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[0],
-      poolTokenAddress: rawAbiV2.reserveTwoPoolToken
-    }
-  ]
-});
+): StakedAndReserve => {
+  const primaryReserveWeight =
+    rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[0];
+  const secondaryReserveWeight =
+    rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[1];
+
+  const reserveOneIsPrimaryReserve = compareString(
+    rawAbiV2.reserveOne,
+    rawAbiV2.primaryReserveToken
+  );
+
+  const reserveOneReserveWeight = reserveOneIsPrimaryReserve
+    ? primaryReserveWeight
+    : secondaryReserveWeight;
+  const reserveTwoReserveWeight = reserveOneIsPrimaryReserve
+    ? secondaryReserveWeight
+    : primaryReserveWeight;
+
+  return {
+    converterAddress: rawAbiV2.converterAddress,
+    reserves: [
+      {
+        reserveAddress: rawAbiV2.reserveOne,
+        stakedBalance: rawAbiV2.reserveOneStakedBalance,
+        reserveWeight: reserveOneReserveWeight,
+        poolTokenAddress: rawAbiV2.reserveOnePoolToken
+      },
+      {
+        reserveAddress: rawAbiV2.reserveTwo,
+        stakedBalance: rawAbiV2.reserveTwoStakedBalance,
+        reserveWeight: reserveTwoReserveWeight,
+        poolTokenAddress: rawAbiV2.reserveTwoPoolToken
+      }
+    ]
+  };
+};
 
 const getAnchorTokenAddresses = (relay: Relay): string[] => {
   if (relay.converterType == PoolType.ChainLink) {
@@ -256,7 +273,7 @@ const buildReserveFeedsChainlink = (
 };
 
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
-const ORIGIN_ADDRESS = "originAddress";
+const ORIGIN_ADDRESS = DataTypes.originAddress;
 
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
@@ -292,6 +309,8 @@ const v2PoolBalanceShape = (
     converterAddress: ORIGIN_ADDRESS,
     primaryReserveToken: contract.methods.primaryReserveToken(),
     secondaryReserveToken: contract.methods.secondaryReserveToken(),
+    reserveOne,
+    reserveTwo,
     reserveOnePoolToken: contract.methods.poolToken(reserveOne),
     reserveTwoPoolToken: contract.methods.poolToken(reserveTwo),
     reserveOneStakedBalance: contract.methods.reserveStakedBalance(reserveOne),
@@ -569,6 +588,8 @@ const buildSingleUnitCosts = (
 
 interface RawAbiV2PoolBalances {
   converterAddress: string;
+  reserveOne: string;
+  reserveTwo: string;
   reserveOnePoolToken: string;
   reserveTwoPoolToken: string;
   primaryReserveToken: string;
