@@ -110,18 +110,18 @@ const rawAbiV2ToStacked = (
   converterAddress: rawAbiV2.converterAddress,
   reserves: [
     {
-      reserveAddress: rawAbiV2.primaryReserveToken,
+      reserveAddress: rawAbiV2.secondaryReserveToken,
       stakedBalance: rawAbiV2.reserveOneStakedBalance,
       reserveWeight:
-        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[0],
-      poolTokenAddress: rawAbiV2.poolTokenOne
+        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[1],
+      poolTokenAddress: rawAbiV2.reserveOnePoolToken
     },
     {
-      reserveAddress: rawAbiV2.secondaryReserveToken,
+      reserveAddress: rawAbiV2.primaryReserveToken,
       stakedBalance: rawAbiV2.reserveTwoStakedBalance,
       reserveWeight:
-        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[1],
-      poolTokenAddress: rawAbiV2.poolTokenTwo
+        rawAbiV2.effectiveReserveWeights && rawAbiV2.effectiveReserveWeights[0],
+      poolTokenAddress: rawAbiV2.reserveTwoPoolToken
     }
   ]
 });
@@ -282,15 +282,18 @@ const poolTokenShape = (address: string) => {
   };
 };
 
-const v2PoolBalanceShape = (contractAddress: string, reserves: string[]) => {
+const v2PoolBalanceShape = (
+  contractAddress: string,
+  reserveOne: string,
+  reserveTwo: string
+) => {
   const contract = buildV2Converter(contractAddress);
-  const [reserveOne, reserveTwo] = reserves;
   return {
     converterAddress: ORIGIN_ADDRESS,
     primaryReserveToken: contract.methods.primaryReserveToken(),
     secondaryReserveToken: contract.methods.secondaryReserveToken(),
-    poolTokenOne: contract.methods.poolToken(reserveOne),
-    poolTokenTwo: contract.methods.poolToken(reserveTwo),
+    reserveOnePoolToken: contract.methods.poolToken(reserveOne),
+    reserveTwoPoolToken: contract.methods.poolToken(reserveTwo),
     reserveOneStakedBalance: contract.methods.reserveStakedBalance(reserveOne),
     reserveTwoStakedBalance: contract.methods.reserveStakedBalance(reserveTwo),
     effectiveReserveWeights: contract.methods.effectiveReserveWeights()
@@ -566,8 +569,8 @@ const buildSingleUnitCosts = (
 
 interface RawAbiV2PoolBalances {
   converterAddress: string;
-  poolTokenOne: string;
-  poolTokenTwo: string;
+  reserveOnePoolToken: string;
+  reserveTwoPoolToken: string;
   primaryReserveToken: string;
   secondaryReserveToken: string;
   reserveOneStakedBalance: string;
@@ -1839,11 +1842,13 @@ export class EthBancorModule
   @action async fetchV2PoolBalances(
     relay: ChainLinkRelay
   ): Promise<StakedAndReserve> {
+    const [reserveOne, reserveTwo] = relay.reserves;
     const [[poolBalace]] = ((await this.multi([
       [
         v2PoolBalanceShape(
           relay.contract,
-          relay.reserves.map(reserve => reserve.contract)
+          reserveOne.contract,
+          reserveTwo.contract
         )
       ]
     ])) as unknown) as [RawAbiV2PoolBalances][];
@@ -1872,9 +1877,7 @@ export class EthBancorModule
           "failed to find token for weight"
         )
       }))
-      .sort((a, b) =>
-        b.decReserveWeight.minus(a.reserveWeight as string).toNumber()
-      );
+      .sort((a, b) => b.decReserveWeight.minus(a.decReserveWeight).toNumber());
 
     const weightsEqualOneMillion = new BigNumber(
       biggerWeight.reserveWeight as string
@@ -2203,7 +2206,7 @@ export class EthBancorModule
     }));
 
     const [biggerWeight, smallerWeight] = matchedWeights.sort((a, b) =>
-      b.decReserveWeight.minus(a.reserveWeight as string).toNumber()
+      b.decReserveWeight.minus(a.decReserveWeight).toNumber()
     );
 
     const weightsEqualOneMillion = new BigNumber(
@@ -3338,7 +3341,11 @@ export class EthBancorModule
         reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
       ),
       verifiedV2Pools.map(pool =>
-        v2PoolBalanceShape(pool.converterAddress, pool.reserves)
+        v2PoolBalanceShape(
+          pool.converterAddress,
+          pool.reserves[0],
+          pool.reserves[1]
+        )
       )
     ])) as [unknown, unknown, unknown]) as [
       RawAbiToken[],
@@ -4221,9 +4228,7 @@ export class EthBancorModule
       toTokenContract
     );
 
-    const relaysByLiqDepth = this.relays.sort(
-      sortByLiqDepth
-    );
+    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
     const relaysList = sortAlongSide(
       this.relaysList,
       relay => relay.id,
