@@ -118,8 +118,7 @@ export default class PoolActionsAddV2 extends Vue {
   errorMsg = ""
 
   get poolClosed() {
-    if (this.pool.v2) return true
-    else return false
+    return false;
   }
 
   get supplyButtonLabel() {
