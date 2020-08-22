@@ -2913,7 +2913,7 @@ export class EthBancorModule
     try {
       const tokens = this.bancorApiTokens;
       if (!tokens || tokens.length == 0) {
-        return reserveFeeds;
+        throw new Error("There are no cached Bancor API tokens.");
       }
       const ethUsdPrice = findOrThrow(
         tokens,
@@ -3224,12 +3224,38 @@ export class EthBancorModule
   @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
     const networkVars = getNetworkVariables(this.currentNetwork);
     const multi = new MultiCall(web3, networkVars.multiCall, [
-      600,
+      500,
       100,
       50,
-      10
+      10,
+      1
     ]);
     return multi.all(groupsOfShapes);
+  }
+
+  @action async refreshReserveBalances() {
+    const v1Relays = this.relaysList.filter(
+      relay => relay.converterType == PoolType.Traditional
+    ) as TraditionalRelay[];
+    const v2Relays = this.relaysList.filter(
+      relay => relay.converterType == PoolType.ChainLink
+    ) as ChainLinkRelay[];
+
+    const v1RelayShapes = v1Relays.map(relay =>
+      reserveBalanceShape(relay.contract, relay.reserves.map(r => r.contract))
+    );
+    const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
+      v2PoolBalanceShape(
+        relay.contract,
+        relay.reserves[0].contract,
+        relay.reserves[1].contract
+      )
+    );
+
+    const [v1RelayBalances, v2RelayBalances] = await this.multi([
+      v1RelayShapes,
+      v2RelayPoolBalanceShapes
+    ]);
   }
 
   @action async addPoolsV2(
@@ -3782,8 +3808,8 @@ export class EthBancorModule
           newSet,
           compareAnchorAndConverter
         );
+        // this.addPoolsBulk(droppedAnchors);
         this.addPoolsBulk(newSet);
-        this.addPoolsBulk(droppedAnchors);
       }
       this.moduleInitiated();
 
