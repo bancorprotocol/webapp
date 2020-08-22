@@ -1682,6 +1682,7 @@ export class EthBancorModule
   }
 
   get traditionalRelays(): ViewRelay[] {
+    const availableHistories = this.availableHistories;
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
       .filter(relay =>
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
@@ -1690,7 +1691,7 @@ export class EthBancorModule
         const [networkReserve, tokenReserve] = relay.reserves;
 
         const smartTokenSymbol = relay.anchor.symbol;
-        const hasHistory = this.availableHistories.some(history =>
+        const hasHistory = availableHistories.some(history =>
           compareString(smartTokenSymbol, history)
         );
 
