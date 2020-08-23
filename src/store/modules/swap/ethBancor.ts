@@ -627,7 +627,7 @@ const networkTokenIncludedInReserves = (networkTokenAddresses: string[]) => (
   if (!test)
     console.warn(
       "Dropping",
-      relay,
+      relay.anchorAddress,
       "because it does not feature a network token"
     );
   return test;
@@ -3491,7 +3491,10 @@ export class EthBancorModule
         compareString(reserve.converterAddress, converterAddress)
       )!;
       if (!reserveBalances) {
-        console.count("DropDueToNoReserveBalances");
+        console.log(
+          pool.anchorAddress,
+          "was dropped because it has no reserve balances"
+        );
         return;
       }
       const zippedReserveBalances = [
