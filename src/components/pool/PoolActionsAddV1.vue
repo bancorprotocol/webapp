@@ -28,9 +28,7 @@
       :large="true"
       class="mt-3"
       :loading="rateLoading"
-      :disabled="
-        token1Error !== '' || token2Error !== '' || !(amount1 && amount2)
-      "
+      :disabled="disableMainButton"
     />
     <modal-pool-action
       :amounts-array="[smartTokenAmount, amount1, amount2]"
@@ -90,6 +88,10 @@ export default class PoolActionsAddV1 extends Vue {
   token1Error = "";
   token2Error = "";
 
+  get disableMainButton() {
+    return this.token1Error !== '' || this.token2Error !== '' || !(this.amount1 && this.amount2)
+  }
+
   get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
@@ -118,7 +120,7 @@ export default class PoolActionsAddV1 extends Vue {
         ...this.singleUnitCosts,
         {
           id: "poolShare",
-          title: formatPercent(this.shareOfPool),
+          title: this.share,
           label: "Share of Pool"
         }
       ];
@@ -223,7 +225,7 @@ export default class PoolActionsAddV1 extends Vue {
 
         this.token2Error =
           raiseToken2InsufficientBalance ? "Insufficient balance" : "";
-        this.shareOfPool = 100;
+        this.shareOfPool = 1;
       } else {
         this.token1Error = e.message;
         this.token2Error = "";
@@ -275,7 +277,7 @@ export default class PoolActionsAddV1 extends Vue {
           this.balance2 < tokenAmount
             ? "Insufficient balance"
             : "";
-        this.shareOfPool = 100;
+        this.shareOfPool = 1;
       } else {
         this.token1Error = "";
         this.token2Error = e.message;
