@@ -22,7 +22,7 @@
     />
     <rate-share-block :items="shareBlockItems" label="Prices and Pool Share" />
     <main-button
-      @click.native="initAction"
+      @click="initAction"
       label="Supply"
       :active="true"
       :large="true"

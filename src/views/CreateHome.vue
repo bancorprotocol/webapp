@@ -38,7 +38,7 @@
       />
 
       <main-button
-        @click.native="initConvert"
+        @click="initConvert"
         label="Create a Pool"
         :active="true"
         :large="true"

@@ -86,7 +86,7 @@
 
     <main-button
       label="Remove"
-      @click.native="initAction"
+      @click="initAction"
       :active="true"
       :large="true"
       class="mt-1"

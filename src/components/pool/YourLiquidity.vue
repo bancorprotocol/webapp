@@ -26,14 +26,14 @@
           <b-row>
             <b-col cols="6" class="pr-1">
               <main-button
-                @click.native="goToAdd(pool.relay)"
+                @click="goToAdd(pool.relay)"
                 label="Add Liquidity"
                 :active="true"
               />
             </b-col>
             <b-col cols="6" class="pl-1">
               <main-button
-                @click.native="goToRemove(pool.relay)"
+                @click="goToRemove(pool.relay)"
                 label="Remove Liquidity"
               />
             </b-col>

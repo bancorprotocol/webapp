@@ -29,7 +29,7 @@
       class="d-flex justify-content-center align-items-center mt-3"
     >
       <main-button
-        @click.native="
+        @click="
           $router.push({ name: 'Swap', params: { service: selectedNetwork } })
         "
         class="px-5 mt-2"

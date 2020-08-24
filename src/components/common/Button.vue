@@ -1,23 +1,19 @@
 <template>
-  <div :class="darkMode ? 'btn-disabled-dark' : 'btn-disabled-light'">
-    <b-btn
-      :variant="variant"
-      class="block-rounded border-0"
-      :class="{
-        'btn-large': large,
-        'btn-sm': small,
-        'btn-block': block
-      }"
-      :disabled="disabled"
-    >
-      <span v-if="label">{{ label }}</span>
-      <slot v-else></slot>
-    </b-btn>
-  </div>
+  <b-btn
+    :variant="variant"
+    @click="click"
+    class="block-rounded"
+    :class="{ 'btn-large': large, 'btn-sm': small, 'btn-block': block }"
+    :disabled="disabled || loading"
+  >
+    <font-awesome-icon v-if="loading" icon="circle-notch" spin />
+    <span v-else-if="label">{{ label }}</span>
+    <slot v-else></slot>
+  </b-btn>
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue } from "vue-property-decorator";
+import { Prop, Component, Vue, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
 
 @Component
@@ -37,6 +33,9 @@ export default class MainButton extends Vue {
   get variant() {
     return this.active ? "primary" : this.darkMode ? "dark" : "light";
   }
+
+  @Emit()
+  click() {}
 }
 </script>
 

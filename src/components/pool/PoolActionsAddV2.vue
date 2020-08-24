@@ -53,8 +53,8 @@
     <rate-share-block :items="shareBlockItems" label="Prices and Pool Share" />
 
     <main-button
-      @click.native="initAction"
       :label="supplyButtonLabel"
+      @click="initAction"
       :active="true"
       :large="true"
       class="mt-3"

@@ -51,8 +51,8 @@
     </div>
 
     <main-button
-      @click.native="initConvert()"
       :label="swapButtonLabel"
+      @click="initConvert"
       :active="true"
       :large="true"
       :loading="rateLoading"
