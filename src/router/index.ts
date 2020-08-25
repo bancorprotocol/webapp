@@ -1,6 +1,9 @@
 import Vue from "vue";
 import Router, { Route } from "vue-router";
 import Data from "@/views/Data.vue";
+import DataAll from "@/components/data/DataAll.vue";
+import DataToken from "@/components/data/details/DataToken.vue";
+import DataPool from "@/components/data/details/DataPool.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import Navigation from "@/components/layout/Navigation.vue";
 import { services } from "@/api/helpers";
@@ -102,15 +105,40 @@ export const router = new Router({
     },
     {
       path: "/:service/super-secret-data",
+      name: "DataSecret",
+      components: {
+        Nav: Navigation,
+        default: DataAll
+      },
+      props: true,
+      meta: {
+        feature: "Liquidity"
+      }
+    },
+    {
+      path: "/:service/data",
       name: "Data",
       components: {
         Nav: Navigation,
         default: Data
       },
       props: true,
-      meta: {
-        feature: "Liquidity"
-      }
+      children: [
+        {
+          path: "",
+          component: DataAll
+        },
+        {
+          path: "token/:id",
+          name: "DataToken",
+          component: DataToken
+        },
+        {
+          path: "pool/:id",
+          name: "DataPool",
+          component: DataPool
+        }
+      ]
     },
     {
       path: "/:service",
