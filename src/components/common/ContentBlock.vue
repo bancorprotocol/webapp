@@ -16,7 +16,7 @@
       :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
     >
       <h3
-        class="m-0 p-0 my-2 font-size-16 font-w600"
+        class="m-0 p-0 my-1 font-size-14 font-w600"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
         {{ title }}
