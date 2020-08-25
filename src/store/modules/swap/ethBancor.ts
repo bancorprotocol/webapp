@@ -99,6 +99,11 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { openDB, DBSchema } from "idb/with-async-ittr.js";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 
+const relayIncludesReserves = (reserves: string[]) => (relay: Relay) =>
+  relay.reserves.every(reserve =>
+    reserves.some(r => compareString(reserve.contract, r))
+  );
+
 const compareRelayByReserves = (a: Relay, b: Relay) =>
   a.reserves.every(reserve =>
     b.reserves.some(r => compareString(reserve.contract, r.contract))
@@ -1302,13 +1307,26 @@ export class EthBancorModule
     if (poolParams.reserves.length !== 2)
       throw new Error("Was expecting two reserves in new pool");
 
+    const suggestedReserveIds = poolParams.reserves.map(reserve => reserve.id);
+    const poolWithSameReservesAlreadyExists = this.relaysList.some(
+      relayIncludesReserves(suggestedReserveIds)
+    );
+    if (poolWithSameReservesAlreadyExists)
+      throw new Error("Pool with same reserves already exists.");
+
+    const networkTokenSymbols =
+      this.currentNetwork == 1 ? networkTokens : ["BNT"];
+
     const [networkReserve, tokenReserve] = sortByNetworkTokens(
       poolParams.reserves,
       reserve => reserve.id,
-      networkTokens.map(
+      networkTokenSymbols.map(
         symbolName =>
-          this.tokenMeta.find(meta => compareString(meta.symbol, symbolName))!
-            .id
+          findOrThrow(
+            this.tokenMeta,
+            meta => compareString(meta.symbol, symbolName),
+            "failed finding network tokens in meta"
+          ).id
       )
     );
 
