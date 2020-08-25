@@ -283,6 +283,7 @@ export default class PoolActionsRemoveV2 extends Vue {
       }
     } catch (e) {
       this.errorMessage = e.message;
+      this.expectedReturn = "?";
     }
   }
 
