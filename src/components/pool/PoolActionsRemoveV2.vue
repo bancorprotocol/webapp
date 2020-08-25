@@ -242,11 +242,15 @@ export default class PoolActionsRemoveV2 extends Vue {
     );
     if (amountNumber.gt(poolTokenBalanceNumber))
       this.insufficientBalance = true;
-    const percentOfBalance = amountNumber
-      .div(poolTokenBalanceNumber)
-      .times(100)
-      .toFixed(0);
-    this.percentage = percentOfBalance;
+    if (amount == "") {
+      this.percentage = "0";
+    } else {
+      const percentOfBalance = amountNumber
+        .div(poolTokenBalanceNumber)
+        .times(100)
+        .toFixed(0);
+      this.percentage = percentOfBalance;
+    }
   }
 
   percentageUpdate(percent: string) {
