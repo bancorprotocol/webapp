@@ -885,6 +885,11 @@ const getTokenMeta = async (currentNetwork: EthNetworks) => {
         decimals: 18
       },
       {
+        symbol: "CATS",
+        contract: "0x37603cB5586c0320F0c757c9146C5010e7AcB116",
+        decimals: 18
+      },
+      {
         contract: "0x4F5e60A76530ac44e0A318cbc9760A2587c34Da6",
         symbol: "YYYY"
       },
