@@ -14,7 +14,9 @@
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
           <td scope="row">
-            <pool-logos :pool="pool" :cursor="false" :version="true" />
+            <router-link :to="{ name: 'DataPool', params: { id: pool.id } }">
+              <pool-logos :pool="pool" :cursor="false" :version="true" />
+            </router-link>
           </td>
           <td>{{ numeral(pool.liqDepth).format("$0,0.00") }}</td>
           <td>{{ numeral(pool.fee).format("0.00%") }}</td>

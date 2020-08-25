@@ -13,7 +13,11 @@
           class="font-w600 font-size-14"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          <td scope="row"><pool-logos :token="token" :cursor="false" /></td>
+          <td scope="row">
+            <router-link :to="{ name: 'DataToken', params: { id: token.id } }">
+              <pool-logos :token="token" :cursor="false" />
+            </router-link>
+          </td>
           <td><colored-percentage :percentage="token.change24h" /></td>
           <td>{{ numeral(token.price).format("$0.0000") }}</td>
           <td>{{ numeral(token.volume24h).format("$0,0.00") }}</td>
