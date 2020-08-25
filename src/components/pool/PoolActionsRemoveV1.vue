@@ -105,7 +105,7 @@
     </div>
 
     <main-button
-      @click.native="initAction"
+      @click="initAction"
       label="Remove"
       :active="true"
       :large="true"

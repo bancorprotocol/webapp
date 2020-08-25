@@ -45,7 +45,7 @@
         <b-col cols="12" class="mb-3 text-center">
           <main-button
             v-if="totalTokens > perStep * currentStep"
-            @click.native="currentStep++"
+            @click="currentStep++"
             label="more"
             :small="true"
           />

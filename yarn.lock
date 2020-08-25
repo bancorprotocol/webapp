@@ -7711,10 +7711,10 @@ eth-lib@^0.1.26:
     ws "^3.0.0"
     xhr-request-promise "^0.1.2"
 
-eth-multicall@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/eth-multicall/-/eth-multicall-1.0.8.tgz#413cef425b4438cc6dd197381e24f0c87c651260"
-  integrity sha512-uqn+L26rgICMOFv1g4l56/NT+bpXO0paqMQCZ1Oesx/xBBW78Xq0O8aFKtjmQE/QNykjZt75s87zFzED/8G5jg==
+eth-multicall@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/eth-multicall/-/eth-multicall-1.1.1.tgz#9875e9e2c0788ce44e267659982312fdeefe0c2e"
+  integrity sha512-bqos04cdMqYHVCXDAgjmH7E+V32xtqbQXYCvdXUx5SjJ9cFA2iPwx5Dhv//crrQeDtUA0u4WT711elqpLICtqw==
   dependencies:
     "@types/lodash" "^4.14.159"
     lodash "^4.17.19"

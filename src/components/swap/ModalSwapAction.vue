@@ -72,7 +72,7 @@
 
       <b-col cols="12">
         <main-button
-          @click.native="initAction"
+          @click="initAction"
           :active="true"
           :label="confirmButton"
           :disabled="txBusy"
@@ -99,6 +99,7 @@ import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import numeral from "numeral";
+
 @Component({
   components: {
     BancorCheckbox,

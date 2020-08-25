@@ -95,7 +95,7 @@
 
       <b-col cols="12">
         <main-button
-          @click.native="initAction"
+          @click="initAction"
           :active="true"
           :label="confirmButton"
           :disabled="txBusy"

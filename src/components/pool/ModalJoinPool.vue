@@ -29,7 +29,7 @@
         <b-col cols="12" class="mb-3 text-center">
           <main-button
             v-if="totalPools > perStep * currentStep"
-            @click.native="currentStep++"
+            @click="currentStep++"
             label="more"
             :small="true"
           />

@@ -7,7 +7,7 @@
 
       <div>
         <main-button
-          @click.native="$bvModal.show('modal-join-pool')"
+          @click="$bvModal.show('modal-join-pool')"
           label="Join a Pool"
           :active="true"
           :large="true"

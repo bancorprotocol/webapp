@@ -19,7 +19,7 @@
     <b-row>
       <b-col cols="3" v-for="p in percentages" :key="p">
         <main-button
-          @click.native="percentageAmount = p"
+          @click="percentageAmount = p"
           :label="`${p}%`"
           :active="p === percentageAmount"
           :small="true"

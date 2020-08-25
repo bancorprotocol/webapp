@@ -86,7 +86,7 @@
 
     <main-button
       label="Remove"
-      @click.native="initAction"
+      @click="initAction"
       :active="true"
       :large="true"
       class="mt-1"
@@ -150,11 +150,13 @@ export default class PoolActionsRemoveV2 extends Vue {
   amountSmartToken = "";
 
   expectedReturn = "";
+  errorMessage = "";
 
   poolTokens: PoolTokenUI[] = [];
   insufficientBalance: boolean = false;
 
   get balanceError() {
+    if (this.errorMessage) return this.errorMessage;
     if (!this.isAuthenticated) return "";
     if (this.amountSmartToken === "") return "";
     if (this.insufficientBalance) return "Insufficient balance";
@@ -240,11 +242,15 @@ export default class PoolActionsRemoveV2 extends Vue {
     );
     if (amountNumber.gt(poolTokenBalanceNumber))
       this.insufficientBalance = true;
-    const percentOfBalance = amountNumber
-      .div(poolTokenBalanceNumber)
-      .times(100)
-      .toFixed(0);
-    this.percentage = percentOfBalance;
+    if (amount == "") {
+      this.percentage = "0";
+    } else {
+      const percentOfBalance = amountNumber
+        .div(poolTokenBalanceNumber)
+        .times(100)
+        .toFixed(0);
+      this.percentage = percentOfBalance;
+    }
   }
 
   percentageUpdate(percent: string) {
@@ -263,18 +269,25 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   @Watch("amountSmartToken")
   async smartTokenChanged(amount: string) {
-    const res = await vxm.bancor.calculateOpposingWithdraw({
-      id: this.pool.id,
-      reserve: {
-        amount,
-        id: this.selectedPoolToken.id
+    this.errorMessage = "";
+    if (amount == "") return;
+    try {
+      const res = await vxm.bancor.calculateOpposingWithdraw({
+        id: this.pool.id,
+        reserve: {
+          amount,
+          id: this.selectedPoolToken.id
+        }
+      });
+
+      this.expectedReturn = res.expectedReturn!.amount;
+
+      if (res.withdrawFee) {
+        this.exitFee = Number((res.withdrawFee * 100).toFixed(4));
       }
-    });
-
-    this.expectedReturn = res.expectedReturn!.amount;
-
-    if (res.withdrawFee) {
-      this.exitFee = Number((res.withdrawFee * 100).toFixed(4));
+    } catch (e) {
+      this.errorMessage = e.message;
+      this.expectedReturn = "?";
     }
   }
 
