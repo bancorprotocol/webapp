@@ -37,7 +37,12 @@
     <modal-select-token name="token2" v-on:select-token="selectToken" />
 
     <div class="my-3">
-      <label-content-split label="Rate" :value="rate" class="mb-2" />
+      <label-content-split
+        label="Rate"
+        :value="rate"
+        :loading="rateLoading"
+        class="mb-2"
+      />
 
       <label-content-split
         label="Price Impact"
@@ -257,6 +262,23 @@ export default class SwapAction extends Vue {
     this.errorToken1 = "";
   }
 
+  async calculateRate() {
+    this.rateLoading = true
+    try {
+      const reward = await vxm.bancor.getReturn({
+        from: {
+          id: this.token1.id,
+          amount: "1"
+        },
+        toId: this.token2.id
+      });
+      this.initialRate = reward.amount
+    } catch (e) {
+      console.log(e)
+    }
+    this.rateLoading = false;
+  }
+
   get balance1() {
     return vxm.bancor.token(this.token1.id).balance ?? "0";
   }
@@ -280,6 +302,7 @@ export default class SwapAction extends Vue {
     const raiseError = Number(this.balance1) < Number(this.amount1);
     console.log('route query watcher is passing updatePriceReturn', this.amount1, raiseError, 'is raise error status')
     await this.updatePriceReturn(this.amount1);
+    await this.calculateRate()
   }
 
   async created() {
@@ -295,22 +318,7 @@ export default class SwapAction extends Vue {
       await this.$router.push({name: "Swap", query: defaultQuery})
     }
 
-    this.rateLoading = true
-    try {
-      const reward = await vxm.bancor.getReturn({
-        from: {
-          id: this.token1.id,
-          amount: "1"
-        },
-        toId: this.token2.id
-      });
-      this.initialRate = reward.amount
-    } catch (e) {
-      // n
-    }
-    this.rateLoading = false;
-
-    //await this.loadBalances();
+    await this.calculateRate()
   }
 }
 </script>
