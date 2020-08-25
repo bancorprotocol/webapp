@@ -39,6 +39,7 @@
 
       <main-button
         @click="initConvert"
+        class="mt-4"
         label="Create a Pool"
         :active="true"
         :large="true"
@@ -47,6 +48,12 @@
       />
 
       <modal-select-token name="token2" v-on:select-token="selectToken" />
+      <modal-create-action
+        :token1="token1"
+        :token2="token2"
+        :amount1="amount1"
+        :amount2="amount2"
+      />
     </div>
   </content-block>
 </template>
@@ -59,9 +66,10 @@ import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
-import { ViewToken } from "@/types/bancor";
+import { ViewToken, TxResponse, Step } from "@/types/bancor";
 import ModalSelectToken from "@/components/modals/ModalSelectToken.vue";
 import MainButton from "@/components/common/Button.vue";
+import ModalCreateAction from "@/components/pool/create/ModalCreateAction.vue"
 
 @Component({
   components: {
@@ -71,7 +79,8 @@ import MainButton from "@/components/common/Button.vue";
     LabelContentSplit,
     PoolActionsHeader,
     ContentBlock,
-    MainButton
+    MainButton,
+    ModalCreateAction
   }
 })
 export default class CreateHome extends Vue {
@@ -83,6 +92,13 @@ export default class CreateHome extends Vue {
 
   errorToken1 = "";
   errorToken2 = "";
+
+  fee = 0
+  txBusy = false;
+  success: TxResponse | string | null = null;
+  error = "";
+  sections: Step[] = [];
+  stepIndex = 0;
 
   get balance1() {
     return vxm.bancor.token(this.token1.id).balance ?? "0";
@@ -105,33 +121,6 @@ export default class CreateHome extends Vue {
     //@ts-ignore
     else await this.promptAuth();
   }
-
-  // onUpdate(stepIndex: number, steps: any[]) {
-  //   this.stepIndex = stepIndex;
-  //   this.sections = steps;
-  // }
-  // async createRelay() {
-  //   const fee = this.fee || 0;
-  //   this.txModal = true;
-  //   this.txBusy = true;
-  //   try {
-  //     const txId = await vxm.bancor.createPool({
-  //       reserves: [
-  //         { id: this.token1.id, amount: this.amount1 },
-  //         { id: this.token2.id, amount: this.amount2 }
-  //       ],
-  //       fee: fee / 100,
-  //       onUpdate: this.onUpdate
-  //     });
-  //     this.success = txId;
-  //     this.networkAmount = "";
-  //     this.tokenAmount = "";
-  //     this.txBusy = false;
-  //   } catch (e) {
-  //     this.error = e.message;
-  //     this.txBusy = false;
-  //   }
-  // }
 
   openModal(name: string) {
     this.$bvModal.show(name);

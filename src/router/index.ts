@@ -80,9 +80,8 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/pool/create",
+      path: "/:service/pool/create/",
       name: "PoolCreate",
-      redirect: "/404",
       components: {
         Nav: Navigation,
         Hero: CreateHome
