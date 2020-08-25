@@ -15,6 +15,7 @@
       />
 
       <b-col cols="12">
+        <bancor-checkbox v-model="notUsState" label="Not a U.S. Citizen" />
         <main-button
           @click="initAction"
           :active="true"
