@@ -2,9 +2,9 @@
   <modal-two
     size="sm"
     v-model="show"
-    :search.sync="tokenSearch"
+    :search.sync="searchQuery"
     @update:search="currentStep = 1"
-    title="Select a Token"
+    :title="title"
     :fixed-height="true"
   >
     <div>
@@ -14,7 +14,7 @@
             class="text-uppercase font-w500 font-size-12"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
-            {{ title }}
+            {{ subtitle }}
           </span>
         </b-col>
         <b-col
@@ -50,7 +50,14 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop, Emit } from "vue-property-decorator";
+import {
+  Watch,
+  Component,
+  Vue,
+  Prop,
+  Emit,
+  PropSync
+} from "vue-property-decorator";
 import { vxm } from "@/store";
 import ModalTwo from "@/components/common/ModalTwo.vue";
 import { VModel } from "@/api/helpers";
@@ -62,9 +69,9 @@ import MainButton from "@/components/common/Button.vue";
 export default class ModalSelect extends Vue {
   @VModel() show!: boolean;
   @Prop({ default: [] }) items!: any[];
-  @Prop({ type: String, default: "Tokens" }) title!: string;
-
-  tokenSearch: string = "";
+  @Prop({ type: String, default: "" }) title!: string;
+  @Prop({ type: String, default: "" }) subtitle!: string;
+  @PropSync("search", { type: String }) searchQuery!: string;
 
   perStep = 30;
   currentStep = 1;

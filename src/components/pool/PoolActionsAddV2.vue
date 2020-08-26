@@ -2,10 +2,11 @@
   <div>
     <label-content-split label="Selected Pool" class="my-3">
       <pool-logos
-        @click="$bvModal.show('modal-join-pool')"
+        @click="poolSelectModal = true"
         :pool="pool"
         :dropdown="true"
       />
+      <modal-pool-select v-model="modal" :pools="pools" @select="select" />
     </label-content-split>
 
     <alert-block
@@ -88,6 +89,8 @@ import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import { namespace } from "vuex-class";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import ModalPoolSelect from "@/components/common/ModalPoolSelect.vue";
+
 
 const bancor = namespace("bancor");
 
@@ -112,6 +115,7 @@ export default class PoolActionsAddV2 extends Vue {
   amount: string = "";
   amountSmartToken: string = "??.????";
   modal = false;
+  poolSelectModal = false;
 
   rateLoading = false;
   singleUnitCosts: any[] = [];

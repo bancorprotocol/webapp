@@ -7,12 +7,16 @@
 
       <div>
         <main-button
-          @click="$bvModal.show('modal-join-pool')"
+          @click="modal = true"
           label="Join a Pool"
           :active="true"
           :large="true"
         />
-        <modal-join-pool v-model="joinPoolModal" />
+        <modal-pool-select
+          @select="selectPool"
+          v-model="modal"
+          :pools="pools"
+        />
         <your-liquidity />
       </div>
     </content-block>
@@ -35,19 +39,34 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import SubNavigation from "@/components/layout/SubNavigation.vue";
 import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
-import ModalJoinPool from "@/components/pool/ModalJoinPool.vue";
+import ModalPoolSelect from "@/components/common/ModalPoolSelect.vue";
 
 @Component({
   components: {
     YourLiquidity,
     MainButton,
     SubNavigation,
-    ModalJoinPool,
+    ModalPoolSelect,
     ContentBlock
   }
 })
 export default class PoolHome extends Vue {
-  joinPoolModal = false;
+  modal = false;
+
+  get pools() {
+    return vxm.bancor.relays;
+  }
+
+  selectPool(id: string) {
+    this.$router.push({
+      name: "PoolAction",
+      params: {
+        poolAction: "add",
+        account: id
+      }
+    });
+    this.modal = false;
+  }
 
   get darkMode() {
     return vxm.general.darkMode;

@@ -80,11 +80,9 @@ import ModalLogin from "@/components/modals/ModalLogin.vue";
 import { vxm } from "@/store/";
 import { WalletProvider } from "eos-transit";
 import wait from "waait";
-import ModalJoinPool from "@/components/pool/ModalJoinPool.vue";
 
 @Component({
   components: {
-    ModalJoinPool,
     ModalLogin
   }
 })

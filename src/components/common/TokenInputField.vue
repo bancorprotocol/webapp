@@ -30,7 +30,7 @@
         >
           <div
             v-if="token"
-            @click="openSwapModal"
+            @click="openModal"
             class="d-flex align-items-center"
           >
             <img
@@ -48,11 +48,7 @@
           </div>
 
           <div v-else>
-            <pool-logos
-              @click="$bvModal.show('modal-join-pool')"
-              :pool="pool"
-              :dropdown="true"
-            />
+            <pool-logos @click="openModal" :pool="pool" :dropdown="true" />
           </div>
         </div>
       </b-input-group-append>
@@ -61,7 +57,18 @@
         variant="error"
         :msg="errorMsg"
       />
-      <modal-token-select v-model="modal" :tokens="tokens" @select="select" />
+      <modal-token-select
+        v-if="tokens && tokens.length > 0"
+        v-model="modal"
+        :tokens="tokens"
+        @select="select"
+      />
+      <modal-pool-select
+        v-if="pools && pools.length > 0"
+        v-model="modal"
+        :pools="pools"
+        @select="select"
+      />
     </b-input-group>
   </div>
 </template>
@@ -82,9 +89,16 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import { formatNumber, VModel } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
+import ModalPoolSelect from "@/components/common/ModalPoolSelect.vue";
 
 @Component({
-  components: { AlertBlock, PoolLogos, LabelContentSplit, ModalTokenSelect }
+  components: {
+    AlertBlock,
+    PoolLogos,
+    LabelContentSplit,
+    ModalTokenSelect,
+    ModalPoolSelect
+  }
 })
 export default class TokenInputField extends Vue {
   @Prop() label!: string;
@@ -97,9 +111,13 @@ export default class TokenInputField extends Vue {
   @Prop({ default: "" }) errorMsg!: string;
   @Prop({ default: false }) disabled!: boolean;
   @Prop() tokens!: ViewModalToken[];
+  @Prop() pools!: ViewRelay[];
 
   get dropdown() {
-    return !!this.tokens;
+    return (
+      (this.tokens && this.tokens.length > 0) ||
+      (this.pools && this.pools.length > 0)
+    );
   }
 
   @Emit()
@@ -128,7 +146,7 @@ export default class TokenInputField extends Vue {
     }
   }
 
-  openSwapModal() {
+  openModal() {
     this.modal = true;
   }
 

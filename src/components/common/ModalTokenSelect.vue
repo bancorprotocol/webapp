@@ -1,5 +1,11 @@
 <template>
-  <modal-select v-model="show" :items="tokens">
+  <modal-select
+    v-model="show"
+    :search.sync="search"
+    :items="searchedTokens"
+    title="Select a token"
+    subtitle="Tokens"
+  >
     <template v-slot:item="{ item }">
       <div
         @click="selectToken(item.id)"
@@ -37,7 +43,7 @@ export default class ModalSelectToken extends Vue {
   @VModel() show!: boolean;
   @Prop() tokens!: ViewModalToken[];
 
-  tokenSearch: string = "";
+  search: string = "";
 
   @Emit("select")
   selectToken(id: string) {
@@ -51,11 +57,13 @@ export default class ModalSelectToken extends Vue {
   }
 
   get searchedTokens() {
-    return this.tokenSearch
-      ? this.tokens.filter(token =>
-          token.symbol.toLowerCase().includes(this.tokenSearch.toLowerCase())
+    const search = this.search;
+    const tokens = this.tokens;
+    return search
+      ? tokens.filter(token =>
+          token.symbol.toLowerCase().includes(search.toLowerCase())
         )
-      : this.tokens;
+      : tokens;
   }
 
   get darkMode(): boolean {
