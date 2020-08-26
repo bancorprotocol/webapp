@@ -3,7 +3,7 @@
     scrollable
     :size="size"
     centered
-    v-model="value"
+    v-model="show"
     hide-footer
     :content-class="contentClass"
     @close="onHide"
@@ -48,6 +48,7 @@
 </template>
 
 <script lang="ts">
+import { vxm } from "@/store/";
 import {
   Component,
   Prop,
@@ -56,18 +57,15 @@ import {
   Emit,
   Model
 } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { VModel } from "@/api/helpers";
 
 @Component
 export default class ModalTwo extends Vue {
-  @Prop() id!: string;
   @Prop() title!: string;
-  @Model("input", { type: Boolean }) readonly value!: boolean;
-  @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
+  @VModel({ type: Boolean }) show!: boolean;
   @PropSync("search", { type: String }) searchField?: string;
+  @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
   @Prop({ default: false }) fixedHeight!: boolean;
-
-  tokenSearch: string = "";
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
@@ -81,8 +79,9 @@ export default class ModalTwo extends Vue {
     ];
   }
 
-  @Emit("on-hide-modal")
-  onHide(event: any) {}
+  onHide() {
+    this.show = false;
+  }
 }
 </script>
 <style lang="scss">

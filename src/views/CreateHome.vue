@@ -33,7 +33,6 @@
         :balance="balance2"
         :dropdown="true"
         name="token2"
-        v-on:open-swap-modal="openModal"
         :error-msg="errorToken2"
       />
 
@@ -47,9 +46,7 @@
         :disabled="false"
       />
 
-      <modal-select-token name="token2" v-on:select-token="selectToken" />
-
-      <modal-two v-model="modal">
+      <modal-two title="Create Pool" v-model="modal">
         <p>Hello world</p>
       </modal-two>
     </div>
@@ -69,10 +66,12 @@ import { ViewToken, TxResponse, Step } from "@/types/bancor";
 import ModalSelectToken from "@/components/modals/ModalSelectToken.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalCreateAction from "@/components/pool/create/ModalCreateAction.vue"
+import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
 
 @Component({
   components: {
     ModalSelectToken,
+    ModalTokenSelect,
     TokenInputField,
     AlertBlock,
     LabelContentSplit,
@@ -86,6 +85,8 @@ import ModalCreateAction from "@/components/pool/create/ModalCreateAction.vue"
 export default class CreateHome extends Vue {
   amount1 = "";
   amount2 = "";
+
+  searchTerm = ""
 
   token1: ViewToken = vxm.bancor.token(vxm.bancor.newNetworkTokenChoices[0].id);
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -101,6 +102,11 @@ export default class CreateHome extends Vue {
   stepIndex = 0;
 
   modal: boolean = false;
+  myModal = false;
+
+  get tokenChoices() {
+    return vxm.bancor.tokens
+  }
 
   get balance1() {
     return vxm.bancor.token(this.token1.id).balance ?? "0";
@@ -126,9 +132,11 @@ export default class CreateHome extends Vue {
 
   async initConvert() {
     console.log("create home pressed")
-    if (this.isAuthenticated) this.toggleModal()
-    //@ts-ignore
-    else await this.promptAuth();
+    this.myModal = !this.myModal
+
+// if (this.isAuthenticated) this.toggleModal()
+    // //@ts-ignore
+    // else await this.promptAuth();
   }
 
 

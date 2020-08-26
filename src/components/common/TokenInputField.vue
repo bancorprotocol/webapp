@@ -61,34 +61,53 @@
         variant="error"
         :msg="errorMsg"
       />
+      <modal-token-select v-model="modal" :tokens="tokens" @select="select" />
     </b-input-group>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
+import {
+  Component,
+  Vue,
+  Prop,
+  Watch,
+  PropSync,
+  Emit
+} from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay, ViewReserve } from "@/types/bancor";
+import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { formatNumber } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
 
 @Component({
-  components: { AlertBlock, PoolLogos, LabelContentSplit }
+  components: { AlertBlock, PoolLogos, LabelContentSplit, ModalTokenSelect }
 })
 export default class TokenInputField extends Vue {
-  @Prop() name?: string;
   @Prop() label!: string;
   @Prop() token?: ViewReserve;
   @Prop() pool?: ViewRelay;
   @Prop() balance!: string;
   @Prop() usdValue?: number;
   @PropSync("amount", { type: String }) tokenAmount!: string;
-  @Prop({ default: false }) dropdown!: boolean;
   @Prop({ default: false }) ignoreError!: boolean;
   @Prop({ default: "" }) errorMsg!: string;
   @Prop({ default: false }) disabled!: boolean;
+  @Prop() tokens!: ViewModalToken[];
+
+  get dropdown() {
+    return !!this.tokens;
+  }
+
+  @Emit()
+  select(id: string) {
+    return id;
+  }
+
+  modal = false;
 
   get formattedBalance() {
     return formatNumber(parseFloat(this.balance), 6).toString();
@@ -110,7 +129,7 @@ export default class TokenInputField extends Vue {
   }
 
   openSwapModal() {
-    if (this.dropdown && this.name) this.$emit("open-swap-modal", this.name);
+    this.modal = true;
   }
 
   get darkMode() {
