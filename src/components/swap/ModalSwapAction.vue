@@ -1,9 +1,5 @@
 <template>
-  <base-modal
-    id="modal-swap-action"
-    v-on:on-hide-modal="setDefault"
-    title="Confirm Token Swap"
-  >
+  <modal-two v-model="show" @input="setDefault" title="Confirm Token Swap">
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)">
         <b-col cols="12">
@@ -80,13 +76,12 @@
         />
       </b-col>
     </b-row>
-  </base-modal>
+  </modal-two>
 </template>
 
 <script lang="ts">
 import { Watch, Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import BaseModal from "@/components/common/BaseModal.vue";
 import {
   Step,
   TxResponse,
@@ -98,18 +93,21 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
+import ModalTwo from "@/components/common/ModalTwo.vue";
 import numeral from "numeral";
+import { VModel } from "@/api/helpers";
 
 @Component({
   components: {
     BancorCheckbox,
     AdvancedBlockItem,
     ActionModalStatus,
-    BaseModal,
-    MainButton
+    MainButton,
+    ModalTwo
   }
 })
 export default class ModalSwapAction extends Vue {
+  @VModel({ type: Boolean }) show!: boolean;
   @Prop() amount1!: string;
   @Prop() token1!: ViewToken;
   @Prop() amount2!: string;

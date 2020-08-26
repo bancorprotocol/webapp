@@ -1,11 +1,11 @@
 <template>
-  <base-modal
-    id="modal-join-pool"
+  <modal-two
     :search.sync="tokenSearch"
     @update:search="currentStep = 1"
     title="Select a Pool"
     size="sm"
-    v-on:on-hide-modal="tokenSearch = ''"
+    v-model="modal"
+    @input="tokenSearch = ''"
     :fixed-height="true"
   >
     <div>
@@ -44,7 +44,7 @@
         </b-col>
       </b-row>
     </div>
-  </base-modal>
+  </modal-two>
 </template>
 
 <script lang="ts">
@@ -52,16 +52,17 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
-import BaseModal from "@/components/common/BaseModal.vue";
+import ModalTwo from "@/components/common/ModalTwo.vue";
 import MainButton from "@/components/common/Button.vue";
 
 @Component({
-  components: { BaseModal, SelectPoolRow, MainButton }
+  components: { ModalTwo, SelectPoolRow, MainButton }
 })
 export default class ModalJoinPool extends Vue {
   tokenSearch: string = "";
 
   perStep = 30;
+  modal = false;
   currentStep = 1;
 
   get totalPools() {
@@ -78,7 +79,7 @@ export default class ModalJoinPool extends Vue {
         account: pool.id
       }
     });
-    this.$bvModal.hide("modal-join-pool");
+    this.modal = false;
   }
 
   get searchedPools() {

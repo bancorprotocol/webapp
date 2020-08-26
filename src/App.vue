@@ -70,7 +70,6 @@
     </div>
     <div>
       <modal-login />
-      <modal-join-pool />
     </div>
   </div>
 </template>

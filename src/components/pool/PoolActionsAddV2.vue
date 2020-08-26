@@ -62,6 +62,7 @@
       :loading="rateLoading"
     />
     <modal-pool-action
+      v-model="modal"
       :selected-token="selectedToken"
       :amounts-array="[amountSmartToken, amount]"
       :advanced-block-items="advancedBlockItems"
@@ -110,6 +111,7 @@ export default class PoolActionsAddV2 extends Vue {
   selectedToken: ViewReserve = this.pool.reserves[0];
   amount: string = "";
   amountSmartToken: string = "??.????";
+  modal = false;
 
   rateLoading = false;
   singleUnitCosts: any[] = [];
@@ -127,7 +129,7 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
+    if (this.isAuthenticated) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }

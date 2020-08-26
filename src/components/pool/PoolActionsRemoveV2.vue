@@ -94,6 +94,7 @@
     />
 
     <modal-pool-action
+      v-model="modal"
       :amounts-array="[amountSmartToken, expectedReturn]"
       :selected-token="selectedPoolToken"
       :advanced-block-items="advancedBlockItems"
@@ -151,6 +152,7 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   expectedReturn = "";
   errorMessage = "";
+  modal: boolean = false;
 
   poolTokens: PoolTokenUI[] = [];
   insufficientBalance: boolean = false;
@@ -179,7 +181,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
+    if (this.isAuthenticated) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }

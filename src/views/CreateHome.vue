@@ -63,14 +63,12 @@ import ModalTwo from "@/components/common/ModalTwo.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken, TxResponse, Step } from "@/types/bancor";
-import ModalSelectToken from "@/components/modals/ModalSelectToken.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalCreateAction from "@/components/pool/create/ModalCreateAction.vue"
 import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
 
 @Component({
   components: {
-    ModalSelectToken,
     ModalTokenSelect,
     TokenInputField,
     AlertBlock,

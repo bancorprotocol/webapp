@@ -31,6 +31,7 @@
       :disabled="disableMainButton"
     />
     <modal-pool-action
+      v-model="modal"
       :amounts-array="[smartTokenAmount, amount1, amount2]"
       :advanced-block-items="advancedBlockItems"
     />
@@ -79,6 +80,7 @@ export default class PoolActionsAddV1 extends Vue {
   smartTokenAmount: string = "??.??????";
   amount1: string = "";
   amount2: string = "";
+  modal = false;
 
   singleUnitCosts: any[] = [];
   shareOfPool = 0;
@@ -97,7 +99,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
+    if (this.isAuthenticated) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }

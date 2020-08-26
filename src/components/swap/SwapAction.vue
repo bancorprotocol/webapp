@@ -4,11 +4,11 @@
       label="From"
       v-model="amount1"
       @input="updatePriceReturn"
+      @select="selectFromToken"
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
-      @select="selectFromToken"
     />
 
     <div class="text-center my-3">
@@ -24,11 +24,11 @@
       label="To (Estimated)"
       v-model="amount2"
       @input="sanitizeAmount"
+      @select="selectToToken"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
       :disabled="false"
-      @select="selectToToken"
       :tokens="tokens"
     />
 
@@ -61,6 +61,7 @@
     />
 
     <modal-swap-action
+      v-model="modal"
       :token1="token1"
       :token2="token2"
       :amount1="amount1"
@@ -79,12 +80,10 @@ import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral"
-import ModalSelectToken from "@/components/modals/ModalSelectToken.vue";
 import { formatNumber } from "@/api/helpers"
 
 @Component({
   components: {
-    ModalSelectToken,
     ModalSwapAction,
     LabelContentSplit,
     TokenInputField,
@@ -108,9 +107,7 @@ export default class SwapAction extends Vue {
   initialRate = ""
   numeral = numeral;
 
-  xx(id: string) {
-    console.log('XX got', id)
-  }
+  modal = false;
 
   get tokens() {
     return vxm.bancor.tokens
@@ -201,7 +198,7 @@ export default class SwapAction extends Vue {
   }
 
   async initConvert() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-swap-action");
+    if (this.isAuthenticated) this.modal = true
     //@ts-ignore
     else await this.promptAuth();
   }
