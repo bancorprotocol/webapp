@@ -25,6 +25,26 @@ import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
+import { PropOptions } from "vue";
+import { createDecorator } from "vue-class-component";
+
+export function VModel(propsArgs: PropOptions = {}) {
+  const valueKey: string = "value";
+  return createDecorator((componentOptions, key) => {
+    (componentOptions.props || ((componentOptions.props = {}) as any))[
+      valueKey
+    ] = propsArgs;
+    (componentOptions.computed || (componentOptions.computed = {}))[key] = {
+      get() {
+        return (this as any)[valueKey];
+      },
+      set(value: any) {
+        // @ts-ignore
+        this.$emit("input", value);
+      }
+    };
+  });
+}
 
 export const networkTokens = ["BNT", "USDB"];
 
