@@ -48,12 +48,10 @@
       />
 
       <modal-select-token name="token2" v-on:select-token="selectToken" />
-      <modal-create-action
-        :token1="token1"
-        :token2="token2"
-        :amount1="amount1"
-        :amount2="amount2"
-      />
+
+      <modal-two v-model="modal">
+        <p>Hello world</p>
+      </modal-two>
     </div>
   </content-block>
 </template>
@@ -64,6 +62,7 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import ModalTwo from "@/components/common/ModalTwo.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken, TxResponse, Step } from "@/types/bancor";
@@ -80,7 +79,8 @@ import ModalCreateAction from "@/components/pool/create/ModalCreateAction.vue"
     PoolActionsHeader,
     ContentBlock,
     MainButton,
-    ModalCreateAction
+    ModalCreateAction,
+    ModalTwo
   }
 })
 export default class CreateHome extends Vue {
@@ -100,6 +100,8 @@ export default class CreateHome extends Vue {
   sections: Step[] = [];
   stepIndex = 0;
 
+  modal: boolean = false;
+
   get balance1() {
     return vxm.bancor.token(this.token1.id).balance ?? "0";
   }
@@ -116,15 +118,19 @@ export default class CreateHome extends Vue {
     return vxm.wallet.isAuthenticated;
   }
 
+  toggleModal() {
+    console.log('this.modal should be toggled')
+    this.modal = !this.modal
+
+  }
+
   async initConvert() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-create-action");
+    console.log("create home pressed")
+    if (this.isAuthenticated) this.toggleModal()
     //@ts-ignore
     else await this.promptAuth();
   }
 
-  openModal(name: string) {
-    this.$bvModal.show(name);
-  }
 
   selectToken(token: { token: ViewToken, name: string }): void {
     if (token.name === "token1") this.token1 = token.token
