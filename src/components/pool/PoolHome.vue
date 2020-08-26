@@ -12,7 +12,7 @@
           :active="true"
           :large="true"
         />
-
+        <modal-join-pool v-model="joinPoolModal" />
         <your-liquidity />
       </div>
     </content-block>
@@ -35,16 +35,20 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import SubNavigation from "@/components/layout/SubNavigation.vue";
 import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
+import ModalJoinPool from "@/components/pool/ModalJoinPool.vue";
 
 @Component({
   components: {
     YourLiquidity,
     MainButton,
     SubNavigation,
+    ModalJoinPool,
     ContentBlock
   }
 })
 export default class PoolHome extends Vue {
+  joinPoolModal = false;
+
   get darkMode() {
     return vxm.general.darkMode;
   }

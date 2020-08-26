@@ -37,7 +37,6 @@ import {
   TxResponse
 } from "@/types/bancor";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
-import BaseModal from "@/components/common/BaseModal.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -55,7 +54,6 @@ const bancor = namespace("bancor");
     ActionModalStatus,
     AdvancedBlockItem,
     PoolLogos,
-    BaseModal,
     SelectPoolRow,
     MainButton
   }
