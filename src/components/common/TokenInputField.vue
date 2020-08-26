@@ -49,7 +49,7 @@
 
           <div v-else>
             <pool-logos
-              @click.native="$bvModal.show('modal-join-pool')"
+              @click="$bvModal.show('modal-join-pool')"
               :pool="pool"
               :dropdown="true"
             />

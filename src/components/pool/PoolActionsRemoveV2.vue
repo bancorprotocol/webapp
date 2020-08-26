@@ -2,7 +2,7 @@
   <div v-if="selectedToken">
     <label-content-split label="Pool" class="my-4">
       <pool-logos
-        @click.native="$bvModal.show('modal-join-pool')"
+        @click="$bvModal.show('modal-join-pool')"
         :pool="pool"
         :dropdown="true"
       />
