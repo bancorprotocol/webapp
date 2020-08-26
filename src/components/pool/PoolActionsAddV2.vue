@@ -43,8 +43,8 @@
     <token-input-field
       label="Input"
       :token="selectedToken"
-      :amount.sync="amount"
-      @update:amount="loadPrices(amount)"
+      v-model="amount"
+      @input="loadPrices(amount)"
       :balance="balance"
       class="mb-3"
       :error-msg="balanceError"

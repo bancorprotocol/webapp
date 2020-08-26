@@ -3,8 +3,8 @@
     <token-input-field
       label="Input"
       :token="reserveOne"
-      :amount.sync="amount1"
-      @update:amount="tokenOneChanged"
+      v-model="amount1"
+      @input="tokenOneChanged"
       :balance="balance1"
       :error-msg="token1Error"
     />
@@ -14,9 +14,9 @@
     <token-input-field
       label="Input"
       :token="reserveTwo"
-      :amount.sync="amount2"
+      v-model="amount2"
+      @input="tokenTwoChanged"
       class="mb-3"
-      @update:amount="tokenTwoChanged"
       :balance="balance2"
       :error-msg="token2Error"
     />

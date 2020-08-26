@@ -50,7 +50,7 @@
       <token-input-field
         v-if="!advanced"
         label="Input"
-        :amount.sync="amountSmartToken"
+        v-model="amountSmartToken"
         :pool="pool"
         class="mt-4"
       />
@@ -63,8 +63,8 @@
       </div>
       <token-input-field
         label="Output"
-        :amount.sync="amountToken1"
-        @update:amount="tokenOneChanged"
+        v-model="amountToken1"
+        @input="tokenOneChanged"
         :token="pool.reserves[0]"
         class="my-3"
         :balance="balance1"
@@ -76,8 +76,8 @@
       </div>
       <token-input-field
         label="Output"
-        :amount.sync="amountToken2"
-        @update:amount="tokenTwoChanged"
+        v-model="amountToken2"
+        @input="tokenTwoChanged"
         :token="pool.reserves[1]"
         :balance="balance2"
         :error-msg="token2Error"

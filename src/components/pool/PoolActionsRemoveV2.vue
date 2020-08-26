@@ -44,8 +44,8 @@
       <token-input-field
         label="Input"
         :token="selectedPoolToken"
-        :amount.sync="amountSmartToken"
-        @update:amount="poolTokenUpdate"
+        v-model="amountSmartToken"
+        @input="poolTokenUpdate"
         :balance="selectedPoolToken.balance"
         class="mt-4"
         :error-msg="balanceError"

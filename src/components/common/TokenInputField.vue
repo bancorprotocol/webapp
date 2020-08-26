@@ -79,7 +79,7 @@ import { vxm } from "@/store/";
 import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { formatNumber } from "@/api/helpers";
+import { formatNumber, VModel } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
 
@@ -92,7 +92,7 @@ export default class TokenInputField extends Vue {
   @Prop() pool?: ViewRelay;
   @Prop() balance!: string;
   @Prop() usdValue?: number;
-  @PropSync("amount", { type: String }) tokenAmount!: string;
+  @VModel({ type: String }) tokenAmount!: string;
   @Prop({ default: false }) ignoreError!: boolean;
   @Prop({ default: "" }) errorMsg!: string;
   @Prop({ default: false }) disabled!: boolean;

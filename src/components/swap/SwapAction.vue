@@ -2,8 +2,8 @@
   <div>
     <token-input-field
       label="From"
-      :amount.sync="amount1"
-      @update:amount="updatePriceReturn"
+      v-model="amount1"
+      @input="updatePriceReturn"
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
@@ -22,8 +22,8 @@
 
     <token-input-field
       label="To (Estimated)"
-      :amount.sync="amount2"
-      @update:amount="sanitizeAmount"
+      v-model="amount2"
+      @input="sanitizeAmount"
       :token="token2"
       :balance="balance2"
       :dropdown="true"

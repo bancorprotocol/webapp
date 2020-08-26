@@ -18,7 +18,7 @@
       <token-input-field
         class="mt-3"
         label="Input"
-        :amount.sync="amount1"
+        v-model="amount1"
         :token="token1"
         :balance="balance1"
         name="token1"
@@ -28,7 +28,7 @@
       <token-input-field
         class="mt-3"
         label="Input"
-        :amount.sync="amount2"
+        v-model="amount2"
         :token="token2"
         :balance="balance2"
         :dropdown="true"
