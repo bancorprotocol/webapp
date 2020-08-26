@@ -46,9 +46,9 @@
         :disabled="false"
       />
 
-      <modal-two title="Create Pool" v-model="modal">
+      <modal-base title="Create Pool" v-model="modal">
         <p>Hello world</p>
-      </modal-two>
+      </modal-base>
     </div>
   </content-block>
 </template>
@@ -59,7 +59,7 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import ModalTwo from "@/components/common/ModalTwo.vue";
+import ModalBase from "@/components/common/ModalBase.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken, TxResponse, Step } from "@/types/bancor";
@@ -77,7 +77,7 @@ import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
     ContentBlock,
     MainButton,
     ModalCreateAction,
-    ModalTwo
+    ModalBase
   }
 })
 export default class CreateHome extends Vue {

@@ -60,7 +60,7 @@ import {
 import { VModel } from "@/api/helpers";
 
 @Component
-export default class ModalTwo extends Vue {
+export default class ModalBase extends Vue {
   @Prop() title!: string;
   @VModel({ type: Boolean }) show!: boolean;
   @PropSync("search", { type: String }) searchField?: string;

@@ -1,5 +1,5 @@
 <template>
-  <modal-two v-model="show" @input="setDefault" title="Confirm Token Swap">
+  <modal-base v-model="show" @input="setDefault" title="Confirm Token Swap">
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)">
         <b-col cols="12">
@@ -76,7 +76,7 @@
         />
       </b-col>
     </b-row>
-  </modal-two>
+  </modal-base>
 </template>
 
 <script lang="ts">
@@ -93,7 +93,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
-import ModalTwo from "@/components/common/ModalTwo.vue";
+import ModalBase from "@/components/common/ModalBase.vue";
 import numeral from "numeral";
 import { VModel } from "@/api/helpers";
 
@@ -103,7 +103,7 @@ import { VModel } from "@/api/helpers";
     AdvancedBlockItem,
     ActionModalStatus,
     MainButton,
-    ModalTwo
+    ModalBase
   }
 })
 export default class ModalSwapAction extends Vue {

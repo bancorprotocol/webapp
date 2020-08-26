@@ -1,5 +1,5 @@
 <template>
-  <modal-two
+  <modal-base
     size="sm"
     v-model="show"
     :search.sync="searchQuery"
@@ -46,7 +46,7 @@
         </b-col>
       </b-row>
     </div>
-  </modal-two>
+  </modal-base>
 </template>
 
 <script lang="ts">
@@ -59,12 +59,12 @@ import {
   PropSync
 } from "vue-property-decorator";
 import { vxm } from "@/store";
-import ModalTwo from "@/components/common/ModalTwo.vue";
+import ModalBase from "@/components/common/ModalBase.vue";
 import { VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 
 @Component({
-  components: { ModalTwo, MainButton }
+  components: { ModalBase, MainButton }
 })
 export default class ModalSelect extends Vue {
   @VModel() show!: boolean;

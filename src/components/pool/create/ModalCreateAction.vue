@@ -1,5 +1,5 @@
 <template>
-  <modal-two v-model="modal" @input="setDefault" title="Create Pool">
+  <modal-base v-model="modal" @input="setDefault" title="Create Pool">
     <b-row class="d-flex justify-content-center">
       <action-modal-status
         v-if="txBusy || error || success"
@@ -21,7 +21,7 @@
         />
       </b-col>
     </b-row>
-  </modal-two>
+  </modal-base>
 </template>
 
 <script lang="ts">
@@ -43,7 +43,7 @@ import MainButton from "@/components/common/Button.vue";
 import { namespace } from "vuex-class";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
-import ModalTwo from "@/components/common/ModalTwo.vue";
+import ModalBase from "@/components/common/ModalBase.vue";
 import { VModel } from "@/api/helpers";
 
 const bancor = namespace("bancor");
@@ -55,7 +55,8 @@ const bancor = namespace("bancor");
     AdvancedBlockItem,
     PoolLogos,
     SelectPoolRow,
-    MainButton
+    MainButton,
+    ModalBase
   }
 })
 export default class ModalCreateAction extends Vue {
