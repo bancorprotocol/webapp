@@ -24,7 +24,7 @@
           :key="pool.id"
           class="my-3 cursor"
         >
-          <select-pool-row @click.native="selectPool(pool)" :pool="pool" />
+          <select-pool-row @click="selectPool(pool)" :pool="pool" />
         </b-col>
         <b-col cols="12" class="mb-3 text-center">
           <main-button

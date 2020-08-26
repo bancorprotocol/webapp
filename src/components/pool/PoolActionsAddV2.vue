@@ -2,7 +2,7 @@
   <div>
     <label-content-split label="Selected Pool" class="my-3">
       <pool-logos
-        @click.native="$bvModal.show('modal-join-pool')"
+        @click="$bvModal.show('modal-join-pool')"
         :pool="pool"
         :dropdown="true"
       />
