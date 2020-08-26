@@ -43,7 +43,7 @@ import MainButton from "@/components/common/Button.vue";
 import { namespace } from "vuex-class";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
-import ModalBase from "@/components/common/ModalBase.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
 import { VModel } from "@/api/helpers";
 
 const bancor = namespace("bancor");

@@ -93,7 +93,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
-import ModalBase from "@/components/common/ModalBase.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
 import numeral from "numeral";
 import { VModel } from "@/api/helpers";
 

@@ -117,7 +117,7 @@ import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import MainButton from "@/components/common/Button.vue";
-import ModalBase from "@/components/common/ModalBase.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
 import { namespace } from "vuex-class";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";

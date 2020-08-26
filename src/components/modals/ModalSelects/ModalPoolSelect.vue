@@ -18,7 +18,7 @@ import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import { VModel } from "@/api/helpers";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
-import ModalSelect from "@/components/common/ModalSelect.vue";
+import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 
 @Component({
   components: { ModalSelect, SelectPoolRow }

@@ -88,8 +88,8 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { formatNumber, VModel } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
-import ModalPoolSelect from "@/components/common/ModalPoolSelect.vue";
+import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 @Component({
   components: {

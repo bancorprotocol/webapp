@@ -31,7 +31,7 @@
 <script lang="ts">
 import { Watch, Component, Vue, Prop, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
-import ModalSelect from "@/components/common/ModalSelect.vue";
+import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import { ViewRelay, ViewToken, ViewModalToken } from "@/types/bancor";
 import { formatNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";

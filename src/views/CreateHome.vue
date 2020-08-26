@@ -59,13 +59,13 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import ModalBase from "@/components/common/ModalBase.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken, TxResponse, Step } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";
 import ModalCreateAction from "@/components/pool/create/ModalCreateAction.vue"
-import ModalTokenSelect from "@/components/common/ModalTokenSelect.vue";
+import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 
 @Component({
   components: {

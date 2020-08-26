@@ -89,7 +89,7 @@ import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import { namespace } from "vuex-class";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import ModalPoolSelect from "@/components/common/ModalPoolSelect.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 
 const bancor = namespace("bancor");

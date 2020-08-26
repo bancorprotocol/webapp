@@ -39,7 +39,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import SubNavigation from "@/components/layout/SubNavigation.vue";
 import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
-import ModalPoolSelect from "@/components/common/ModalPoolSelect.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 @Component({
   components: {
