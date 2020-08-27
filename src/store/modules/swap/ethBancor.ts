@@ -23,7 +23,9 @@ import {
   ConvertReturn,
   UserPoolBalances,
   ReserveFeed,
-  PoolTokenPosition
+  PoolTokenPosition,
+  CreateV1PoolEthParams,
+  TxResponse
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -72,7 +74,14 @@ import Decimal from "decimal.js";
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import wait from "waait";
-import { uniqWith, differenceWith, zip, partition } from "lodash";
+import {
+  uniqWith,
+  differenceWith,
+  zip,
+  partition,
+  unzip,
+  unzipWith
+} from "lodash";
 import {
   buildNetworkContract,
   buildRegistryContract,
@@ -179,6 +188,10 @@ interface RefinedAbiRelay {
   conversionFee: string;
   owner: string;
 }
+
+const decToPpm = (dec: number | string): string => {
+  return new BigNumber(dec).times(oneMillion).toFixed(0);
+};
 
 const determineConverterType = (
   converterType: string | undefined
@@ -1295,7 +1308,39 @@ export class EthBancorModule
         smartTokenDecimals,
         50000,
         reserveTokenAddresses,
-        [500000, 500000]
+        ["500000", "500000"]
+      )
+    });
+  }
+
+  @action async deployV1Converter({
+    poolTokenName,
+    poolTokenSymbol,
+    poolTokenPrecision,
+    reserves
+  }: {
+    poolTokenName: string;
+    poolTokenSymbol: string;
+    poolTokenPrecision: number;
+    reserves: { contract: string; ppmReserveWeight: string }[];
+  }): Promise<string> {
+    if (reserves.length == 0) throw new Error("Must have at least one reserve");
+    const contract = buildRegistryContract(
+      this.contracts.BancorConverterRegistry
+    );
+
+    const reserveTokenAddresses = reserves.map(reserve => reserve.contract);
+    const reserveWeights = reserves.map(reserve => reserve.ppmReserveWeight);
+
+    return this.resolveTxOnConfirmation({
+      tx: contract.methods.newConverter(
+        1,
+        poolTokenName,
+        poolTokenSymbol,
+        poolTokenPrecision,
+        50000,
+        reserveTokenAddresses,
+        reserveWeights
       )
     });
   }
@@ -1306,6 +1351,102 @@ export class EthBancorModule
     const sortedSymbols = sortByNetworkTokens(reserveSymbols, x => x);
     const [networkToken, primaryReserveToken] = sortedSymbols;
     return getSmartTokenHistory(primaryReserveToken.toLowerCase());
+  }
+
+  @action async createV1Pool({
+    onUpdate,
+    decFee,
+    decimals,
+    poolName,
+    poolSymbol,
+    reserves
+  }: CreateV1PoolEthParams): Promise<TxResponse> {
+    const hasFee = new BigNumber(decFee).isGreaterThan(0);
+
+    const converterTx = await multiSteps({
+      items: [
+        {
+          description: "Creating pool...",
+          task: async () => {
+            const converterRes = await this.deployV1Converter({
+              reserves: reserves.map(reserve => ({
+                contract: reserve.tokenId,
+                ppmReserveWeight: decToPpm(reserve.decReserveWeight)
+              })),
+              poolTokenName: poolName,
+              poolTokenSymbol: poolSymbol,
+              poolTokenPrecision: decimals
+            });
+
+            const converterAddress = await this.fetchNewConverterAddressFromHash(
+              converterRes
+            );
+            return { converterAddress, newConverterTx: converterRes };
+          }
+        },
+        {
+          description: "Transferring ownership...",
+          task: async ({ converterAddress, newConverterTx }) => {
+            await this.claimOwnership(converterAddress);
+            return { converterAddress, newConverterTx };
+          }
+        },
+        ...(hasFee
+          ? [
+              {
+                description: "Setting fee...",
+                task: async ({
+                  converterAddress,
+                  newConverterTx
+                }: {
+                  converterAddress: string;
+                  newConverterTx: string;
+                }) => {
+                  this.setFee({
+                    converterAddress,
+                    ppmFee: decToPpm(decFee)
+                  });
+                  return { converterAddress, newConverterTx };
+                }
+              }
+            ]
+          : []),
+        {
+          description: "Adding pool...",
+          task: async ({
+            converterAddress,
+            newConverterTx
+          }: {
+            converterAddress: string;
+            newConverterTx: string;
+          }) => {
+            const registeredAnchorAddresses = await this.fetchAnchorAddresses(
+              this.contracts.BancorConverterRegistry
+            );
+            const convertersAndAnchors = await this.addConvertersToAnchors(
+              registeredAnchorAddresses
+            );
+            const converterAndAnchor = findOrThrow(
+              convertersAndAnchors,
+              converterAndAnchor =>
+                compareString(
+                  converterAndAnchor.converterAddress,
+                  converterAddress
+                ),
+              "failed to find new pool in the contract registry"
+            );
+            await this.addPoolsBulk([converterAndAnchor]);
+            return { converterAddress, newConverterTx };
+          }
+        }
+      ],
+      onUpdate
+    });
+
+    return {
+      txId: converterTx,
+      blockExplorerLink: await this.createExplorerLink(converterTx)
+    };
   }
 
   @action async createPool(poolParams: CreatePoolParams) {
@@ -1420,36 +1561,6 @@ export class EthBancorModule
                 )
             ]);
           }
-        },
-        {
-          description: `Adding reserve liquidity ${
-            hasFee ? "and setting fee..." : ""
-          }`,
-          task: async (state?: any) => {
-            const { converterAddress, reserves } = state as {
-              converterAddress: string;
-              reserves: WeiExtendedAsset[];
-            };
-
-            await Promise.all<any>([
-              ...[
-                hasFee
-                  ? this.setFee({
-                      converterAddress,
-                      decFee: Number(poolParams.fee)
-                    })
-                  : []
-              ],
-              this.addLiquidityV28({
-                converterAddress,
-                reserves: reserves.map(reserve => ({
-                  tokenContract: reserve.contract,
-                  weiAmount: reserve.weiAmount
-                })),
-                minimumReturnWei: "1"
-              })
-            ]);
-          }
         }
       ],
       onUpdate: poolParams.onUpdate
@@ -1503,17 +1614,15 @@ export class EthBancorModule
 
   @action async setFee({
     converterAddress,
-    decFee
+    ppmFee
   }: {
     converterAddress: string;
-    decFee: number;
+    ppmFee: string;
   }) {
     const converterContract = buildConverterContract(converterAddress);
 
-    const ppm = decFee * 1000000;
-    // @ts-ignore
     return this.resolveTxOnConfirmation({
-      tx: converterContract.methods.setConversionFee(ppm),
+      tx: converterContract.methods.setConversionFee(ppmFee),
       resolveImmediately: true
     });
   }
