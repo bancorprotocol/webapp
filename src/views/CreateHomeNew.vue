@@ -37,27 +37,28 @@
       </div>
     </content-block>
     <modal-base title="Create Pool" v-model="modal">
-      <div v-if="!(txBusy || success || error)" class="w-100">
+      <b-row v-if="!(txBusy || success || error)" class="w-100">
         <b-col cols="12">Some info here ...</b-col>
+
         <b-col cols="12">
           <bancor-checkbox
             v-model="notUsState"
             label="I am not a US citizen or domiciliary"
           />
         </b-col>
-      </div>
+      </b-row>
+
       <action-modal-status
-        v-if="txBusy || error || success"
+        v-else
         :error="error"
         :success="success"
-        :step-description="
-          sections.length ? sections[stepIndex].description : undefined
-        "
+        :step-description="currentStatus"
       />
+
       <main-button
         @click="createPool"
         class="mt-4"
-        label="Create Pool"
+        :label="modalConfirmButton"
         :active="true"
         :large="true"
         :disabled="txBusy"
@@ -137,6 +138,23 @@ export default class CreateHomeNew extends Vue {
     poolDecimals: 18,
     poolFee: "0.02"
   };
+
+  get modalConfirmButton() {
+    return this.error
+      ? "Try Again"
+      : this.success
+      ? "Close"
+      : this.txBusy
+      ? "processing ..."
+      : "Confirm";
+  }
+
+  get currentStatus() {
+    if (this.sections.length) {
+      return this.sections[this.stepIndex].description;
+    }
+    return undefined;
+  }
 
   get existingPoolWarning() {
     return this.existingPool ? "A pool like this already exists" : "";
