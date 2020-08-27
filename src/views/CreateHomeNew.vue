@@ -30,12 +30,14 @@
         <main-button
           @click="nextStep"
           label="Continue"
-          :active="true"
+          :active="stepOneProps.token2"
           class="mt-3"
           :large="true"
+          :disabled="!stepOneProps.token2"
         />
       </div>
     </content-block>
+
     <modal-base title="Create Pool" v-model="modal">
       <b-row v-if="!(txBusy || success || error)" class="w-100">
         <b-col cols="12">Some info here ...</b-col>

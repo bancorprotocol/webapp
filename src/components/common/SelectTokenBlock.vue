@@ -7,7 +7,7 @@
       >
         <div>
           <pool-logos v-if="token" :token="token" />
-          <span v-else>Select a token</span>
+          <span v-else class="font-size-14 font-w600">Select a token</span>
         </div>
         <div>
           <font-awesome-icon
