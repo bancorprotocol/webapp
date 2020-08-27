@@ -21,7 +21,6 @@
         v-model="amount1"
         :token="token1"
         :balance="balance1"
-        name="token1"
         :error-msg="errorToken1"
       />
 
@@ -32,7 +31,6 @@
         :token="token2"
         :balance="balance2"
         :dropdown="true"
-        name="token2"
         :error-msg="errorToken2"
       />
 
