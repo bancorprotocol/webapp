@@ -1,7 +1,7 @@
 <template>
   <div class="pt-2">
     <div class="float-right mr-2">
-      <search-input-field :value.sync="search" />
+      <search-input-field v-model="search" />
     </div>
 
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
