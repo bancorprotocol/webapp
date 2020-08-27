@@ -14,7 +14,7 @@
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
           <td scope="row"><pool-logos :token="token" :cursor="false" /></td>
-          <td><colored-percentage :percentage="token.change24h" /></td>
+          <td><coloured-percentage :percentage="token.change24h" /></td>
           <td>{{ numeral(token.price).format("$0.0000") }}</td>
           <td>{{ numeral(token.volume24h).format("$0,0.00") }}</td>
           <td>{{ numeral(token.liqDepth).format("$0,0.00") }}</td>
@@ -40,7 +40,7 @@ import TableHeader, {
 import { ViewToken } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import numeral from "numeral";
-import ColoredPercentage from "@/components/common/ColoredPercentage.vue";
+import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
 import sort from "fast-sort";
 import TablePagination from "@/components/common/TablePagination.vue";
 import TableActionButtons from "@/components/common/TableActionButtons.vue";
@@ -49,7 +49,7 @@ import TableActionButtons from "@/components/common/TableActionButtons.vue";
   components: {
     TableHeader,
     PoolLogos,
-    ColoredPercentage,
+    ColouredPercentage,
     TablePagination,
     TableActionButtons
   }

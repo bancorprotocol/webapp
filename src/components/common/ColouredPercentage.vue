@@ -20,7 +20,7 @@ import { vxm } from "@/store";
 import numeral from "numeral";
 
 @Component
-export default class ColoredPercentage extends Vue {
+export default class ColouredPercentage extends Vue {
   @Prop() percentage!: number | null;
 
   get formattedPercentage() {
