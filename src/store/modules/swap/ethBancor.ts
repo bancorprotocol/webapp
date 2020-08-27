@@ -1124,35 +1124,24 @@ export class EthBancorModule
 
   get primaryReserveChoices() {
     return (secondaryReserveId: string): ModalChoice[] => {
-      const poolsWithReserve = this.relaysList.filter(
-        reserveIncludedInRelay(secondaryReserveId)
+      const metaTokens = this.tokenMeta.filter(
+        meta => !compareString(meta.id, secondaryReserveId)
       );
-      const reserves = poolsWithReserve
-        .flatMap(relay => relay.reserves)
-        .filter(
-          reserve => !compareString(reserve.contract, secondaryReserveId)
-        );
-
-      const modalChoices = reserves
-        .filter(reserve =>
-          this.tokens.some(token => compareString(token.id, reserve.contract))
-        )
-        .map(reserve =>
-          viewTokenToModalChoice(
-            this.tokens.find(token =>
-              compareString(token.id, reserve.contract)
-            )!
-          )
-        )
-        .filter(
-          token =>
-            !this.secondaryReserveChoices.some(choice =>
-              compareString(choice.id, token.id)
-            )
-        );
+      const modalChoices = metaTokens.map(metaToModalChoice);
+      const balances = this.tokenBalances;
+      const tokensWithBalances = updateArray(
+        modalChoices,
+        token => balances.some(balance => compareString(balance.id, token.id)),
+        token => ({
+          ...token,
+          balance: findOrThrow(balances, balance =>
+            compareString(balance.id, token.id)
+          ).balance
+        })
+      );
 
       return sortAlongSide(
-        modalChoices,
+        tokensWithBalances,
         choice => choice.id.toLowerCase(),
         this.tokens.map(token => token.id.toLowerCase())
       );
