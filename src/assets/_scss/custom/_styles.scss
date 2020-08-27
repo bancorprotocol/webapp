@@ -280,3 +280,11 @@
     border-bottom: 2px solid #ffffff !important;
   }
 }
+
+.border-gray {
+  border: 1px solid $gray-border !important;
+}
+
+.border-gray-dark {
+  border: 1px solid $gray-border-dark !important;
+}

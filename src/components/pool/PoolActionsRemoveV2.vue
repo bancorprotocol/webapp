@@ -35,9 +35,11 @@
       </b-form-group>
     </label-content-split>
 
-    <pool-actions-percentages
-      :percentage.sync="percentage"
-      @update:percentage="percentageUpdate"
+    <percentage-slider
+      label="Amount"
+      v-model="percentage"
+      @input="percentageUpdate"
+      :show-buttons="true"
     />
 
     <div>
@@ -114,12 +116,12 @@ import { ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import PoolActionsPercentages from "@/components/pool/PoolActionsPercentages.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { compareString } from "../../api/helpers";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import PercentageSlider from "@/components/common/PercentageSlider.vue";
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -131,10 +133,10 @@ interface PoolTokenUI {
 
 @Component({
   components: {
+    PercentageSlider,
     AlertBlock,
     TokenInputField,
     ModalPoolAction,
-    PoolActionsPercentages,
     LabelContentSplit,
     PoolLogos,
     MainButton

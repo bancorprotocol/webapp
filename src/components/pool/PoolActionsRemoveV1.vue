@@ -1,6 +1,5 @@
 <template>
   <div>
-    <pool-actions-percentages v-if="!advanced" :percentage.sync="percentage" />
     <div v-if="!advanced" class="text-center my-3">
       <font-awesome-icon
         icon="long-arrow-alt-down"
@@ -133,7 +132,6 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import PoolActionsPercentages from "@/components/pool/PoolActionsPercentages.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { namespace } from "vuex-class";
 
@@ -142,7 +140,6 @@ const bancor = namespace("bancor");
 @Component({
   components: {
     ModalPoolAction,
-    PoolActionsPercentages,
     LabelContentSplit,
     TokenInputField,
     PoolLogos,

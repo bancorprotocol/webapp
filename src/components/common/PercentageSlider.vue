@@ -1,27 +1,26 @@
 <template>
   <div>
-    <label-content-split label="Amount">
+    <label-content-split :label="label">
       <span
         :class="darkMode ? 'text-dark' : 'text-light'"
         class="font-size-16 font-w700"
-        >{{ percentageAmount }} %</span
+        >{{ percentage }} %</span
       >
     </label-content-split>
     <b-form-input
       id="range-1"
-      v-model="percentageAmount"
+      v-model="percentage"
       type="range"
-      debounce="300"
       min="0"
       max="100"
       class="my-2"
     ></b-form-input>
-    <b-row>
+    <b-row v-if="showButtons">
       <b-col cols="3" v-for="p in percentages" :key="p">
         <main-button
-          @click="percentageAmount = p"
+          @click="percentage = p"
           :label="`${p}%`"
-          :active="p === percentageAmount"
+          :active="p === percentage"
           :small="true"
         />
       </b-col>
@@ -34,11 +33,15 @@ import { Component, Prop, PropSync, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
+import { VModel } from "@/api/helpers";
+
 @Component({
   components: { LabelContentSplit, MainButton }
 })
-export default class PoolActionsPercentages extends Vue {
-  @PropSync("percentage", { type: String }) percentageAmount!: string;
+export default class PercentageSlider extends Vue {
+  @Prop() label!: string;
+  @Prop({ default: false }) showButtons!: boolean;
+  @VModel({ type: String }) percentage!: String;
 
   percentages = ["25", "50", "75", "100"];
 
