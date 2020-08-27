@@ -571,6 +571,7 @@ interface EthOpposingLiquid {
   opposingAmount?: string;
   shareOfPool: number;
   singleUnitCosts: ViewAmount[];
+  reserveBalancesAboveZero: boolean;
 }
 
 const buildSingleUnitCosts = (
@@ -822,9 +823,14 @@ const calculateFundReward = (
   smartSupply: string
 ) => {
   Decimal.set({ rounding: 0 });
+
+  const smartSupplyNumber = new Decimal(smartSupply);
+  if (smartSupplyNumber.eq(0)) {
+    return "10000";
+  }
   return new Decimal(reserveAmount)
     .div(reserveSupply)
-    .times(smartSupply)
+    .times(smartSupplyNumber)
     .times(0.99)
     .toFixed(0);
 };
@@ -1804,12 +1810,36 @@ export class EthBancorModule
     const reserveBalancesAboveZero = reserves.every(reserve =>
       new BigNumber(reserve.weiAmount).gt(0)
     );
+    const sameReserveWei = expandToken(tokenAmount, sameReserve.decimals);
 
     if (!reserveBalancesAboveZero) {
-      throw new Error("NoReserveBalances");
-    }
+      const fundReward = calculateFundReward(
+        sameReserveWei,
+        sameReserve.weiAmount,
+        smartTokenSupplyWei
+      );
 
-    const sameReserveWei = expandToken(tokenAmount, sameReserve.decimals);
+      console.log(
+        "calculate fund reward returned",
+        fundReward,
+        "which was passed",
+        sameReserveWei,
+        sameReserve.weiAmount,
+        smartTokenSupplyWei
+      );
+
+      const shareOfPool = new BigNumber(smartTokenSupplyWei).gt(0)
+        ? new BigNumber(fundReward).div(smartTokenSupplyWei).toNumber()
+        : 1;
+
+      return {
+        shareOfPool,
+        smartTokenAmountWei: { amount: fundReward, id: smartTokenAddress },
+        singleUnitCosts: [],
+        opposingAmount: undefined,
+        reserveBalancesAboveZero
+      };
+    }
 
     const opposingAmount = calculateOppositeFundRequirement(
       sameReserveWei,
@@ -1850,7 +1880,8 @@ export class EthBancorModule
         singleUnitCosts,
         unitCost => unitCost.id,
         relay.reserves.map(reserve => reserve.contract)
-      )
+      ),
+      reserveBalancesAboveZero
     };
     return res;
   }
@@ -2371,6 +2402,10 @@ export class EthBancorModule
       smartTokenAddress
     );
 
+    const reserveBalancesAboveZero = reserves.every(reserve =>
+      new BigNumber(reserve.weiAmount).gt(0)
+    );
+
     const [sameReserve, opposingReserve] = sortByNetworkTokens(
       reserves,
       reserve => reserve.symbol,
@@ -2433,7 +2468,8 @@ export class EthBancorModule
       singleUnitCosts: [
         { id: sameReserve.contract, amount: sameReserveCost },
         { id: opposingReserve.contract, amount: opposingReserveCost }
-      ]
+      ],
+      reserveBalancesAboveZero
     };
   }
 
@@ -2781,21 +2817,26 @@ export class EthBancorModule
 
     if (postV28 && relay.converterType == PoolType.Traditional) {
       console.log("treating as a traditional relay");
-      const { smartTokenAmountWei } = await this.calculateOpposingDepositInfo({
+      const {
+        smartTokenAmountWei,
+        reserveBalancesAboveZero
+      } = await this.calculateOpposingDepositInfo({
         id: relay.id,
         reserve: reserves[0]
       });
 
-      const minimumReturnWei = await this.weiMinusSlippageTolerance(
-        smartTokenAmountWei.amount
-      );
+      const minimumReturnWei = reserveBalancesAboveZero
+        ? await this.weiMinusSlippageTolerance(smartTokenAmountWei.amount)
+        : "1";
 
       txHash = await this.addLiquidityV28({
         converterAddress,
-        reserves: matchedBalances.map(balance => ({
-          tokenContract: balance.contract,
-          weiAmount: expandToken(balance.amount, balance.decimals)
-        })),
+        reserves: matchedBalances
+          .filter(balance => new BigNumber(balance.amount).gt(0))
+          .map(balance => ({
+            tokenContract: balance.contract,
+            weiAmount: expandToken(balance.amount, balance.decimals)
+          })),
         minimumReturnWei,
         onHash: () => onUpdate!(2, steps)
       });
