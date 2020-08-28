@@ -85,7 +85,7 @@ export const router = new Router({
       name: "PoolCreate",
       components: {
         Nav: Navigation,
-        Hero: CreateHome
+        Hero: CreateHomeNew
       },
       props: true
     },

@@ -25,7 +25,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
   components: { LabelContentSplit }
 })
 export default class MultiInputField extends Vue {
-  @VModel({ type: String }) text!: string;
+  @VModel() text!: string | number;
   @Prop({ default: "Enter here" }) placeholder!: string;
   @Prop({ default: "text" }) type!: string;
   @Prop() label?: string;

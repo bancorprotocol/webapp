@@ -41,7 +41,7 @@ import { VModel } from "@/api/helpers";
 export default class PercentageSlider extends Vue {
   @Prop() label!: string;
   @Prop({ default: false }) showButtons!: boolean;
-  @VModel({ type: String }) percentage!: String;
+  @VModel({ type: String }) percentage!: string;
 
   percentages = ["25", "50", "75", "100"];
 

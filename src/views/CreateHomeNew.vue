@@ -1,6 +1,6 @@
 <template>
   <div>
-    <content-block class="mb-3">
+    <content-block :shadow="true" class="mb-3">
       <template slot="header">
         <pool-actions-header title="Create a Pool" @back="back" />
       </template>
@@ -20,33 +20,54 @@
           <create-v2-step2 v-else />
         </div>
 
-        <div
-          v-if="existingPoolWarning"
-          class="text-center font-size-12 font-w600 mt-3"
-        >
-          {{ existingPoolWarning }}
-        </div>
+        <alert-block variant="error" :msg="errorStep1" class="mt-3" />
 
         <main-button
           @click="nextStep"
-          label="Continue"
-          :active="stepOneProps.token2"
+          :label="stepsConfirmButton"
+          :active="stepsConfirmError"
           class="mt-3"
           :large="true"
-          :disabled="!stepOneProps.token2"
+          :disabled="!stepsConfirmError"
         />
       </div>
     </content-block>
 
-    <modal-base title="Create Pool" v-model="modal">
-      <b-row v-if="!(txBusy || success || error)" class="w-100">
-        <b-col cols="12">Some info here ...</b-col>
-
+    <modal-base
+      title="You are creating a pool"
+      v-model="modal"
+      @input="setDefault"
+    >
+      <b-row v-if="!(txBusy || success || error)">
+        <b-col cols="12" class="text-center mb-3">
+          <span
+            v-for="(item, index) in selectedTokens"
+            :key="index"
+            class="font-size-24 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+          >
+            {{ item.token.symbol }}
+            <span v-if="selectedTokens.length !== index + 1">/</span>
+          </span>
+        </b-col>
         <b-col cols="12">
-          <bancor-checkbox
-            v-model="notUsState"
-            label="I am not a US citizen or domiciliary"
-          />
+          <gray-border-block>
+            <label-content-split
+              v-for="item in selectedTokens"
+              :key="item.token.id"
+              :label="item.token.symbol + ' Ratio'"
+              :value="item.percentage + '%'"
+            />
+            <label-content-split label="Fee" :value="stepTwoProps.poolFee" />
+            <label-content-split
+              label="Pool Name"
+              :value="stepTwoProps.poolName"
+            />
+            <label-content-split
+              label="Token Symbol"
+              :value="stepTwoProps.poolSymbol"
+            />
+          </gray-border-block>
         </b-col>
       </b-row>
 
@@ -59,7 +80,7 @@
 
       <main-button
         @click="createPool"
-        class="mt-4"
+        class="mt-3"
         :label="modalConfirmButton"
         :active="true"
         :large="true"
@@ -70,7 +91,7 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop, PropSync } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
@@ -80,17 +101,18 @@ import CreateV1Step2 from "@/components/pool/create/CreateV1Step2.vue";
 import CreateV2Step1 from "@/components/pool/create/CreateV2Step1.vue";
 import CreateV2Step2 from "@/components/pool/create/CreateV2Step2.vue";
 import MainButton from "@/components/common/Button.vue";
-import { Step, TxResponse, ViewModalToken, ViewToken } from "@/types/bancor";
+import { Step, TxResponse, ViewToken } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import { compareString } from "@/api/helpers";
+import AlertBlock from "@/components/common/AlertBlock.vue";
+import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 
 export interface CreateStep1 {
-  token1: ViewToken;
-  token2: ViewToken | null;
-  percentage1: string;
-  percentage2: string;
+  token: ViewToken | null;
+  percentage: string;
 }
 
 export interface CreateStep2 {
@@ -102,6 +124,9 @@ export interface CreateStep2 {
 
 @Component({
   components: {
+    AdvancedBlockItem,
+    GrayBorderBlock,
+    AlertBlock,
     ModalBase,
     BancorCheckbox,
     ActionModalStatus,
@@ -119,7 +144,6 @@ export default class CreateHomeNew extends Vue {
   version: 1 | 2 = 1;
   step = 1;
   modal = false;
-  notUsState: boolean = false;
 
   txBusy = false;
   success: TxResponse | string | null = null;
@@ -127,12 +151,16 @@ export default class CreateHomeNew extends Vue {
   sections: Step[] = [];
   stepIndex = 0;
 
-  stepOneProps: CreateStep1 = {
-    token1: vxm.bancor.token(vxm.bancor.newNetworkTokenChoices[0].id),
-    token2: null,
-    percentage1: "50",
-    percentage2: "50"
-  };
+  stepOneProps: CreateStep1[] = [
+    {
+      token: vxm.bancor.token(vxm.bancor.newNetworkTokenChoices[0].id),
+      percentage: "50"
+    },
+    {
+      token: null,
+      percentage: "50"
+    }
+  ];
 
   stepTwoProps: CreateStep2 = {
     poolName: "",
@@ -140,6 +168,10 @@ export default class CreateHomeNew extends Vue {
     poolDecimals: 18,
     poolFee: "0.02"
   };
+
+  get stepsConfirmButton() {
+    return this.step === 1 ? "Continue" : "Create a Pool";
+  }
 
   get modalConfirmButton() {
     return this.error
@@ -149,6 +181,44 @@ export default class CreateHomeNew extends Vue {
       : this.txBusy
       ? "processing ..."
       : "Confirm";
+  }
+
+  get stepsConfirmError() {
+    if (this.selectedTokens.length <= 1) return false;
+    else if (this.step === 1 && this.errorStep1) return false;
+    else if (this.step === 2 && this.errorStep2) return false;
+    else return true;
+  }
+
+  get errorStep1() {
+    if (this.existingPoolWarning) return this.existingPoolWarning;
+    else if (this.percentageWarning) return this.percentageWarning;
+    else return "";
+  }
+
+  get errorStep2() {
+    if (
+      this.stepTwoProps.poolName &&
+      this.stepTwoProps.poolSymbol &&
+      this.stepTwoProps.poolFee &&
+      this.stepTwoProps.poolDecimals
+    )
+      return false;
+    else return true;
+  }
+
+  get percentageWarning() {
+    return this.totalPercentage > 100 ? "Maximum total reserve is 100%" : "";
+  }
+
+  get totalPercentage() {
+    let sum = 0;
+    for (const item of this.stepOneProps) {
+      if (item.token) {
+        sum += parseInt(item.percentage);
+      }
+    }
+    return sum;
   }
 
   get currentStatus() {
@@ -162,15 +232,24 @@ export default class CreateHomeNew extends Vue {
     return this.existingPool ? "A pool like this already exists" : "";
   }
 
+  get selectedTokens() {
+    return this.stepOneProps.filter((p: CreateStep1) => p.token !== null);
+  }
+
+  get tokenIdArray() {
+    const array = [];
+    for (const item of this.selectedTokens) {
+      const tokenId = item.token!.id;
+      const decReserveWeight = (parseFloat(item.percentage) / 100).toString();
+      array.push({ tokenId, decReserveWeight });
+    }
+    return array;
+  }
+
   get existingPool() {
-    if (this.stepOneProps.token2 === null) return false;
-    const suggestion = [
-      this.stepOneProps.token1.id,
-      this.stepOneProps.token2.id
-    ].map(tokenId => ({
-      tokenId,
-      decReserveWeight: "0.5"
-    }));
+    if (this.stepOneProps.length <= 1) return false;
+    const suggestion = this.tokenIdArray;
+
     const relays = vxm.ethBancor.relays;
     const existingPooll = relays.find(relay =>
       relay.reserves.every(r =>
@@ -187,13 +266,23 @@ export default class CreateHomeNew extends Vue {
   }
 
   async createPool() {
-    const tokens = [
-      this.stepOneProps.token1.id,
-      this.stepOneProps.token2!.id
-    ].map(tokenId => ({ tokenId, decReserveWeight: "0.4" }));
+    if (this.success) {
+      this.modal = false;
+      this.setDefault();
+      await this.$router.push({ name: "Pool" });
+      return;
+    }
+
+    if (this.error) {
+      this.setDefault();
+      return;
+    }
+
+    this.setDefault();
+
+    const tokens = this.tokenIdArray;
 
     this.txBusy = true;
-    this.error = "";
 
     try {
       const res = await vxm.ethBancor.createV1Pool({
@@ -227,12 +316,25 @@ export default class CreateHomeNew extends Vue {
   }
 
   nextStep() {
+    this.stepOneProps = this.stepOneProps.filter(
+      (p: CreateStep1) => p.token !== null
+    );
     if (this.step === 2) this.modal = true;
     else this.step++;
   }
 
   prevStep() {
     this.step--;
+  }
+
+  setDefault() {
+    this.sections = [];
+    this.error = "";
+    this.success = null;
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode;
   }
 }
 </script>
