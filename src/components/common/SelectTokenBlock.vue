@@ -57,12 +57,15 @@ export default class SelectTokenBlock extends Vue {
   get primaryReserveOptions() {
     const result = vxm.bancor
       .primaryReserveChoices("0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c")
-      .map(x => ({ ...x, logo: x.img }));
+      .map((x: any) => ({ ...x, logo: x.img }));
     return result;
   }
 
   get secondaryReserveOptions() {
-    return vxm.bancor.secondaryReserveChoices.map(x => ({ ...x, logo: x.img }));
+    return vxm.bancor.secondaryReserveChoices.map((x: any) => ({
+      ...x,
+      logo: x.img
+    }));
   }
 
   get darkMode() {
