@@ -380,6 +380,18 @@ export interface CreatePoolParams {
   onUpdate: OnUpdate;
 }
 
+export interface CreateV1PoolEthParams {
+  reserves: {
+    decReserveWeight: string;
+    tokenId: string;
+  }[];
+  poolName: string;
+  poolSymbol: string;
+  decimals: number;
+  decFee: string;
+  onUpdate: OnUpdate;
+}
+
 export interface CreatePoolModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly newPoolTokenChoices: (networkToken: string) => ModalChoice[];
