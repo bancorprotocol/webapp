@@ -2809,12 +2809,19 @@ export class EthBancorModule
     const isAddress = web3.utils.isAddress(tokenAddress);
     if (!isAddress) throw new Error(`${tokenAddress} is not a valid address`);
 
-    const contract = buildTokenContract(tokenAddress);
-    const [decimals, symbol] = await Promise.all([
-      contract.methods.decimals().call(),
-      contract.methods.symbol().call()
-    ]);
-    this.addTokenToMeta({ decimals: Number(decimals), symbol, tokenAddress });
+    const shape = tokenShape(tokenAddress);
+    const [[token]] = (await this.multi([[shape]])) as [
+      [{ symbol: string; decimals: string; contract: string }]
+    ];
+
+    const tokenAddressesMatch = compareString(token.contract, tokenAddress);
+    if (!tokenAddressesMatch) throw new Error("RPC return was not expected");
+
+    this.addTokenToMeta({
+      decimals: Number(token.decimals),
+      symbol: token.symbol,
+      tokenAddress: token.contract
+    });
   }
 
   @mutation addTokenToMeta(token: {
@@ -2824,10 +2831,10 @@ export class EthBancorModule
   }) {
     const tokenMetaList = this.tokenMeta;
 
-    const tokenAlreadyThere = this.tokenMeta.some(meta =>
+    const tokenAlreadyExists = this.tokenMeta.some(meta =>
       compareString(meta.contract, token.tokenAddress)
     );
-    if (tokenAlreadyThere) return;
+    if (tokenAlreadyExists) return;
 
     const tokenMeta: TokenMeta = {
       contract: token.tokenAddress,

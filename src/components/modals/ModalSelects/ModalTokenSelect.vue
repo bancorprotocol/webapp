@@ -25,6 +25,22 @@
         }}</span>
       </div>
     </template>
+    <template v-if="allowTokenAdd" #footer>
+      <p>
+        Can't find the token you're looking for?
+        <span style="color: blue" @click="promptTokenAddModal">Add token</span>
+      </p>
+      <modal-base title="Add Token" v-model="addTokenModal">
+        <multi-input-field
+          v-model="addTokenText"
+          @input="onTokenInput"
+          label="Token Address"
+          placeholder="eg. 0x90feoiw..."
+          height="48"
+        />
+        {{ error }}
+      </modal-base>
+    </template>
   </modal-select>
 </template>
 
@@ -32,24 +48,60 @@
 import { Watch, Component, Vue, Prop, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
+
 import { ViewRelay, ViewToken, ViewModalToken } from "@/types/bancor";
 import { formatNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
+import { isAddress } from "web3-utils";
+import wait from "waait";
+
+const INVALID_ADDRESS = "Invalid address";
 
 @Component({
-  components: { ModalSelect, MainButton }
+  components: { ModalSelect, MainButton, MultiInputField, ModalBase }
 })
 export default class ModalSelectToken extends Vue {
   @VModel() show!: boolean;
   @Prop() tokens!: ViewModalToken[];
+  @Prop({ default: false }) allowTokenAdd!: boolean;
 
   search: string = "";
+  addTokenModal: boolean = false;
+  addTokenText: string = "";
+  error: string = "";
 
   @Emit("select")
   selectToken(id: string) {
-    console.log("modal token select is emitting itself..?", id);
     this.show = false;
     return id;
+  }
+
+  onTokenInput(input: string) {
+    if (isAddress(input)) {
+      this.error = "";
+      this.triggerAdd();
+    } else {
+      if (this.error !== INVALID_ADDRESS) {
+        this.error = INVALID_ADDRESS;
+      }
+    }
+  }
+
+  promptTokenAddModal() {
+    this.addTokenModal = true;
+  }
+
+  async triggerAdd() {
+    const tokenAddress = this.addTokenText;
+    try {
+      await vxm.ethBancor.addToken(tokenAddress);
+      this.error = "";
+      this.addTokenModal = false;
+    } catch (e) {
+      this.error = e.message;
+    }
   }
 
   formattedBalance(num: string = "0") {

@@ -18,7 +18,12 @@
       </div>
     </gray-border-block>
 
-    <modal-token-select v-model="modal" :tokens="tokens" @select="select" />
+    <modal-token-select
+      v-model="modal"
+      :tokens="tokens"
+      @select="select"
+      :allowTokenAdd="type == 'primary'"
+    />
   </div>
 </template>
 

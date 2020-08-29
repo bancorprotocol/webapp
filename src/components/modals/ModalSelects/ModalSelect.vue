@@ -36,6 +36,9 @@
             :small="true"
           />
         </b-col>
+        <b-col cols="12" class="mb-3 text-center">
+          <slot name="footer"></slot>
+        </b-col>
         <b-col
           v-if="totalItemsLength == 0"
           class="text-center font-size-16 font-w500 mt-3"

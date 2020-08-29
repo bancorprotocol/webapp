@@ -60,6 +60,7 @@
       <modal-token-select
         v-if="tokens && tokens.length > 0"
         v-model="modal"
+        :allowTokenAdd="allowTokenAdd"
         :tokens="tokens"
         @select="select"
       />
@@ -112,6 +113,7 @@ export default class TokenInputField extends Vue {
   @Prop({ default: false }) disabled!: boolean;
   @Prop() tokens!: ViewModalToken[];
   @Prop() pools!: ViewRelay[];
+  @Prop({ default: false }) allowTokenAdd!: boolean;
 
   get dropdown() {
     return (
