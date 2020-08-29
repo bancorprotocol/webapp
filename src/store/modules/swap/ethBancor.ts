@@ -2805,6 +2805,42 @@ export class EthBancorModule
     return newWei;
   }
 
+  @action async addToken(tokenAddress: string) {
+    const isAddress = web3.utils.isAddress(tokenAddress);
+    if (!isAddress) throw new Error(`${tokenAddress} is not a valid address`);
+
+    const contract = buildTokenContract(tokenAddress);
+    const [decimals, symbol] = await Promise.all([
+      contract.methods.decimals().call(),
+      contract.methods.symbol().call()
+    ]);
+    this.addTokenToMeta({ decimals: Number(decimals), symbol, tokenAddress });
+  }
+
+  @mutation addTokenToMeta(token: {
+    decimals: number;
+    symbol: string;
+    tokenAddress: string;
+  }) {
+    const tokenMetaList = this.tokenMeta;
+
+    const tokenAlreadyThere = this.tokenMeta.some(meta =>
+      compareString(meta.contract, token.tokenAddress)
+    );
+    if (tokenAlreadyThere) return;
+
+    const tokenMeta: TokenMeta = {
+      contract: token.tokenAddress,
+      id: token.tokenAddress,
+      image: defaultImage,
+      name: token.symbol,
+      symbol: token.symbol,
+      precision: token.decimals
+    };
+
+    this.tokenMeta = [...tokenMetaList, tokenMeta];
+  }
+
   @action async addLiquidity({
     id: relayId,
     reserves,
