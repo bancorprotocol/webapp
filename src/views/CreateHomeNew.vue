@@ -237,13 +237,11 @@ export default class CreateHomeNew extends Vue {
   }
 
   get tokenIdArray() {
-    const array = [];
-    for (const item of this.selectedTokens) {
+    return this.selectedTokens.map(item => {
       const tokenId = item.token!.id;
       const decReserveWeight = (parseFloat(item.percentage) / 100).toString();
-      array.push({ tokenId, decReserveWeight });
-    }
-    return array;
+      return { decReserveWeight, tokenId };
+    });
   }
 
   get existingPool(): boolean {
