@@ -249,7 +249,7 @@ export default class CreateHomeNew extends Vue {
   get existingPool(): boolean {
     if (this.stepOneProps.length <= 1) return false;
     const suggestion = this.tokenIdArray;
-    const relays = vxm.ethBancor.relays;
+    const relays = vxm.ethBancor.relays.filter(relay => !relay.v2);
     const existingPooll = relays.find(
       relay =>
         relay.reserves.every(reserve =>
