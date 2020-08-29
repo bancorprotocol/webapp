@@ -1,12 +1,12 @@
 <template>
   <div>
     <label-content-split label="Selected Pool" class="my-3">
-      <pool-logos
-        @click="poolSelectModal = true"
-        :pool="pool"
-        :dropdown="true"
+      <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
+      <modal-pool-select
+        v-model="poolSelectModal"
+        :pools="pools"
+        @select="select"
       />
-      <modal-pool-select v-model="modal" :pools="pools" @select="select" />
     </label-content-split>
 
     <alert-block
@@ -100,6 +100,7 @@ const bancor = namespace("bancor");
     RateShareBlock,
     ModalPoolAction,
     LabelContentSplit,
+    ModalPoolSelect,
     TokenInputField,
     PoolLogos,
     MainButton
@@ -122,6 +123,24 @@ export default class PoolActionsAddV2 extends Vue {
   shareOfPool = 0;
 
   errorMsg = ""
+
+  select(id: string) {
+    this.$router.push({
+      name: "PoolAction",
+      params: {
+        poolAction: "add",
+        account: id
+      }
+    })
+  }
+
+  poolLogosClick() {
+    this.poolSelectModal = true;
+  }
+
+  get pools() {
+    return vxm.bancor.relays.filter(x => x.v2)
+  }
 
   get supplyButtonLabel() {
     if (this.amount === "") return "Enter an amount"
