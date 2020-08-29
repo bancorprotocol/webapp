@@ -205,4 +205,9 @@ export const buildRegistryContract = (
     reserveTokens: string[],
     reserveWeights: string[]
   ) => ContractSendMethod;
+  getLiquidityPoolByConfig: (
+    type: number,
+    reserveTokens: string[],
+    reserveWeight: string[]
+  ) => CallReturn<string>;
 }> => buildContract(ABIConverterRegistry, contractAddress);

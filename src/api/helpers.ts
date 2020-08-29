@@ -354,6 +354,8 @@ export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
   return b.liqDepth - a.liqDepth;
 };
 
+export const zeroAddress: string = "0x0000000000000000000000000000000000000000";
+
 export const matchReserveFeed = (reserveFeed: ReserveFeed) => (
   dict: DictionaryItem
 ) =>

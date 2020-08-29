@@ -46,12 +46,11 @@ import {
   ChainLinkRelay,
   SmartToken,
   PoolContainer,
-  viewTokenToModalChoice,
-  reserveIncludedInRelay,
   sortAlongSide,
   RelayWithReserveBalances,
   sortByLiqDepth,
-  matchReserveFeed
+  matchReserveFeed,
+  zeroAddress
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -67,21 +66,15 @@ import {
   getAnchors,
   getConvertibleTokenAnchors,
   conversionPath,
-  getTokenSupplyWei
+  getTokenSupplyWei,
+  existingPool
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, isAddress, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import wait from "waait";
-import {
-  uniqWith,
-  differenceWith,
-  zip,
-  partition,
-  unzip,
-  unzipWith
-} from "lodash";
+import { uniqWith, differenceWith, zip, partition } from "lodash";
 import {
   buildNetworkContract,
   buildRegistryContract,
@@ -801,8 +794,6 @@ const removeLeadingZeros = (hexString: string) => {
   else throw new Error(`Failed parsing hex ${hexString}`);
 };
 
-const zeroAddress: string = "0x0000000000000000000000000000000000000000";
-
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
   new Decimal(percent).times(existingSupply).toFixed(0);
 
@@ -1314,16 +1305,26 @@ export class EthBancorModule
     reserves: { contract: string; ppmReserveWeight: string }[];
   }): Promise<string> {
     if (reserves.length == 0) throw new Error("Must have at least one reserve");
-    const contract = buildRegistryContract(
-      this.contracts.BancorConverterRegistry
-    );
+    const converterRegistryAddress = this.contracts.BancorConverterRegistry;
+    const contract = buildRegistryContract(converterRegistryAddress);
 
     const reserveTokenAddresses = reserves.map(reserve => reserve.contract);
     const reserveWeights = reserves.map(reserve => reserve.ppmReserveWeight);
 
+    const poolType = PoolType.Traditional;
+
+    const poolAlreadyExists = await existingPool(
+      converterRegistryAddress,
+      poolType,
+      reserveTokenAddresses,
+      reserveWeights
+    );
+    if (poolAlreadyExists)
+      throw new Error(`Similar pool already exists (${poolAlreadyExists})`);
+
     return this.resolveTxOnConfirmation({
       tx: contract.methods.newConverter(
-        1,
+        poolType,
         poolTokenName,
         poolTokenSymbol,
         poolTokenPrecision,
