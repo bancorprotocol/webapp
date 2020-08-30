@@ -2857,6 +2857,7 @@ export class EthBancorModule
     const tokenAddressesMatch = compareString(token.contract, tokenAddress);
     if (!tokenAddressesMatch) throw new Error("RPC return was not expected");
 
+    console.log(token, 'was was return')
     if (!(token.symbol && token.decimals))
       throw new Error(
         "Failed parsing token information, please ensure this is an ERC-20 token"
