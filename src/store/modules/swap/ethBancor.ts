@@ -1424,7 +1424,7 @@ export class EthBancorModule
               "failed to find new pool in the contract registry"
             );
             await this.addPoolsBulk([converterAndAnchor]);
-            return { converterAddress, newConverterTx };
+            return newConverterTx;
           }
         }
       ],
