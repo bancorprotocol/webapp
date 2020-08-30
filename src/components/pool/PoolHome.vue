@@ -22,6 +22,7 @@
     </content-block>
     <div class="d-flex justify-content-center">
       <router-link
+      v-if="false"
         :to="{ name: 'PoolCreate' }"
         class="cursor font-w700 mb-3"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
