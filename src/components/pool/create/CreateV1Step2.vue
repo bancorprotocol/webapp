@@ -31,6 +31,7 @@
         label="Fee"
         placeholder="eg. 0.02"
         height="48"
+        append="%"
       />
     </b-col>
   </b-row>

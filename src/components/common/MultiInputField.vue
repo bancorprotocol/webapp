@@ -1,17 +1,28 @@
 <template>
   <div>
     <label-content-split v-if="label" :label="label" class="mb-2" />
-    <b-form-input
-      :class="[
-        !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
-        fontSizeClass
-      ]"
-      v-model="text"
-      :placeholder="placeholder"
-      class="mb-1"
-      :type="type"
-      :style="'height: ' + height + 'px;'"
-    ></b-form-input>
+    <b-input-group>
+      <b-form-input
+        :class="[
+          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
+          fontSizeClass
+        ]"
+        v-model="text"
+        :placeholder="placeholder"
+        class="mb-1"
+        :type="type"
+        :style="style"
+      />
+      <b-input-group-append v-if="append">
+        <div
+          class="rounded-right d-flex align-items-center pr-3 pl-2"
+          :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
+          style="border-left: 0 !important;"
+        >
+          {{ append }}
+        </div>
+      </b-input-group-append>
+    </b-input-group>
   </div>
 </template>
 
@@ -31,6 +42,13 @@ export default class MultiInputField extends Vue {
   @Prop() label?: string;
   @Prop({ default: "md" }) fontSize!: "sm" | "md" | "lg";
   @Prop({ default: 32 }) height!: number;
+  @Prop() append?: string;
+
+  get style() {
+    const height = "height: " + this.height + "px;";
+    const border = "border-right: 0 !important;";
+    return this.append ? height + border : height;
+  }
 
   get fontSizeClass() {
     if (this.fontSize === "sm") return "font-size-12";

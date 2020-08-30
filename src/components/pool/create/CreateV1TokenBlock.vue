@@ -1,7 +1,12 @@
 <template>
   <div>
     <gray-border-block v-if="token">
-      <select-token-block :type="type" v-model="token" class="mt-2" />
+      <select-token-block
+        :type="type"
+        v-model="token"
+        @remove="removeToken"
+        class="mt-2"
+      />
       <percentage-slider
         class="mt-3"
         label="Token Reserve Ratio"
@@ -13,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Vue } from "vue-property-decorator";
+import { Component, Emit, Prop, PropSync, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import SelectTokenBlock from "@/components/common/SelectTokenBlock.vue";
@@ -32,6 +37,11 @@ export default class CreateV1TokenBlock extends Vue {
   @Prop() type?: "primary" | "secondary";
   @VModel() token?: ViewToken;
   @PropSync("percentage", { type: String }) percent!: string;
+
+  @Emit("remove")
+  removeToken() {
+    return this.token!.id;
+  }
 
   get darkMode() {
     return vxm.general.darkMode;

@@ -19,7 +19,7 @@
         </b-col>
         <b-col
           cols="12"
-          v-for="item in items"
+          v-for="item in items.slice(0, showAmount)"
           :key="item.id"
           class="my-3 cursor"
           @click="selectItem"
@@ -90,6 +90,10 @@ export default class ModalSelect extends Vue {
 
   get totalItemsLength() {
     return this.items.length;
+  }
+
+  get showAmount() {
+    return this.currentStep * this.perStep;
   }
 
   get darkMode(): boolean {
