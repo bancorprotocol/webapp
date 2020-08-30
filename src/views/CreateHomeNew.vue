@@ -151,6 +151,8 @@ export default class CreateHomeNew extends Vue {
   sections: Step[] = [];
   stepIndex = 0;
 
+  newPoolId = "";
+
   stepOneProps: CreateStep1[] = [
     {
       token: vxm.bancor.token(vxm.bancor.newNetworkTokenChoices[0].id),
@@ -267,8 +269,15 @@ export default class CreateHomeNew extends Vue {
   async createPool() {
     if (this.success) {
       this.modal = false;
+      const poolId = this.newPoolId;
+      this.$router.push({
+        name: "PoolAction",
+        params: {
+          poolAction: "add",
+          account: poolId
+        }
+      });
       this.setDefault();
-      await this.$router.push({ name: "Pool" });
       return;
     }
 
@@ -284,7 +293,7 @@ export default class CreateHomeNew extends Vue {
     this.txBusy = true;
 
     try {
-      const res = await vxm.ethBancor.createV1Pool({
+      const { txId, poolId } = await vxm.ethBancor.createV1Pool({
         onUpdate: this.onUpdate,
         reserves: tokens,
         poolName: this.stepTwoProps.poolName,
@@ -292,7 +301,8 @@ export default class CreateHomeNew extends Vue {
         decimals: this.stepTwoProps.poolDecimals,
         decFee: this.stepTwoProps.poolFee
       });
-      this.success = res;
+      this.success = txId;
+      this.newPoolId = poolId;
     } catch (e) {
       this.error = e.message;
     } finally {
@@ -330,6 +340,7 @@ export default class CreateHomeNew extends Vue {
     this.sections = [];
     this.error = "";
     this.success = null;
+    this.newPoolId = "";
   }
 
   get darkMode() {

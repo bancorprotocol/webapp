@@ -260,6 +260,10 @@ export interface TxResponse {
   txId: string;
   blockExplorerLink: string;
 }
+
+export interface V1PoolResponse extends TxResponse {
+  poolId: string;
+}
 export interface TradingModule {
   init: (param?: ModuleParam) => Promise<void>;
   readonly token: (arg0: string) => ViewToken;

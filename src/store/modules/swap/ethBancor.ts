@@ -25,7 +25,8 @@ import {
   ReserveFeed,
   PoolTokenPosition,
   CreateV1PoolEthParams,
-  TxResponse
+  TxResponse,
+  V1PoolResponse
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -1354,10 +1355,13 @@ export class EthBancorModule
     poolName,
     poolSymbol,
     reserves
-  }: CreateV1PoolEthParams): Promise<TxResponse> {
+  }: CreateV1PoolEthParams): Promise<V1PoolResponse> {
     const hasFee = new BigNumber(decFee).isGreaterThan(0);
 
-    const converterTx = await multiSteps({
+    const {
+      poolId,
+      newConverterTx
+    }: { poolId: string; newConverterTx: string } = await multiSteps({
       items: [
         {
           description: "Creating pool...",
@@ -1430,7 +1434,7 @@ export class EthBancorModule
               "failed to find new pool in the contract registry"
             );
             await this.addPoolsBulk([converterAndAnchor]);
-            return newConverterTx;
+            return { newConverterTx, poolId: converterAndAnchor.anchorAddress };
           }
         }
       ],
@@ -1438,8 +1442,9 @@ export class EthBancorModule
     });
 
     return {
-      txId: converterTx,
-      blockExplorerLink: await this.createExplorerLink(converterTx)
+      txId: newConverterTx,
+      blockExplorerLink: await this.createExplorerLink(newConverterTx),
+      poolId
     };
   }
 
@@ -4210,7 +4215,11 @@ export class EthBancorModule
     );
   }
 
-  @action async convert({ from, to, onUpdate }: ProposedConvertTransaction) {
+  @action async convert({
+    from,
+    to,
+    onUpdate
+  }: ProposedConvertTransaction): Promise<TxResponse> {
     if (compareString(from.id, to.id))
       throw new Error("Cannot convert a token to itself.");
     const [fromToken, toToken] = await this.tokensById([from.id, to.id]);
