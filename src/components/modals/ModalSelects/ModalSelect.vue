@@ -19,7 +19,7 @@
         </b-col>
         <b-col
           cols="12"
-          v-for="item in items"
+          v-for="item in paginatedItems"
           :key="item.id"
           class="my-3 cursor"
           @click="selectItem"
@@ -84,8 +84,16 @@ export default class ModalSelect extends Vue {
     return item;
   }
 
+  get itemsToLoad() {
+    return this.currentStep * this.perStep;
+  }
+
+  get paginatedItems() {
+    return this.items.slice(0, this.itemsToLoad);
+  }
+
   get canDisplayMoreItems() {
-    return this.totalItemsLength > this.perStep * this.currentStep;
+    return this.totalItemsLength > this.itemsToLoad;
   }
 
   get totalItemsLength() {
