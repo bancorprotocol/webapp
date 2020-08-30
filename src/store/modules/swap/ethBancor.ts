@@ -1100,9 +1100,7 @@ export class EthBancorModule
       );
 
     if (remainingAnchorAddresses && remainingAnchorAddresses.length > 0) {
-      const remainingPools = await this.addConvertersToAnchors(
-        remainingAnchorAddresses
-      );
+      const remainingPools = await this.add(remainingAnchorAddresses);
 
       await this.addPoolsBulk(remainingPools);
     }
@@ -1413,7 +1411,7 @@ export class EthBancorModule
             const registeredAnchorAddresses = await this.fetchAnchorAddresses(
               this.contracts.BancorConverterRegistry
             );
-            const convertersAndAnchors = await this.addConvertersToAnchors(
+            const convertersAndAnchors = await this.add(
               registeredAnchorAddresses
             );
             const converterAndAnchor = findOrThrow(
@@ -3271,9 +3269,7 @@ export class EthBancorModule
               compareString(relay.id, anchorAddress)
             )
         );
-      const convertersAndAnchors = await this.addConvertersToAnchors(
-        anchorAddressesNotLoaded
-      );
+      const convertersAndAnchors = await this.add(anchorAddressesNotLoaded);
       await this.addPoolsV2(convertersAndAnchors);
     } else {
       await this.loadMorePools();
@@ -3751,71 +3747,6 @@ export class EthBancorModule
     return zipAnchorAndConverters(anchorAddresses, converters);
   }
 
-  @action async replayIfDifference(convertersAndAnchors: ConverterAndAnchor[]) {
-    const anchorAddresses = convertersAndAnchors.map(x => x.anchorAddress);
-    const latest = await this.add(anchorAddresses);
-    const exactSame = latest.every(newAnchorPair =>
-      convertersAndAnchors.some(oldAnchorPair =>
-        compareAnchorAndConverter(newAnchorPair, oldAnchorPair)
-      )
-    );
-
-    if (!exactSame) {
-      const difference = differenceWith(
-        latest,
-        convertersAndAnchors,
-        compareAnchorAndConverter
-      );
-      this.reloadPools(difference);
-    } else {
-      console.log("exact same! was okay in caching");
-    }
-
-    try {
-      const db = await openDB<MyDB>("bancor", 4);
-      const tx = db.transaction("anchorPair", "readwrite");
-      const store = await tx.objectStore("anchorPair");
-      await Promise.all(
-        latest.map(pair => store.put(pair, pair.anchorAddress))
-      );
-      await tx.done;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  @action async addConvertersToAnchors(
-    anchorAddresses: string[]
-  ): Promise<ConverterAndAnchor[]> {
-    console.time("fetchConverterAddressesByAnchorAddresses");
-
-    const db = await openDB<MyDB>("bancor", 4);
-
-    const items = await db
-      .transaction("anchorPair")
-      .objectStore("anchorPair")
-      .getAll();
-    console.log(items, "were items!");
-
-    const allAnchorsFulfilled = anchorAddresses.every(anchor =>
-      items.some(x => compareString(anchor, x.anchorAddress))
-    );
-    if (allAnchorsFulfilled) {
-      this.replayIfDifference(items);
-      console.timeEnd("fetchConverterAddressesByAnchorAddresses");
-
-      return items;
-    } else {
-      const converters = await this.fetchConverterAddressesByAnchorAddresses(
-        anchorAddresses
-      );
-      const latest = zipAnchorAndConverters(anchorAddresses, converters);
-      this.replayIfDifference(latest);
-      console.timeEnd("fetchConverterAddressesByAnchorAddresses");
-      return latest;
-    }
-  }
-
   @action async init(params?: ModuleParam) {
     console.log(params, "was init param on eth");
     console.time("ethResolved");
@@ -4051,9 +3982,7 @@ export class EthBancorModule
       tokenAddresses.map(this.relaysContainingToken)
     );
     const uniqueAnchors = uniqWith(anchorAddresses.flat(1), compareString);
-    const anchorsAndConverters = await this.addConvertersToAnchors(
-      uniqueAnchors
-    );
+    const anchorsAndConverters = await this.add(uniqueAnchors);
     this.addPoolsV2(anchorsAndConverters);
   }
 
