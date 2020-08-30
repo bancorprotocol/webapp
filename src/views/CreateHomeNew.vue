@@ -293,7 +293,7 @@ export default class CreateHomeNew extends Vue {
     this.txBusy = true;
 
     try {
-      const { txId, poolId } = await vxm.ethBancor.createV1Pool({
+      const success = await vxm.ethBancor.createV1Pool({
         onUpdate: this.onUpdate,
         reserves: tokens,
         poolName: this.stepTwoProps.poolName,
@@ -301,8 +301,8 @@ export default class CreateHomeNew extends Vue {
         decimals: this.stepTwoProps.poolDecimals,
         decFee: this.stepTwoProps.poolFee
       });
-      this.success = txId;
-      this.newPoolId = poolId;
+      this.success = success;
+      this.newPoolId = success.poolId;
     } catch (e) {
       this.error = e.message;
     } finally {
