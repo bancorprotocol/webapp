@@ -1400,7 +1400,7 @@ export class EthBancorModule
                   converterAddress: string;
                   newConverterTx: string;
                 }) => {
-                  this.setFee({
+                  await this.setFee({
                     converterAddress,
                     ppmFee: decToPpm(decFee)
                   });
