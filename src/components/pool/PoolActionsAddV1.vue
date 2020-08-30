@@ -186,7 +186,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async tokenOneChanged(tokenAmount: string) {
-    if (!tokenAmount || tokenAmount === "0" || tokenAmount === '.') {
+    if (!tokenAmount || tokenAmount === '.') {
       this.setDefault();
       return;
     }
@@ -213,25 +213,8 @@ export default class PoolActionsAddV1 extends Vue {
       this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);
     } catch (e) {
-      if (e.message == "NoReserveBalances") {
-
-      const raiseToken1InsufficientBalance = Number(this.balance1) < Number(tokenAmount);
-      console.log(this.balance1, 'is token1 balance', tokenAmount, 'is token amount', raiseToken1InsufficientBalance, 'is error flag', 'on NoReserveBalances');
-        this.token1Error =
-          raiseToken1InsufficientBalance ? "Insufficient balance" : "";
-
-
-      const raiseToken2InsufficientBalance = Number(this.balance2) < Number(this.amount2);
-      console.log(this.balance2, 'is token2 balance', this.amount2, 'is already set amount2', raiseToken2InsufficientBalance, 'is error flag', 'on NoReserveBalances');
-
-
-        this.token2Error =
-          raiseToken2InsufficientBalance ? "Insufficient balance" : "";
-        this.shareOfPool = 1;
-      } else {
         this.token1Error = e.message;
         this.token2Error = "";
-      }
     }
     this.rateLoading = false;
   }
@@ -254,7 +237,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async tokenTwoChanged(tokenAmount: string) {
-    if (!tokenAmount || tokenAmount === "0" || tokenAmount === '.') {
+    if (!tokenAmount || tokenAmount === '.') {
       this.setDefault();
       return;
     }
@@ -270,20 +253,8 @@ export default class PoolActionsAddV1 extends Vue {
       this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);
     } catch (e) {
-      if (e.message == "NoReserveBalances") {
-        this.token1Error =
-          this.balance1 < this.amount1
-            ? "Insufficient balance"
-            : "";
-        this.token2Error =
-          this.balance2 < tokenAmount
-            ? "Insufficient balance"
-            : "";
-        this.shareOfPool = 1;
-      } else {
         this.token1Error = "";
         this.token2Error = e.message;
-      }
     }
     this.rateLoading = false;
   }
