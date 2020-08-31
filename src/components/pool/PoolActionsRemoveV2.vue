@@ -81,7 +81,7 @@
 
     <alert-block
       v-if="exitFee > 0.1"
-      variant="error"
+      variant="warning"
       msg="The pool is not balanced. It is recommended to wait until the pool is balanced."
       class="mb-3"
     />
