@@ -197,6 +197,16 @@ export default class CreateHomeNew extends Vue {
   }
 
   get errorStep1() {
+    // TMP fix
+    if (this.stepOneProps.length > 2)
+      return "Temporarily you can only add two tokens.";
+    if (
+      this.stepOneProps[0].percentage !== "50" ||
+      this.stepOneProps[1].percentage !== "50"
+    )
+      return "Currently the ratio is locked to 50% / 50%";
+    // TMP fix end
+
     if (this.existingPoolWarning) return this.existingPoolWarning;
     else if (this.percentageWarning) return this.percentageWarning;
     else return "";
