@@ -58,7 +58,10 @@
               :label="item.token.symbol + ' Ratio'"
               :value="item.percentage + '%'"
             />
-            <label-content-split label="Fee" :value="stepTwoProps.poolFee" />
+            <label-content-split
+              label="Fee"
+              :value="stepTwoProps.poolFee + '%'"
+            />
             <label-content-split
               label="Pool Name"
               :value="stepTwoProps.poolName"
