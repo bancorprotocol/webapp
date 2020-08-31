@@ -109,6 +109,7 @@ import { compareString } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
+import BigNumber from "bignumber.js";
 
 export interface CreateStep1 {
   token: ViewToken | null;
@@ -168,7 +169,7 @@ export default class CreateHomeNew extends Vue {
     poolName: "",
     poolSymbol: "",
     poolDecimals: 18,
-    poolFee: "0.02"
+    poolFee: "0.2"
   };
 
   get stepsConfirmButton() {
@@ -291,6 +292,9 @@ export default class CreateHomeNew extends Vue {
 
     this.txBusy = true;
 
+    const percentFee = this.stepTwoProps.poolFee;
+    const decFee = new BigNumber(percentFee).div(100).toString();
+
     try {
       const success = await vxm.ethBancor.createV1Pool({
         onUpdate: this.onUpdate,
@@ -298,7 +302,7 @@ export default class CreateHomeNew extends Vue {
         poolName: this.stepTwoProps.poolName,
         poolSymbol: this.stepTwoProps.poolSymbol,
         decimals: this.stepTwoProps.poolDecimals,
-        decFee: this.stepTwoProps.poolFee
+        decFee
       });
       this.success = success;
       this.newPoolId = success.poolId;
