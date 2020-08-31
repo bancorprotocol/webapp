@@ -13,6 +13,7 @@
       type="range"
       min="0"
       max="100"
+      :disabled="disabled"
       class="my-2"
     ></b-form-input>
     <b-row v-if="showButtons">
@@ -42,6 +43,7 @@ export default class PercentageSlider extends Vue {
   @Prop() label!: string;
   @Prop({ default: false }) showButtons!: boolean;
   @VModel({ type: String }) percentage!: string;
+  @Prop({ default: false }) disabled!: boolean;
 
   percentages = ["25", "50", "75", "100"];
 
