@@ -2,6 +2,21 @@
   <div>
     <label-content-split v-if="label" :label="label" class="mb-2" />
     <b-input-group>
+      <b-input-group-prepend v-if="prepend">
+        <div
+          class="rounded-left d-flex align-items-center pl-2 font-size-12 font-w500"
+          :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
+          :style="stylePrepend"
+        >
+          <span v-if="prepend !== 'search'">{{ prepend }}</span>
+          <font-awesome-icon
+            v-else
+            icon="search"
+            class="ml-1"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          />
+        </div>
+      </b-input-group-prepend>
       <b-form-input
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
@@ -11,13 +26,13 @@
         :placeholder="placeholder"
         class="mb-1"
         :type="type"
-        :style="style"
+        :style="styleInput"
       />
       <b-input-group-append v-if="append">
         <div
-          class="rounded-right d-flex align-items-center pr-3 pl-2"
+          class="rounded-right d-flex align-items-center pr-3 pl-2 font-size-12 font-w500"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-          style="border-left: 0 !important;"
+          :style="styleAppend"
         >
           {{ append }}
         </div>
@@ -43,11 +58,28 @@ export default class MultiInputField extends Vue {
   @Prop({ default: "md" }) fontSize!: "sm" | "md" | "lg";
   @Prop({ default: 32 }) height!: number;
   @Prop() append?: string;
+  @Prop() prepend?: string;
 
-  get style() {
+  get styleInput() {
+    const height = "height: " + this.height + "px;";
+    const borderRight = "border-right: 0 !important;";
+    const borderLeft = "border-left: 0 !important;";
+    let border = "";
+    if (this.append) border += borderRight;
+    if (this.prepend) border += borderLeft;
+    return height + border;
+  }
+
+  get stylePrepend() {
     const height = "height: " + this.height + "px;";
     const border = "border-right: 0 !important;";
-    return this.append ? height + border : height;
+    return height + border;
+  }
+
+  get styleAppend() {
+    const height = "height: " + this.height + "px;";
+    const border = "border-left: 0 !important;";
+    return height + border;
   }
 
   get fontSizeClass() {
