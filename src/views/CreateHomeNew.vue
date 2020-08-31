@@ -249,21 +249,23 @@ export default class CreateHomeNew extends Vue {
   get existingPool(): boolean {
     if (this.stepOneProps.length <= 1) return false;
     const suggestion = this.tokenIdArray;
+    const draftedTokens = this.stepOneProps.length;
+    if (suggestion.length !== draftedTokens) return false;
     const relays = vxm.ethBancor.relays.filter(relay => !relay.v2);
-    const existingPooll = relays.find(
-      relay =>
-        relay.reserves.every(reserve =>
-          suggestion.some(token => compareString(token.tokenId, reserve.id))
-        ) &&
-        relay.reserves.every(reserve => {
-          const sameReserve = suggestion.find(r =>
-            compareString(r.tokenId, reserve.id)
-          );
-          if (!sameReserve) return false;
-          return Number(sameReserve.decReserveWeight) == reserve.reserveWeight;
-        })
+
+    const existingPool = relays.find(relay =>
+      suggestion.every(reserve => {
+        const matchingReserve = relay.reserves.find(r =>
+          compareString(reserve.tokenId, r.id)
+        );
+        return (
+          matchingReserve &&
+          Number(matchingReserve.reserveWeight) ==
+            Number(reserve.decReserveWeight)
+        );
+      })
     );
-    return !!existingPooll;
+    return !!existingPool;
   }
 
   async createPool() {
