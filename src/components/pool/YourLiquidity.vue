@@ -69,11 +69,7 @@
       </div>
     </div>
     <div v-else class="font-size-14 font-w600 mt-3 text-center">
-      <span>{{
-        isAuthenticated
-          ? "You dont have any Liquidity yet"
-          : "Connect Wallet to see your Liquidity"
-      }}</span>
+      <span>{{ noLiquidityFoundMsg }}</span>
     </div>
   </div>
 </template>
@@ -109,6 +105,13 @@ export default class YourLiquidity extends Vue {
 
   get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
+  }
+
+  get noLiquidityFoundMsg() {
+    if (!this.isAuthenticated) return "Connect Wallet to see your Liquidity";
+    return this.search
+      ? "No Results found."
+      : "You dont have any Liquidity yet";
   }
 
   formattedBalance(amount: string) {
