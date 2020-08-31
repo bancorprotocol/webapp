@@ -214,13 +214,10 @@ export default class CreateHomeNew extends Vue {
   }
 
   get totalPercentage() {
-    let sum = 0;
-    for (const item of this.stepOneProps) {
-      if (item.token) {
-        sum += parseInt(item.percentage);
-      }
-    }
-    return sum;
+    return this.stepOneProps.reduce(
+      (sum, item) => (item.token ? sum + parseInt(item.percentage) : sum),
+      0
+    );
   }
 
   get currentStatus() {
