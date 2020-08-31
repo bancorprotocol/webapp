@@ -100,6 +100,10 @@ export default class ModalSelect extends Vue {
     return this.items.length;
   }
 
+  get showAmount() {
+    return this.currentStep * this.perStep;
+  }
+
   get darkMode(): boolean {
     return vxm.general.darkMode;
   }

@@ -1,19 +1,19 @@
 <template>
   <div>
-    <gray-border-block class="cursor">
-      <div
-        @click="modal = true"
-        class="d-flex justify-content-between align-items-center"
-      >
+    <gray-border-block @click.native="clickAction" class="cursor">
+      <div class="d-flex justify-content-between align-items-center">
         <div>
           <pool-logos v-if="token" :token="token" />
           <span v-else class="font-size-14 font-w600">Select a token</span>
         </div>
-        <div>
-          <font-awesome-icon
-            icon="caret-down"
-            :class="darkMode ? 'text-white' : 'text-primary'"
-          />
+        <div :class="darkMode ? 'text-white' : 'text-primary'">
+          <span
+            v-if="token && type === 'primary'"
+            class="font-size-12 font-w500 text-primary cursor"
+          >
+            remove
+          </span>
+          <font-awesome-icon v-else icon="caret-down" />
         </div>
       </div>
     </gray-border-block>
@@ -41,7 +41,7 @@ import { ViewModalToken, ViewToken } from "@/types/bancor";
 })
 export default class SelectTokenBlock extends Vue {
   @Prop({ default: "primary" }) type!: "primary" | "secondary";
-  @VModel() token?: ViewToken;
+  @VModel() token!: ViewToken | null;
 
   modal = false;
 
@@ -51,6 +51,16 @@ export default class SelectTokenBlock extends Vue {
     } else {
       this.token = this.secondaryReserveOptions.find((x: any) => x.id === id);
     }
+  }
+
+  clickAction() {
+    if (this.token && this.type === "primary") this.removeToken();
+    else this.modal = true;
+  }
+
+  @Emit("remove")
+  removeToken() {
+    return this.token!.id;
   }
 
   get tokens() {

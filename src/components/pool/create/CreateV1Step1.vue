@@ -11,6 +11,7 @@
         v-model="props.token"
         :percentage.sync="props.percentage"
         :type="index ? 'primary' : 'secondary'"
+        @remove="removeToken"
       />
       <font-awesome-icon
         v-if="index + 1 !== stepOneProps.length"
@@ -48,6 +49,13 @@ export default class CreateV1Step1 extends Vue {
 
   addToken() {
     this.stepOneProps.push({ token: null, percentage: "50" });
+  }
+
+  removeToken(id: string) {
+    let index = this.stepOneProps.findIndex(x => x.token && x.token.id === id);
+    if (index > -1) {
+      this.stepOneProps.splice(index, 1);
+    }
   }
 
   get darkMode() {
