@@ -13,9 +13,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
-@Component({
-  components: {}
-})
+@Component
 export default class GrayBorderBlock extends Vue {
   get darkMode() {
     return vxm.general.darkMode;

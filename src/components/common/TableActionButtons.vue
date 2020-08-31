@@ -34,9 +34,7 @@ import { Component, Vue, Watch, Prop, PropSync } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 
-@Component({
-  components: {}
-})
+@Component
 export default class TableActionButtons extends Vue {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;

@@ -47,9 +47,7 @@ import { Component, Prop, Vue, Emit } from "vue-property-decorator";
 import { ViewRelay, ViewToken } from "@/types/bancor";
 import { vxm } from "@/store";
 
-@Component({
-  components: {}
-})
+@Component
 export default class PoolLogos extends Vue {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;

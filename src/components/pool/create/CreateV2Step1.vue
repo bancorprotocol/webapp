@@ -8,9 +8,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
-@Component({
-  components: {}
-})
+@Component
 export default class CreateV2Step1 extends Vue {}
 </script>
 <style lang="scss"></style>
