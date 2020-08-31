@@ -1,9 +1,9 @@
 <template>
   <b-modal
-    :id="id"
     scrollable
     :size="size"
     centered
+    v-model="show"
     hide-footer
     :content-class="contentClass"
     @close="onHide"
@@ -22,7 +22,7 @@
             <font-awesome-icon
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="$bvModal.hide(id)"
+              @click="onHide"
               icon="times"
             />
           </b-col>
@@ -48,20 +48,24 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import {
+  Component,
+  Prop,
+  PropSync,
+  Vue,
+  Emit,
+  Model
+} from "vue-property-decorator";
+import { VModel } from "@/api/helpers";
 
-@Component({
-  components: {}
-})
-export default class BaseModal extends Vue {
-  @Prop() id!: string;
+@Component
+export default class ModalBase extends Vue {
   @Prop() title!: string;
-  @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
+  @VModel({ type: Boolean }) show!: boolean;
   @PropSync("search", { type: String }) searchField?: string;
+  @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
   @Prop({ default: false }) fixedHeight!: boolean;
-
-  tokenSearch: string = "";
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
@@ -75,11 +79,9 @@ export default class BaseModal extends Vue {
     ];
   }
 
-  onHide(event: any) {
-    this.$emit("on-hide-modal");
+  onHide() {
+    this.show = false;
   }
-
-  created() {}
 }
 </script>
 <style lang="scss">

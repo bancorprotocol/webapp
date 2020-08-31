@@ -4,6 +4,7 @@
       <pool-actions-header
         :title="(withdrawLiquidity ? 'Remove' : 'Add') + ' Liquidity'"
         :v2="pool.v2"
+        @back="back"
       />
     </template>
 
@@ -42,6 +43,10 @@ import PoolActionsRemoveV2 from "@/components/pool/PoolActionsRemoveV2.vue";
 })
 export default class PoolActions extends Vue {
   withdrawLiquidity = false;
+
+  back() {
+    this.$router.push({ name: "Pool" });
+  }
 
   get pool(): ViewRelay {
     return vxm.bancor.relay(this.$route.params.account);

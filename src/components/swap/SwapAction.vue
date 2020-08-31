@@ -2,17 +2,14 @@
   <div>
     <token-input-field
       label="From"
-      :amount.sync="amount1"
-      @update:amount="updatePriceReturn"
+      v-model="amount1"
+      @input="updatePriceReturn"
+      @select="selectFromToken"
       :token="token1"
       :balance="balance1"
-      :dropdown="true"
-      name="token1"
-      v-on:open-swap-modal="openModal"
       :error-msg="errorToken1"
+      :tokens="tokens"
     />
-
-    <modal-select-token name="token1" v-on:select-token="selectToken" />
 
     <div class="text-center my-3">
       <font-awesome-icon
@@ -25,16 +22,15 @@
 
     <token-input-field
       label="To (Estimated)"
-      :amount.sync="amount2"
-      @update:amount="sanitizeAmount"
+      v-model="amount2"
+      @input="sanitizeAmount"
+      @select="selectToToken"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
-      name="token2"
-      v-on:open-swap-modal="openModal"
       :disabled="false"
+      :tokens="tokens"
     />
-    <modal-select-token name="token2" v-on:select-token="selectToken" />
 
     <div class="my-3">
       <label-content-split
@@ -65,6 +61,7 @@
     />
 
     <modal-swap-action
+      v-model="modal"
       :token1="token1"
       :token2="token2"
       :amount1="amount1"
@@ -83,12 +80,10 @@ import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral"
-import ModalSelectToken from "@/components/modals/ModalSelectToken.vue";
 import { formatNumber } from "@/api/helpers"
 
 @Component({
   components: {
-    ModalSelectToken,
     ModalSwapAction,
     LabelContentSplit,
     TokenInputField,
@@ -111,6 +106,12 @@ export default class SwapAction extends Vue {
   rateLoading = false
   initialRate = ""
   numeral = numeral;
+
+  modal = false;
+
+  get tokens() {
+    return vxm.bancor.tokens
+  }
 
   get rate() {
     let rate = ""
@@ -155,46 +156,28 @@ export default class SwapAction extends Vue {
     this.$bvModal.show(name);
   }
 
-  selectToken(token: { token: ViewToken, name: string }): void {
-    if (token.name === "token1") {
-      if (token.token.id === this.$route.query.to) {
+
+  selectFromToken(id: string) {
         this.$router.push({
           name: "Swap",
           query: {
-            from: this.$route.query.to,
-            to: this.$route.query.from
-          }
-        });
-      } else {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: token.token.id,
+            from: id,
             to: this.$route.query.to
           }
         });
       }
-    } else {
-      if (token.token.id === this.$route.query.from) {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.to,
-            to: this.$route.query.from
-          }
-        });
-      } else {
+
+  selectToToken(id: string) {
         this.$router.push({
           name: "Swap",
           query: {
             from: this.$route.query.from,
-            to: token.token.id
+            to: id
           }
         });
       }
-    }
-    this.$bvModal.hide(token.name);
-  }
+
+
 
   sanitizeAmount(amount: string) {
     this.setDefault()
@@ -215,7 +198,7 @@ export default class SwapAction extends Vue {
   }
 
   async initConvert() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-swap-action");
+    if (this.isAuthenticated) this.modal = true
     //@ts-ignore
     else await this.promptAuth();
   }

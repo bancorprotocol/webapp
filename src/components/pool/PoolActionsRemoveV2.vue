@@ -2,7 +2,7 @@
   <div v-if="selectedToken">
     <label-content-split label="Pool" class="my-4">
       <pool-logos
-        @click.native="$bvModal.show('modal-join-pool')"
+        @click="$bvModal.show('modal-join-pool')"
         :pool="pool"
         :dropdown="true"
       />
@@ -35,17 +35,19 @@
       </b-form-group>
     </label-content-split>
 
-    <pool-actions-percentages
-      :percentage.sync="percentage"
-      @update:percentage="percentageUpdate"
+    <percentage-slider
+      label="Amount"
+      v-model="percentage"
+      @input="percentageUpdate"
+      :show-buttons="true"
     />
 
     <div>
       <token-input-field
         label="Input"
         :token="selectedPoolToken"
-        :amount.sync="amountSmartToken"
-        @update:amount="poolTokenUpdate"
+        v-model="amountSmartToken"
+        @input="poolTokenUpdate"
         :balance="selectedPoolToken.balance"
         class="mt-4"
         :error-msg="balanceError"
@@ -79,8 +81,8 @@
 
     <alert-block
       v-if="exitFee > 0.1"
-      variant="error"
-      msg="Pool is not balanced. Recommended to wait until it will be balanced."
+      variant="warning"
+      msg="The pool is not balanced. It is recommended to wait until the pool is balanced."
       class="mb-3"
     />
 
@@ -94,6 +96,7 @@
     />
 
     <modal-pool-action
+      v-model="modal"
       :amounts-array="[amountSmartToken, expectedReturn]"
       :selected-token="selectedPoolToken"
       :advanced-block-items="advancedBlockItems"
@@ -113,12 +116,12 @@ import { ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import PoolActionsPercentages from "@/components/pool/PoolActionsPercentages.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { compareString } from "../../api/helpers";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import PercentageSlider from "@/components/common/PercentageSlider.vue";
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -130,10 +133,10 @@ interface PoolTokenUI {
 
 @Component({
   components: {
+    PercentageSlider,
     AlertBlock,
     TokenInputField,
     ModalPoolAction,
-    PoolActionsPercentages,
     LabelContentSplit,
     PoolLogos,
     MainButton
@@ -151,6 +154,7 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   expectedReturn = "";
   errorMessage = "";
+  modal: boolean = false;
 
   poolTokens: PoolTokenUI[] = [];
   insufficientBalance: boolean = false;
@@ -179,7 +183,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
+    if (this.isAuthenticated) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }

@@ -1,10 +1,11 @@
 <template>
   <div>
     <label-content-split label="Selected Pool" class="my-3">
-      <pool-logos
-        @click.native="$bvModal.show('modal-join-pool')"
-        :pool="pool"
-        :dropdown="true"
+      <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
+      <modal-pool-select
+        v-model="poolSelectModal"
+        :pools="pools"
+        @select="select"
       />
     </label-content-split>
 
@@ -43,8 +44,8 @@
     <token-input-field
       label="Input"
       :token="selectedToken"
-      :amount.sync="amount"
-      @update:amount="loadPrices(amount)"
+      v-model="amount"
+      @input="loadPrices(amount)"
       :balance="balance"
       class="mb-3"
       :error-msg="balanceError"
@@ -62,6 +63,7 @@
       :loading="rateLoading"
     />
     <modal-pool-action
+      v-model="modal"
       :selected-token="selectedToken"
       :amounts-array="[amountSmartToken, amount]"
       :advanced-block-items="advancedBlockItems"
@@ -87,6 +89,8 @@ import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import { namespace } from "vuex-class";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+
 
 const bancor = namespace("bancor");
 
@@ -96,6 +100,7 @@ const bancor = namespace("bancor");
     RateShareBlock,
     ModalPoolAction,
     LabelContentSplit,
+    ModalPoolSelect,
     TokenInputField,
     PoolLogos,
     MainButton
@@ -110,12 +115,32 @@ export default class PoolActionsAddV2 extends Vue {
   selectedToken: ViewReserve = this.pool.reserves[0];
   amount: string = "";
   amountSmartToken: string = "??.????";
+  modal = false;
+  poolSelectModal = false;
 
   rateLoading = false;
   singleUnitCosts: any[] = [];
   shareOfPool = 0;
 
   errorMsg = ""
+
+  select(id: string) {
+    this.$router.push({
+      name: "PoolAction",
+      params: {
+        poolAction: "add",
+        account: id
+      }
+    })
+  }
+
+  poolLogosClick() {
+    this.poolSelectModal = true;
+  }
+
+  get pools() {
+    return vxm.bancor.relays.filter(x => x.v2)
+  }
 
   get supplyButtonLabel() {
     if (this.amount === "") return "Enter an amount"
@@ -127,7 +152,7 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
+    if (this.isAuthenticated) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }

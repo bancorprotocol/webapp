@@ -4,6 +4,7 @@ import {
   buildV2Converter,
   buildRegistryContract
 } from "./contractTypes";
+import { zeroAddress } from "../helpers";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -103,4 +104,19 @@ export const conversionPath = async ({
 export const getTokenSupplyWei = async (tokenContractAddress: string) => {
   const contract = buildTokenContract(tokenContractAddress);
   return contract.methods.totalSupply().call();
+};
+
+export const existingPool = async (
+  converterRegistry: string,
+  poolType: number,
+  reserveTokenAddresses: string[],
+  reserveWeights: string[]
+): Promise<string | false> => {
+  const contract = buildRegistryContract(converterRegistry);
+  const res = await contract.methods
+    .getLiquidityPoolByConfig(poolType, reserveTokenAddresses, reserveWeights)
+    .call();
+
+  if (res == zeroAddress) return false;
+  return res;
 };

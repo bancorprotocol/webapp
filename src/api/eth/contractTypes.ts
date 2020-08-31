@@ -77,7 +77,7 @@ export const buildConverterContract = (
   acceptOwnership: () => ContractSendMethod;
   fund: (fundAmount: string) => ContractSendMethod;
   liquidate: (fundAmount: string) => ContractSendMethod;
-  setConversionFee: (ppm: number) => ContractSendMethod;
+  setConversionFee: (ppm: string) => ContractSendMethod;
   addReserve: (
     reserveAddress: string,
     connectorWeight: number
@@ -203,6 +203,11 @@ export const buildRegistryContract = (
     smartTokenDecimals: number,
     maxConversionFee: number,
     reserveTokens: string[],
-    reserveWeights: number[]
+    reserveWeights: string[]
   ) => ContractSendMethod;
+  getLiquidityPoolByConfig: (
+    type: number,
+    reserveTokens: string[],
+    reserveWeight: string[]
+  ) => CallReturn<string>;
 }> => buildContract(ABIConverterRegistry, contractAddress);

@@ -10,24 +10,12 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Emit } from "vue-property-decorator";
+import { VModel } from "@/api/helpers";
 
 @Component
 export default class BancorCheckbox extends Vue {
-  @Prop() value!: boolean;
+  @VModel({ type: Boolean }) localValue!: boolean;
   @Prop() label!: string;
-
-  get localValue() {
-    return this.value;
-  }
-
-  set localValue(value: boolean) {
-    this.update(value);
-  }
-
-  @Emit("input")
-  update(value: boolean) {
-    return value;
-  }
 }
 </script>
 

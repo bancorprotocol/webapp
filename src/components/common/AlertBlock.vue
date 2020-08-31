@@ -17,7 +17,7 @@ import { vxm } from "@/store/";
 
 @Component
 export default class AlertBlock extends Vue {
-  @Prop({ default: "info" }) variant!: "info" | "error";
+  @Prop({ default: "info" }) variant!: "info" | "error" | "warning";
   @Prop() title?: string;
   @Prop({ default: "" }) msg!: string;
 

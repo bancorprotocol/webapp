@@ -31,9 +31,7 @@ export interface ViewTableFields {
   maxWidth?: string;
 }
 
-@Component({
-  components: {}
-})
+@Component
 export default class TableHeader extends Vue {
   @Prop() fields!: ViewTableFields[];
   @PropSync("sortBy", { type: String }) sortByKey!: string;

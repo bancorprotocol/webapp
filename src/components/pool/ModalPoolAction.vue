@@ -1,9 +1,5 @@
 <template>
-  <base-modal
-    id="modal-pool-action"
-    v-on:on-hide-modal="setDefault"
-    title="You will receive"
-  >
+  <modal-base v-model="modal" @input="setDefault" title="You will receive">
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)" class="w-100">
         <b-col
@@ -103,7 +99,7 @@
         />
       </b-col>
     </b-row>
-  </base-modal>
+  </modal-base>
 </template>
 
 <script lang="ts">
@@ -118,15 +114,15 @@ import {
   ViewReserve
 } from "@/types/bancor";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
-import BaseModal from "@/components/common/BaseModal.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import MainButton from "@/components/common/Button.vue";
-
+import ModalBase from "@/components/modals/ModalBase.vue";
 import { namespace } from "vuex-class";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import numeral from "numeral";
+import { VModel } from "@/api/helpers";
 
 const bancor = namespace("bancor");
 
@@ -136,7 +132,7 @@ const bancor = namespace("bancor");
     ActionModalStatus,
     AdvancedBlockItem,
     PoolLogos,
-    BaseModal,
+    ModalBase,
     SelectPoolRow,
     MainButton
   }
@@ -145,6 +141,7 @@ export default class ModalPoolAction extends Vue {
   @bancor.Action addLiquidity!: LiquidityModule["addLiquidity"];
   @bancor.Action removeLiquidity!: LiquidityModule["removeLiquidity"];
 
+  @VModel({ type: Boolean }) modal!: boolean;
   @Prop() amountsArray!: string[];
   @Prop() selectedToken?: ViewReserve;
   @Prop() advancedBlockItems!: any[];

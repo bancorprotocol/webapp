@@ -120,6 +120,23 @@
   color: $text-error-dark;
 }
 
+
+.alert-warning-light {
+  border: 1px $text-warning-light solid !important;
+  background: $bg-warning-light;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: $text-warning-light;
+}
+
+.alert-warning-dark {
+  border: 1px $text-warning-dark solid !important;
+  background: $bg-warning-dark;
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: $text-warning-dark;
+}
+
 .cursor {
   cursor: pointer;
 }
@@ -279,4 +296,12 @@
     color: #ffffff !important;
     border-bottom: 2px solid #ffffff !important;
   }
+}
+
+.border-gray {
+  border: 1px solid $gray-border !important;
+}
+
+.border-gray-dark {
+  border: 1px solid $gray-border-dark !important;
 }

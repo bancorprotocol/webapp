@@ -27,9 +27,7 @@
 import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
-@Component({
-  components: {}
-})
+@Component
 export default class LabelContentSplit extends Vue {
   @Prop() label!: string;
   @Prop() value?: string;

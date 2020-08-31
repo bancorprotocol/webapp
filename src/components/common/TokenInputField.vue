@@ -30,7 +30,7 @@
         >
           <div
             v-if="token"
-            @click="openSwapModal"
+            @click="openModal"
             class="d-flex align-items-center"
           >
             <img
@@ -48,11 +48,7 @@
           </div>
 
           <div v-else>
-            <pool-logos
-              @click.native="$bvModal.show('modal-join-pool')"
-              :pool="pool"
-              :dropdown="true"
-            />
+            <pool-logos @click="openModal" :pool="pool" :dropdown="true" />
           </div>
         </div>
       </b-input-group-append>
@@ -61,34 +57,77 @@
         variant="error"
         :msg="errorMsg"
       />
+      <modal-token-select
+        v-if="tokens && tokens.length > 0"
+        v-model="modal"
+        :allowTokenAdd="allowTokenAdd"
+        :tokens="tokens"
+        @select="select"
+      />
+      <modal-pool-select
+        v-if="pools && pools.length > 0"
+        v-model="modal"
+        :pools="pools"
+        @select="select"
+      />
     </b-input-group>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
+import {
+  Component,
+  Vue,
+  Prop,
+  Watch,
+  PropSync,
+  Emit
+} from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay, ViewReserve } from "@/types/bancor";
+import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { formatNumber } from "@/api/helpers";
+import { formatNumber, VModel } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 @Component({
-  components: { AlertBlock, PoolLogos, LabelContentSplit }
+  components: {
+    AlertBlock,
+    PoolLogos,
+    LabelContentSplit,
+    ModalTokenSelect,
+    ModalPoolSelect
+  }
 })
 export default class TokenInputField extends Vue {
-  @Prop() name?: string;
   @Prop() label!: string;
   @Prop() token?: ViewReserve;
   @Prop() pool?: ViewRelay;
   @Prop() balance!: string;
   @Prop() usdValue?: number;
-  @PropSync("amount", { type: String }) tokenAmount!: string;
-  @Prop({ default: false }) dropdown!: boolean;
+  @VModel({ type: String }) tokenAmount!: string;
   @Prop({ default: false }) ignoreError!: boolean;
   @Prop({ default: "" }) errorMsg!: string;
   @Prop({ default: false }) disabled!: boolean;
+  @Prop() tokens!: ViewModalToken[];
+  @Prop() pools!: ViewRelay[];
+  @Prop({ default: false }) allowTokenAdd!: boolean;
+
+  get dropdown() {
+    return (
+      (this.tokens && this.tokens.length > 0) ||
+      (this.pools && this.pools.length > 0)
+    );
+  }
+
+  @Emit()
+  select(id: string) {
+    return id;
+  }
+
+  modal = false;
 
   get formattedBalance() {
     return formatNumber(parseFloat(this.balance), 6).toString();
@@ -109,8 +148,8 @@ export default class TokenInputField extends Vue {
     }
   }
 
-  openSwapModal() {
-    if (this.dropdown && this.name) this.$emit("open-swap-modal", this.name);
+  openModal() {
+    this.modal = true;
   }
 
   get darkMode() {

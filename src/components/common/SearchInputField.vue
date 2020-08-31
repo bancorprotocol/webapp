@@ -30,10 +30,11 @@
 <script lang="ts">
 import { Prop, PropSync, Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { VModel } from "@/api/helpers";
 
 @Component
 export default class SearchInputField extends Vue {
-  @PropSync("value", { type: String }) searchValue!: string;
+  @VModel({ type: String }) searchValue!: string;
   @Prop({ default: 32 }) height!: number;
   @Prop({ default: "md" }) fontSize!: "sm" | "md" | "lg";
 

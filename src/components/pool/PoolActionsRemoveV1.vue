@@ -1,6 +1,5 @@
 <template>
   <div>
-    <pool-actions-percentages v-if="!advanced" :percentage.sync="percentage" />
     <div v-if="!advanced" class="text-center my-3">
       <font-awesome-icon
         icon="long-arrow-alt-down"
@@ -50,7 +49,7 @@
       <token-input-field
         v-if="!advanced"
         label="Input"
-        :amount.sync="amountSmartToken"
+        v-model="amountSmartToken"
         :pool="pool"
         class="mt-4"
       />
@@ -63,8 +62,8 @@
       </div>
       <token-input-field
         label="Output"
-        :amount.sync="amountToken1"
-        @update:amount="tokenOneChanged"
+        v-model="amountToken1"
+        @input="tokenOneChanged"
         :token="pool.reserves[0]"
         class="my-3"
         :balance="balance1"
@@ -76,8 +75,8 @@
       </div>
       <token-input-field
         label="Output"
-        :amount.sync="amountToken2"
-        @update:amount="tokenTwoChanged"
+        v-model="amountToken2"
+        @input="tokenTwoChanged"
         :token="pool.reserves[1]"
         :balance="balance2"
         :error-msg="token2Error"
@@ -118,6 +117,7 @@
     />
 
     <modal-pool-action
+      v-model="modal"
       :amounts-array="[amountSmartToken, amountToken1, amountToken2]"
       :advanced-block-items="advancedBlockItems"
     />
@@ -132,7 +132,6 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import PoolActionsPercentages from "@/components/pool/PoolActionsPercentages.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import { namespace } from "vuex-class";
 
@@ -141,7 +140,6 @@ const bancor = namespace("bancor");
 @Component({
   components: {
     ModalPoolAction,
-    PoolActionsPercentages,
     LabelContentSplit,
     TokenInputField,
     PoolLogos,
@@ -171,6 +169,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   token2Error = "";
   balance1 = "";
   balance2 = "";
+  modal = false;
 
   res: any = null;
 
@@ -179,7 +178,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.$bvModal.show("modal-pool-action");
+    if (this.isAuthenticated) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }

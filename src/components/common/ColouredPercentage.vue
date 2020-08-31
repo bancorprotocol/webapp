@@ -10,22 +10,23 @@
         : 'text-danger '
     "
   >
-    {{ percentage ? numeral(percentage / 100).format("0.00%") : "N/A" }}
+    {{ formattedPercentage }}
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Prop, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import numeral from "numeral";
 
-@Component({
-  components: {}
-})
-export default class ColoredPercentage extends Vue {
+@Component
+export default class ColouredPercentage extends Vue {
   @Prop() percentage!: number | null;
 
-  numeral = numeral;
+  get formattedPercentage() {
+    const percentage = this.percentage;
+    return percentage ? numeral(percentage / 100).format("0.00%") : "N/A";
+  }
 
   get darkMode() {
     return vxm.general.darkMode;

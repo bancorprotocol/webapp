@@ -40,9 +40,7 @@
 import { Component, Vue, Watch, Prop, PropSync } from "vue-property-decorator";
 import { vxm } from "@/store";
 
-@Component({
-  components: {}
-})
+@Component
 export default class TablePagination extends Vue {
   @PropSync("currentPage", { type: Number }) current!: number;
   @PropSync("rowCount", { type: Number }) count!: number;

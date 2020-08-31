@@ -41,7 +41,7 @@ import TableHeader, {
 import { ViewToken, ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import numeral from "numeral";
-import ColoredPercentage from "@/components/common/ColoredPercentage.vue";
+import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
 import sort from "fast-sort";
 import TablePagination from "@/components/common/TablePagination.vue";
 import TableActionButtons from "@/components/common/TableActionButtons.vue";
@@ -50,7 +50,7 @@ import TableActionButtons from "@/components/common/TableActionButtons.vue";
   components: {
     TableHeader,
     PoolLogos,
-    ColoredPercentage,
+    ColouredPercentage,
     TablePagination,
     TableActionButtons
   }
