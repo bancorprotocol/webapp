@@ -3863,9 +3863,9 @@ export class EthBancorModule
       this.fetchUsdPriceOfBnt();
 
       console.time("FirstPromise");
-      let [contractAddresses] = await Promise.all([
-        this.fetchContractAddresses(networkVariables.contractRegistry)
-      ]);
+      const contractAddresses = await this.fetchContractAddresses(
+        networkVariables.contractRegistry
+      );
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
 
