@@ -15,7 +15,8 @@ import {
   OnUpdate,
   ViewToken,
   ReserveFeed,
-  ModalChoice
+  ModalChoice,
+  ViewAmount
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -121,6 +122,24 @@ export const formatNumber = (num: number | string, size: number = 4) => {
     return `< ${replaceLastChar(reduced, "1")}`;
   }
   return reduced;
+};
+
+export const buildSingleUnitCosts = (
+  reserveOneSupply: ViewAmount,
+  reserveTwoSupply: ViewAmount
+): ViewAmount[] => {
+  const reserveTwoCost = new BigNumber(reserveOneSupply.amount)
+    .div(reserveTwoSupply.amount)
+    .toString();
+
+  const reserveOneCost = new BigNumber(reserveTwoSupply.amount)
+    .div(reserveOneSupply.amount)
+    .toString();
+
+  return [
+    { id: reserveTwoSupply.id, amount: reserveTwoCost },
+    { id: reserveOneSupply.id, amount: reserveOneCost }
+  ];
 };
 
 export const formatPercent = (decNumber: number) =>

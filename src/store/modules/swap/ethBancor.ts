@@ -51,7 +51,9 @@ import {
   RelayWithReserveBalances,
   sortByLiqDepth,
   matchReserveFeed,
-  zeroAddress
+  zeroAddress,
+  formatPercent,
+  buildSingleUnitCosts
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -99,8 +101,41 @@ import { findNewPath } from "@/api/eos/eosBancorCalc";
 import { priorityEthPools } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
-import { openDB, DBSchema } from "idb/with-async-ittr.js";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
+
+type Wei = string;
+
+const calculateExpectedPoolTokenReturnV2 = (
+  poolTokenSupply: Wei,
+  stakedReserveBalance: Wei,
+  reserveTokenAmountToDeposit: Wei
+): Wei =>
+  new BigNumber(poolTokenSupply)
+    .div(stakedReserveBalance)
+    .times(reserveTokenAmountToDeposit)
+    .toFixed(0);
+
+const calculateShareOfPool = (
+  poolTokensToAdd: Wei,
+  poolTokenSupply: Wei,
+  existingUserPoolTokenBalance?: Wei
+): number => {
+  if (new BigNumber(poolTokenSupply).eq(0)) return 1;
+
+  const suggestedSmartTokens = new BigNumber(poolTokensToAdd).plus(
+    existingUserPoolTokenBalance || 0
+  );
+
+  const suggestedSmartTokenSupply = new BigNumber(poolTokenSupply).plus(
+    poolTokensToAdd
+  );
+
+  const shareOfPool = suggestedSmartTokens
+    .div(suggestedSmartTokenSupply)
+    .toNumber();
+
+  return shareOfPool;
+};
 
 const relayIncludesReserves = (reserves: string[]) => (relay: Relay) =>
   relay.reserves.every(reserve =>
@@ -162,13 +197,6 @@ const getAnchorTokenAddresses = (relay: Relay): string[] => {
     throw new Error("Failed to identify type of relay passed");
   }
 };
-
-interface MyDB extends DBSchema {
-  anchorPair: {
-    key: string;
-    value: ConverterAndAnchor;
-  };
-}
 
 interface RefinedAbiRelay {
   anchorAddress: string;
@@ -501,6 +529,7 @@ interface EthNetworkVariables {
   bntToken: string;
   ethToken: string;
   multiCall: string;
+  // converterContractForMaths: string;
 }
 
 const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
@@ -511,6 +540,7 @@ const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
         bntToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
         ethToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         multiCall: "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2"
+        // converterContractForMaths: ""
       };
     case EthNetworks.Ropsten:
       return {
@@ -518,6 +548,7 @@ const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
         bntToken: "0x98474564A00d15989F16BFB7c162c782b0e2b336",
         ethToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         multiCall: "0xf3ad7e31b052ff96566eedd218a823430e74b406"
+        // converterContractForMaths: "0x9a36b31ca768a860dab246cf080e7f042d1b7c0f"
       };
     default:
       throw new Error("Information not stored");
@@ -580,24 +611,6 @@ interface EthOpposingLiquid {
   singleUnitCosts: ViewAmount[];
   reserveBalancesAboveZero: boolean;
 }
-
-const buildSingleUnitCosts = (
-  reserveOneSupply: ViewAmount,
-  reserveTwoSupply: ViewAmount
-) => {
-  const reserveTwoCost = new BigNumber(reserveOneSupply.amount)
-    .div(reserveTwoSupply.amount)
-    .toString();
-
-  const reserveOneCost = new BigNumber(reserveTwoSupply.amount)
-    .div(reserveOneSupply.amount)
-    .toString();
-
-  return [
-    { id: reserveTwoSupply.id, amount: reserveTwoCost },
-    { id: reserveOneSupply.id, amount: reserveOneCost }
-  ];
-};
 
 interface RawAbiV2PoolBalances {
   converterAddress: string;
@@ -1899,6 +1912,7 @@ export class EthBancorModule
     const smartTokenAddress = relay.anchor.contract;
     const smartTokenDecimals = relay.anchor.decimals;
 
+    this.getUserBalance({ tokenContractAddress: smartTokenAddress });
     const { reserves, smartTokenSupplyWei } = await this.fetchRelayBalances(
       smartTokenAddress
     );
@@ -1914,6 +1928,16 @@ export class EthBancorModule
     );
     const sameReserveWei = expandToken(tokenAmount, sameReserve.decimals);
 
+    const userSmartTokenBalance = this.tokenBalances.find(balance =>
+      compareString(balance.id, smartTokenAddress)
+    );
+
+    const userSmartTokenBalanceWei =
+      userSmartTokenBalance &&
+      new BigNumber(userSmartTokenBalance.balance).gt(0)
+        ? expandToken(userSmartTokenBalance.balance, smartTokenDecimals)
+        : "0";
+
     if (!reserveBalancesAboveZero) {
       const fundReward = calculateFundReward(
         sameReserveWei,
@@ -1921,18 +1945,13 @@ export class EthBancorModule
         smartTokenSupplyWei
       );
 
-      console.log(
-        "calculate fund reward returned",
+      const shareOfPool = calculateShareOfPool(
         fundReward,
-        "which was passed",
-        sameReserveWei,
-        sameReserve.weiAmount,
-        smartTokenSupplyWei
+        smartTokenSupplyWei,
+        userSmartTokenBalanceWei
       );
 
-      const shareOfPool = new BigNumber(smartTokenSupplyWei).gt(0)
-        ? new BigNumber(fundReward).div(smartTokenSupplyWei).toNumber()
-        : 1;
+      // (existing balance + any new indicated amount) / (total pool supply + any new indicated amount)
 
       return {
         shareOfPool,
@@ -1954,11 +1973,11 @@ export class EthBancorModule
       smartTokenSupplyWei
     );
 
-    const fundRewardDec = Number(shrinkToken(fundReward, smartTokenDecimals));
-    const smartSupplyDec = Number(
-      shrinkToken(smartTokenSupplyWei, smartTokenDecimals)
+    const shareOfPool = calculateShareOfPool(
+      fundReward,
+      smartTokenSupplyWei,
+      userSmartTokenBalanceWei
     );
-    const shareOfPool = fundRewardDec / smartSupplyDec;
 
     const opposingReserveSupplyDec = shrinkToken(
       opposingReserve.weiAmount,
@@ -2857,7 +2876,7 @@ export class EthBancorModule
     const tokenAddressesMatch = compareString(token.contract, tokenAddress);
     if (!tokenAddressesMatch) throw new Error("RPC return was not expected");
 
-    console.log(token, 'was was return')
+    console.log(token, "was was return");
     if (!(token.symbol && token.decimals))
       throw new Error(
         "Failed parsing token information, please ensure this is an ERC-20 token"
@@ -3012,10 +3031,11 @@ export class EthBancorModule
         getTokenSupplyWei(poolToken.poolToken.contract)
       ]);
 
-      const expectedPoolTokenReturnWei = new BigNumber(poolTokenSupply)
-        .div(stakedReserveBalance)
-        .times(reserveToken.weiAmount)
-        .toFixed(0);
+      const expectedPoolTokenReturnWei = calculateExpectedPoolTokenReturnV2(
+        poolTokenSupply,
+        stakedReserveBalance,
+        reserveToken.weiAmount
+      );
 
       const poolTokenMinReturnWei = await this.weiMinusSlippageTolerance(
         expectedPoolTokenReturnWei
@@ -3805,11 +3825,6 @@ export class EthBancorModule
 
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
-    // const bigBnt = new BigNumber(toWei("100000"));
-    // const bntBalance = new BigNumber("3917675891686726629443620");
-    // const percent = bigBnt.div(bntBalance).toString();
-    // console.log(percent, "is the percent");
-
     const web3NetworkVersion = await web3.eth.getChainId();
     const currentNetwork: EthNetworks = web3NetworkVersion;
     console.log(currentNetwork, "is the current network");
@@ -3851,6 +3866,7 @@ export class EthBancorModule
       let [contractAddresses] = await Promise.all([
         this.fetchContractAddresses(networkVariables.contractRegistry)
       ]);
+      console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
 
       console.time("SecondPromise");
