@@ -13,6 +13,7 @@
       type="range"
       min="0"
       max="100"
+      debounce="300"
       :disabled="disabled"
       class="my-2"
     ></b-form-input>
