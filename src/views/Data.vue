@@ -18,7 +18,7 @@
       </b-col>
       <b-col>
         <content-block :px0="true" :shadow-light="true" :no-header="true">
-          <data-table />
+          <pool-token-tables />
         </content-block>
       </b-col>
     </b-row>
@@ -31,14 +31,14 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Statistics from "@/components/data/statistics/Statistics.vue";
 import LiquidityChart from "@/components/data/charts/LiquidityChart.vue";
-import DataTable from "@/components/data/data-tables/DataTables.vue";
+import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
 
 @Component({
   components: {
     LiquidityChart,
     Statistics,
     ContentBlock,
-    DataTable
+    PoolTokenTables
   }
 })
 export default class Data extends Vue {
