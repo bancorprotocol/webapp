@@ -6,7 +6,7 @@
         v-if="isAuthenticated"
         class="font-size-12 font-w500 cursor"
       >
-        Balance: {{ formattedBalance }}
+        {{ formattedBalance }}
         {{ usdValue ? usdValue : "" }}
       </span>
     </label-content-split>
@@ -91,6 +91,7 @@ import { formatNumber, VModel } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -130,7 +131,9 @@ export default class TokenInputField extends Vue {
   modal = false;
 
   get formattedBalance() {
-    return formatNumber(parseFloat(this.balance), 6).toString();
+    const balanceInput = this.balance;
+    if (new BigNumber(balanceInput).isNaN()) return "";
+    return `Balance: ${formatNumber(parseFloat(balanceInput), 6).toString()}`;
   }
 
   isNumber(evt: any) {
