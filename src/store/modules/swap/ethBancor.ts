@@ -257,6 +257,56 @@ const buildRelayFeedChainkLink = ({
   usdPriceOfBnt: number;
 }) => relays.flatMap(relay => buildReserveFeedsChainlink(relay, usdPriceOfBnt));
 
+const buildReserveFeedsTraditional = (
+  relays: RelayWithReserveBalances[],
+  usdPriceOfBnt: number
+): ReserveFeed[] => {
+  return relays.flatMap(relay => {
+    const reservesBalances = relay.reserves.map(reserve => {
+      const reserveBalance = findOrThrow(
+        relay.reserveBalances,
+        balance => compareString(balance.id, reserve.contract),
+        "failed to find a reserve balance for reserve"
+      );
+      const decNumber = shrinkToken(reserveBalance.amount, reserve.decimals);
+      return [reserve, Number(decNumber)] as [Token, number];
+    });
+
+    const [
+      [networkReserve, networkReserveAmount],
+      [tokenReserve, tokenAmount]
+    ] = sortByNetworkTokens(reservesBalances, balance =>
+      balance[0].symbol.toUpperCase()
+    );
+
+    const networkReserveIsUsd = networkReserve.symbol == "USDB";
+    const dec = networkReserveAmount / tokenAmount;
+    const reverse = tokenAmount / networkReserveAmount;
+    const main = networkReserveIsUsd ? dec : dec * usdPriceOfBnt;
+
+    const liqDepth = networkReserveIsUsd
+      ? networkReserveAmount
+      : networkReserveAmount * usdPriceOfBnt;
+
+    return [
+      {
+        reserveAddress: tokenReserve.contract,
+        poolId: relay.id,
+        costByNetworkUsd: main,
+        liqDepth,
+        priority: 10
+      },
+      {
+        reserveAddress: networkReserve.contract,
+        poolId: relay.id,
+        liqDepth,
+        costByNetworkUsd: reverse * main,
+        priority: 10
+      }
+    ];
+  });
+};
+
 const buildReserveFeedsChainlink = (
   relay: RawV2Pool,
   usdPriceOfBnt: number
@@ -3291,59 +3341,6 @@ export class EthBancorModule
     return [weights["0"], weights["1"]];
   }
 
-  @action async buildTraditionalReserveFeeds({
-    relays,
-    usdPriceOfBnt
-  }: {
-    relays: RelayWithReserveBalances[];
-    usdPriceOfBnt: number;
-  }): Promise<ReserveFeed[]> {
-    return relays.flatMap(relay => {
-      const reservesBalances = relay.reserves.map(reserve => {
-        const reserveBalance = findOrThrow(
-          relay.reserveBalances,
-          balance => compareString(balance.id, reserve.contract),
-          "failed to find a reserve balance for reserve"
-        );
-        const decNumber = shrinkToken(reserveBalance.amount, reserve.decimals);
-        return [reserve, Number(decNumber)] as [Token, number];
-      });
-
-      const [
-        [networkReserve, networkReserveAmount],
-        [tokenReserve, tokenAmount]
-      ] = sortByNetworkTokens(reservesBalances, balance =>
-        balance[0].symbol.toUpperCase()
-      );
-
-      const networkReserveIsUsd = networkReserve.symbol == "USDB";
-      const dec = networkReserveAmount / tokenAmount;
-      const reverse = tokenAmount / networkReserveAmount;
-      const main = networkReserveIsUsd ? dec : dec * usdPriceOfBnt;
-
-      const liqDepth = networkReserveIsUsd
-        ? networkReserveAmount
-        : networkReserveAmount * usdPriceOfBnt;
-
-      return [
-        {
-          reserveAddress: tokenReserve.contract,
-          poolId: relay.id,
-          costByNetworkUsd: main,
-          liqDepth,
-          priority: 10
-        },
-        {
-          reserveAddress: networkReserve.contract,
-          poolId: relay.id,
-          liqDepth,
-          costByNetworkUsd: reverse * main,
-          priority: 10
-        }
-      ];
-    });
-  }
-
   get loadingTokens() {
     return this.loadingPools;
   }
@@ -3808,10 +3805,10 @@ export class EthBancorModule
     ) as RelayWithReserveBalances[]).filter(x => x.reserves.every(Boolean));
 
     console.log({ v1Pools, v2Pools });
-    const traditionalRelayFeeds = await this.buildTraditionalReserveFeeds({
-      relays: completeV1Pools,
-      usdPriceOfBnt: this.bntUsdPrice
-    });
+    const traditionalRelayFeeds = buildReserveFeedsTraditional(
+      completeV1Pools,
+      this.bntUsdPrice
+    );
 
     const reserveFeeds = [...traditionalRelayFeeds, ...v2RelayFeeds];
     const pools = [...v2Pools, ...completeV1Pools];
