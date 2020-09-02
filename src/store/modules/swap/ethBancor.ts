@@ -845,7 +845,7 @@ const calculateFundReward = (
 
   const smartSupplyNumber = new Decimal(smartSupply);
   if (smartSupplyNumber.eq(0)) {
-    return "10000";
+    throw new Error("Client side geometric mean not yet supported");
   }
   return new Decimal(reserveAmount)
     .div(reserveSupply)
@@ -1866,6 +1866,13 @@ export class EthBancorModule
       });
   }
 
+  @action async getGeometricMean(amounts: string[]) {
+    const converter = buildConverterContract(
+      getNetworkVariables(this.currentNetwork).converterContractForMaths
+    );
+    return converter.methods.geometricMean(amounts).call();
+  }
+
   @mutation setTokenMeta(tokenMeta: TokenMeta[]) {
     this.tokenMeta = tokenMeta;
   }
@@ -1946,11 +1953,17 @@ export class EthBancorModule
         : "0";
 
     if (!reserveBalancesAboveZero) {
-      const fundReward = calculateFundReward(
-        sameReserveWei,
-        sameReserve.weiAmount,
-        smartTokenSupplyWei
+      const matchedInputs = reservesViewAmounts.map(viewAmount => ({
+        decAmount: viewAmount.amount,
+        decimals: findOrThrow(reserves, reserve =>
+          compareString(reserve.contract, viewAmount.id)
+        ).decimals
+      }));
+      const weiInputs = matchedInputs.map(input =>
+        expandToken(input.decAmount, input.decimals)
       );
+      const fundReward = await this.getGeometricMean(weiInputs);
+      console.log(fundReward, "was returned with geometric mean");
 
       const shareOfPool = calculateShareOfPool(
         fundReward,
@@ -1958,12 +1971,15 @@ export class EthBancorModule
         userSmartTokenBalanceWei
       );
 
-      // (existing balance + any new indicated amount) / (total pool supply + any new indicated amount)
+      const singleUnitCosts =
+        matchedInputs.length == 2
+          ? buildSingleUnitCosts(reservesViewAmounts[0], reservesViewAmounts[1])
+          : [];
 
       return {
         shareOfPool,
         smartTokenAmountWei: { amount: fundReward, id: smartTokenAddress },
-        singleUnitCosts: [],
+        singleUnitCosts,
         opposingAmount: undefined,
         reserveBalancesAboveZero
       };
