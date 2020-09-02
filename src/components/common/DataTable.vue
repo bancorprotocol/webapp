@@ -46,10 +46,11 @@ export default class DataTable extends Vue {
   @Prop() filter!: string;
   @Prop() filterBy!: string;
   @Prop() defaultSort!: string;
+  @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
 
   sortBy: string = this.defaultSort;
-  descOrder: boolean = true;
+  descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
   modifiedItems: any[] = [];
 
