@@ -237,6 +237,20 @@ const smartTokenAnchor = (smartToken: Token) => {
   return { anchor: smartToken, converterType: PoolType.Traditional };
 };
 
+interface UsdValue {
+  id: string;
+  usdPrice: string;
+}
+
+const trustedStables = (network: EthNetworks): UsdValue[] => {
+  if (network == EthNetworks.Mainnet) {
+    return [
+      { id: "0x309627af60f0926daa6041b8279484312f2bf060", usdPrice: "1" }
+    ];
+  }
+  return [];
+};
+
 const calculateSlippage = (
   slippageLessRate: BigNumber,
   slippagedRate: BigNumber
@@ -259,7 +273,7 @@ const buildRelayFeedChainkLink = ({
 
 const buildReserveFeedsTraditional = (
   relays: RelayWithReserveBalances[],
-  usdPriceOfBnt: number
+  knownUsdPrices: UsdValue[]
 ): ReserveFeed[] => {
   return relays.flatMap(relay => {
     const reservesBalances = relay.reserves.map(reserve => {
@@ -268,43 +282,67 @@ const buildReserveFeedsTraditional = (
         balance => compareString(balance.id, reserve.contract),
         "failed to find a reserve balance for reserve"
       );
-      const decNumber = shrinkToken(reserveBalance.amount, reserve.decimals);
-      return [reserve, Number(decNumber)] as [Token, number];
+
+      const decAmount = shrinkToken(reserveBalance.amount, reserve.decimals);
+      const knownUsdPrice = knownUsdPrices.find(price =>
+        compareString(price.id, reserve.contract)
+      );
+      return {
+        reserve,
+        decAmount,
+        knownUsdPrice
+      };
     });
 
-    const [
-      [networkReserve, networkReserveAmount],
-      [tokenReserve, tokenAmount]
-    ] = sortByNetworkTokens(reservesBalances, balance =>
-      balance[0].symbol.toUpperCase()
+    const [networkReserve, tokenReserve] = sortByNetworkTokens(
+      reservesBalances,
+      balance => balance.reserve.symbol.toUpperCase()
     );
 
-    const networkReserveIsUsd = networkReserve.symbol == "USDB";
+    const cryptoCostOfTokenReserve = new BigNumber(networkReserve.decAmount)
+      .dividedBy(tokenReserve.decAmount)
+      .toNumber();
+    const cryptoCostOfNetworkReserve = new BigNumber(
+      tokenReserve.decAmount
+    ).dividedBy(networkReserve.decAmount);
 
-    const cryptoCostOfTokenReserve = networkReserveAmount / tokenAmount;
-    const cryptoCostOfNetworkReserve = tokenAmount / networkReserveAmount;
+    let usdCostOfTokenReserve: number;
+    let usdCostOfNetworkReserve: number;
 
-    const usdCostOfTokenReserve = networkReserveIsUsd
-      ? cryptoCostOfTokenReserve
-      : cryptoCostOfTokenReserve * usdPriceOfBnt;
+    if (networkReserve.knownUsdPrice) {
+      usdCostOfTokenReserve = new BigNumber(cryptoCostOfTokenReserve)
+        .times(networkReserve.knownUsdPrice.usdPrice)
+        .toNumber();
+      usdCostOfNetworkReserve = new BigNumber(cryptoCostOfNetworkReserve)
+        .times(usdCostOfTokenReserve)
+        .toNumber();
+    } else if (tokenReserve.knownUsdPrice) {
+      usdCostOfNetworkReserve = new BigNumber(cryptoCostOfNetworkReserve)
+        .times(tokenReserve.knownUsdPrice.usdPrice)
+        .toNumber();
+      usdCostOfTokenReserve = new BigNumber(cryptoCostOfTokenReserve)
+        .times(usdCostOfNetworkReserve)
+        .toNumber();
+    } else {
+      throw new Error(
+        "Cannot determine the price without knowing one of the reserve prices"
+      );
+    }
 
-    const usdCostOfNetworkReserve =
-      cryptoCostOfNetworkReserve * usdCostOfTokenReserve;
-
-    const liqDepth = networkReserveIsUsd
-      ? networkReserveAmount
-      : networkReserveAmount * usdPriceOfBnt;
+    const liqDepth = new BigNumber(networkReserve.decAmount)
+      .times(usdCostOfNetworkReserve)
+      .toNumber();
 
     return [
       {
-        reserveAddress: tokenReserve.contract,
+        reserveAddress: tokenReserve.reserve.contract,
         poolId: relay.id,
         costByNetworkUsd: usdCostOfTokenReserve,
         liqDepth,
         priority: 10
       },
       {
-        reserveAddress: networkReserve.contract,
+        reserveAddress: networkReserve.reserve.contract,
         poolId: relay.id,
         liqDepth,
         costByNetworkUsd: usdCostOfNetworkReserve,
@@ -3577,6 +3615,12 @@ export class EthBancorModule
       })
     );
 
+    // todo
+    // remove network included in reserves filter/
+    // create new handling to run the build traditional reserves twice
+    // 1. to build 99% of tokens using just the BNT token
+    // 2: sweep again using these new prices to cover the rest
+
     const passedFirstHalfs = overWroteVersions
       .filter(hasTwoConnectors)
       .filter(
@@ -3811,10 +3855,13 @@ export class EthBancorModule
       Boolean
     ) as RelayWithReserveBalances[]).filter(x => x.reserves.every(Boolean));
 
-    console.log({ v1Pools, v2Pools });
+    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
     const traditionalRelayFeeds = buildReserveFeedsTraditional(
       completeV1Pools,
-      this.bntUsdPrice
+      [
+        { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
+        ...trustedStables(this.currentNetwork)
+      ]
     );
 
     const reserveFeeds = [...traditionalRelayFeeds, ...v2RelayFeeds];
