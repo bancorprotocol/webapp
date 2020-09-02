@@ -38,12 +38,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Vue } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import { ViewToken } from "@/types/bancor";
 import { VModel } from "@/api/helpers";
-import { CreateStep1, CreateStep2 } from "@/views/CreateHomeNew.vue";
+import { CreateStep2 } from "@/views/CreateHome.vue";
 
 @Component({
   components: { MultiInputField }

@@ -36,7 +36,7 @@ import CreateV1TokenBlock from "./CreateV1TokenBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import { ViewToken } from "@/types/bancor";
 import { VModel } from "@/api/helpers";
-import { CreateStep1 } from "@/views/CreateHomeNew.vue";
+import { CreateStep1 } from "@/views/CreateHome.vue";
 
 @Component({
   components: {
