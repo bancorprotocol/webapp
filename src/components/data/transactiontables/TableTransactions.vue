@@ -6,6 +6,7 @@
     :filter="filter"
     filter-by="description"
     default-sort="time"
+    default-order="asc"
   >
     <tr
       v-for="tx in modifiedTransactions"
@@ -75,7 +76,7 @@ export default class TableTransactions extends Vue {
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
         tx: "0x9021…87ab",
-        time: "2 hours ago"
+        time: "1 hours ago"
       },
       {
         type: "swap",
@@ -83,7 +84,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x8021…86ab",
+        tx: "0x8021…86cb",
         time: "2 hours ago"
       },
       {
@@ -92,8 +93,62 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x9024…86ab",
+        tx: "0x7024…86ab",
+        time: "7 hours ago"
+      },
+      {
+        type: "swap",
+        description: "Swap COMP for ETH",
+        totalValue: 45.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 ETH",
+        tx: "0x6021…87ab",
         time: "2 hours ago"
+      },
+      {
+        type: "swap",
+        description: "Swap COMP for ETH",
+        totalValue: 345.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 ETH",
+        tx: "0x5421…86ab",
+        time: "5 hours ago"
+      },
+      {
+        type: "swap",
+        description: "Swap COMP for ETH",
+        totalValue: 12345.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 ETH",
+        tx: "0x3224…86ab",
+        time: "9 hours ago"
+      },
+      {
+        type: "swap",
+        description: "Swap COMP for ETH",
+        totalValue: 45.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 ETH",
+        tx: "0x1221…67ab",
+        time: "7 hours ago"
+      },
+      {
+        type: "swap",
+        description: "Swap COMP for ETH",
+        totalValue: 345.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 ETH",
+        tx: "0x8021…16ab",
+        time: "3 hours ago"
+      },
+      {
+        type: "swap",
+        description: "Swap COMP for ETH",
+        totalValue: 12345.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 ETH",
+        tx: "0x9024…26ab",
+        time: "5 hours ago"
       }
     ];
   }
@@ -106,7 +161,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 BNT",
-        tx: "0x9021…87ab",
+        tx: "0x9021…87af",
         time: "3 hours ago"
       },
       {
@@ -115,8 +170,8 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x8021…86ab",
-        time: "1 hours ago"
+        tx: "0x7721…86ab",
+        time: "6 hours ago"
       },
       {
         type: "add",
@@ -124,8 +179,62 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x9024…86ab",
+        tx: "0x3324…86ab",
         time: "2 hours ago"
+      },
+      {
+        type: "add",
+        description: "Add Liquidity to COMP V1",
+        totalValue: 45.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 BNT",
+        tx: "0x9d21…87af",
+        time: "3 hours ago"
+      },
+      {
+        type: "add",
+        description: "Add Liquidity to DAPP V2",
+        totalValue: 345.67,
+        tokenAmountFrom: "1001.33345 DAPP",
+        tokenAmountTo: "",
+        tx: "0x7f21…86ab",
+        time: "8 hours ago"
+      },
+      {
+        type: "add",
+        description: "Add Liquidity to DAPP V2",
+        totalValue: 12345.67,
+        tokenAmountFrom: "1001.33345 DAPP",
+        tokenAmountTo: "",
+        tx: "0x2s24…86ab",
+        time: "2 hours ago"
+      },
+      {
+        type: "add",
+        description: "Add Liquidity to COMP V1",
+        totalValue: 45.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "46.88767 BNT",
+        tx: "0x9j21…87af",
+        time: "6 hours ago"
+      },
+      {
+        type: "add",
+        description: "Add Liquidity to DAPP V2",
+        totalValue: 345.67,
+        tokenAmountFrom: "1001.33345 DAPP",
+        tokenAmountTo: "",
+        tx: "0x7h21…86ab",
+        time: "4 hours ago"
+      },
+      {
+        type: "add",
+        description: "Add Liquidity to DAPP V2",
+        totalValue: 12345.67,
+        tokenAmountFrom: "1001.33345 DAPP",
+        tokenAmountTo: "",
+        tx: "0x3g24…86ab",
+        time: "1 hours ago"
       }
     ];
   }
@@ -139,7 +248,7 @@ export default class TableTransactions extends Vue {
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "",
         tx: "0x9021…87ab",
-        time: "1 hours ago"
+        time: "4 hours ago"
       },
       {
         type: "remove",
@@ -158,6 +267,60 @@ export default class TableTransactions extends Vue {
         tokenAmountTo: "",
         tx: "0x9024…86ab",
         time: "4 hours ago"
+      },
+      {
+        type: "remove",
+        description: "Remove Liquidity from REN V2",
+        totalValue: 45.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "",
+        tx: "0x9s21…87ab",
+        time: "8 hours ago"
+      },
+      {
+        type: "remove",
+        description: "Remove Liquidity from LINK V1",
+        totalValue: 345.67,
+        tokenAmountFrom: "1001.33345 LINK",
+        tokenAmountTo: "46.88767 BNT",
+        tx: "0x8u21…86ab",
+        time: "3 hours ago"
+      },
+      {
+        type: "remove",
+        description: "Remove Liquidity from BNB V2",
+        totalValue: 765.67,
+        tokenAmountFrom: "71.4456 BNB",
+        tokenAmountTo: "",
+        tx: "0x9k24…86ab",
+        time: "6 hours ago"
+      },
+      {
+        type: "remove",
+        description: "Remove Liquidity from REN V2",
+        totalValue: 45.67,
+        tokenAmountFrom: "1001.33345 COMP",
+        tokenAmountTo: "",
+        tx: "0x902g…87ab",
+        time: "1 hours ago"
+      },
+      {
+        type: "remove",
+        description: "Remove Liquidity from LINK V1",
+        totalValue: 345.67,
+        tokenAmountFrom: "1001.33345 LINK",
+        tokenAmountTo: "46.88767 BNT",
+        tx: "0x802s…86ab",
+        time: "8 hours ago"
+      },
+      {
+        type: "remove",
+        description: "Remove Liquidity from BNB V2",
+        totalValue: 765.67,
+        tokenAmountFrom: "71.4456 BNB",
+        tokenAmountTo: "",
+        tx: "0x902d…86ab",
+        time: "5 hours ago"
       }
     ];
   }
