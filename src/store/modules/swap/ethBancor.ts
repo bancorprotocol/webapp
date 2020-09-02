@@ -529,7 +529,7 @@ interface EthNetworkVariables {
   bntToken: string;
   ethToken: string;
   multiCall: string;
-  // converterContractForMaths: string;
+  converterContractForMaths: string;
 }
 
 const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
@@ -539,16 +539,16 @@ const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
         contractRegistry: "0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4",
         bntToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
         ethToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-        multiCall: "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2"
-        // converterContractForMaths: ""
+        multiCall: "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2",
+        converterContractForMaths: "0xe870d00176b2c71afd4c43cea550228e22be4abd"
       };
     case EthNetworks.Ropsten:
       return {
         contractRegistry: "0xA6DB4B0963C37Bc959CbC0a874B5bDDf2250f26F",
         bntToken: "0x98474564A00d15989F16BFB7c162c782b0e2b336",
         ethToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-        multiCall: "0xf3ad7e31b052ff96566eedd218a823430e74b406"
-        // converterContractForMaths: "0x9a36b31ca768a860dab246cf080e7f042d1b7c0f"
+        multiCall: "0xf3ad7e31b052ff96566eedd218a823430e74b406",
+        converterContractForMaths: "0x9a36b31ca768a860dab246cf080e7f042d1b7c0f"
       };
     default:
       throw new Error("Information not stored");

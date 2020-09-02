@@ -96,6 +96,7 @@ export const buildConverterContract = (
   connectorTokenCount: () => CallReturn<string>;
   connectorTokens: (index: number) => CallReturn<string>;
   conversionFee: () => CallReturn<string>;
+  geometricMean: (weis: string[]) => CallReturn<string>;
 }> => buildContract(ABIConverter, contractAddress);
 
 export const buildV2Converter = (
