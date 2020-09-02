@@ -207,7 +207,7 @@ export default class CreateHomeNew extends Vue {
       return "Currently the ratio is locked to 50% / 50%";
 
     const fee = parseFloat(this.stepTwoProps.poolFee);
-    if (fee > 3 || fee < 0) return "Fee must be between 0% and 3%";
+    if (fee > 5 || fee < 0) return "Fee must be between 0% and 5%";
     // TMP fix end
 
     if (this.existingPoolWarning) return this.existingPoolWarning;

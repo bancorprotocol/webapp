@@ -29,15 +29,13 @@
         </b-row>
         <b-row v-if="searchField !== undefined">
           <b-col cols="12">
-            <b-input-group>
-              <b-form-input
-                v-model="searchField"
-                placeholder="Search"
-                :class="
-                  darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'
-                "
-              ></b-form-input>
-            </b-input-group>
+            <multi-input-field
+              v-model="searchField"
+              placeholder="Search"
+              prepend="search"
+              height="48"
+              font-size="lg"
+            />
           </b-col>
         </b-row>
       </div>
@@ -58,8 +56,10 @@ import {
   Model
 } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
-
-@Component
+import MultiInputField from "@/components/common/MultiInputField.vue";
+@Component({
+  components: { MultiInputField }
+})
 export default class ModalBase extends Vue {
   @Prop() title!: string;
   @VModel({ type: Boolean }) show!: boolean;

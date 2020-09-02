@@ -11,7 +11,6 @@
         class="mt-3"
         label="Token Reserve Ratio"
         v-model="percent"
-        :disabled="true"
       />
     </gray-border-block>
     <select-token-block v-else v-model="token" :type="type" />
