@@ -280,9 +280,16 @@ const buildReserveFeedsTraditional = (
     );
 
     const networkReserveIsUsd = networkReserve.symbol == "USDB";
-    const dec = networkReserveAmount / tokenAmount;
-    const reverse = tokenAmount / networkReserveAmount;
-    const main = networkReserveIsUsd ? dec : dec * usdPriceOfBnt;
+
+    const cryptoCostOfTokenReserve = networkReserveAmount / tokenAmount;
+    const cryptoCostOfNetworkReserve = tokenAmount / networkReserveAmount;
+
+    const usdCostOfTokenReserve = networkReserveIsUsd
+      ? cryptoCostOfTokenReserve
+      : cryptoCostOfTokenReserve * usdPriceOfBnt;
+
+    const usdCostOfNetworkReserve =
+      cryptoCostOfNetworkReserve * usdCostOfTokenReserve;
 
     const liqDepth = networkReserveIsUsd
       ? networkReserveAmount
@@ -292,7 +299,7 @@ const buildReserveFeedsTraditional = (
       {
         reserveAddress: tokenReserve.contract,
         poolId: relay.id,
-        costByNetworkUsd: main,
+        costByNetworkUsd: usdCostOfTokenReserve,
         liqDepth,
         priority: 10
       },
@@ -300,7 +307,7 @@ const buildReserveFeedsTraditional = (
         reserveAddress: networkReserve.contract,
         poolId: relay.id,
         liqDepth,
-        costByNetworkUsd: reverse * main,
+        costByNetworkUsd: usdCostOfNetworkReserve,
         priority: 10
       }
     ];
