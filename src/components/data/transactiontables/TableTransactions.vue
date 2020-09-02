@@ -11,7 +11,7 @@
     <tr
       v-for="tx in modifiedTransactions"
       :key="tx.tx"
-      class="font-w600 font-size-14"
+      class="font-w500 font-size-14"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <td scope="row" class="text-primary">

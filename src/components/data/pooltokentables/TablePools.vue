@@ -10,7 +10,7 @@
     <tr
       v-for="pool in modifiedPools"
       :key="pool.id"
-      class="font-w600 font-size-14"
+      class="font-w500 font-size-14"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <td scope="row">
