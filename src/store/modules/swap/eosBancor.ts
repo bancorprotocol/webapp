@@ -51,7 +51,8 @@ import {
   sortAlongSide,
   sortByLiqDepth,
   assetToDecNumberString,
-  decNumberStringToAsset
+  decNumberStringToAsset,
+  findChangedReserve
 } from "@/api/helpers";
 import {
   Sym as Symbol,
@@ -1560,7 +1561,8 @@ export class EosBancorModule
 
             const { smartTokenAmount } = await this.calculateOpposingDeposit({
               id: relayId,
-              reserve: reserves[0]
+              reserves,
+              changedReserveId: reserves[0].id
             });
 
             const fundAmount = smartTokenAmount;
@@ -1736,7 +1738,8 @@ export class EosBancorModule
 
     const { smartTokenAmount } = await this.calculateOpposingWithdraw({
       id: relayId,
-      reserve: reserves[0]
+      reserves,
+      changedReserveId: reserves[0].id
     });
 
     const percentChunkOfRelay =
@@ -1803,7 +1806,8 @@ export class EosBancorModule
 
     const { smartTokenAmount } = await this.calculateOpposingWithdraw({
       id: relayId,
-      reserve: reserves[0]
+      reserves,
+      changedReserveId: reserves[0].id
     });
 
     const liquidityAsset = smartTokenAmount;
@@ -1934,6 +1938,11 @@ export class EosBancorModule
   @action async calculateOpposingDeposit(
     suggestedDeposit: OpposingLiquidParams
   ): Promise<EosOpposingLiquid> {
+    const changedReserve = findChangedReserve(
+      suggestedDeposit.reserves,
+      suggestedDeposit.changedReserveId
+    );
+
     const relay = await this.relayById(suggestedDeposit.id);
     const [reserves, supply] = await Promise.all([
       this.fetchRelayReservesAsAssets(relay.id),
@@ -1943,9 +1952,9 @@ export class EosBancorModule
       })
     ]);
 
-    const sameAsset = await this.viewAmountToAsset(suggestedDeposit.reserve);
+    const sameAsset = await this.viewAmountToAsset(changedReserve);
 
-    const tokenAmount = suggestedDeposit.reserve.amount;
+    const tokenAmount = changedReserve.amount;
 
     const [sameReserve, opposingReserve] = sortByNetworkTokens(
       reserves,
@@ -2025,11 +2034,14 @@ export class EosBancorModule
   ): Promise<EosOpposingLiquid> {
     const relay = await this.relayById(suggestWithdraw.id);
 
-    const sameAmountAsset = await this.viewAmountToAsset(
-      suggestWithdraw.reserve
+    const changedReserve = findChangedReserve(
+      suggestWithdraw.reserves,
+      suggestWithdraw.changedReserveId
     );
 
-    const tokenAmount = suggestWithdraw.reserve.amount;
+    const sameAmountAsset = await this.viewAmountToAsset(changedReserve);
+
+    const tokenAmount = changedReserve.amount;
 
     const [reserves, supply, smartUserBalanceString] = await Promise.all([
       this.fetchRelayReservesAsAssets(suggestWithdraw.id),

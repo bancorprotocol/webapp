@@ -77,7 +77,8 @@ export interface LiquidityParams {
 
 export interface OpposingLiquidParams {
   id: string;
-  reserve: ViewAmount;
+  changedReserveId: string;
+  reserves: ViewAmount[];
 }
 
 export interface OpposingLiquid {

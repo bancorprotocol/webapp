@@ -278,10 +278,13 @@ export default class PoolActionsRemoveV2 extends Vue {
     try {
       const res = await vxm.bancor.calculateOpposingWithdraw({
         id: this.pool.id,
-        reserve: {
-          amount,
-          id: this.selectedPoolToken.id
-        }
+        reserves: [
+          {
+            amount,
+            id: this.selectedPoolToken.id
+          }
+        ],
+        changedReserveId: this.selectedPoolToken.id
       });
 
       this.expectedReturn = res.expectedReturn!.amount;

@@ -124,6 +124,16 @@ export const formatNumber = (num: number | string, size: number = 4) => {
   return reduced;
 };
 
+export const findChangedReserve = (
+  amounts: ViewAmount[],
+  changedReserveId: string
+) =>
+  findOrThrow(
+    amounts,
+    reserve => compareString(reserve.id, changedReserveId),
+    "failed to find changed reserve id in reserves passed"
+  );
+
 export const buildSingleUnitCosts = (
   reserveOneSupply: ViewAmount,
   reserveTwoSupply: ViewAmount

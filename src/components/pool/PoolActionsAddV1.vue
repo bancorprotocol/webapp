@@ -194,7 +194,8 @@ export default class PoolActionsAddV1 extends Vue {
     try {
       const results = await this.calculateOpposingDeposit({
         id: this.pool.id,
-        reserve: { id: this.reserveOne.id, amount: this.amount1 }
+        reserves: [{ id: this.reserveOne.id, amount: tokenAmount }, { id: this.reserveTwo.id, amount: this.amount2 }],
+        changedReserveId: this.reserveOne.id
       });
       if (typeof results.opposingAmount !== "undefined") {
         this.amount2 = results.opposingAmount;
@@ -245,7 +246,8 @@ export default class PoolActionsAddV1 extends Vue {
     try {
       const results = await this.calculateOpposingDeposit({
         id: this.pool.id,
-        reserve: { id: this.reserveTwo.id, amount: this.amount2 }
+        reserves: [{ id: this.reserveTwo.id, amount: tokenAmount }, { id: this.reserveOne.id, amount: this.amount1 }],
+        changedReserveId: this.reserveTwo.id
       });
       if (typeof results.opposingAmount !== "undefined") {
         this.amount1 = results.opposingAmount;
@@ -262,7 +264,8 @@ export default class PoolActionsAddV1 extends Vue {
   async initialLoadPrices() {
     const results = await this.calculateOpposingDeposit({
       id: this.pool.id,
-      reserve: { id: this.reserveTwo.id, amount: this.amount2 }
+      reserves: [{ id: this.reserveOne.id, amount: this.amount1 }, { id: this.reserveTwo.id, amount: this.amount2 }],
+      changedReserveId: this.reserveOne.id
     });
     this.setSingleUnitCosts(results.singleUnitCosts);
   }

@@ -53,7 +53,8 @@ import {
   matchReserveFeed,
   zeroAddress,
   formatPercent,
-  buildSingleUnitCosts
+  buildSingleUnitCosts,
+  findChangedReserve
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -1901,7 +1902,13 @@ export class EthBancorModule
   @action async calculateOpposingDepositInfo(
     opposingDeposit: OpposingLiquidParams
   ): Promise<EthOpposingLiquid> {
-    const { id, reserve } = opposingDeposit;
+    const {
+      id,
+      reserves: reservesViewAmounts,
+      changedReserveId
+    } = opposingDeposit;
+    const reserve = findChangedReserve(reservesViewAmounts, changedReserveId);
+
     const relay = await this.traditionalRelayById(id);
 
     const reserveToken = await this.tokenById(reserve.id);
@@ -2029,7 +2036,11 @@ export class EthBancorModule
   ): Promise<OpposingLiquid> {
     const relay = await this.chainLinkRelayById(opposingDeposit.id);
 
-    const suggestedDepositDec = opposingDeposit.reserve.amount;
+    const changedReserve = findChangedReserve(
+      opposingDeposit.reserves,
+      opposingDeposit.changedReserveId
+    );
+    const suggestedDepositDec = changedReserve.amount;
 
     const stakedAndReserveWeight = await this.fetchV2PoolBalances(relay);
 
@@ -2082,8 +2093,7 @@ export class EthBancorModule
 
     const sameReserve = findOrThrow(
       [biggerWeight, smallerWeight],
-      weight =>
-        compareString(weight.reserveAddress, opposingDeposit.reserve.id),
+      weight => compareString(weight.reserveAddress, changedReserve.id),
       "failed to find same reserve"
     );
 
@@ -2350,7 +2360,11 @@ export class EthBancorModule
   ): Promise<OpposingLiquid> {
     const relay = await this.chainLinkRelayById(opposingWithdraw.id);
 
-    const suggestedPoolTokenWithdrawDec = opposingWithdraw.reserve.amount;
+    const changedReserve = findChangedReserve(
+      opposingWithdraw.reserves,
+      opposingWithdraw.changedReserveId
+    );
+    const suggestedPoolTokenWithdrawDec = changedReserve.amount;
 
     const stakedAndReserveWeight = await this.fetchV2PoolBalances(relay);
 
@@ -2417,11 +2431,7 @@ export class EthBancorModule
 
     const sameReserve = findOrThrow(
       matchedWeights,
-      weight =>
-        compareString(
-          weight.reserveToken.contract,
-          opposingWithdraw.reserve.id
-        ),
+      weight => compareString(weight.reserveToken.contract, changedReserve.id),
       "failed to find same reserve"
     );
 
@@ -2512,7 +2522,13 @@ export class EthBancorModule
   @action async calculateOpposingWithdrawInfo(
     opposingWithdraw: OpposingLiquidParams
   ): Promise<EthOpposingLiquid> {
-    const { id, reserve } = opposingWithdraw;
+    const {
+      id,
+      reserves: reservesViewAmounts,
+      changedReserveId
+    } = opposingWithdraw;
+
+    const reserve = findChangedReserve(reservesViewAmounts, changedReserveId);
     const tokenAmount = reserve.amount;
     const sameReserveToken = await this.tokenById(reserve.id);
 
@@ -2687,7 +2703,8 @@ export class EthBancorModule
       const traditionalRelay = await this.traditionalRelayById(relay.id);
       const { smartTokenAmountWei } = await this.calculateOpposingWithdrawInfo({
         id: relayId,
-        reserve: reserves[0]
+        reserves,
+        changedReserveId: reserves[0].id
       });
       const userPoolBalance = await this.getUserBalancesTraditional({
         relayId,
@@ -2719,7 +2736,8 @@ export class EthBancorModule
     } else {
       const { smartTokenAmountWei } = await this.calculateOpposingWithdrawInfo({
         id: relayId,
-        reserve: reserves[0]
+        reserves,
+        changedReserveId: reserves[0].id
       });
       hash = await this.liquidate({
         converterAddress,
@@ -2992,7 +3010,8 @@ export class EthBancorModule
         reserveBalancesAboveZero
       } = await this.calculateOpposingDepositInfo({
         id: relay.id,
-        reserve: reserves[0]
+        reserves,
+        changedReserveId: reserves[0].id
       });
 
       const minimumReturnWei = reserveBalancesAboveZero
@@ -3050,7 +3069,8 @@ export class EthBancorModule
     } else {
       console.log("treating as an old tradtional relay");
       const { smartTokenAmountWei } = await this.calculateOpposingDepositInfo({
-        reserve: reserves[0],
+        reserves,
+        changedReserveId: reserves[0].id,
         id: relayId
       });
 

@@ -215,7 +215,8 @@ export default class PoolActionsAddV2 extends Vue {
     try {
       const results = await this.calculateOpposingDeposit({
         id: this.pool.id,
-        reserve: { id: this.selectedToken.id, amount: amount ? amount : "0" }
+        reserves: [{ id: this.selectedToken.id, amount: amount ? amount : "0" }],
+        changedReserveId: this.selectedToken.id
       });
       if (amount !== "0" && amount !== "") this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);

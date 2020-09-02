@@ -216,7 +216,11 @@ export default class PoolActionsRemoveV1 extends Vue {
     try {
       const results = await this.calculateOpposingWithdraw({
         id: this.pool.id,
-        reserve: { id: this.pool.reserves[0].id, amount: this.amountToken1 }
+        reserves: [
+          { id: this.pool.reserves[0].id, amount: tokenAmount },
+          { id: this.pool.reserves[1].id, amount: this.amountToken2 }
+        ],
+        changedReserveId: this.pool.reserves[0].id
       });
       if (typeof results.opposingAmount !== "undefined") {
         this.amountToken2 = results.opposingAmount;
@@ -241,7 +245,11 @@ export default class PoolActionsRemoveV1 extends Vue {
     try {
       const results = await this.calculateOpposingWithdraw({
         id: this.pool.id,
-        reserve: { id: this.pool.reserves[1].id, amount: this.amountToken2 }
+        reserves: [
+          { id: this.pool.reserves[0].id, amount: this.amountToken1 },
+          { id: this.pool.reserves[1].id, amount: tokenAmount }
+        ],
+        changedReserveId: this.pool.reserves[1].id
       });
       if (typeof results.opposingAmount !== "undefined") {
         this.amountToken1 = results.opposingAmount;
