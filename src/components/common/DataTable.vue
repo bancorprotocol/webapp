@@ -80,6 +80,10 @@ export default class DataTable extends Vue {
   get darkMode() {
     return vxm.general.darkMode;
   }
+
+  mounted() {
+    this.modifyItems();
+  }
 }
 </script>
 
