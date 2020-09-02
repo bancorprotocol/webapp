@@ -1,7 +1,11 @@
 <template>
   <div class="pt-2">
     <div class="float-right mr-2">
-      <search-input-field v-model="search" />
+      <multi-input-field
+        v-model="search"
+        placeholder="Search"
+        prepend="search"
+      />
     </div>
 
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
@@ -20,13 +24,13 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TablePools from "@/components/data/data-tables/TablePools.vue";
 import TableTokens from "@/components/data/data-tables/TableTokens.vue";
-import SearchInputField from "@/components/common/SearchInputField.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 
 @Component({
   components: {
+    MultiInputField,
     TablePools,
-    TableTokens,
-    SearchInputField
+    TableTokens
   }
 })
 export default class DataTable extends Vue {
