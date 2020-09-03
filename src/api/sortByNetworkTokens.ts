@@ -9,15 +9,6 @@ export const sortByNetworkTokens = <T>(
   const atLeastOneNetworkTokenIncluded = order.some(networkSymbol =>
     allTokenSymbols.includes(networkSymbol)
   );
-  if (!atLeastOneNetworkTokenIncluded) {
-    console.error(
-      arr,
-      allTokenSymbols,
-      "was the array passed, my network tokens are",
-      order
-    );
-    throw new Error("No network tokens are found in these reserves");
-  }
 
   return [...arr].sort((a, b) => {
     const aSymbol = selector(a);

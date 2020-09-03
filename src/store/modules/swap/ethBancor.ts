@@ -272,10 +272,9 @@ const buildRelayFeedChainkLink = ({
 }) => relays.flatMap(relay => buildReserveFeedsChainlink(relay, usdPriceOfBnt));
 
 const buildReserveFeedsTraditional = (
-  relays: RelayWithReserveBalances[],
+  relay: RelayWithReserveBalances,
   knownUsdPrices: UsdValue[]
 ): ReserveFeed[] => {
-  return relays.flatMap(relay => {
     const reservesBalances = relay.reserves.map(reserve => {
       const reserveBalance = findOrThrow(
         relay.reserveBalances,
@@ -349,8 +348,38 @@ const buildReserveFeedsTraditional = (
         priority: 10
       }
     ];
-  });
-};
+  }
+
+
+const duplicateWith = <T>(arr: readonly T[], comparator: (a: T, b: T) => boolean) => arr.filter((item, index, arr) => arr.findIndex(i => comparator(item, i)) !== index)
+const compareById = (a: { id: string}, b: { id: string }) => compareString(a.id, b.id)
+const compareReserveFeedByReserveAddress = (a: ReserveFeed, b: ReserveFeed) => compareString(a.reserveAddress, b.reserveAddress)
+const reserveFeedToUsdPrice = (reserveFeed: ReserveFeed): UsdValue => ({ id: reserveFeed.reserveAddress, usdPrice: String(reserveFeed.costByNetworkUsd) })
+
+const buildPossibleReserveFeedsTraditional = (v1Pools: RelayWithReserveBalances[], initialKnownPrices: UsdValue[]): ReserveFeed[] => {
+  if (initialKnownPrices.length == 0) throw new Error("Must know the price of at least one token");
+  const duplicatePrices = duplicateWith(initialKnownPrices, compareById);
+  if (duplicatePrices.length > 0) throw new Error("Cannot pass multiple prices of a single token");
+
+  const attemptedRelays = v1Pools.map(pool => {
+    try {
+      const res = buildReserveFeedsTraditional(pool, initialKnownPrices)
+      return res;
+    } catch {
+      return false;
+    }
+  })
+
+  const [fulfilled, failed] = partition(attemptedRelays, Boolean);
+  const flatReserveFeeds = (fulfilled as unknown as  ReserveFeed[][]).flat(2).sort(sortByLiqDepth)
+  if (failed.length == 0) return flatReserveFeeds;
+  const uniquePrices = uniqWith(flatReserveFeeds, compareReserveFeedByReserveAddress).map(reserveFeedToUsdPrice)
+  const learntPrices = uniqWith([...initialKnownPrices, ...uniquePrices], compareById)
+  const hasLearntNewPrices = learntPrices.length > initialKnownPrices.length;
+  return hasLearntNewPrices ? buildPossibleReserveFeedsTraditional(v1Pools, learntPrices): flatReserveFeeds;
+
+}
+
 
 const buildReserveFeedsChainlink = (
   relay: RawV2Pool,
@@ -3623,11 +3652,6 @@ export class EthBancorModule
 
     const passedFirstHalfs = overWroteVersions
       .filter(hasTwoConnectors)
-      .filter(
-        relay =>
-          this.currentNetwork == EthNetworks.Ropsten ||
-          networkTokenIncludedInReserves(networkTokenAddresses)(relay)
-      )
       .filter(half =>
         poolTokenAddresses.some(poolTokenAddress =>
           compareString(poolTokenAddress.anchorAddress, half.anchorAddress)
@@ -3856,7 +3880,8 @@ export class EthBancorModule
     ) as RelayWithReserveBalances[]).filter(x => x.reserves.every(Boolean));
 
     const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
-    const traditionalRelayFeeds = buildReserveFeedsTraditional(
+
+    const traditionalRelayFeeds = buildPossibleReserveFeedsTraditional(
       completeV1Pools,
       [
         { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
