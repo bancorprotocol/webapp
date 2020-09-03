@@ -20,10 +20,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import TablePools from "@/components/data/data-tables/TablePools.vue";
-import TableTokens from "@/components/data/data-tables/TableTokens.vue";
+import TablePools from "@/components/data/pooltokentables/TablePools.vue";
+import TableTokens from "@/components/data/pooltokentables/TableTokens.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 
 @Component({
@@ -33,7 +33,7 @@ import MultiInputField from "@/components/common/MultiInputField.vue";
     TableTokens
   }
 })
-export default class DataTable extends Vue {
+export default class PoolTokenTables extends Vue {
   search: string = "";
 
   get darkMode() {
