@@ -31,7 +31,11 @@ export default class MainButton extends Vue {
   }
 
   get variant() {
-    return this.active ? "primary" : this.darkMode ? "dark" : "light";
+    return this.active
+      ? "primary"
+      : this.darkMode
+      ? "outline-gray-dark"
+      : "outline-gray";
   }
 
   @Emit()

@@ -8,7 +8,6 @@ import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
-import CreateHomeNew from "@/views/CreateHomeNew.vue";
 
 Vue.use(Router);
 
@@ -85,16 +84,7 @@ export const router = new Router({
       name: "PoolCreate",
       components: {
         Nav: Navigation,
-        Hero: CreateHomeNew
-      },
-      props: true
-    },
-    {
-      path: "/:service/pool/create-new/",
-      name: "PoolCreateNew",
-      components: {
-        Nav: Navigation,
-        Hero: CreateHomeNew
+        Hero: CreateHome
       },
       props: true
     },
