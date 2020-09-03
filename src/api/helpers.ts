@@ -193,20 +193,52 @@ export const updateArray = <T>(
 
 export type Wei = string | number;
 export type Ether = string | number;
-
-export let web3 = new Web3(
-  Web3.givenProvider ||
-    "https://mainnet.infura.io/v3/da059c364a2f4e6eb89bfd89600bce07"
-);
-
-export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
-
 export enum EthNetworks {
   Mainnet = 1,
   Ropsten = 3,
   Rinkeby = 4,
   Goerli = 5
 }
+
+const projectId = "da059c364a2f4e6eb89bfd89600bce07";
+
+const buildInfuraAddress = (subdomain: string, projectId: string) =>
+  `https://${subdomain}.infura.io/v3/${projectId}`;
+
+const getInfuraAddress = (network: EthNetworks) => {
+  if (network == EthNetworks.Mainnet) {
+    return buildInfuraAddress("mainnet", projectId);
+  } else if (network == EthNetworks.Ropsten) {
+    return buildInfuraAddress("ropsten", projectId);
+  }
+  throw new Error("Infura address for network not supported ");
+};
+
+export let web3 = new Web3(
+  Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
+);
+
+export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
+
+const getLogs = async () => {
+  const address = getInfuraAddress(EthNetworks.Mainnet);
+
+  const res = await axios.post(address, {
+    jsonrpc: "2.0",
+    method: "eth_getLogs",
+    params: [
+      {
+        fromBlock: web3.utils.toHex(10785845),
+        toBlock: "latest",
+        address: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0"
+      }
+    ],
+    id: 1
+  });
+  console.log(res.data, "shit");
+};
+
+getLogs();
 
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
