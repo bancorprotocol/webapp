@@ -6,6 +6,7 @@
 // This file is included last, so you have access
 // to all Bootstrap and Core functions/mixins/styles etc
 // --------------------------------------------------
+@import "table";
 
 .primary-light {
   background: $text-link-light !important;
@@ -221,33 +222,6 @@
   }
 }
 
-.table {
-  td {
-    @extend .align-middle;
-    border-top: none;
-    border-bottom: 1px solid $gray-border;
-  }
-
-  th {
-    border-top: 1px solid $gray-border;
-    border-bottom: 1px solid $gray-border !important;
-  }
-}
-
-.dark-table {
-  @extend .table;
-
-  td {
-    border-top: none;
-    border-bottom: 1px solid $gray-border-dark;
-  }
-
-  th {
-    border-top: 1px solid $gray-border-dark;
-    border-bottom: 1px solid $gray-border-dark !important;
-  }
-}
-
 .custom-tabs {
   .nav-tabs {
     border-bottom: none !important;
@@ -304,4 +278,13 @@
 
 .border-gray-dark {
   border: 1px solid $gray-border-dark !important;
+}
+
+
+.pagination {
+  .page-item, .page-item.active, .page-item:hover, .page-link, .page-link.active, .page-link:hover {
+    border: none !important;
+    background-color: transparent !important;
+  }
+
 }

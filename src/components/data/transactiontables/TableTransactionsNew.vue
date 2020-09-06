@@ -1,57 +1,121 @@
 <template>
-  <data-table
-    v-model="modifiedTransactions"
-    :items="getTx"
-    :fields="fields"
-    :filter="filter"
-    filter-by="description"
-    default-sort="time"
-    default-order="asc"
-  >
-    <tr
-      v-for="tx in modifiedTransactions"
-      :key="tx.tx"
-      class="font-w500 font-size-14"
-      :class="darkMode ? 'text-dark' : 'text-light'"
+  <div>
+    <b-table
+      :dark="darkMode"
+      :fields="fields"
+      :items="getTx"
+      :per-page="perPage"
+      :current-page="currentPage"
+      responsive
+      :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc"
+      :filter="filter"
     >
-      <td scope="row" class="text-primary">
-        {{ tx.description }}
-      </td>
-      <td>${{ tx.totalValue }}</td>
-      <td>{{ tx.tokenAmountFrom }}</td>
-      <td>{{ tx.tokenAmountTo }}</td>
-      <td class="text-primary">{{ tx.tx }}</td>
-      <td>{{ tx.time }}</td>
-    </tr>
-  </data-table>
+      <template v-slot:cell(description)="data">
+        <router-link to="/eth/swap">{{ data.value }}</router-link>
+      </template>
+
+      <template v-slot:cell(account)="data">
+        <router-link to="/eth/swap">{{ data.value }}</router-link>
+      </template>
+
+      <template v-slot:cell()="data">
+        <span>{{ data.value }}</span>
+      </template>
+    </b-table>
+
+    <b-pagination
+      v-model="currentPage"
+      :total-rows="totalRows"
+      :per-page="perPage"
+      hide-goto-end-buttons
+      align="center"
+      limit="3"
+    >
+      <template v-slot:prev-text="{ page, index, disabled }">
+        <font-awesome-icon
+          icon="long-arrow-alt-left"
+          :class="iconClass(disabled)"
+        />
+      </template>
+      <template v-slot:next-text="{ page, index, disabled }">
+        <font-awesome-icon
+          icon="long-arrow-alt-right"
+          :class="iconClass(disabled)"
+        />
+      </template>
+    </b-pagination>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import DataTable from "@/components/common/DataTable.vue";
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
+import { ViewTableTxSwap } from "@/components/data/transactiontables/TableTransactions.vue";
 
-export interface ViewTableTxSwap {
-  type: "swap" | "add" | "remove";
-  description: string;
-  totalValue: number;
-  tokenAmountFrom: string;
-  tokenAmountTo: string;
-  tx?: string;
-  account?: string;
-  time: string;
-}
 @Component({
-  components: {
-    DataTable
-  }
+  components: {}
 })
-export default class TableTransactions extends Vue {
+export default class TableTransactionsNew extends Vue {
   @Prop() filter!: string;
   @Prop() txType!: "all" | "swap" | "add" | "remove";
 
-  modifiedTransactions: ViewTableTxSwap[] = [];
+  sortBy = "time";
+  sortDesc = false;
+
+  perPage = 5;
+  currentPage = 1;
+
+  fields = [
+    {
+      key: "description",
+      label: "Description",
+      thStyle: { "min-width": "260px" },
+      sortable: true
+    },
+    {
+      key: "totalValue",
+      label: "Total Value",
+      thStyle: { "min-width": "180px" },
+      sortable: true
+    },
+    {
+      key: "tokenAmountFrom",
+      label: "Amount From",
+      thStyle: { "min-width": "200px" },
+      sortable: true
+    },
+    {
+      key: "tokenAmountTo",
+      label: "Amount To",
+      thStyle: { "min-width": "200px" },
+      sortable: true
+    },
+    {
+      key: "account",
+      label: "Account",
+      thStyle: { "min-width": "160px" },
+      sortable: true
+    },
+    {
+      key: "time",
+      label: "Time",
+      thStyle: { "min-width": "120px" },
+      sortable: true
+    }
+  ];
+
+  get totalRows() {
+    return this.getTx.length;
+  }
+
+  iconClass(disabled: boolean) {
+    return disabled
+      ? this.darkMode
+        ? "text-muted-dark"
+        : "text-muted-light"
+      : "text-primary";
+  }
 
   get getTx() {
     switch (this.txType) {
@@ -76,7 +140,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x9021…87ab",
+        account: "0x9021…87ab",
         time: "1 hours ago"
       },
       {
@@ -85,7 +149,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x8021…86cb",
+        account: "0x8021…86cb",
         time: "2 hours ago"
       },
       {
@@ -94,7 +158,7 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x7024…86ab",
+        account: "0x7024…86ab",
         time: "7 hours ago"
       },
       {
@@ -103,7 +167,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x6021…87ab",
+        account: "0x6021…87ab",
         time: "2 hours ago"
       },
       {
@@ -112,7 +176,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x5421…86ab",
+        account: "0x5421…86ab",
         time: "5 hours ago"
       },
       {
@@ -121,7 +185,7 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x3224…86ab",
+        account: "0x3224…86ab",
         time: "9 hours ago"
       },
       {
@@ -130,7 +194,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x1221…67ab",
+        account: "0x1221…67ab",
         time: "7 hours ago"
       },
       {
@@ -139,7 +203,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x8021…16ab",
+        account: "0x8021…16ab",
         time: "3 hours ago"
       },
       {
@@ -148,7 +212,7 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 ETH",
-        tx: "0x9024…26ab",
+        account: "0x9024…26ab",
         time: "5 hours ago"
       }
     ];
@@ -162,7 +226,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 BNT",
-        tx: "0x9021…87af",
+        account: "0x9021…87af",
         time: "3 hours ago"
       },
       {
@@ -171,7 +235,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x7721…86ab",
+        account: "0x7721…86ab",
         time: "6 hours ago"
       },
       {
@@ -180,7 +244,7 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x3324…86ab",
+        account: "0x3324…86ab",
         time: "2 hours ago"
       },
       {
@@ -189,7 +253,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 BNT",
-        tx: "0x9d21…87af",
+        account: "0x9d21…87af",
         time: "3 hours ago"
       },
       {
@@ -198,7 +262,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x7f21…86ab",
+        account: "0x7f21…86ab",
         time: "8 hours ago"
       },
       {
@@ -207,7 +271,7 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x2s24…86ab",
+        account: "0x2s24…86ab",
         time: "2 hours ago"
       },
       {
@@ -216,7 +280,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "46.88767 BNT",
-        tx: "0x9j21…87af",
+        account: "0x9j21…87af",
         time: "6 hours ago"
       },
       {
@@ -225,7 +289,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x7h21…86ab",
+        account: "0x7h21…86ab",
         time: "4 hours ago"
       },
       {
@@ -234,7 +298,7 @@ export default class TableTransactions extends Vue {
         totalValue: 12345.67,
         tokenAmountFrom: "1001.33345 DAPP",
         tokenAmountTo: "",
-        tx: "0x3g24…86ab",
+        account: "0x3g24…86ab",
         time: "1 hours ago"
       }
     ];
@@ -248,7 +312,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "",
-        tx: "0x9021…87ab",
+        account: "0x9021…87ab",
         time: "4 hours ago"
       },
       {
@@ -257,7 +321,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 LINK",
         tokenAmountTo: "46.88767 BNT",
-        tx: "0x8021…86ab",
+        account: "0x8021…86ab",
         time: "3 hours ago"
       },
       {
@@ -266,7 +330,7 @@ export default class TableTransactions extends Vue {
         totalValue: 765.67,
         tokenAmountFrom: "71.4456 BNB",
         tokenAmountTo: "",
-        tx: "0x9024…86ab",
+        account: "0x9024…86ab",
         time: "4 hours ago"
       },
       {
@@ -275,7 +339,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "",
-        tx: "0x9s21…87ab",
+        account: "0x9s21…87ab",
         time: "8 hours ago"
       },
       {
@@ -284,7 +348,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 LINK",
         tokenAmountTo: "46.88767 BNT",
-        tx: "0x8u21…86ab",
+        account: "0x8u21…86ab",
         time: "3 hours ago"
       },
       {
@@ -293,7 +357,7 @@ export default class TableTransactions extends Vue {
         totalValue: 765.67,
         tokenAmountFrom: "71.4456 BNB",
         tokenAmountTo: "",
-        tx: "0x9k24…86ab",
+        account: "0x9k24…86ab",
         time: "6 hours ago"
       },
       {
@@ -302,7 +366,7 @@ export default class TableTransactions extends Vue {
         totalValue: 45.67,
         tokenAmountFrom: "1001.33345 COMP",
         tokenAmountTo: "",
-        tx: "0x902g…87ab",
+        account: "0x902g…87ab",
         time: "1 hours ago"
       },
       {
@@ -311,7 +375,7 @@ export default class TableTransactions extends Vue {
         totalValue: 345.67,
         tokenAmountFrom: "1001.33345 LINK",
         tokenAmountTo: "46.88767 BNT",
-        tx: "0x802s…86ab",
+        account: "0x802s…86ab",
         time: "8 hours ago"
       },
       {
@@ -320,43 +384,8 @@ export default class TableTransactions extends Vue {
         totalValue: 765.67,
         tokenAmountFrom: "71.4456 BNB",
         tokenAmountTo: "",
-        tx: "0x902d…86ab",
+        account: "0x902d…86ab",
         time: "5 hours ago"
-      }
-    ];
-  }
-
-  get fields(): ViewTableFields[] {
-    return [
-      {
-        label: "Description",
-        key: "description"
-      },
-      {
-        label: "Total Value",
-        key: "totalValue"
-        // minWidth: "160px"
-      },
-      {
-        label: "Amount From",
-        key: "tokenAmountFrom"
-        // minWidth: "80px"
-      },
-      {
-        label: "Amount To",
-        key: "tokenAmountTo"
-        // minWidth: "80px"
-      },
-      {
-        label: "Transaction",
-        key: "tx"
-        // minWidth: "310px",
-        // maxWidth: "310px"
-      },
-      {
-        label: "Time",
-        key: "time"
-        // minWidth: "80px"
       }
     ];
   }
