@@ -350,23 +350,23 @@ const RPC_URL = getInfuraAddress(EthNetworks.Mainnet);
 const APP_NAME = "Bancor Swap";
 
 const wallets = [
-  { walletName: "metamask" },
-  { walletName: "imToken", rpcUrl: RPC_URL },
+  { walletName: "metamask", preferred: true },
+  { walletName: "imToken", rpcUrl: RPC_URL, preferred: true },
   { walletName: "coinbase" },
-  { walletName: "trust", rpcUrl: RPC_URL },
+  { walletName: "trust", rpcUrl: RPC_URL, preferred: true },
   { walletName: "dapper" },
   {
     walletName: "ledger",
     rpcUrl: RPC_URL
   },
   { walletName: "authereum" },
-  { walletName: "opera" },
+  { walletName: "opera", preferred: true },
   { walletName: "operaTouch" },
   { walletName: "torus" },
   { walletName: "status" },
   { walletName: "unilogin" },
   { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME },
-  { walletName: "meetone" },
+  { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },
   { walletName: "hyperpay" }
