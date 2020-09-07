@@ -69,8 +69,8 @@ export default class TableTransactionsNew extends Vue {
   @Prop() filter!: string;
   @Prop() txType!: "swap" | "add" | "remove";
 
-  sortBy = "time";
-  sortDesc = false;
+  sortBy = "unixTime";
+  sortDesc = true;
 
   perPage = 5;
   currentPage = 1;

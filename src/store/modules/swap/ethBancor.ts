@@ -4070,8 +4070,9 @@ export class EthBancorModule
   liquidityHistoryArr: ConversionEvent[] = [];
 
   @mutation setLiquidityHistory(events: ConversionEvent[]) {
-    console.log(events, "came through");
-    this.liquidityHistoryArr = events;
+    this.liquidityHistoryArr = events
+      .slice()
+      .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
   }
 
   get liquidityHistory() {

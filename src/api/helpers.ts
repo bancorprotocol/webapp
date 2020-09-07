@@ -28,7 +28,7 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
-import { pick, uniq } from "lodash";
+import { pick } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 
 export function VModel(propsArgs: PropOptions = {}) {
@@ -341,7 +341,6 @@ export const getLogs = async (
     ],
     id: 1
   });
-  console.log(res.data.result[0], "fighting myself");
   const decoded = res.data.result.map(decodeConversionEvent);
 
   return decoded;
