@@ -67,6 +67,12 @@ export interface ViewAmount {
   amount: string;
 }
 
+export interface ViewAmountWithMeta extends ViewAmount {
+  symbol: string;
+  logo: string;
+  decimals: number;
+}
+
 type OnUpdate = (index: number, sections: Section[]) => void;
 
 export interface LiquidityParams {

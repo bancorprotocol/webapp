@@ -26,7 +26,8 @@ import {
   PoolTokenPosition,
   CreateV1PoolEthParams,
   TxResponse,
-  V1PoolResponse
+  V1PoolResponse,
+  ViewAmountWithMeta
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -55,7 +56,9 @@ import {
   formatPercent,
   buildSingleUnitCosts,
   findChangedReserve,
-  getLogs
+  getLogs,
+  DecodedEvent,
+  ConversionEventDecoded
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -86,7 +89,8 @@ import {
   partition,
   uniqBy,
   first,
-  last
+  last,
+  fromPairs
 } from "lodash";
 import {
   buildNetworkContract,
@@ -113,6 +117,83 @@ import { priorityEthPools } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
+import moment from "moment";
+
+export interface ConversionEvent extends DecodedEvent<ConversionEventDecoded> {
+  blockTime: number;
+}
+
+const tokenAddressesInEvent = (event: ConversionEvent): string[] => {
+  const res = [event.data.from.address, event.data.to.address];
+  const isArrayOfStrings = res.every(address => typeof address == "string");
+  if (!isArrayOfStrings)
+    throw new Error("Failed to get token addresses in event");
+  return res;
+};
+interface ViewTradeEvent {
+  from: ViewAmountWithMeta;
+  to: ViewAmountWithMeta;
+}
+
+interface ViewLiquidityEvent<T> {
+  valueTransmitted: number;
+  type: string;
+  unixTime: number;
+  account: string;
+  data: T;
+}
+
+const estimateBlockTime = (
+  blockNumber: number,
+  knownBlockNumber: number,
+  knownBlockNumberTime: number,
+  averageBlockTimeSeconds = 15
+): number => {
+  const blockGap = knownBlockNumber - blockNumber;
+  const timeGap = blockGap * averageBlockTimeSeconds;
+  return knownBlockNumberTime - timeGap;
+};
+
+const conversionEventToViewTradeEvent = (
+  conversion: ConversionEvent,
+  tokenPrices: ViewToken[]
+): ViewLiquidityEvent<ViewTradeEvent> => {
+  const fromToken = findOrThrow(
+    tokenPrices,
+    price => compareString(price.id, conversion.data.from.address),
+    "failed finding token meta passed to conversion event to view trade"
+  );
+  const toToken = findOrThrow(
+    tokenPrices,
+    price => compareString(price.id, conversion.data.to.address),
+    "failed finding token meta passed to conversion event to view trade"
+  );
+  return {
+    valueTransmitted: 3,
+    type: "swap",
+    unixTime: conversion.blockTime,
+    account: conversion.data.trader,
+    data: {
+      from: {
+        amount: shrinkToken(
+          conversion.data.from.weiAmount,
+          fromToken.precision
+        ),
+        decimals: fromToken.precision,
+        id: fromToken.id,
+        logo: fromToken.logo,
+        symbol: fromToken.symbol
+      },
+      to: {
+        amount: shrinkToken(conversion.data.to.weiAmount, toToken.precision),
+        decimals: toToken.precision,
+        id: toToken.id,
+        logo: toToken.logo,
+        symbol: toToken.symbol
+      }
+    }
+  };
+};
 
 type Wei = string;
 
@@ -3955,30 +4036,59 @@ export class EthBancorModule
       res.filter(x => compareString(x.txHash, hash))
     );
 
-    const joinStartingAndTerminating = groups.map(trades => {
-      const firstTrade = trades[0];
-      const lastTrade = trades[trades.length - 1];
-      const { txHash: firstHash, blockNumber: firstBlockNumber } = firstTrade;
-      const haveSameBlockNumber = trades.every(
-        trade => trade.blockNumber == firstBlockNumber
-      );
-      const haveSameTxHash = trades.every(trade => trade.txHash == firstHash);
-      if (!(haveSameBlockNumber && haveSameTxHash))
-        throw new Error("Trades do not share the same block number and hash");
+    const joinStartingAndTerminating = groups.map(
+      (trades): DecodedEvent<ConversionEventDecoded> => {
+        const firstTrade = trades[0];
+        const lastTrade = trades[trades.length - 1];
+        const { txHash: firstHash, blockNumber: firstBlockNumber } = firstTrade;
+        const haveSameBlockNumber = trades.every(
+          trade => trade.blockNumber == firstBlockNumber
+        );
+        const haveSameTxHash = trades.every(trade => trade.txHash == firstHash);
+        if (!(haveSameBlockNumber && haveSameTxHash))
+          throw new Error("Trades do not share the same block number and hash");
 
-      return {
-        ...firstTrade,
-        data: {
-          ...firstTrade.data,
-          to: lastTrade.data.to
-        }
-      };
-    });
-    console.log(
-      joinStartingAndTerminating,
-      "are joined starting and terminating"
+        return {
+          ...firstTrade,
+          data: {
+            ...firstTrade.data,
+            to: lastTrade.data.to
+          }
+        };
+      }
     );
-    console.log(groups, "are groups");
+    return joinStartingAndTerminating;
+  }
+
+  liquidityHistoryArr: ConversionEvent[] = [];
+
+  @mutation setLiquidityHistory(events: ConversionEvent[]) {
+    console.log(events, "came through");
+    this.liquidityHistoryArr = events;
+  }
+
+  get liquidityHistory() {
+    const liquidityEvents = this.liquidityHistoryArr;
+    const knownTokens = this.tokens;
+    if (liquidityEvents.length == 0 || knownTokens.length == 0) {
+      return {
+        loading: true,
+        data: []
+      };
+    }
+
+    const conversionsSupported = liquidityEvents.filter(event =>
+      tokenAddressesInEvent(event).every(tokenAddress =>
+        knownTokens.some(t => compareString(tokenAddress, t.id))
+      )
+    );
+
+    return {
+      loading: false,
+      data: conversionsSupported.map(conversion =>
+        conversionEventToViewTradeEvent(conversion, knownTokens)
+      )
+    };
   }
 
   @action async init(params?: ModuleParam) {
@@ -4035,75 +4145,53 @@ export class EthBancorModule
         web3.eth.getBlockNumber()
       ]);
 
+      console.log(contractAddresses, "are contract addresses");
+
       const reverseBlocks = (hours: number, blockTimeSeconds = 15) => {
         const hoursInSeconds = hours * 60 * 60;
         return hoursInSeconds / blockTimeSeconds;
       };
 
-      const estimateBlockTimes = (
-        fromBlock: number,
-        toBlock: number,
-        toBlockTime: number
-      ) => {
-        const fromBlockSmallerThanToBlock = fromBlock < toBlock;
-        if (!fromBlockSmallerThanToBlock)
-          throw new Error("From block should be smaller than to block");
-        const blockGap = toBlock - fromBlock;
-        console.log(blockGap, "is the block gap");
-        const decendingBlockArray = Array.from({ length: blockGap - 1 });
-        console.log(decendingBlockArray, "is the deseding block array");
-        const starting = {
-          blockNumber: toBlock,
-          time: toBlockTime
-        };
-        decendingBlockArray.unshift(starting);
-        const result = decendingBlockArray.reduce(
-          (acc, item) => {
-            // @ts-ignore
-            const last = acc.last;
-            // @ts-ignore
-            const newLast = {
-              // @ts-ignore
-              blockNumber: last.blockNumber - 1,
-              // @ts-ignore
-              time: last.time - 15
-            };
-            return {
-              // @ts-ignore
-              last: newLast,
-              data: [...acc.data, newLast]
-            };
-          },
-          {
-            last: starting,
-            data: []
-          }
-        );
-        console.log(result, "was result");
-      };
-
       const twentyFourHoursOfBlocks = reverseBlocks(24);
       const fromBlock = currentBlock - twentyFourHoursOfBlocks;
 
-      estimateBlockTimes(fromBlock, currentBlock, 3094293040);
-      console.log(
-        currentBlock,
-        "was current block",
-        fromBlock,
-        "is 24 hours behind"
-      );
-      this.pullEvents({
-        network: currentNetwork,
-        networkContract: contractAddresses.BancorNetwork,
-        fromBlock
-      });
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
 
       console.time("SecondPromise");
-      const registeredAnchorAddresses = await this.fetchAnchorAddresses(
-        contractAddresses.BancorConverterRegistry
-      );
+      const [registeredAnchorAddresses, currentBlockInfo] = await Promise.all([
+        this.fetchAnchorAddresses(contractAddresses.BancorConverterRegistry),
+        web3.eth.getBlock(currentBlock)
+      ]);
+
+      (async () => {
+        const events = await this.pullEvents({
+          network: currentNetwork,
+          networkContract: contractAddresses.BancorNetwork,
+          fromBlock
+        });
+        const withDates = events.map(
+          (event): ConversionEvent => ({
+            ...event,
+            blockTime: estimateBlockTime(
+              Number(event.blockNumber),
+              currentBlock,
+              Number(currentBlockInfo.timestamp)
+            )
+          })
+        );
+
+        this.setLiquidityHistory(withDates);
+
+        console.log(
+          withDates.map(x => ({
+            ...x,
+            formatted: moment.unix(x.blockTime).format()
+          })),
+          "have dates"
+        );
+      })();
+
       console.timeEnd("SecondPromise");
 
       this.setRegisteredAnchorAddresses(registeredAnchorAddresses);

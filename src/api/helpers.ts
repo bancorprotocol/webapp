@@ -270,13 +270,13 @@ interface TokenAmount {
   address: string;
   weiAmount: string;
 }
-interface ConversionEventDecoded {
+export interface ConversionEventDecoded {
   from: TokenAmount;
   to: TokenAmount;
   trader: string;
 }
 
-interface DecodedEvent<T> {
+export interface DecodedEvent<T> {
   blockNumber: string;
   txHash: string;
   data: T;
