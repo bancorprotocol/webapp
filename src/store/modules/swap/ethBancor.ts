@@ -2069,6 +2069,15 @@ export class EthBancorModule
           compareString(smartTokenSymbol, history)
         );
 
+        let liqDepth = relay.reserves.reduce(
+          (acc, item) => acc + item.reserveFeed!.liqDepth,
+          0
+        );
+
+        if (Number.isNaN(liqDepth)) {
+          liqDepth = 0;
+        }
+
         return {
           id: relay.anchor.contract,
           reserves: relay.reserves.map(reserve => ({
@@ -2081,10 +2090,7 @@ export class EthBancorModule
             smartTokenSymbol: relay.anchor.contract
           })),
           fee: relay.fee / 100,
-          liqDepth: relay.reserves.reduce(
-            (acc, item) => acc + item.reserveFeed!.liqDepth,
-            0
-          ),
+          liqDepth,
           owner: relay.owner,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
