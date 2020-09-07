@@ -346,6 +346,32 @@ export const getLogs = async (
   return decoded;
 };
 
+const RPC_URL = getInfuraAddress(EthNetworks.Mainnet);
+const APP_NAME = "Bancor Swap";
+
+const wallets = [
+  { walletName: "metamask" },
+  { walletName: "imToken", rpcUrl: RPC_URL },
+  { walletName: "coinbase" },
+  { walletName: "trust", rpcUrl: RPC_URL },
+  { walletName: "dapper" },
+  {
+    walletName: "ledger",
+    rpcUrl: RPC_URL
+  },
+  { walletName: "authereum" },
+  { walletName: "opera" },
+  { walletName: "operaTouch" },
+  { walletName: "torus" },
+  { walletName: "status" },
+  { walletName: "unilogin" },
+  { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME },
+  { walletName: "meetone" },
+  { walletName: "mykey", rpcUrl: RPC_URL },
+  { walletName: "huobiwallet", rpcUrl: RPC_URL },
+  { walletName: "hyperpay" }
+];
+
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
   networkId: 1,
@@ -367,6 +393,9 @@ export const onboard = Onboard({
       }
       web3.setProvider(wallet.provider);
     }
+  },
+  walletSelect: {
+    wallets
   }
 });
 
