@@ -26,7 +26,7 @@
         ><font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
         Bancor Swap</b-dropdown-item
       >
-      <b-dropdown-item :to="{ name: 'Data' }"
+      <b-dropdown-item disabled :to="{ name: 'Data' }"
         ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
         Data</b-dropdown-item
       >
