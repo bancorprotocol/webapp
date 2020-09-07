@@ -101,7 +101,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/super-secret-data",
+      path: "/:service/data",
       name: "Data",
       components: {
         Nav: Navigation,
