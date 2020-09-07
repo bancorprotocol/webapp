@@ -276,6 +276,11 @@ export interface ConversionEventDecoded {
   trader: string;
 }
 
+export const shortenEthAddress = (ethAddress: string) =>
+  ethAddress.substring(0, 4) +
+  "..." +
+  ethAddress.substring(ethAddress.length - 6, ethAddress.length);
+
 export interface DecodedEvent<T> {
   blockNumber: string;
   txHash: string;

@@ -59,6 +59,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
+import { shortenEthAddress } from "@/api/helpers";
 
 @Component({
   components: { BancorMenu, SettingsMenu }
@@ -116,12 +117,7 @@ export default class Navigation extends Vue {
   get shortenedEthAddress() {
     const isAuthenticated = vxm.ethWallet.isAuthenticated;
     return isAuthenticated.length > 13
-      ? isAuthenticated.substring(0, 4) +
-          "..." +
-          isAuthenticated.substring(
-            isAuthenticated.length - 6,
-            isAuthenticated.length
-          )
+      ? shortenEthAddress(isAuthenticated)
       : isAuthenticated;
   }
 

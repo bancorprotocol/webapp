@@ -137,6 +137,7 @@ interface ViewTradeEvent {
 
 interface ViewLiquidityEvent<T> {
   valueTransmitted: number;
+  txHash: string;
   type: string;
   unixTime: number;
   account: string;
@@ -168,17 +169,23 @@ const conversionEventToViewTradeEvent = (
     price => compareString(price.id, conversion.data.to.address),
     "failed finding token meta passed to conversion event to view trade"
   );
+
+  const fromAmountDec = shrinkToken(
+    conversion.data.from.weiAmount,
+    fromToken.precision
+  );
+
   return {
-    valueTransmitted: 3,
+    valueTransmitted: new BigNumber(fromAmountDec)
+      .times(fromToken.price || 0)
+      .toNumber(),
     type: "swap",
     unixTime: conversion.blockTime,
     account: conversion.data.trader,
+    txHash: conversion.txHash,
     data: {
       from: {
-        amount: shrinkToken(
-          conversion.data.from.weiAmount,
-          fromToken.precision
-        ),
+        amount: fromAmountDec,
         decimals: fromToken.precision,
         id: fromToken.id,
         logo: fromToken.logo,

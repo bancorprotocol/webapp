@@ -9,17 +9,8 @@
     </div>
 
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-      <b-tab title="All Transactions" active>
-        <table-transactions-new :filter="search" tx-type="all" />
-      </b-tab>
-      <b-tab title="Swap">
-        <table-transactions :filter="search" tx-type="swap" />
-      </b-tab>
-      <b-tab title="Adds">
-        <table-transactions :filter="search" tx-type="add" />
-      </b-tab>
-      <b-tab title="Removes">
-        <table-transactions :filter="search" tx-type="remove" />
+      <b-tab title="Swap" active>
+        <table-transactions-new :filter="search" tx-type="swap" />
       </b-tab>
     </b-tabs>
   </div>
