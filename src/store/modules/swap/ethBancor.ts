@@ -4040,9 +4040,52 @@ export class EthBancorModule
         return hoursInSeconds / blockTimeSeconds;
       };
 
+      const estimateBlockTimes = (
+        fromBlock: number,
+        toBlock: number,
+        toBlockTime: number
+      ) => {
+        const fromBlockSmallerThanToBlock = fromBlock < toBlock;
+        if (!fromBlockSmallerThanToBlock)
+          throw new Error("From block should be smaller than to block");
+        const blockGap = toBlock - fromBlock;
+        console.log(blockGap, "is the block gap");
+        const decendingBlockArray = Array.from({ length: blockGap - 1 });
+        console.log(decendingBlockArray, "is the deseding block array");
+        const starting = {
+          blockNumber: toBlock,
+          time: toBlockTime
+        };
+        decendingBlockArray.unshift(starting);
+        const result = decendingBlockArray.reduce(
+          (acc, item) => {
+            // @ts-ignore
+            const last = acc.last;
+            // @ts-ignore
+            const newLast = {
+              // @ts-ignore
+              blockNumber: last.blockNumber - 1,
+              // @ts-ignore
+              time: last.time - 15
+            };
+            return {
+              // @ts-ignore
+              last: newLast,
+              data: [...acc.data, newLast]
+            };
+          },
+          {
+            last: starting,
+            data: []
+          }
+        );
+        console.log(result, "was result");
+      };
+
       const twentyFourHoursOfBlocks = reverseBlocks(24);
       const fromBlock = currentBlock - twentyFourHoursOfBlocks;
 
+      estimateBlockTimes(fromBlock, currentBlock, 3094293040);
       console.log(
         currentBlock,
         "was current block",
