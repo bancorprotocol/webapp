@@ -1,8 +1,24 @@
 import BigNumber from "bignumber.js";
 import { web3 } from "@/api/helpers";
+import { isAddress } from "web3-utils";
 
 export const expandToken = (amount: string | number, precision: number) =>
   new BigNumber(amount).times(new BigNumber(10).pow(precision)).toFixed(0);
+
+export const removeLeadingZeros = (hexString: string) => {
+  const withoutOx = hexString.startsWith("0x") ? hexString.slice(2) : hexString;
+  const initialAttempt =
+    "0x" + withoutOx.slice(withoutOx.split("").findIndex(x => x !== "0"));
+  if (isAddress(initialAttempt)) return initialAttempt;
+  const secondAttempt = [
+    "0",
+    "x",
+    "0",
+    ...initialAttempt.split("").slice(2)
+  ].join("");
+  if (isAddress(secondAttempt)) return secondAttempt;
+  else throw new Error(`Failed parsing hex ${hexString}`);
+};
 
 export const shrinkToken = (amount: string | number, precision: number) =>
   new BigNumber(amount)

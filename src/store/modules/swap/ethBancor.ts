@@ -54,7 +54,8 @@ import {
   zeroAddress,
   formatPercent,
   buildSingleUnitCosts,
-  findChangedReserve
+  findChangedReserve,
+  getLogs
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -78,7 +79,15 @@ import Decimal from "decimal.js";
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import wait from "waait";
-import { uniqWith, differenceWith, zip, partition } from "lodash";
+import {
+  uniqWith,
+  differenceWith,
+  zip,
+  partition,
+  uniqBy,
+  first,
+  last
+} from "lodash";
 import {
   buildNetworkContract,
   buildRegistryContract,
@@ -93,7 +102,8 @@ import {
   expandToken,
   generateEthPath,
   shrinkToken,
-  TokenSymbol
+  TokenSymbol,
+  removeLeadingZeros
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
@@ -940,22 +950,6 @@ interface RegisteredContracts {
   BancorNetwork: string;
   BancorConverterRegistry: string;
 }
-
-const removeLeadingZeros = (hexString: string) => {
-  console.log(hexString, "was received on remove leading zeros");
-  const withoutOx = hexString.startsWith("0x") ? hexString.slice(2) : hexString;
-  const initialAttempt =
-    "0x" + withoutOx.slice(withoutOx.split("").findIndex(x => x !== "0"));
-  if (isAddress(initialAttempt)) return initialAttempt;
-  const secondAttempt = [
-    "0",
-    "x",
-    "0",
-    ...initialAttempt.split("").slice(2)
-  ].join("");
-  if (isAddress(secondAttempt)) return secondAttempt;
-  else throw new Error(`Failed parsing hex ${hexString}`);
-};
 
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
   new Decimal(percent).times(existingSupply).toFixed(0);
@@ -3943,19 +3937,48 @@ export class EthBancorModule
     return zipAnchorAndConverters(anchorAddresses, converters);
   }
 
-  @action async pullEvents(contractAddress: string) {
-    console.log("hug me", contractAddress);
-    const contract = buildNetworkContract(
-      "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0"
-    );
-    const res = await contract.getPastEvents("allEvents");
+  @action async pullEvents({
+    networkContract,
+    network,
+    fromBlock
+  }: {
+    networkContract: string;
+    network: EthNetworks;
+    fromBlock: number;
+  }) {
+    const res = await getLogs(network, networkContract, fromBlock);
+    console.log(res, "was res");
 
-    // const res = await web3.eth.getPastLogs({ fromBlock: '10786113',
-    //  toBlock: 'latest',
-    // address: '0xe870d00176b2c71afd4c43cea550228e22be4abd',
-    //  topics: ['0x7154b38b5dd31bb3122436a96d4e09aba5b323ae1fd580025fab55074334c095',
-    // '0x7154b38b5dd31bb3122436a96d4e09aba5b323ae1fd580025fab55074334c095', '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] })
-    console.log(res, "was res on pull events");
+    const uniqTxHashes = uniqWith(res.map(x => x.txHash), compareString);
+
+    const groups = uniqTxHashes.map(hash =>
+      res.filter(x => compareString(x.txHash, hash))
+    );
+
+    const joinStartingAndTerminating = groups.map(trades => {
+      const firstTrade = trades[0];
+      const lastTrade = trades[trades.length - 1];
+      const { txHash: firstHash, blockNumber: firstBlockNumber } = firstTrade;
+      const haveSameBlockNumber = trades.every(
+        trade => trade.blockNumber == firstBlockNumber
+      );
+      const haveSameTxHash = trades.every(trade => trade.txHash == firstHash);
+      if (!(haveSameBlockNumber && haveSameTxHash))
+        throw new Error("Trades do not share the same block number and hash");
+
+      return {
+        ...firstTrade,
+        data: {
+          ...firstTrade.data,
+          to: lastTrade.data.to
+        }
+      };
+    });
+    console.log(
+      joinStartingAndTerminating,
+      "are joined starting and terminating"
+    );
+    console.log(groups, "are groups");
   }
 
   @action async init(params?: ModuleParam) {
@@ -4007,10 +4030,30 @@ export class EthBancorModule
       this.fetchUsdPriceOfBnt();
 
       console.time("FirstPromise");
-      const contractAddresses = await this.fetchContractAddresses(
-        networkVariables.contractRegistry
+      const [contractAddresses, currentBlock] = await Promise.all([
+        this.fetchContractAddresses(networkVariables.contractRegistry),
+        web3.eth.getBlockNumber()
+      ]);
+
+      const reverseBlocks = (hours: number, blockTimeSeconds = 15) => {
+        const hoursInSeconds = hours * 60 * 60;
+        return hoursInSeconds / blockTimeSeconds;
+      };
+
+      const twentyFourHoursOfBlocks = reverseBlocks(24);
+      const fromBlock = currentBlock - twentyFourHoursOfBlocks;
+
+      console.log(
+        currentBlock,
+        "was current block",
+        fromBlock,
+        "is 24 hours behind"
       );
-      this.pullEvents(contractAddresses.BancorNetwork);
+      this.pullEvents({
+        network: currentNetwork,
+        networkContract: contractAddresses.BancorNetwork,
+        fromBlock
+      });
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
 
@@ -4021,6 +4064,41 @@ export class EthBancorModule
       console.timeEnd("SecondPromise");
 
       this.setRegisteredAnchorAddresses(registeredAnchorAddresses);
+
+      const tz = {
+        address: "0x2f9ec37d6ccfff1cab21733bdadede11c823ccb0",
+        blockHash:
+          "0x2570d981705b282aafd2ff07ed293cb3169513b0d12ea819f84b71b4d68ab2c1",
+        blockNumber: "0xa49f45",
+        data:
+          "0x0000000000000000000000000000000000000000000008238eb1566fee5d0000000000000000000000000000000000000000000000000007b4be6e4156334ad4000000000000000000000000dead1241f2ee2a7950ad967993efb72d62bf6822",
+        logIndex: "0x17",
+        removed: false,
+        topics: [
+          "0x7154b38b5dd31bb3122436a96d4e09aba5b323ae1fd580025fab55074334c095",
+          "0x000000000000000000000000b1cd6e4153b2a390cf00a6556b0fc1458c4a5533",
+          "0x0000000000000000000000001f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
+          "0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        ],
+        transactionHash:
+          "0x3d200c94eca4474b421a6342121e7933f3b94abb22494719550461c5ba2c4571",
+        transactionIndex: "0x10"
+      };
+
+      const conversionEventAbi = [
+        { type: "uint256", name: "fromAmount" },
+        { type: "uint256", name: "toAmount" },
+        { type: "address", name: "trader" }
+      ];
+
+      const decoded = web3.eth.abi.decodeLog(
+        conversionEventAbi,
+        tz.data,
+        tz.topics
+      );
+      console.log(decoded, "was decoded");
+
+      // web3.eth.getBlock(3)
 
       console.time("ThirdPromise");
       const [
