@@ -27,7 +27,8 @@ import {
   CreateV1PoolEthParams,
   TxResponse,
   V1PoolResponse,
-  ViewAmountWithMeta
+  ViewTradeEvent,
+  ViewLiquidityEvent
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -128,19 +129,7 @@ const tokenAddressesInEvent = (event: ConversionEvent): string[] => {
     throw new Error("Failed to get token addresses in event");
   return res;
 };
-interface ViewTradeEvent {
-  from: ViewAmountWithMeta;
-  to: ViewAmountWithMeta;
-}
 
-interface ViewLiquidityEvent<T> {
-  valueTransmitted: number;
-  txHash: string;
-  type: string;
-  unixTime: number;
-  account: string;
-  data: T;
-}
 
 const estimateBlockTime = (
   blockNumber: number,
@@ -155,7 +144,9 @@ const estimateBlockTime = (
 
 const conversionEventToViewTradeEvent = (
   conversion: ConversionEvent,
-  tokenPrices: ViewToken[]
+  tokenPrices: ViewToken[],
+  createBlockExplorerTxLink: (hash: string) => string,
+  createBlockExplorerAccountLink: (account: string) => string
 ): ViewLiquidityEvent<ViewTradeEvent> => {
   const fromToken = findOrThrow(
     tokenPrices,
@@ -174,6 +165,8 @@ const conversionEventToViewTradeEvent = (
   );
 
   return {
+    txLink: createBlockExplorerTxLink(conversion.txHash),
+    accountLink: createBlockExplorerAccountLink(conversion.data.trader),
     valueTransmitted: new BigNumber(fromAmountDec)
       .times(fromToken.price || 0)
       .toNumber(),
@@ -743,8 +736,11 @@ const assertChainlink = (relay: Relay): ChainLinkRelay => {
   throw new Error("Not a chainlink relay");
 };
 
-const generateEtherscanLink = (txHash: string, ropsten: boolean = false) =>
+const generateEtherscanTxLink = (txHash: string, ropsten: boolean = false) =>
   `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
+
+  const generateEtherscanAccountLink = (account: string, ropsten: boolean = false) =>
+  `https://${ropsten ? "ropsten." : ""}etherscan.io/address/${account}`;
 
 interface AnchorProps {
   anchor: Anchor;
@@ -1820,7 +1816,7 @@ export class EthBancorModule
   }
 
   @action async createExplorerLink(txHash: string) {
-    return generateEtherscanLink(
+    return generateEtherscanTxLink(
       txHash,
       this.currentNetwork == EthNetworks.Ropsten
     );
@@ -4102,7 +4098,10 @@ export class EthBancorModule
     return {
       loading: false,
       data: conversionsSupported.map(conversion =>
-        conversionEventToViewTradeEvent(conversion, knownTokens)
+        conversionEventToViewTradeEvent(conversion, knownTokens, (hash) => generateEtherscanTxLink(
+          hash,
+          this.currentNetwork == EthNetworks.Ropsten
+        ), (account) => generateEtherscanAccountLink(account))
       )
     };
   }

@@ -154,6 +154,12 @@ export const buildSingleUnitCosts = (
   ];
 };
 
+export interface StringPool {
+  pool: string;
+  poolToken?: string;
+  destSymbol: string;
+}
+
 export const formatPercent = (decNumber: number) =>
   numeral(decNumber).format("0.00%");
 

@@ -19,8 +19,6 @@ import {
   BaseToken,
   CreatePoolParams,
   ViewRelay,
-  ViewModalToken,
-  Step,
   TokenMeta,
   ViewAmount,
   ProposedFromTransaction,
@@ -30,7 +28,10 @@ import {
   TokenBalanceReturn,
   UserPoolBalances,
   PoolTokenPosition,
-  TxResponse
+  TxResponse,
+  DFuseTrade,
+  ViewTradeEvent,
+  ViewLiquidityEvent
 } from "@/types/bancor";
 import { bancorApi, ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -53,7 +54,8 @@ import {
   assetToDecNumberString,
   decNumberStringToAsset,
   findChangedReserve,
-  ConversionEvent
+  ConversionEvent,
+  StringPool
 } from "@/api/helpers";
 import {
   Sym as Symbol,
@@ -75,23 +77,102 @@ import {
   findReturn,
   calculateFundReturn,
   TokenAmount,
-  findNewPath
+  findNewPath,
+  poolsInMemo,
+  parseTransferMemo
 } from "@/api/eos/eosBancorCalc";
-import _, { uniqWith } from "lodash";
+import _, { uniqWith, first, last } from "lodash";
 import wait from "waait";
 import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
-import { createDfuseClient } from '@dfuse/client'
-import { conversionPath } from '@/api/eth/contractWrappers';
+import { createDfuseClient } from "@dfuse/client";
+import moment from "moment";
 
+const networkContract = "thisisbancor";
+
+const searchTransactionsWithHigherBlock = `query ($limit: Int64!, $highBlockNum: Int64!) {
+  searchTransactionsBackward(query: "receiver:${networkContract} action:transfer data.from:${networkContract}", limit: $limit, highBlockNum: $highBlockNum) {
+    results {
+      block {
+        num
+        timestamp
+      }
+      trace { 
+        id
+        executedActions {
+          json
+        }
+        matchingActions { 
+          json 
+        } 
+      }
+    }
+  }
+}`;
 
 const client = createDfuseClient({
   apiKey: "web_af8f1c42eca1bec0d8b6d6248625b62d",
   network: "mainnet.eos.dfuse.io"
-})
+});
 
+const past24HourTrades = async (
+  lastBlockTarget?: number,
+  highBlockNum = -1,
+  tradesFetched: DFuseTrade[] = []
+): Promise<DFuseTrade[]> => {
+  const response = await client.graphql(searchTransactionsWithHigherBlock, {
+    variables: {
+      limit: 1000,
+      highBlockNum
+    }
+  });
+
+  const results: DFuseTrade[] =
+    response.data.searchTransactionsBackward.results || [];
+
+  const firstBlock = first(results)!.block.num;
+  const lastBlock = last(results)!.block.num;
+
+  if (!lastBlockTarget) {
+    const secondsInADay = 86400;
+    const blocksPerSecond = 2;
+    const searchBlockAmount = secondsInADay * blocksPerSecond;
+    lastBlockTarget = firstBlock - searchBlockAmount;
+  }
+
+  const blockTargetReached = lastBlock <= lastBlockTarget;
+  const latestTrades = [...tradesFetched, ...results];
+  if (blockTargetReached) {
+    return latestTrades.map(trade => ({
+      ...trade,
+      trace: {
+        ...trade.trace,
+        executedActions: trade.trace.executedActions.filter(x => x.json)
+      }
+    }));
+  } else {
+    return past24HourTrades(lastBlockTarget, lastBlock - 1, latestTrades);
+  }
+};
+
+const compareEosMultiRelayToStringPool = (
+  relay: EosMultiRelay,
+  stringPool: StringPool
+) => {
+  const isMulti = stringPool.poolToken;
+  if (isMulti) {
+    const sameSymbol = compareString(
+      relay.smartToken.symbol,
+      stringPool.poolToken!
+    );
+    const sameAccount = compareString(relay.contract, stringPool.pool);
+    return sameSymbol && sameAccount;
+  } else {
+    return compareString(relay.contract, stringPool.pool);
+  }
+};
 
 const bnt: BaseToken = {
   symbol: "BNT",
@@ -725,8 +806,6 @@ export class EosBancorModule
   }
 
   get newNetworkTokenChoices(): NetworkChoice[] {
-
-
     const usdb: BaseToken = {
       symbol: "USDB",
       contract: "usdbusdbusdb"
@@ -1014,8 +1093,10 @@ export class EosBancorModule
         (acc, item) => acc + item.liqDepth,
         0
       ),
-      bntPrice: this.tokens.find(token => compareString(buildTokenId(bnt), token.id))?.price || 0,
-      twentyFourHourTradeCount: 30 
+      bntPrice:
+        this.tokens.find(token => compareString(buildTokenId(bnt), token.id))
+          ?.price || 0,
+      twentyFourHourTradeCount: this.liquidityHistory.data.length
     };
   }
 
@@ -1282,20 +1363,156 @@ export class EosBancorModule
 
   @action async loadMoreTokens(tokenIds?: string[]) {}
 
+  liquidityHistoryArr: DFuseTrade[] = [];
+  liquidityHistoryLoading: boolean = true;
+  liquidityHistoryError: string = "";
+
+  @mutation setLiquidityHistoryError(errorMessage: string) {
+    this.liquidityHistoryError = errorMessage;
+    this.liquidityHistoryLoading = false;
+  }
+
+  @mutation setLiquidityHistory(trades: DFuseTrade[]) {
+    console.log(trades, "are the trades to be set");
+
+    this.liquidityHistoryArr = trades;
+    this.liquidityHistoryLoading = false;
+  }
+
+  get liquidityHistory() {
+
+    console.log("HULK")
+    const relays = this.relaysList;
+
+    const parsedPools = this.liquidityHistoryArr.map(trade => {
+      const fromTokenAction = first(trade.trace.matchingActions)!;
+      const poolsInTrade = parseTransferMemo(fromTokenAction.json.memo).pools;
+      const enteringPool = first(poolsInTrade)!;
+      const exitingPool = last(poolsInTrade)!;
+      return {
+        ...trade,
+        enteringPool,
+        exitingPool
+      };
+    });
+
+    const withKnownPools = parsedPools.filter(
+      trade =>
+        relays.some(relay =>
+          compareEosMultiRelayToStringPool(relay, trade.enteringPool)
+        ) &&
+        relays.some(relay =>
+          compareEosMultiRelayToStringPool(relay, trade.exitingPool)
+        )
+    );
+
+    // @ts-ignore
+    const data: ViewLiquidityEvent<ViewTradeEvent>[] = withKnownPools
+      .map(trade => {
+        const momentTime = moment(trade.block.timestamp);
+
+        const fromTokenAction = first(trade.trace.matchingActions)!;
+
+        const fromAmountAsset = new Asset(fromTokenAction.json.quantity);
+        const fromSymbol = fromAmountAsset.symbol.code().to_string()
+
+        const initialTransferMemoObj = parseTransferMemo(
+          fromTokenAction.json.memo
+        );
+        const toSymbol = last(initialTransferMemoObj.pools)!.destSymbol;
+        const destinationAccount = initialTransferMemoObj.destAccount;
+
+        const executedActions = trade.trace.executedActions.map(x => x.json);
+        const rewardTransferAction = executedActions
+          .find(
+            x => {
+              const res = x.to &&
+              x.from &&
+              x.quantity &&
+              compareString(x.to, destinationAccount) &&
+              compareString(new Asset(x.quantity).symbol.code().to_string(), toSymbol) &&
+              (compareString(x.from, trade.exitingPool.pool) || compareString(x.from, "thisisbancor"))
+              return res;
+            }
+          );
+          if (!rewardTransferAction) {
+            console.log(executedActions, 'could not be found');
+            return;
+          }
+
+        const enteringRelay = findOrThrow(relays, relay =>
+          compareEosMultiRelayToStringPool(relay, trade.enteringPool)
+        );
+        const exitingRelay = findOrThrow(relays, relay =>
+          compareEosMultiRelayToStringPool(relay, trade.exitingPool)
+        );
+
+        const fromToken = enteringRelay.reserves.find(reserve =>
+          compareString(reserve.symbol, fromSymbol)
+        );
+
+        if (!fromToken) return;
+        const toToken = findOrThrow(exitingRelay.reserves, reserve =>
+          compareString(reserve.symbol, toSymbol), `failed finding to token ${toSymbol}`
+        );
+        const fromTokenI = this.token(fromToken.id)
+
+        const valueTransmitted = asset_to_number(fromAmountAsset) * (fromTokenI && fromTokenI.price || 0)
+
+        return {
+          type: "swap",
+          account: initialTransferMemoObj.destAccount,
+          txLink: `https://www.eosx.io/tx/${trade.trace.id}`,
+          accountLink: `https://www.eosx.io/account/${initialTransferMemoObj.destAccount}`,
+          unixTime: momentTime.unix(),
+          data: {
+            from: {
+              decimals: fromToken.precision,
+              amount: fromTokenAction.json.quantity.split(" ")[0],
+              id: fromToken.id,
+              logo: "",
+              symbol: fromToken.symbol
+            },
+            to: {
+              decimals: toToken.precision,
+              amount: rewardTransferAction!.quantity.split(" ")[0],
+              id: toToken.id,
+              logo: "",
+              symbol: toToken.symbol
+            }
+          },
+          txHash: trade.trace.id,
+          valueTransmitted
+        } as ViewLiquidityEvent<ViewTradeEvent>;
+      })
+      .filter(Boolean);
+
+    console.log(data, "is data");
+
+    return {
+      // error: '',
+      loading: this.liquidityHistoryLoading,
+      data
+    };
+  }
 
   @action async pullEvents() {
+    try {
+      const results = await past24HourTrades();
 
-    const networkContract = 'thisisbancor';
-    const res = await client.searchTransactions(`receiver:${networkContract} action:transfer data.from:${networkContract}`, { withReversible: true, limit: 100, blockCount: 86520, sort: "desc" });
-    console.log(res, 'was from dfuse');
+      const timeNow = moment();
+      const oneDay = moment.duration(1, "day");
+      const yesterday = timeNow.subtract(oneDay);
+      const withinPastDay = results.filter(result =>
+        moment(result.block.timestamp).isSameOrAfter(yesterday)
+      );
 
-
-
-    const trades: ConversionEvent[] = []
-
-    // txId
-    // 
-
+      console.log(withinPastDay, "are within past day", results, "are total");
+      this.setLiquidityHistory(withinPastDay);
+    } catch (error) {
+      console.log("An error occurred", error);
+      this.setLiquidityHistoryError(error.message as string);
+    }
   }
 
   @action async init(param?: ModuleParam) {
@@ -1303,7 +1520,7 @@ export class EosBancorModule
     console.time("eos");
     console.log("eosInit received", param);
 
-    this.pullEvents()
+    this.pullEvents();
 
     if (this.initialised) {
       console.log("eos refreshing instead");

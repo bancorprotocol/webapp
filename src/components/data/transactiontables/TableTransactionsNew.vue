@@ -12,19 +12,11 @@
       :filter="filter"
     >
       <template v-slot:cell(description)="data">
-        <a
-          :href="`https://etherscan.io/tx/${data.item.txHash}`"
-          target="_blank"
-          >{{ data.value }}</a
-        >
+        <a :href="data.item.txLink" target="_blank">{{ data.value }}</a>
       </template>
 
       <template v-slot:cell(account)="data">
-        <a
-          :href="`https://etherscan.io/address/${data.unformatted}`"
-          target="_blank"
-          >{{ data.value }}</a
-        >
+        <a :href="data.item.accountLink" target="_blank">{{ data.value }}</a>
       </template>
 
       <template v-slot:cell()="data">
@@ -116,7 +108,8 @@ export default class TableTransactionsNew extends Vue {
       label: "Account",
       thStyle: { "min-width": "160px" },
       sortable: true,
-      formatter: (value: string) => shortenEthAddress(value)
+      formatter: (value: string) =>
+        value.length > 12 ? shortenEthAddress(value) : value
     },
     {
       key: "unixTime",
@@ -140,7 +133,7 @@ export default class TableTransactionsNew extends Vue {
   }
 
   get items() {
-    const liquidityHistory = vxm.ethBancor.liquidityHistory;
+    const liquidityHistory = vxm.bancor.liquidityHistory;
     if (liquidityHistory.loading) return [];
     return liquidityHistory.data;
   }

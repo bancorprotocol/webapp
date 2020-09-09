@@ -263,6 +263,33 @@ export interface SlippageTolerance {
   setSlippageTolerance: (tolerance: number) => Promise<void>;
 }
 
+export interface DFuseTrade {
+  block: Block;
+  trace: Trace;
+}
+
+export interface Block {
+  num: number;
+  timestamp: string;
+}
+
+export interface Trace {
+  id: string;
+  matchingActions: MatchingAction[];
+  executedActions: MatchingAction[];
+}
+
+export interface MatchingAction {
+  json: JSON;
+}
+
+export interface JSON {
+  from: string;
+  to: string;
+  quantity: string;
+  memo: string;
+}
+
 export interface TxResponse {
   txId: string;
   blockExplorerLink: string;
@@ -270,6 +297,22 @@ export interface TxResponse {
 
 export interface V1PoolResponse extends TxResponse {
   poolId: string;
+}
+
+export interface ViewTradeEvent {
+  from: ViewAmountWithMeta;
+  to: ViewAmountWithMeta;
+}
+
+export interface ViewLiquidityEvent<T> {
+  valueTransmitted: number;
+  txHash: string;
+  txLink: string;
+  accountLink: string;
+  type: string;
+  unixTime: number;
+  account: string;
+  data: T;
 }
 export interface TradingModule {
   init: (param?: ModuleParam) => Promise<void>;
@@ -310,6 +353,11 @@ export interface ReserveFeed {
   priority: number;
 }
 
+interface LiquidityHistory {
+  loading: boolean;
+  data: ViewLiquidityEvent<ViewTradeEvent>[];
+}
+
 export interface LiquidityModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly primaryReserveChoices: (secondaryChoiceId: string) => ModalChoice[];
@@ -325,6 +373,7 @@ export interface LiquidityModule {
     twentyFourHourTradeCount: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];
+  readonly liquidityHistory: LiquidityHistory;
   loadMorePools: () => Promise<void>;
   calculateOpposingDeposit: (
     opposingDeposit: OpposingLiquidParams
