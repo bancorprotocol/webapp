@@ -270,6 +270,9 @@ interface TokenAmount {
   address: string;
   weiAmount: string;
 }
+export interface ConversionEvent extends DecodedEvent<ConversionEventDecoded> {
+  blockTime: number;
+}
 export interface ConversionEventDecoded {
   from: TokenAmount;
   to: TokenAmount;

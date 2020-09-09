@@ -52,7 +52,8 @@ import {
   sortByLiqDepth,
   assetToDecNumberString,
   decNumberStringToAsset,
-  findChangedReserve
+  findChangedReserve,
+  ConversionEvent
 } from "@/api/helpers";
 import {
   Sym as Symbol,
@@ -82,6 +83,14 @@ import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
+import { createDfuseClient } from '@dfuse/client'
+import { conversionPath } from '@/api/eth/contractWrappers';
+
+
+const client = createDfuseClient({
+  apiKey: "web_af8f1c42eca1bec0d8b6d6248625b62d",
+  network: "mainnet.eos.dfuse.io"
+})
 
 
 const bnt: BaseToken = {
@@ -1273,10 +1282,29 @@ export class EosBancorModule
 
   @action async loadMoreTokens(tokenIds?: string[]) {}
 
+
+  @action async pullEvents() {
+
+    const networkContract = 'thisisbancor';
+    const res = await client.searchTransactions(`receiver:${networkContract} action:transfer data.from:${networkContract}`, { withReversible: true, limit: 100, blockCount: 86520, sort: "desc" });
+    console.log(res, 'was from dfuse');
+
+
+
+    const trades: ConversionEvent[] = []
+
+    // txId
+    // 
+
+  }
+
   @action async init(param?: ModuleParam) {
     console.count("eosInit");
     console.time("eos");
     console.log("eosInit received", param);
+
+    this.pullEvents()
+
     if (this.initialised) {
       console.log("eos refreshing instead");
       return this.refresh();

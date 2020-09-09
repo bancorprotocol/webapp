@@ -58,7 +58,8 @@ import {
   findChangedReserve,
   getLogs,
   DecodedEvent,
-  ConversionEventDecoded
+  ConversionEventDecoded,
+  ConversionEvent
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -119,9 +120,6 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 
-export interface ConversionEvent extends DecodedEvent<ConversionEventDecoded> {
-  blockTime: number;
-}
 
 const tokenAddressesInEvent = (event: ConversionEvent): string[] => {
   const res = [event.data.from.address, event.data.to.address];
