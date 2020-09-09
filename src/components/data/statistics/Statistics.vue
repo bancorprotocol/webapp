@@ -13,7 +13,12 @@
     <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
       <statistics-data-block title="BNT Price" :value="bntPrice" />
     </b-col>
-    <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+    <b-col
+      md="6"
+      lg="3"
+      class="mb-4 mb-md-0 mb-lg-0"
+      v-if="twentyFourHourTradeCount > 0"
+    >
       <statistics-data-block
         title="Recent Conversions (24hrs)"
         :value="twentyFourHourTradeCount"

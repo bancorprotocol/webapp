@@ -129,6 +129,10 @@ const past24HourTrades = async (
     }
   });
 
+  if (response.errors && response.errors.length > 0) {
+    throw new Error(response.errors[0].message);
+  }
+
   const results: DFuseTrade[] =
     response.data.searchTransactionsBackward.results || [];
 
@@ -1088,14 +1092,15 @@ export class EosBancorModule
   }
 
   get stats() {
+    const bntt = this.tokens.find(token =>
+      compareString(buildTokenId(bnt), token.id)
+    );
     return {
       totalLiquidityDepth: this.relays.reduce(
         (acc, item) => acc + item.liqDepth,
         0
       ),
-      bntPrice:
-        this.tokens.find(token => compareString(buildTokenId(bnt), token.id))
-          ?.price || 0,
+      bntPrice: (bntt && bntt.price) || 0,
       twentyFourHourTradeCount: this.liquidityHistory.data.length
     };
   }
@@ -1280,7 +1285,7 @@ export class EosBancorModule
     await this.addDryPools({
       dryRelays: passedDryPools,
       chunkSize: 4,
-      waitTime: 250
+      waitTime: 100
     });
   }
 
@@ -1380,8 +1385,7 @@ export class EosBancorModule
   }
 
   get liquidityHistory() {
-
-    console.log("HULK")
+    console.time("HULK");
     const relays = this.relaysList;
 
     const parsedPools = this.liquidityHistoryArr.map(trade => {
@@ -1414,7 +1418,7 @@ export class EosBancorModule
         const fromTokenAction = first(trade.trace.matchingActions)!;
 
         const fromAmountAsset = new Asset(fromTokenAction.json.quantity);
-        const fromSymbol = fromAmountAsset.symbol.code().to_string()
+        const fromSymbol = fromAmountAsset.symbol.code().to_string();
 
         const initialTransferMemoObj = parseTransferMemo(
           fromTokenAction.json.memo
@@ -1423,22 +1427,24 @@ export class EosBancorModule
         const destinationAccount = initialTransferMemoObj.destAccount;
 
         const executedActions = trade.trace.executedActions.map(x => x.json);
-        const rewardTransferAction = executedActions
-          .find(
-            x => {
-              const res = x.to &&
-              x.from &&
-              x.quantity &&
-              compareString(x.to, destinationAccount) &&
-              compareString(new Asset(x.quantity).symbol.code().to_string(), toSymbol) &&
-              (compareString(x.from, trade.exitingPool.pool) || compareString(x.from, "thisisbancor"))
-              return res;
-            }
-          );
-          if (!rewardTransferAction) {
-            console.log(executedActions, 'could not be found');
-            return;
-          }
+        const rewardTransferAction = executedActions.find(x => {
+          const res =
+            x.to &&
+            x.from &&
+            x.quantity &&
+            compareString(x.to, destinationAccount) &&
+            compareString(
+              new Asset(x.quantity).symbol.code().to_string(),
+              toSymbol
+            ) &&
+            (compareString(x.from, trade.exitingPool.pool) ||
+              compareString(x.from, "thisisbancor"));
+          return res;
+        });
+        if (!rewardTransferAction) {
+          console.log(executedActions, "could not be found");
+          return;
+        }
 
         const enteringRelay = findOrThrow(relays, relay =>
           compareEosMultiRelayToStringPool(relay, trade.enteringPool)
@@ -1452,12 +1458,16 @@ export class EosBancorModule
         );
 
         if (!fromToken) return;
-        const toToken = findOrThrow(exitingRelay.reserves, reserve =>
-          compareString(reserve.symbol, toSymbol), `failed finding to token ${toSymbol}`
+        const toToken = findOrThrow(
+          exitingRelay.reserves,
+          reserve => compareString(reserve.symbol, toSymbol),
+          `failed finding to token ${toSymbol}`
         );
-        const fromTokenI = this.token(fromToken.id)
+        const fromTokenI = this.token(fromToken.id);
 
-        const valueTransmitted = asset_to_number(fromAmountAsset) * (fromTokenI && fromTokenI.price || 0)
+        const valueTransmitted =
+          asset_to_number(fromAmountAsset) *
+          ((fromTokenI && fromTokenI.price) || 0);
 
         return {
           type: "swap",
@@ -1487,7 +1497,7 @@ export class EosBancorModule
       })
       .filter(Boolean);
 
-    console.log(data, "is data");
+    console.timeEnd("HULK");
 
     return {
       // error: '',
@@ -1507,10 +1517,9 @@ export class EosBancorModule
         moment(result.block.timestamp).isSameOrAfter(yesterday)
       );
 
-      console.log(withinPastDay, "are within past day", results, "are total");
       this.setLiquidityHistory(withinPastDay);
     } catch (error) {
-      console.log("An error occurred", error);
+      console.error("An error occurred in fetching transaction history", error);
       this.setLiquidityHistoryError(error.message as string);
     }
   }
@@ -1527,11 +1536,13 @@ export class EosBancorModule
       return this.refresh();
     }
     try {
+      console.time("eos1");
       const [usdPriceOfBnt, v2Relays, tokenMeta] = await Promise.all([
         vxm.bancor.fetchUsdPriceOfBnt(),
         fetchMultiRelays(),
         getTokenMeta()
       ]);
+      console.timeEnd("eos1");
       this.setTokenMeta(tokenMeta);
       this.setBntPrice(usdPriceOfBnt);
 
@@ -1555,7 +1566,9 @@ export class EosBancorModule
         param.tradeQuery.base &&
         param.tradeQuery.quote;
 
+      console.time("eos22");
       if (quickTrade) {
+        console.log("quick trade triggered");
         const { base: fromId, quote: toId } = param!.tradeQuery!;
         await this.bareMinimumForTrade({
           fromId,
@@ -1565,12 +1578,14 @@ export class EosBancorModule
           tokenMeta
         });
       } else {
+        console.log("adding bulk pools");
         await this.addPools({
           multiRelays: v2Relays,
           dryDelays: v1Relays,
           tokenMeta
         });
       }
+      console.timeEnd("eos22");
 
       this.setInitialised(true);
       this.setLoadingPools(false);
@@ -1610,6 +1625,8 @@ export class EosBancorModule
         ethBancorApi.getTokens()
       ]);
 
+      console.log(tokenPrices, "token prices,x");
+
       const bntToken = findOrThrow(tokenPrices, token =>
         compareString(token.code, "BNT")
       );
@@ -1624,12 +1641,11 @@ export class EosBancorModule
           reserve => reserve.symbol.code().to_string()
         );
 
-        const token = findOrThrow(
-          tokenPrices,
-          price =>
-            compareString(price.code, primaryReserve.symbol.code().to_string()),
-          "failed to find token in possible relayfeeds from bancor API"
+        const token = tokenPrices.find(price =>
+          compareString(price.code, primaryReserve.symbol.code().to_string())
         );
+
+        if (!token) return [];
 
         const includeBnt = compareString(
           relay.smartToken.symbol.code().to_string(),
