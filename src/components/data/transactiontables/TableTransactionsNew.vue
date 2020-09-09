@@ -32,13 +32,13 @@
       align="center"
       limit="3"
     >
-      <template v-slot:prev-text="{ page, index, disabled }">
+      <template v-slot:prev-text="{ disabled }">
         <font-awesome-icon
           icon="long-arrow-alt-left"
           :class="iconClass(disabled)"
         />
       </template>
-      <template v-slot:next-text="{ page, index, disabled }">
+      <template v-slot:next-text="{ disabled }">
         <font-awesome-icon
           icon="long-arrow-alt-right"
           :class="iconClass(disabled)"
