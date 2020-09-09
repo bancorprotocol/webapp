@@ -426,6 +426,8 @@ const buildReserveFeedsTraditional = (
     );
   }
 
+  if (Number.isNaN(usdCostOfNetworkReserve)) usdCostOfNetworkReserve = 0;
+
   const liqDepth = new BigNumber(networkReserve.decAmount)
     .times(usdCostOfNetworkReserve)
     .toNumber();
