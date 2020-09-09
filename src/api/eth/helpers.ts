@@ -17,6 +17,14 @@ export const removeLeadingZeros = (hexString: string) => {
     ...initialAttempt.split("").slice(2)
   ].join("");
   if (isAddress(secondAttempt)) return secondAttempt;
+  const thirdAttempt = [
+    "0",
+    "x",
+    "0",
+    "0",
+    ...initialAttempt.split("").slice(2)
+  ].join("");
+  if (isAddress(thirdAttempt)) return thirdAttempt;
   else throw new Error(`Failed parsing hex ${hexString}`);
 };
 
