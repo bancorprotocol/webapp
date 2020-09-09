@@ -15,7 +15,8 @@ import {
   OpposingLiquid,
   PoolTokenPosition,
   ViewRelay,
-  ViewToken
+  ViewToken,
+  LiquidityModule
 } from "@/types/bancor";
 import { vxm } from "@/store";
 import { store } from "../../../store";
@@ -175,7 +176,7 @@ export class BancorModule extends VuexModule.With({
     return vxm[`${this.currentNetwork}Bancor`]["wallet"];
   }
 
-  get stats() {
+  get stats(): LiquidityModule["stats"] {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["stats"];
   }

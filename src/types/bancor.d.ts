@@ -321,6 +321,8 @@ export interface LiquidityModule {
   readonly loadingPools: boolean;
   readonly stats: {
     totalLiquidityDepth: number;
+    bntPrice: number;
+    twentyFourHourTradeCount: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   loadMorePools: () => Promise<void>;

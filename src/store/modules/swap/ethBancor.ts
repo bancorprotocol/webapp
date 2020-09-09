@@ -1236,7 +1236,9 @@ export class EthBancorModule
       totalLiquidityDepth: this.tokens.reduce(
         (acc, item) => acc + (item.liqDepth || 0),
         0
-      )
+      ),
+      bntPrice: this.tokens.find(token => compareString('BNT', token.symbol))?.price || 0,
+      twentyFourHourTradeCount: this.liquidityHistory.data.length 
     };
   }
 

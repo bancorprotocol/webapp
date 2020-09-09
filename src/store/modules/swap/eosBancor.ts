@@ -83,6 +83,12 @@ import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
 
+
+const bnt: BaseToken = {
+  symbol: "BNT",
+  contract: "bntbntbntbnt"
+};
+
 const compareAgnosticToBalanceParam = (
   agnostic: AgnosticToken,
   balance: TokenBalanceReturn
@@ -710,10 +716,7 @@ export class EosBancorModule
   }
 
   get newNetworkTokenChoices(): NetworkChoice[] {
-    const bnt: BaseToken = {
-      symbol: "BNT",
-      contract: "bntbntbntbnt"
-    };
+
 
     const usdb: BaseToken = {
       symbol: "USDB",
@@ -1001,7 +1004,9 @@ export class EosBancorModule
       totalLiquidityDepth: this.relays.reduce(
         (acc, item) => acc + item.liqDepth,
         0
-      )
+      ),
+      bntPrice: this.tokens.find(token => compareString(buildTokenId(bnt), token.id))?.price || 0,
+      twentyFourHourTradeCount: 30 
     };
   }
 
