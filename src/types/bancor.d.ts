@@ -369,7 +369,7 @@ export interface LiquidityModule {
   readonly loadingPools: boolean;
   readonly stats: {
     totalLiquidityDepth: number;
-    bntPrice: number;
+    nativeTokenPrice: { price: number; symbol: string };
     twentyFourHourTradeCount: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];

@@ -1092,15 +1092,21 @@ export class EosBancorModule
   }
 
   get stats() {
-    const bntt = this.tokens.find(token =>
-      compareString(buildTokenId(bnt), token.id)
+    const eos = this.tokens.find(token =>
+      compareString(
+        buildTokenId({ contract: "eosio.token", symbol: "EOS" }),
+        token.id
+      )
     );
     return {
       totalLiquidityDepth: this.relays.reduce(
         (acc, item) => acc + item.liqDepth,
         0
       ),
-      bntPrice: (bntt && bntt.price) || 0,
+      nativeTokenPrice: {
+        symbol: "EOS",
+        price: (eos && eos.price) || 0
+      },
       twentyFourHourTradeCount: this.liquidityHistory.data.length
     };
   }

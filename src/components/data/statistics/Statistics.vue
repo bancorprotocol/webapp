@@ -11,7 +11,10 @@
       <statistics-data-block title="Total Liquidity" :value="liquidityDepth" />
     </b-col>
     <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
-      <statistics-data-block title="BNT Price" :value="bntPrice" />
+      <statistics-data-block
+        :title="nativeTokenLabel"
+        :value="nativeTokenPrice"
+      />
     </b-col>
     <b-col
       md="6"
@@ -48,8 +51,12 @@ export default class Statistics extends Vue {
     return numeral(this.stats.totalLiquidityDepth).format("$0,0.00");
   }
 
-  get bntPrice() {
-    return numeral(this.stats.bntPrice).format("$0,0.00");
+  get nativeTokenLabel() {
+    return `${this.stats.nativeTokenPrice.symbol} Price`;
+  }
+
+  get nativeTokenPrice() {
+    return numeral(this.stats.nativeTokenPrice.price).format("$0,0.00");
   }
 
   get twentyFourHourTradeCount() {

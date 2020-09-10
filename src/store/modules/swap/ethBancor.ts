@@ -1226,7 +1226,10 @@ export class EthBancorModule
         (acc, item) => acc + (item.liqDepth || 0),
         0
       ),
-      bntPrice: this.tokens.find(token => compareString('BNT', token.symbol))?.price || 0,
+      nativeTokenPrice: {
+        symbol: "ETH",
+        price: this.tokens.find(token => compareString('ETH', token.symbol))?.price || 0
+      },
       twentyFourHourTradeCount: this.liquidityHistory.data.length 
     };
   }
