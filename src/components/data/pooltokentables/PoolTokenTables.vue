@@ -7,7 +7,14 @@
         prepend="search"
       />
     </div>
-
+    <div class="float-right mr-2" v-if="loading">
+      <b-spinner
+        style="display: block; width: 1.5rem; height: 1.5rem;"
+        class="align-self-center align-middle"
+        :class="darkMode ? 'text-primary' : 'text-primary'"
+        label="Loading..."
+      ></b-spinner>
+    </div>
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
       <b-tab title="Pools" active>
         <table-pools :filter="search" />
@@ -35,6 +42,10 @@ import MultiInputField from "@/components/common/MultiInputField.vue";
 })
 export default class PoolTokenTables extends Vue {
   search: string = "";
+
+  get loading() {
+    return vxm.bancor.loadingTokens;
+  }
 
   get darkMode() {
     return vxm.general.darkMode;

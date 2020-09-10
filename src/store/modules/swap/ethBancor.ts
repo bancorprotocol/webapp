@@ -4324,6 +4324,7 @@ export class EthBancorModule
           converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
         }
       ]);
+      this.setLoadingPools(false)
       console.timeEnd("initialPools");
       console.log("finished add pools...", x);
 
