@@ -26,9 +26,9 @@
         ><font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
         Bancor Swap</b-dropdown-item
       >
-      <b-dropdown-item disabled :to="{ name: 'Data' }"
+      <b-dropdown-item @click="navData"
         ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
-        Data (Coming Soon)</b-dropdown-item
+        Data</b-dropdown-item
       >
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')"
         ><font-awesome-icon icon="times" class="mr-2" fixed-width /> Bancor
@@ -114,6 +114,26 @@ import { vxm } from "@/store";
 export default class BancorMenu extends Vue {
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  navData() {
+    const hostbase = window.location.hostname;
+    const service = this.$route.params.service;
+
+    const isDev = hostbase == "localhost";
+    const isStaging = hostbase.includes("staging");
+    const isProd = !isDev && !isStaging;
+
+    if (isDev) {
+      this.openUrl(`http://localhost:8080/${service}/data`);
+    } else if (isStaging) {
+      this.openUrl(`https://staging.swap.bancor.network/${service}/data`);
+    } else if (isProd) {
+      this.openUrl(`https://swap.bancor.network/${service}/data`);
+    } else {
+      console.log("failed to determine route...");
+      this.openUrl(`https://swap.bancor.network/${service}/data`);
+    }
   }
 
   openUrl(url: string) {
