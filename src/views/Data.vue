@@ -21,7 +21,7 @@
           <pool-token-tables />
         </content-block>
       </b-col>
-      <b-col cols="12">
+      <b-col cols="12" v-if="isEth">
         <content-block :px0="true" :shadow-light="true" :no-header="true">
           <transaction-tables />
         </content-block>
@@ -51,6 +51,10 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
 export default class Data extends Vue {
   selected: string = "pools";
   filter: string = "";
+
+  get isEth() {
+    return this.$route.params.service === "eth";
+  }
 
   get darkMode() {
     return vxm.general.darkMode;
