@@ -11,7 +11,7 @@
       <font-awesome-icon icon="cog" fixed-width />
     </template>
 
-    <b-dropdown-group id="dropdown-group-1">
+    <b-dropdown-group id="dropdown-group-1" v-if="showTx">
       <b-dropdown-header class="text-uppercase"
         >Transaction Settings</b-dropdown-header
       >
@@ -70,7 +70,7 @@
         <!--        ></b-input>-->
       </b-dropdown-text>
     </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-divider v-if="showTx"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-2">
       <b-dropdown-header class="text-uppercase"
         >Interface Settings</b-dropdown-header
@@ -133,6 +133,8 @@ import { vxm } from "@/store";
 
 @Component
 export default class SettingsMenu extends Vue {
+  @Prop({ default: true }) showTx!: boolean;
+
   get darkMode() {
     return vxm.general.darkMode;
   }
