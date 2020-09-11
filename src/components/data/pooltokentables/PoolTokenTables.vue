@@ -17,7 +17,8 @@
     </div>
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
       <b-tab title="Pools" active>
-        <table-pools :filter="search" />
+        <table-pools-new :filter="search" />
+        <!--        <table-pools :filter="search" />-->
       </b-tab>
       <b-tab title="Tokens">
         <table-tokens :filter="search" />
@@ -32,9 +33,11 @@ import { vxm } from "@/store";
 import TablePools from "@/components/data/pooltokentables/TablePools.vue";
 import TableTokens from "@/components/data/pooltokentables/TableTokens.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
+import TablePoolsNew from "@/components/data/pooltokentables/TablePoolsNew.vue";
 
 @Component({
   components: {
+    TablePoolsNew,
     MultiInputField,
     TablePools,
     TableTokens
