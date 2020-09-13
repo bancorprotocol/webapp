@@ -17,10 +17,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
-import { ViewTableTxSwap } from "@/components/data/transactiontables/TableTransactions.vue";
 import { formatNumber, shortenEthAddress } from "@/api/helpers";
-import { format } from "numeral";
 import moment from "moment";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 @Component({
@@ -28,7 +25,7 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 })
 export default class TableTransactionsNew extends Vue {
   @Prop() filter!: string;
-  @Prop() txType!: "swap" | "add" | "remove";
+  @Prop({ default: [] }) items!: any[];
 
   fields = [
     {
@@ -82,12 +79,6 @@ export default class TableTransactionsNew extends Vue {
       formatter: (value: number) => moment.unix(value).fromNow()
     }
   ];
-
-  get items() {
-    const liquidityHistory = vxm.bancor.liquidityHistory;
-    if (liquidityHistory.loading) return [];
-    return liquidityHistory.data;
-  }
 }
 </script>
 

@@ -8,6 +8,8 @@ import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
+import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
+import DataSummary from "@/components/data/DataSummary.vue";
 
 Vue.use(Router);
 
@@ -108,9 +110,22 @@ export const router = new Router({
         default: Data
       },
       props: true,
-      meta: {
-        feature: "Liquidity"
-      }
+      children: [
+        {
+          path: "",
+          component: DataSummary
+        },
+        // {
+        //   path: "token/:id",
+        //   name: "DetailsToken",
+        //   component: DataDetailsToken
+        // },
+        {
+          path: "pool/:id",
+          name: "DetailsPool",
+          component: DataDetailsPool
+        }
+      ]
     },
     {
       path: "/:service",

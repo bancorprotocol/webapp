@@ -6,7 +6,9 @@
     sort-by="liqDepth"
   >
     <template v-slot:cell(symbol)="data">
-      <pool-logos :pool="data.item" :cursor="false" :version="true" />
+      <router-link :to="{ name: 'DetailsPool', params: { id: data.item.id } }">
+        <pool-logos :pool="data.item" :cursor="false" :version="true" />
+      </router-link>
     </template>
 
     <template v-slot:cell(actionButtons)="data">
