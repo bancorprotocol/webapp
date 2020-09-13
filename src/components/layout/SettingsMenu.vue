@@ -139,6 +139,11 @@ export default class SettingsMenu extends Vue {
     return vxm.general.darkMode;
   }
 
+  get showTxSettings() {
+    if (this.$route.fullPath.includes("data")) return false;
+    else return true;
+  }
+
   get slippage() {
     return vxm.bancor.slippageTolerance;
   }
