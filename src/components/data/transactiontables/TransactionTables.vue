@@ -9,7 +9,7 @@
     </div>
 
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-      <b-tab title="Swap" active>
+      <b-tab title="Swaps" active>
         <table-transactions-new :filter="search" tx-type="swap" />
       </b-tab>
     </b-tabs>
