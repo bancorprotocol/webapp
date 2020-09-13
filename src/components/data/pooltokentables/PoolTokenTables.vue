@@ -18,10 +18,9 @@
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
       <b-tab title="Pools" active>
         <table-pools-new :filter="search" />
-        <!--        <table-pools :filter="search" />-->
       </b-tab>
       <b-tab title="Tokens">
-        <table-tokens :filter="search" />
+        <table-tokens-new :filter="search" />
       </b-tab>
     </b-tabs>
   </div>
@@ -30,17 +29,15 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import TablePools from "@/components/data/pooltokentables/TablePools.vue";
-import TableTokens from "@/components/data/pooltokentables/TableTokens.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import TablePoolsNew from "@/components/data/pooltokentables/TablePoolsNew.vue";
+import TableTokensNew from "@/components/data/pooltokentables/TableTokensNew.vue";
 
 @Component({
   components: {
+    TableTokensNew,
     TablePoolsNew,
-    MultiInputField,
-    TablePools,
-    TableTokens
+    MultiInputField
   }
 })
 export default class PoolTokenTables extends Vue {

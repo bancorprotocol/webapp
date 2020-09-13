@@ -1,0 +1,99 @@
+<template>
+  <table-wrapper
+    :items="items"
+    :fields="fields"
+    :filter="filter"
+    sort-by="liqDepth"
+  >
+    <template v-slot:cell(symbol)="data">
+      <pool-logos :token="data.item" :cursor="false" />
+    </template>
+
+    <template v-slot:cell(change24h)="data">
+      <coloured-percentage :percentage="data.value" />
+    </template>
+
+    <template v-slot:cell(actionButtons)="data">
+      <table-action-buttons :token="data.item" />
+    </template>
+  </table-wrapper>
+</template>
+
+<script lang="ts">
+import { Component, Vue, Prop } from "vue-property-decorator";
+import { vxm } from "@/store";
+import numeral from "numeral";
+import TableWrapper from "@/components/common/TableWrapper.vue";
+import TableActionButtons from "@/components/common/TableActionButtons.vue";
+import PoolLogos from "@/components/common/PoolLogos.vue";
+import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
+@Component({
+  components: {
+    ColouredPercentage,
+    PoolLogos,
+    TableActionButtons,
+    TableWrapper
+  }
+})
+export default class TableTokensNew extends Vue {
+  @Prop() filter!: string;
+
+  fields = [
+    {
+      key: "symbol",
+      label: "Name",
+      sortable: true
+    },
+    {
+      key: "change24h",
+      label: "24h Change",
+      thStyle: { "min-width": "135px" },
+      sortable: true
+    },
+    {
+      key: "price",
+      label: "Price USD",
+      thStyle: { "min-width": "120px" },
+      sortable: true,
+      formatter: (value: number) =>
+        new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD"
+        }).format(value)
+    },
+    {
+      key: "volume24h",
+      label: "24h Volume",
+      thStyle: { "min-width": "120px" },
+      sortable: true,
+      formatter: (value: number) =>
+        new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD"
+        }).format(value)
+    },
+    {
+      key: "liqDepth",
+      label: "Liquidity Depth",
+      thStyle: { "min-width": "160px" },
+      sortable: true,
+      formatter: (value: number) =>
+        new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD"
+        }).format(value)
+    },
+    {
+      key: "actionButtons",
+      label: "Action",
+      thStyle: { width: "160px", "min-width": "160px" }
+    }
+  ];
+
+  get items() {
+    return vxm.bancor.tokens;
+  }
+}
+</script>
+
+<style lang="scss"></style>
