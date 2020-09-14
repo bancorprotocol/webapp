@@ -499,6 +499,10 @@ $bv-escaped-characters: (("<", "%3c"), (">", "%3e"), ("#", "%23"));
       border-top: 1px solid $gray-border !important;
       border-bottom: 1px solid $gray-border !important;
     }
+
+    th:first-child {
+      padding-left: 1.25rem !important;
+    }
   }
 
   td {
@@ -508,6 +512,10 @@ $bv-escaped-characters: (("<", "%3c"), (">", "%3e"), ("#", "%23"));
     color: $text-color-light;
     border-top: none !important;
     border-bottom: 1px solid $gray-border !important;
+  }
+
+  td:first-child {
+    padding-left: 1.25rem !important;
   }
 }
 
