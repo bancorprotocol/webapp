@@ -17,7 +17,8 @@ import {
   ViewToken,
   ReserveFeed,
   ModalChoice,
-  ViewAmount
+  ViewAmount,
+  ViewRelay
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -1157,4 +1158,13 @@ export const getCountryCode = async (): Promise<string> => {
     console.error(e);
     return "UNKOWN";
   }
+};
+
+export const buildPoolName = (
+  poolId: string,
+  separator: string = "/"
+): string => {
+  const pool: ViewRelay = vxm.bancor.relay(poolId);
+  const symbols = pool.reserves.map(x => x.symbol);
+  return symbols.join(separator);
 };

@@ -1,71 +1,31 @@
 <template>
-  <div>
-    <b-table
-      :dark="darkMode"
-      :fields="fields"
-      :items="items"
-      :per-page="perPage"
-      :current-page="currentPage"
-      responsive
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      :filter="filter"
-    >
-      <template v-slot:cell(description)="data">
-        <a :href="data.item.txLink" target="_blank">{{ data.value }}</a>
-      </template>
+  <table-wrapper
+    :items="items"
+    :fields="fields"
+    :filter="filter"
+    sort-by="unixTime"
+  >
+    <template v-slot:cell(description)="data">
+      <a :href="data.item.txLink" target="_blank">{{ data.value }}</a>
+    </template>
 
-      <template v-slot:cell(account)="data">
-        <a :href="data.item.accountLink" target="_blank">{{ data.value }}</a>
-      </template>
-
-      <template v-slot:cell()="data">
-        <span>{{ data.value }}</span>
-      </template>
-    </b-table>
-
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="totalRows"
-      :per-page="perPage"
-      hide-goto-end-buttons
-      align="center"
-      limit="3"
-    >
-      <template v-slot:prev-text="{ disabled }">
-        <font-awesome-icon
-          icon="long-arrow-alt-left"
-          :class="iconClass(disabled)"
-        />
-      </template>
-      <template v-slot:next-text="{ disabled }">
-        <font-awesome-icon
-          icon="long-arrow-alt-right"
-          :class="iconClass(disabled)"
-        />
-      </template>
-    </b-pagination>
-  </div>
+    <template v-slot:cell(account)="data">
+      <a :href="data.item.accountLink" target="_blank">{{ data.value }}</a>
+    </template>
+  </table-wrapper>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
-import { ViewTableTxSwap } from "@/components/data/transactiontables/TableTransactions.vue";
 import { formatNumber, shortenEthAddress } from "@/api/helpers";
-import { format } from "numeral";
 import moment from "moment";
-
-@Component
+import TableWrapper from "@/components/common/TableWrapper.vue";
+@Component({
+  components: { TableWrapper }
+})
 export default class TableTransactionsNew extends Vue {
   @Prop() filter!: string;
-  @Prop() txType!: "swap" | "add" | "remove";
-
-  sortBy = "unixTime";
-  sortDesc = true;
-
-  perPage = 5;
-  currentPage = 1;
+  @Prop({ default: [] }) items!: any[];
 
   fields = [
     {
@@ -119,28 +79,6 @@ export default class TableTransactionsNew extends Vue {
       formatter: (value: number) => moment.unix(value).fromNow()
     }
   ];
-
-  get totalRows() {
-    return this.items.length;
-  }
-
-  iconClass(disabled: boolean) {
-    return disabled
-      ? this.darkMode
-        ? "text-muted-dark"
-        : "text-muted-light"
-      : "text-primary";
-  }
-
-  get items() {
-    const liquidityHistory = vxm.bancor.liquidityHistory;
-    if (liquidityHistory.loading) return [];
-    return liquidityHistory.data;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

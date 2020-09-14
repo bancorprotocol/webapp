@@ -83,7 +83,7 @@ export default class Navigation extends Vue {
   }
 
   get showLogin() {
-    return this.$route.name !== "Data";
+    return !this.$route.fullPath.includes("data");
   }
 
   created() {
