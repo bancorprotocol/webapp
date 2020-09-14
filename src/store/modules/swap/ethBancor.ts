@@ -58,7 +58,6 @@ import {
   sortByLiqDepth,
   matchReserveFeed,
   zeroAddress,
-  formatPercent,
   buildSingleUnitCosts,
   findChangedReserve,
   getLogs,
@@ -86,23 +85,12 @@ import {
   getTokenSupplyWei,
   existingPool
 } from "@/api/eth/contractWrappers";
-import { toWei, fromWei, isAddress, toHex, asciiToHex } from "web3-utils";
+import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import wait from "waait";
-import {
-  uniqWith,
-  differenceWith,
-  zip,
-  partition,
-  uniqBy,
-  first,
-  last,
-  fromPairs,
-  chunk,
-  remove
-} from "lodash";
+import { uniqWith, differenceWith, zip, partition, first } from "lodash";
 import {
   buildNetworkContract,
   buildRegistryContract,
@@ -399,9 +387,8 @@ interface RefinedAbiRelay {
   owner: string;
 }
 
-const decToPpm = (dec: number | string): string => {
-  return new BigNumber(dec).times(oneMillion).toFixed(0);
-};
+const decToPpm = (dec: number | string): string =>
+  new BigNumber(dec).times(oneMillion).toFixed(0);
 
 const determineConverterType = (
   converterType: string | undefined
@@ -420,9 +407,10 @@ const determineConverterType = (
   throw new Error("Failed to determine the converter type");
 };
 
-const smartTokenAnchor = (smartToken: Token) => {
-  return { anchor: smartToken, converterType: PoolType.Traditional };
-};
+const smartTokenAnchor = (smartToken: Token) => ({
+  anchor: smartToken,
+  converterType: PoolType.Traditional
+});
 
 interface UsdValue {
   id: string;
