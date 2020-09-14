@@ -86,8 +86,12 @@
             :items="poolTokensTable.items"
             :fields="poolTokensTable.fields"
             :filter="searchTokens"
-            sort-by="tokenWeight"
-          />
+            sort-by="reserveWeight"
+          >
+            <template v-slot:cell(symbol)="data">
+              <pool-logos :token="data.item" :cursor="false" />
+            </template>
+          </table-wrapper>
         </content-block>
       </b-col>
 
@@ -95,7 +99,7 @@
         <content-block
           :px0="true"
           :shadow-light="true"
-          title="Transactions"
+          title="Swap Transactions"
           :search.sync="searchTx"
         >
           <table-transactions-new :filter="searchTx" :items="txItemsSwap" />
@@ -124,6 +128,11 @@ import VersionBadge from "@/components/common/VersionBadge.vue";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import numeral from "numeral";
 import TableTransactionsNew from "@/components/data/transactiontables/TableTransactionsNew.vue";
+export interface TxHistoryView {
+  addEvents: any[];
+  conversionEvents: any[];
+  removeEvents: any[];
+}
 
 @Component({
   components: {
@@ -141,15 +150,26 @@ import TableTransactionsNew from "@/components/data/transactiontables/TableTrans
   }
 })
 export default class DataPool extends Vue {
+  loadingFocusPool = false;
   searchTx = "";
   searchTokens = "";
+
+  txHistory: TxHistoryView = {
+    addEvents: [],
+    conversionEvents: [],
+    removeEvents: []
+  };
+
+  get poolId() {
+    return this.$route.params.id;
+  }
 
   get loading() {
     return vxm.bancor.loadingTokens;
   }
 
   get pool(): ViewRelay {
-    return vxm.bancor.relay(this.$route.params.id);
+    return vxm.bancor.relay(this.poolId);
   }
 
   get liqDepth() {
@@ -180,7 +200,9 @@ export default class DataPool extends Vue {
   }
 
   get totalPoolWeight() {
-    return "????????";
+    const weights = this.poolTokensTable.items.map(x => x.reserveWeight)
+    const total = weights.reduce((accumulator, currentValue) => accumulator + currentValue)
+    return numeral(total).format('0%');
   }
 
   get poolVersion() {
@@ -192,32 +214,11 @@ export default class DataPool extends Vue {
   }
 
   get poolTokensTable() {
-    const items: any[] = [
-      {
-        tokenWeight: 0.6,
-        symbol: "ETH",
-        address: "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
-        pooledTokens: 7654.76564,
-        usdValue: 12345.67
-      },
-      {
-        tokenWeight: 0.3,
-        symbol: "REN",
-        address: "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
-        pooledTokens: 7654.76564,
-        usdValue: 12345.67
-      },
-      {
-        tokenWeight: 0.1,
-        symbol: "LINK",
-        address: "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
-        pooledTokens: 7654.76564,
-        usdValue: 12345.67
-      }
-    ];
+    const items = this.pool.reserves
+
     const fields: any[] = [
       {
-        key: "tokenWeight",
+        key: "reserveWeight",
         label: "Token Weight",
         sortable: true,
         formatter: (value: string) => numeral(value).format("0%")
@@ -228,7 +229,7 @@ export default class DataPool extends Vue {
         sortable: true
       },
       {
-        key: "address",
+        key: "contract",
         label: "Token Address",
         sortable: true,
         formatter: (value: string) => shortenEthAddress(value)
@@ -238,7 +239,7 @@ export default class DataPool extends Vue {
         label: "Pooled Tokens",
         sortable: true,
         formatter: (value: any, label: string, item: any) =>
-          `${formatNumber(value)} ${item.symbol}`
+          `${formatNumber(value ?? 0)} ${item.symbol}`
       },
       {
         key: "usdValue",
@@ -248,7 +249,7 @@ export default class DataPool extends Vue {
           new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "USD"
-          }).format(value)
+          }).format(value ?? 0)
       }
     ];
 
@@ -256,21 +257,23 @@ export default class DataPool extends Vue {
   }
 
   get txItemsSwap() {
-    const liquidityHistory = vxm.bancor.liquidityHistory;
-    if (liquidityHistory.loading) return [];
-    return liquidityHistory.data;
+    return this.txHistory.conversionEvents;
   }
 
-  // async created() {
-  //   const id = this.$route.params.id;
-  //   try {
-  //     const pool = await vxm.bancor.relay(id);
-  //     this.pool = pool;
-  //   } catch (e) {
-  //     console.log(e);
-  //     await this.$router.replace({ name: "404" });
-  //   }
-  // }
+  async loadFocusPool() {
+    this.loadingFocusPool = true;
+    try {
+      this.txHistory = await vxm.bancor.focusPool(this.poolId);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      this.loadingFocusPool = false;
+    }
+  }
+
+  async created() {
+    await this.loadFocusPool();
+  }
 }
 </script>
 
