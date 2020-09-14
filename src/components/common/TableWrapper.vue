@@ -22,6 +22,7 @@
     </b-table>
 
     <b-pagination
+      v-if="totalRows >= perPage"
       v-model="currentPage"
       :total-rows="totalRows"
       :per-page="perPage"
@@ -42,6 +43,10 @@
         />
       </template>
     </b-pagination>
+
+    <div v-if="!totalRows" class="text-center">
+      <span class="font-size-14 font-w500">No results found</span>
+    </div>
   </div>
 </template>
 
