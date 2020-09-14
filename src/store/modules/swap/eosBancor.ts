@@ -54,7 +54,6 @@ import {
   assetToDecNumberString,
   decNumberStringToAsset,
   findChangedReserve,
-  ConversionEvent,
   StringPool
 } from "@/api/helpers";
 import {
@@ -691,6 +690,8 @@ export class EosBancorModule
       this.fetchTokenBalancesIfPossible(reserves);
     }
   }
+
+  @action async focusPool(id: string) {}
 
   get wallet() {
     return "eos";

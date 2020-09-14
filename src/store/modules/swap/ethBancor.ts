@@ -28,7 +28,11 @@ import {
   TxResponse,
   V1PoolResponse,
   ViewTradeEvent,
-  ViewLiquidityEvent
+  ViewLiquidityEvent,
+  ViewRemoveEvent,
+  ViewAddEvent,
+  ViewAmountWithMeta,
+  FocusPoolRes
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -60,7 +64,10 @@ import {
   getLogs,
   DecodedEvent,
   ConversionEventDecoded,
-  ConversionEvent
+  getConverterLogs,
+  DecodedTimedEvent,
+  AddLiquidityEvent,
+  RemoveLiquidityEvent
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -92,7 +99,9 @@ import {
   uniqBy,
   first,
   last,
-  fromPairs
+  fromPairs,
+  chunk,
+  remove
 } from "lodash";
 import {
   buildNetworkContract,
@@ -121,15 +130,42 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 
+const decodedToTimedDecoded = <T>(
+  event: DecodedEvent<T>,
+  knownBlockNumber: number,
+  knownBlockNumberTime: number
+): DecodedTimedEvent<T> => ({
+  ...event,
+  blockTime: estimateBlockTime(
+    Number(event.blockNumber),
+    knownBlockNumber,
+    knownBlockNumberTime
+  )
+});
 
-const tokenAddressesInEvent = (event: ConversionEvent): string[] => {
-  const res = [event.data.from.address, event.data.to.address];
-  const isArrayOfStrings = res.every(address => typeof address == "string");
-  if (!isArrayOfStrings)
-    throw new Error("Failed to get token addresses in event");
-  return res;
+const tokenAddressesInEvent = (
+  event:
+    | DecodedEvent<ConversionEventDecoded>
+    | DecodedEvent<AddLiquidityEvent>
+    | DecodedEvent<RemoveLiquidityEvent>
+): string[] => {
+  if (Object.keys(event.data).includes("from")) {
+    const actualEvent = event as DecodedEvent<ConversionEventDecoded>;
+    const res = [actualEvent.data.from.address, actualEvent.data.to.address];
+    const isArrayOfStrings = res.every(address => typeof address == "string");
+    if (!isArrayOfStrings)
+      throw new Error("Failed to get token addresses in event");
+    return res;
+  } else if (Object.keys(event.data).includes("tokenAdded")) {
+    const actualEvent = event as DecodedEvent<AddLiquidityEvent>;
+    return [actualEvent.data.tokenAdded];
+  } else if (Object.keys(event.data).includes("tokenRemoved")) {
+    const actualEvent = event as DecodedEvent<RemoveLiquidityEvent>;
+    return [actualEvent.data.tokenRemoved];
+  } else {
+    throw new Error("Failed to find token");
+  }
 };
-
 
 const estimateBlockTime = (
   blockNumber: number,
@@ -142,8 +178,77 @@ const estimateBlockTime = (
   return knownBlockNumberTime - timeGap;
 };
 
+const addLiquidityEventToView = (
+  addLiquidity: DecodedTimedEvent<AddLiquidityEvent>[],
+  tokens: ViewToken[],
+  createBlockExplorerTxLink: (hash: string) => string,
+  createBlockExplorerAccountLink: (account: string) => string
+): ViewLiquidityEvent<ViewAddEvent> => {
+  const firstItem = first(addLiquidity)!;
+  const account = firstItem.data.trader;
+
+  return {
+    account,
+    type: "add",
+    accountLink: createBlockExplorerAccountLink(account),
+    data: {
+      tokensAdded: addLiquidity.map(event => {
+        const token = findOrThrow(tokens, token =>
+          compareString(token.contract, event.data.tokenAdded)
+        );
+        const decAmount = shrinkToken(event.data.amount, token.precision);
+        return viewTokenToViewAmountWithMeta(decAmount, token);
+      })
+    },
+    txHash: firstItem.txHash,
+    txLink: createBlockExplorerTxLink(firstItem.txHash),
+    unixTime: firstItem.blockTime,
+    valueTransmitted: 0
+  };
+};
+
+const viewTokenToViewAmountWithMeta = (
+  amount: string,
+  token: ViewToken
+): ViewAmountWithMeta => ({
+  amount: amount,
+  decimals: token.precision,
+  id: token.id,
+  logo: token.logo,
+  symbol: token.symbol
+});
+
+const removeLiquidityEventToView = (
+  removeLiquidity: DecodedTimedEvent<RemoveLiquidityEvent>[],
+  tokens: ViewToken[],
+  createBlockExplorerTxLink: (hash: string) => string,
+  createBlockExplorerAccountLink: (account: string) => string
+): ViewLiquidityEvent<ViewRemoveEvent> => {
+  const firstItem = first(removeLiquidity)!;
+  const account = firstItem.data.trader;
+
+  return {
+    account,
+    type: "remove",
+    accountLink: createBlockExplorerAccountLink(account),
+    data: {
+      tokensRemoved: removeLiquidity.map(event => {
+        const token = findOrThrow(tokens, token =>
+          compareString(token.id, event.data.tokenRemoved)
+        );
+        const decAmount = shrinkToken(event.data.amount, token.precision);
+        return viewTokenToViewAmountWithMeta(decAmount, token);
+      })
+    },
+    txHash: firstItem.txHash,
+    txLink: createBlockExplorerTxLink(firstItem.txHash),
+    unixTime: firstItem.blockTime,
+    valueTransmitted: 0
+  };
+};
+
 const conversionEventToViewTradeEvent = (
-  conversion: ConversionEvent,
+  conversion: DecodedTimedEvent<ConversionEventDecoded>,
   tokenPrices: ViewToken[],
   createBlockExplorerTxLink: (hash: string) => string,
   createBlockExplorerAccountLink: (account: string) => string
@@ -151,17 +256,22 @@ const conversionEventToViewTradeEvent = (
   const fromToken = findOrThrow(
     tokenPrices,
     price => compareString(price.id, conversion.data.from.address),
-    "failed finding token meta passed to conversion event to view trade"
+    `failed finding token meta passed to conversion event to view trade ${conversion.data.from.address}`
   );
   const toToken = findOrThrow(
     tokenPrices,
     price => compareString(price.id, conversion.data.to.address),
-    "failed finding token meta passed to conversion event to view trade"
+    `failed finding token meta passed to conversion event to view trade ${conversion.data.to.address}`
   );
 
   const fromAmountDec = shrinkToken(
     conversion.data.from.weiAmount,
     fromToken.precision
+  );
+
+  const toAmountDec = shrinkToken(
+    conversion.data.to.weiAmount,
+    toToken.precision
   );
 
   return {
@@ -175,20 +285,8 @@ const conversionEventToViewTradeEvent = (
     account: conversion.data.trader,
     txHash: conversion.txHash,
     data: {
-      from: {
-        amount: fromAmountDec,
-        decimals: fromToken.precision,
-        id: fromToken.id,
-        logo: fromToken.logo,
-        symbol: fromToken.symbol
-      },
-      to: {
-        amount: shrinkToken(conversion.data.to.weiAmount, toToken.precision),
-        decimals: toToken.precision,
-        id: toToken.id,
-        logo: toToken.logo,
-        symbol: toToken.symbol
-      }
+      from: viewTokenToViewAmountWithMeta(fromAmountDec, fromToken),
+      to: viewTokenToViewAmountWithMeta(toAmountDec, toToken)
     }
   };
 };
@@ -739,8 +837,10 @@ const assertChainlink = (relay: Relay): ChainLinkRelay => {
 const generateEtherscanTxLink = (txHash: string, ropsten: boolean = false) =>
   `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
 
-  const generateEtherscanAccountLink = (account: string, ropsten: boolean = false) =>
-  `https://${ropsten ? "ropsten." : ""}etherscan.io/address/${account}`;
+const generateEtherscanAccountLink = (
+  account: string,
+  ropsten: boolean = false
+) => `https://${ropsten ? "ropsten." : ""}etherscan.io/address/${account}`;
 
 interface AnchorProps {
   anchor: Anchor;
@@ -1228,9 +1328,11 @@ export class EthBancorModule
       ),
       nativeTokenPrice: {
         symbol: "ETH",
-        price: this.tokens.find(token => compareString('ETH', token.symbol))?.price || 0
+        price:
+          this.tokens.find(token => compareString("ETH", token.symbol))!
+            .price || 0
       },
-      twentyFourHourTradeCount: this.liquidityHistory.data.length 
+      twentyFourHourTradeCount: this.liquidityHistory.data.length
     };
   }
 
@@ -1940,6 +2042,7 @@ export class EthBancorModule
           const reserveFeed = reserve.reserveFeed!;
           return {
             id: reserve.contract,
+            contract: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
             name: name || reserve.symbol,
@@ -2184,22 +2287,24 @@ export class EthBancorModule
         : "0";
 
     if (!reserveBalancesAboveZero) {
-      console.log('is fresh')
+      console.log("is fresh");
       const matchedInputs = reservesViewAmounts.map(viewAmount => ({
         decAmount: viewAmount.amount,
         decimals: findOrThrow(reserves, reserve =>
           compareString(reserve.contract, viewAmount.id)
         ).decimals
       }));
-      const notAllInputsAreNumbers = matchedInputs.some(input => new BigNumber(input.decAmount).isNaN());
+      const notAllInputsAreNumbers = matchedInputs.some(input =>
+        new BigNumber(input.decAmount).isNaN()
+      );
       if (notAllInputsAreNumbers) {
         return {
           shareOfPool: 0,
-          smartTokenAmountWei: { amount: '1', id: smartTokenAddress },
+          smartTokenAmountWei: { amount: "1", id: smartTokenAddress },
           singleUnitCosts: [],
           opposingAmount: undefined,
           reserveBalancesAboveZero
-        }
+        };
       }
       const weiInputs = matchedInputs.map(input =>
         expandToken(input.decAmount, input.decimals)
@@ -4038,6 +4143,129 @@ export class EthBancorModule
     return zipAnchorAndConverters(anchorAddresses, converters);
   }
 
+  @action async pullConverterEvents({
+    converterAddress,
+    network,
+    fromBlock
+  }: {
+    converterAddress: string;
+    network: EthNetworks;
+    fromBlock: number;
+  }) {
+    const res = await getConverterLogs(network, converterAddress, fromBlock);
+    console.log(res, "was res");
+
+    const uniqueAddHashes = uniqWith(
+      res.addLiquidity.map(event => event.txHash),
+      compareString
+    );
+    const uniqueRemoveHashes = uniqWith(
+      res.removeLiquidity.map(event => event.txHash),
+      compareString
+    );
+
+    const conversions = res.conversions;
+
+    const groupedAddLiquidityEvents = uniqueAddHashes.map(hash =>
+      res.addLiquidity.filter(event => compareString(event.txHash, hash))
+    );
+
+    const groupedRemoveLiquidityEvents = uniqueRemoveHashes.map(hash =>
+      res.removeLiquidity.filter(event => compareString(event.txHash, hash))
+    );
+
+    const tokens = this.tokens;
+    console.log(tokens, "is tokens");
+
+    const blockNow = await this.blockNumberHoursAgo(0);
+    const timeNow = moment().unix();
+
+    const removeEvents = groupedRemoveLiquidityEvents
+      .filter(events => {
+        const res = events.every(event =>
+          tokenAddressesInEvent(event).every(address =>
+            tokens.some(token => compareString(token.id, address))
+          )
+        );
+        return res;
+      })
+      .map(events =>
+        events.map(event =>
+          decodedToTimedDecoded(event, blockNow.currentBlock, timeNow)
+        )
+      )
+      .map(events =>
+        removeLiquidityEventToView(
+          events,
+          tokens,
+          hash =>
+            generateEtherscanTxLink(
+              hash,
+              this.currentNetwork == EthNetworks.Ropsten
+            ),
+          account => generateEtherscanAccountLink(account)
+        )
+      );
+
+    const addEvents = groupedAddLiquidityEvents
+      .filter(events =>
+        events.every(event =>
+          tokenAddressesInEvent(event).every(address =>
+            tokens.some(token => compareString(token.id, address))
+          )
+        )
+      )
+      .map(events =>
+        events.map(event =>
+          decodedToTimedDecoded(event, blockNow.currentBlock, timeNow)
+        )
+      )
+      .map(events =>
+        addLiquidityEventToView(
+          events,
+          tokens,
+          hash =>
+            generateEtherscanTxLink(
+              hash,
+              this.currentNetwork == EthNetworks.Ropsten
+            ),
+          account => generateEtherscanAccountLink(account)
+        )
+      );
+
+    console.log(addEvents, "are add events");
+    console.log(removeEvents, "are generated remove events");
+
+    const conversionEvents = res.conversions
+      .filter((event, index) => {
+        const res = tokenAddressesInEvent(event).every(address =>
+          tokens.some(token => compareString(token.id, address))
+        );
+        return res;
+      })
+      .map(event =>
+        decodedToTimedDecoded(event, blockNow.currentBlock, timeNow)
+      )
+      .map(conversion =>
+        conversionEventToViewTradeEvent(
+          conversion,
+          tokens,
+          hash =>
+            generateEtherscanTxLink(
+              hash,
+              this.currentNetwork == EthNetworks.Ropsten
+            ),
+          account => generateEtherscanAccountLink(account)
+        )
+      );
+
+    return {
+      addEvents,
+      removeEvents,
+      conversionEvents
+    };
+  }
+
   @action async pullEvents({
     networkContract,
     network,
@@ -4080,9 +4308,11 @@ export class EthBancorModule
     return joinStartingAndTerminating;
   }
 
-  liquidityHistoryArr: ConversionEvent[] = [];
+  liquidityHistoryArr: DecodedTimedEvent<ConversionEventDecoded>[] = [];
 
-  @mutation setLiquidityHistory(events: ConversionEvent[]) {
+  @mutation setLiquidityHistory(
+    events: DecodedTimedEvent<ConversionEventDecoded>[]
+  ) {
     this.liquidityHistoryArr = events
       .slice()
       .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
@@ -4107,11 +4337,28 @@ export class EthBancorModule
     return {
       loading: false,
       data: conversionsSupported.map(conversion =>
-        conversionEventToViewTradeEvent(conversion, knownTokens, (hash) => generateEtherscanTxLink(
-          hash,
-          this.currentNetwork == EthNetworks.Ropsten
-        ), (account) => generateEtherscanAccountLink(account))
+        conversionEventToViewTradeEvent(
+          conversion,
+          knownTokens,
+          hash =>
+            generateEtherscanTxLink(
+              hash,
+              this.currentNetwork == EthNetworks.Ropsten
+            ),
+          account => generateEtherscanAccountLink(account)
+        )
       )
+    };
+  }
+
+  @action async blockNumberHoursAgo(hours: number) {
+    const currentBlock = await web3.eth.getBlockNumber();
+    const secondsPerBlock = 15;
+    const secondsToRewind = 60 * 60 * hours;
+    const blocksToRewind = secondsToRewind / secondsPerBlock;
+    return {
+      blockHoursAgo: currentBlock - blocksToRewind,
+      currentBlock: currentBlock
     };
   }
 
@@ -4164,20 +4411,13 @@ export class EthBancorModule
       this.fetchUsdPriceOfBnt();
 
       console.time("FirstPromise");
-      const [contractAddresses, currentBlock] = await Promise.all([
+      const [
+        contractAddresses,
+        { currentBlock, blockHoursAgo }
+      ] = await Promise.all([
         this.fetchContractAddresses(networkVariables.contractRegistry),
-        web3.eth.getBlockNumber()
+        this.blockNumberHoursAgo(24)
       ]);
-
-      console.log(contractAddresses, "are contract addresses");
-
-      const reverseBlocks = (hours: number, blockTimeSeconds = 15) => {
-        const hoursInSeconds = hours * 60 * 60;
-        return hoursInSeconds / blockTimeSeconds;
-      };
-
-      const twentyFourHoursOfBlocks = reverseBlocks(24);
-      const fromBlock = currentBlock - twentyFourHoursOfBlocks;
 
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
@@ -4192,17 +4432,14 @@ export class EthBancorModule
         const events = await this.pullEvents({
           network: currentNetwork,
           networkContract: contractAddresses.BancorNetwork,
-          fromBlock
+          fromBlock: blockHoursAgo
         });
-        const withDates = events.map(
-          (event): ConversionEvent => ({
-            ...event,
-            blockTime: estimateBlockTime(
-              Number(event.blockNumber),
-              currentBlock,
-              Number(currentBlockInfo.timestamp)
-            )
-          })
+        const withDates = events.map(event =>
+          decodedToTimedDecoded(
+            event,
+            currentBlock,
+            Number(currentBlockInfo.timestamp)
+          )
         );
 
         this.setLiquidityHistory(withDates);
@@ -4324,7 +4561,7 @@ export class EthBancorModule
           converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
         }
       ]);
-      this.setLoadingPools(false)
+      this.setLoadingPools(false);
       console.timeEnd("initialPools");
       console.log("finished add pools...", x);
 
@@ -4515,6 +4752,21 @@ export class EthBancorModule
         userAddress
       })
     );
+  }
+
+  @action async focusPool(id: string): Promise<FocusPoolRes> {
+    const pool = await this.relayById(id);
+    const converterAddress = pool.contract;
+    const yesterday = await this.blockNumberHoursAgo(24);
+
+    const res = await this.pullConverterEvents({
+      converterAddress,
+      network: this.currentNetwork,
+      fromBlock: yesterday.blockHoursAgo
+    });
+    console.log(res, "was returned from focus pool");
+
+    return res;
   }
 
   @action async focusSymbol(id: string) {

@@ -5,27 +5,30 @@ import { isAddress } from "web3-utils";
 export const expandToken = (amount: string | number, precision: number) =>
   new BigNumber(amount).times(new BigNumber(10).pow(precision)).toFixed(0);
 
+const addZeros = (numberOfZeros: number, noLeadingZeros: string) => {
+  const zeros = [...Array(numberOfZeros)].map(() => "0");
+  const res = ["0", "x", ...zeros, ...noLeadingZeros.split("").slice(2)].join(
+    ""
+  );
+  return res;
+};
+
 export const removeLeadingZeros = (hexString: string) => {
-  const withoutOx = hexString.startsWith("0x") ? hexString.slice(2) : hexString;
-  const initialAttempt =
-    "0x" + withoutOx.slice(withoutOx.split("").findIndex(x => x !== "0"));
-  if (isAddress(initialAttempt)) return initialAttempt;
-  const secondAttempt = [
-    "0",
-    "x",
-    "0",
-    ...initialAttempt.split("").slice(2)
-  ].join("");
-  if (isAddress(secondAttempt)) return secondAttempt;
-  const thirdAttempt = [
-    "0",
-    "x",
-    "0",
-    "0",
-    ...initialAttempt.split("").slice(2)
-  ].join("");
-  if (isAddress(thirdAttempt)) return thirdAttempt;
-  else throw new Error(`Failed parsing hex ${hexString}`);
+  const removedOx = hexString.startsWith("0x") ? hexString.slice(2) : hexString;
+
+  const noLeadingZeros =
+    "0x" + removedOx.slice(removedOx.split("").findIndex(x => x !== "0"));
+
+  const attempts = [...Array(60)].map((_, index) => index);
+
+  const correctAttemptNumber = attempts.find(attemptNumber => {
+    const result = addZeros(attemptNumber, noLeadingZeros);
+    return isAddress(result);
+  });
+
+  if (typeof correctAttemptNumber !== "undefined") {
+    return addZeros(correctAttemptNumber, noLeadingZeros);
+  } else throw new Error(`Failed parsing hex ${hexString}`);
 };
 
 export const shrinkToken = (amount: string | number, precision: number) =>

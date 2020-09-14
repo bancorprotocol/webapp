@@ -304,6 +304,14 @@ export interface ViewTradeEvent {
   to: ViewAmountWithMeta;
 }
 
+export interface ViewAddEvent {
+  tokensAdded: ViewAmountWithMeta[];
+}
+
+export interface ViewRemoveEvent {
+  tokensRemoved: ViewAmountWithMeta[];
+}
+
 export interface ViewLiquidityEvent<T> {
   valueTransmitted: number;
   txHash: string;
@@ -358,6 +366,12 @@ interface LiquidityHistory {
   data: ViewLiquidityEvent<ViewTradeEvent>[];
 }
 
+export interface FocusPoolRes {
+  conversionEvents: ViewLiquidityEvent<ViewTradeEvent>[];
+  addEvents: ViewLiquidityEvent<ViewAddEvent>[];
+  removeEvents: ViewLiquidityEvent<ViewRemoveEvent>[];
+}
+
 export interface LiquidityModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly primaryReserveChoices: (secondaryChoiceId: string) => ModalChoice[];
@@ -374,6 +388,7 @@ export interface LiquidityModule {
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;
+  focusPool: (poolId: string) => Promise<FocusPoolRes | void>;
   loadMorePools: () => Promise<void>;
   calculateOpposingDeposit: (
     opposingDeposit: OpposingLiquidParams

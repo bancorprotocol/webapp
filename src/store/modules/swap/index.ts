@@ -360,6 +360,10 @@ export class BancorModule extends VuexModule.With({
     return this.dispatcher(["updateOwner", owner]);
   }
 
+  @action async focusPool(poolId: string) {
+    return this.dispatcher(["focusPool", poolId]);
+  }
+
   @action async getUserBalances(relayId: string): Promise<UserPoolBalances> {
     return this.dispatcher(["getUserBalances", relayId]);
   }
