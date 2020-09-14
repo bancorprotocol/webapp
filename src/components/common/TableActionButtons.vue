@@ -1,6 +1,11 @@
 <template>
   <div>
-    <b-btn @click="goToPool" variant="primary" class="mr-3 table-button">
+    <b-btn
+      v-if="pool"
+      @click="goToPool"
+      variant="primary"
+      class="mr-3 table-button"
+    >
       Add Liquidity
     </b-btn>
 
