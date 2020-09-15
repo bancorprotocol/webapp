@@ -4360,45 +4360,6 @@ export class EthBancorModule
       return this.refresh();
     }
 
-    const v1Converters = await bancorSubgraph(`
-    {
-      converters(orderBy: createdAtBlockNumber, orderDirection: desc) {
-        id
-        activated
-        anchor
-        factory
-        conversionFee
-        numSwaps
-        volumes {
-          token {
-            symbol
-          }
-          totalVolume
-        }
-        type
-        version
-        balances {
-          poolToken {
-            id
-            symbol
-            supply
-            shareValue
-            shareValueEth
-          }
-          token {
-            id
-            symbol
-          }
-          stakedAmount
-          balance
-          weight
-        }
-      }
-    }
-    `);
-
-    console.log(v1Converters, "are v1 converters but actually both");
-
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
     const web3NetworkVersion = await web3.eth.getChainId();
@@ -4644,6 +4605,151 @@ export class EthBancorModule
     this.setLoadingPools(false);
   }
 
+  @action async getPoolsViaSubgraph(): Promise<V2Response> {
+    interface ConverterRes {
+      activated: boolean;
+      anchor: string;
+      balances: Balance[];
+      conversionFee: string;
+      factory: string;
+      id: string;
+      type: string;
+      version: string;
+    }
+
+    interface Balance {
+      balance: string;
+      poolToken: null | PoolToken;
+      stakedAmount: string;
+      token: Token;
+      weight: string;
+    }
+
+    interface Token {
+      id: string;
+      symbol: string;
+      decimals: string;
+    }
+
+    interface PoolToken {
+      id: string;
+      supply: string;
+      symbol: string;
+    }
+
+    const res = (await bancorSubgraph(`
+    {
+      converters(where: {activated: true}, orderBy: createdAtBlockNumber, orderDirection: desc) {
+        id
+        activated
+        anchor
+        factory
+        conversionFee
+        type
+        version
+        balances {
+          poolToken {
+            id
+            symbol
+            supply
+          }
+          token {
+            id
+            symbol
+            decimals
+          }
+          stakedAmount
+          balance
+          weight
+        }
+      }
+    }
+    `)) as { converters: ConverterRes[] };
+
+    const v1Relays = res.converters.filter(converter => converter.type == "1");
+
+    const tokenMeta = this.tokenMeta;
+    const anchorAddresses = v1Relays.map(relay => relay.anchor);
+    const localKnownAnchors = anchorAddresses.filter(address => {
+      const meta = tokenMeta.find(meta =>
+        compareString(meta.contract, address)
+      );
+      return (
+        meta &&
+        (typeof meta.precision == "number" || typeof meta.precision == "string")
+      );
+    });
+    const remainingTokens = differenceWith(
+      anchorAddresses,
+      localKnownAnchors,
+      compareString
+    );
+
+    const shapes = remainingTokens.map(tokenShape);
+    const [tokens] = (await this.multi([shapes])) as [
+      [{ symbol: string; decimals: string; contract: string }]
+    ];
+
+    const localTokens = localKnownAnchors.map(anchor =>
+      findOrThrow(tokenMeta, meta => compareString(meta.contract, anchor))
+    );
+    const allTokens = [
+      ...localTokens.map(meta => ({ ...meta, decimals: meta.precision! })),
+      ...tokens
+    ];
+
+    const v1RelaysWithBalances = v1Relays.map(
+      (relay): RelayWithReserveBalances => {
+        const foundAnchor = findOrThrow(allTokens, token =>
+          compareString(token.contract, relay.anchor)
+        );
+
+        const anchor = {
+          ...foundAnchor,
+          decimals: Number(foundAnchor.decimals),
+          network: "ETH"
+        } as SmartToken;
+        return {
+          anchor,
+          contract: relay.id,
+          fee: Number(relay.conversionFee),
+          converterType: PoolType.Traditional,
+          id: relay.anchor,
+          isMultiContract: false,
+          network: "ETH",
+          owner: ethReserveAddress,
+          reserveBalances: relay.balances.map(balance => ({
+            id: balance.token.id,
+            amount: balance.balance
+          })),
+          reserves: relay.balances.map(balance => ({
+            network: "ETH",
+            contract: balance.token.id,
+            decimals: Number(balance.token.decimals),
+            reserveWeight: Number(balance.weight),
+            symbol: balance.token.symbol
+          })),
+          version: relay.version
+        };
+      }
+    );
+
+    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
+
+    const reserveFeeds = buildPossibleReserveFeedsTraditional(
+      v1RelaysWithBalances,
+      [
+        { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
+        ...trustedStables(this.currentNetwork)
+      ]
+    );
+
+    return {
+      pools: v1RelaysWithBalances,
+      reserveFeeds
+    };
+  }
+
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
     if (!convertersAndAnchors || convertersAndAnchors.length == 0)
       throw new Error("Received nothing for addPoolsBulk");
@@ -4652,7 +4758,25 @@ export class EthBancorModule
 
     const tokenAddresses: string[][] = [];
 
-    const { pools, reserveFeeds } = await this.addPoolsV2(convertersAndAnchors);
+    const subgraphRes = await this.getPoolsViaSubgraph();
+
+    const notCoveredBySubGraph = convertersAndAnchors.filter(
+      anchor =>
+        !subgraphRes.pools.some(relay =>
+          compareString(relay.id, anchor.anchorAddress)
+        )
+    );
+
+    console.log(
+      subgraphRes.pools.length,
+      "covered by subgraph",
+      notCoveredBySubGraph.length,
+      "left for rpc"
+    );
+    const { pools, reserveFeeds } = await this.addPoolsV2(notCoveredBySubGraph);
+
+    const allPools = [...subgraphRes.pools, ...pools];
+    const allReserveFeeds = [...subgraphRes.reserveFeeds, ...reserveFeeds];
 
     const poolsFailed = differenceWith(convertersAndAnchors, pools, (a, b) =>
       compareString(a.anchorAddress, b.id)
@@ -4660,9 +4784,10 @@ export class EthBancorModule
     this.updateFailedPools(
       poolsFailed.map(failedPool => failedPool.anchorAddress)
     );
-    this.updateRelays(pools);
+
+    this.updateRelays(allPools);
     this.updateRelayFeeds(
-      await this.addPossiblePropsFromBancorApi(reserveFeeds)
+      await this.addPossiblePropsFromBancorApi(allReserveFeeds)
     );
     const tokensInChunk = pools
       .flatMap(tokensInRelay)
@@ -4675,7 +4800,7 @@ export class EthBancorModule
     this.setLoadingPools(false);
 
     console.timeEnd("addPoolsBulk");
-    return { pools, reserveFeeds };
+    return { pools: allPools, reserveFeeds: allReserveFeeds };
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {
