@@ -10,9 +10,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
-@Component({
-  components: {}
-})
+@Component
 export default class SFCTemplate extends Vue {
   @Prop() version!: 1 | 2;
 
