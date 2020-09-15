@@ -119,6 +119,75 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 
+const get_volumes = async (converter: string) =>
+  bancorSubgraph(`
+{
+  converter(id:"${converter}") {
+    id
+    activated
+    volumes {
+      token { 
+        symbol
+        id
+      }
+      sellVolume
+      buyVolume
+      totalVolume
+    }
+    createdAtTimestamp
+  }
+}
+`);
+
+const secondsInADay = 60 * 60 * 24;
+const timestamp_days_ago = (days: number) =>
+  moment().unix() - days * secondsInADay;
+
+const get_exchange_snapshot_volume = async (
+  exchange: string,
+  blockNumber: string
+) =>
+  bancorSubgraph(`
+{
+  before:converter(
+    id:"${exchange}"
+    block:{
+      number: ${blockNumber}
+    }
+  ) {
+    id
+    volumes {
+      token { symbol }
+      totalVolume
+    }
+  }
+  afterr:converter(
+    id:"${exchange}"
+  ) {
+    id
+    volumes {
+      token { symbol }
+      totalVolume
+    }
+  }
+}
+`);
+
+const main = async () => {
+  const converter = "0x25b970d6b92a2b38fdd84c7dc7d9de3830128c90";
+  const v = await get_volumes(converter);
+  console.log(v, "was v");
+  const formattedTime = moment.unix(v.converter.createdAtTimestamp).format();
+  console.log(formattedTime, "was formatted time");
+  const y = await get_exchange_snapshot_volume(
+    converter,
+    String(10865120 - 5760)
+  );
+  console.log(y, "came back for y");
+};
+
+main();
+
 const decodedToTimedDecoded = <T>(
   event: DecodedEvent<T>,
   knownBlockNumber: number,
