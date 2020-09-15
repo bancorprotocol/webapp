@@ -34,6 +34,16 @@ import { pick, partition, groupBy, omit, chunk } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import { ABIV2Converter } from "./eth/ethAbis";
 
+const bancorSubgraphInstance = axios.create({
+  baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
+  method: "post"
+});
+
+export const bancorSubgraph = async (query: string) => {
+  const res = await bancorSubgraphInstance.post("", { query });
+  return res.data.data;
+};
+
 export function VModel(propsArgs: PropOptions = {}) {
   const valueKey: string = "value";
   return createDecorator((componentOptions, key) => {

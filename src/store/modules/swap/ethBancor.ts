@@ -66,7 +66,8 @@ import {
   getConverterLogs,
   DecodedTimedEvent,
   AddLiquidityEvent,
-  RemoveLiquidityEvent
+  RemoveLiquidityEvent,
+  bancorSubgraph
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -4358,6 +4359,45 @@ export class EthBancorModule
       console.log("returning already");
       return this.refresh();
     }
+
+    const v1Converters = await bancorSubgraph(`
+    {
+      converters(orderBy: createdAtBlockNumber, orderDirection: desc) {
+        id
+        activated
+        anchor
+        factory
+        conversionFee
+        numSwaps
+        volumes {
+          token {
+            symbol
+          }
+          totalVolume
+        }
+        type
+        version
+        balances {
+          poolToken {
+            id
+            symbol
+            supply
+            shareValue
+            shareValueEth
+          }
+          token {
+            id
+            symbol
+          }
+          stakedAmount
+          balance
+          weight
+        }
+      }
+    }
+    `);
+
+    console.log(v1Converters, "are v1 converters but actually both");
 
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
