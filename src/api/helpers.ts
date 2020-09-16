@@ -41,6 +41,8 @@ const bancorSubgraphInstance = axios.create({
 
 export const bancorSubgraph = async (query: string) => {
   const res = await bancorSubgraphInstance.post("", { query });
+  if (res.data.errors && res.data.errors.length > 0)
+    throw new Error(res.data.errors[0].message);
   return res.data.data;
 };
 
