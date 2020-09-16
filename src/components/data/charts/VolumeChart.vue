@@ -1,17 +1,17 @@
 <template>
-  <line-chart
+  <bar-chart
     :styles="myStyles"
     :chart-data="datacollection"
     :options="dataoptions"
-  ></line-chart>
+  ></bar-chart>
 </template>
 
 <script>
-import LineChart from "./LineChart";
+import BarChart from "@/components/data/charts/BarChart";
 
 export default {
   components: {
-    LineChart
+    BarChart
   },
   data() {
     return {
@@ -124,10 +124,10 @@ export default {
         ],
         datasets: [
           {
-            label: "Data One",
-            backgroundColor: "#e9f2fd",
+            label: "Date",
+            backgroundColor: "#0f59d1",
             borderColor: "#0f59d1",
-            borderWidth: 1,
+            borderWidth: 0,
             pointRadius: 0,
             data: [
               this.getRandomInt(),
