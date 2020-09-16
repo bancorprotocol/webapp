@@ -2527,24 +2527,24 @@ export class EthBancorModule
         : "0";
 
     if (!reserveBalancesAboveZero) {
-      console.log("is fresh");
+
+      console.log('is fresh')
       const matchedInputs = reservesViewAmounts.map(viewAmount => ({
         decAmount: viewAmount.amount,
         decimals: findOrThrow(reserves, reserve =>
           compareString(reserve.contract, viewAmount.id)
         ).decimals
       }));
-      const notAllInputsAreNumbers = matchedInputs.some(input =>
-        new BigNumber(input.decAmount).isNaN()
-      );
+
+      const notAllInputsAreNumbers = matchedInputs.some(input => new BigNumber(input.decAmount).isNaN());
       if (notAllInputsAreNumbers) {
         return {
           shareOfPool: 0,
-          smartTokenAmountWei: { amount: "1", id: smartTokenAddress },
+          smartTokenAmountWei: { amount: '1', id: smartTokenAddress },
           singleUnitCosts: [],
           opposingAmount: undefined,
           reserveBalancesAboveZero
-        };
+        }
       }
       const weiInputs = matchedInputs.map(input =>
         expandToken(input.decAmount, input.decimals)

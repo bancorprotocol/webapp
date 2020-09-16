@@ -1,17 +1,17 @@
 <template>
-  <line-chart
+  <bar-chart
     :styles="myStyles"
     :chart-data="datacollection"
     :options="dataoptions"
-  ></line-chart>
+  ></bar-chart>
 </template>
 
 <script>
-import LineChart from "./LineChart";
+import BarChart from "@/components/data/charts/BarChart";
 
 export default {
   components: {
-    LineChart
+    BarChart
   },
   data() {
     return {
@@ -20,28 +20,57 @@ export default {
         scales: {
           yAxes: [
             {
-              display: false,
-              gridLines: false,
+              display: true,
+              gridLines: {
+                display: true,
+                drawBorder: true,
+                drawOnChartArea: false,
+                drawTicks: false
+              },
               ticks: {
-                beginAtZero: true
-              }
+                padding: 10,
+                autoSkip: true,
+                maxTicksLimit: 4
+              },
+              position: "right"
             }
           ],
           xAxes: [
             {
-              display: false,
-              gridLines: false
+              display: true,
+              gridLines: {
+                display: true,
+                drawBorder: true,
+                drawOnChartArea: false,
+                drawTicks: false
+              },
+              ticks: {
+                padding: 10,
+                autoSkip: true,
+                maxTicksLimit: 3,
+                maxRotation: 0,
+                minRotation: 0
+              }
             }
           ]
         },
         responsive: true,
         maintainAspectRatio: false,
+        tooltips: {
+          mode: "index",
+          intersect: false
+        },
+        hover: {
+          mode: "nearest",
+          intersect: true
+        },
+
         legend: {
           display: false
         }
       },
       myStyles: {
-        height: "180px",
+        height: "200px",
         position: "relative"
       }
     };
@@ -64,10 +93,11 @@ export default {
         ],
         datasets: [
           {
-            label: "Data One",
-            backgroundColor: "rgba(15, 89, 209, 0.2)",
-            borderColor: ["#0f59d1"],
-            borderWidth: 2,
+            label: "Date",
+            backgroundColor: "#0f59d1",
+            borderColor: "#0f59d1",
+            borderWidth: 0,
+            pointRadius: 0,
             data: [
               this.getRandomInt(),
               this.getRandomInt(),
