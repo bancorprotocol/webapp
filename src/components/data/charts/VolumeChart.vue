@@ -53,11 +53,11 @@ export default {
     fillData() {
       this.datacollection = {
         labels: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
+          this.getRandomInt(),
+          this.getRandomInt(),
+          this.getRandomInt(),
+          this.getRandomInt(),
+          this.getRandomInt(),
           this.getRandomInt(),
           this.getRandomInt(),
           this.getRandomInt()

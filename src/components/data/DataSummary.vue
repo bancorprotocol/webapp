@@ -5,14 +5,14 @@
         <statistics class="mt-3" />
       </content-block>
     </b-col>
-    <b-col v-if="false" md="6">
+    <b-col md="6">
       <content-block title="Liquidity">
         <liquidity-chart />
       </content-block>
     </b-col>
-    <b-col v-if="false" md="6">
+    <b-col md="6">
       <content-block title="Volume">
-        <liquidity-chart />
+        <volume-chart />
       </content-block>
     </b-col>
     <b-col cols="12">
@@ -34,6 +34,7 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Statistics from "@/components/data/statistics/Statistics.vue";
 import LiquidityChart from "@/components/data/charts/LiquidityChart.vue";
+import VolumeChart from "@/components/data/charts/VolumeChart.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
 
@@ -42,6 +43,7 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
     TransactionTables,
     PoolTokenTables,
     LiquidityChart,
+    VolumeChart,
     Statistics,
     ContentBlock
   }
