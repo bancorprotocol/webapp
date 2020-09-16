@@ -113,7 +113,6 @@ export const router = new Router({
       children: [
         {
           path: "",
-          redirect: "/404",
           component: DataSummary
         },
         // {
