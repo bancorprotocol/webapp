@@ -30,9 +30,8 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
-import { pick, partition, groupBy, omit, chunk } from "lodash";
+import { pick } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
-import { ABIV2Converter } from "./eth/ethAbis";
 
 const bancorSubgraphInstance = axios.create({
   baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
