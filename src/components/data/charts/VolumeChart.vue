@@ -10,6 +10,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import BarChart from "@/components/data/charts/BarChart.vue";
 import Chart from "chart.js";
+import numeral from "numeral";
 
 @Component({
   components: {
@@ -33,13 +34,20 @@ export default class VolumeChart extends Vue {
           ticks: {
             padding: 10,
             autoSkip: true,
-            maxTicksLimit: 4
+            maxTicksLimit: 4,
+            callback: function(value, index, values) {
+              return numeral(value).format("$0a");
+            }
           },
           position: "right"
         }
       ],
       xAxes: [
         {
+          type: "time",
+          time: {
+            unit: "month"
+          },
           display: true,
           gridLines: {
             display: true,

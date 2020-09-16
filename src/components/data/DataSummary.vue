@@ -51,7 +51,7 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
 export default class DataSummary extends Vue {
   get volumeChartData(): Chart.ChartData {
     const volumeStats = vxm.ethBancor.volumeInfo;
-    const labels = volumeStats.map(x => x[2]).reverse();
+    const labels = volumeStats.map(x => new Date(x[2] * 1000)).reverse();
     const data = volumeStats.map(x => parseFloat(x[1])).reverse();
 
     return {
