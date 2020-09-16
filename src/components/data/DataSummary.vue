@@ -12,7 +12,7 @@
     </b-col>
     <b-col md="6">
       <content-block title="Volume">
-        <volume-chart class="mt-3" />
+        <volume-chart :data="volumeChartData" class="mt-3" />
       </content-block>
     </b-col>
     <b-col cols="12">
@@ -49,6 +49,43 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
   }
 })
 export default class DataSummary extends Vue {
+  getRandomInt() {
+    return Math.floor(Math.random() * (50 - 5 + 1)) + 5;
+  }
+  get volumeChartData() {
+    return {
+      labels: [
+        this.getRandomInt(),
+        this.getRandomInt(),
+        this.getRandomInt(),
+        this.getRandomInt(),
+        this.getRandomInt(),
+        this.getRandomInt(),
+        this.getRandomInt(),
+        this.getRandomInt()
+      ],
+      datasets: [
+        {
+          label: "Date",
+          backgroundColor: "#0f59d1",
+          borderColor: "#0f59d1",
+          borderWidth: 0,
+          pointRadius: 0,
+          data: [
+            this.getRandomInt(),
+            this.getRandomInt(),
+            this.getRandomInt(),
+            this.getRandomInt(),
+            this.getRandomInt(),
+            this.getRandomInt(),
+            this.getRandomInt(),
+            this.getRandomInt()
+          ]
+        }
+      ]
+    };
+  }
+
   get isEth() {
     return this.$route.params.service === "eth";
   }
