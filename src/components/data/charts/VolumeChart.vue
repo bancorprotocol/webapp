@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import BarChart from "@/components/data/charts/BarChart";
+import BarChart from "@/components/data/charts/BarChart.vue";
 import Chart from "chart.js";
 
 @Component({
