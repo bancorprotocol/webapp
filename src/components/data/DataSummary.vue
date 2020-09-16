@@ -37,7 +37,6 @@ import LiquidityChart from "@/components/data/charts/LiquidityChart.vue";
 import VolumeChart from "@/components/data/charts/VolumeChart.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
-import VolumeChart from "@/components/data/charts/VolumeChart.vue";
 
 @Component({
   components: {
@@ -45,7 +44,6 @@ import VolumeChart from "@/components/data/charts/VolumeChart.vue";
     TransactionTables,
     PoolTokenTables,
     LiquidityChart,
-    VolumeChart,
     Statistics,
     ContentBlock
   }
