@@ -30,9 +30,20 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
-import { pick, partition, groupBy, omit, chunk } from "lodash";
+import { pick } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
-import { ABIV2Converter } from "./eth/ethAbis";
+
+const bancorSubgraphInstance = axios.create({
+  baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
+  method: "post"
+});
+
+export const bancorSubgraph = async (query: string) => {
+  const res = await bancorSubgraphInstance.post("", { query });
+  if (res.data.errors && res.data.errors.length > 0)
+    throw new Error(res.data.errors[0].message);
+  return res.data.data;
+};
 
 export function VModel(propsArgs: PropOptions = {}) {
   const valueKey: string = "value";
@@ -248,40 +259,6 @@ export interface RawEventResponse {
   transactionHash: string;
   transactionIndex: string;
 }
-
-// const tz = {
-//   address: "0x2f9ec37d6ccfff1cab21733bdadede11c823ccb0",
-//   blockHash:
-//     "0x2570d981705b282aafd2ff07ed293cb3169513b0d12ea819f84b71b4d68ab2c1",
-//   blockNumber: "0xa49f45",
-//   data:
-//     "0x0000000000000000000000000000000000000000000008238eb1566fee5d0000000000000000000000000000000000000000000000000007b4be6e4156334ad4000000000000000000000000dead1241f2ee2a7950ad967993efb72d62bf6822",
-//   logIndex: "0x17",
-//   removed: false,
-//   topics: [
-//     "0x7154b38b5dd31bb3122436a96d4e09aba5b323ae1fd580025fab55074334c095",
-//     "0x000000000000000000000000b1cd6e4153b2a390cf00a6556b0fc1458c4a5533",
-//     "0x0000000000000000000000001f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
-//     "0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-//   ],
-//   transactionHash:
-//     "0x3d200c94eca4474b421a6342121e7933f3b94abb22494719550461c5ba2c4571",
-//   transactionIndex: "0x10"
-// };
-
-// {
-//   anonymous: false,
-//   inputs: [
-//     { indexed: true, name: "_fromToken", type: "address" },
-//     { indexed: true, name: "_toToken", type: "address" },
-//     { indexed: true, name: "_trader", type: "address" },
-//     { indexed: false, name: "_amount", type: "uint256" },
-//     { indexed: false, name: "_return", type: "uint256" },
-//     { indexed: false, name: "_conversionFee", type: "int256" }
-//   ],
-//   name: "Conversion",
-//   type: "event"
-// },
 
 const conversionEventNetworkAbi = [
   { type: "uint256", name: "fromAmount" },

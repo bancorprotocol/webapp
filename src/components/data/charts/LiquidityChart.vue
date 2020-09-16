@@ -81,11 +81,11 @@ export default {
     fillData() {
       this.datacollection = {
         labels: [
-          this.getRandomInt(),
-          this.getRandomInt(),
-          this.getRandomInt(),
-          this.getRandomInt(),
-          this.getRandomInt(),
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
           this.getRandomInt(),
           this.getRandomInt(),
           this.getRandomInt(),

@@ -54,9 +54,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
-@Component({
-  components: {}
-})
+@Component
 export default class TableWrapper extends Vue {
   @Prop() items!: any[];
   @Prop() fields!: any[];
