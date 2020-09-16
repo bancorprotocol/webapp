@@ -49,38 +49,21 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
   }
 })
 export default class DataSummary extends Vue {
-  getRandomInt() {
-    return Math.floor(Math.random() * (50 - 5 + 1)) + 5;
-  }
-  get volumeChartData() {
+  get volumeChartData(): Chart.ChartData {
+    const volumeStats = vxm.ethBancor.volumeInfo;
+    const labels = volumeStats.map(x => x[2]).reverse();
+    const data = volumeStats.map(x => parseFloat(x[1])).reverse();
+
     return {
-      labels: [
-        this.getRandomInt(),
-        this.getRandomInt(),
-        this.getRandomInt(),
-        this.getRandomInt(),
-        this.getRandomInt(),
-        this.getRandomInt(),
-        this.getRandomInt(),
-        this.getRandomInt()
-      ],
+      labels,
       datasets: [
         {
-          label: "Date",
+          label: "Volume",
           backgroundColor: "#0f59d1",
           borderColor: "#0f59d1",
           borderWidth: 0,
           pointRadius: 0,
-          data: [
-            this.getRandomInt(),
-            this.getRandomInt(),
-            this.getRandomInt(),
-            this.getRandomInt(),
-            this.getRandomInt(),
-            this.getRandomInt(),
-            this.getRandomInt(),
-            this.getRandomInt()
-          ]
+          data
         }
       ]
     };

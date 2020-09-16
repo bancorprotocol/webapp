@@ -15,7 +15,10 @@ export default class BarChart extends Vue {
   @Prop({ default: {} })
   options!: Chart.ChartOptions;
 
-  public renderChart!: (chartData: any, options: any) => void;
+  public renderChart!: (
+    chartData: Chart.ChartData,
+    options: Chart.ChartOptions
+  ) => void;
 
   mounted() {
     this.renderChart(this.chartData, this.options);
