@@ -75,6 +75,7 @@
     "web3": "^1.2.11"
   },
   "devDependencies": {
+    "@types/chart.js": "^2.9.24",
     "@types/webpack": "^4.39.1",
     "@vue/cli-plugin-babel": "^3.11.0",
     "@vue/cli-plugin-eslint": "^3.11.0",
