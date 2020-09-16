@@ -7,13 +7,20 @@
         prepend="search"
       />
     </div>
-
+    <div class="float-right mr-2" v-if="loading">
+      <b-spinner
+        style="display: block; width: 1.5rem; height: 1.5rem;"
+        class="align-self-center align-middle"
+        :class="darkMode ? 'text-primary' : 'text-primary'"
+        label="Loading..."
+      ></b-spinner>
+    </div>
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
       <b-tab title="Pools" active>
-        <table-pools :filter="search" />
+        <table-pools-new :filter="search" />
       </b-tab>
       <b-tab title="Tokens">
-        <table-tokens :filter="search" />
+        <table-tokens-new :filter="search" />
       </b-tab>
     </b-tabs>
   </div>
@@ -22,19 +29,23 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import TablePools from "@/components/data/pooltokentables/TablePools.vue";
-import TableTokens from "@/components/data/pooltokentables/TableTokens.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
+import TablePoolsNew from "@/components/data/pooltokentables/TablePoolsNew.vue";
+import TableTokensNew from "@/components/data/pooltokentables/TableTokensNew.vue";
 
 @Component({
   components: {
-    MultiInputField,
-    TablePools,
-    TableTokens
+    TableTokensNew,
+    TablePoolsNew,
+    MultiInputField
   }
 })
 export default class PoolTokenTables extends Vue {
   search: string = "";
+
+  get loading() {
+    return vxm.bancor.loadingTokens;
+  }
 
   get darkMode() {
     return vxm.general.darkMode;

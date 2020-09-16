@@ -2,25 +2,15 @@
   <div>
     <b-btn
       v-if="pool"
-      :to="{
-        name: 'PoolAction',
-        params: {
-          poolAction: 'add',
-          account: pool.id
-        }
-      }"
+      @click="goToPool"
       variant="primary"
       class="mr-3 table-button"
     >
       Add Liquidity
     </b-btn>
+
     <b-btn
-      :to="{
-        name: 'Swap',
-        query: {
-          from: getId
-        }
-      }"
+      @click="goToSwap"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       class="table-button"
     >
@@ -30,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Prop, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 
@@ -41,6 +31,27 @@ export default class TableActionButtons extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  goToPool() {
+    let routeData = this.$router.resolve({
+      name: "PoolAction",
+      params: {
+        poolAction: "add",
+        account: this.pool!.id
+      }
+    });
+    window.open(routeData.href, "_blank");
+  }
+
+  goToSwap() {
+    let routeData = this.$router.resolve({
+      name: "Swap",
+      query: {
+        from: this.getId
+      }
+    });
+    window.open(routeData.href, "_blank");
   }
 
   get getId() {

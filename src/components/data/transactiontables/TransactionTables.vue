@@ -9,8 +9,8 @@
     </div>
 
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-      <b-tab title="Swap" active>
-        <table-transactions-new :filter="search" tx-type="swap" />
+      <b-tab title="Swaps" active>
+        <table-transactions-new :filter="search" :items="itemsSwap" />
       </b-tab>
     </b-tabs>
   </div>
@@ -32,6 +32,12 @@ import TableTransactionsNew from "@/components/data/transactiontables/TableTrans
 })
 export default class TransactionTables extends Vue {
   search: string = "";
+
+  get itemsSwap() {
+    const liquidityHistory = vxm.bancor.liquidityHistory;
+    if (liquidityHistory.loading) return [];
+    return liquidityHistory.data;
+  }
 
   get darkMode() {
     return vxm.general.darkMode;

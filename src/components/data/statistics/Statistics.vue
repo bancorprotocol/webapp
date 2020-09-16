@@ -10,13 +10,23 @@
     <b-col md="6" lg="3" class="mb-0">
       <statistics-data-block title="Total Liquidity" :value="liquidityDepth" />
     </b-col>
-    <!-- <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0"> -->
-    <!-- <statistics-data-block -->
-    <!-- title="24hrs Volume" -->
-    <!-- value="123,456,789.00 ETH" -->
-    <!-- :percentage="-0.89" -->
-    <!-- /> -->
-    <!-- </b-col> -->
+    <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+      <statistics-data-block
+        :title="nativeTokenLabel"
+        :value="nativeTokenPrice"
+      />
+    </b-col>
+    <b-col
+      md="6"
+      lg="3"
+      class="mb-4 mb-md-0 mb-lg-0"
+      v-if="twentyFourHourTradeCount > 0"
+    >
+      <statistics-data-block
+        title="Recent Conversions (24hrs)"
+        :value="twentyFourHourTradeCount"
+      />
+    </b-col>
     <!-- <b-col md="6" lg="3"> -->
     <!-- <statistics-data-block -->
     <!-- title="24hrs Transactions" -->
@@ -37,10 +47,20 @@ import numeral from "numeral";
   components: { StatisticsDataBlock }
 })
 export default class Statistics extends Vue {
-  numeral = numeral;
-
   get liquidityDepth() {
     return numeral(this.stats.totalLiquidityDepth).format("$0,0.00");
+  }
+
+  get nativeTokenLabel() {
+    return `${this.stats.nativeTokenPrice.symbol} Price`;
+  }
+
+  get nativeTokenPrice() {
+    return numeral(this.stats.nativeTokenPrice.price).format("$0,0.00");
+  }
+
+  get twentyFourHourTradeCount() {
+    return String(this.stats.twentyFourHourTradeCount);
   }
 
   get stats() {

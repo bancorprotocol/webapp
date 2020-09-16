@@ -30,11 +30,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import CreateV1TokenBlock from "./CreateV1TokenBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { ViewToken } from "@/types/bancor";
 import { VModel } from "@/api/helpers";
 import { CreateStep1 } from "@/views/CreateHome.vue";
 

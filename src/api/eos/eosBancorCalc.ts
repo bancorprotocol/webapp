@@ -1,7 +1,7 @@
 import { Decimal } from "decimal.js";
 import { Asset, asset_to_number, Sym as Symbol, Sym, asset } from "eos-common";
-import _ from "lodash";
-import { compareString } from "../helpers";
+import _, { chunk } from "lodash";
+import { compareString, StringPool } from "../helpers";
 
 export type EosAccount = string;
 
@@ -136,6 +136,37 @@ export function composeMemo(
     return concatAffiliate(base, feeAccount, feePercent);
   }
   return base;
+}
+
+export function poolsInMemo(receiver: string): StringPool[] {
+  const splitted = chunk(receiver.split(" "), 2).map(([pool, destSymbol]) => {
+    const isMultiContract = pool.includes(":");
+    if (isMultiContract) {
+      const [multiContract, poolSymbol] = pool.split(":");
+      return {
+        pool: multiContract,
+        poolToken: poolSymbol,
+        destSymbol
+      };
+    } else {
+      return {
+        pool,
+        destSymbol
+      };
+    }
+  });
+  return splitted;
+}
+
+export function parseTransferMemo(memo: string) {
+  const [version, receiver, minReturn, destAccount] = memo.split(",");
+  const pools = poolsInMemo(receiver);
+  return {
+    version,
+    pools,
+    minReturn,
+    destAccount
+  };
 }
 
 export function relaysToConvertPaths(

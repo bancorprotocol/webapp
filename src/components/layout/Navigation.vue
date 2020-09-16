@@ -29,6 +29,7 @@
         <div class="d-flex justify-content-end" style="width: 250px">
           <b-navbar-nav class="mr-2">
             <b-btn
+              v-if="showLogin"
               @click="loginAction"
               variant="white"
               class="block-rounded"
@@ -43,7 +44,7 @@
             </b-btn>
           </b-navbar-nav>
           <b-navbar-nav class="mr-2">
-            <settings-menu />
+            <settings-menu :show-tx="showLogin" />
           </b-navbar-nav>
           <b-navbar-nav>
             <bancor-menu />
@@ -79,6 +80,10 @@ export default class Navigation extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  get showLogin() {
+    return !this.$route.fullPath.includes("data");
   }
 
   created() {

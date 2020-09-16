@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
+import { AbiItem } from "web3-utils";
 import Onboard from "bnc-onboard";
 import { Asset, Sym, number_to_asset } from "eos-common";
 import { rpc } from "./eos/rpc";
@@ -16,7 +17,8 @@ import {
   ViewToken,
   ReserveFeed,
   ModalChoice,
-  ViewAmount
+  ViewAmount,
+  ViewRelay
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -28,8 +30,9 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
-import { pick } from "lodash";
+import { pick, partition, groupBy, omit, chunk } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
+import { ABIV2Converter } from "./eth/ethAbis";
 
 export function VModel(propsArgs: PropOptions = {}) {
   const valueKey: string = "value";
@@ -154,6 +157,12 @@ export const buildSingleUnitCosts = (
   ];
 };
 
+export interface StringPool {
+  pool: string;
+  poolToken?: string;
+  destSymbol: string;
+}
+
 export const formatPercent = (decNumber: number) =>
   numeral(decNumber).format("0.00%");
 
@@ -260,10 +269,42 @@ export interface RawEventResponse {
 //   transactionIndex: "0x10"
 // };
 
-const conversionEventAbi = [
+// {
+//   anonymous: false,
+//   inputs: [
+//     { indexed: true, name: "_fromToken", type: "address" },
+//     { indexed: true, name: "_toToken", type: "address" },
+//     { indexed: true, name: "_trader", type: "address" },
+//     { indexed: false, name: "_amount", type: "uint256" },
+//     { indexed: false, name: "_return", type: "uint256" },
+//     { indexed: false, name: "_conversionFee", type: "int256" }
+//   ],
+//   name: "Conversion",
+//   type: "event"
+// },
+
+const conversionEventNetworkAbi = [
   { type: "uint256", name: "fromAmount" },
   { type: "uint256", name: "toAmount" },
   { type: "address", name: "trader" }
+];
+
+const conversionEventAbi = [
+  { type: "uint256", name: "fromAmount" },
+  { type: "uint256", name: "toAmount" },
+  { type: "int256", name: "conversionFee" }
+];
+
+const addLiquidityEventAbi = [
+  { type: "uint256", name: "amount" },
+  { type: "uint256", name: "newBalance" },
+  { type: "uint256", name: "newSupply" }
+];
+
+const removeLiquidityEventAbi = [
+  { type: "uint256", name: "amount" },
+  { type: "uint256", name: "newBalance" },
+  { type: "uint256", name: "newSupply" }
 ];
 
 interface TokenAmount {
@@ -287,6 +328,86 @@ export interface DecodedEvent<T> {
   data: T;
 }
 
+export interface DecodedTimedEvent<T> extends DecodedEvent<T> {
+  blockTime: number;
+}
+export interface RemoveLiquidityEvent {
+  tokenRemoved: string;
+  trader: string;
+  amount: string;
+  newBalance: string;
+  newSupply: string;
+}
+
+export interface AddLiquidityEvent {
+  tokenAdded: string;
+  trader: string;
+  amount: string;
+  newBalance: string;
+  newSupply: string;
+}
+
+const decodeRemoveLiquidity = (
+  rawEvent: RawEventResponse
+): DecodedEvent<RemoveLiquidityEvent> => {
+  const decoded = web3.eth.abi.decodeLog(
+    removeLiquidityEventAbi,
+    rawEvent.data,
+    rawEvent.topics
+  );
+
+  const txHash = rawEvent.transactionHash;
+  const keys = removeLiquidityEventAbi.map(abi => abi.name);
+  const dynamic = pick(decoded, keys) as {
+    amount: string;
+    newBalance: string;
+    newSupply: string;
+  };
+
+  const [_, trader, tokenAdded] = rawEvent.topics;
+  const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
+
+  return {
+    txHash,
+    blockNumber,
+    data: {
+      ...dynamic,
+      trader: removeLeadingZeros(trader),
+      tokenRemoved: removeLeadingZeros(tokenAdded)
+    }
+  };
+};
+
+const decodeAddLiquidityEvent = (
+  rawEvent: RawEventResponse
+): DecodedEvent<AddLiquidityEvent> => {
+  const decoded = web3.eth.abi.decodeLog(
+    addLiquidityEventAbi,
+    rawEvent.data,
+    rawEvent.topics
+  );
+  const txHash = rawEvent.transactionHash;
+  const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
+
+  const keys = addLiquidityEventAbi.map(abi => abi.name);
+  const dynamic = pick(decoded, keys) as {
+    amount: string;
+    newBalance: string;
+    newSupply: string;
+  };
+  const [_, trader, tokenAdded] = rawEvent.topics;
+  console.log("decoded add liquidity event", rawEvent);
+  return {
+    blockNumber,
+    txHash,
+    data: {
+      ...dynamic,
+      trader: removeLeadingZeros(trader),
+      tokenAdded: removeLeadingZeros(tokenAdded)
+    }
+  };
+};
+
 const decodeConversionEvent = (
   rawEvent: RawEventResponse
 ): DecodedEvent<ConversionEventDecoded> => {
@@ -299,10 +420,52 @@ const decodeConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
+  const [_, fromAddress, toAddress, trader] = rawEvent.topics;
+  const picked = (pick(
+    decoded,
+    conversionEventNetworkAbi.map(abi => abi.name)
+  ) as unknown) as {
+    fromAmount: string;
+    toAmount: string;
+    conversionFee: string;
+  };
+
+  const res = {
+    blockNumber,
+    txHash,
+    data: {
+      from: {
+        address: removeLeadingZeros(fromAddress),
+        weiAmount: picked.fromAmount
+      },
+      to: {
+        address: removeLeadingZeros(toAddress),
+        weiAmount: picked.toAmount
+      },
+      trader: removeLeadingZeros(trader)
+    }
+  };
+
+  console.log(decoded, { rawEvent, res }, "big deal");
+  return res;
+};
+
+const decodeNetworkConversionEvent = (
+  rawEvent: RawEventResponse
+): DecodedEvent<ConversionEventDecoded> => {
+  const decoded = web3.eth.abi.decodeLog(
+    conversionEventNetworkAbi,
+    rawEvent.data,
+    rawEvent.topics
+  );
+
+  const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
+  const txHash = rawEvent.transactionHash;
+
   const [_, poolToken, fromAddress, toAddress] = rawEvent.topics;
   const picked = (pick(
     decoded,
-    conversionEventAbi.map(abi => abi.name)
+    conversionEventNetworkAbi.map(abi => abi.name)
   ) as unknown) as { fromAmount: string; toAmount: string; trader: string };
 
   return {
@@ -319,6 +482,79 @@ const decodeConversionEvent = (
       },
       trader: picked.trader
     }
+  };
+};
+
+const isTopic = (topic: string) => (event: RawEventResponse) =>
+  compareString(event.topics[0], topic);
+const isNotTopics = (topicsToIgnore: string[]) => (
+  rawEvent: RawEventResponse
+) =>
+  !topicsToIgnore.some(topicToIgnore =>
+    compareString(topicToIgnore, rawEvent.topics[0])
+  );
+
+export const getConverterLogs = async (
+  network: EthNetworks,
+  converterAddress: string,
+  fromBlock: number
+) => {
+  const address = getInfuraAddress(network);
+  const LiquidityRemoved = web3.utils.sha3(
+    "LiquidityRemoved(address,address,uint256,uint256,uint256)"
+  ) as string;
+
+  const LiquidityAdded = web3.utils.sha3(
+    "LiquidityAdded(address,address,uint256,uint256,uint256)"
+  ) as string;
+
+  const Conversion = web3.utils.sha3(
+    "Conversion(address,address,address,uint256,uint256,int256)"
+  ) as string;
+
+  const res = await axios.post<InfuraEventResponse>(address, {
+    jsonrpc: "2.0",
+    method: "eth_getLogs",
+    params: [
+      {
+        fromBlock: web3.utils.toHex(fromBlock),
+        toBlock: "latest",
+        address: converterAddress
+        // topics: [Conversion, LiquidityAdded, LiquidityRemoved]
+      }
+    ],
+    id: 1
+  });
+
+  console.log(res, "was the raw res");
+
+  const TokenRateUpdate = web3.utils.sha3(
+    "TokenRateUpdate(address,address,uint256,uint256)"
+  ) as string;
+
+  const PriceDataUpdate =
+    "0x8a6a7f53b3c8fa1dc4b83e3f1be668c1b251ff8d44cdcb83eb3acec3fec6a788";
+
+  const topicsToIgnore = [TokenRateUpdate, PriceDataUpdate];
+
+  const focusedTopics = res.data.result.filter(isNotTopics(topicsToIgnore));
+
+  const conversions = focusedTopics
+    .filter(isTopic(Conversion))
+    .map(decodeConversionEvent);
+
+  const removeLiquidity = focusedTopics
+    .filter(isTopic(LiquidityRemoved))
+    .map(decodeRemoveLiquidity);
+
+  const addLiquidity = focusedTopics
+    .filter(isTopic(LiquidityAdded))
+    .map(decodeAddLiquidityEvent);
+
+  return {
+    addLiquidity,
+    removeLiquidity,
+    conversions
   };
 };
 
@@ -341,7 +577,7 @@ export const getLogs = async (
     ],
     id: 1
   });
-  const decoded = res.data.result.map(decodeConversionEvent);
+  const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
 };
@@ -922,4 +1158,13 @@ export const getCountryCode = async (): Promise<string> => {
     console.error(e);
     return "UNKOWN";
   }
+};
+
+export const buildPoolName = (
+  poolId: string,
+  separator: string = "/"
+): string => {
+  const pool: ViewRelay = vxm.bancor.relay(poolId);
+  const symbols = pool.reserves.map(x => x.symbol);
+  return symbols.join(separator);
 };

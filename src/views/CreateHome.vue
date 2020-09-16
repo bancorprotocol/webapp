@@ -343,7 +343,16 @@ export default class CreateHomeNew extends Vue {
     }
   }
 
-  nextStep() {
+  get isAuthenticated() {
+    return vxm.wallet.isAuthenticated;
+  }
+
+  async nextStep() {
+    if (!this.isAuthenticated) {
+      //@ts-ignore
+      await this.promptAuth();
+      return;
+    }
     this.stepOneProps = this.stepOneProps.filter(
       (p: CreateStep1) => p.token !== null
     );
