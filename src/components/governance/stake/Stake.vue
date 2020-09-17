@@ -3,6 +3,10 @@
     <p>hello world</p>
     {{ balance }}
     {{ votes }}
+    <div
+        @click="stake"
+    >stake!
+    </div>
   </content-block>
 </template>
 
@@ -28,7 +32,17 @@ export default class Stake extends Vue {
     return vxm.general.darkMode;
   }
 
-  async created() {
+  stake() {
+    vxm.ethGovernance.stake({
+      account: vxm.ethWallet.isAuthenticated,
+      amount: 2 * 1e18
+    })
+        .then(() => {
+          this.updateBalances()
+        })
+  }
+
+  async updateBalances() {
     this.balance = await vxm.ethGovernance.getBalance({
       account: vxm.ethWallet.isAuthenticated
     });
@@ -36,6 +50,10 @@ export default class Stake extends Vue {
     this.votes = await vxm.ethGovernance.getVotes({
       voter: vxm.ethWallet.isAuthenticated
     });
+  }
+
+  async mounted() {
+    await this.updateBalances()
   }
 }
 </script>
