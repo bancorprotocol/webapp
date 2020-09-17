@@ -76,7 +76,10 @@
           class="font-size-12 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          {{ expectedReturn ? expectedReturn : "0" }}
+          <span v-if="!loadingReturn">
+            {{ expectedReturn ? expectedReturn : "0" }}
+          </span>
+          <font-awesome-icon v-else icon="circle-notch" spin class="mr-2" />
           {{ selectedPoolToken.symbol }}
         </span>
       </label-content-split>
@@ -159,6 +162,8 @@ export default class PoolActionsRemoveV2 extends Vue {
   amountSmartToken = "";
 
   expectedReturn = "";
+  loadingReturn = false;
+
   errorMessage = "";
   modal: boolean = false;
 
@@ -305,6 +310,7 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   @Watch("amountSmartToken")
   async smartTokenChanged(amount: string) {
+    this.loadingReturn = true;
     this.errorMessage = "";
     if (amount == "") {
       this.expectedReturn = "";
@@ -331,6 +337,8 @@ export default class PoolActionsRemoveV2 extends Vue {
     } catch (e) {
       this.errorMessage = e.message;
       this.expectedReturn = "?";
+    } finally {
+      this.loadingReturn = false;
     }
   }
 

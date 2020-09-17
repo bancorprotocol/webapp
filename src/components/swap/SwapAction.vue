@@ -156,7 +156,6 @@ export default class SwapAction extends Vue {
     this.$bvModal.show(name);
   }
 
-
   selectFromToken(id: string) {
     let to = this.$route.query.to;
 
@@ -190,8 +189,6 @@ export default class SwapAction extends Vue {
       }
     });
   }
-
-
 
   sanitizeAmount(amount: string) {
     this.setDefault()
