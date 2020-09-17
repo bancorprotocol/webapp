@@ -67,7 +67,8 @@ import {
   DecodedTimedEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
-  bancorSubgraph
+  bancorSubgraph, 
+  chainlinkSubgraph
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -126,7 +127,6 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
-import { blockTimestampToDate } from "eosjs/dist/eosjs-serialize";
 
 const get_volumes = async (converter: string) =>
   bancorSubgraph(`
@@ -273,8 +273,6 @@ const getVolumeStats = async (blockNumbers: string[]) => {
         weight
       }
     }
-  
-  
   `
   );
   const finalRequest = ["{", ...requests, "}"].join("");
@@ -289,11 +287,51 @@ const getVolumeStats = async (blockNumbers: string[]) => {
 
 const bntToken = "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c";
 
-const totalBntVolumeAtBlocks = async (blocks: string[])=> {
-  console.count('volumeRequest')
-  const res = await getVolumeStats(blocks);
+const usdPriceOfEth = async(blockNumbers: string[]) => {
 
-  console.log(res, 'was res volume stat')
+  interface ChainkLinkRes {
+    assetPair:          AssetPair;
+    latestHourlyCandle: LatestHourlyCandle;
+  }
+
+  enum AssetPair {
+    EthUsd = "ETH/USD",
+  }
+
+  interface LatestHourlyCandle {
+    medianPrice: string;
+  }
+
+  const labelAndBlocks = blockNumbers.map(
+    number => [`a${number}`, number] as [string, string]
+  );
+
+  const requests = labelAndBlocks.map(
+    ([label, block]) => `
+
+    ${label}:priceFeed(block:{number:${block}} id: "0xf79d6afbb6da890132f9d7c355e3015f15f3406f") {
+      assetPair
+      latestHourlyCandle {
+        medianPrice
+      }
+    }
+
+  `
+  );
+  
+  const finalRequest = ["{", ...requests, "}"].join("");
+  const res = await chainlinkSubgraph(finalRequest);
+  const arrRes = toPairs(res).filter(([_, data]) => data) as [string, ChainkLinkRes][]
+
+  const medianPriceToDec = (medianPrice: string) => new BigNumber(medianPrice).dividedBy(100000000).toNumber();
+  const data = arrRes.map(([blockLabel, data]) => [blockLabel.slice(1), data] as [string, ChainkLinkRes]);
+
+  const prices = data.map(([blockNumber, data]) => [blockNumber, medianPriceToDec(data.latestHourlyCandle.medianPrice)] as [string, number]);
+  return prices;
+}
+
+const totalBntVolumeAtBlocks = async (blocks: string[])=> {
+  const [usdPrices, res] = await Promise.all([usdPriceOfEth(blocks), getVolumeStats(blocks)]);
 
   const totalVolumeAtBlock = res.map(([block, converters]) => {
     const uniqueAnchors = uniqWith(
@@ -325,20 +363,20 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
     );
 
     const filteredLiquidity = liquidity
-    .filter(vol => vol && vol.length > 0)
-    .map(vol => vol.filter(Boolean))
-    .filter(vol => vol && vol.length > 0)
-    .map(vol => vol!.map(con => con!.balance))
-    .map(vol =>
-      vol.reduce((acc, item) => new BigNumber(item).plus(acc).toString())
-    );
+      .filter(vol => vol && vol.length > 0)
+      .map(vol => vol.filter(Boolean))
+      .filter(vol => vol && vol.length > 0)
+      .map(vol => vol!.map(con => con!.balance))
+      .map(vol =>
+        vol.reduce((acc, item) => new BigNumber(item).plus(acc).toString())
+      );
 
     const totalLiquidity =
-    filteredLiquidity.length > 0
-      ? filteredLiquidity.reduce((acc, item) =>
-          new BigNumber(item).plus(acc).toString()
-        )
-      : "0";
+      filteredLiquidity.length > 0
+        ? filteredLiquidity.reduce((acc, item) =>
+            new BigNumber(item).plus(acc).toString()
+          )
+        : "0";
 
 
 
