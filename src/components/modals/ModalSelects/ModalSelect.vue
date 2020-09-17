@@ -28,6 +28,12 @@
             <p>Nothing here!</p>
           </slot>
         </b-col>
+        <b-col v-if="loadingTokens" cols="12" class="text-center">
+          <span>
+            <font-awesome-icon icon="circle-notch" class="mr-3" spin />
+            loading ...
+          </span>
+        </b-col>
         <b-col cols="12" class="mb-3 text-center">
           <main-button
             v-if="canDisplayMoreItems"
@@ -82,6 +88,10 @@ export default class ModalSelect extends Vue {
   @Emit()
   selectItem(item: any) {
     return item;
+  }
+
+  get loadingTokens() {
+    return vxm.bancor.loadingTokens;
   }
 
   get itemsToLoad() {
