@@ -53,10 +53,12 @@ export default class DataSummary extends Vue {
   get volumeChartData(): Chart.ChartData {
     const volumeStats = vxm.ethBancor.volumeInfo;
     const labels = volumeStats.map(
-      ([blockNumber, totalVolume, unixTime]) => new Date(unixTime * 1000)
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
+        new Date(unixTime * 1000)
     );
-    const data = volumeStats.map(([blockNumber, totalVolume, unixTime]) =>
-      parseFloat(totalVolume)
+    const data = volumeStats.map(
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
+        parseFloat(totalVolume)
     );
 
     return {
