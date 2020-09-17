@@ -12,7 +12,7 @@
     </b-col>
     <b-col md="6">
       <content-block title="Volume">
-        <volume-chart class="mt-3" />
+        <volume-chart :data="volumeChartData" class="mt-3" />
       </content-block>
     </b-col>
     <b-col cols="12">
@@ -40,7 +40,6 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
 
 @Component({
   components: {
-    VolumeChart,
     TransactionTables,
     PoolTokenTables,
     LiquidityChart,
@@ -49,6 +48,26 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
   }
 })
 export default class DataSummary extends Vue {
+  get volumeChartData(): Chart.ChartData {
+    const volumeStats = vxm.ethBancor.volumeInfo;
+    const labels = volumeStats.map(x => new Date(x[2] * 1000)).reverse();
+    const data = volumeStats.map(x => parseFloat(x[1])).reverse();
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Volume",
+          backgroundColor: "#0f59d1",
+          borderColor: "#0f59d1",
+          borderWidth: 0,
+          pointRadius: 0,
+          data
+        }
+      ]
+    };
+  }
+
   get isEth() {
     return this.$route.params.service === "eth";
   }
