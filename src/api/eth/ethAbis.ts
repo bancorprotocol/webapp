@@ -3975,3 +3975,690 @@ export const ABIV2Converter: AbiItem[] = [
     type: "event"
   }
 ];
+
+export const ABIBancorGovernance: AbiItem[] = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_voteTokenAddress",
+        type: "address"
+      }
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "creator",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "start",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "duration",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "executor",
+        type: "address"
+      }
+    ],
+    name: "NewProposal",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_prevOwner",
+        type: "address"
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_newOwner",
+        type: "address"
+      }
+    ],
+    name: "OwnerUpdate",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "executor",
+        type: "address"
+      }
+    ],
+    name: "ProposalExecuted",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_for",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_against",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "quorumReached",
+        type: "bool"
+      }
+    ],
+    name: "ProposalFinished",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "voter",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "votes",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "totalVotes",
+        type: "uint256"
+      }
+    ],
+    name: "RevokeVoter",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "user",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      }
+    ],
+    name: "Staked",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "user",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      }
+    ],
+    name: "Unstaked",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "voter",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "vote",
+        type: "bool"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "weight",
+        type: "uint256"
+      }
+    ],
+    name: "Vote",
+    type: "event"
+  },
+  {
+    inputs: [],
+    name: "acceptOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "newOwner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "proposalCount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    name: "proposals",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      },
+      {
+        internalType: "address",
+        name: "proposer",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "totalForVotes",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "totalAgainstVotes",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "start",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "end",
+        type: "uint256"
+      },
+      {
+        internalType: "address",
+        name: "executor",
+        type: "address"
+      },
+      {
+        internalType: "string",
+        name: "hash",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "totalVotesAvailable",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "quorum",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "quorumRequired",
+        type: "uint256"
+      },
+      {
+        internalType: "bool",
+        name: "open",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "quorum",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "totalVotes",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_newOwner",
+        type: "address"
+      }
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "voteLock",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    name: "voteLocks",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "voteMinimum",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "votePeriod",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "voteToken",
+    outputs: [
+      {
+        internalType: "contract IERC20",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    name: "voters",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "exit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      }
+    ],
+    name: "getStats",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "_for",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_against",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_quorum",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "voter",
+        type: "address"
+      }
+    ],
+    name: "votesOf",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_quorum",
+        type: "uint256"
+      }
+    ],
+    name: "setQuorum",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_voteMinimum",
+        type: "uint256"
+      }
+    ],
+    name: "setVoteMinimum",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_votePeriod",
+        type: "uint256"
+      }
+    ],
+    name: "setVotePeriod",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_voteLock",
+        type: "uint256"
+      }
+    ],
+    name: "setVoteLock",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "executor",
+        type: "address"
+      },
+      {
+        internalType: "string",
+        name: "hash",
+        type: "string"
+      }
+    ],
+    name: "propose",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      }
+    ],
+    name: "execute",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      }
+    ],
+    name: "tallyVotes",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "revoke",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      }
+    ],
+    name: "voteFor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256"
+      }
+    ],
+    name: "voteAgainst",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      }
+    ],
+    name: "stake",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      }
+    ],
+    name: "unstake",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  }
+];
