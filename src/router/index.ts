@@ -10,6 +10,8 @@ import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
 import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
+import Governance from "@/views/Governance.vue";
+import Stake from "@/components/governance/Stake.vue";
 
 Vue.use(Router);
 
@@ -124,6 +126,21 @@ export const router = new Router({
           path: "pool/:id",
           name: "DetailsPool",
           component: DataDetailsPool
+        }
+      ]
+    },
+    {
+      path: "/:service/Governance",
+      name: "Governance",
+      components: {
+        Nav: Navigation,
+        default: Governance
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          component: Stake
         }
       ]
     },

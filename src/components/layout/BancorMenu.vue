@@ -26,9 +26,13 @@
         ><font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
         Bancor Swap</b-dropdown-item
       >
-      <b-dropdown-item @click="navData"
+      <b-dropdown-item @click="navigate('data')"
         ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
         Data</b-dropdown-item
+      >
+      <b-dropdown-item @click="navigate('governance')"
+      ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
+        Governance</b-dropdown-item
       >
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')"
         ><font-awesome-icon icon="times" class="mr-2" fixed-width /> Bancor
@@ -116,7 +120,7 @@ export default class BancorMenu extends Vue {
     return vxm.general.darkMode;
   }
 
-  navData() {
+  navigate(page: string) {
     const hostbase = window.location.hostname;
     const service = this.$route.params.service;
 
@@ -125,14 +129,14 @@ export default class BancorMenu extends Vue {
     const isProd = !isDev && !isStaging;
 
     if (isDev) {
-      this.openUrl(`http://localhost:8080/${service}/data`);
+      this.openUrl(`http://localhost:8080/${service}/${page}`);
     } else if (isStaging) {
-      this.openUrl(`https://staging.swap.bancor.network/${service}/data`);
+      this.openUrl(`https://staging.swap.bancor.network/${service}/${page}`);
     } else if (isProd) {
-      this.openUrl(`https://swap.bancor.network/${service}/data`);
+      this.openUrl(`https://swap.bancor.network/${service}/${page}`);
     } else {
       console.log("failed to determine route...");
-      this.openUrl(`https://swap.bancor.network/${service}/data`);
+      this.openUrl(`https://swap.bancor.network/${service}/${page}`);
     }
   }
 
