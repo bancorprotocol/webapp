@@ -892,6 +892,9 @@ const buildReserveFeedsChainlink = (
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
+type TotalVolume = [blockNumber: string, totalVolume: string, unixTime: number];
+
+
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
   return {
@@ -4511,9 +4514,9 @@ export class EthBancorModule
   }
 
   // blockNumber, totalBntVolumeInBntTokens, unixTime
-  volumeArr: [string, string, number][] = [];
+  volumeArr: TotalVolume[] = [];
 
-  @mutation setVolume(volumeData: [string, string, number][]) {
+  @mutation setVolume(volumeData: TotalVolume[]) {
     this.volumeArr = volumeData;
   }
 
@@ -4544,7 +4547,7 @@ export class EthBancorModule
         Number(latestBlock),
         timeNow
       );
-      return [blockNumber, totalVolume, unixTime] as [string, string, number];
+      return [blockNumber, totalVolume, unixTime] as TotalVolume;
     });
 
     this.setVolume(withTimestamp);
