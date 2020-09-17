@@ -1,6 +1,6 @@
 <template>
   <div :class="`progress-line-bar progress-line-bar--${type}`">
-    <div class="progress-line-bar__progress fade" :style="{width: percentageValue}"></div>
+    <div class="progress-line-bar__progress" :style="{width: percentageValue}"></div>
   </div>
 </template>
 

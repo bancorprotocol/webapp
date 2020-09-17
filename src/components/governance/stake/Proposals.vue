@@ -7,9 +7,10 @@
       <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
         <b-tab title="Playground" active>
           <!--  -->
-a
+
+          <remaining-time type="warn" from="1600348747298" to="1600358747298" />
           <progress-bar type="warn" percentage="20" />
-a
+
           <!--  -->
         </b-tab>
         <b-tab title="Open">
@@ -29,12 +30,13 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 
 import ProgressBar from "@/components/common/ProgressBar.vue";
-
+import RemainingTime from "@/components/common/RemainingTime.vue";
 
 @Component({
   components: {
     ContentBlock,
     ProgressBar,
+    RemainingTime,
   }
 })
 export default class Stake extends Vue {
