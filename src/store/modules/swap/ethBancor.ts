@@ -327,7 +327,7 @@ const usdPriceOfEth = async(blockNumbers: string[]) => {
   const data = arrRes.map(([blockLabel, data]) => [blockLabel.slice(1), data] as [string, ChainkLinkRes]);
 
   const prices = data.map(([blockNumber, data]) => [blockNumber, medianPriceToDec(data.latestHourlyCandle.medianPrice)] as [string, number]);
-  return prices;
+  return prices as [block: string, priceOfBnt: number][]
 }
 
 const totalBntVolumeAtBlocks = async (blocks: string[])=> {
