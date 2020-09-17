@@ -5,7 +5,14 @@
         + add
       </div>
       <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-        <b-tab title="Open" active>
+        <b-tab title="Playground" active>
+          <!--  -->
+a
+          <progress-bar type="warn" percentage="20" />
+a
+          <!--  -->
+        </b-tab>
+        <b-tab title="Open">
           Open
         </b-tab>
         <b-tab title="Done">
@@ -21,9 +28,13 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 
+import ProgressBar from "@/components/common/ProgressBar.vue";
+
+
 @Component({
   components: {
     ContentBlock,
+    ProgressBar,
   }
 })
 export default class Stake extends Vue {
