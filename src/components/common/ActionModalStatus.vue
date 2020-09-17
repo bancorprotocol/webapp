@@ -53,21 +53,20 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, PropSync, Emit } from "vue-property-decorator";
+import { Prop, Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import { namespace } from "vuex-class";
 import { TxResponse } from "@/types/bancor";
-
-const bancor = namespace("bancor");
 
 @Component
 export default class ActionModalStatus extends Vue {
-  @bancor.Getter currentNetwork!: string;
-
   @Prop() error?: string;
   @Prop() success?: TxResponse | null;
   @Prop({ default: "Wait for your Wallet to prompt and continue there" })
   stepDescription!: string;
+
+  get currentNetwork() {
+    return vxm.bancor.currentNetwork;
+  }
 
   get explorerName() {
     switch (this.currentNetwork) {
