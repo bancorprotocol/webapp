@@ -1,10 +1,11 @@
 <template>
   <div v-if="selectedToken && !loadingTokens">
     <label-content-split label="Pool" class="my-4">
-      <pool-logos
-        @click="$bvModal.show('modal-join-pool')"
-        :pool="pool"
-        :dropdown="true"
+      <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
+      <modal-pool-select
+        v-model="poolSelectModal"
+        :pools="pools"
+        @select="select"
       />
     </label-content-split>
 
@@ -124,6 +125,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -135,6 +137,7 @@ interface PoolTokenUI {
 
 @Component({
   components: {
+    ModalPoolSelect,
     PercentageSlider,
     AlertBlock,
     TokenInputField,
@@ -162,8 +165,14 @@ export default class PoolActionsRemoveV2 extends Vue {
   poolTokens: PoolTokenUI[] = [];
   insufficientBalance: boolean = false;
 
+  poolSelectModal = false;
+
   get loadingTokens() {
     return this.selectedToken ? false : vxm.bancor.loadingTokens;
+  }
+
+  get pools() {
+    return vxm.bancor.relays.filter(x => x.v2);
   }
 
   get balanceError() {
@@ -195,6 +204,16 @@ export default class PoolActionsRemoveV2 extends Vue {
     else await this.promptAuth();
   }
 
+  select(id: string) {
+    this.$router.push({
+      name: "PoolAction",
+      params: {
+        poolAction: "remove",
+        account: id
+      }
+    });
+  }
+
   get advancedBlockItems() {
     return [
       {
@@ -213,6 +232,10 @@ export default class PoolActionsRemoveV2 extends Vue {
     if (isAuthenticated) {
       this.getPoolBalances();
     }
+  }
+
+  poolLogosClick() {
+    this.poolSelectModal = true;
   }
 
   async getPoolBalances() {
