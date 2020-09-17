@@ -404,52 +404,6 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
   return blockSummaries;
 };
 
-const main = async () => {
-  const converter = "0x25b970d6b92a2b38fdd84c7dc7d9de3830128c90";
-  const v = await get_volumes(converter);
-  console.log(v, "was v");
-  const formattedTime = moment.unix(v.converter.createdAtTimestamp).format();
-  console.log(formattedTime, "was formatted time");
-  // const xx = await get_exchange_snapshot_volume(converter, "10871720");
-
-  const averageBlockTimeSeconds = 13;
-  const blocksPerMinute = 60 / averageBlockTimeSeconds;
-  const blocksPerDay = blocksPerMinute * 60 * 24;
-  const blocksPerWeek = blocksPerDay * 7;
-
-  const backBlocks = parseInt(String(blocksPerWeek));
-  const rootBlocks = "10872376";
-  const blocksToRequest = [...Array(26)]
-    .map((_, index) => index + 1)
-    .map(backNumber =>
-      new BigNumber(rootBlocks)
-        .minus(new BigNumber(backBlocks).times(backNumber))
-        .toString()
-    );
-  const d = await totalBntVolumeAtBlocks(blocksToRequest);
-
-  console.log("ferrari", d);
-  // console.log(filteredVolumes, "are filtered", totalVolume, "is total volume");
-
-  // console.log(volumes, "are the volumes now");
-  // const backBlocks = "100";
-  // const rootBlocks = "10871720";
-  // const requests = [...Array(50)]
-  //   .map((_, index) => index + 1)
-  //   .map(backNumber =>
-  //     new BigNumber(rootBlocks)
-  //       .minus(new BigNumber(backBlocks).times(backNumber))
-  //       .toNumber()
-  //   );
-  // const labelledRequests = requests.map(
-  //   number => [`a${number}`, String(number)] as [string, string]
-  // );
-  // const y = await get_exchange_snapshots(converter, labelledRequests);
-  // console.log(y, "came back for y", xx, labelledRequests);
-};
-
-// main();
-
 const decodedToTimedDecoded = <T>(
   event: DecodedEvent<T>,
   knownBlockNumber: number,
