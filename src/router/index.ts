@@ -10,8 +10,8 @@ import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
 import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
-import Governance from "@/views/Governance.vue";
-import Stake from "@/components/governance/Stake.vue";
+import GovernancePage from "@/components/governance/GovernancePage.vue"
+import Governance from "@/views/Governance.vue"
 
 Vue.use(Router);
 
@@ -140,7 +140,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          component: Stake
+          component: GovernancePage
         }
       ]
     },
