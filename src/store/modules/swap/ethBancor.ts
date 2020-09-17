@@ -233,6 +233,14 @@ const getVolumeStats = async (blockNumbers: string[]) => {
     anchor: string;
     id: string;
     volumes: Volume[];
+    balances: Balance[]
+  }
+
+  interface Balance {
+    token: Token
+    stakedAmount: string;
+    balance: string;
+    weight: string;
   }
 
   interface Volume {
@@ -242,7 +250,6 @@ const getVolumeStats = async (blockNumbers: string[]) => {
 
   interface Token {
     id: string;
-    symbol: string;
   }
 
   const requests = labelAndBlocks.map(
@@ -254,9 +261,16 @@ const getVolumeStats = async (blockNumbers: string[]) => {
       volumes {
         token {
           id
-          symbol
         }
         totalVolume
+      }
+      balances {
+        token {
+          id
+        }
+        stakedAmount
+        balance
+        weight
       }
     }
   
@@ -275,8 +289,11 @@ const getVolumeStats = async (blockNumbers: string[]) => {
 
 const bntToken = "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c";
 
-const totalBntVolumeAtBlocks = async (blocks: string[]) => {
+const totalBntVolumeAtBlocks = async (blocks: string[])=> {
+  console.count('volumeRequest')
   const res = await getVolumeStats(blocks);
+
+  console.log(res, 'was res volume stat')
 
   const totalVolumeAtBlock = res.map(([block, converters]) => {
     const uniqueAnchors = uniqWith(
@@ -290,6 +307,7 @@ const totalBntVolumeAtBlocks = async (blocks: string[]) => {
         .map(obj => omit(obj, "anchor"))
     }));
 
+
     const volumes = groupedByAnchors.map(group =>
       group.converters.flatMap(converter =>
         converter.volumes.find(volume =>
@@ -297,6 +315,32 @@ const totalBntVolumeAtBlocks = async (blocks: string[]) => {
         )
       )
     );
+
+    const liquidity = groupedByAnchors.map(group =>
+      group.converters.flatMap(converter =>
+        converter.balances.find(volume =>
+          compareString(volume.token.id, bntToken)
+        )
+      )
+    );
+
+    const filteredLiquidity = liquidity
+    .filter(vol => vol && vol.length > 0)
+    .map(vol => vol.filter(Boolean))
+    .filter(vol => vol && vol.length > 0)
+    .map(vol => vol!.map(con => con!.balance))
+    .map(vol =>
+      vol.reduce((acc, item) => new BigNumber(item).plus(acc).toString())
+    );
+
+    const totalLiquidity =
+    filteredLiquidity.length > 0
+      ? filteredLiquidity.reduce((acc, item) =>
+          new BigNumber(item).plus(acc).toString()
+        )
+      : "0";
+
+
 
     const filteredVolumes = volumes
       .filter(vol => vol && vol.length > 0)
@@ -313,7 +357,7 @@ const totalBntVolumeAtBlocks = async (blocks: string[]) => {
             new BigNumber(item).plus(acc).toString()
           )
         : "0";
-    return [block, totalVolume];
+    return [block, totalVolume, totalLiquidity] as VolumeAndLiq
   });
 
   const blockSummaries = totalVolumeAtBlock.sort((a, b) =>
@@ -891,6 +935,9 @@ const buildReserveFeedsChainlink = (
 
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
+
+type TotalVolumeAndLiquidity = [blockNumber: string, totalVolume: string, totalLiquidity: string, unixTime: number];
+type VolumeAndLiq = [blockNumber: string, totalVolume: string, totalLiquidity: string]
 
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
@@ -4511,9 +4558,9 @@ export class EthBancorModule
   }
 
   // blockNumber, totalBntVolumeInBntTokens, unixTime
-  volumeArr: [string, string, number][] = [];
+  volumeArr: TotalVolumeAndLiquidity[] = [];
 
-  @mutation setVolume(volumeData: [string, string, number][]) {
+  @mutation setVolume(volumeData: TotalVolumeAndLiquidity[]) {
     this.volumeArr = volumeData;
   }
 
@@ -4538,13 +4585,13 @@ export class EthBancorModule
 
     console.log(data, "came back in vuex");
 
-    const withTimestamp = data.map(([blockNumber, totalVolume]) => {
+    const withTimestamp = data.map(([blockNumber, totalVolume, totalLiquidity]) => {
       const unixTime = estimateBlockTimeUnix(
         Number(blockNumber),
         Number(latestBlock),
         timeNow
       );
-      return [blockNumber, totalVolume, unixTime] as [string, string, number];
+      return [blockNumber, totalVolume, totalLiquidity, unixTime] as TotalVolumeAndLiquidity;
     });
 
     this.setVolume(withTimestamp);

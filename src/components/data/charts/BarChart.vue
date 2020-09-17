@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Bar, mixins } from "vue-chartjs-typescript";
-import { Component, Vue, Watch, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 
 const { reactiveProp } = mixins;
 
@@ -10,16 +10,15 @@ const { reactiveProp } = mixins;
 })
 export default class BarChart extends Vue {
   @Prop()
-  chartData: any;
+  chartData!: Chart.ChartData;
 
-  @Prop({
-    default: function() {
-      return {};
-    }
-  })
-  options!: object;
+  @Prop({ default: {} })
+  options!: Chart.ChartOptions;
 
-  public renderChart!: (chartData: any, options: any) => void;
+  public renderChart!: (
+    chartData: Chart.ChartData,
+    options: Chart.ChartOptions
+  ) => void;
 
   mounted() {
     this.renderChart(this.chartData, this.options);

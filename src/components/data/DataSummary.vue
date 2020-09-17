@@ -7,12 +7,12 @@
     </b-col>
     <b-col md="6">
       <content-block title="Liquidity">
-        <liquidity-chart class="mt-3" />
+        <liquidity-chart :data="liquidityChartData" class="mt-3" />
       </content-block>
     </b-col>
     <b-col md="6">
       <content-block title="Volume">
-        <volume-chart class="mt-3" />
+        <volume-chart :data="volumeChartData" class="mt-3" />
       </content-block>
     </b-col>
     <b-col cols="12">
@@ -37,18 +37,70 @@ import LiquidityChart from "@/components/data/charts/LiquidityChart.vue";
 import VolumeChart from "@/components/data/charts/VolumeChart.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
+import { Chart } from "chart.js";
 
 @Component({
   components: {
-    VolumeChart,
     TransactionTables,
     PoolTokenTables,
     LiquidityChart,
     Statistics,
+    VolumeChart,
     ContentBlock
   }
 })
 export default class DataSummary extends Vue {
+  get liquidityChartData(): Chart.ChartData {
+    const volumeStats = vxm.ethBancor.volumeInfo;
+    const labels = volumeStats.map(
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) => unixTime * 1000
+    );
+    const data = volumeStats.map(
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
+        parseFloat(totalLiquidity)
+    );
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Liquidity",
+          backgroundColor: "#0f59d1",
+          borderColor: "#0f59d1",
+          borderWidth: 0,
+          pointRadius: 0,
+          data
+        }
+      ]
+    };
+  }
+
+  get volumeChartData(): Chart.ChartData {
+    const volumeStats = vxm.ethBancor.volumeInfo;
+    const labels = volumeStats.map(
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
+        new Date(unixTime * 1000)
+    );
+    const data = volumeStats.map(
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
+        parseFloat(totalVolume)
+    );
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Volume",
+          backgroundColor: "#0f59d1",
+          borderColor: "#0f59d1",
+          borderWidth: 0,
+          pointRadius: 0,
+          data
+        }
+      ]
+    };
+  }
+
   get isEth() {
     return this.$route.params.service === "eth";
   }
