@@ -35,7 +35,7 @@ export default class VolumeChart extends Vue {
             padding: 10,
             autoSkip: true,
             maxTicksLimit: 4,
-            callback: function(value, index, values) {
+            callback: function(value) {
               return numeral(value).format("$0a");
             }
           },

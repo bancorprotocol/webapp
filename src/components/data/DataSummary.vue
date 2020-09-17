@@ -37,6 +37,7 @@ import LiquidityChart from "@/components/data/charts/LiquidityChart.vue";
 import VolumeChart from "@/components/data/charts/VolumeChart.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
+import { Chart } from "chart.js";
 
 @Component({
   components: {
@@ -44,14 +45,19 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
     PoolTokenTables,
     LiquidityChart,
     Statistics,
+    VolumeChart,
     ContentBlock
   }
 })
 export default class DataSummary extends Vue {
   get volumeChartData(): Chart.ChartData {
     const volumeStats = vxm.ethBancor.volumeInfo;
-    const labels = volumeStats.map(x => new Date(x[2] * 1000)).reverse();
-    const data = volumeStats.map(x => parseFloat(x[1])).reverse();
+    const labels = volumeStats.map(
+      ([blockNumber, totalVolume, unixTime]) => new Date(unixTime * 1000)
+    );
+    const data = volumeStats.map(([blockNumber, totalVolume, unixTime]) =>
+      parseFloat(totalVolume)
+    );
 
     return {
       labels,
