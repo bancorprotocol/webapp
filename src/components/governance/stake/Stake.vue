@@ -1,6 +1,8 @@
 <template>
   <content-block title="Stake" :shadow-light="true">
     <p>hello world</p>
+    {{ balance }}
+    {{ votes }}
   </content-block>
 </template>
 
@@ -15,12 +17,25 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
   }
 })
 export default class Stake extends Vue {
+  votes: string = ""
+  balance: string = ""
+
   get isEth() {
     return this.$route.params.service === "eth";
   }
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  async created() {
+    this.balance = await vxm.ethGovernance.getBalance({
+      account: "0x14db63c867895b79BD88dD18747a97eB55714882"
+    });
+
+    this.votes = await vxm.ethGovernance.getVotes({
+      voter: "0x14db63c867895b79BD88dD18747a97eB55714882"
+    });
   }
 }
 </script>
