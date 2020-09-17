@@ -22,7 +22,7 @@
         <main-button
           @click="percentage = p"
           :label="`${p}%`"
-          :active="p === percentage"
+          :active="buttonsDirty && p === percentage"
           :small="true"
         />
       </b-col>
@@ -45,6 +45,7 @@ export default class PercentageSlider extends Vue {
   @Prop({ default: false }) showButtons!: boolean;
   @VModel({ type: String }) percentage!: string;
   @Prop({ default: false }) disabled!: boolean;
+  @Prop({ default: true }) buttonsDirty!: boolean;
 
   percentages = ["25", "50", "75", "100"];
 

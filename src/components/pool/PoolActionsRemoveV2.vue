@@ -1,5 +1,5 @@
 <template>
-  <div v-if="selectedToken">
+  <div v-if="selectedToken && !loadingTokens">
     <label-content-split label="Pool" class="my-4">
       <pool-logos
         @click="$bvModal.show('modal-join-pool')"
@@ -40,6 +40,7 @@
       v-model="percentage"
       @input="percentageUpdate"
       :show-buttons="true"
+      :buttons-dirty="percentageDirty"
     />
 
     <div>
@@ -74,7 +75,8 @@
           class="font-size-12 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          {{ expectedReturn }} {{ selectedPoolToken.symbol }}
+          {{ expectedReturn ? expectedReturn : "0" }}
+          {{ selectedPoolToken.symbol }}
         </span>
       </label-content-split>
     </div>
@@ -147,6 +149,7 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   percentage: string = "50";
   exitFee = 0;
+  percentageDirty = false;
 
   selectedToken: string = "";
 
@@ -158,6 +161,10 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   poolTokens: PoolTokenUI[] = [];
   insufficientBalance: boolean = false;
+
+  get loadingTokens() {
+    return this.selectedToken ? false : vxm.bancor.loadingTokens;
+  }
 
   get balanceError() {
     if (this.errorMessage) return this.errorMessage;
@@ -246,6 +253,7 @@ export default class PoolActionsRemoveV2 extends Vue {
     );
     if (amountNumber.gt(poolTokenBalanceNumber))
       this.insufficientBalance = true;
+    else this.insufficientBalance = false;
     if (amount == "") {
       this.percentage = "0";
     } else {
@@ -259,6 +267,7 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   percentageUpdate(percent: string) {
     this.insufficientBalance = false;
+    this.percentageDirty = true;
     const decPercent = Number(percent) / 100;
     if (decPercent === 1)
       this.amountSmartToken = this.selectedPoolToken.balance;
@@ -274,7 +283,11 @@ export default class PoolActionsRemoveV2 extends Vue {
   @Watch("amountSmartToken")
   async smartTokenChanged(amount: string) {
     this.errorMessage = "";
-    if (amount == "") return;
+    if (amount == "") {
+      this.expectedReturn = "";
+      this.exitFee = 0;
+      return;
+    }
     try {
       const res = await vxm.bancor.calculateOpposingWithdraw({
         id: this.pool.id,
@@ -300,14 +313,14 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   @Watch("pool")
   async updateSelection(pool: ViewRelay) {
-    this.selectedToken = "";
+    // this.selectedToken = "";
     await this.getPoolBalances();
-    this.percentageUpdate(this.percentage);
+    // this.percentageUpdate(this.percentage);
   }
 
   async created() {
     await this.getPoolBalances();
-    this.percentageUpdate(this.percentage);
+    //this.percentageUpdate(this.percentage);
   }
 }
 </script>
