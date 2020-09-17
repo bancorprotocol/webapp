@@ -31,7 +31,7 @@
         Data</b-dropdown-item
       >
       <b-dropdown-item @click="navigate('governance')"
-      ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
+      ><font-awesome-icon icon="poll" class="mr-2" fixed-width /> Bancor
         Governance</b-dropdown-item
       >
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')"
