@@ -7,7 +7,7 @@
     </b-col>
     <b-col md="6">
       <content-block title="Liquidity">
-        <liquidity-chart class="mt-3" />
+        <liquidity-chart :data="liquidityChartData" class="mt-3" />
       </content-block>
     </b-col>
     <b-col md="6">
@@ -50,6 +50,31 @@ import { Chart } from "chart.js";
   }
 })
 export default class DataSummary extends Vue {
+  get liquidityChartData(): Chart.ChartData {
+    const volumeStats = vxm.ethBancor.volumeInfo;
+    const labels = volumeStats.map(
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) => unixTime * 1000
+    );
+    const data = volumeStats.map(
+      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
+        parseFloat(totalLiquidity)
+    );
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Liquidity",
+          backgroundColor: "#0f59d1",
+          borderColor: "#0f59d1",
+          borderWidth: 0,
+          pointRadius: 0,
+          data
+        }
+      ]
+    };
+  }
+
   get volumeChartData(): Chart.ChartData {
     const volumeStats = vxm.ethBancor.volumeInfo;
     const labels = volumeStats.map(

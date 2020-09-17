@@ -35,9 +35,7 @@ export default class VolumeChart extends Vue {
             padding: 10,
             autoSkip: true,
             maxTicksLimit: 4,
-            callback: function(value) {
-              return numeral(value).format("$0a");
-            }
+            callback: value => `${numeral(value).format("0,0")} BNT`
           },
           position: "right"
         }
@@ -46,7 +44,10 @@ export default class VolumeChart extends Vue {
         {
           type: "time",
           time: {
-            unit: "month"
+            displayFormats: {
+              week: "ll"
+            },
+            tooltipFormat: "ll"
           },
           display: true,
           gridLines: {
@@ -68,6 +69,11 @@ export default class VolumeChart extends Vue {
     responsive: true,
     maintainAspectRatio: false,
     tooltips: {
+      callbacks: {
+        label: item => {
+          return `${numeral(item.value!).format("0,0")} BNT`;
+        }
+      },
       mode: "index",
       intersect: false
     },
