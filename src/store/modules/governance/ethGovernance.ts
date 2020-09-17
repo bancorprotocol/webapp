@@ -31,27 +31,25 @@ export class EthereumGovernance extends VuexModule.With({
     );
 
     const votes = await governanceContract.methods.votesOf(voter).call();
-
-    console.log(votes);
-
-    return votes.toString();
+    return shrinkToken(votes, 18);
   }
 
   @action
   async getBalance({ account }: { account: EthAddress }): Promise<string> {
-    if (!account) throw new Error("Cannot get balance without address");
+    if (!account)
+      throw new Error("Cannot get balance without address");
 
     const tokenContract = new web3.eth.Contract(
       ABISmartToken,
       tokenContractAddress
     );
 
+    // console.log('accs', await web3.eth.getAccounts())
+
     const [decimals, weiBalance] = await Promise.all([
       tokenContract.methods.decimals().call() as string,
       tokenContract.methods.balanceOf(account).call() as string
     ]);
-    console.log(decimals, weiBalance);
-
     return shrinkToken(weiBalance, Number(decimals));
   }
 }
