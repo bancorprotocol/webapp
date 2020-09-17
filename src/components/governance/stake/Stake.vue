@@ -30,11 +30,11 @@ export default class Stake extends Vue {
 
   async created() {
     this.balance = await vxm.ethGovernance.getBalance({
-      account: "0x14db63c867895b79BD88dD18747a97eB55714882"
+      account: vxm.ethWallet.isAuthenticated
     });
 
     this.votes = await vxm.ethGovernance.getVotes({
-      voter: "0x14db63c867895b79BD88dD18747a97eB55714882"
+      voter: vxm.ethWallet.isAuthenticated
     });
   }
 }
