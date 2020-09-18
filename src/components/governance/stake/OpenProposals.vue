@@ -37,7 +37,9 @@
         </div>
       </td>
       <td>
-        placeholder
+        <button-progress title="For" :percentage="proposal.voteFor * 100" type="info" />
+        <div class="pt-1" />
+        <button-progress title="Against" :percentage="(1 - proposal.voteFor) * 100" type="error" :selected="true" />
       </td>
       <td>
         <div class="font-size-14 font-w500">{{formatDate(proposal.from)}}</div>
@@ -69,6 +71,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
+import ButtonProgress from "@/components/common/ButtonProgress.vue";
 
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 
@@ -78,14 +81,15 @@ import { ViewTableFields } from "@/components/common/TableHeader.vue";
     ProgressBar,
     RemainingTime,
     DataTable,
+    ButtonProgress,
   }
 })
 export default class Stake extends Vue {
 
   get openProposals() {
     return [
-      {id: 1, creator: '0x' + '1'.repeat(8), executor: '0x' + '1'.repeat(8), voteYes: 0.34, from: 1600348747298, to: 1600248747298},
-      {id: 2, creator: '0x' + '3'.repeat(8), executor: '0x' + '2'.repeat(8), voteYes: 0.87, from: 1600348747298, to: 1600268747298},
+      {id: 1, creator: '0x' + '1'.repeat(8), executor: '0x' + '1'.repeat(8), voteFor: 0.34, from: 1600348747298, to: 1600248747298},
+      {id: 2, creator: '0x' + '3'.repeat(8), executor: '0x' + '2'.repeat(8), voteFor: 0.87, from: 1600348747298, to: 1600268747298},
     ]
   }
 
@@ -105,7 +109,7 @@ export default class Stake extends Vue {
       },
       {
         label: "Options",
-        key: "voteYes",
+        key: "voteFor",
         minWidth: "160px",
         maxWidth: "160px"
       },
@@ -150,7 +154,7 @@ export default class Stake extends Vue {
   cursor: pointer;
 }
 .aling-rows-cells {
-  & > td {
+  @at-root .table & > td {
     vertical-align: top !important;
   }
 }
