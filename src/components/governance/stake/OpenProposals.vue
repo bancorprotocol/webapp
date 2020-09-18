@@ -68,7 +68,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import DataTable from "@/components/common/DataTable.vue";
+import DataTable from "@/components/deprecated/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
