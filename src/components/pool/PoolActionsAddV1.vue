@@ -42,10 +42,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import {
-  LiquidityModule,
-  OpposingLiquid,
   ViewRelay,
-  ViewReserve,
   ViewAmount
 } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -53,11 +50,8 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
-import { namespace } from "vuex-class";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "../../api/helpers";
-
-const bancor = namespace("bancor");
 
 @Component({
   components: {
@@ -70,11 +64,6 @@ const bancor = namespace("bancor");
   }
 })
 export default class PoolActionsAddV1 extends Vue {
-  @bancor.Action
-  calculateOpposingDeposit!: LiquidityModule["calculateOpposingDeposit"];
-  @bancor.Action
-  calculateOpposingWithdraw!: LiquidityModule["calculateOpposingWithdraw"];
-
   @Prop() pool!: ViewRelay;
 
   smartTokenAmount: string = "??.??????";
@@ -192,7 +181,7 @@ export default class PoolActionsAddV1 extends Vue {
     }
     this.rateLoading = true;
     try {
-      const results = await this.calculateOpposingDeposit({
+      const results = await vxm.bancor.calculateOpposingDeposit({
         id: this.pool.id,
         reserves: [{ id: this.reserveOne.id, amount: tokenAmount }, { id: this.reserveTwo.id, amount: this.amount2 }],
         changedReserveId: this.reserveOne.id
@@ -241,7 +230,7 @@ export default class PoolActionsAddV1 extends Vue {
     }
     this.rateLoading = true;
     try {
-      const results = await this.calculateOpposingDeposit({
+      const results = await vxm.bancor.calculateOpposingDeposit({
         id: this.pool.id,
         reserves: [{ id: this.reserveTwo.id, amount: tokenAmount }, { id: this.reserveOne.id, amount: this.amount1 }],
         changedReserveId: this.reserveTwo.id
@@ -268,7 +257,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async initialLoadPrices() {
-    const results = await this.calculateOpposingDeposit({
+    const results = await vxm.bancor.calculateOpposingDeposit({
       id: this.pool.id,
       reserves: [{ id: this.reserveOne.id, amount: this.amount1 }, { id: this.reserveTwo.id, amount: this.amount2 }],
       changedReserveId: this.reserveOne.id

@@ -127,15 +127,12 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { LiquidityModule, ViewRelay, ViewReserve } from "@/types/bancor";
+import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
-import { namespace } from "vuex-class";
-
-const bancor = namespace("bancor");
 
 @Component({
   components: {
@@ -147,11 +144,6 @@ const bancor = namespace("bancor");
   }
 })
 export default class PoolActionsRemoveV1 extends Vue {
-  @bancor.Action
-  calculateOpposingWithdraw!: LiquidityModule["calculateOpposingWithdraw"];
-  @bancor.Action
-  getUserBalances!: LiquidityModule["getUserBalances"];
-
   @Prop() pool!: ViewRelay;
 
   advanced = true;
@@ -214,7 +206,7 @@ export default class PoolActionsRemoveV1 extends Vue {
     }
     this.rateLoading = true;
     try {
-      const results = await this.calculateOpposingWithdraw({
+      const results = await vxm.bancor.calculateOpposingWithdraw({
         id: this.pool.id,
         reserves: [
           { id: this.pool.reserves[0].id, amount: tokenAmount },
@@ -243,7 +235,7 @@ export default class PoolActionsRemoveV1 extends Vue {
     }
     this.rateLoading = true;
     try {
-      const results = await this.calculateOpposingWithdraw({
+      const results = await vxm.bancor.calculateOpposingWithdraw({
         id: this.pool.id,
         reserves: [
           { id: this.pool.reserves[0].id, amount: this.amountToken1 },
@@ -280,7 +272,7 @@ export default class PoolActionsRemoveV1 extends Vue {
 
   async fetchBalances() {
     if (!this.isAuthenticated) return;
-    const res = await this.getUserBalances(this.pool.id);
+    const res = await vxm.bancor.getUserBalances(this.pool.id);
     if (this.pool.reserves[0].id === res.maxWithdrawals[0].id) {
       this.balance1 = res.maxWithdrawals[0].amount;
       this.balance2 = res.maxWithdrawals[1].amount;

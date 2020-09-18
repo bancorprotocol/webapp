@@ -156,28 +156,39 @@ export default class SwapAction extends Vue {
     this.$bvModal.show(name);
   }
 
-
   selectFromToken(id: string) {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: id,
-            to: this.$route.query.to
-          }
-        });
+    let to = this.$route.query.to;
+
+    if (id === to) {
+      this.invertSelection();
+      return;
+    }
+
+    this.$router.push({
+      name: "Swap",
+      query: {
+        from: id,
+        to: to
       }
+    });
+  }
 
   selectToToken(id: string) {
-        this.$router.push({
-          name: "Swap",
-          query: {
-            from: this.$route.query.from,
-            to: id
-          }
-        });
+    let from = this.$route.query.from;
+
+    if (id === from) {
+      this.invertSelection();
+      return;
+    }
+
+    this.$router.push({
+      name: "Swap",
+      query: {
+        from: from,
+        to: id
       }
-
-
+    });
+  }
 
   sanitizeAmount(amount: string) {
     this.setDefault()
