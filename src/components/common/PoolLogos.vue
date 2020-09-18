@@ -5,25 +5,10 @@
       class="font-w600 font-size-14 d-flex align-items-center"
       :class="[darkMode ? 'text-dark' : 'text-light', cursor ? 'cursor' : '']"
     >
-      <img
-        class="img-avatar img-avatar32 bg-white"
-        :src="pool.reserves[0].logo"
-        alt="Token Logo"
-        style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08); border: solid 1px #e6ebf2;"
-      />
-      <img
-        class="img-avatar img-avatar32 bg-white overlap"
-        :src="pool.reserves[1].logo"
-        alt="Token Logo"
-        style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08); border: solid 1px #e6ebf2;"
-      />
-      <span class="ml-2 mr-2"
-        >{{ pool.reserves[0].symbol }}/{{ pool.reserves[1].symbol }}</span
-      >
+      <pool-logos-overlapped :pool-id="pool.id" />
+      <span class="ml-2 mr-2">{{ poolName }}</span>
       <font-awesome-icon v-if="dropdown" icon="caret-down" />
-      <b-badge v-if="version" class="badge-v2 text-primary px-2">{{
-        pool.v2 ? "V2" : "V1"
-      }}</b-badge>
+      <version-badge v-if="version" :version="pool.v2 ? 2 : 1" />
     </div>
     <div
       v-else-if="token"
@@ -46,8 +31,13 @@
 import { Component, Prop, Vue, Emit } from "vue-property-decorator";
 import { ViewRelay, ViewToken } from "@/types/bancor";
 import { vxm } from "@/store";
+import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
+import { buildPoolName } from "@/api/helpers";
+import VersionBadge from "@/components/common/VersionBadge.vue";
 
-@Component
+@Component({
+  components: { VersionBadge, PoolLogosOverlapped }
+})
 export default class PoolLogos extends Vue {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
@@ -58,19 +48,14 @@ export default class PoolLogos extends Vue {
   @Emit()
   click() {}
 
+  get poolName() {
+    return buildPoolName(this.pool!.id);
+  }
+
   get darkMode() {
     return vxm.general.darkMode;
   }
 }
 </script>
 
-<style scoped lang="scss">
-.overlap {
-  margin-left: -10px;
-}
-
-.badge-v2 {
-  font-size: 12px !important;
-  background-color: #e9f2fd !important;
-}
-</style>
+<style scoped lang="scss"></style>
