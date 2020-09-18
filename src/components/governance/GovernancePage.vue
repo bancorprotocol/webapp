@@ -1,9 +1,9 @@
 <template>
   <b-row>
-    <b-col cols="4">
+    <b-col cols="3">
       <stake />
     </b-col>
-    <b-col cols="8">
+    <b-col class="pl-1" cols="9">
       <proposals />
     </b-col>
   </b-row>
