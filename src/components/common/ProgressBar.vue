@@ -15,7 +15,7 @@ export default class ProgressBar extends Vue {
   @Prop() percentage?: number;
 
   get percentageValue() {
-    return `${(+this.percentage)?.toFixed(2)}%`
+    return `${(+(this.percentage || 0))?.toFixed(2)}%`
   }
 
   get darkMode() {

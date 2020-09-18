@@ -15,13 +15,13 @@ import numeral from "numeral";
 
 @Component
 export default class RemainingTime extends Vue {
-  @Prop() type: 'warn' | 'info' | null;
-  @Prop() from: number;
-  @Prop() to: number;
+  @Prop() type?: 'warn' | 'info' | null;
+  @Prop() from?: number;
+  @Prop() to?: number;
 
   private remainingPercentage: number = 0
   private remainingTime: number = 0
-  private interval
+  private interval: any
 
   get percentage() {
     return `${this.remainingPercentage.toFixed(2)}%`
