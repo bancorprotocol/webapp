@@ -1,10 +1,13 @@
 import { createModule, action } from "vuex-class-component";
-import { web3, compareString, EthNetworks } from "@/api/helpers";
+import { web3, EthNetworks } from "@/api/helpers";
 import { ABIBancorGovernance, ABISmartToken } from "@/api/eth/ethAbis";
 import { EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
+import BigNumber from "bignumber.js"
 
 export const governanceContractAddress = "0xf648d3920188f79d045e35007ad1c3158d47732b";
+// block time in seconds
+export const blockTime = 15
 
 const VuexModule = createModule({
   strict: false
@@ -61,8 +64,8 @@ export class EthereumGovernance extends VuexModule.With({
 
     console.log("getting votes")
 
-    const votes = await this.governanceContract.methods.votesOf(voter).call();
-    return shrinkToken(votes, Number(await this.tokenContract.methods.decimals().call()));
+    const weiVotes = await this.governanceContract.methods.votesOf(voter).call();
+    return shrinkToken(weiVotes, Number(await this.tokenContract.methods.decimals().call()));
   }
 
 
@@ -79,19 +82,21 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getLock({ account }: { account: EthAddress }): Promise<number> {
+  async getLock({ account }: { account: EthAddress }): Promise<{ now: number, till: number, for: number }> {
     if (!account) throw new Error("Cannot get lock without address");
 
-    console.log("getting lock")
-    const lockedTill = Number(await this.governanceContract.methods.voteLocks(account).call());
+    const till = Number(await this.governanceContract.methods.voteLocks(account).call());
+    const now = await web3.eth.getBlockNumber()
+    const f = till - now
 
-    console.log(
-      lockedTill,
-      await web3.eth.getBlockNumber(),
-      // how many blocks left?
-      lockedTill - await web3.eth.getBlockNumber()
-    )
-    return lockedTill
+    const lock = {
+      now,
+      till,
+      for: f > 0 ? f : 0
+    }
+
+    console.log(lock)
+    return lock;
   }
 
   @action
@@ -100,7 +105,7 @@ export class EthereumGovernance extends VuexModule.With({
                 amount
               }: {
     account: EthAddress;
-    amount: number;
+    amount: number | BigNumber | string;
   }): Promise<boolean> {
     if (!account || !amount)
       throw new Error("Cannot stake without address or amount");
@@ -124,7 +129,7 @@ export class EthereumGovernance extends VuexModule.With({
                   amount
                 }: {
     account: EthAddress;
-    amount: number;
+    amount: number | BigNumber | string;
   }): Promise<boolean> {
     if (!account || !amount)
       throw new Error("Cannot unstake without address or amount");
