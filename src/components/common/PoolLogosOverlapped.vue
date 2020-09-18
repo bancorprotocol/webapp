@@ -3,7 +3,7 @@
     <img
       v-for="(reserve, index) in pool.reserves"
       :key="reserve.id"
-      class="img-avatar img-avatar32 bg-white logo-shadow"
+      class="img-avatar bg-white logo-shadow"
       :class="styleClasses(index)"
       :src="reserve.logo"
       alt="Token Logo"
