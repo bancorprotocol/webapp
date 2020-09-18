@@ -25,7 +25,7 @@ import { vxm } from "@/store";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 
 @Component
-export default class TableActionButtons extends Vue {
+export default class ActionButtons extends Vue {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
 

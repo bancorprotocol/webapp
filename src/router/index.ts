@@ -10,6 +10,7 @@ import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
 import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
+import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
 import GovernancePage from "@/components/governance/GovernancePage.vue"
 import Governance from "@/views/Governance.vue"
 
@@ -117,11 +118,11 @@ export const router = new Router({
           path: "",
           component: DataSummary
         },
-        // {
-        //   path: "token/:id",
-        //   name: "DetailsToken",
-        //   component: DataDetailsToken
-        // },
+        {
+          path: "token/:id",
+          name: "DetailsToken",
+          component: DataDetailsToken
+        },
         {
           path: "pool/:id",
           name: "DetailsPool",
