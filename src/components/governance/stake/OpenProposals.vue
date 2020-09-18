@@ -1,11 +1,11 @@
 <template>
   <data-table
-    :items="openProposals"
+    :items="proposals"
     :fields="fields"
     default-sort="to"
   >
     <tr
-      v-for="proposal in openProposals"
+      v-for="proposal in proposals"
       :key="proposal.id"
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
@@ -18,7 +18,7 @@
         >
           Proposed by
           <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{shortAddress(proposal.creator)}}
+            {{shortAddress(proposal.proposer)}}
           </a>
         </div>
 
@@ -72,8 +72,8 @@ import DataTable from "@/components/common/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
-
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
+import { shortenEthAddress } from "@/api/helpers"
 
 @Component({
   components: {
@@ -82,16 +82,12 @@ import { ViewTableFields } from "@/components/common/TableHeader.vue";
     RemainingTime,
     DataTable,
     ButtonProgress,
-  }
+  },
+  props: [
+    'proposals'
+  ]
 })
-export default class Stake extends Vue {
-
-  get openProposals() {
-    return [
-      {id: 1, creator: '0x' + '1'.repeat(8), executor: '0x' + '1'.repeat(8), voteFor: 0.34, from: 1600348747298, to: 1600248747298},
-      {id: 2, creator: '0x' + '3'.repeat(8), executor: '0x' + '2'.repeat(8), voteFor: 0.87, from: 1600348747298, to: 1600268747298},
-    ]
-  }
+export default class OpenProposals extends Vue {
 
   get fields(): ViewTableFields[] {
     return [
@@ -138,12 +134,13 @@ export default class Stake extends Vue {
   formatDate(date: number) {
     return new Intl.DateTimeFormat('en-GB').format(date)
   }
+
   formatTime(date: number) {
     return new Intl.DateTimeFormat('en-GB', {timeStyle: "short"} as any).format(date)
   }
 
   shortAddress(address: string) {
-    return `${address.substr(0, 4)}...${address.substr(-6, 6)}`
+    return shortenEthAddress(address)
   }
 }
 </script>

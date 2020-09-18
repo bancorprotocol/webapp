@@ -22,7 +22,7 @@
           <!--  -->
         </b-tab>
         <b-tab title="Open" active>
-          <open-proposals />
+          <open-proposals v-bind:proposals="proposals" />
         </b-tab>
         <b-tab title="Done">
           Done
@@ -50,7 +50,7 @@ import OpenProposals from "@/components/governance/stake/OpenProposals.vue";
     OpenProposals,
   }
 })
-export default class Stake extends Vue {
+export default class Proposals extends Vue {
   proposals: Proposal[] = []
 
   get isEth() {
@@ -62,7 +62,7 @@ export default class Stake extends Vue {
   }
 
   async created() {
-    await vxm.ethGovernance.getProposals()
+    this.proposals = await vxm.ethGovernance.getProposals()
   }
 }
 </script>

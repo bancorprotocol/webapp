@@ -142,13 +142,49 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
+  async voteFor({
+                  account,
+                  proposalId
+                }: {
+    account: EthAddress;
+    proposalId: number | BigNumber | string;
+  }): Promise<boolean> {
+    if (!account || !proposalId)
+      throw new Error("Cannot vote for without address or proposal id");
+
+    await this.governanceContract.methods.voteFor(proposalId.toString()).send({
+      from: account
+    });
+
+    return true;
+  }
+
+  @action
+  async voteAgainst({
+                  account,
+                  proposalId
+                }: {
+    account: EthAddress;
+    proposalId: number | BigNumber | string;
+  }): Promise<boolean> {
+    if (!account || !proposalId)
+      throw new Error("Cannot vote against without address or proposal id");
+
+    await this.governanceContract.methods.voteAgainst(proposalId.toString()).send({
+      from: account
+    });
+
+    return true;
+  }
+
+  @action
   async getProposals(): Promise<Proposal[]> {
     console.log("getting proposals");
     const proposalCount = await this.governanceContract.methods.proposalCount().call();
 
     const proposals: Proposal[] = []
 
-    for (let i = 0; i <= proposalCount; i++) {
+    for (let i = 1; i <= proposalCount; i++) {
       const proposal = await this.governanceContract.methods.proposals(i).call();
       proposals.push({
         id: Number(proposal.id),
