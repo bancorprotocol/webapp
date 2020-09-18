@@ -31,6 +31,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
+import { Proposal } from "@/store/modules/governance/ethGovernance"
 
 @Component({
   components: {
@@ -40,12 +41,18 @@ import RemainingTime from "@/components/common/RemainingTime.vue";
   }
 })
 export default class Stake extends Vue {
+  proposals: Proposal[] = []
+
   get isEth() {
     return this.$route.params.service === "eth";
   }
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  async created() {
+    await vxm.ethGovernance.getProposals()
   }
 }
 </script>
