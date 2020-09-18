@@ -12,7 +12,7 @@ import numeral from "numeral";
 @Component
 export default class ProgressBar extends Vue {
   @Prop() type?: 'warn' | 'error' | 'info';
-  @Prop() percentage?: number;
+  @Prop() percentage: number = 0;
 
   get percentageValue() {
     return `${(+(this.percentage || 0))?.toFixed(2)}%`
