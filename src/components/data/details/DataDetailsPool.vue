@@ -13,18 +13,7 @@
       </b-col>
 
       <b-col cols="6" class="d-flex justify-content-end align-items-end">
-        <main-button
-          label="Add Liquidity"
-          :active="true"
-          :block="false"
-          class="font-size-14"
-        />
-        <main-button
-          label="Remove liquidity"
-          :block="false"
-          class="font-size-14 mx-3"
-        />
-        <main-button label="Trade" :block="false" class="font-size-14" />
+        <action-buttons :pool="pool" />
       </b-col>
     </b-row>
 
@@ -128,6 +117,7 @@ import VersionBadge from "@/components/common/VersionBadge.vue";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import numeral from "numeral";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
+import ActionButtons from "@/components/common/ActionButtons.vue";
 export interface TxHistoryView {
   addEvents: any[];
   conversionEvents: any[];
@@ -136,6 +126,7 @@ export interface TxHistoryView {
 
 @Component({
   components: {
+    ActionButtons,
     TableTransactions,
     TableWrapper,
     VersionBadge,

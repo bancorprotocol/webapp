@@ -16,18 +16,7 @@
       </b-col>
 
       <b-col cols="6" class="d-flex justify-content-end align-items-end">
-        <main-button
-          label="Add Liquidity"
-          :active="true"
-          :block="false"
-          class="font-size-14"
-        />
-        <main-button
-          label="Remove liquidity"
-          :block="false"
-          class="font-size-14 mx-3"
-        />
-        <main-button label="Trade" :block="false" class="font-size-14" />
+        <action-buttons :token="token" />
       </b-col>
     </b-row>
 
@@ -102,20 +91,16 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import Statistics from "@/components/data/statistics/Statistics.vue";
 import {ViewRelay, ViewReserve, ViewToken} from "@/types/bancor";
-import PoolLogos from "@/components/common/PoolLogos.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
 import MainButton from "@/components/common/Button.vue";
-import { buildPoolName, formatNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
-import VersionBadge from "@/components/common/VersionBadge.vue";
-import TableWrapper from "@/components/common/TableWrapper.vue";
-import numeral from "numeral";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
 import TablePools from "@/components/data/pooltokentables/TablePools.vue";
+import ActionButtons from "@/components/common/ActionButtons.vue";
 export interface TxHistoryView {
   addEvents: any[];
   conversionEvents: any[];
@@ -124,16 +109,13 @@ export interface TxHistoryView {
 
 @Component({
   components: {
+    ActionButtons,
     TablePools,
     TableTransactions,
-    TableWrapper,
-    VersionBadge,
     PoolLogosOverlapped,
     TransactionTables,
     StatisticsDataBlock,
-    Statistics,
     ContentBlock,
-    PoolLogos,
     LabelContentSplit,
     MainButton
   }
