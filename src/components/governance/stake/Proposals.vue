@@ -1,11 +1,19 @@
 <template>
-  <content-block title="Proposals" :shadow-light="true">
-    <div class="pt-2">
-      <div class="float-right mr-2">
-        + add
+  <content-block :px0="true" :shadow-light="true" :no-header="true">
+    <div>
+      <div class="block-header pr-2">
+        <h3
+          class="m-0 p-0 my-1 font-size-14 font-w600"
+          :class="darkMode ? 'text-dark' : 'text-light'"
+        >
+          Proposals
+        </h3>
+        <div class="float-right mr-2">
+          + add
+        </div>
       </div>
-      <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-        <b-tab title="Playground" active>
+      <b-tabs class="overlap-tabs" no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
+        <b-tab title="P">
           <!--  -->
 
           <remaining-time type="warn" from="1600348747298" to="1600358747298" />
@@ -13,8 +21,8 @@
 
           <!--  -->
         </b-tab>
-        <b-tab title="Open">
-          Open
+        <b-tab title="Open" active>
+          <open-proposals />
         </b-tab>
         <b-tab title="Done">
           Done
@@ -28,16 +36,18 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import { Proposal } from "@/store/modules/governance/ethGovernance"
+
+import OpenProposals from "@/components/governance/stake/OpenProposals.vue";
 
 @Component({
   components: {
     ContentBlock,
     ProgressBar,
     RemainingTime,
+    OpenProposals,
   }
 })
 export default class Stake extends Vue {
@@ -57,4 +67,17 @@ export default class Stake extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.overlap-tabs {
+  & > div > .nav.nav-tabs {
+    height: 0;
+    position: relative;
+    top: 3px;
+
+    & > li > .nav-link {
+      padding-bottom: 10px;
+      font-weight: 500;
+    }
+  }
+}
+</style>
