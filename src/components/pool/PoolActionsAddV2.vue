@@ -87,12 +87,8 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
-import { namespace } from "vuex-class";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
-
-
-const bancor = namespace("bancor");
 
 @Component({
   components: {
@@ -107,9 +103,6 @@ const bancor = namespace("bancor");
   }
 })
 export default class PoolActionsAddV2 extends Vue {
-  @bancor.Action
-  calculateOpposingDeposit!: LiquidityModule["calculateOpposingDeposit"];
-
   @Prop() pool!: ViewRelay;
 
   selectedToken: ViewReserve = this.pool.reserves[0];
@@ -213,7 +206,7 @@ export default class PoolActionsAddV2 extends Vue {
     if (amount === '.') return
     this.errorMsg = ""
     try {
-      const results = await this.calculateOpposingDeposit({
+      const results = await vxm.bancor.calculateOpposingDeposit({
         id: this.pool.id,
         reserves: [{ id: this.selectedToken.id, amount: amount ? amount : "0" }],
         changedReserveId: this.selectedToken.id

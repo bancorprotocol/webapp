@@ -1,95 +1,67 @@
 <template>
-  <data-table
-    v-model="modifiedPools"
-    :items="allPools"
+  <table-wrapper
+    :items="items"
     :fields="fields"
     :filter="filter"
-    filter-by="symbol"
-    default-sort="liqDepth"
+    sort-by="liqDepth"
   >
-    <tr
-      v-for="pool in modifiedPools"
-      :key="pool.id"
-      class="font-w500 font-size-14"
-      :class="darkMode ? 'text-dark' : 'text-light'"
-    >
-      <td scope="row">
-        <pool-logos :pool="pool" :cursor="false" :version="true" />
-      </td>
-      <td>{{ numeral(pool.liqDepth).format("$0,0.00") }}</td>
-      <td>{{ numeral(pool.fee).format("0.00%") }}</td>
-      <!-- <td>{{ ratio(pool) }}</td> -->
-      <td><table-action-buttons :pool="pool" /></td>
-    </tr>
-  </data-table>
+    <template v-slot:cell(symbol)="data">
+      <router-link :to="{ name: 'DetailsPool', params: { id: data.item.id } }">
+        <pool-logos :pool="data.item" :cursor="false" :version="true" />
+      </router-link>
+    </template>
+
+    <template v-slot:cell(actionButtons)="data">
+      <action-buttons :pool="data.item" />
+    </template>
+  </table-wrapper>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import { ViewRelay } from "@/types/bancor";
-import PoolLogos from "@/components/common/PoolLogos.vue";
 import numeral from "numeral";
-import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
-import TableActionButtons from "@/components/common/TableActionButtons.vue";
-import DataTable from "@/components/common/DataTable.vue";
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
-
+import TableWrapper from "@/components/common/TableWrapper.vue";
+import ActionButtons from "@/components/common/ActionButtons.vue";
+import PoolLogos from "@/components/common/PoolLogos.vue";
+import { ViewRelay } from "@/types/bancor";
 @Component({
-  components: {
-    DataTable,
-    PoolLogos,
-    ColouredPercentage,
-    TableActionButtons
-  }
+  components: { PoolLogos, ActionButtons, TableWrapper }
 })
 export default class TablePools extends Vue {
+  @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
-  modifiedPools: ViewRelay[] = [];
 
-  numeral = numeral;
-
-  get allPools() {
-    return vxm.bancor.relays;
-  }
-
-  get fields(): ViewTableFields[] {
-    return [
-      {
-        label: "Token",
-        key: "symbol"
-      },
-      {
-        label: "Liquidity Depth",
-        key: "liqDepth",
-        minWidth: "160px"
-      },
-      {
-        label: "Fee",
-        key: "fee",
-        minWidth: "80px"
-      },
-      // {
-      //   label: "Ratio",
-      //   minWidth: "80px"
-      // },
-      {
-        label: "Actions",
-        minWidth: "310px",
-        maxWidth: "310px"
-      }
-    ];
-  }
-
-  ratio(pool: ViewRelay) {
-    return pool.reserves
-      .map(reserve => Number.parseInt(String(reserve.reserveWeight * 100)))
-      .join("-");
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
+  fields = [
+    {
+      key: "symbol",
+      label: "Name",
+      sortable: true
+    },
+    {
+      key: "liqDepth",
+      label: "Liquidity Depth",
+      thStyle: { "min-width": "160px" },
+      sortable: true,
+      formatter: (value: number) =>
+        new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD"
+        }).format(value)
+    },
+    {
+      key: "fee",
+      label: "Fee",
+      thStyle: { "min-width": "80px" },
+      sortable: true,
+      formatter: (value: any) => numeral(value).format("0.00%")
+    },
+    {
+      key: "actionButtons",
+      label: "Action",
+      thStyle: { width: "310px", "min-width": "310px" }
+    }
+  ];
 }
 </script>
 

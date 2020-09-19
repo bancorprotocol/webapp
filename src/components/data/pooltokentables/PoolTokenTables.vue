@@ -17,10 +17,10 @@
     </div>
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
       <b-tab title="Pools" active>
-        <table-pools-new :filter="search" />
+        <table-pools :filter="search" :items="poolItems" />
       </b-tab>
       <b-tab title="Tokens">
-        <table-tokens-new :filter="search" />
+        <table-tokens :filter="search" />
       </b-tab>
     </b-tabs>
   </div>
@@ -30,13 +30,13 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import TablePoolsNew from "@/components/data/pooltokentables/TablePoolsNew.vue";
-import TableTokensNew from "@/components/data/pooltokentables/TableTokensNew.vue";
+import TablePools from "@/components/data/pooltokentables/TablePools.vue";
+import TableTokens from "@/components/data/pooltokentables/TableTokens.vue";
 
 @Component({
   components: {
-    TableTokensNew,
-    TablePoolsNew,
+    TableTokens,
+    TablePools,
     MultiInputField
   }
 })
@@ -45,6 +45,10 @@ export default class PoolTokenTables extends Vue {
 
   get loading() {
     return vxm.bancor.loadingTokens;
+  }
+
+  get poolItems() {
+    return vxm.bancor.relays;
   }
 
   get darkMode() {

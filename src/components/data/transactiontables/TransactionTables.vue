@@ -10,7 +10,7 @@
 
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
       <b-tab title="Swaps" active>
-        <table-transactions-new :filter="search" :items="itemsSwap" />
+        <table-transactions :filter="search" :items="itemsSwap" />
       </b-tab>
     </b-tabs>
   </div>
@@ -21,11 +21,9 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
-import TableTransactionsNew from "@/components/data/transactiontables/TableTransactionsNew.vue";
 
 @Component({
   components: {
-    TableTransactionsNew,
     TableTransactions,
     MultiInputField
   }

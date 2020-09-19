@@ -1,10 +1,11 @@
 <template>
-  <div v-if="selectedToken">
+  <div v-if="selectedToken && !loadingTokens">
     <label-content-split label="Pool" class="my-4">
-      <pool-logos
-        @click="$bvModal.show('modal-join-pool')"
-        :pool="pool"
-        :dropdown="true"
+      <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
+      <modal-pool-select
+        v-model="poolSelectModal"
+        :pools="pools"
+        @select="select"
       />
     </label-content-split>
 
@@ -40,6 +41,7 @@
       v-model="percentage"
       @input="percentageUpdate"
       :show-buttons="true"
+      :buttons-dirty="percentageDirty"
     />
 
     <div>
@@ -74,7 +76,11 @@
           class="font-size-12 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          {{ expectedReturn }} {{ selectedPoolToken.symbol }}
+          <span v-if="!loadingReturn">
+            {{ expectedReturn ? expectedReturn : "0" }}
+          </span>
+          <font-awesome-icon v-else icon="circle-notch" spin class="mr-2" />
+          {{ selectedPoolToken.symbol }}
         </span>
       </label-content-split>
     </div>
@@ -122,6 +128,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -133,6 +140,7 @@ interface PoolTokenUI {
 
 @Component({
   components: {
+    ModalPoolSelect,
     PercentageSlider,
     AlertBlock,
     TokenInputField,
@@ -147,17 +155,30 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   percentage: string = "50";
   exitFee = 0;
+  percentageDirty = false;
 
   selectedToken: string = "";
 
   amountSmartToken = "";
 
   expectedReturn = "";
+  loadingReturn = false;
+
   errorMessage = "";
   modal: boolean = false;
 
   poolTokens: PoolTokenUI[] = [];
   insufficientBalance: boolean = false;
+
+  poolSelectModal = false;
+
+  get loadingTokens() {
+    return this.selectedToken ? false : vxm.bancor.loadingTokens;
+  }
+
+  get pools() {
+    return vxm.bancor.relays.filter(x => x.v2);
+  }
 
   get balanceError() {
     if (this.errorMessage) return this.errorMessage;
@@ -188,6 +209,16 @@ export default class PoolActionsRemoveV2 extends Vue {
     else await this.promptAuth();
   }
 
+  select(id: string) {
+    this.$router.push({
+      name: "PoolAction",
+      params: {
+        poolAction: "remove",
+        account: id
+      }
+    });
+  }
+
   get advancedBlockItems() {
     return [
       {
@@ -206,6 +237,10 @@ export default class PoolActionsRemoveV2 extends Vue {
     if (isAuthenticated) {
       this.getPoolBalances();
     }
+  }
+
+  poolLogosClick() {
+    this.poolSelectModal = true;
   }
 
   async getPoolBalances() {
@@ -246,6 +281,7 @@ export default class PoolActionsRemoveV2 extends Vue {
     );
     if (amountNumber.gt(poolTokenBalanceNumber))
       this.insufficientBalance = true;
+    else this.insufficientBalance = false;
     if (amount == "") {
       this.percentage = "0";
     } else {
@@ -259,6 +295,7 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   percentageUpdate(percent: string) {
     this.insufficientBalance = false;
+    this.percentageDirty = true;
     const decPercent = Number(percent) / 100;
     if (decPercent === 1)
       this.amountSmartToken = this.selectedPoolToken.balance;
@@ -273,8 +310,13 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   @Watch("amountSmartToken")
   async smartTokenChanged(amount: string) {
+    this.loadingReturn = true;
     this.errorMessage = "";
-    if (amount == "") return;
+    if (amount == "") {
+      this.expectedReturn = "";
+      this.exitFee = 0;
+      return;
+    }
     try {
       const res = await vxm.bancor.calculateOpposingWithdraw({
         id: this.pool.id,
@@ -295,19 +337,21 @@ export default class PoolActionsRemoveV2 extends Vue {
     } catch (e) {
       this.errorMessage = e.message;
       this.expectedReturn = "?";
+    } finally {
+      this.loadingReturn = false;
     }
   }
 
   @Watch("pool")
   async updateSelection(pool: ViewRelay) {
-    this.selectedToken = "";
+    // this.selectedToken = "";
     await this.getPoolBalances();
-    this.percentageUpdate(this.percentage);
+    // this.percentageUpdate(this.percentage);
   }
 
   async created() {
     await this.getPoolBalances();
-    this.percentageUpdate(this.percentage);
+    //this.percentageUpdate(this.percentage);
   }
 }
 </script>

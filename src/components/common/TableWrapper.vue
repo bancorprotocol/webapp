@@ -7,8 +7,8 @@
       :items="items"
       :per-page="perPage"
       :current-page="currentPage"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
+      :sort-by.sync="sortByProp"
+      :sort-desc.sync="sortDescProp"
       :filter="filter"
     >
       <slot v-for="(_, name) in $slots" :name="name" :slot="name" />
@@ -64,6 +64,9 @@ export default class TableWrapper extends Vue {
   @Prop({ default: 10 }) perPage!: number;
 
   currentPage = 1;
+
+  sortByProp = this.sortBy;
+  sortDescProp = this.sortDesc;
 
   iconClass(disabled: boolean) {
     return disabled

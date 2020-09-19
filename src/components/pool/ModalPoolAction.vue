@@ -106,7 +106,6 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import {
-  LiquidityModule,
   LiquidityParams,
   Step,
   TxResponse,
@@ -118,13 +117,10 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
-import { namespace } from "vuex-class";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import numeral from "numeral";
 import { VModel } from "@/api/helpers";
-
-const bancor = namespace("bancor");
 
 @Component({
   components: {
@@ -138,9 +134,6 @@ const bancor = namespace("bancor");
   }
 })
 export default class ModalPoolAction extends Vue {
-  @bancor.Action addLiquidity!: LiquidityModule["addLiquidity"];
-  @bancor.Action removeLiquidity!: LiquidityModule["removeLiquidity"];
-
   @VModel({ type: Boolean }) modal!: boolean;
   @Prop() amountsArray!: string[];
   @Prop() selectedToken?: ViewReserve;
@@ -266,8 +259,9 @@ export default class ModalPoolAction extends Vue {
       this.txBusy = true;
       let txResult: any;
 
-      if (!this.withdrawLiquidity) txResult = await this.addLiquidity(params);
-      else txResult = await this.removeLiquidity(params);
+      if (!this.withdrawLiquidity)
+        txResult = await vxm.bancor.addLiquidity(params);
+      else txResult = await vxm.bancor.removeLiquidity(params);
       this.success = txResult;
       // @ts-ignore
       this.$gtag.event(
