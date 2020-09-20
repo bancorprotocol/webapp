@@ -202,12 +202,9 @@ export default class PoolActionsAddV1 extends Vue {
       }
 
       const raiseToken1InsufficientBalance = Number(this.balance1) < Number(tokenAmount);
-      console.log(this.balance1, 'is token1 balance', tokenAmount, 'is token amount', raiseToken1InsufficientBalance, 'is error flag');
       this.token1Error = raiseToken1InsufficientBalance ? "Insufficient balance" : "";
 
       const raiseToken2InsufficientBalance = Number(this.balance2) < Number(this.amount2);
-      console.log(this.balance2, 'is token2 balance', this.amount2, 'is already set amount2', raiseToken2InsufficientBalance, 'is error flag');
-
       this.token2Error =
         raiseToken2InsufficientBalance ? "Insufficient balance" : "";
 
@@ -254,6 +251,15 @@ export default class PoolActionsAddV1 extends Vue {
       }
       this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);
+
+      const raiseToken1InsufficientBalance = Number(this.balance1) < Number(this.amount1);
+      this.token1Error = raiseToken1InsufficientBalance ? "Insufficient balance" : "";
+
+      const raiseToken2InsufficientBalance = Number(this.balance2) < Number(tokenAmount);
+      this.token2Error =
+        raiseToken2InsufficientBalance ? "Insufficient balance" : "";
+
+
     } catch (e) {
         this.token1Error = "";
         this.token2Error = e.message;

@@ -15,7 +15,8 @@ import {
   OpposingLiquid,
   PoolTokenPosition,
   ViewRelay,
-  ViewToken
+  ViewToken,
+  LiquidityModule
 } from "@/types/bancor";
 import { vxm } from "@/store";
 import { store } from "../../../store";
@@ -105,6 +106,11 @@ export class BancorModule extends VuexModule.With({
     }
   }
 
+  get liquidityHistory(): LiquidityModule["liquidityHistory"] {
+    // @ts-ignore
+    return vxm[`${this.currentNetwork}Bancor`]["liquidityHistory"];
+  }
+
   get tokens() {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["tokens"];
@@ -175,7 +181,7 @@ export class BancorModule extends VuexModule.With({
     return vxm[`${this.currentNetwork}Bancor`]["wallet"];
   }
 
-  get stats() {
+  get stats(): LiquidityModule["stats"] {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["stats"];
   }
@@ -352,6 +358,10 @@ export class BancorModule extends VuexModule.With({
 
   @action async updateOwner(owner: NewOwnerParams) {
     return this.dispatcher(["updateOwner", owner]);
+  }
+
+  @action async focusPool(poolId: string) {
+    return this.dispatcher(["focusPool", poolId]);
   }
 
   @action async getUserBalances(relayId: string): Promise<UserPoolBalances> {
