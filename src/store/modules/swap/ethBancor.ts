@@ -1810,7 +1810,25 @@ export class EthBancorModule
   }
 
   @mutation updateFailedPools(ids: string[]) {
+    console.log(ids, 'are pools which failed to get loaded');
     this.failedPools = uniqWith([...this.failedPools, ...ids], compareString);
+
+    [
+      "0xca186FacC9e927e0c2ddBbd31b16eE41057edDB2",
+      "0x006BeA43Baa3f7A6f765F14f10A1a1b08334EF45",
+      "0xb1A5b7e9a268742B9B5D2455fFcf43BaBC6929bA",
+      "0xE355dcF475ff7569B8b74d5165a532ABa87c25bf",
+      "0x534DF0Ec6D65cD6fE1b05D3b8c935c97Eb844190",
+      "0x0aacA86e54Fe70eDd7c86cBF3cFb470caA49FAeF",
+      "0xEE4dC4C5Ca843B83035d8E5159AC1bd1b4EbdfF5",
+      "0xFD556AB5010A4076fee1A232117E4ef549A84032",
+      "0x2f4EF142cd9983B1f86dF21BEd3cE12E06856dCb",
+      "0x325732Fd6d9b98f60acFb6215eDe90B9F9bAD38a",
+      "0x1F5350558F1E3e8Bf370d4d552F3ebC785bf2979",
+      "0x09C5188d9fE33d218Cc186baE8F985907b25eBEe",
+      "0xf001bC665ffac52c6a969305c3BDaaf88DE4bBC8"
+    ]
+    
   }
 
   @action async loadMorePools() {
@@ -4982,8 +5000,9 @@ export class EthBancorModule
           newSet,
           compareAnchorAndConverter
         );
-        // this.addPoolsBulk(droppedAnchors);
-        this.addPoolsBulk(newSet);
+        this.addPoolsBulk(newSet).then(() => {
+          this.addPoolsBulk(droppedAnchors);
+        })
       }
       this.moduleInitiated();
 
@@ -5180,7 +5199,7 @@ export class EthBancorModule
     const allPools = [...subgraphRes.pools, ...pools];
     const allReserveFeeds = [...subgraphRes.reserveFeeds, ...reserveFeeds];
 
-    const poolsFailed = differenceWith(convertersAndAnchors, pools, (a, b) =>
+    const poolsFailed = differenceWith(convertersAndAnchors, allPools, (a, b) =>
       compareString(a.anchorAddress, b.id)
     );
     this.updateFailedPools(
