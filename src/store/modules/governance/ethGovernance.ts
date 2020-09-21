@@ -5,7 +5,9 @@ import { EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
 import BigNumber from "bignumber.js"
 
-export const governanceContractAddress = "0xf648d3920188f79d045e35007ad1c3158d47732b";
+// export const governanceContractAddress = "0xf648d3920188f79d045e35007ad1c3158d47732b";
+export const governanceContractAddress = "0x05AA3da21D2706681837a896433E62deEeEaB1f1"
+
 // block time in seconds
 export const blockTime = 15
 
@@ -29,8 +31,8 @@ export interface Proposal {
   proposer: EthAddress
   quorum: string
   quorumRequired: string
-  totalAgainstVotes: string
-  totalForVotes: string
+  totalVotesAgainst: string
+  totalVotesFor: string
   totalVotesAvailable: string
 }
 
@@ -50,7 +52,7 @@ export class EthereumGovernance extends VuexModule.With({
   @action
   async init() {
     const tokenAddress = await this.governanceContract.methods
-      .voteToken()
+      .govToken()
       .call();
     console.log("vote token address", tokenAddress);
 
@@ -111,7 +113,7 @@ export class EthereumGovernance extends VuexModule.With({
                 amount
               }: {
     account: EthAddress;
-    amount: number | BigNumber | string;
+    amount: string;
   }): Promise<boolean> {
     if (!account || !amount)
       throw new Error("Cannot stake without address or amount");
@@ -134,7 +136,7 @@ export class EthereumGovernance extends VuexModule.With({
                   amount
                 }: {
     account: EthAddress;
-    amount: number | BigNumber | string;
+    amount: string;
   }): Promise<boolean> {
     if (!account || !amount)
       throw new Error("Cannot unstake without address or amount");
@@ -152,9 +154,9 @@ export class EthereumGovernance extends VuexModule.With({
                   proposalId
                 }: {
     account: EthAddress;
-    proposalId: number | BigNumber | string;
+    proposalId: string;
   }): Promise<boolean> {
-    if (!account || !proposalId)
+    if (!account || proposalId)
       throw new Error("Cannot vote for without address or proposal id");
 
     await this.governanceContract.methods.voteFor(proposalId.toString()).send({
@@ -170,7 +172,7 @@ export class EthereumGovernance extends VuexModule.With({
                       proposalId
                     }: {
     account: EthAddress;
-    proposalId: number | BigNumber | string;
+    proposalId: string;
   }): Promise<boolean> {
     if (!account || !proposalId)
       throw new Error("Cannot vote against without address or proposal id");
@@ -186,10 +188,10 @@ export class EthereumGovernance extends VuexModule.With({
   async getProposals(): Promise<Proposal[]> {
     console.log("getting proposals");
     const proposalCount = await this.governanceContract.methods.proposalCount().call();
-
+    console.log("getting proposals", proposalCount);
+    
     const decimals = Number(await this.tokenContract.methods.decimals().call())
-
-      const proposals: Proposal[] = []
+    const proposals: Proposal[] = []
     const currentBlock = await web3.eth.getBlock("latest")
 
     for (let i = 0; i <= proposalCount; i++) {
@@ -206,8 +208,8 @@ export class EthereumGovernance extends VuexModule.With({
         proposer: proposal.proposer,
         quorum: proposal.quorum,
         quorumRequired: proposal.quorumRequired,
-        totalAgainstVotes: shrinkToken(proposal.totalAgainstVotes, decimals),
-        totalForVotes: shrinkToken(proposal.totalForVotes, decimals),
+        totalVotesAgainst: shrinkToken(proposal.totalVotesAgainst, decimals),
+        totalVotesFor: shrinkToken(proposal.totalVotesFor, decimals),
         totalVotesAvailable: shrinkToken(proposal.totalVotesAvailable, decimals)
       });
     }

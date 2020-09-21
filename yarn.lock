@@ -16969,6 +16969,11 @@ vue-loader@^15.7.0:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
+vue-pie-chart@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/vue-pie-chart/-/vue-pie-chart-1.1.0.tgz#98a12bde71dfbe55db3b09a273b5a0d7c282621b"
+  integrity sha512-XmbmrlLjfx3rNEJUueDQ6MXdPq5NzeNJ8dG+2I31N9ZBX6h/jNfCJaD4P+thVzpNfDFaafPlqhi8PFfb4wkcsw==
+
 vue-property-decorator@^8.2.2:
   version "8.5.1"
   resolved "https://registry.yarnpkg.com/vue-property-decorator/-/vue-property-decorator-8.5.1.tgz#571a91cf8d2b507f537d79bf8275af3184572fff"

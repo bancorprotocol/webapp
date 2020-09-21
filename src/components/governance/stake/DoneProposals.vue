@@ -17,7 +17,7 @@
             class="fix-pie"
             width="24"
             height="24"
-            :ratio="proposal.totalForVotes / (+proposal.totalForVotes + +proposal.totalAgainstVotes)"
+            :ratio="proposal.totalVotesFor / (+proposal.totalVotesFor + +proposal.totalVotesAgainst)"
             :stroke-width="12"
             :opacity="1"
             color="#3ec8c8"
@@ -46,12 +46,12 @@
         </div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{proposal.totalForVotes}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalForVotes)}}</div>
+        <div class="font-size-14 font-w500">{{proposal.totalVotesFor}}</div>
+        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalVotesFor)}}</div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{proposal.totalAgainstVotes}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalAgainstVotes)}}</div>
+        <div class="font-size-14 font-w500">{{proposal.totalVotesAgainst}}</div>
+        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalVotesAgainst)}}</div>
       </td>
       <td>
         <div class="font-size-14 font-w500">{{formatDate(proposal.startDate)}}</div>
@@ -67,6 +67,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
+// @ts-ignore
 import PieChart from "vue-pie-chart";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
@@ -83,12 +84,10 @@ import { Proposal } from "@/store/modules/governance/ethGovernance"
   }
 })
 export default class OpenProposals extends Vue {
-  get proposals(): Partial<Proposal>[] {
-    return [
-      {id: 1, proposer: '0x' + '1'.repeat(40), executor: '0x' + '1'.repeat(40), totalAgainstVotes: '3777', totalForVotes: '1900', startDate: 1600348747298, endDate: 1600248747298},
-      {id: 2, proposer: '0x' + '3'.repeat(40), executor: '0x' + '2'.repeat(40), totalAgainstVotes: '1299', totalForVotes: '1900', startDate: 1600348747298, endDate: 1600268747298},
-    ]
-  }
+  @Prop() proposals?: Proposal[] = [
+    {id: 1, proposer: '0x' + '1'.repeat(40), executor: '0x' + '1'.repeat(40), totalVotesAgainst: '3777', totalVotesFor: '1900', totalVotesAvailable: '10000', start: 0, end: 0, startDate: 1600348747298, endDate: 1600248747298, open: false, hash: "sdadsa", quorum: "10000", quorumRequired: "100000"},
+    {id: 2, proposer: '0x' + '3'.repeat(40), executor: '0x' + '2'.repeat(40), totalVotesAgainst: '1299', totalVotesFor: '1900', totalVotesAvailable: '10000', start: 0, end: 0, startDate: 1600348747298, endDate: 1600268747298, open: false, hash: "sdadsa", quorum: "10000", quorumRequired: "100000"},
+  ]
 
   get fields(): ViewTableFields[] {
     return [
@@ -153,7 +152,7 @@ export default class OpenProposals extends Vue {
   }
 
   getVotesPercentage(proposal: Proposal, votes: number): any {
-    return (votes / (+proposal.totalForVotes + +proposal.totalAgainstVotes) * 100).toFixed(2) + '%'
+    return (votes / (+proposal.totalVotesFor + +proposal.totalVotesAgainst) * 100).toFixed(2) + '%';
   }
 }
 </script>

@@ -1,5 +1,6 @@
 <template>
   <data-table
+    v-if="proposals.length > 0"
     :items="proposals"
     :fields="fields"
     default-sort="to"
@@ -37,9 +38,9 @@
         </div>
       </td>
       <td>
-        <button-progress :click="voteFor.bind(this, proposal.id)" title="For" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalForVotes)" type="info" />
+        <button-progress :click="voteFor.bind(this, proposal.id.toString())" title="For" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalForVotes)" type="info" />
         <div class="pt-1" />
-        <button-progress :click="voteAgainst.bind(this, proposal.id)" title="Against" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalAgainstVotes)" type="error" :selected="true" />
+        <button-progress :click="voteAgainst.bind(this, proposal.id.toString())" title="Against" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalAgainstVotes)" type="error" :selected="true" />
       </td>
       <td>
         <div class="font-size-14 font-w500">{{formatDate(proposal.startDate)}}</div>

@@ -3980,8 +3980,8 @@ export const ABIBancorGovernance: AbiItem[] = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "_voteTokenAddress",
+        internalType: "contract IERC20",
+        name: "_govToken",
         type: "address"
       }
     ],
@@ -3994,31 +3994,31 @@ export const ABIBancorGovernance: AbiItem[] = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "id",
+        name: "_id",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "address",
-        name: "creator",
+        name: "_creator",
         type: "address"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "start",
+        name: "_start",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "duration",
+        name: "_duration",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "address",
-        name: "executor",
+        name: "_executor",
         type: "address"
       }
     ],
@@ -4050,13 +4050,13 @@ export const ABIBancorGovernance: AbiItem[] = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "id",
+        name: "_id",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "address",
-        name: "executor",
+        name: "_executor",
         type: "address"
       }
     ],
@@ -4069,7 +4069,7 @@ export const ABIBancorGovernance: AbiItem[] = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "id",
+        name: "_id",
         type: "uint256"
       },
       {
@@ -4087,7 +4087,7 @@ export const ABIBancorGovernance: AbiItem[] = [
       {
         indexed: false,
         internalType: "bool",
-        name: "quorumReached",
+        name: "_quorumReached",
         type: "bool"
       }
     ],
@@ -4100,38 +4100,13 @@ export const ABIBancorGovernance: AbiItem[] = [
       {
         indexed: true,
         internalType: "address",
-        name: "voter",
+        name: "_user",
         type: "address"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "votes",
-        type: "uint256"
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "totalVotes",
-        type: "uint256"
-      }
-    ],
-    name: "RevokeVoter",
-    type: "event"
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "user",
-        type: "address"
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
+        name: "_amount",
         type: "uint256"
       }
     ],
@@ -4144,13 +4119,13 @@ export const ABIBancorGovernance: AbiItem[] = [
       {
         indexed: true,
         internalType: "address",
-        name: "user",
+        name: "_user",
         type: "address"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount",
+        name: "_amount",
         type: "uint256"
       }
     ],
@@ -4163,29 +4138,54 @@ export const ABIBancorGovernance: AbiItem[] = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "id",
+        name: "_id",
         type: "uint256"
       },
       {
         indexed: true,
         internalType: "address",
-        name: "voter",
+        name: "_voter",
         type: "address"
       },
       {
         indexed: false,
         internalType: "bool",
-        name: "vote",
+        name: "_vote",
         type: "bool"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "weight",
+        name: "_weight",
         type: "uint256"
       }
     ],
     name: "Vote",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_voter",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_votes",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_totalVotes",
+        type: "uint256"
+      }
+    ],
+    name: "VotesRevoked",
     type: "event"
   },
   {
@@ -4194,6 +4194,20 @@ export const ABIBancorGovernance: AbiItem[] = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
+  },
+  {
+    inputs: [],
+    name: "govToken",
+    outputs: [
+      {
+        internalType: "contract IERC20",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
   },
   {
     inputs: [],
@@ -4259,12 +4273,12 @@ export const ABIBancorGovernance: AbiItem[] = [
       },
       {
         internalType: "uint256",
-        name: "totalForVotes",
+        name: "totalVotesFor",
         type: "uint256"
       },
       {
         internalType: "uint256",
-        name: "totalAgainstVotes",
+        name: "totalVotesAgainst",
         type: "uint256"
       },
       {
@@ -4355,6 +4369,20 @@ export const ABIBancorGovernance: AbiItem[] = [
   },
   {
     inputs: [],
+    name: "voteDuration",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
     name: "voteLock",
     outputs: [
       {
@@ -4402,34 +4430,6 @@ export const ABIBancorGovernance: AbiItem[] = [
     constant: true
   },
   {
-    inputs: [],
-    name: "votePeriod",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true
-  },
-  {
-    inputs: [],
-    name: "voteToken",
-    outputs: [
-      {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -4460,25 +4460,25 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "uint256",
-        name: "id",
+        name: "_id",
         type: "uint256"
       }
     ],
-    name: "getStats",
+    name: "proposalStats",
     outputs: [
       {
         internalType: "uint256",
-        name: "_for",
+        name: "",
         type: "uint256"
       },
       {
         internalType: "uint256",
-        name: "_against",
+        name: "",
         type: "uint256"
       },
       {
         internalType: "uint256",
-        name: "_quorum",
+        name: "",
         type: "uint256"
       }
     ],
@@ -4490,11 +4490,61 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "address",
-        name: "voter",
+        name: "_voter",
         type: "address"
       }
     ],
     name: "votesOf",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_voter",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "_id",
+        type: "uint256"
+      }
+    ],
+    name: "votesAgainstOf",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_voter",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "_id",
+        type: "uint256"
+      }
+    ],
+    name: "votesForOf",
     outputs: [
       {
         internalType: "uint256",
@@ -4536,11 +4586,11 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "uint256",
-        name: "_votePeriod",
+        name: "_voteDuration",
         type: "uint256"
       }
     ],
-    name: "setVotePeriod",
+    name: "setVoteDuration",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -4562,12 +4612,12 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "address",
-        name: "executor",
+        name: "_executor",
         type: "address"
       },
       {
         internalType: "string",
-        name: "hash",
+        name: "_hash",
         type: "string"
       }
     ],
@@ -4580,7 +4630,7 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "uint256",
-        name: "id",
+        name: "_id",
         type: "uint256"
       }
     ],
@@ -4593,7 +4643,7 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "uint256",
-        name: "id",
+        name: "_id",
         type: "uint256"
       }
     ],
@@ -4603,43 +4653,10 @@ export const ABIBancorGovernance: AbiItem[] = [
     type: "function"
   },
   {
-    inputs: [],
-    name: "revoke",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
     inputs: [
       {
         internalType: "uint256",
-        name: "id",
-        type: "uint256"
-      }
-    ],
-    name: "voteFor",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256"
-      }
-    ],
-    name: "voteAgainst",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
+        name: "_amount",
         type: "uint256"
       }
     ],
@@ -4652,11 +4669,44 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "uint256",
-        name: "amount",
+        name: "_amount",
         type: "uint256"
       }
     ],
     name: "unstake",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_id",
+        type: "uint256"
+      }
+    ],
+    name: "voteFor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_id",
+        type: "uint256"
+      }
+    ],
+    name: "voteAgainst",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "revokeVotes",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

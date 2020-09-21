@@ -17,7 +17,7 @@
           <open-proposals :proposals="proposals.filter((p) => p.open)" :update="updateProposals.bind(this)"/>
         </b-tab>
         <b-tab title="Done" active>
-          <done-proposals/>
+          <done-proposals :proposals="proposals.filter((p) => !p.open)" />
         </b-tab>
       </b-tabs>
     </div>
