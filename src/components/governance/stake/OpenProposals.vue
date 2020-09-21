@@ -33,21 +33,21 @@
         </div>
 
         <div class="pt-2">
-          <remaining-time type="warn" :from="proposal.from" :to="proposal.to" />
+          <remaining-time type="warn" :from="proposal.startDate" :to="proposal.endDate" />
         </div>
       </td>
       <td>
-        <button-progress title="For" :percentage="proposal.voteFor * 100" type="info" />
+        <button-progress :click="voteFor.bind(this, proposal.id)" title="For" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalForVotes)" type="info" />
         <div class="pt-1" />
-        <button-progress title="Against" :percentage="(1 - proposal.voteFor) * 100" type="error" :selected="true" />
+        <button-progress :click="voteAgainst.bind(this, proposal.id)" title="Against" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalAgainstVotes)" type="error" :selected="true" />
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{formatDate(proposal.from)}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.from)}}</div>
+        <div class="font-size-14 font-w500">{{formatDate(proposal.startDate)}}</div>
+        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.startDate)}}</div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{formatDate(proposal.to)}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.to)}}</div>
+        <div class="font-size-14 font-w500">{{formatDate(proposal.endDate)}}</div>
+        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.endDate)}}</div>
       </td>
       <td>
         <a target="_blank" class="font-size-14 font-w500 fix-a">
@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
@@ -74,6 +74,7 @@ import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers"
+import { Proposal } from "@/store/modules/governance/ethGovernance"
 
 @Component({
   components: {
@@ -82,12 +83,11 @@ import { shortenEthAddress } from "@/api/helpers"
     RemainingTime,
     DataTable,
     ButtonProgress,
-  },
-  props: [
-    'proposals'
-  ]
+  }
 })
 export default class OpenProposals extends Vue {
+  @Prop() proposals?: Proposal[];
+  @Prop() update?: any;
 
   get fields(): ViewTableFields[] {
     return [
@@ -111,13 +111,13 @@ export default class OpenProposals extends Vue {
       },
       {
         label: "Vote start",
-        key: "from",
+        key: "startDate",
         maxWidth: "120px",
         minWidth: "120px"
       },
       {
         label: "Vote End",
-        key: "to",
+        key: "endDate",
         maxWidth: "120px",
         minWidth: "120px"
       },
@@ -141,6 +141,24 @@ export default class OpenProposals extends Vue {
 
   shortAddress(address: string) {
     return shortenEthAddress(address)
+  }
+
+  async voteFor(proposalId: string) {
+    await vxm.ethGovernance.voteFor({
+      account: vxm.ethWallet.isAuthenticated,
+      proposalId
+    })
+
+    await this.update()
+  }
+
+  async voteAgainst(proposalId: string) {
+    await vxm.ethGovernance.voteAgainst({
+      account: vxm.ethWallet.isAuthenticated,
+      proposalId
+    })
+
+    await this.update()
   }
 }
 </script>

@@ -3,8 +3,8 @@
     <div>
       <div class="block-header pr-2">
         <h3
-          class="m-0 p-0 my-1 font-size-14 font-w600"
-          :class="darkMode ? 'text-dark' : 'text-light'"
+            class="m-0 p-0 my-1 font-size-14 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
         >
           Proposals
         </h3>
@@ -16,13 +16,13 @@
         <b-tab title="P">
           <!--  -->
 
-          <remaining-time type="warn" from="1600348747298" to="1600358747298" />
-          <progress-bar type="warn" percentage="20" />
+          <remaining-time type="warn" from="1600348747298" to="1600358747298"/>
+          <progress-bar type="warn" percentage="20"/>
 
           <!--  -->
         </b-tab>
         <b-tab title="Open" active>
-          <open-proposals v-bind:proposals="proposals" />
+          <open-proposals :proposals="proposals.filter((p) => p.open)" :update="updateProposals.bind(this)"/>
         </b-tab>
         <b-tab title="Done">
           Done
@@ -61,8 +61,12 @@ export default class Proposals extends Vue {
     return vxm.general.darkMode;
   }
 
-  async created() {
+  async updateProposals() {
     this.proposals = await vxm.ethGovernance.getProposals()
+  }
+
+  async created() {
+    await this.updateProposals()
   }
 }
 </script>

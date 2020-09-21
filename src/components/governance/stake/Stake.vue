@@ -122,16 +122,6 @@ export default class Stake extends Vue {
         })
   }
 
-  voteFor() {
-    vxm.ethGovernance.voteFor({
-      account: vxm.ethWallet.isAuthenticated,
-      proposalId: 1
-    })
-        .then(() => {
-          this.updateBalances();
-        })
-  }
-
   lockedTill(): number {
     const till = Date.now() + this.lock.for * blockTime * 1000
 

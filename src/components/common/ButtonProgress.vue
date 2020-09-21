@@ -2,7 +2,7 @@
   <div :class="`button-progress`">
     <div class="button-progress__radio" :class="{'button-progress__radio--selected': selected}"></div>
     <div class="button-progress__content">
-      <div class="pb-1">
+      <div class="pb-1" @click="click">
         <span class="font-size-14 font-w500 text-uppercase">{{title}}</span><!-- 
      --><span class="font-size-12 font-w500 text-muted-light pl-1">{{percentageValue}}</span>
       </div>
@@ -28,6 +28,7 @@ export default class ButtonProgress extends Vue {
   @Prop() selected?: boolean;
   @Prop() type?: "warn" | "error" | "info";
   @Prop() percentage?: number;
+  @Prop() click?: any;
 
   get percentageValue() {
     return `${(+(this.percentage || 0))?.toFixed(2)}%`;

@@ -192,10 +192,10 @@ export class EthereumGovernance extends VuexModule.With({
       const proposals: Proposal[] = []
     const currentBlock = await web3.eth.getBlock("latest")
 
-    for (let i = 1; i <= proposalCount; i++) {
+    for (let i = 0; i <= proposalCount; i++) {
       const proposal = await this.governanceContract.methods.proposals(i).call();
       proposals.push({
-        id: Number(proposal.id) + 1,
+        id: Number(proposal.id),
         start: Number(proposal.start),
         startDate: Number((await web3.eth.getBlock(proposal.start)).timestamp) * 1000,
         end: Number(proposal.end),
