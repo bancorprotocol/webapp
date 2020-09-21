@@ -74,10 +74,10 @@ import { shortenEthAddress } from "@/api/helpers";
   }
 })
 export default class OpenProposals extends Vue {
-  get proposals() {
+  get proposals(): Partial<Proposal>[] {
     return [
-      {id: 1, proposer: '0x' + '1'.repeat(40), executor: '0x' + '1'.repeat(40), votesFor: 3777, votesAgainst: 1900, startDate: 1600348747298, endDate: 1600248747298},
-      {id: 2, proposer: '0x' + '3'.repeat(40), executor: '0x' + '2'.repeat(40), votesFor: 1299, votesAgainst: 1900, startDate: 1600348747298, endDate: 1600268747298},
+      {id: 1, proposer: '0x' + '1'.repeat(40), executor: '0x' + '1'.repeat(40), totalAgainstVotes: '3777', totalForVotes: '1900', startDate: 1600348747298, endDate: 1600248747298},
+      {id: 2, proposer: '0x' + '3'.repeat(40), executor: '0x' + '2'.repeat(40), totalAgainstVotes: '1299', totalForVotes: '1900', startDate: 1600348747298, endDate: 1600268747298},
     ]
   }
 
@@ -143,8 +143,8 @@ export default class OpenProposals extends Vue {
     return shortenEthAddress(address)
   }
 
-  getVotesPercentage(proposal, votes) {
-    return (votes / (proposal.votesFor + proposal.votesAgainst) * 100).toFixed(2) + '%'
+  getVotesPercentage(proposal: Proposal, votes: number): any {
+    return (votes / (+proposal.totalForVotes + +proposal.totalAgainstVotes) * 100).toFixed(2) + '%'
   }
 }
 </script>
