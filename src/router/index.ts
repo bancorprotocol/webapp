@@ -11,6 +11,7 @@ import CreateHome from "@/views/CreateHome.vue";
 import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
 import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
+import LiquidityProtection from "@/views/LiquidityProtection.vue";
 
 Vue.use(Router);
 
@@ -81,6 +82,15 @@ export const router = new Router({
       meta: {
         feature: "Liquidity"
       }
+    },
+    {
+      path: "/:service/liquidity-protection",
+      name: "LiqProtection",
+      components: {
+        Nav: Navigation,
+        default: LiquidityProtection
+      },
+      props: true
     },
     {
       path: "/:service/pool/create/",

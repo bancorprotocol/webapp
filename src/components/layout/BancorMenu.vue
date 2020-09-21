@@ -30,6 +30,10 @@
         ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
         Data</b-dropdown-item
       >
+      <b-dropdown-item :to="{ name: 'LiqProtection' }">
+        <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
+        Liquidity Protection
+      </b-dropdown-item>
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')"
         ><font-awesome-icon icon="times" class="mr-2" fixed-width /> Bancor
         X</b-dropdown-item

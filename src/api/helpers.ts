@@ -32,6 +32,7 @@ import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
+import moment from "moment";
 
 const bancorSubgraphInstance = axios.create({
   baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
@@ -1156,4 +1157,13 @@ export const buildPoolName = (
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   const symbols = pool.reserves.map(x => x.symbol);
   return symbols.join(separator);
+};
+
+export const formatUnixTime = (
+  unixTime: number
+): { date: string; time: string } => {
+  return {
+    date: moment(unixTime * 1000).format("DD/MM/YY"),
+    time: moment(unixTime * 1000).format("HH:mm")
+  };
 };
