@@ -17,8 +17,12 @@ export interface Proposal {
   id: number
   // block number
   start: number
+  // timestamp
+  startDate: number
   // block number
   end: number
+  // timestamp
+  endDate: number
   executor: EthAddress
   hash: string
   open: boolean
@@ -63,9 +67,11 @@ export class EthereumGovernance extends VuexModule.With({
     if (!voter) throw new Error("Cannot get votes without voter address");
 
     console.log("getting votes")
-
-    const weiVotes = await this.governanceContract.methods.votesOf(voter).call();
-    return shrinkToken(weiVotes, Number(await this.tokenContract.methods.decimals().call()));
+    const [decimals, weiVotes] = await Promise.all([
+      Number(await this.tokenContract.methods.decimals().call()),
+      this.governanceContract.methods.votesOf(voter).call()
+    ])
+    return shrinkToken(weiVotes, decimals);
   }
 
 
@@ -115,7 +121,6 @@ export class EthereumGovernance extends VuexModule.With({
       .send({
         from: account
       });
-
     await this.governanceContract.methods.stake(amount.toString()).send({
       from: account
     });
@@ -161,9 +166,9 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async voteAgainst({
-                  account,
-                  proposalId
-                }: {
+                      account,
+                      proposalId
+                    }: {
     account: EthAddress;
     proposalId: number | BigNumber | string;
   }): Promise<boolean> {
@@ -182,28 +187,33 @@ export class EthereumGovernance extends VuexModule.With({
     console.log("getting proposals");
     const proposalCount = await this.governanceContract.methods.proposalCount().call();
 
-    const proposals: Proposal[] = []
+    const decimals = Number(await this.tokenContract.methods.decimals().call())
+
+      const proposals: Proposal[] = []
+    const currentBlock = await web3.eth.getBlock("latest")
 
     for (let i = 1; i <= proposalCount; i++) {
       const proposal = await this.governanceContract.methods.proposals(i).call();
       proposals.push({
-        id: Number(proposal.id),
+        id: Number(proposal.id) + 1,
         start: Number(proposal.start),
+        startDate: Number((await web3.eth.getBlock(proposal.start)).timestamp) * 1000,
         end: Number(proposal.end),
+        endDate: Date.now() + ((Number(proposal.end) - currentBlock.number) * blockTime * 1000),
         executor: proposal.executor,
         hash: proposal.hash,
         open: proposal.open,
         proposer: proposal.proposer,
         quorum: proposal.quorum,
         quorumRequired: proposal.quorumRequired,
-        totalAgainstVotes: proposal.totalAgainstVotes,
-        totalForVotes: proposal.totalForVotes,
-        totalVotesAvailable: proposal.totalVotesAvailable
-      })
+        totalAgainstVotes: shrinkToken(proposal.totalAgainstVotes, decimals),
+        totalForVotes: shrinkToken(proposal.totalForVotes, decimals),
+        totalVotesAvailable: shrinkToken(proposal.totalVotesAvailable, decimals)
+      });
     }
 
     console.log("proposals", proposals);
 
-    return proposals
+    return proposals;
   }
 }
