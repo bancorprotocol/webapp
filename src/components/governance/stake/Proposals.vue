@@ -13,19 +13,11 @@
         </div>
       </div>
       <b-tabs class="overlap-tabs" no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-        <b-tab title="P">
-          <!--  -->
-
-          <remaining-time type="warn" from="1600348747298" to="1600358747298"/>
-          <progress-bar type="warn" percentage="20"/>
-
-          <!--  -->
-        </b-tab>
-        <b-tab title="Open" active>
+        <b-tab title="Open">
           <open-proposals :proposals="proposals.filter((p) => p.open)" :update="updateProposals.bind(this)"/>
         </b-tab>
-        <b-tab title="Done">
-          Done
+        <b-tab title="Done" active>
+          <done-proposals/>
         </b-tab>
       </b-tabs>
     </div>
@@ -41,6 +33,7 @@ import RemainingTime from "@/components/common/RemainingTime.vue";
 import { Proposal } from "@/store/modules/governance/ethGovernance"
 
 import OpenProposals from "@/components/governance/stake/OpenProposals.vue";
+import DoneProposals from "@/components/governance/stake/DoneProposals.vue";
 
 @Component({
   components: {
@@ -48,6 +41,7 @@ import OpenProposals from "@/components/governance/stake/OpenProposals.vue";
     ProgressBar,
     RemainingTime,
     OpenProposals,
+    DoneProposals,
   }
 })
 export default class Proposals extends Vue {
