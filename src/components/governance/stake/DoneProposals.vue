@@ -11,7 +11,19 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <td>{{proposal.id}}</td>
-      <td>0</td>
+      <td>
+        <div class="pie-wrapper">
+          <pie-chart
+            class="fix-pie"
+            width="24"
+            height="24"
+            :ratio="proposal.totalForVotes / (+proposal.totalForVotes + +proposal.totalAgainstVotes)"
+            :stroke-width="12"
+            :opacity="1"
+            color="#3ec8c8"
+          />
+        </div>
+      </td>
       <td>
         <div
           class="font-size-14 font-w500"
@@ -34,12 +46,12 @@
         </div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{proposal.votesFor}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.votesFor)}}</div>
+        <div class="font-size-14 font-w500">{{proposal.totalForVotes}}</div>
+        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalForVotes)}}</div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{proposal.votesAgainst}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.votesAgainst)}}</div>
+        <div class="font-size-14 font-w500">{{proposal.totalAgainstVotes}}</div>
+        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalAgainstVotes)}}</div>
       </td>
       <td>
         <div class="font-size-14 font-w500">{{formatDate(proposal.startDate)}}</div>
@@ -55,22 +67,19 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
+import PieChart from "vue-pie-chart";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
-import ProgressBar from "@/components/common/ProgressBar.vue";
-import RemainingTime from "@/components/common/RemainingTime.vue";
-import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
+import { Proposal } from "@/store/modules/governance/ethGovernance"
 
 @Component({
   components: {
     ContentBlock,
-    ProgressBar,
-    RemainingTime,
     DataTable,
-    ButtonProgress,
+    PieChart,
   }
 })
 export default class OpenProposals extends Vue {
@@ -91,8 +100,8 @@ export default class OpenProposals extends Vue {
       },
       {
         label: "",
-        minWidth: "16px",
-        maxWidth: "16px"
+        minWidth: "24px",
+        maxWidth: "24px"
       },
       {
         label: "",
@@ -103,14 +112,14 @@ export default class OpenProposals extends Vue {
       {
         label: "Votes for",
         key: "votesFor",
-        maxWidth: "120px",
-        minWidth: "120px"
+        maxWidth: "130px",
+        minWidth: "130px"
       },
       {
         label: "Votes against",
         key: "votesAgainst",
-        maxWidth: "120px",
-        minWidth: "120px"
+        maxWidth: "130px",
+        minWidth: "130px"
       },
       {
         label: "Vote start",
@@ -158,5 +167,17 @@ export default class OpenProposals extends Vue {
   @at-root .table & > td {
     vertical-align: top !important;
   }
+}
+.fix-pie {
+  circle,
+  text {
+    display: none;
+  }
+}
+.pie-wrapper {
+  height: 24px;
+  width: 24px;
+  background: #de4a5c;
+  border-radius: 12px;
 }
 </style>
