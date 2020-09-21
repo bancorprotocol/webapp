@@ -24,7 +24,10 @@ export default class RemainingTime extends Vue {
   private interval: any
 
   get percentage() {
-    return `${this.remainingPercentage.toFixed(2)}%`
+    if (this.remainingPercentage < 0) {
+      return '100%'
+    }
+    return `${Math.min(100, this.remainingPercentage).toFixed(2)}%`
   }
 
   get remaining() {
