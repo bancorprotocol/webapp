@@ -38,6 +38,18 @@ const bancorSubgraphInstance = axios.create({
   method: "post"
 });
 
+const chainlinkSubgraphInstance = axios.create({
+  baseURL: "https://api.thegraph.com/subgraphs/name/melonproject/chainlink",
+  method: "post"
+});
+
+export const chainlinkSubgraph = async (query: string) => {
+  const res = await chainlinkSubgraphInstance.post("", { query });
+  if (res.data.errors && res.data.errors.length > 0)
+    throw new Error(res.data.errors[0].message);
+  return res.data.data;
+};
+
 export const bancorSubgraph = async (query: string) => {
   const res = await bancorSubgraphInstance.post("", { query });
   if (res.data.errors && res.data.errors.length > 0)
