@@ -73,8 +73,8 @@ import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
-import { shortenEthAddress } from "@/api/helpers"
-import { Proposal } from "@/store/modules/governance/ethGovernance"
+import { shortenEthAddress } from "@/api/helpers";
+import { Proposal } from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -82,7 +82,7 @@ import { Proposal } from "@/store/modules/governance/ethGovernance"
     ProgressBar,
     RemainingTime,
     DataTable,
-    ButtonProgress,
+    ButtonProgress
   }
 })
 export default class OpenProposals extends Vue {
@@ -122,7 +122,7 @@ export default class OpenProposals extends Vue {
         minWidth: "120px"
       },
       {
-        label: "Vote",
+        label: "Vote"
       }
     ];
   }
@@ -140,25 +140,25 @@ export default class OpenProposals extends Vue {
   }
 
   shortAddress(address: string) {
-    return shortenEthAddress(address)
+    return shortenEthAddress(address);
   }
 
   async voteFor(proposalId: string) {
     await vxm.ethGovernance.voteFor({
       account: vxm.ethWallet.isAuthenticated,
       proposalId
-    })
+    });
 
-    await this.update()
+    await this.update();
   }
 
   async voteAgainst(proposalId: string) {
     await vxm.ethGovernance.voteAgainst({
       account: vxm.ethWallet.isAuthenticated,
       proposalId
-    })
+    });
 
-    await this.update()
+    await this.update();
   }
 }
 </script>

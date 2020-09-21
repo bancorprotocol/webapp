@@ -62,8 +62,7 @@ import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
-import { shortenEthAddress } from "@/api/helpers"
-import { Proposal } from "@/store/modules/governance/ethGovernance"
+import { shortenEthAddress } from "@/api/helpers";
 
 @Component({
   components: {
