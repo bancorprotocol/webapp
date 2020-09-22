@@ -3,7 +3,6 @@ import { web3, EthNetworks } from "@/api/helpers";
 import { ABIBancorGovernance, ABISmartToken } from "@/api/eth/ethAbis";
 import { EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
-import BigNumber from "bignumber.js";
 
 // export const governanceContractAddress = "0xf648d3920188f79d045e35007ad1c3158d47732b";
 export const governanceContractAddress =
@@ -35,6 +34,10 @@ export interface Proposal {
   totalVotesAgainst: number;
   totalVotesFor: number;
   totalVotesAvailable: number;
+  votes: {
+    for: number,
+    against: number
+  }
 }
 
 export class EthereumGovernance extends VuexModule.With({
@@ -193,7 +196,11 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getProposals(): Promise<Proposal[]> {
+  async getProposals({
+    voter
+  }: {
+    voter?: string
+  }): Promise<Proposal[]> {
     console.log("getting proposals");
     const proposalCount = await this.governanceContract.methods
       .proposalCount()
@@ -236,7 +243,15 @@ export class EthereumGovernance extends VuexModule.With({
         ),
         totalVotesAvailable: parseFloat(
           shrinkToken(proposal.totalVotesAvailable, decimals)
-        )
+        ),
+        votes: {
+          for: voter ?  parseFloat(shrinkToken(await this.governanceContract.methods
+            .votesForOf(voter, proposal.id)
+            .call(), decimals )): 0,
+          against: voter ?  parseFloat(shrinkToken(await this.governanceContract.methods
+            .votesAgainstOf(voter, proposal.id)
+            .call(), decimals )): 0,
+        }
       });
     }
 

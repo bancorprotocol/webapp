@@ -14,11 +14,11 @@ import numeral from "numeral";
 
 @Component
 export default class ProgressBar extends Vue {
-  @Prop() type?: 'warn' | 'error' | 'info';
+  @Prop() type?: "warn" | "error" | "info";
   @Prop() percentage?: number;
 
   get percentageValue() {
-    return `${+(this.percentage || 0)}%`
+    return `${+(this.percentage || 0)}%`;
   }
 
   get darkMode() {

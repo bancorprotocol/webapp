@@ -49,6 +49,7 @@
             (100 / proposal.totalVotesAvailable) * proposal.totalVotesFor
           "
           type="info"
+          :selected="proposal.votes.for > 0"
         />
         <div class="pt-1" />
         <button-progress
@@ -58,7 +59,7 @@
             (100 / proposal.totalVotesAvailable) * proposal.totalVotesAgainst
           "
           type="error"
-          :selected="true"
+          :selected="proposal.votes.against > 0"
         />
       </td>
       <td>

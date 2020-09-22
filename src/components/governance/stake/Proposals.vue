@@ -3,8 +3,8 @@
     <div>
       <div class="block-header pr-2">
         <h3
-          class="m-0 p-0 my-1 font-size-14 font-w600"
-          :class="darkMode ? 'text-dark' : 'text-light'"
+            class="m-0 p-0 my-1 font-size-14 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
         >
           Proposals
         </h3>
@@ -13,18 +13,18 @@
         </div>
       </div>
       <b-tabs
-        class="overlap-tabs"
-        no-fade
-        :class="darkMode ? 'tabs-dark' : 'tabs-light'"
+          class="overlap-tabs"
+          no-fade
+          :class="darkMode ? 'tabs-dark' : 'tabs-light'"
       >
         <b-tab title="Open" active>
           <open-proposals
-            :proposals="proposals.filter(p => p.open)"
-            :update="updateProposals.bind(this)"
+              :proposals="proposals.filter(p => p.open)"
+              :update="updateProposals.bind(this)"
           />
         </b-tab>
         <b-tab title="Done">
-          <done-proposals :proposals="proposals.filter(p => !p.open)" />
+          <done-proposals :proposals="proposals.filter(p => !p.open)"/>
         </b-tab>
       </b-tabs>
     </div>
@@ -63,7 +63,9 @@ export default class Proposals extends Vue {
   }
 
   async updateProposals() {
-    this.proposals = await vxm.ethGovernance.getProposals();
+    this.proposals = await vxm.ethGovernance.getProposals({
+      voter: vxm.ethWallet.isAuthenticated
+    });
   }
 
   async created() {

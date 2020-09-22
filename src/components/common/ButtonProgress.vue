@@ -27,7 +27,7 @@ import ProgressBar from "@/components/common/ProgressBar.vue";
 
 @Component({
   components: {
-    ProgressBar,
+    ProgressBar
   }
 })
 export default class ButtonProgress extends Vue {

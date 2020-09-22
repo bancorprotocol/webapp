@@ -112,7 +112,11 @@ export default class DoneProposals extends Vue {
       open: false,
       hash: "sdadsa",
       quorum: "10000",
-      quorumRequired: "100000"
+      quorumRequired: "100000",
+      votes: {
+        for: 10,
+        against: 0
+      }
     },
     {
       id: 2,
@@ -128,7 +132,11 @@ export default class DoneProposals extends Vue {
       open: false,
       hash: "sdadsa",
       quorum: "10000",
-      quorumRequired: "100000"
+      quorumRequired: "100000",
+      votes: {
+        for: 10,
+        against: 0
+      }
     }
   ];
 
