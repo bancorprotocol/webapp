@@ -208,9 +208,12 @@ export default class DoneProposals extends Vue {
 </script>
 
 <style lang="scss">
+@import "@/assets/_scss/custom/_variables";
+
 .fix-a {
   vertical-align: middle;
   cursor: pointer;
+  color: $primary !important;
 }
 .aling-rows-cells {
   @at-root .table & > td {
