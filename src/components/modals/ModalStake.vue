@@ -56,7 +56,7 @@
       </div>
 
       <main-button
-        @click="a = true"
+        @click="stake"
         :label="
           stakeValue.length === 0
             ? 'Enter Amount'
@@ -80,6 +80,23 @@
       <div class="font-size-12 font-w500" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
         Confirm this transaction in your wallet
       </div>
+    </div>
+
+    <div v-if="step === 'staked'" class="text-center" :class="darkMode ? 'text-dark' : 'text-light'">
+      <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
+      <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
+      <div class="mt-2 mb-3">
+        Staking {{stakeValue}} gBNT
+      </div>
+      <a target="_blank" class="text-primary font-w500 cursor">View on Etherscan</a>
+      <main-button
+        @click="onHide"
+        label="Close"
+        :large="true"
+        :active="true"
+        :block="true"
+        class="font-size-14 font-w400 mt-3"
+      />
     </div>
   </b-modal>
 </template>
@@ -111,6 +128,11 @@ export default class ModalBase extends Vue {
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
+  }
+
+  stake() {
+    this.step = 'staking'
+    setTimeout(() => this.step = 'staked', 5000)
   }
 
   onHide() {
