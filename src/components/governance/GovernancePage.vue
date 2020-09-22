@@ -18,7 +18,7 @@ import Proposals from "@/components/governance/stake/Proposals.vue";
 @Component({
   components: {
     Stake,
-    Proposals,
+    Proposals
   }
 })
 export default class GovernancePage extends Vue {

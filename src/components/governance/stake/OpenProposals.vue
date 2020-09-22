@@ -11,7 +11,7 @@
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <td>{{proposal.id}}</td>
+      <td>{{ proposal.id }}</td>
       <td>
         <div
           class="font-size-14 font-w500"
@@ -19,7 +19,7 @@
         >
           Proposed by
           <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{shortAddress(proposal.proposer)}}
+            {{ shortAddress(proposal.proposer) }}
           </a>
         </div>
 
@@ -29,26 +29,53 @@
         >
           Executed by
           <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{shortAddress(proposal.executor)}}
+            {{ shortAddress(proposal.executor) }}
           </a>
         </div>
 
         <div class="pt-2">
-          <remaining-time type="warn" :from="proposal.startDate" :to="proposal.endDate" />
+          <remaining-time
+            type="warn"
+            :from="proposal.startDate"
+            :to="proposal.endDate"
+          />
         </div>
       </td>
       <td>
-        <button-progress :click="voteFor.bind(this, proposal.id.toString())" title="For" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalVotesFor)" type="info" />
+        <button-progress
+          :click="voteFor.bind(this, proposal.id.toString())"
+          title="For"
+          :percentage="
+            (100 / proposal.totalVotesAvailable) * proposal.totalVotesFor
+          "
+          type="info"
+        />
         <div class="pt-1" />
-        <button-progress :click="voteAgainst.bind(this, proposal.id.toString())" title="Against" :percentage="(100 / proposal.totalVotesAvailable * proposal.totalVotesAgainst)" type="error" :selected="true" />
+        <button-progress
+          :click="voteAgainst.bind(this, proposal.id.toString())"
+          title="Against"
+          :percentage="
+            (100 / proposal.totalVotesAvailable) * proposal.totalVotesAgainst
+          "
+          type="error"
+          :selected="true"
+        />
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{formatDate(proposal.startDate)}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.startDate)}}</div>
+        <div class="font-size-14 font-w500">
+          {{ formatDate(proposal.startDate) }}
+        </div>
+        <div class="font-size-12 font-w500 text-muted-light">
+          {{ formatTime(proposal.startDate) }}
+        </div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{formatDate(proposal.endDate)}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.endDate)}}</div>
+        <div class="font-size-14 font-w500">
+          {{ formatDate(proposal.endDate) }}
+        </div>
+        <div class="font-size-12 font-w500 text-muted-light">
+          {{ formatTime(proposal.endDate) }}
+        </div>
       </td>
       <td>
         <a target="_blank" class="font-size-14 font-w500 fix-a">
@@ -133,11 +160,13 @@ export default class OpenProposals extends Vue {
   }
 
   formatDate(date: number) {
-    return new Intl.DateTimeFormat('en-GB').format(date)
+    return new Intl.DateTimeFormat("en-GB").format(date);
   }
 
   formatTime(date: number) {
-    return new Intl.DateTimeFormat('en-GB', {timeStyle: "short"} as any).format(date)
+    return new Intl.DateTimeFormat("en-GB", {
+      timeStyle: "short"
+    } as any).format(date);
   }
 
   shortAddress(address: string) {

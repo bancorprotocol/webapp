@@ -15,31 +15,33 @@ import numeral from "numeral";
 
 @Component
 export default class RemainingTime extends Vue {
-  @Prop() type?: 'warn' | 'info' | null;
+  @Prop() type?: "warn" | "info" | null;
   @Prop() from?: number;
   @Prop() to?: number;
 
-  private remainingPercentage: number = 0
-  private remainingTime: number = 0
-  private interval: any
+  private remainingPercentage: number = 0;
+  private remainingTime: number = 0;
+  private interval: any;
 
   get percentage() {
     if (this.remainingPercentage < 0) {
-      return '100%'
+      return "100%";
     }
-    return `${Math.min(100, this.remainingPercentage).toFixed(2)}%`
+    return `${Math.min(100, this.remainingPercentage).toFixed(2)}%`;
   }
 
   get remaining() {
     if (this.remainingTime < 0) {
-      return 'No time left'
+      return "No time left";
     }
 
     const m = this.remainingTime / 60 / 1000;
     const h = m / 60;
     const d = h / 24;
 
-    return `${Math.round(d)}d ${Math.round(h % 24)}h ${Math.round(m % 60)}m left`;
+    return `${Math.round(d)}d ${Math.round(h % 24)}h ${Math.round(
+      m % 60
+    )}m left`;
   }
 
   get darkMode() {
@@ -54,13 +56,14 @@ export default class RemainingTime extends Vue {
   }
 
   mounted() {
-    [10, 100, 500, 1000, 2000]
-      .map(time => setTimeout(() => this.updateTime(), time))
+    [10, 100, 500, 1000, 2000].map(time =>
+      setTimeout(() => this.updateTime(), time)
+    );
     this.interval = setInterval(() => this.updateTime(), 10 * 1000);
   }
 
   destroyed() {
-    clearInterval(this.interval)
+    clearInterval(this.interval);
   }
 }
 </script>
@@ -92,7 +95,7 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   border-radius: $remaining-time---border-radius;
   overflow: hidden;
   position: relative;
-  
+
   &,
   &__progress,
   &__content {

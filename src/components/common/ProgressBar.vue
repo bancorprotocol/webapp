@@ -1,6 +1,9 @@
 <template>
   <div :class="`progress-line-bar progress-line-bar--${type}`">
-    <div class="progress-line-bar__progress" :style="{width: percentageValue}"></div>
+    <div
+      class="progress-line-bar__progress"
+      :style="{ width: percentageValue }"
+    ></div>
   </div>
 </template>
 
@@ -41,7 +44,7 @@ $progress-line-bar--info__progress---background: #3ec8c8;
   overflow: hidden;
   position: relative;
   background: $progress-line-bar---background;
-  
+
   &,
   &__progress {
     height: $progress-line-bar---height;

@@ -118,7 +118,7 @@ export default class App extends Vue {
 
     console.log({ service, feature, query, initParams, paramsSatisfied });
     try {
-      await vxm.ethGovernance.init()
+      await vxm.ethGovernance.init();
       await vxm.bancor.init(initParams);
       this.loading = false;
       // @ts-ignore

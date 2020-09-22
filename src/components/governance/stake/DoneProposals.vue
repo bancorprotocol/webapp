@@ -1,23 +1,22 @@
 <template>
-  <data-table
-    :items="proposals"
-    :fields="fields"
-    default-sort="to"
-  >
+  <data-table :items="proposals" :fields="fields" default-sort="to">
     <tr
       v-for="proposal in proposals"
       :key="proposal.id"
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <td>{{proposal.id}}</td>
+      <td>{{ proposal.id }}</td>
       <td>
         <div class="pie-wrapper">
           <pie-chart
             class="fix-pie"
             width="24"
             height="24"
-            :ratio="proposal.totalVotesFor / (+proposal.totalVotesFor + +proposal.totalVotesAgainst)"
+            :ratio="
+              proposal.totalVotesFor /
+                (+proposal.totalVotesFor + +proposal.totalVotesAgainst)
+            "
             :stroke-width="12"
             :opacity="1"
             color="#3ec8c8"
@@ -31,7 +30,7 @@
         >
           Proposed by
           <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{shortAddress(proposal.proposer)}}
+            {{ shortAddress(proposal.proposer) }}
           </a>
         </div>
 
@@ -41,25 +40,39 @@
         >
           Executed by
           <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{shortAddress(proposal.executor)}}
+            {{ shortAddress(proposal.executor) }}
           </a>
         </div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{proposal.totalVotesFor}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalVotesFor)}}</div>
+        <div class="font-size-14 font-w500">{{ proposal.totalVotesFor }}</div>
+        <div class="font-size-12 font-w500 text-muted-light">
+          {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
+        </div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{proposal.totalVotesAgainst}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{getVotesPercentage(proposal, proposal.totalVotesAgainst)}}</div>
+        <div class="font-size-14 font-w500">
+          {{ proposal.totalVotesAgainst }}
+        </div>
+        <div class="font-size-12 font-w500 text-muted-light">
+          {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
+        </div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{formatDate(proposal.startDate)}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.startDate)}}</div>
+        <div class="font-size-14 font-w500">
+          {{ formatDate(proposal.startDate) }}
+        </div>
+        <div class="font-size-12 font-w500 text-muted-light">
+          {{ formatTime(proposal.startDate) }}
+        </div>
       </td>
       <td>
-        <div class="font-size-14 font-w500">{{formatDate(proposal.endDate)}}</div>
-        <div class="font-size-12 font-w500 text-muted-light">{{formatTime(proposal.endDate)}}</div>
+        <div class="font-size-14 font-w500">
+          {{ formatDate(proposal.endDate) }}
+        </div>
+        <div class="font-size-12 font-w500 text-muted-light">
+          {{ formatTime(proposal.endDate) }}
+        </div>
       </td>
     </tr>
   </data-table>
@@ -74,20 +87,50 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
-import { Proposal } from "@/store/modules/governance/ethGovernance"
+import { Proposal } from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
     ContentBlock,
     DataTable,
-    PieChart,
+    PieChart
   }
 })
 export default class OpenProposals extends Vue {
   @Prop() proposals?: Proposal[] = [
-    {id: 1, proposer: '0x' + '1'.repeat(40), executor: '0x' + '1'.repeat(40), totalVotesAgainst: '3777', totalVotesFor: '1900', totalVotesAvailable: '10000', start: 0, end: 0, startDate: 1600348747298, endDate: 1600248747298, open: false, hash: "sdadsa", quorum: "10000", quorumRequired: "100000"},
-    {id: 2, proposer: '0x' + '3'.repeat(40), executor: '0x' + '2'.repeat(40), totalVotesAgainst: '1299', totalVotesFor: '1900', totalVotesAvailable: '10000', start: 0, end: 0, startDate: 1600348747298, endDate: 1600268747298, open: false, hash: "sdadsa", quorum: "10000", quorumRequired: "100000"},
-  ]
+    {
+      id: 1,
+      proposer: "0x" + "1".repeat(40),
+      executor: "0x" + "1".repeat(40),
+      totalVotesAgainst: "3777",
+      totalVotesFor: "1900",
+      totalVotesAvailable: "10000",
+      start: 0,
+      end: 0,
+      startDate: 1600348747298,
+      endDate: 1600248747298,
+      open: false,
+      hash: "sdadsa",
+      quorum: "10000",
+      quorumRequired: "100000"
+    },
+    {
+      id: 2,
+      proposer: "0x" + "3".repeat(40),
+      executor: "0x" + "2".repeat(40),
+      totalVotesAgainst: "1299",
+      totalVotesFor: "1900",
+      totalVotesAvailable: "10000",
+      start: 0,
+      end: 0,
+      startDate: 1600348747298,
+      endDate: 1600268747298,
+      open: false,
+      hash: "sdadsa",
+      quorum: "10000",
+      quorumRequired: "100000"
+    }
+  ];
 
   get fields(): ViewTableFields[] {
     return [
@@ -131,7 +174,7 @@ export default class OpenProposals extends Vue {
         key: "endDate",
         maxWidth: "120px",
         minWidth: "120px"
-      },
+      }
     ];
   }
 
@@ -140,19 +183,26 @@ export default class OpenProposals extends Vue {
   }
 
   formatDate(date: number) {
-    return new Intl.DateTimeFormat('en-GB').format(date)
+    return new Intl.DateTimeFormat("en-GB").format(date);
   }
 
   formatTime(date: number) {
-    return new Intl.DateTimeFormat('en-GB', {timeStyle: "short"} as any).format(date)
+    return new Intl.DateTimeFormat("en-GB", {
+      timeStyle: "short"
+    } as any).format(date);
   }
 
   shortAddress(address: string) {
-    return shortenEthAddress(address)
+    return shortenEthAddress(address);
   }
 
   getVotesPercentage(proposal: Proposal, votes: number): any {
-    return (votes / (+proposal.totalVotesFor + +proposal.totalVotesAgainst) * 100).toFixed(2) + '%';
+    return (
+      (
+        (votes / (+proposal.totalVotesFor + +proposal.totalVotesAgainst)) *
+        100
+      ).toFixed(2) + "%"
+    );
   }
 }
 </script>

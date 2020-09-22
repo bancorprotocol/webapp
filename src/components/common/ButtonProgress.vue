@@ -1,10 +1,16 @@
 <template>
   <div :class="`button-progress`">
-    <div class="button-progress__radio" :class="{'button-progress__radio--selected': selected}"></div>
+    <div
+      class="button-progress__radio"
+      :class="{ 'button-progress__radio--selected': selected }"
+    ></div>
     <div class="button-progress__content">
       <div class="pb-1" @click="click">
-        <span class="font-size-14 font-w500 text-uppercase">{{title}}</span><!-- 
-     --><span class="font-size-12 font-w500 text-muted-light pl-1">{{percentageValue}}</span>
+        <span class="font-size-14 font-w500 text-uppercase">{{ title }}</span
+        ><!-- 
+     --><span class="font-size-12 font-w500 text-muted-light pl-1">{{
+          percentageValue
+        }}</span>
       </div>
       <progress-bar :type="type" :percentage="percentage" />
     </div>
@@ -57,7 +63,7 @@ $button-progress---background: $block-bg-blue;
   border: 1px solid $button-progress---border;
   display: flex;
   align-items: top;
-  
+
   &__radio {
     box-sizing: border-box;
     height: $button-progress__radio---size;
@@ -65,15 +71,15 @@ $button-progress---background: $block-bg-blue;
     border-radius: $button-progress__radio---size / 2;
     border: 1px solid $button-progress---border;
     margin-right: $button-progress---padding;
-    box-shadow:
-      inset 0 0 0 ($button-progress__radio---size / 2) #ffffff,
-      inset 0 0 0 ($button-progress__radio---size / 2) $button-progress__radio--selected---color;
+    box-shadow: inset 0 0 0 ($button-progress__radio---size / 2) #ffffff,
+      inset 0 0 0 ($button-progress__radio---size / 2)
+        $button-progress__radio--selected---color;
 
     &--selected {
       border-color: $button-progress__radio--selected---color;
-      box-shadow:
-        inset 0 0 0 3px #ffffff,
-        inset 0 0 0 ($button-progress__radio---size / 2) $button-progress__radio--selected---color;
+      box-shadow: inset 0 0 0 3px #ffffff,
+        inset 0 0 0 ($button-progress__radio---size / 2)
+          $button-progress__radio--selected---color;
     }
   }
 

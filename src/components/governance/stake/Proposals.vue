@@ -3,8 +3,8 @@
     <div>
       <div class="block-header pr-2">
         <h3
-            class="m-0 p-0 my-1 font-size-14 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
+          class="m-0 p-0 my-1 font-size-14 font-w600"
+          :class="darkMode ? 'text-dark' : 'text-light'"
         >
           Proposals
         </h3>
@@ -12,12 +12,19 @@
           + add
         </div>
       </div>
-      <b-tabs class="overlap-tabs" no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
+      <b-tabs
+        class="overlap-tabs"
+        no-fade
+        :class="darkMode ? 'tabs-dark' : 'tabs-light'"
+      >
         <b-tab title="Open">
-          <open-proposals :proposals="proposals.filter((p) => p.open)" :update="updateProposals.bind(this)"/>
+          <open-proposals
+            :proposals="proposals.filter(p => p.open)"
+            :update="updateProposals.bind(this)"
+          />
         </b-tab>
         <b-tab title="Done" active>
-          <done-proposals :proposals="proposals.filter((p) => !p.open)" />
+          <done-proposals :proposals="proposals.filter(p => !p.open)" />
         </b-tab>
       </b-tabs>
     </div>
@@ -30,7 +37,7 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
-import { Proposal } from "@/store/modules/governance/ethGovernance"
+import { Proposal } from "@/store/modules/governance/ethGovernance";
 
 import OpenProposals from "@/components/governance/stake/OpenProposals.vue";
 import DoneProposals from "@/components/governance/stake/DoneProposals.vue";
@@ -41,11 +48,11 @@ import DoneProposals from "@/components/governance/stake/DoneProposals.vue";
     ProgressBar,
     RemainingTime,
     OpenProposals,
-    DoneProposals,
+    DoneProposals
   }
 })
 export default class Proposals extends Vue {
-  proposals: Proposal[] = []
+  proposals: Proposal[] = [];
 
   get isEth() {
     return this.$route.params.service === "eth";
@@ -56,11 +63,11 @@ export default class Proposals extends Vue {
   }
 
   async updateProposals() {
-    this.proposals = await vxm.ethGovernance.getProposals()
+    this.proposals = await vxm.ethGovernance.getProposals();
   }
 
   async created() {
-    await this.updateProposals()
+    await this.updateProposals();
   }
 }
 </script>
