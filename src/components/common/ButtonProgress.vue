@@ -8,9 +8,8 @@
       <div class="pb-1" @click="click">
         <span class="font-size-14 font-w500 text-uppercase">
           {{ title }}
-        </span>
-        <!-- -->
-        <span class="font-size-12 font-w500 text-muted-light pl-1">
+        </span><!--
+     --><span class="font-size-12 font-w500 text-muted-light pl-1">
           {{ percentageValue }}
         </span>
       </div>
@@ -39,7 +38,7 @@ export default class ButtonProgress extends Vue {
   @Prop() click?: any;
 
   get percentageValue() {
-    return `${(+(this.percentage || 0))?.toFixed(2)}%`;
+    return `${(+(this.percentage || 0))?.toFixed(1)}%`.replace('.0%', '%');
   }
 
   get darkMode() {
