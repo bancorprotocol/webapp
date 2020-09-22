@@ -2,15 +2,24 @@
   <b-container fluid="xl" class="px-xl-0">
     <b-row>
       <b-col cols="12">
-        <h2
-          class="font-size-20 font-w600 mt-2"
-          :class="darkMode ? 'text-dark' : 'text-light'"
-        >
-          Liquidity Protection
-        </h2>
+        <div class="mt-2">
+          <span
+            class="font-size-20 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+          >
+            Liquidity Protection
+          </span>
 
+          <b-btn
+            variant="primary"
+            :to="{ name: 'AddLiqProtection' }"
+            class="float-right"
+          >
+            Add Protection
+          </b-btn>
+        </div>
         <p
-          class="font-size-14 font-w400"
+          class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
           You can protect your token pools with our special insurance for
@@ -101,7 +110,7 @@
                     ).percentage
                   "
                   :max="100"
-                  height="10px"
+                  height="7px"
                   class="my-1"
                 />
                 <span class="text-primary">
