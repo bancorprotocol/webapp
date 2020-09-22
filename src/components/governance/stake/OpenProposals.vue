@@ -84,7 +84,7 @@
         </a>
         <div class="pt-2" />
         <a target="_blank" class="font-size-14 font-w500 fix-a">
-          <font-awesome-icon icon="github" />
+          <font-awesome-icon :icon="['fab', 'github']" />
           &nbsp;GitHub
         </a>
       </td>
