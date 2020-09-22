@@ -35,9 +35,9 @@ export interface Proposal {
   totalVotesFor: number;
   totalVotesAvailable: number;
   votes: {
-    for: number,
-    against: number
-  }
+    for: number;
+    against: number;
+  };
 }
 
 export class EthereumGovernance extends VuexModule.With({
@@ -196,11 +196,7 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getProposals({
-    voter
-  }: {
-    voter?: string
-  }): Promise<Proposal[]> {
+  async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
     console.log("getting proposals");
     const proposalCount = await this.governanceContract.methods
       .proposalCount()
@@ -245,12 +241,26 @@ export class EthereumGovernance extends VuexModule.With({
           shrinkToken(proposal.totalVotesAvailable, decimals)
         ),
         votes: {
-          for: voter ?  parseFloat(shrinkToken(await this.governanceContract.methods
-            .votesForOf(voter, proposal.id)
-            .call(), decimals )): 0,
-          against: voter ?  parseFloat(shrinkToken(await this.governanceContract.methods
-            .votesAgainstOf(voter, proposal.id)
-            .call(), decimals )): 0,
+          for: voter
+            ? parseFloat(
+                shrinkToken(
+                  await this.governanceContract.methods
+                    .votesForOf(voter, proposal.id)
+                    .call(),
+                  decimals
+                )
+              )
+            : 0,
+          against: voter
+            ? parseFloat(
+                shrinkToken(
+                  await this.governanceContract.methods
+                    .votesAgainstOf(voter, proposal.id)
+                    .call(),
+                  decimals
+                )
+              )
+            : 0
         }
       });
     }

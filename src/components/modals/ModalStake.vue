@@ -15,11 +15,10 @@
           <b-col cols="12" class="d-flex justify-content-between mb-2">
             <span
               class="font-size-14 font-w600"
-              :class="darkMode ? 'text-dark' : 'text-light'">
-              
-              <span v-if="step === 'stake'">Stake</span>
-            </span
+              :class="darkMode ? 'text-dark' : 'text-light'"
             >
+              <span v-if="step === 'stake'">Stake</span>
+            </span>
             <font-awesome-icon
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
@@ -32,24 +31,33 @@
     </template>
 
     <div v-if="step === 'stake'">
-      <div class="font-size-12 font-w500" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
+      <div
+        class="font-size-12 font-w500"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
         <span class="text-uppercase">Stake your tokens</span>
-        <span class="float-right">Balance: {{currentBalance}} gBTN</span>
+        <span class="float-right">Balance: {{ currentBalance }} gBTN</span>
       </div>
 
       <div class="input-currency mt-1">
         <b-form-input
           v-model="stakeValue"
-          :state="(stakeValue.length === 0 || (stakeValue > 0 && stakeValue <= currentBalance)) && undefined"
+          :state="
+            (stakeValue.length === 0 ||
+              (stakeValue > 0 && stakeValue <= currentBalance)) &&
+              undefined
+          "
           :max="currentBalance"
           type="number"
           placeholder="0"
           size="lg"
-          class="input-currency__input"/>
+          class="input-currency__input"
+        />
         <div class="input-currency__append pr-3">
           <img
             class="img-avatar img-avatar32 bg-dark input-currency__img mr-2 ml-3"
-            src="@/assets/media/logos/bancor-white2.png">
+            src="@/assets/media/logos/bancor-white2.png"
+          />
 
           <span class=" font-size-14 font-w500">gBNT</span>
         </div>
@@ -61,34 +69,49 @@
           stakeValue.length === 0
             ? 'Enter Amount'
             : stakeValue > 0 && stakeValue <= currentBalance
-              ? 'Stake Tokens'
-              : 'Insufficient Amount'"
+            ? 'Stake Tokens'
+            : 'Insufficient Amount'
+        "
         :active="true"
         :block="true"
         :disabled="!(stakeValue > 0 && stakeValue <= currentBalance)"
         class="font-size-14 font-w400 mt-3 button-status"
-        :class="{'button-status--empty': stakeValue.length === 0, 'button-status--invalid': !(stakeValue > 0 && stakeValue <= currentBalance)}"
+        :class="{
+          'button-status--empty': stakeValue.length === 0,
+          'button-status--invalid': !(
+            stakeValue > 0 && stakeValue <= currentBalance
+          )
+        }"
       />
     </div>
 
-    <div v-if="step === 'staking'" class="text-center" :class="darkMode ? 'text-dark' : 'text-light'">
+    <div
+      v-if="step === 'staking'"
+      class="text-center"
+      :class="darkMode ? 'text-dark' : 'text-light'"
+    >
       <b-spinner variant="primary"></b-spinner>
       <h3 class="font-size-lg mt-4">Waiting For Confirmation</h3>
-      <div class="mt-2 mb-3">
-        Staking {{stakeValue}} gBNT
-      </div>
-      <div class="font-size-12 font-w500" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
+      <div class="mt-2 mb-3">Staking {{ stakeValue }} gBNT</div>
+      <div
+        class="font-size-12 font-w500"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
         Confirm this transaction in your wallet
       </div>
     </div>
 
-    <div v-if="step === 'staked'" class="text-center" :class="darkMode ? 'text-dark' : 'text-light'">
+    <div
+      v-if="step === 'staked'"
+      class="text-center"
+      :class="darkMode ? 'text-dark' : 'text-light'"
+    >
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
       <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
-      <div class="mt-2 mb-3">
-        Staking {{stakeValue}} gBNT
-      </div>
-      <a target="_blank" class="text-primary font-w500 cursor">View on Etherscan</a>
+      <div class="mt-2 mb-3">Staking {{ stakeValue }} gBNT</div>
+      <a target="_blank" class="text-primary font-w500 cursor"
+        >View on Etherscan</a
+      >
       <main-button
         @click="onHide"
         label="Close"
@@ -116,23 +139,23 @@ import MainButton from "@/components/common/Button.vue";
 
 @Component({
   components: {
-    MainButton,
-  },
+    MainButton
+  }
 })
 export default class ModalBase extends Vue {
   @VModel({ type: Boolean }) show!: boolean;
 
-  currentBalance: number = 120
-  stakeValue?: number = '' as any
-  step: 'stake' | 'staking' | 'staked' = 'stake'
+  currentBalance: number = 120;
+  stakeValue?: number = "" as any;
+  step: "stake" | "staking" | "staked" = "stake";
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
   }
 
   stake() {
-    this.step = 'staking'
-    setTimeout(() => this.step = 'staked', 5000)
+    this.step = "staking";
+    setTimeout(() => (this.step = "staked"), 5000);
   }
 
   onHide() {
@@ -171,7 +194,7 @@ export default class ModalBase extends Vue {
       -webkit-appearance: none;
       margin: 0;
     }
-    &[type=number] {
+    &[type="number"] {
       -moz-appearance: textfield;
     }
   }

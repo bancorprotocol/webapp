@@ -1,7 +1,6 @@
 <template>
   <content-block title="Stake" :shadow-light="true">
     <div>
-
       <main-button
         @click="stakeModal = true"
         label="Open stake modal"
@@ -82,7 +81,7 @@ import { expandToken } from "@/api/eth/helpers";
     MainButton,
     RemainingTime,
     ProgressBar,
-    ModalStake,
+    ModalStake
   }
 })
 export default class Stake extends Vue {
