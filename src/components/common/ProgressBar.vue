@@ -15,10 +15,10 @@ import numeral from "numeral";
 @Component
 export default class ProgressBar extends Vue {
   @Prop() type?: 'warn' | 'error' | 'info';
-  @Prop() percentage: number = 0;
+  @Prop() percentage?: number;
 
   get percentageValue() {
-    return `${(+(this.percentage || 0))?.toFixed(2)}%`
+    return `${+(this.percentage || 0)}%`
   }
 
   get darkMode() {

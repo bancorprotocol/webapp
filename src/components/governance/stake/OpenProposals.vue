@@ -134,8 +134,8 @@ export default class OpenProposals extends Vue {
       {
         label: "Options",
         key: "voteFor",
-        minWidth: "168px",
-        maxWidth: "168px"
+        minWidth: "174px",
+        maxWidth: "174px"
       },
       {
         label: "Vote start",
