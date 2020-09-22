@@ -33,11 +33,18 @@
     <div>
       <div class="font-size-12 font-w500" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
         <span class="text-uppercase">Stake your tokens</span>
-        <span class="float-right">Balance: {{120}} gBTN</span>
+        <span class="float-right">Balance: {{currentBalance}} gBTN</span>
       </div>
-
+      
       <div class="input-currency mt-1">
-        <b-form-input type="number" size="lg" class="input-currency__input"></b-form-input>
+        <b-form-input
+          v-model="stakeValue"
+          :state="(stakeValue.length === 0 || (stakeValue > 0 && stakeValue <= currentBalance)) && undefined"
+          :max="currentBalance"
+          type="number"
+          placeholder="0"
+          size="lg"
+          class="input-currency__input"/>
         <div class="input-currency__append pr-3">
           <img
             class="img-avatar img-avatar32 bg-dark input-currency__img mr-2 ml-3"
@@ -45,8 +52,22 @@
 
           <span class=" font-size-14 font-w500">gBNT</span>
         </div>
-        
       </div>
+
+      <main-button
+        @click="a = true"
+        :label="
+          stakeValue.length === 0
+            ? 'Enter Amount'
+            : stakeValue > 0 && stakeValue <= currentBalance
+              ? 'Stake Tokens'
+              : 'Insufficient Amount'"
+        :active="true"
+        :block="true"
+        :disabled="!(stakeValue > 0 && stakeValue <= currentBalance)"
+        class="font-size-14 font-w400 mt-3 button-status"
+        :class="{'button-status--empty': stakeValue.length === 0, 'button-status--invalid': !(stakeValue > 0 && stakeValue <= currentBalance)}"
+      />
     </div>
   </b-modal>
 </template>
@@ -62,12 +83,17 @@ import {
   Model
 } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
-import MultiInputField from "@/components/common/MultiInputField.vue";
+import MainButton from "@/components/common/Button.vue";
+
 @Component({
-  components: { MultiInputField }
+  components: {
+    MainButton,
+  },
 })
 export default class ModalBase extends Vue {
   @VModel({ type: Boolean }) show!: boolean;
+  currentBalance: number = 120
+  stakeValue?: number = '' as any
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
@@ -79,6 +105,8 @@ export default class ModalBase extends Vue {
 }
 </script>
 <style lang="scss">
+@import "@/assets/_scss/custom/_variables";
+
 .modal-body {
   padding-top: 0 !important;
 }
@@ -100,6 +128,8 @@ export default class ModalBase extends Vue {
     padding: 4px;
   }
   &__input {
+    background-image: none !important;
+
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -108,6 +138,17 @@ export default class ModalBase extends Vue {
     &[type=number] {
       -moz-appearance: textfield;
     }
+  }
+}
+
+.button-status {
+  &--invalid {
+    background: $text-error-light !important;
+    border-color: transparent !important;
+  }
+  &--empty {
+    background: $gray-placeholder !important;
+    border-color: transparent !important;
   }
 }
 </style>
