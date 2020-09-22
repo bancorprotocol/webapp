@@ -12,8 +12,8 @@ import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
 import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
 import LiquidityProtection from "@/views/LiquidityProtection.vue";
-import GovernancePage from "@/components/governance/GovernancePage.vue"
-import Governance from "@/views/Governance.vue"
+import GovernancePage from "@/components/governance/GovernancePage.vue";
+import Governance from "@/views/Governance.vue";
 
 Vue.use(Router);
 

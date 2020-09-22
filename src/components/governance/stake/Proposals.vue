@@ -17,13 +17,13 @@
         no-fade
         :class="darkMode ? 'tabs-dark' : 'tabs-light'"
       >
-        <b-tab title="Open">
+        <b-tab title="Open" active>
           <open-proposals
             :proposals="proposals.filter(p => p.open)"
             :update="updateProposals.bind(this)"
           />
         </b-tab>
-        <b-tab title="Done" active>
+        <b-tab title="Done">
           <done-proposals :proposals="proposals.filter(p => !p.open)" />
         </b-tab>
       </b-tabs>

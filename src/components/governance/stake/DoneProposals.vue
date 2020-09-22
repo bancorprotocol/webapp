@@ -96,15 +96,15 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
     PieChart
   }
 })
-export default class OpenProposals extends Vue {
+export default class DoneProposals extends Vue {
   @Prop() proposals?: Proposal[] = [
     {
       id: 1,
       proposer: "0x" + "1".repeat(40),
       executor: "0x" + "1".repeat(40),
-      totalVotesAgainst: "3777",
-      totalVotesFor: "1900",
-      totalVotesAvailable: "10000",
+      totalVotesAgainst: 3777,
+      totalVotesFor: 1900,
+      totalVotesAvailable: 10000,
       start: 0,
       end: 0,
       startDate: 1600348747298,
@@ -118,9 +118,9 @@ export default class OpenProposals extends Vue {
       id: 2,
       proposer: "0x" + "3".repeat(40),
       executor: "0x" + "2".repeat(40),
-      totalVotesAgainst: "1299",
-      totalVotesFor: "1900",
-      totalVotesAvailable: "10000",
+      totalVotesAgainst: 1299,
+      totalVotesFor: 1900,
+      totalVotesAvailable: 10000,
       start: 0,
       end: 0,
       startDate: 1600348747298,
