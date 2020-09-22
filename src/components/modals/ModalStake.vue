@@ -1,11 +1,10 @@
 <template>
   <b-modal
     scrollable
-    :size="size"
+    size="sm"
     centered
     v-model="show"
     hide-footer
-    :content-class="contentClass"
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
@@ -16,8 +15,10 @@
           <b-col cols="12" class="d-flex justify-content-between mb-2">
             <span
               class="font-size-14 font-w600"
-              :class="darkMode ? 'text-dark' : 'text-light'"
-              >Stake</span
+              :class="darkMode ? 'text-dark' : 'text-light'">
+              
+              <span v-if="step === 'stake'">Stake</span>
+            </span
             >
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -30,12 +31,12 @@
       </div>
     </template>
 
-    <div>
+    <div v-if="step === 'stake'">
       <div class="font-size-12 font-w500" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
         <span class="text-uppercase">Stake your tokens</span>
         <span class="float-right">Balance: {{currentBalance}} gBTN</span>
       </div>
-      
+
       <div class="input-currency mt-1">
         <b-form-input
           v-model="stakeValue"
@@ -69,6 +70,17 @@
         :class="{'button-status--empty': stakeValue.length === 0, 'button-status--invalid': !(stakeValue > 0 && stakeValue <= currentBalance)}"
       />
     </div>
+
+    <div v-if="step === 'staking'" class="text-center" :class="darkMode ? 'text-dark' : 'text-light'">
+      <b-spinner variant="primary"></b-spinner>
+      <h3 class="font-size-lg mt-4">Waiting For Confirmation</h3>
+      <div class="mt-2 mb-3">
+        Staking {{stakeValue}} gBNT
+      </div>
+      <div class="font-size-12 font-w500" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
+        Confirm this transaction in your wallet
+      </div>
+    </div>
   </b-modal>
 </template>
 
@@ -92,8 +104,10 @@ import MainButton from "@/components/common/Button.vue";
 })
 export default class ModalBase extends Vue {
   @VModel({ type: Boolean }) show!: boolean;
+
   currentBalance: number = 120
   stakeValue?: number = '' as any
+  step: 'stake' | 'staking' | 'staked' = 'stake'
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
