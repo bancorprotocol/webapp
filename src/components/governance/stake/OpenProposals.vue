@@ -46,7 +46,7 @@
           :click="voteFor.bind(this, proposal.id.toString())"
           title="For"
           :percentage="
-            (100 / proposal.totalVotesAvailable) * proposal.totalVotesFor
+            (100 / proposal.totalVotes) * proposal.totalVotesFor
           "
           type="info"
           :selected="proposal.votes.for > 0"
@@ -56,7 +56,7 @@
           :click="voteAgainst.bind(this, proposal.id.toString())"
           title="Against"
           :percentage="
-            (100 / proposal.totalVotesAvailable) * proposal.totalVotesAgainst
+            (100 / proposal.totalVotes) * proposal.totalVotesAgainst
           "
           type="error"
           :selected="proposal.votes.against > 0"
@@ -67,7 +67,7 @@
           {{ formatDate(proposal.startDate) }}
         </div>
         <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.startDate) }}
+          {{ formatTime(proposal.startDate) }} UTC
         </div>
       </td>
       <td>
@@ -75,7 +75,7 @@
           {{ formatDate(proposal.endDate) }}
         </div>
         <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.endDate) }}
+          {{ formatTime(proposal.endDate) }} UTC
         </div>
       </td>
       <td>
@@ -166,7 +166,8 @@ export default class OpenProposals extends Vue {
 
   formatTime(date: number) {
     return new Intl.DateTimeFormat("en-GB", {
-      timeStyle: "short"
+      timeStyle: "short",
+      timezone: "UTC"
     } as any).format(date);
   }
 

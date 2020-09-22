@@ -13,10 +13,7 @@
             class="fix-pie"
             width="24"
             height="24"
-            :ratio="
-              proposal.totalVotesFor /
-                (+proposal.totalVotesFor + +proposal.totalVotesAgainst)
-            "
+            :ratio="proposal.totalVotesFor / proposal.totalVotes"
             :stroke-width="12"
             :opacity="1"
             color="#3ec8c8"
@@ -63,7 +60,7 @@
           {{ formatDate(proposal.startDate) }}
         </div>
         <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.startDate) }}
+          {{ formatTime(proposal.startDate) }} UTC
         </div>
       </td>
       <td>
@@ -71,7 +68,7 @@
           {{ formatDate(proposal.endDate) }}
         </div>
         <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.endDate) }}
+          {{ formatTime(proposal.endDate) }} UTC
         </div>
       </td>
     </tr>
@@ -105,6 +102,7 @@ export default class DoneProposals extends Vue {
       totalVotesAgainst: 3777,
       totalVotesFor: 1900,
       totalVotesAvailable: 10000,
+      totalVotes: 1900 + 3777,
       start: 0,
       end: 0,
       startDate: 1600348747298,
@@ -125,6 +123,7 @@ export default class DoneProposals extends Vue {
       totalVotesAgainst: 1299,
       totalVotesFor: 1900,
       totalVotesAvailable: 10000,
+      totalVotes: 1900 + 1299,
       start: 0,
       end: 0,
       startDate: 1600348747298,
@@ -196,7 +195,8 @@ export default class DoneProposals extends Vue {
 
   formatTime(date: number) {
     return new Intl.DateTimeFormat("en-GB", {
-      timeStyle: "short"
+      timeStyle: "short",
+      timezone: "UTC"
     } as any).format(date);
   }
 
@@ -205,12 +205,7 @@ export default class DoneProposals extends Vue {
   }
 
   getVotesPercentage(proposal: Proposal, votes: number): any {
-    return (
-      (
-        (votes / (+proposal.totalVotesFor + +proposal.totalVotesAgainst)) *
-        100
-      ).toFixed(2) + "%"
-    );
+    return ((100 / proposal.totalVotes) * votes).toFixed(2) + "%";
   }
 }
 </script>
