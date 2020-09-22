@@ -1,6 +1,18 @@
 <template>
   <content-block title="Stake" :shadow-light="true">
     <div>
+
+      <main-button
+        @click="stakeModal = true"
+        label="Open stake modal"
+        :active="true"
+        :block="true"
+        class="font-size-14"
+      />
+      <modal-stake v-model="stakeModal" />
+    </div>
+
+    <div>
       <span
         class="text-uppercase font-size-12 font-w600"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -60,6 +72,7 @@ import { formatNumber, shortenEthAddress } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
+import ModalStake from "@/components/modals/ModalStake.vue";
 import { blockTime } from "@/store/modules/governance/ethGovernance";
 import { expandToken } from "@/api/eth/helpers";
 
@@ -68,10 +81,13 @@ import { expandToken } from "@/api/eth/helpers";
     ContentBlock,
     MainButton,
     RemainingTime,
-    ProgressBar
+    ProgressBar,
+    ModalStake,
   }
 })
 export default class Stake extends Vue {
+  stakeModal = true;
+
   votes: string = "";
   balance: string = "";
   symbol: string = "";
