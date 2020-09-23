@@ -85,7 +85,7 @@
       <td>
         <div class="pl-3 container-border">
           <main-button
-            @click="voteFor.bind(this, proposal.id.toString())"
+            @click="() => voteFor(proposal.id.toString())"
             label="Vote for"
             :large="true"
             :active="true"
@@ -94,7 +94,7 @@
           />
 
           <main-button
-            @click="voteAgainst.bind(this, proposal.id.toString())"
+            @click="() => voteAgainst(proposal.id.toString())"
             label="Vote against"
             :large="true"
             :active="true"
