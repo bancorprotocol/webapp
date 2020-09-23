@@ -52,21 +52,41 @@
       <remaining-time type="warn" :from="Date.now()" :to="lockedTill()" />
     </span>
 
-    <span
-      class="font-size-12"
-      :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-    >
-      Contract address: {{ contractAddress }}
-    </span>
+    <div>
+      <span
+        class="font-size-12"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
+        Governance:
+        <a :href="getEtherscanUrl(governanceContractAddress)" target="_blank">
+          {{ shortAddress(governanceContractAddress) }}
+        </a>
+      </span>
+    </div>
+
+    <div>
+      <span
+        class="font-size-12"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
+        Token:
+        <a :href="getEtherscanUrl(tokenAddress)" target="_blank">
+          {{ shortAddress(tokenAddress) }}
+        </a>
+      </span>
+    </div>
   </content-block>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { EthAddress } from "@/types/bancor";
-import { governanceContractAddress } from "@/store/modules/governance/ethGovernance";
+import {
+  etherscanUrl,
+  governanceContractAddress
+} from "@/store/modules/governance/ethGovernance";
 import { formatNumber, shortenEthAddress } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
@@ -85,7 +105,7 @@ import { expandToken } from "@/api/eth/helpers";
   }
 })
 export default class Stake extends Vue {
-  stakeModal = true;
+  stakeModal = false;
 
   votes: string = "";
   balance: string = "";
@@ -101,7 +121,8 @@ export default class Stake extends Vue {
     for: 0
   };
 
-  contractAddress: EthAddress = shortenEthAddress(governanceContractAddress);
+  governanceContractAddress: EthAddress = governanceContractAddress;
+  tokenAddress: EthAddress = "";
 
   get isEth() {
     return this.$route.params.service === "eth";
@@ -111,25 +132,41 @@ export default class Stake extends Vue {
     return vxm.general.darkMode;
   }
 
+  get account() {
+    return vxm.wallet.isAuthenticated;
+  }
+
+  get loaded() {
+    return vxm.ethGovernance.isLoaded;
+  }
+
+  getEtherscanUrl(token: string) {
+    return `${etherscanUrl}address/${token}`;
+  }
+
+  shortAddress(address: EthAddress) {
+    return shortenEthAddress(address);
+  }
+
   stake() {
     vxm.ethGovernance
       .stake({
-        account: vxm.ethWallet.isAuthenticated,
+        account: this.account,
         amount: expandToken(2.2, 18)
       })
       .then(() => {
-        this.updateBalances();
+        this.update();
       });
   }
 
   unstake() {
     vxm.ethGovernance
       .unstake({
-        account: vxm.ethWallet.isAuthenticated,
+        account: this.account,
         amount: expandToken(2.2, 18)
       })
       .then(() => {
-        this.updateBalances();
+        this.update();
       });
   }
 
@@ -140,28 +177,30 @@ export default class Stake extends Vue {
     return till;
   }
 
-  async updateBalances() {
+  @Watch("account")
+  async update() {
     this.balance = formatNumber(
       await vxm.ethGovernance.getBalance({
-        account: vxm.ethWallet.isAuthenticated
+        account: this.account
       })
     );
 
     this.votes = formatNumber(
       await vxm.ethGovernance.getVotes({
-        voter: vxm.ethWallet.isAuthenticated
+        voter: this.account
       })
     );
 
     this.lock = await vxm.ethGovernance.getLock({
-      account: vxm.ethWallet.isAuthenticated
+      account: this.account
     });
+
+    this.tokenAddress = await vxm.ethGovernance.getTokenAddress();
+    this.symbol = await vxm.ethGovernance.getSymbol();
   }
 
-  async mounted() {
-    await this.updateBalances();
-
-    this.symbol = await vxm.ethGovernance.getSymbol();
+  async mounted(){
+    await this.update()
   }
 }
 </script>

@@ -1,5 +1,7 @@
 <template>
-  <b-row>
+  <b-row
+    v-if="loaded"
+  >
     <b-col cols="3">
       <stake />
     </b-col>
@@ -7,6 +9,11 @@
       <proposals />
     </b-col>
   </b-row>
+  <span
+      v-else
+  >
+    Loading ...
+  </span>
 </template>
 
 <script lang="ts">
@@ -26,8 +33,20 @@ export default class GovernancePage extends Vue {
     return this.$route.params.service === "eth";
   }
 
+  get loaded(){
+    return vxm.ethGovernance.isLoaded
+  }
+
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  async mounted() {
+    try{
+      await vxm.ethGovernance.init();
+    } catch {
+      console.error('unable to load governance')
+    }
   }
 }
 </script>

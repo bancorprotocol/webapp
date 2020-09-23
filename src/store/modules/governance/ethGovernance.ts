@@ -1,12 +1,12 @@
-import { createModule, action } from "vuex-class-component";
+import { createModule, action, mutation } from "vuex-class-component";
 import { web3, EthNetworks } from "@/api/helpers";
 import { ABIBancorGovernance, ABISmartToken } from "@/api/eth/ethAbis";
 import { EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
 
-// export const governanceContractAddress = "0xf648d3920188f79d045e35007ad1c3158d47732b";
 export const governanceContractAddress =
   "0x05AA3da21D2706681837a896433E62deEeEaB1f1";
+export const etherscanUrl = "https://ropsten.etherscan.io/";
 
 // block time in seconds
 export const blockTime = 15;
@@ -44,24 +44,39 @@ export interface Proposal {
 export class EthereumGovernance extends VuexModule.With({
   namespaced: "ethGovernance/"
 }) {
-  loggedInAccount: string = "";
-  currentNetwork: EthNetworks = EthNetworks.Mainnet;
+  governanceContract: any = undefined;
+  tokenContract: any = undefined;
 
-  governanceContract = new web3.eth.Contract(
-    ABIBancorGovernance,
-    governanceContractAddress
-  );
+  isLoaded: boolean = false
 
-  tokenContract: any;
+  @mutation
+  setContracts({governance, token}: {governance: any, token: any}) {
+    this.tokenContract = token;
+    this.governanceContract = governance;
+    this.isLoaded = true
+    console.log('contracts set', Date.now(), this.tokenContract, this.governanceContract)
+  }
+
+  @action
+  async getTokenAddress(): Promise<EthAddress> {
+    return this.tokenContract.options.address;
+  }
 
   @action
   async init() {
-    const tokenAddress = await this.governanceContract.methods
+    const governanceContract = new web3.eth.Contract(
+      ABIBancorGovernance,
+      governanceContractAddress
+    );
+    const tokenAddress = await governanceContract.methods
       .govToken()
       .call();
     console.log("vote token address", tokenAddress);
 
-    this.tokenContract = new web3.eth.Contract(ABISmartToken, tokenAddress);
+    await this.setContracts({
+      governance: governanceContract,
+      token: new web3.eth.Contract(ABISmartToken, tokenAddress)
+    });
   }
 
   @action
@@ -105,6 +120,7 @@ export class EthereumGovernance extends VuexModule.With({
       await this.governanceContract.methods.voteLocks(account).call()
     );
     const now = await web3.eth.getBlockNumber();
+    // for
     const f = till - now;
 
     const lock = {
@@ -198,11 +214,10 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
-    console.log("getting proposals");
+    console.log("getting proposals", Date.now(), this.isLoaded, this.governanceContract, this.tokenContract)
     const proposalCount = await this.governanceContract.methods
       .proposalCount()
       .call();
-    console.log("getting proposals", proposalCount);
 
     const decimals = Number(await this.tokenContract.methods.decimals().call());
     const proposals: Proposal[] = [];
@@ -231,7 +246,7 @@ export class EthereumGovernance extends VuexModule.With({
         id: Number(proposal.id),
         start: Number(proposal.start),
         startDate:
-          Number((await web3.eth.getBlock(proposal.start)).timestamp) * 1000,
+          Number(currentBlock.timestamp) * 1000,
         end: Number(proposal.end),
         endDate:
           Date.now() +

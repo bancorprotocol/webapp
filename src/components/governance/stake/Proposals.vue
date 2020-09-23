@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -62,14 +62,19 @@ export default class Proposals extends Vue {
     return vxm.general.darkMode;
   }
 
+  get account() {
+    return vxm.wallet.isAuthenticated;
+  }
+
+  @Watch("account")
   async updateProposals() {
     this.proposals = await vxm.ethGovernance.getProposals({
-      voter: vxm.ethWallet.isAuthenticated
+      voter: this.account
     });
   }
 
-  async created() {
-    await this.updateProposals();
+  async mounted(){
+    await this.updateProposals()
   }
 }
 </script>
