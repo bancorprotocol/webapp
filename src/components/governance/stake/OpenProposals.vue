@@ -13,33 +13,75 @@
     >
       <td>{{ proposal.id }}</td>
       <td>
-        <div
-          class="font-size-14 font-w500"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          Proposed by
-          <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{ shortAddress(proposal.proposer) }}
-          </a>
+        <div class="font-size-14 font-w500">
+          Governance #comptroller:_supportMarket(address)
         </div>
 
-        <div
-          class="font-size-14 font-w500"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          Executed by
-          <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{ shortAddress(proposal.executor) }}
-          </a>
-        </div>
-
-        <div class="pt-2">
+        <div class="pt-2 pb-3">
           <remaining-time
+            class="remaining-time"
             type="warn"
             :from="proposal.startDate"
             :to="proposal.endDate"
           />
         </div>
+
+        <b-row>
+          <b-col cols="6">
+            <div class="pb-1">
+              <span class="font-size-14 font-w500 text-muted-light">
+                Vote Start
+              </span>
+              <span class="font-size-14 font-w500 pl-1 pr-1">
+                {{ formatDate(proposal.startDate) }}
+              </span>
+              <span class="font-size-12 font-w500 text-muted-light">
+                {{ formatTime(proposal.startDate) }}
+              </span>
+            </div>
+            <div>
+              <span class="font-size-14 font-w500 text-muted-light">
+                Vote End
+              </span>
+              <span class="font-size-14 font-w500 pl-1 pr-1">
+                {{ formatDate(proposal.endDate) }}
+              </span>
+              <span class="font-size-12 font-w500 text-muted-light">
+                {{ formatTime(proposal.endDate) }}
+              </span>
+            </div>
+          </b-col>
+          <b-col cols="6">
+            <div class="font-size-14 font-w500 text-muted-light pb-1">
+              Proposed
+              <a target="_blank" class="font-size-14 font-w500 fix-a pl-1">
+                <font-awesome-icon icon="external-link-alt" />
+              </a>
+              <a target="_blank" class="font-size-14 font-w500 fix-a pl-1">
+                <font-awesome-icon :icon="['fab', 'github']" />
+              </a>
+            </div>
+            <div
+              class="font-size-14 font-w500 pb-1"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              Proposed by
+              <a target="_blank" class="font-size-14 font-w500 fix-a">
+                {{ shortAddress(proposal.proposer) }}
+              </a>
+            </div>
+            <div
+              class="font-size-14 font-w500"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              Executed by
+              <a target="_blank" class="font-size-14 font-w500 fix-a">
+                {{ shortAddress(proposal.executor) }}
+              </a>
+            </div>
+          </b-col>
+        </b-row>
+
       </td>
       <td>
         <button-progress
@@ -61,33 +103,6 @@
           type="error"
           :selected="proposal.votes.against > 0"
         />
-      </td>
-      <td>
-        <div class="font-size-14 font-w500">
-          {{ formatDate(proposal.startDate) }}
-        </div>
-        <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.startDate) }} UTC
-        </div>
-      </td>
-      <td>
-        <div class="font-size-14 font-w500">
-          {{ formatDate(proposal.endDate) }}
-        </div>
-        <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.endDate) }} UTC
-        </div>
-      </td>
-      <td>
-        <a target="_blank" class="font-size-14 font-w500 fix-a">
-          <font-awesome-icon icon="external-link-alt" />
-          &nbsp;Disscussion Forum
-        </a>
-        <div class="pt-2" />
-        <a target="_blank" class="font-size-14 font-w500 fix-a">
-          <font-awesome-icon :icon="['fab', 'github']" />
-          &nbsp;GitHub
-        </a>
       </td>
     </tr>
   </data-table>
@@ -121,34 +136,13 @@ export default class OpenProposals extends Vue {
   get fields(): ViewTableFields[] {
     return [
       {
-        label: "",
+        label: '',
+      },
+      {
+        label: "Proposal ID",
         key: "id",
-        minWidth: "16px",
-        maxWidth: "16px"
-      },
-      {
-        label: "",
-        key: "creator",
-        minWidth: "186px",
-        maxWidth: "220px"
-      },
-      {
-        label: "Options",
-        key: "voteFor",
-        minWidth: "174px",
-        maxWidth: "174px"
-      },
-      {
-        label: "Vote start",
-        key: "startDate",
-        maxWidth: "120px",
-        minWidth: "120px"
-      },
-      {
-        label: "Vote End",
-        key: "endDate",
-        maxWidth: "120px",
-        minWidth: "120px"
+        minWidth: "500px",
+        maxWidth: "600px"
       },
       {
         label: "Vote"
@@ -207,5 +201,8 @@ export default class OpenProposals extends Vue {
   @at-root .table & > td {
     vertical-align: top !important;
   }
+}
+.remaining-time {
+  width: 150px;
 }
 </style>
