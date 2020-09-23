@@ -218,6 +218,17 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
+  async revokeVotes({ account }: { account: EthAddress }): Promise<boolean> {
+    if (!account) throw new Error("Cannot revoke votes without address");
+
+    await this.governanceContract.methods.revokeVotes().send({
+      from: account
+    });
+
+    return true;
+  }
+
+  @action
   async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
     console.log(
       "getting proposals",
