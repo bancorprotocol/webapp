@@ -86,7 +86,6 @@ export const router = new Router({
     {
       path: "/:service/liquidity-protection",
       name: "LiqProtection",
-      redirect: "/404",
       components: {
         Nav: Navigation,
         default: LiquidityProtection
