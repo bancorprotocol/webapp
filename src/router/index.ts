@@ -12,6 +12,7 @@ import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
 import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
 import LiquidityProtection from "@/views/LiquidityProtection.vue";
+import AddLiqProtection from "@/components/pool/protection/AddLiqProtection.vue";
 import GovernancePage from "@/components/governance/GovernancePage.vue";
 import Governance from "@/views/Governance.vue";
 
@@ -88,10 +89,18 @@ export const router = new Router({
     {
       path: "/:service/liquidity-protection",
       name: "LiqProtection",
-      redirect: "/404",
       components: {
         Nav: Navigation,
         default: LiquidityProtection
+      },
+      props: true
+    },
+    {
+      path: "/:service/liquidity-protection/add",
+      name: "AddLiqProtection",
+      components: {
+        Nav: Navigation,
+        Hero: AddLiqProtection
       },
       props: true
     },
