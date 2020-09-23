@@ -14,7 +14,7 @@
       <td>{{ proposal.id }}</td>
       <td>
         <div class="font-size-14 font-w500">
-          Governance #comptroller:_supportMarket(address)
+          {{ proposal.name }}
         </div>
 
         <div class="pt-2 pb-3">
@@ -81,7 +81,6 @@
             </div>
           </b-col>
         </b-row>
-
       </td>
       <td>
         <div class="pl-3 container-border">
@@ -117,11 +116,27 @@
             </span>
             <span>
               <span class="square square--for"></span>
-              <span>For {{((100 / proposal.totalVotes) * proposal.totalVotesFor).toFixed(1)}}%</span>
+              <span
+                >For
+                {{
+                  (
+                    (100 / proposal.totalVotes) *
+                    proposal.totalVotesFor
+                  ).toFixed(1)
+                }}%</span
+              >
             </span>
             <span>
               <span class="square square--against"></span>
-              <span>Against {{((100 / proposal.totalVotes) * proposal.totalVotesAgainst).toFixed(1)}}%</span>
+              <span
+                >Against
+                {{
+                  (
+                    (100 / proposal.totalVotes) *
+                    proposal.totalVotesAgainst
+                  ).toFixed(1)
+                }}%</span
+              >
             </span>
           </div>
         </div>
@@ -162,7 +177,7 @@ export default class OpenProposals extends Vue {
   get fields(): ViewTableFields[] {
     return [
       {
-        label: '',
+        label: ""
       },
       {
         label: "Proposal ID",

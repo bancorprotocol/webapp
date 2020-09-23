@@ -7,6 +7,7 @@ import { shrinkToken } from "@/api/eth/helpers";
 export const governanceContractAddress =
   "0x05AA3da21D2706681837a896433E62deEeEaB1f1";
 export const etherscanUrl = "https://ropsten.etherscan.io/";
+const ipfsUrl = "https://ipfs.io/ipfs/";
 
 // block time in seconds
 export const blockTime = 15;
@@ -25,6 +26,7 @@ export interface Proposal {
   end: number;
   // timestamp
   endDate: number;
+  name: string;
   executor: EthAddress;
   hash: string;
   open: boolean;
@@ -47,14 +49,19 @@ export class EthereumGovernance extends VuexModule.With({
   governanceContract: any = undefined;
   tokenContract: any = undefined;
 
-  isLoaded: boolean = false
+  isLoaded: boolean = false;
 
   @mutation
-  setContracts({governance, token}: {governance: any, token: any}) {
+  setContracts({ governance, token }: { governance: any; token: any }) {
     this.tokenContract = token;
     this.governanceContract = governance;
-    this.isLoaded = true
-    console.log('contracts set', Date.now(), this.tokenContract, this.governanceContract)
+    this.isLoaded = true;
+    console.log(
+      "contracts set",
+      Date.now(),
+      this.tokenContract,
+      this.governanceContract
+    );
   }
 
   @action
@@ -68,9 +75,7 @@ export class EthereumGovernance extends VuexModule.With({
       ABIBancorGovernance,
       governanceContractAddress
     );
-    const tokenAddress = await governanceContract.methods
-      .govToken()
-      .call();
+    const tokenAddress = await governanceContract.methods.govToken().call();
     console.log("vote token address", tokenAddress);
 
     await this.setContracts({
@@ -214,7 +219,13 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
-    console.log("getting proposals", Date.now(), this.isLoaded, this.governanceContract, this.tokenContract)
+    console.log(
+      "getting proposals",
+      Date.now(),
+      this.isLoaded,
+      this.governanceContract,
+      this.tokenContract
+    );
     const proposalCount = await this.governanceContract.methods
       .proposalCount()
       .call();
@@ -242,6 +253,20 @@ export class EthereumGovernance extends VuexModule.With({
         shrinkToken(proposal.totalVotesAvailable, decimals)
       );
 
+      let name;
+
+      try {
+        const metadata = await this.getFromIPFS({
+          hash: proposal.hash,
+          timeoutInSeconds: 5
+        });
+        console.log(metadata);
+
+        name = (metadata && metadata.payload && metadata.payload.name) || null;
+      } catch (err) {
+        console.log("Getting metadata failed!", err);
+      }
+
       proposals.push({
         id: Number(proposal.id),
         start: Number(proposal.start),
@@ -254,6 +279,7 @@ export class EthereumGovernance extends VuexModule.With({
         executor: proposal.executor,
         hash: proposal.hash,
         open: proposal.open,
+        name,
         proposer: proposal.proposer,
         quorum: proposal.quorum,
         quorumRequired: proposal.quorumRequired,
@@ -288,6 +314,32 @@ export class EthereumGovernance extends VuexModule.With({
 
     console.log("proposals", proposals);
 
-    return proposals;
+    return proposals.reverse();
+  }
+
+  @action
+  getFromIPFS({
+    hash,
+    timeoutInSeconds
+  }: {
+    hash: string;
+    timeoutInSeconds: number;
+  }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(() => {
+        return reject("timeout");
+      }, timeoutInSeconds * 1000);
+
+      fetch(`${ipfsUrl}${hash}`, {
+        method: "GET"
+      })
+        .then(response => response.json())
+        .then(data => {
+          clearTimeout(t);
+          console.log(data);
+          return resolve(data);
+        })
+        .catch(reject);
+    });
   }
 }
