@@ -84,25 +84,47 @@
 
       </td>
       <td>
-        <button-progress
-          :click="voteFor.bind(this, proposal.id.toString())"
-          title="For"
-          :percentage="
-            (100 / proposal.totalVotes) * proposal.totalVotesFor
-          "
-          type="info"
-          :selected="proposal.votes.for > 0"
-        />
-        <div class="pt-1" />
-        <button-progress
-          :click="voteAgainst.bind(this, proposal.id.toString())"
-          title="Against"
-          :percentage="
-            (100 / proposal.totalVotes) * proposal.totalVotesAgainst
-          "
-          type="error"
-          :selected="proposal.votes.against > 0"
-        />
+        <div class="pl-3 container-border">
+          <main-button
+            @click="voteFor.bind(this, proposal.id.toString())"
+            label="Vote for"
+            :large="true"
+            :active="true"
+            :block="true"
+            class="font-size-14 font-w400 mb-2 text-uppercase button-vote button-vote--for"
+          />
+
+          <main-button
+            @click="voteAgainst.bind(this, proposal.id.toString())"
+            label="Vote against"
+            :large="true"
+            :active="true"
+            :block="true"
+            class="font-size-14 font-w400 text-uppercase button-vote button-vote--against"
+          />
+
+          <div class="font-size-12 font-w500 text-uppercase pt-3">
+            <span class="mini-pie-wrapper">
+              <pie-chart
+                class="fix-pie"
+                width="16"
+                height="16"
+                :ratio="proposal.totalVotesFor / proposal.totalVotes"
+                :stroke-width="10"
+                :opacity="1"
+                color="#3ec8c8"
+              />
+            </span>
+            <span>
+              <span class="square square--for"></span>
+              <span>For {{((100 / proposal.totalVotes) * proposal.totalVotesFor).toFixed(1)}}%</span>
+            </span>
+            <span>
+              <span class="square square--against"></span>
+              <span>Against {{((100 / proposal.totalVotes) * proposal.totalVotesAgainst).toFixed(1)}}%</span>
+            </span>
+          </div>
+        </div>
       </td>
     </tr>
   </data-table>
@@ -111,11 +133,13 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
+import PieChart from "vue-pie-chart";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
+import MainButton from "@/components/common/Button.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
@@ -126,7 +150,9 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
     ProgressBar,
     RemainingTime,
     DataTable,
-    ButtonProgress
+    ButtonProgress,
+    MainButton,
+    PieChart
   }
 })
 export default class OpenProposals extends Vue {
@@ -141,8 +167,8 @@ export default class OpenProposals extends Vue {
       {
         label: "Proposal ID",
         key: "id",
-        minWidth: "500px",
-        maxWidth: "600px"
+        minWidth: "450px",
+        maxWidth: "500px"
       },
       {
         label: "Vote"
@@ -204,5 +230,44 @@ export default class OpenProposals extends Vue {
 }
 .remaining-time {
   width: 150px;
+}
+.container-border {
+  border-left: 1px solid $gray-border;
+}
+
+@mixin vote-bg() {
+  &--for {
+    background: #3ec8c8 !important;
+  }
+  &--against {
+    background: #de4a5c !important;
+  }
+}
+
+.button-vote {
+  @include vote-bg;
+
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.square {
+  @include vote-bg;
+
+  display: inline-block;
+  height: 4px;
+  width: 4px;
+  vertical-align: middle;
+  margin-right: 8px;
+  margin-left: 16px;
+}
+
+.mini-pie-wrapper {
+  height: 16px;
+  width: 16px;
+  background: #de4a5c;
+  border-radius: 8px;
+  display: inline-flex;
+  vertical-align: middle;
 }
 </style>
