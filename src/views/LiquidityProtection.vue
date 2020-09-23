@@ -9,14 +9,6 @@
           >
             Liquidity Protection
           </span>
-
-          <b-btn
-            variant="primary"
-            :to="{ name: 'AddLiqProtection' }"
-            class="float-right"
-          >
-            Add Protection
-          </b-btn>
         </div>
         <p
           class="font-size-14 font-w400 my-3"
@@ -26,6 +18,12 @@
           impermanent loss by simpy adding insurance to each of your
           transactions.
         </p>
+      </b-col>
+    </b-row>
+
+    <b-row>
+      <b-col cols="12">
+        <protectable-liquidity />
       </b-col>
     </b-row>
 
@@ -144,9 +142,15 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
+import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquidity.vue";
 
 @Component({
-  components: { PoolLogosOverlapped, TableWrapper, ContentBlock }
+  components: {
+    ProtectableLiquidity,
+    PoolLogosOverlapped,
+    TableWrapper,
+    ContentBlock
+  }
 })
 export default class LiquidityProtection extends Vue {
   search: string = "";
