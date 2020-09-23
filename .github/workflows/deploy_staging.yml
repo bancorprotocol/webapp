@@ -11,5 +11,6 @@ jobs:
     steps:
       - name: Webhook
         uses: distributhor/workflow-webhook@v1
-        with:
-          url: 'https://forge.laravel.com/servers/316757/sites/1142111/deploy/http?token=${{ secrets.STAGING_DEPLOYMENT_TOKEN }}'
+        env:
+          webhook_url: 'https://forge.laravel.com/servers/316757/sites/1142111/deploy/http?token=${{ secrets.STAGING_DEPLOYMENT_TOKEN }}'
+          webhook_secret: ${{ secrets.STAGING_DEPLOYMENT_TOKEN }}
