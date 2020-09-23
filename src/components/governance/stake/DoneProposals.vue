@@ -14,7 +14,7 @@
             width="24"
             height="24"
             :ratio="proposal.totalVotesFor / proposal.totalVotes"
-            :stroke-width="12"
+            :stroke-width=12
             :opacity="1"
             color="#3ec8c8"
           />
@@ -93,7 +93,7 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
   }
 })
 export default class DoneProposals extends Vue {
-  @Prop() proposals?: Proposal[] = [];
+  @Prop() proposals?: Proposal[];
 
   mockData: Proposal[] = [
     {
