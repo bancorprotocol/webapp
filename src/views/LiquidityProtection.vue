@@ -53,7 +53,7 @@
                     "
                   />
                   <span
-                    v-text="formatDate(data.item.unixTime.staked)"
+                    v-text="formatDate(data.item.unixTime.staked).dateTime"
                     class="font-size-12 font-w400"
                     :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
                   />
@@ -78,14 +78,10 @@
             <template v-slot:cell(insuranceStart)="data">
               <div class="d-flex flex-column">
                 <span
-                  v-text="
-                    formatDate(data.item.unixTime.insuranceStart, 'object').date
-                  "
+                  v-text="formatDate(data.item.unixTime.insuranceStart).date"
                 />
                 <span
-                  v-text="
-                    formatDate(data.item.unixTime.insuranceStart, 'object').time
-                  "
+                  v-text="formatDate(data.item.unixTime.insuranceStart).time"
                   class="font-size-12 font-w400"
                   :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
                 />
@@ -173,9 +169,8 @@ export default class LiquidityProtection extends Vue {
     else return { percentage: "100%", timeLeft: "Full coverage achieved" };
   }
 
-  formatDate(unixTime: number, type: "string" | "object" = "string") {
-    const dateTime = formatUnixTime(unixTime);
-    return type === "string" ? `${dateTime.date} ${dateTime.time}` : dateTime;
+  formatDate(unixTime: number) {
+    return formatUnixTime(unixTime);
   }
 
   get protectedTxTable() {
