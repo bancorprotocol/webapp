@@ -10,6 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Webhook
-        uses: distributhor/workflow-webhook
+        uses: distributhor/workflow-webhook@v1
         with:
           url: format('https://forge.laravel.com/servers/316757/sites/1142111/deploy/http?token={0}', ${{ secrets.STAGING_DEPLOYMENT_TOKEN }})
