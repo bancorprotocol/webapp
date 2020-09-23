@@ -1,1 +1,15 @@
+name: Trigger Deployment for Staging
 
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  trigger-deployment:
+    name: Trigger Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Webhook
+        uses: distributhor/workflow-webhook
+        with:
+          url: format('https://forge.laravel.com/servers/316757/sites/1142111/deploy/http?token={0}', ${{ secrets.STAGING_DEPLOYMENT_TOKEN }})
