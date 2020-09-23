@@ -120,8 +120,7 @@
                 >For
                 {{
                   (
-                    (100 / proposal.totalVotes) *
-                    proposal.totalVotesFor
+                    (100 / proposal.totalVotes) * proposal.totalVotesFor || 0
                   ).toFixed(1)
                 }}%</span
               >
@@ -132,8 +131,8 @@
                 >Against
                 {{
                   (
-                    (100 / proposal.totalVotes) *
-                    proposal.totalVotesAgainst
+                    (100 / proposal.totalVotes) * proposal.totalVotesAgainst ||
+                    0
                   ).toFixed(1)
                 }}%</span
               >
