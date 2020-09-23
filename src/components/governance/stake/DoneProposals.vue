@@ -77,7 +77,6 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-// @ts-ignore
 import PieChart from "vue-pie-chart";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
