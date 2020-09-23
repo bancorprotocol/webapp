@@ -1,7 +1,7 @@
 <template>
-  <data-table :items="proposals" :fields="fields" default-sort="to">
+  <data-table :items="proposalsToDisplay" :fields="fields" default-sort="to">
     <tr
-      v-for="proposal in proposals"
+      v-for="proposal in proposalsToDisplay"
       :key="proposal.id"
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
@@ -93,7 +93,9 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
   }
 })
 export default class DoneProposals extends Vue {
-  @Prop() proposals?: Proposal[] = [
+  @Prop() proposals?: Proposal[] = [];
+
+  mockData: Proposal[] = [
     {
       id: 1,
       proposer: "0x" + "1".repeat(40),
@@ -139,6 +141,11 @@ export default class DoneProposals extends Vue {
       }
     }
   ];
+
+  get proposalsToDisplay() {
+    // @ts-ignore
+    return this.proposals.length > 0 ? this.proposals : this.mockData;
+  }
 
   get fields(): ViewTableFields[] {
     return [

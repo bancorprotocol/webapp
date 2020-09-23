@@ -142,6 +142,7 @@
       </td>
     </tr>
   </data-table>
+
   <span v-else>
     Loading ...
   </span>
