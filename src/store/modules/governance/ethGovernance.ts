@@ -246,7 +246,7 @@ export class EthereumGovernance extends VuexModule.With({
         id: Number(proposal.id),
         start: Number(proposal.start),
         startDate:
-          Number(currentBlock.timestamp) * 1000,
+          Number((await web3.eth.getBlock(proposal.start)).timestamp) * 1000,
         end: Number(proposal.end),
         endDate:
           Date.now() +
