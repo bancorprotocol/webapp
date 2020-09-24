@@ -154,6 +154,7 @@ export default class DoneProposals extends Vue {
       quorum: "10000",
       quorumRequired: "100000",
       votes: {
+        voted: "for",
         for: 10,
         against: 0
       }
@@ -176,6 +177,7 @@ export default class DoneProposals extends Vue {
       quorum: "10000",
       quorumRequired: "100000",
       votes: {
+        voted: "for",
         for: 10,
         against: 0
       }
