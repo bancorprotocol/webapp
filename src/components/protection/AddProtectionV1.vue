@@ -103,7 +103,7 @@ export default class AddProtectionV1 extends Vue {
   }
 
   async selectPool(id: string) {
-    await this.$router.push({
+    await this.$router.replace({
       name: "AddProtectionAction",
       params: { id }
     });
