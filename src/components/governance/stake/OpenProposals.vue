@@ -266,7 +266,7 @@ export default class OpenProposals extends Vue {
   cursor: pointer;
   color: $primary !important;
 }
-.aling-rows-cells {
+.align-rows-cells {
   @at-root .table & > td {
     vertical-align: top !important;
   }

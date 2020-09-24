@@ -1,70 +1,115 @@
 <template>
   <data-table :items="proposalsToDisplay" :fields="fields" default-sort="to">
-    <tr
+    <template
       v-for="proposal in proposalsToDisplay"
-      :key="proposal.id"
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <td>{{ proposal.id }}</td>
-      <td class="font-size-14 font-w500">
-        {{ proposal.name }}
-      </td>
-      <td class="result" :class="'result--' + (isApproved(proposal) ? 'for' : 'against')">
-        {{ isApproved(proposal) ? 'Approved' : 'Rejected' }}
-      </td>
-<!--       <td>
-        <div
-          class="font-size-14 font-w500"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          Proposed by
-          <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{ shortAddress(proposal.proposer) }}
-          </a>
-        </div>
+      <tr :key="'r1-' + proposal.id" class="align-rows-cells">
+        <td>{{ proposal.id }}</td>
+        <td class="font-size-14 font-w500">
+          {{ proposal.name }}
+        </td>
+        <td class="result" :class="'result--' + (isApproved(proposal) ? 'for' : 'against')">
+          {{ isApproved(proposal) ? 'Approved' : 'Rejected' }}
+        </td>
+        <td>
+          <div class="font-size-14 font-w500">{{ proposal.totalVotesFor }}</div>
+          <div class="font-size-12 font-w500 result result--for">
+            {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
+          </div>
+        </td>
+        <td>
+          <div class="font-size-14 font-w500">
+            {{ proposal.totalVotesAgainst }}
+          </div>
+          <div class="font-size-12 font-w500 result result--against">
+            {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
+          </div>
+        </td>
+  <!--       <td>
+          <div class="font-size-14 font-w500">
+            {{ formatDate(proposal.startDate) }}
+          </div>
+          <div class="font-size-12 font-w500 text-muted-light">
+            {{ formatTime(proposal.startDate) }} UTC
+          </div>
+        </td> -->
+        <td>
+          <div class="font-size-14 font-w500">
+            {{ formatDate(proposal.endDate) }}
+          </div>
+          <div class="font-size-12 font-w500 text-muted-light">
+            {{ formatTime(proposal.endDate) }} UTC
+          </div>
+        </td>
+      </tr>
+      <tr :key="'r2-' + proposal.id" class="align-rows-cells">
+        <td class="no-border"></td>
+        <td>
+          <div
+            class="font-size-12 pb-1"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            Proposed by
+            <a target="_blank" class="font-size-12 font-w500 fix-a">
+              {{ shortAddress(proposal.proposer) }}
+            </a>
+          </div>
 
-        <div
-          class="font-size-14 font-w500"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          Executed by
-          <a target="_blank" class="font-size-14 font-w500 fix-a">
-            {{ shortAddress(proposal.executor) }}
-          </a>
-        </div>
-      </td> -->
-      <td>
-        <div class="font-size-14 font-w500">{{ proposal.totalVotesFor }}</div>
-        <div class="font-size-12 font-w500 result result--for">
-          {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
-        </div>
-      </td>
-      <td>
-        <div class="font-size-14 font-w500">
-          {{ proposal.totalVotesAgainst }}
-        </div>
-        <div class="font-size-12 font-w500 result result--against">
-          {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
-        </div>
-      </td>
-<!--       <td>
-        <div class="font-size-14 font-w500">
-          {{ formatDate(proposal.startDate) }}
-        </div>
-        <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.startDate) }} UTC
-        </div>
-      </td> -->
-      <td>
-        <div class="font-size-14 font-w500">
-          {{ formatDate(proposal.endDate) }}
-        </div>
-        <div class="font-size-12 font-w500 text-muted-light">
-          {{ formatTime(proposal.endDate) }} UTC
-        </div>
-      </td>
-    </tr>
+          <div
+            class="font-size-12"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            Executed by
+            <a target="_blank" class="font-size-12 font-w500 fix-a">
+              {{ shortAddress(proposal.executor) }}
+            </a>
+          </div>
+        </td>
+        <td colspan="2">
+          <div class="pb-1">
+            <span class="font-size-12 text-muted-light">
+              Vote Start
+            </span>
+            <span class="font-size-12 font-w500 pl-1 pr-1">
+              {{ formatDate(proposal.startDate) }}
+            </span>
+            <span class="font-size-12 font-w500 text-muted-light">
+              {{ formatTime(proposal.startDate) }}
+            </span>
+          </div>
+          <div>
+            <span class="font-size-12 text-muted-light">
+              Quorum/Required
+            </span>
+            <span class="font-size-12 font-w500 pl-1 pr-1">
+              {{ proposal.quorum / 100 }}% / {{ proposal.quorumRequired / 100 }}%
+            </span>
+          </div>
+        </td>
+        <td colspan="2">
+          <div class="buttons-container">
+            <main-button
+              :small="true"
+              :active="true"
+              class="font-w400 mt-0 mb-0">
+
+              BIP
+              <font-awesome-icon icon="external-link-alt" />
+            </main-button>
+
+            <main-button
+              :small="true"
+              class="font-w400 mt-0 mb-0 ml-3">
+
+              IPFS
+              <font-awesome-icon icon="external-link-alt" />
+            </main-button>
+          </div>
+        </td>
+      </tr>
+    </template>
   </data-table>
 </template>
 
@@ -73,6 +118,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import PieChart from "vue-pie-chart";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
+import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
@@ -82,7 +128,8 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
   components: {
     ContentBlock,
     DataTable,
-    PieChart
+    PieChart,
+    MainButton
   }
 })
 export default class DoneProposals extends Vue {
@@ -214,7 +261,7 @@ export default class DoneProposals extends Vue {
   cursor: pointer;
   color: $primary !important;
 }
-.aling-rows-cells {
+.align-rows-cells {
   @at-root .table & > td {
     vertical-align: top !important;
   }
@@ -239,5 +286,25 @@ export default class DoneProposals extends Vue {
   &--against {
     color: #de4a5c !important;
   }
+}
+
+.no-border {
+  position: relative;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    height: 1px;
+    width: 100%;
+    left: 0;
+    background: #ffffff;
+  }
+}
+
+.buttons-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
