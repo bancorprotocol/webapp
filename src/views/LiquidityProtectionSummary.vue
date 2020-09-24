@@ -21,9 +21,7 @@
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          You can protect your token pools with our special insurance for
-          impermanent loss by simpy adding insurance to each of your
-          transactions.
+          Add impermanent loss protection to any of your pool token stakings
         </p>
       </b-col>
     </b-row>
