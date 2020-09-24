@@ -82,7 +82,7 @@ export default class ProtectableLiquidity extends Vue {
   }
 
   changePool(id: string) {
-    this.$router.push({ name: "AddLiqProtection", params: { id } });
+    this.$router.push({ name: "AddProtectionAction", params: { id } });
   }
 
   poolName(id: string): string {
