@@ -7,20 +7,13 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <td>{{ proposal.id }}</td>
-      <td>
-        <div class="pie-wrapper">
-          <pie-chart
-            class="fix-pie"
-            width="24"
-            height="24"
-            :ratio="proposal.totalVotesFor / proposal.totalVotes"
-            :stroke-width="12"
-            :opacity="1"
-            color="#3ec8c8"
-          />
-        </div>
+      <td class="font-size-14 font-w500">
+        {{ proposal.name }}
       </td>
-      <td>
+      <td class="result" :class="'result--' + (isApproved(proposal) ? 'for' : 'against')">
+        {{ isApproved(proposal) ? 'Approved' : 'Rejected' }}
+      </td>
+<!--       <td>
         <div
           class="font-size-14 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -40,10 +33,10 @@
             {{ shortAddress(proposal.executor) }}
           </a>
         </div>
-      </td>
+      </td> -->
       <td>
         <div class="font-size-14 font-w500">{{ proposal.totalVotesFor }}</div>
-        <div class="font-size-12 font-w500 text-muted-light">
+        <div class="font-size-12 font-w500 result result--for">
           {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
         </div>
       </td>
@@ -51,18 +44,18 @@
         <div class="font-size-14 font-w500">
           {{ proposal.totalVotesAgainst }}
         </div>
-        <div class="font-size-12 font-w500 text-muted-light">
+        <div class="font-size-12 font-w500 result result--against">
           {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
         </div>
       </td>
-      <td>
+<!--       <td>
         <div class="font-size-14 font-w500">
           {{ formatDate(proposal.startDate) }}
         </div>
         <div class="font-size-12 font-w500 text-muted-light">
           {{ formatTime(proposal.startDate) }} UTC
         </div>
-      </td>
+      </td> -->
       <td>
         <div class="font-size-14 font-w500">
           {{ formatDate(proposal.endDate) }}
@@ -156,15 +149,12 @@ export default class DoneProposals extends Vue {
         maxWidth: "16px"
       },
       {
-        label: "",
-        minWidth: "24px",
-        maxWidth: "24px"
+        label: "Proposal ID"
       },
       {
-        label: "",
-        key: "creator",
-        minWidth: "186px",
-        maxWidth: "220px"
+        label: "Result",
+        maxWidth: "180px",
+        minWidth: "180px"
       },
       {
         label: "Votes for",
@@ -181,12 +171,6 @@ export default class DoneProposals extends Vue {
       {
         label: "Vote start",
         key: "startDate",
-        maxWidth: "120px",
-        minWidth: "120px"
-      },
-      {
-        label: "Vote End",
-        key: "endDate",
         maxWidth: "120px",
         minWidth: "120px"
       }
@@ -213,7 +197,11 @@ export default class DoneProposals extends Vue {
   }
 
   getVotesPercentage(proposal: Proposal, votes: number): any {
-    return ((100 / proposal.totalVotes) * votes).toFixed(2) + "%";
+    return (((100 / proposal.totalVotes) * votes) || 0).toFixed(2).replace(/\.0+$/, '') + "%";
+  }
+
+  isApproved(proposal: Proposal) {
+    return proposal.totalVotesFor > proposal.totalVotesAgainst
   }
 }
 </script>
@@ -242,5 +230,14 @@ export default class DoneProposals extends Vue {
   width: 24px;
   background: #de4a5c;
   border-radius: 12px;
+}
+
+.result {
+  &--for {
+    color: #3ec8c8 !important;
+  }
+  &--against {
+    color: #de4a5c !important;
+  }
 }
 </style>
