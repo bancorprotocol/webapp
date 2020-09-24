@@ -199,8 +199,8 @@ export default class Stake extends Vue {
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 
-  async mounted(){
-    await this.update()
+  async mounted() {
+    await this.update();
   }
 }
 </script>

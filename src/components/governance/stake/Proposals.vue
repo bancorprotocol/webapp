@@ -62,8 +62,8 @@ export default class Proposals extends Vue {
     });
   }
 
-  async mounted(){
-    await this.updateProposals()
+  async mounted() {
+    await this.updateProposals();
   }
 }
 </script>

@@ -38,7 +38,7 @@ export interface Proposal {
   totalVotes: number;
   totalVotesAvailable: number;
   votes: {
-    voted: undefined | 'for' | 'against';
+    voted: undefined | "for" | "against";
     for: number;
     against: number;
   };
@@ -322,9 +322,10 @@ export class EthereumGovernance extends VuexModule.With({
             : 0
         } as any
       };
-      const {for: vFor, against: vAgainst} = prop.votes
-      prop.votes.voted = vFor === vAgainst ? undefined : vFor > vAgainst ? 'for' : 'against' 
-      proposals.push(prop)
+      const { for: vFor, against: vAgainst } = prop.votes;
+      prop.votes.voted =
+        vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
+      proposals.push(prop);
     }
 
     console.log("proposals", proposals);

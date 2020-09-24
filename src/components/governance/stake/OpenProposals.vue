@@ -111,7 +111,7 @@
                 width="16"
                 height="16"
                 :ratio="proposal.totalVotesFor / proposal.totalVotes"
-                :stroke-width=10
+                :stroke-width="10"
                 :opacity="1"
                 color="#3ec8c8"
               />
