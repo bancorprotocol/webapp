@@ -86,23 +86,45 @@
       </td>
       <td>
         <div class="pl-3 container-border">
-          <main-button
-            @click="() => voteFor(proposal.id.toString())"
-            label="Vote for"
-            :large="true"
-            :active="true"
-            :block="true"
-            class="font-size-14 font-w400 mb-2 text-uppercase button-vote button-vote--for"
-          />
+          <div v-if="!proposal.votes.voted">
+            <main-button
+              @click="() => voteFor(proposal.id.toString())"
+              label="Vote for"
+              :large="true"
+              :active="true"
+              :block="true"
+              class="font-size-14 font-w400 mb-2 text-uppercase button-vote button-vote--for"
+            />
 
-          <main-button
-            @click="() => voteAgainst(proposal.id.toString())"
-            label="Vote against"
-            :large="true"
-            :active="true"
-            :block="true"
-            class="font-size-14 font-w400 text-uppercase button-vote button-vote--against"
-          />
+            <main-button
+              @click="() => voteAgainst(proposal.id.toString())"
+              label="Vote against"
+              :large="true"
+              :active="true"
+              :block="true"
+              class="font-size-14 font-w400 text-uppercase button-vote button-vote--against"
+            />
+          </div>
+
+          <div v-if="proposal.votes.voted">
+            <div class="voted-box">
+              <div class="voted-box__row">
+                <div class="font-size-12 font-w500 text-muted-light">My vote</div>
+                <div class="font-size-12 font-w500">
+                  <span class="vote-chip" :class="'vote-chip--' + proposal.votes.voted"></span>
+                  <a target="_blank" class="font-size-12 font-w500 fix-a ml-2">Unvote</a>
+                </div>
+              </div>
+              <div class="voted-box__row">
+                <div class="font-size-12 font-w500 text-muted-light">Staked Amount</div>
+                <div class="font-size-12 font-w500">{{proposal.votes.for || proposal.votes.against}} gBTN</div>
+              </div>
+              <div class="voted-box__row">
+                <div class="font-size-12 font-w500 text-muted-light">Percentage from Total</div>
+                <div class="font-size-12 font-w500">{{(proposal.votes.for || proposal.votes.against) / proposal.totalVotes * 100}}%</div>
+              </div>
+            </div>
+          </div>
 
           <div class="font-size-12 font-w500 text-uppercase pt-3">
             <span class="mini-pie-wrapper">
@@ -180,6 +202,7 @@ export default class OpenProposals extends Vue {
   @Prop() update?: any;
 
   get fields(): ViewTableFields[] {
+    console.log('proposals', this.proposals)
     return [
       {
         label: ""
@@ -286,5 +309,45 @@ export default class OpenProposals extends Vue {
   border-radius: 8px;
   display: inline-flex;
   vertical-align: middle;
+}
+
+.voted-box {
+  border: 1px solid $gray-border;
+  background: $block-bg-blue;
+  padding: 8px 16px;
+  border-radius: 8px;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 24px + 8px;
+
+  }
+}
+
+.vote-chip {
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 24px;
+
+  &--for {
+    color: #3ec8c8;
+
+    &:before {
+      content: 'For';
+    }
+  }
+  &--against {
+    color: #de4a5c;
+
+    &:before {
+      content: 'Against';
+    }
+  }
 }
 </style>
