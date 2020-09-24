@@ -1,6 +1,6 @@
 <template>
   <div>
-    <content-block :shadow="true" class="mb-3">
+    <content-block :shadow="true" class="mb-4">
       <template slot="header">
         <pool-actions-header title="Add Liquidity Protection" @back="back" />
       </template>
@@ -70,6 +70,8 @@
       </div>
     </content-block>
 
+    <protectable-liquidity />
+
     <modal-base
       title="You are adding liquidity protection"
       v-model="modal"
@@ -112,13 +114,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import {Component, Vue, Watch} from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
-import { Step, TxResponse, ViewReserve } from "@/types/bancor";
+import {Step, TxResponse, ViewRelay, ViewReserve} from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -128,9 +130,11 @@ import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BigNumber from "bignumber.js";
+import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquidity.vue";
 
 @Component({
   components: {
+    ProtectableLiquidity,
     PoolLogos,
     TokenInputField,
     AdvancedBlockItem,
@@ -158,8 +162,8 @@ export default class AddLiqProtection extends Vue {
   sections: Step[] = [];
   stepIndex = 0;
 
-  get pool() {
-    return vxm.bancor.relay("0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237");
+  get pool(): ViewRelay {
+    return vxm.bancor.relay(this.$route.params.id);
   }
 
   get balance() {
@@ -210,6 +214,16 @@ export default class AddLiqProtection extends Vue {
     this.sections = [];
     this.error = "";
     this.success = null;
+  }
+
+  @Watch('pool')
+  onPoolChange() {
+    this.selectedToken = this.pool.reserves[0];
+    this.amount = "";
+  }
+
+  mounted() {
+    this.selectedToken = this.pool.reserves[0]
   }
 
   get darkMode() {
