@@ -17,22 +17,25 @@
           {{ proposal.name }}
         </div>
 
-        <div class="pt-2 pb-3">
-          <remaining-time
-            class="remaining-time"
-            type="warn"
-            :from="proposal.startDate"
-            :to="proposal.endDate"
-          />
+        <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
+          More about proposal:
+          <a target="_blank" class="font-size-14 font-w500 fix-a pl-2">
+            <font-awesome-icon icon="external-link-alt" />
+            Disscussion Forum
+          </a>
+          <a target="_blank" class="font-size-14 font-w500 fix-a pl-2">
+            <font-awesome-icon :icon="['fab', 'github']" />
+            GitHub
+          </a>
         </div>
 
         <b-row>
           <b-col cols="6">
             <div class="pb-1">
-              <span class="font-size-14 font-w500 text-muted-light">
+              <span class="font-size-12 text-muted-light">
                 Vote Start
               </span>
-              <span class="font-size-14 font-w500 pl-1 pr-1">
+              <span class="font-size-12 font-w500 pl-1 pr-1">
                 {{ formatDate(proposal.startDate) }}
               </span>
               <span class="font-size-12 font-w500 text-muted-light">
@@ -40,10 +43,10 @@
               </span>
             </div>
             <div>
-              <span class="font-size-14 font-w500 text-muted-light">
+              <span class="font-size-12 text-muted-light">
                 Vote End
               </span>
-              <span class="font-size-14 font-w500 pl-1 pr-1">
+              <span class="font-size-12 font-w500 pl-1 pr-1">
                 {{ formatDate(proposal.endDate) }}
               </span>
               <span class="font-size-12 font-w500 text-muted-light">
@@ -52,35 +55,34 @@
             </div>
           </b-col>
           <b-col cols="6">
-            <div class="font-size-14 font-w500 text-muted-light pb-1">
-              Proposed
-              <a target="_blank" class="font-size-14 font-w500 fix-a pl-1">
-                <font-awesome-icon icon="external-link-alt" />
-              </a>
-              <a target="_blank" class="font-size-14 font-w500 fix-a pl-1">
-                <font-awesome-icon :icon="['fab', 'github']" />
-              </a>
-            </div>
             <div
-              class="font-size-14 font-w500 pb-1"
+              class="font-size-12 pb-1"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
               Proposed by
-              <a target="_blank" class="font-size-14 font-w500 fix-a">
+              <a target="_blank" class="font-size-12 font-w500 fix-a">
                 {{ shortAddress(proposal.proposer) }}
               </a>
             </div>
             <div
-              class="font-size-14 font-w500"
+              class="font-size-12"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
               Executed by
-              <a target="_blank" class="font-size-14 font-w500 fix-a">
+              <a target="_blank" class="font-size-12 font-w500 fix-a">
                 {{ shortAddress(proposal.executor) }}
               </a>
             </div>
           </b-col>
         </b-row>
+
+        <div class="pt-2">
+          <remaining-time
+            type="warn"
+            :from="proposal.startDate"
+            :to="proposal.endDate"
+          />
+        </div>
       </td>
       <td>
         <div class="pl-3 container-border">
@@ -245,9 +247,6 @@ export default class OpenProposals extends Vue {
   @at-root .table & > td {
     vertical-align: top !important;
   }
-}
-.remaining-time {
-  width: 150px;
 }
 .container-border {
   border-left: 1px solid $gray-border;
