@@ -112,7 +112,7 @@
                 <div class="font-size-12 font-w500 text-muted-light">My vote</div>
                 <div class="font-size-12 font-w500">
                   <span class="vote-chip" :class="'vote-chip--' + proposal.votes.voted"></span>
-                  <a target="_blank" class="font-size-12 font-w500 fix-a ml-2">Unvote</a>
+                  <a v-show="false" target="_blank" class="font-size-12 font-w500 fix-a ml-2">Unvote</a>
                 </div>
               </div>
               <div class="voted-box__row">
