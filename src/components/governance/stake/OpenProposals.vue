@@ -8,7 +8,7 @@
     <tr
       v-for="proposal in proposals"
       :key="proposal.id"
-      class="font-w500 font-size-14 aling-rows-cells"
+      class="font-w500 font-size-14 align-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <td>{{ proposal.id }}</td>
