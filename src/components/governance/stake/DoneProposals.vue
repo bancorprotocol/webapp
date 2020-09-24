@@ -55,7 +55,11 @@
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             Proposed by
-            <a target="_blank" class="font-size-12 font-w500 fix-a">
+            <a
+              target="_blank"
+              class="font-size-12 font-w500 fix-a"
+              :href="getEtherscanUrl(proposal.proposer)"
+            >
               {{ shortAddress(proposal.proposer) }}
             </a>
           </div>
@@ -65,7 +69,11 @@
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             Contract to execute
-            <a target="_blank" class="font-size-12 font-w500 fix-a">
+            <a
+              target="_blank"
+              class="font-size-12 font-w500 fix-a"
+              :href="getEtherscanUrl(proposal.executor)"
+            >
               {{ shortAddress(proposal.executor) }}
             </a>
           </div>
@@ -104,8 +112,10 @@
             </main-button>
 
             <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
-              IPFS
-              <font-awesome-icon icon="external-link-alt" />
+              <a :href="getIPFSUrl(proposal.hash)" target="_blank">
+                IPFS
+                <font-awesome-icon icon="external-link-alt" />
+              </a>
             </main-button>
           </div>
         </td>
@@ -123,7 +133,11 @@ import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
-import { Proposal } from "@/store/modules/governance/ethGovernance";
+import {
+  etherscanUrl,
+  ipfsUrl,
+  Proposal
+} from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -229,6 +243,14 @@ export default class DoneProposals extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  getIPFSUrl(hash: string) {
+    return `${ipfsUrl}/${hash}`;
+  }
+
+  getEtherscanUrl(address: string) {
+    return `${etherscanUrl}address/${address}`;
   }
 
   formatDate(date: number) {

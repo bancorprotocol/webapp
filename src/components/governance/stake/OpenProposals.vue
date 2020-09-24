@@ -60,7 +60,11 @@
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
               Proposed by
-              <a target="_blank" class="font-size-12 font-w500 fix-a">
+              <a
+                target="_blank"
+                class="font-size-12 font-w500 fix-a"
+                :href="getEtherscanUrl(proposal.proposer)"
+              >
                 {{ shortAddress(proposal.proposer) }}
               </a>
             </div>
@@ -69,7 +73,11 @@
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
               Contract to execute
-              <a target="_blank" class="font-size-12 font-w500 fix-a">
+              <a
+                target="_blank"
+                class="font-size-12 font-w500 fix-a"
+                :href="getEtherscanUrl(proposal.executor)"
+              >
                 {{ shortAddress(proposal.executor) }}
               </a>
             </div>
@@ -206,7 +214,10 @@ import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import MainButton from "@/components/common/Button.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
-import { Proposal } from "@/store/modules/governance/ethGovernance";
+import {
+  etherscanUrl,
+  Proposal
+} from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -254,6 +265,10 @@ export default class OpenProposals extends Vue {
       timeStyle: "short",
       timezone: "UTC"
     } as any).format(date);
+  }
+
+  getEtherscanUrl(address: string) {
+    return `${etherscanUrl}address/${address}`;
   }
 
   shortAddress(address: string) {

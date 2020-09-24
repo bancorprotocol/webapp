@@ -7,7 +7,7 @@ import { shrinkToken } from "@/api/eth/helpers";
 export const governanceContractAddress =
   "0x05AA3da21D2706681837a896433E62deEeEaB1f1";
 export const etherscanUrl = "https://ropsten.etherscan.io/";
-const ipfsUrl = "https://ipfs.io/ipfs/";
+export const ipfsUrl = "https://ipfs.io/ipfs/";
 
 // block time in seconds
 export const blockTime = 15;
