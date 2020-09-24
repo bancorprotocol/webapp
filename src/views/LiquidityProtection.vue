@@ -2,21 +2,28 @@
   <b-container fluid="xl" class="px-xl-0">
     <b-row>
       <b-col cols="12">
-        <h2
-          class="font-size-20 font-w600 mt-2"
-          :class="darkMode ? 'text-dark' : 'text-light'"
-        >
-          Liquidity Protection
-        </h2>
-
+        <div class="mt-2">
+          <span
+            class="font-size-20 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+          >
+            Liquidity Protection
+          </span>
+        </div>
         <p
-          class="font-size-14 font-w400"
+          class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
           You can protect your token pools with our special insurance for
           impermanent loss by simpy adding insurance to each of your
           transactions.
         </p>
+      </b-col>
+    </b-row>
+
+    <b-row>
+      <b-col cols="12">
+        <protectable-liquidity />
       </b-col>
     </b-row>
 
@@ -44,7 +51,7 @@
                     "
                   />
                   <span
-                    v-text="formatDate(data.item.unixTime.staked)"
+                    v-text="formatDate(data.item.unixTime.staked).dateTime"
                     class="font-size-12 font-w400"
                     :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
                   />
@@ -69,14 +76,10 @@
             <template v-slot:cell(insuranceStart)="data">
               <div class="d-flex flex-column">
                 <span
-                  v-text="
-                    formatDate(data.item.unixTime.insuranceStart, 'object').date
-                  "
+                  v-text="formatDate(data.item.unixTime.insuranceStart).date"
                 />
                 <span
-                  v-text="
-                    formatDate(data.item.unixTime.insuranceStart, 'object').time
-                  "
+                  v-text="formatDate(data.item.unixTime.insuranceStart).time"
                   class="font-size-12 font-w400"
                   :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
                 />
@@ -101,7 +104,7 @@
                     ).percentage
                   "
                   :max="100"
-                  height="10px"
+                  height="7px"
                   class="my-1"
                 />
                 <span class="text-primary">
@@ -139,9 +142,15 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
+import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquidity.vue";
 
 @Component({
-  components: { PoolLogosOverlapped, TableWrapper, ContentBlock }
+  components: {
+    ProtectableLiquidity,
+    PoolLogosOverlapped,
+    TableWrapper,
+    ContentBlock
+  }
 })
 export default class LiquidityProtection extends Vue {
   search: string = "";
@@ -164,9 +173,8 @@ export default class LiquidityProtection extends Vue {
     else return { percentage: "100%", timeLeft: "Full coverage achieved" };
   }
 
-  formatDate(unixTime: number, type: "string" | "object" = "string") {
-    const dateTime = formatUnixTime(unixTime);
-    return type === "string" ? `${dateTime.date} ${dateTime.time}` : dateTime;
+  formatDate(unixTime: number) {
+    return formatUnixTime(unixTime);
   }
 
   get protectedTxTable() {

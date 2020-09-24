@@ -1161,9 +1161,10 @@ export const buildPoolName = (
 
 export const formatUnixTime = (
   unixTime: number
-): { date: string; time: string } => {
-  return {
-    date: moment(unixTime * 1000).format("DD/MM/YY"),
-    time: moment(unixTime * 1000).format("HH:mm")
-  };
+): { date: string; time: string; dateTime: string } => {
+  const date = moment(unixTime * 1000).format("DD/MM/YY");
+  const time = moment(unixTime * 1000).format("HH:mm");
+  const dateTime = `${date} ${time}`;
+
+  return { date, time, dateTime };
 };
