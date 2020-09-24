@@ -21,7 +21,7 @@
           More about proposal:
           <a target="_blank" class="font-size-14 font-w500 fix-a pl-2">
             <font-awesome-icon icon="external-link-alt" />
-            Disscussion Forum
+            Discussion Forum
           </a>
           <a target="_blank" class="font-size-14 font-w500 fix-a pl-2">
             <font-awesome-icon :icon="['fab', 'github']" />
@@ -68,7 +68,7 @@
               class="font-size-12"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
-              Executed by
+              Contract to execute
               <a target="_blank" class="font-size-12 font-w500 fix-a">
                 {{ shortAddress(proposal.executor) }}
               </a>
@@ -116,7 +116,7 @@
                 </div>
               </div>
               <div class="voted-box__row">
-                <div class="font-size-12 font-w500 text-muted-light">Staked Amount</div>
+                <div class="font-size-12 font-w500 text-muted-light">Voted Amount</div>
                 <div class="font-size-12 font-w500">{{proposal.votes.for || proposal.votes.against}} gBTN</div>
               </div>
               <div class="voted-box__row">

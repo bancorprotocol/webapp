@@ -61,7 +61,7 @@
             class="font-size-12"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
-            Executed by
+            Contract to execute
             <a target="_blank" class="font-size-12 font-w500 fix-a">
               {{ shortAddress(proposal.executor) }}
             </a>
