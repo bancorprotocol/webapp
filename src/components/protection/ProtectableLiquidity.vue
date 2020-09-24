@@ -1,6 +1,6 @@
 <template>
   <div>
-    <content-block title="Liquidity you can protect">
+    <content-block title="Assets at risk of impermanent loss">
       <div
         class="pb-3 mt-3"
         v-for="item in protectableLiquidity"
@@ -82,7 +82,10 @@ export default class ProtectableLiquidity extends Vue {
   }
 
   changePool(id: string) {
-    this.$router.push({ name: "AddProtectionAction", params: { id } });
+    this.$router.push({
+      name: "ProtectionAction",
+      params: { action: "add", id }
+    });
   }
 
   poolName(id: string): string {

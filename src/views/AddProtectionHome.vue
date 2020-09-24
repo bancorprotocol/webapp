@@ -52,8 +52,8 @@ export default class AddProtectionHome extends Vue {
 
   selectPool(id: string) {
     this.$router.push({
-      name: "AddProtectionAction",
-      params: { id }
+      name: "ProtectionAction",
+      params: { action: "add", id }
     });
     this.modal = false;
   }

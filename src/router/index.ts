@@ -13,7 +13,7 @@ import DataSummary from "@/components/data/DataSummary.vue";
 import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
 import LiquidityProtectionSummary from "@/views/LiquidityProtectionSummary.vue";
 import AddProtectionHome from "@/views/AddProtectionHome.vue";
-import AddProtectionActions from "@/components/protection/AddProtectionActions.vue";
+import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 
 Vue.use(Router);
 
@@ -102,11 +102,11 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection/add/:id",
-      name: "AddProtectionAction",
+      path: "/:service/liquidity-protection/:action/:id",
+      name: "ProtectionAction",
       components: {
         Nav: Navigation,
-        Hero: AddProtectionActions
+        Hero: ProtectionActions
       },
       props: true
     },
