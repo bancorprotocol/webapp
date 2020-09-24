@@ -38,6 +38,7 @@ export interface Proposal {
   totalVotes: number;
   totalVotesAvailable: number;
   votes: {
+    voted: undefined | 'for' | 'against';
     for: number;
     against: number;
   };
@@ -278,7 +279,7 @@ export class EthereumGovernance extends VuexModule.With({
         console.log("Getting metadata failed!", err);
       }
 
-      proposals.push({
+      const prop = {
         id: Number(proposal.id),
         start: Number(proposal.start),
         startDate:
@@ -319,8 +320,11 @@ export class EthereumGovernance extends VuexModule.With({
                 )
               )
             : 0
-        }
-      });
+        } as any
+      };
+      const {for: vFor, against: vAgainst} = prop.votes
+      prop.votes.voted = vFor === vAgainst ? undefined : vFor > vAgainst ? 'for' : 'against' 
+      proposals.push(prop)
     }
 
     console.log("proposals", proposals);
