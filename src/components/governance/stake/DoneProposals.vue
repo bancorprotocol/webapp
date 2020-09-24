@@ -10,8 +10,11 @@
         <td class="font-size-14 font-w500">
           {{ proposal.name }}
         </td>
-        <td class="result" :class="'result--' + (isApproved(proposal) ? 'for' : 'against')">
-          {{ isApproved(proposal) ? 'Approved' : 'Rejected' }}
+        <td
+          class="result"
+          :class="'result--' + (isApproved(proposal) ? 'for' : 'against')"
+        >
+          {{ isApproved(proposal) ? "Approved" : "Rejected" }}
         </td>
         <td>
           <div class="font-size-14 font-w500">{{ proposal.totalVotesFor }}</div>
@@ -27,7 +30,7 @@
             {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
           </div>
         </td>
-  <!--       <td>
+        <!--       <td>
           <div class="font-size-14 font-w500">
             {{ formatDate(proposal.startDate) }}
           </div>
@@ -84,7 +87,8 @@
               Quorum/Required
             </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
-              {{ proposal.quorum / 100 }}% / {{ proposal.quorumRequired / 100 }}%
+              {{ proposal.quorum / 100 }}% /
+              {{ proposal.quorumRequired / 100 }}%
             </span>
           </div>
         </td>
@@ -93,16 +97,13 @@
             <main-button
               :small="true"
               :active="true"
-              class="font-w400 mt-0 mb-0">
-
+              class="font-w400 mt-0 mb-0"
+            >
               BIP
               <font-awesome-icon icon="external-link-alt" />
             </main-button>
 
-            <main-button
-              :small="true"
-              class="font-w400 mt-0 mb-0 ml-3">
-
+            <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
               IPFS
               <font-awesome-icon icon="external-link-alt" />
             </main-button>
@@ -246,11 +247,15 @@ export default class DoneProposals extends Vue {
   }
 
   getVotesPercentage(proposal: Proposal, votes: number): any {
-    return (((100 / proposal.totalVotes) * votes) || 0).toFixed(2).replace(/\.0+$/, '') + "%";
+    return (
+      ((100 / proposal.totalVotes) * votes || 0)
+        .toFixed(2)
+        .replace(/\.0+$/, "") + "%"
+    );
   }
 
   isApproved(proposal: Proposal) {
-    return proposal.totalVotesFor > proposal.totalVotesAgainst
+    return proposal.totalVotesFor > proposal.totalVotesAgainst;
   }
 }
 </script>
@@ -294,7 +299,7 @@ export default class DoneProposals extends Vue {
   position: relative;
 
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     top: -1px;
     height: 1px;

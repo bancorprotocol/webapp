@@ -109,19 +109,41 @@
           <div v-if="proposal.votes.voted">
             <div class="voted-box">
               <div class="voted-box__row">
-                <div class="font-size-12 font-w500 text-muted-light">My vote</div>
+                <div class="font-size-12 font-w500 text-muted-light">
+                  My vote
+                </div>
                 <div class="font-size-12 font-w500">
-                  <span class="vote-chip" :class="'vote-chip--' + proposal.votes.voted"></span>
-                  <a v-show="false" target="_blank" class="font-size-12 font-w500 fix-a ml-2">Unvote</a>
+                  <span
+                    class="vote-chip"
+                    :class="'vote-chip--' + proposal.votes.voted"
+                  ></span>
+                  <a
+                    v-show="false"
+                    target="_blank"
+                    class="font-size-12 font-w500 fix-a ml-2"
+                    >Unvote</a
+                  >
                 </div>
               </div>
               <div class="voted-box__row">
-                <div class="font-size-12 font-w500 text-muted-light">Voted Amount</div>
-                <div class="font-size-12 font-w500">{{proposal.votes.for || proposal.votes.against}} gBTN</div>
+                <div class="font-size-12 font-w500 text-muted-light">
+                  Voted Amount
+                </div>
+                <div class="font-size-12 font-w500">
+                  {{ proposal.votes.for || proposal.votes.against }} gBTN
+                </div>
               </div>
               <div class="voted-box__row">
-                <div class="font-size-12 font-w500 text-muted-light">Percentage from Total</div>
-                <div class="font-size-12 font-w500">{{(proposal.votes.for || proposal.votes.against) / proposal.totalVotes * 100}}%</div>
+                <div class="font-size-12 font-w500 text-muted-light">
+                  Percentage from Total
+                </div>
+                <div class="font-size-12 font-w500">
+                  {{
+                    ((proposal.votes.for || proposal.votes.against) /
+                      proposal.totalVotes) *
+                      100
+                  }}%
+                </div>
               </div>
             </div>
           </div>
@@ -202,7 +224,7 @@ export default class OpenProposals extends Vue {
   @Prop() update?: any;
 
   get fields(): ViewTableFields[] {
-    console.log('proposals', this.proposals)
+    console.log("proposals", this.proposals);
     return [
       {
         label: ""
@@ -322,7 +344,6 @@ export default class OpenProposals extends Vue {
     align-items: center;
     justify-content: space-between;
     height: 24px + 8px;
-
   }
 }
 
@@ -339,14 +360,14 @@ export default class OpenProposals extends Vue {
     color: #3ec8c8;
 
     &:before {
-      content: 'For';
+      content: "For";
     }
   }
   &--against {
     color: #de4a5c;
 
     &:before {
-      content: 'Against';
+      content: "Against";
     }
   }
 }
