@@ -1,5 +1,5 @@
 <template>
-  <content-block :shadow="true" title="Add Liquidity Protection">
+  <content-block :shadow="true" :title="title">
     <div v-if="!withdrawProtection">
       <add-protection-v1 v-if="!pool.v2" :pool="pool" />
       <add-protection-v2 v-else :pool="pool" />
@@ -33,6 +33,10 @@ import WithdrawProtectionV2 from "@/components/protection/WithdrawProtectionV2.v
 })
 export default class ProtectionActions extends Vue {
   withdrawProtection = false;
+
+  get title() {
+    return this.withdrawProtection ? "Withdraw" : "Add Liquidity Protection";
+  }
 
   get protectionAction() {
     return this.$route.params.action;
