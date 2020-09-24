@@ -9,6 +9,13 @@
           >
             Liquidity Protection
           </span>
+
+          <b-btn
+            variant="primary"
+            class="float-right"
+            :to="{ name: 'AddProtection' }"
+            >Stake</b-btn
+          >
         </div>
         <p
           class="font-size-14 font-w400 my-3"
@@ -152,7 +159,7 @@ import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquid
     ContentBlock
   }
 })
-export default class LiquidityProtection extends Vue {
+export default class LiquidityProtectionSummary extends Vue {
   search: string = "";
 
   poolName(id: string): string {
