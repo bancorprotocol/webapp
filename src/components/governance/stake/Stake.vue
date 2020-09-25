@@ -59,7 +59,7 @@
         <modal-unstake v-model="unstakeModal" />
       </div>
 
-      <span v-if="lock.for > 0">
+      <span v-if="lockedTill() > Date.now()">
         <remaining-time type="warn" :from="Date.now()" :to="lockedTill()" />
       </span>
 
