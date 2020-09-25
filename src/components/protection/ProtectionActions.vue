@@ -1,5 +1,5 @@
 <template>
-  <content-block :shadow="true" :title="title">
+  <content-block :shadow="true" :title="title" :back-button="true" @back="back">
     <div v-if="!withdrawProtection">
       <add-protection-v1 v-if="!pool.v2" :pool="pool" />
       <add-protection-v2 v-else :pool="pool" />
@@ -47,7 +47,7 @@ export default class ProtectionActions extends Vue {
   }
 
   back() {
-    this.$router.push({ name: "AddProtectionHome" });
+    this.$router.push({ name: "LiqProtection" });
   }
 
   created() {
