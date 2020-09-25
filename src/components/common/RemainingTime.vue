@@ -15,13 +15,22 @@ import numeral from "numeral";
 
 @Component
 export default class RemainingTime extends Vue {
-  @Prop() type?: "warn" | "info" | null;
   @Prop() from?: number;
   @Prop() to?: number;
 
   private remainingPercentage: number = 0;
   private remainingTime: number = 0;
   private interval: any;
+
+  get type() {
+    if (this.remainingPercentage <= 20) {
+      return 'info'
+    } else if (this.remainingPercentage <= 90) {
+      return
+    } else {
+      return 'warn'
+    }
+  }
 
   get percentage() {
     if (this.remainingPercentage < 0) {
