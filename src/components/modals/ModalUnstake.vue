@@ -112,7 +112,10 @@
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
       <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
       <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
-      <a target="_blank" class="text-primary font-w500 cursor"
+      <a
+        target="_blank"
+        class="text-primary font-w500 cursor"
+        :href="getEtherscanUrl()"
         >View on Etherscan</a
       >
       <main-button
@@ -133,6 +136,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { expandToken } from "@/api/eth/helpers";
+import { etherscanUrl } from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -146,6 +150,10 @@ export default class ModalUnstake extends Vue {
   unstakeValue?: number = "" as any;
   step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";
+
+  getEtherscanUrl() {
+    return `${etherscanUrl}address/${this.account}#tokentxns`;
+  }
 
   get darkMode(): boolean {
     return vxm.general.darkMode;

@@ -113,7 +113,10 @@
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
       <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
       <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
-      <a target="_blank" class="text-primary font-w500 cursor"
+      <a
+        target="_blank"
+        class="text-primary font-w500 cursor"
+        :href="getEtherscanUrl()"
         >View on Etherscan</a
       >
       <main-button
@@ -134,6 +137,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { expandToken } from "@/api/eth/helpers";
+import { etherscanUrl } from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -150,6 +154,10 @@ export default class ModalStake extends Vue {
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
+  }
+
+  getEtherscanUrl() {
+    return `${etherscanUrl}address/${this.account}#tokentxns`;
   }
 
   stake() {
