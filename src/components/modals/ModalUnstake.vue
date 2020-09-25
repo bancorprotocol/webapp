@@ -17,7 +17,7 @@
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              <span v-if="step === 'stake'">Stake</span>
+              <span v-if="step === 'unstake'">Unstake</span>
             </span>
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -30,26 +30,26 @@
       </div>
     </template>
 
-    <div v-if="step === 'stake'">
+    <div v-if="step === 'unstake'">
       <div
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        <span class="text-uppercase">Stake your tokens</span>
+        <span class="text-uppercase">Unstake your tokens</span>
         <span class="float-right"
-          >Balance: {{ currentBalance }} {{ symbol }}</span
+          >Balance: {{ currentStake }} {{ symbol }}</span
         >
       </div>
 
       <div class="input-currency mt-1">
         <b-form-input
-          v-model="stakeValue"
+          v-model="unstakeValue"
           :state="
-            (stakeValue.length === 0 ||
-              (stakeValue > 0 && stakeValue <= currentBalance)) &&
+            (unstakeValue.length === 0 ||
+              (unstakeValue > 0 && unstakeValue <= currentStake)) &&
               undefined
           "
-          :max="currentBalance"
+          :max="currentStake"
           type="number"
           placeholder="0"
           size="lg"
@@ -66,35 +66,35 @@
       </div>
 
       <main-button
-        @click="stake"
+        @click="unstake"
         :label="
-          stakeValue.length === 0
+          unstakeValue.length === 0
             ? 'Enter Amount'
-            : stakeValue > 0 && stakeValue <= currentBalance
-            ? 'Stake Tokens'
+            : unstakeValue > 0 && unstakeValue <= currentStake
+            ? 'Unstake Tokens'
             : 'Insufficient Amount'
         "
         :active="true"
         :block="true"
-        :disabled="!(stakeValue > 0 && stakeValue <= currentBalance)"
+        :disabled="!(unstakeValue && unstakeValue <= currentStake)"
         class="font-size-14 font-w400 mt-3 button-status"
         :class="{
-          'button-status--empty': stakeValue.length === 0,
+          'button-status--empty': unstakeValue.length === 0,
           'button-status--invalid': !(
-            stakeValue > 0 && stakeValue <= currentBalance
+            unstakeValue > 0 && unstakeValue <= currentStake
           )
         }"
       />
     </div>
 
     <div
-      v-if="step === 'staking'"
+      v-if="step === 'unstaking'"
       class="text-center"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <b-spinner variant="primary"></b-spinner>
       <h3 class="font-size-lg mt-4">Waiting For Confirmation</h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
       <div
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -104,13 +104,13 @@
     </div>
 
     <div
-      v-if="step === 'staked'"
+      v-if="step === 'unstaked'"
       class="text-center"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
       <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
       <a target="_blank" class="text-primary font-w500 cursor"
         >View on Etherscan</a
       >
@@ -138,45 +138,45 @@ import { expandToken } from "@/api/eth/helpers";
     MainButton
   }
 })
-export default class ModalStake extends Vue {
+export default class ModalUnstake extends Vue {
   @VModel({ type: Boolean }) show!: boolean;
 
-  currentBalance: number = 0;
-  stakeValue?: number = "" as any;
-  step: "stake" | "staking" | "staked" = "stake";
+  currentStake: number = 0;
+  unstakeValue?: number = "" as any;
+  step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
   }
 
-  stake() {
-    this.step = "staking";
-    this.doStake().then(() => {
-      this.step = "staked";
+  unstake() {
+    this.step = "unstaking";
+    this.doUnstake().then(() => {
+      this.step = "unstaked";
     });
   }
 
-  async doStake() {
-    await vxm.ethGovernance.stake({
+  async doUnstake() {
+    await vxm.ethGovernance.unstake({
       account: vxm.wallet.isAuthenticated,
-      amount: expandToken(this.stakeValue!.toString(), 18)
+      amount: expandToken(this.unstakeValue!.toString(), 18)
     });
   }
 
   onHide() {
     this.show = false;
-    if (this.step === "staked") {
-      this.step = "stake";
-      this.stakeValue = 0;
+    if (this.step === "unstaked") {
+      this.step = "unstake";
+      this.unstakeValue = 0;
     }
   }
 
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
-    this.currentBalance = Number(
-      await vxm.ethGovernance.getBalance({
-        account: vxm.wallet.isAuthenticated
+    this.currentStake = Number(
+      await vxm.ethGovernance.getVotes({
+        voter: vxm.wallet.isAuthenticated
       })
     );
   }

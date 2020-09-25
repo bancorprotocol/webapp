@@ -31,14 +31,16 @@
       <modal-stake v-model="stakeModal" />
     </div>
 
-    <main-button
-      @click="unstake"
-      v-if="lock.for === 0 && votes > 0"
-      label="Unstake Tokens"
-      :active="false"
-      :block="true"
-      class="font-size-14"
-    />
+    <div v-if="lock.for === 0 && votes > 0">
+      <main-button
+          @click="unstakeModal = true"
+          label="Unstake Tokens"
+          :active="false"
+          :block="true"
+          class="font-size-14"
+      />
+      <modal-unstake v-model="unstakeModal" />
+    </div>
 
     <span v-if="lock.for > 0">
       <remaining-time type="warn" :from="Date.now()" :to="lockedTill()" />
@@ -85,7 +87,7 @@ import RemainingTime from "@/components/common/RemainingTime.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import ModalStake from "@/components/modals/ModalStake.vue";
 import { blockTime } from "@/store/modules/governance/ethGovernance";
-import { expandToken } from "@/api/eth/helpers";
+import ModalUnstake from "@/components/modals/ModalUnstake.vue"
 
 @Component({
   components: {
@@ -93,11 +95,13 @@ import { expandToken } from "@/api/eth/helpers";
     MainButton,
     RemainingTime,
     ProgressBar,
-    ModalStake
+    ModalStake,
+    ModalUnstake
   }
 })
 export default class Stake extends Vue {
   stakeModal = false;
+  unstakeModal = false;
 
   votes: string = "";
   balance: string = "";
@@ -140,17 +144,6 @@ export default class Stake extends Vue {
     return shortenEthAddress(address);
   }
 
-  unstake() {
-    vxm.ethGovernance
-      .unstake({
-        account: this.account,
-        amount: expandToken(2.2, 18)
-      })
-      .then(() => {
-        this.update();
-      });
-  }
-
   lockedTill(): number {
     const till = Date.now() + this.lock.for * blockTime * 1000;
 
@@ -160,6 +153,7 @@ export default class Stake extends Vue {
 
   @Watch("account")
   @Watch("stakeModal")
+  @Watch("unstakeModal")
   async update() {
     this.balance = formatNumber(
       await vxm.ethGovernance.getBalance({
