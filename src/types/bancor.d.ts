@@ -75,6 +75,11 @@ export interface ViewAmountWithMeta extends ViewAmount {
 
 type OnUpdate = (index: number, sections: Section[]) => void;
 
+export interface ProtectLiquidityParams {
+  amount: ViewAmount;
+  onUpdate?: OnUpdate;
+}
+
 export interface LiquidityParams {
   id: string;
   reserves: ViewAmount[];
@@ -215,6 +220,8 @@ export interface ViewRelay {
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
   focusAvailable?: boolean;
+  liquidityProtection: boolean;
+  whitelisted: boolean;
   v2: boolean;
 }
 

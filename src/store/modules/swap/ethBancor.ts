@@ -32,7 +32,7 @@ import {
   ViewRemoveEvent,
   ViewAddEvent,
   ViewAmountWithMeta,
-  FocusPoolRes
+  FocusPoolRes, ProtectLiquidityParams
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -109,7 +109,8 @@ import {
   buildContainerContract,
   buildConverterContract,
   buildTokenContract,
-  buildLiquidityProtectionContract
+  buildLiquidityProtectionContract,
+  buildLiquidityProtectionStoreContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -1275,16 +1276,20 @@ interface EthNetworkVariables {
   bntToken: string;
   ethToken: string;
   multiCall: string;
+  liquidityProtectionToken: string;
   converterContractForMaths: string;
 }
 
 const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
+
+  const ethToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
   switch (ethNetwork) {
     case EthNetworks.Mainnet:
       return {
         contractRegistry: "0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4",
         bntToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        ethToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        ethToken,
+        liquidityProtectionToken: ethToken,
         multiCall: "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2",
         converterContractForMaths: "0xe870d00176b2c71afd4c43cea550228e22be4abd"
       };
@@ -1292,7 +1297,8 @@ const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
       return {
         contractRegistry: "0xA6DB4B0963C37Bc959CbC0a874B5bDDf2250f26F",
         bntToken: "0x98474564A00d15989F16BFB7c162c782b0e2b336",
-        ethToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        ethToken,
+        liquidityProtectionToken: ethToken,
         multiCall: "0xf3ad7e31b052ff96566eedd218a823430e74b406",
         converterContractForMaths: "0x9a36b31ca768a860dab246cf080e7f042d1b7c0f"
       };
@@ -1741,11 +1747,77 @@ export class EthBancorModule
   }
 
 
-  @action async fetchWhiteListedV1Pools() {
+  whiteListedPools: string[] = []
 
-    const liquidityProtection  = buildLiquidityProtectionContract('') 
-    const res = ['anchor1', 'anchor2', 'anchor3'];
+
+  @mutation setWhiteListedPools(anchors: string[]) {
+    this.whiteListedPools = anchors;
   }
+
+  @action async fetchWhiteListedV1Pools() {
+    const liquidityProtection = buildLiquidityProtectionStoreContract('') 
+    const whiteListedPools = await liquidityProtection.methods.whitelistedPools().call();
+    this.setWhiteListedPools(whiteListedPools);
+    return whiteListedPools;
+  }
+
+
+  @action async protectLiquidityTx({ anchorAddress, amountWei } : { anchorAddress: string, amountWei: string }) {
+    const liquidityProtectionAddress = ''
+    const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
+    return this.resolveTxOnConfirmation({
+      tx: contract.methods.protectLiquidity(
+        anchorAddress,
+        amountWei
+      )
+    });
+  }
+
+  @action async unProtectLiquidityTx({ id1, id2 }: { id1: string; id2: string }) {
+    const liquidityProtectionAddress = ''
+    const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
+    return this.resolveTxOnConfirmation({
+      tx: contract.methods.unprotectLiquidity(id1, id2)
+    })
+  }
+
+  @action async protectLiquidity({ amount, onUpdate }: ProtectLiquidityParams): Promise<TxResponse> {
+    
+    const liquidityProtectionContractAddress = ''
+    const liquidityProtection = buildLiquidityProtectionContract(liquidityProtectionContractAddress);
+
+    const pool = await this.traditionalRelayById(amount.id);
+    const poolToken = pool.anchor;
+    if (!compareString(amount.id, poolToken.contract)) throw new Error("Pool token does not match anchor ID");
+    const poolTokenWei = expandToken(amount.amount, poolToken.decimals);
+    
+
+    const txHash = await multiSteps({
+      items: [
+        {
+          description: "Approving transfer...",
+          task: async () => {
+            await this.approveTokenWithdrawals([{ amount: poolTokenWei, approvedAddress: liquidityProtectionContractAddress, tokenAddress: poolToken.contract }])
+          }
+        },
+        {
+          description: "Adding liquidity protection...",
+          task: async() => {
+            return this.protectLiquidityTx({ anchorAddress: poolToken.contract, amountWei: poolTokenWei })
+          }
+        },
+        // maybe go ahead and perform a fetch of new positions now that this has resolved? 
+        // not sure if we can expect the api to have it ready as soon as conf 
+        // or should wait a few seconds...
+      ],
+      onUpdate
+  })
+
+  return {
+    blockExplorerLink: await this.createExplorerLink(txHash),
+    txId: txHash
+  }
+}
 
   @mutation setTolerance(tolerance: number) {
     this.slippageTolerance = tolerance;
@@ -1761,6 +1833,25 @@ export class EthBancorModule
 
   @mutation setBancorApiTokens(tokens: TokenPrice[]) {
     this.bancorApiTokens = tokens;
+  }
+
+  get protectedPositions() {
+
+    enum PositionType {
+      single,
+      double
+    }
+    interface ProtectedPosition {
+      type: PositionType,
+      relay: ViewRelay,
+      tokensCovered: ViewAmount[],
+      startTime: number;
+      endTime: number;
+      protectionPercent: number;
+    }
+    return [];
+
+    
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
@@ -2560,7 +2651,8 @@ export class EthBancorModule
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
           focusAvailable: false,
-          liquidityProtection: false,
+          liquidityProtection: true,
+          whitelisted: false,
           v2: true
         } as ViewRelay;
       });
@@ -2568,6 +2660,10 @@ export class EthBancorModule
 
   get traditionalRelays(): ViewRelay[] {
     const availableHistories = this.availableHistories;
+
+    const liquidityProtectionToken = getNetworkVariables(this.currentNetwork).liquidityProtectionToken;
+    const whiteListedPools = this.whiteListedPools;
+
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
       .filter(relay =>
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
@@ -2589,6 +2685,9 @@ export class EthBancorModule
           liqDepth = 0;
         }
 
+        const liquidityProtection = relay.reserves.some(reserve => compareString(reserve.contract, liquidityProtectionToken)) && relay.reserves.length == 2 && relay.reserves.every(reserve => reserve.reserveWeight == 0.5);
+        const whitelisted = whiteListedPools.some(whitelistedAnchor => compareString(whitelistedAnchor, relay.anchor.contract));
+
         return {
           id: relay.anchor.contract,
           reserves: relay.reserves.map(reserve => ({
@@ -2608,7 +2707,8 @@ export class EthBancorModule
           removeLiquiditySupported: true,
           focusAvailable: hasHistory,
           v2: false,
-          liquidityProtection: true
+          liquidityProtection,
+          whitelisted
         } as ViewRelay;
       });
   }

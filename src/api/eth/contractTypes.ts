@@ -238,7 +238,7 @@ export const buildLiquidityProtectionStoreContract = (
   protectedLiquidityId(owner: string): CallReturn<string>;
   protectedLiquidity(id: string): CallReturn<{ [key: string]: string }>;
   isPoolWhitelisted(anchorAddress: string): CallReturn<"0" | "1">;
-}> => buildContract("", "");
+}> => buildContract([], "");
 
 export const buildLiquidityProtectionContract = (
   contractAddress: string
@@ -259,4 +259,4 @@ export const buildLiquidityProtectionContract = (
   ) => ContractSendMethod;
   removeLiquidity: (dbId: string, ppmPercent: string) => ContractSendMethod;
   claimTokens: (startIndex: string, endIndex: string) => ContractSendMethod;
-}> => buildContract("", "");
+}> => buildContract([], "");
