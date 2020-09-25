@@ -36,9 +36,9 @@
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         <span class="text-uppercase">Stake your tokens</span>
-        <span class="float-right"
-          >Balance: {{ currentBalance }} {{ symbol }}</span
-        >
+        <span class="float-right cursor" @click="() => useMax()">
+          Balance: {{ currentBalance }} {{ symbol }}
+        </span>
       </div>
 
       <div class="input-currency mt-1">
@@ -170,6 +170,10 @@ export default class ModalStake extends Vue {
       this.step = "stake";
       this.stakeValue = 0;
     }
+  }
+
+  useMax() {
+    this.stakeValue = this.currentBalance
   }
 
   async mounted() {
