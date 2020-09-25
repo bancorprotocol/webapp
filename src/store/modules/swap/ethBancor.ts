@@ -108,7 +108,8 @@ import {
   buildV2Converter,
   buildContainerContract,
   buildConverterContract,
-  buildTokenContract
+  buildTokenContract,
+  buildLiquidityProtectionContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -127,6 +128,29 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
+
+
+const daysAsSeconds = (days: number): number => moment.duration(days, 'days').asSeconds() 
+const thirtyDaysInSeconds = daysAsSeconds(30)
+const oneHundredDaysInSeconds = daysAsSeconds(100)
+
+const calculateProtectionLevel = (startTimeSeconds: number, minimumDelaySeconds: number = thirtyDaysInSeconds, maximumDelaySeconds: number = oneHundredDaysInSeconds): number => {
+  const nowMoment = moment();
+  const nowSeconds = nowMoment.unix();
+
+  const timeElaspedSeconds = nowSeconds - startTimeSeconds;
+
+  if (timeElaspedSeconds < minimumDelaySeconds) return 0;
+  if (timeElaspedSeconds >= maximumDelaySeconds ) return 1;
+
+  const timeProgressedPastMinimum = timeElaspedSeconds - minimumDelaySeconds
+  const totalWaitingTime = maximumDelaySeconds - minimumDelaySeconds
+
+  return new BigNumber(timeProgressedPastMinimum).div(totalWaitingTime).toNumber();
+}
+
+const formatLockDuration = (seconds: number): string => moment.duration(seconds, 'seconds').humanize()
+
 
 const get_volumes = async (converter: string) =>
   bancorSubgraph(`
@@ -1716,6 +1740,13 @@ export class EthBancorModule
     };
   }
 
+
+  @action async fetchWhiteListedV1Pools() {
+
+    const liquidityProtection  = buildLiquidityProtectionContract('') 
+    const res = ['anchor1', 'anchor2', 'anchor3'];
+  }
+
   @mutation setTolerance(tolerance: number) {
     this.slippageTolerance = tolerance;
   }
@@ -2529,6 +2560,7 @@ export class EthBancorModule
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
           focusAvailable: false,
+          liquidityProtection: false,
           v2: true
         } as ViewRelay;
       });
@@ -2575,7 +2607,8 @@ export class EthBancorModule
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
           focusAvailable: hasHistory,
-          v2: false
+          v2: false,
+          liquidityProtection: true
         } as ViewRelay;
       });
   }
