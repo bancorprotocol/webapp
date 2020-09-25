@@ -49,25 +49,17 @@ export default class CollapsableBlock extends Vue {
 <style scoped lang="scss">
 @import "../../assets/_scss/custom/_variables";
 .card {
-  border: 1px solid #e7ebf1 !important;
+  border: 1px solid $block-header-gray !important;
   border-radius: 8px !important;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.04),
     0 1px 2px 0 rgba(15, 89, 209, 0.08) !important;
-  background-color: #f7f9fc !important;
+  background-color: $block-bg-blue !important;
 }
 .card-header {
   padding: 0 !important;
   margin-bottom: 0 !important;
-  background-color: #e7ebf1 !important;
+  background-color: $block-header-gray !important;
   border-bottom: none !important;
   border-radius: 8px 8px !important;
-}
-
-.border-bottom-light {
-  border-bottom: 1px solid $gray-border;
-}
-
-.border-bottom-dark {
-  border-bottom: 1px solid $gray-border-dark;
 }
 </style>
