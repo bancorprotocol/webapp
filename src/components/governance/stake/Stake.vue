@@ -1,6 +1,5 @@
 <template>
   <content-block title="Stake" :shadow-light="true">
-
     <div>
       <span
         class="text-uppercase font-size-12 font-w600"
@@ -23,11 +22,11 @@
 
     <div>
       <main-button
-          @click="stakeModal = true"
-          label="Stake Tokens"
-          :active="true"
-          :block="true"
-          class="font-size-14"
+        @click="stakeModal = true"
+        label="Stake Tokens"
+        :active="true"
+        :block="true"
+        class="font-size-14"
       />
       <modal-stake v-model="stakeModal" />
     </div>

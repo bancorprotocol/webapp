@@ -148,9 +148,11 @@
                 </div>
                 <div class="font-size-12 font-w500">
                   {{
-                    (((proposal.votes.for || proposal.votes.against) /
-                      proposal.totalVotes) *
-                      100).toFixed(2)
+                    (
+                      ((proposal.votes.for || proposal.votes.against) /
+                        proposal.totalVotes) *
+                      100
+                    ).toFixed(2)
                   }}%
                 </div>
               </div>
