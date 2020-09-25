@@ -8,6 +8,7 @@
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
+    @show="update"
   >
     <template slot="modal-header">
       <div class="w-100">
@@ -160,7 +161,7 @@ export default class ModalStake extends Vue {
 
   async doStake() {
     await vxm.ethGovernance.stake({
-      account: vxm.wallet.isAuthenticated,
+      account: this.account,
       amount: expandToken(this.stakeValue!.toString(), 18)
     });
   }
@@ -171,6 +172,10 @@ export default class ModalStake extends Vue {
       this.step = "stake";
       this.stakeValue = 0;
     }
+  }
+
+  get account() {
+    return vxm.wallet.isAuthenticated;
   }
 
   useMax() {
@@ -187,9 +192,11 @@ export default class ModalStake extends Vue {
   }
 
   @Watch("step")
+  @Watch("account")
+  @Watch("show")
   async update() {
     this.currentBalance = await vxm.ethGovernance.getBalance({
-      account: vxm.wallet.isAuthenticated
+      account: this.account
     });
   }
 

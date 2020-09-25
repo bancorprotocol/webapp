@@ -8,6 +8,7 @@
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
+    @show="update"
   >
     <template slot="modal-header">
       <div class="w-100">
@@ -159,7 +160,7 @@ export default class ModalUnstake extends Vue {
 
   async doUnstake() {
     await vxm.ethGovernance.unstake({
-      account: vxm.wallet.isAuthenticated,
+      account: this.account,
       amount: expandToken(this.unstakeValue!.toString(), 18)
     });
   }
@@ -172,10 +173,16 @@ export default class ModalUnstake extends Vue {
     }
   }
 
+  get account() {
+    return vxm.wallet.isAuthenticated;
+  }
+
   @Watch("step")
+  @Watch("account")
+  @Watch("show")
   async update() {
     this.currentStake = await vxm.ethGovernance.getVotes({
-      voter: vxm.wallet.isAuthenticated
+      voter: this.account
     });
   }
 
