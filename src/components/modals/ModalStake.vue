@@ -166,6 +166,7 @@ export default class ModalBase extends Vue {
 
   onHide() {
     this.show = false;
+    this.stakeValue = 0;
     if (this.step === "staked") {
       this.step = "stake";
     }
