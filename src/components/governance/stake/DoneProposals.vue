@@ -48,8 +48,11 @@
             {{ formatTime(proposal.endDate) }} UTC
           </div>
         </td>
+        <td @click="() => openProposal(proposal)" class="cursor">
+          <font-awesome-icon :icon="proposal.id === opened ? 'caret-up' : 'caret-down'" />
+        </td>
       </tr>
-      <tr :key="'r2-' + proposal.id" class="align-rows-cells">
+      <tr :key="'r2-' + proposal.id" class="align-rows-cells" v-if="proposal.id === opened">
         <td class="no-border"></td>
         <td>
           <div
@@ -102,7 +105,7 @@
             </span>
           </div>
         </td>
-        <td colspan="2">
+        <td colspan="3">
           <div class="buttons-container">
             <main-button
               :small="true"
@@ -152,6 +155,7 @@ import {
 export default class DoneProposals extends Vue {
   @Prop() proposals?: Proposal[];
   symbol: string = "";
+  opened?: number = undefined
 
   mockData: Proposal[] = [
     {
@@ -220,8 +224,8 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "Result",
-        maxWidth: "180px",
-        minWidth: "180px"
+        maxWidth: "140px",
+        minWidth: "140px"
       },
       {
         label: "Votes for",
@@ -240,6 +244,10 @@ export default class DoneProposals extends Vue {
         key: "startDate",
         maxWidth: "120px",
         minWidth: "120px"
+      },
+      {
+        label: '',
+        maxWidth: "10px"
       }
     ];
   }
@@ -281,6 +289,11 @@ export default class DoneProposals extends Vue {
 
   isApproved(proposal: Proposal) {
     return proposal.totalVotesFor > proposal.totalVotesAgainst;
+  }
+
+  openProposal(proposal: any) {
+    this.opened = proposal.id === this.opened ? undefined : proposal.id
+    this.$forceUpdate()
   }
 
   async mounted() {
