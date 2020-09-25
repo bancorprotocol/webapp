@@ -1,73 +1,74 @@
 <template>
-  <content-block title="Stake" :shadow-light="true">
-    <div>
+  <content-block title="Stake" :shadow-light="true" :px0="true">
+    <div class="p-3" :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'">
       <span
-        class="text-uppercase font-size-12 font-w600"
+        class="text-uppercase font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         Your Balance
       </span>
-      <div>{{ balance }} {{ symbol }}</div>
+      <div class="font-size-12 font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
+        {{ cleanNumber(balance) }} {{ symbol }}
+      </div>
     </div>
 
-    <div>
+    <div class="p-3" :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'">
       <span
-        class="text-uppercase font-size-12 font-w600"
+        class="text-uppercase font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         Currently Staked
       </span>
-      <div>{{ votes }} {{ symbol }}</div>
+      <div class="font-size-12 font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
+        {{ cleanNumber(votes) }} {{ symbol }}
+      </div>
     </div>
 
-    <div>
+    <div class="p-3 pb-0">
       <main-button
         @click="stakeModal = true"
         label="Stake Tokens"
         :active="true"
+        :large="true"
         :block="true"
-        class="font-size-14"
+        class="font-size-14 mb-3"
       />
       <modal-stake v-model="stakeModal" />
-    </div>
 
-    <div v-if="lock.for === 0 && votes > 0">
-      <main-button
-        @click="unstakeModal = true"
-        label="Unstake Tokens"
-        :active="false"
-        :block="true"
-        class="font-size-14"
-      />
-      <modal-unstake v-model="unstakeModal" />
-    </div>
+      <div v-if="lock.for === 0 && votes > 0">
+        <main-button
+          @click="unstakeModal = true"
+          label="Unstake Tokens"
+          :active="false"
+          :large="true"
+          :block="true"
+          class="font-size-14 mb-3"
+        />
+        <modal-unstake v-model="unstakeModal" />
+      </div>
 
-    <span v-if="lock.for > 0">
-      <remaining-time type="warn" :from="Date.now()" :to="lockedTill()" />
-    </span>
-
-    <div>
-      <span
-        class="font-size-12"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        Governance:
-        <a :href="getEtherscanUrl(governanceContractAddress)" target="_blank">
-          {{ shortAddress(governanceContractAddress) }}
-        </a>
+      <span v-if="lock.for > 0">
+        <remaining-time type="warn" :from="Date.now()" :to="lockedTill()" />
       </span>
-    </div>
 
-    <div>
-      <span
-        class="font-size-12"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        Token:
-        <a :href="getEtherscanUrl(tokenAddress)" target="_blank">
-          {{ shortAddress(tokenAddress) }}
-        </a>
-      </span>
+      <div
+        class="font-size-12 font-w400 text-center"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
+
+        <div>
+          Government contract
+          <a :href="getEtherscanUrl(governanceContractAddress)" class="font-w500" target="_blank">
+            {{ shortAddress(governanceContractAddress) }}
+          </a>
+        </div>
+
+        <div>
+          Government token
+          <a :href="getEtherscanUrl(tokenAddress)" class="font-w500" target="_blank">
+            {{ shortAddress(tokenAddress) }}
+          </a>
+        </div>
+      </div>
     </div>
   </content-block>
 </template>
@@ -149,6 +150,10 @@ export default class Stake extends Vue {
 
     console.log("lock", Date.now(), till);
     return till;
+  }
+
+  cleanNumber(number: string | number) {
+    return +(+number).toFixed(4)
   }
 
   @Watch("account")
