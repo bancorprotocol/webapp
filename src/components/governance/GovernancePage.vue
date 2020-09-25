@@ -8,7 +8,20 @@
     </b-col>
   </b-row>
   <span v-else>
-    Loading ...
+    <div class="d-flex justify-content-center align-items-center my-5">
+      <b-spinner
+        style="display: block; width: 2rem; height: 2rem;"
+        class="align-self-center align-middle"
+        :class="darkMode ? 'text-primary' : 'text-primary'"
+        label="Loading..."
+      ></b-spinner>
+      <h5
+        class="m-0 ml-3"
+        :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+      >
+        Just a moment ...
+      </h5>
+    </div>
   </span>
 </template>
 

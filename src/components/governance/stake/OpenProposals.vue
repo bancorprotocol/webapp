@@ -201,9 +201,22 @@
     </tr>
   </data-table>
 
-  <span v-else>
-    Loading ...
-  </span>
+  <div v-else>
+    <div class="d-flex justify-content-center align-items-center my-5">
+      <b-spinner
+        style="display: block; width: 2rem; height: 2rem;"
+        class="align-self-center align-middle"
+        :class="darkMode ? 'text-primary' : 'text-primary'"
+        label="Loading..."
+      ></b-spinner>
+      <h5
+        class="m-0 ml-3"
+        :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+      >
+        Just a moment ...
+      </h5>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
