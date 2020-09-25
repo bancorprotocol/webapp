@@ -22,11 +22,11 @@ export default class RemainingTime extends Vue {
   private remainingTime: number = 0;
   private interval: any;
 
-  get type() {
+  get type(): string {
     if (this.remainingPercentage <= 20) {
       return "info";
     } else if (this.remainingPercentage <= 90) {
-      return;
+      return "";
     } else {
       return "warn";
     }
