@@ -49,10 +49,16 @@
           </div>
         </td>
         <td @click="() => openProposal(proposal)" class="cursor">
-          <font-awesome-icon :icon="proposal.id === opened ? 'caret-up' : 'caret-down'" />
+          <font-awesome-icon
+            :icon="proposal.id === opened ? 'caret-up' : 'caret-down'"
+          />
         </td>
       </tr>
-      <tr :key="'r2-' + proposal.id" class="align-rows-cells" v-if="proposal.id === opened">
+      <tr
+        :key="'r2-' + proposal.id"
+        class="align-rows-cells"
+        v-if="proposal.id === opened"
+      >
         <td class="no-border"></td>
         <td>
           <div
@@ -155,7 +161,7 @@ import {
 export default class DoneProposals extends Vue {
   @Prop() proposals?: Proposal[];
   symbol: string = "";
-  opened?: number = undefined
+  opened?: number = undefined;
 
   mockData: Proposal[] = [
     {
@@ -246,7 +252,7 @@ export default class DoneProposals extends Vue {
         minWidth: "120px"
       },
       {
-        label: '',
+        label: "",
         maxWidth: "10px"
       }
     ];
@@ -292,8 +298,8 @@ export default class DoneProposals extends Vue {
   }
 
   openProposal(proposal: any) {
-    this.opened = proposal.id === this.opened ? undefined : proposal.id
-    this.$forceUpdate()
+    this.opened = proposal.id === this.opened ? undefined : proposal.id;
+    this.$forceUpdate();
   }
 
   async mounted() {

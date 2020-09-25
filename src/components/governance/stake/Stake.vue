@@ -1,25 +1,37 @@
 <template>
   <content-block title="Stake" :shadow-light="true" :px0="true">
-    <div class="p-3" :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'">
+    <div
+      class="p-3"
+      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+    >
       <span
         class="text-uppercase font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         Your Balance
       </span>
-      <div class="font-size-12 font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
+      <div
+        class="font-size-12 font-w500"
+        :class="darkMode ? 'text-dark' : 'text-light'"
+      >
         {{ cleanNumber(balance) }} {{ symbol }}
       </div>
     </div>
 
-    <div class="p-3" :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'">
+    <div
+      class="p-3"
+      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+    >
       <span
         class="text-uppercase font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         Currently Staked
       </span>
-      <div class="font-size-12 font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
+      <div
+        class="font-size-12 font-w500"
+        :class="darkMode ? 'text-dark' : 'text-light'"
+      >
         {{ cleanNumber(votes) }} {{ symbol }}
       </div>
     </div>
@@ -53,18 +65,26 @@
 
       <div
         class="font-size-12 font-w400 text-center"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
-
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
         <div>
           Government contract
-          <a :href="getEtherscanUrl(governanceContractAddress)" class="font-w500" target="_blank">
+          <a
+            :href="getEtherscanUrl(governanceContractAddress)"
+            class="font-w500"
+            target="_blank"
+          >
             {{ shortAddress(governanceContractAddress) }}
           </a>
         </div>
 
         <div>
           Government token
-          <a :href="getEtherscanUrl(tokenAddress)" class="font-w500" target="_blank">
+          <a
+            :href="getEtherscanUrl(tokenAddress)"
+            class="font-w500"
+            target="_blank"
+          >
             {{ shortAddress(tokenAddress) }}
           </a>
         </div>
@@ -153,7 +173,7 @@ export default class Stake extends Vue {
   }
 
   cleanNumber(number: string | number) {
-    return +(+number).toFixed(4)
+    return +(+number).toFixed(4);
   }
 
   @Watch("account")

@@ -174,12 +174,12 @@ export default class ModalStake extends Vue {
   }
 
   useMax() {
-    this.stakeValue = this.currentBalance
+    this.stakeValue = this.currentBalance;
   }
 
   isNumber(event) {
     const char = event.keyCode;
-    if ((char > 31 && (char < 48 || char > 57)) && char !== 46) {
+    if (char > 31 && (char < 48 || char > 57) && char !== 46) {
       event.preventDefault();
     } else {
       return true;
