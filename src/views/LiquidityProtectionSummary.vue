@@ -21,9 +21,7 @@
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          You can protect your token pools with our special insurance for
-          impermanent loss by simpy adding insurance to each of your
-          transactions.
+          Add impermanent loss protection to any of your pool token stakings
         </p>
       </b-col>
     </b-row>
@@ -127,6 +125,7 @@
 
             <template v-slot:cell(actionButtons)="data">
               <b-btn
+                @click="goToWithdraw(data.item.stake.poolId)"
                 :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
                 class="table-button"
               >
@@ -180,6 +179,13 @@ export default class LiquidityProtectionSummary extends Vue {
     else return { percentage: "100%", timeLeft: "Full coverage achieved" };
   }
 
+  goToWithdraw(id: string) {
+    this.$router.push({
+      name: "ProtectionAction",
+      params: { action: "withdraw", id }
+    });
+  }
+
   formatDate(unixTime: number) {
     return formatUnixTime(unixTime);
   }
@@ -206,7 +212,7 @@ export default class LiquidityProtectionSummary extends Vue {
       {
         stake: {
           amount: 5123.7865,
-          poolId: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+          poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
           usdValue: 1146.86
         },
         protectedAmount: {
