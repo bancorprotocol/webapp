@@ -33,11 +33,11 @@
 
     <div v-if="lock.for === 0 && votes > 0">
       <main-button
-          @click="unstakeModal = true"
-          label="Unstake Tokens"
-          :active="false"
-          :block="true"
-          class="font-size-14"
+        @click="unstakeModal = true"
+        label="Unstake Tokens"
+        :active="false"
+        :block="true"
+        class="font-size-14"
       />
       <modal-unstake v-model="unstakeModal" />
     </div>
@@ -87,7 +87,7 @@ import RemainingTime from "@/components/common/RemainingTime.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import ModalStake from "@/components/modals/ModalStake.vue";
 import { blockTime } from "@/store/modules/governance/ethGovernance";
-import ModalUnstake from "@/components/modals/ModalUnstake.vue"
+import ModalUnstake from "@/components/modals/ModalUnstake.vue";
 
 @Component({
   components: {
