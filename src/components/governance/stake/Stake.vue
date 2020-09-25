@@ -1,15 +1,5 @@
 <template>
   <content-block title="Stake" :shadow-light="true">
-    <div>
-      <main-button
-        @click="stakeModal = true"
-        label="Open stake modal"
-        :active="true"
-        :block="true"
-        class="font-size-14"
-      />
-      <modal-stake v-model="stakeModal" />
-    </div>
 
     <div>
       <span
@@ -31,13 +21,16 @@
       <div>{{ votes }} {{ symbol }}</div>
     </div>
 
-    <main-button
-      @click="stake"
-      label="Stake Tokens"
-      :active="true"
-      :block="true"
-      class="font-size-14"
-    />
+    <div>
+      <main-button
+          @click="stakeModal = true"
+          label="Stake Tokens"
+          :active="true"
+          :block="true"
+          class="font-size-14"
+      />
+      <modal-stake v-model="stakeModal" />
+    </div>
 
     <main-button
       @click="unstake"
@@ -148,17 +141,6 @@ export default class Stake extends Vue {
     return shortenEthAddress(address);
   }
 
-  stake() {
-    vxm.ethGovernance
-      .stake({
-        account: this.account,
-        amount: expandToken(2.2, 18)
-      })
-      .then(() => {
-        this.update();
-      });
-  }
-
   unstake() {
     vxm.ethGovernance
       .unstake({
@@ -178,6 +160,7 @@ export default class Stake extends Vue {
   }
 
   @Watch("account")
+  @Watch("stakeModal")
   async update() {
     this.balance = formatNumber(
       await vxm.ethGovernance.getBalance({
