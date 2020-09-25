@@ -1,9 +1,6 @@
 <template>
   <div>
-    <div
-      class="block-rounded rounded px-3 py-2"
-      :class="darkMode ? 'border-gray-dark' : 'border-gray'"
-    >
+    <div class="block-rounded rounded px-3 py-2" :class="blockStyle">
       <slot />
     </div>
   </div>
@@ -15,6 +12,14 @@ import { vxm } from "@/store/";
 
 @Component
 export default class GrayBorderBlock extends Vue {
+  @Prop({ default: false }) grayBg!: boolean;
+
+  get blockStyle() {
+    if (this.grayBg)
+      return this.darkMode ? "block-light-blue-dark" : "block-light-blue-light";
+    else return this.darkMode ? "border-gray-dark" : "border-gray";
+  }
+
   get darkMode() {
     return vxm.general.darkMode;
   }

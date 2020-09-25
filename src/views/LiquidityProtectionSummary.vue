@@ -9,14 +9,19 @@
           >
             Liquidity Protection
           </span>
+
+          <b-btn
+            variant="primary"
+            class="float-right"
+            :to="{ name: 'AddProtection' }"
+            >Stake</b-btn
+          >
         </div>
         <p
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          You can protect your token pools with our special insurance for
-          impermanent loss by simpy adding insurance to each of your
-          transactions.
+          Add impermanent loss protection to any of your pool token stakings
         </p>
       </b-col>
     </b-row>
@@ -120,6 +125,7 @@
 
             <template v-slot:cell(actionButtons)="data">
               <b-btn
+                @click="goToWithdraw(data.item.stake.poolId)"
                 :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
                 class="table-button"
               >
@@ -142,7 +148,7 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
-import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquidity.vue";
+import ProtectableLiquidity from "@/components/protection/ProtectableLiquidity.vue";
 
 @Component({
   components: {
@@ -152,7 +158,7 @@ import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquid
     ContentBlock
   }
 })
-export default class LiquidityProtection extends Vue {
+export default class LiquidityProtectionSummary extends Vue {
   search: string = "";
 
   poolName(id: string): string {
@@ -171,6 +177,13 @@ export default class LiquidityProtection extends Vue {
     if (parseInt(percentage) < 100)
       return { percentage, timeLeft: timeLeft + " left till full coverage" };
     else return { percentage: "100%", timeLeft: "Full coverage achieved" };
+  }
+
+  goToWithdraw(id: string) {
+    this.$router.push({
+      name: "ProtectionAction",
+      params: { action: "withdraw", id }
+    });
   }
 
   formatDate(unixTime: number) {
@@ -199,7 +212,7 @@ export default class LiquidityProtection extends Vue {
       {
         stake: {
           amount: 5123.7865,
-          poolId: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+          poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
           usdValue: 1146.86
         },
         protectedAmount: {
