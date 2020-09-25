@@ -17,14 +17,16 @@
           {{ isApproved(proposal) ? "Approved" : "Rejected" }}
         </td>
         <td>
-          <div class="font-size-14 font-w500">{{ proposal.totalVotesFor }}</div>
+          <div class="font-size-14 font-w500">
+            {{ proposal.totalVotesFor }} {{ symbol }}
+          </div>
           <div class="font-size-12 font-w500 result result--for">
             {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
           </div>
         </td>
         <td>
           <div class="font-size-14 font-w500">
-            {{ proposal.totalVotesAgainst }}
+            {{ proposal.totalVotesAgainst }} {{ symbol }}
           </div>
           <div class="font-size-12 font-w500 result result--against">
             {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
@@ -149,6 +151,7 @@ import {
 })
 export default class DoneProposals extends Vue {
   @Prop() proposals?: Proposal[];
+  symbol: string = "";
 
   mockData: Proposal[] = [
     {
@@ -278,6 +281,10 @@ export default class DoneProposals extends Vue {
 
   isApproved(proposal: Proposal) {
     return proposal.totalVotesFor > proposal.totalVotesAgainst;
+  }
+
+  async mounted() {
+    this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }
 </script>

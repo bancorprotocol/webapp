@@ -138,7 +138,8 @@
                   Voted Amount
                 </div>
                 <div class="font-size-12 font-w500">
-                  {{ proposal.votes.for || proposal.votes.against }} gBTN
+                  {{ proposal.votes.for || proposal.votes.against }}
+                  {{ symbol }}
                 </div>
               </div>
               <div class="voted-box__row">
@@ -147,9 +148,9 @@
                 </div>
                 <div class="font-size-12 font-w500">
                   {{
-                    ((proposal.votes.for || proposal.votes.against) /
+                    (((proposal.votes.for || proposal.votes.against) /
                       proposal.totalVotes) *
-                      100
+                      100).toFixed(2)
                   }}%
                 </div>
               </div>
@@ -233,6 +234,7 @@ import {
 export default class OpenProposals extends Vue {
   @Prop() proposals?: Proposal[];
   @Prop() update?: any;
+  symbol: string = "";
 
   get fields(): ViewTableFields[] {
     console.log("proposals", this.proposals);
@@ -291,6 +293,10 @@ export default class OpenProposals extends Vue {
     });
 
     await this.update();
+  }
+
+  async mounted() {
+    this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }
 </script>

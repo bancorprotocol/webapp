@@ -36,7 +36,9 @@
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         <span class="text-uppercase">Stake your tokens</span>
-        <span class="float-right">Balance: {{ currentBalance }} gBTN</span>
+        <span class="float-right"
+          >Balance: {{ currentBalance }} {{ symbol }}</span
+        >
       </div>
 
       <div class="input-currency mt-1">
@@ -59,7 +61,7 @@
             src="@/assets/media/logos/bancor-white2.png"
           />
 
-          <span class=" font-size-14 font-w500">gBNT</span>
+          <span class=" font-size-14 font-w500">{{ symbol }}</span>
         </div>
       </div>
 
@@ -92,7 +94,7 @@
     >
       <b-spinner variant="primary"></b-spinner>
       <h3 class="font-size-lg mt-4">Waiting For Confirmation</h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} gBNT</div>
+      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
       <div
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -108,7 +110,7 @@
     >
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
       <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} gBNT</div>
+      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
       <a target="_blank" class="text-primary font-w500 cursor"
         >View on Etherscan</a
       >
@@ -148,6 +150,7 @@ export default class ModalBase extends Vue {
   currentBalance: number = 120;
   stakeValue?: number = "" as any;
   step: "stake" | "staking" | "staked" = "stake";
+  symbol: string = "";
 
   get darkMode(): boolean {
     return vxm.general.darkMode;
@@ -160,6 +163,10 @@ export default class ModalBase extends Vue {
 
   onHide() {
     this.show = false;
+  }
+
+  async mounted() {
+    this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }
 </script>

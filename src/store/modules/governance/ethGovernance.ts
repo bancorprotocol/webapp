@@ -51,6 +51,7 @@ export class EthereumGovernance extends VuexModule.With({
   tokenContract: any = undefined;
 
   isLoaded: boolean = false;
+  symbol?: string;
 
   @mutation
   setContracts({ governance, token }: { governance: any; token: any }) {
@@ -63,6 +64,11 @@ export class EthereumGovernance extends VuexModule.With({
       this.tokenContract,
       this.governanceContract
     );
+  }
+
+  @mutation
+  setSymbol(symbol: string) {
+    this.symbol = symbol;
   }
 
   @action
@@ -87,7 +93,13 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async getSymbol(): Promise<string> {
-    return await this.tokenContract.methods.symbol().call();
+    if (!this.symbol) {
+      const symbol = await this.tokenContract.methods.symbol().call();
+      this.setSymbol(symbol);
+      return symbol;
+    } else {
+      return this.symbol;
+    }
   }
 
   @action
