@@ -1,13 +1,11 @@
 <template>
-  <content-block :shadow="true">
-    <template slot="header">
-      <pool-actions-header
-        :title="(withdrawLiquidity ? 'Remove' : 'Add') + ' Liquidity'"
-        :v2="pool.v2"
-        @back="back"
-      />
-    </template>
-
+  <content-block
+    :shadow="true"
+    :title="title"
+    :back-button="true"
+    @back="back"
+    :version="version"
+  >
     <div v-if="!withdrawLiquidity">
       <pool-actions-add-v1 v-if="!pool.v2" :pool="pool" />
       <pool-actions-add-v2 v-else :pool="pool" />
@@ -25,7 +23,6 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { ViewRelay } from "@/types/bancor";
-import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import PoolActionsAddV1 from "@/components/pool/PoolActionsAddV1.vue";
 import PoolActionsAddV2 from "@/components/pool/PoolActionsAddV2.vue";
 import PoolActionsRemoveV1 from "@/components/pool/PoolActionsRemoveV1.vue";
@@ -37,12 +34,19 @@ import PoolActionsRemoveV2 from "@/components/pool/PoolActionsRemoveV2.vue";
     PoolActionsRemoveV1,
     PoolActionsAddV2,
     PoolActionsAddV1,
-    PoolActionsHeader,
     ContentBlock
   }
 })
 export default class PoolActions extends Vue {
   withdrawLiquidity = false;
+
+  get title() {
+    return (this.withdrawLiquidity ? "Remove" : "Add") + " Liquidity";
+  }
+
+  get version() {
+    return this.pool.v2 ? 2 : 1;
+  }
 
   back() {
     this.$router.push({ name: "Pool" });

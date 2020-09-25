@@ -11,7 +11,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
 @Component
-export default class SFCTemplate extends Vue {
+export default class VersionBadge extends Vue {
   @Prop() version!: 1 | 2;
 
   get versionString() {

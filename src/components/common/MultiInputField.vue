@@ -24,7 +24,6 @@
         ]"
         v-model="text"
         :placeholder="placeholder"
-        class="mb-1"
         :type="type"
         :style="styleInput"
       />

@@ -1,5 +1,11 @@
 <template>
-  <content-block title="Stake" :shadow="true" class="mb-3">
+  <content-block
+    title="Stake"
+    :shadow="true"
+    :back-button="true"
+    @back="back"
+    class="mb-3"
+  >
     <div class="mt-3">
       <main-button
         @click="openModal('v2')"
@@ -56,6 +62,10 @@ export default class AddProtectionHome extends Vue {
       params: { action: "add", id }
     });
     this.modal = false;
+  }
+
+  back() {
+    this.$router.push({ name: "LiqProtection" });
   }
 
   get darkMode() {
