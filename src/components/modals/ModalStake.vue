@@ -177,7 +177,7 @@ export default class ModalStake extends Vue {
     this.stakeValue = this.currentBalance;
   }
 
-  isNumber(event) {
+  isNumber(event: KeyboardEvent) {
     const char = event.keyCode;
     if (char > 31 && (char < 48 || char > 57) && char !== 46) {
       event.preventDefault();
