@@ -1,5 +1,5 @@
 <template>
-  <data-table :items="proposalsToDisplay" :fields="fields" default-sort="to">
+  <data-table :items="proposalsToDisplay" :fields="fields" default-sort="to" :hidePagination="true">
     <template
       v-for="proposal in proposalsToDisplay"
       class="font-w500 font-size-14 aling-rows-cells"

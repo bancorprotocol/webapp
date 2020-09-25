@@ -4,6 +4,7 @@
     :items="proposals"
     :fields="fields"
     default-sort="to"
+    :hidePagination="true"
   >
     <tr
       v-for="proposal in proposals"

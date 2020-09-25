@@ -14,6 +14,7 @@
     </table>
 
     <table-pagination
+      v-if="!hidePagination"
       :current-page.sync="currentPage"
       @update:currentPage="modifyItems"
       :rowCount.sync="modifiedItems.length"
@@ -48,6 +49,7 @@ export default class DataTable extends Vue {
   @Prop() defaultSort!: string;
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
+  @Prop({ default: false }) hidePagination!: boolean;
 
   sortBy: string = this.defaultSort;
   descOrder: boolean = this.defaultOrder === "desc";
