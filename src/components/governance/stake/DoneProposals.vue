@@ -55,14 +55,14 @@
         </td>
         <td @click="() => openProposal(proposal)" class="cursor">
           <font-awesome-icon
-            :icon="proposal.id === opened ? 'caret-up' : 'caret-down'"
+            :icon="opened && proposal.id === opened ? 'caret-up' : 'caret-down'"
           />
         </td>
       </tr>
       <tr
         :key="'r2-' + proposal.id"
         class="align-rows-cells"
-        v-if="proposal.id === opened"
+        v-if="opened && proposal.id === opened"
       >
         <td class="no-border"></td>
         <td>
