@@ -1,5 +1,5 @@
 import { createModule, action, mutation } from "vuex-class-component";
-import { web3, EthNetworks } from "@/api/helpers";
+import { web3 } from "@/api/helpers";
 import { ABIBancorGovernance, ABISmartToken } from "@/api/eth/ethAbis";
 import { EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
@@ -103,7 +103,7 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getVotes({ voter }: { voter: EthAddress }): Promise<string> {
+  async getVotes({ voter }: { voter: EthAddress }): Promise<number> {
     if (!voter) throw new Error("Cannot get votes without voter address");
 
     console.log("getting votes");
@@ -111,11 +111,11 @@ export class EthereumGovernance extends VuexModule.With({
       Number(await this.tokenContract.methods.decimals().call()),
       this.governanceContract.methods.votesOf(voter).call()
     ]);
-    return shrinkToken(weiVotes, decimals);
+    return parseFloat(shrinkToken(weiVotes, decimals));
   }
 
   @action
-  async getBalance({ account }: { account: EthAddress }): Promise<string> {
+  async getBalance({ account }: { account: EthAddress }): Promise<number> {
     if (!account) throw new Error("Cannot get balance without address");
 
     console.log("getting balance");
@@ -123,7 +123,7 @@ export class EthereumGovernance extends VuexModule.With({
       this.tokenContract.methods.decimals().call() as string,
       this.tokenContract.methods.balanceOf(account).call() as string
     ]);
-    return shrinkToken(weiBalance, Number(decimals));
+    return parseFloat(shrinkToken(weiBalance, Number(decimals)));
   }
 
   @action

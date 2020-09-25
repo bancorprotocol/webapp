@@ -14,7 +14,7 @@
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        {{ cleanNumber(balance) }} {{ symbol }}
+        {{ balance }} {{ symbol }}
       </div>
     </div>
 
@@ -32,7 +32,7 @@
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        {{ cleanNumber(votes) }} {{ symbol }}
+        {{ votes }} {{ symbol }}
       </div>
     </div>
 
@@ -102,7 +102,7 @@ import {
   etherscanUrl,
   governanceContractAddress
 } from "@/store/modules/governance/ethGovernance";
-import { formatNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -124,8 +124,8 @@ export default class Stake extends Vue {
   stakeModal = false;
   unstakeModal = false;
 
-  votes: string = "";
-  balance: string = "";
+  votes: number = 0;
+  balance: number = 0;
   symbol: string = "";
 
   lock: {
@@ -172,25 +172,17 @@ export default class Stake extends Vue {
     return till;
   }
 
-  cleanNumber(number: string | number) {
-    return +(+number).toFixed(4);
-  }
-
   @Watch("account")
   @Watch("stakeModal")
   @Watch("unstakeModal")
   async update() {
-    this.balance = formatNumber(
-      await vxm.ethGovernance.getBalance({
-        account: this.account
-      })
-    );
+    this.balance = await vxm.ethGovernance.getBalance({
+      account: this.account
+    });
 
-    this.votes = formatNumber(
-      await vxm.ethGovernance.getVotes({
-        voter: this.account
-      })
-    );
+    this.votes = await vxm.ethGovernance.getVotes({
+      voter: this.account
+    });
 
     this.lock = await vxm.ethGovernance.getLock({
       account: this.account

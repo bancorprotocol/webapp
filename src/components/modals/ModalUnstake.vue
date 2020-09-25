@@ -128,7 +128,7 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { expandToken } from "@/api/eth/helpers";
@@ -172,13 +172,16 @@ export default class ModalUnstake extends Vue {
     }
   }
 
+  @Watch("step")
+  async update() {
+    this.currentStake = await vxm.ethGovernance.getVotes({
+      voter: vxm.wallet.isAuthenticated
+    });
+  }
+
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
-    this.currentStake = Number(
-      await vxm.ethGovernance.getVotes({
-        voter: vxm.wallet.isAuthenticated
-      })
-    );
+    await this.update();
   }
 }
 </script>
