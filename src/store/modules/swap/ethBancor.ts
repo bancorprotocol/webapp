@@ -32,7 +32,11 @@ import {
   ViewRemoveEvent,
   ViewAddEvent,
   ViewAmountWithMeta,
-  FocusPoolRes, ProtectLiquidityParams, ProtectedLiquidity
+  FocusPoolRes, 
+  ProtectLiquidityParams,
+  ProtectedLiquidity,
+  PositionType,
+  ProtectedViewPosition,
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -129,6 +133,7 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
+import { timeout } from 'blend-promise-utils'
 
 
 const daysAsSeconds = (days: number): number => moment.duration(days, 'days').asSeconds() 
@@ -136,8 +141,7 @@ const thirtyDaysInSeconds = daysAsSeconds(30)
 const oneHundredDaysInSeconds = daysAsSeconds(100)
 
 const calculateProtectionLevel = (startTimeSeconds: number, minimumDelaySeconds: number = thirtyDaysInSeconds, maximumDelaySeconds: number = oneHundredDaysInSeconds): number => {
-  const nowMoment = moment();
-  const nowSeconds = nowMoment.unix();
+  const nowSeconds = moment().unix();
 
   const timeElaspedSeconds = nowSeconds - startTimeSeconds;
 
@@ -149,9 +153,6 @@ const calculateProtectionLevel = (startTimeSeconds: number, minimumDelaySeconds:
 
   return new BigNumber(timeProgressedPastMinimum).div(totalWaitingTime).toNumber();
 }
-
-const formatLockDuration = (seconds: number): string => moment.duration(seconds, 'seconds').humanize()
-
 
 const get_volumes = async (converter: string) =>
   bancorSubgraph(`
@@ -1545,6 +1546,12 @@ interface RegisteredContracts {
   BancorConverterRegistry: string;
 }
 
+interface Contracts extends RegisteredContracts { 
+  liquidityProtection: string;
+  liquidityProtectionStore: string;
+  rootContractRegistry: string;
+}
+
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
   new Decimal(percent).times(existingSupply).toFixed(0);
 
@@ -1721,9 +1728,12 @@ export class EthBancorModule
   bntUsdPrice: number = 0;
   tokenMeta: TokenMeta[] = [];
   availableHistories: string[] = [];
-  contracts: RegisteredContracts = {
+  contracts: Contracts = {
     BancorNetwork: "",
-    BancorConverterRegistry: ""
+    BancorConverterRegistry: "",
+    liquidityProtection: '',
+    liquidityProtectionStore: '',
+    rootContractRegistry: ''
   };
   initiated: boolean = false;
   failedPools: string[] = [];
@@ -1763,7 +1773,7 @@ export class EthBancorModule
 
 
   @action async protectLiquidityTx({ anchorAddress, amountWei } : { anchorAddress: string, amountWei: string }) {
-    const liquidityProtectionAddress = ''
+    const liquidityProtectionAddress = this.contracts.liquidityProtection;
     const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
     return this.resolveTxOnConfirmation({
       tx: contract.methods.protectLiquidity(
@@ -1774,7 +1784,7 @@ export class EthBancorModule
   }
 
   @action async unProtectLiquidityTx({ id1, id2 }: { id1: string; id2: string }) {
-    const liquidityProtectionAddress = ''
+    const liquidityProtectionAddress = this.contracts.liquidityProtection
     const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
     return this.resolveTxOnConfirmation({
       tx: contract.methods.unprotectLiquidity(id1, id2)
@@ -1789,23 +1799,22 @@ export class EthBancorModule
   }
 
   @action async fetchProtectionPositions() {
-    const liquidityStore = '';
+    const liquidityStore = this.contracts.liquidityProtectionStore
     const contract = buildLiquidityProtectionStoreContract(liquidityStore);
     const owner = this.isAuthenticated
-    const idCount = await contract.methods.protectedLiquidityCount(owner).call()
+    const idCount = Number(await contract.methods.protectedLiquidityCount(owner).call())
     const ids = await contract.methods.protectedLiquidityIds(owner).call();
     const allPositions = await Promise.all(ids.map(id => protectionById(liquidityStore, id)));
-    this.setProtectedPositions(allPositions)
+    if (allPositions.length !== idCount) throw new Error("ID count does not match returned positions");
+    this.setProtectedPositions(allPositions);
     return allPositions;
-    // # poolTokenRate
-    // is this public
-
   }
 
   @action async protectLiquidity({ amount, onUpdate }: ProtectLiquidityParams): Promise<TxResponse> {
+
+
     
-    const liquidityProtectionContractAddress = ''
-    const liquidityProtection = buildLiquidityProtectionContract(liquidityProtectionContractAddress);
+    const liquidityProtectionContractAddress = this.contracts.liquidityProtection;
 
     const pool = await this.traditionalRelayById(amount.id);
     const poolToken = pool.anchor;
@@ -1864,21 +1873,65 @@ export class EthBancorModule
 
   get protectedPositions() {
 
-    enum PositionType {
-      single,
-      double
-    }
-    interface ProtectedPosition {
-      type: PositionType,
-      relay: ViewRelay,
-      tokensCovered: ViewAmount[],
-      startTime: number;
-      endTime: number;
-      protectionPercent: number;
-    }
-    return [];
+    const minimumProtection = 0;
+    const maxProtectionDelay = 0;
 
-    
+    const allPositions = this.protectedPositionsArr.filter(position => compareString(position.owner, this.isAuthenticated))
+
+    const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) => compareString(a.poolToken, b.poolToken) && a.timestamp == b.timestamp && compareString(a.owner, b.owner);
+    const seperatedEntries = uniqWith(allPositions, samePointOfEntry);
+
+    const binded = seperatedEntries.map(entry => allPositions.filter(position => samePointOfEntry(position, entry)));
+    const allFoundAtLeastOne = binded.every(entries => entries.length > 0 && entries.length < 3);
+    if (!allFoundAtLeastOne) throw new Error("Failed finding at least one entry");
+
+    const [singlesArr, doublesArr] = partition(binded, entries => entries.length == 1);
+
+    const reviewedSingles = singlesArr.map(x => x[0]).map((singleEntry): ProtectedViewPosition => {
+      const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor => compareString(singleEntry.poolToken, whitelistedAnchor));
+
+      const startTime = Number(singleEntry.timestamp)
+      return {
+        whitelisted: isWhiteListed,
+        endTime: startTime,
+        startTime,
+        protectionPercent: calculateProtectionLevel(startTime),
+        relay: this.relay(singleEntry.poolToken),
+        tokensCovered: [{ id: singleEntry.reserveToken, amount: shrinkToken(singleEntry.reserveAmount, this.token(singleEntry.reserveToken).precision) }],
+        type: PositionType.single
+      }
+    })
+
+    const reviewedDoubles = doublesArr.flatMap((doubles): ProtectedViewPosition[] | ProtectedViewPosition => {
+      const first = doubles[0]
+      const commonPoolToken = first.poolToken;
+      const commonViewRelay = this.relay(commonPoolToken);
+      const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor => compareString(commonPoolToken, whitelistedAnchor));
+      
+      const startTime = Number(first.timestamp)
+      if (isWhiteListed) {
+        return doubles.map(entry => ({
+          type: PositionType.single,
+          whitelisted: isWhiteListed,
+          relay: commonViewRelay,
+          endTime: startTime,
+          startTime,
+          protectionPercent: calculateProtectionLevel(startTime),
+          tokensCovered: [{ id: entry.reserveToken, amount: shrinkToken(entry.reserveAmount, this.token(entry.reserveToken).precision)}]
+        }))
+      } else {
+        return {
+          type: PositionType.double,
+          endTime: startTime,
+          startTime,
+          protectionPercent: calculateProtectionLevel(startTime),
+          relay: commonViewRelay,
+          tokensCovered: doubles.map(entry => ({ id: entry.reserveToken, amount: shrinkToken(entry.reserveAmount, this.token(entry.reserveToken).precision) }))
+        } as ProtectedViewPosition
+      }
+    })
+
+    return [...reviewedDoubles, ...reviewedSingles];
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
@@ -2619,7 +2672,7 @@ export class EthBancorModule
       this.tokenBalances.find(token => compareString(token.id, tokenId));
   }
 
-  get token(): (arg0: string) => any {
+  get token(): (arg0: string) => ViewToken {
     return (id: string) =>
       findOrThrow(
         this.tokens,
@@ -4021,32 +4074,12 @@ export class EthBancorModule
       contractRegistry
     );
 
-    const bytesKeys = Object.keys(hardCodedBytes);
-    const bytesList = Object.values(hardCodedBytes);
+    const arr = toPairs(hardCodedBytes) as [label: string, ascii: string][]
 
     try {
-      const contractAddresses = await Promise.race([
-        Promise.all(
-          bytesList.map(bytes =>
-            registryContract.methods.addressOf(bytes).call()
-          )
-        ),
-        wait(10000).then(() => {
-          throw new Error(
-            "Failed to resolve the Ethereum Bancor Contracts, BancorNetwork, BancorConverterRegistry, BancorX and BancorConverterFactory."
-          );
-        })
-      ]);
+      const contractAddresses = await Promise.all(arr.map(async ([label, ascii]) => [label, await registryContract.methods.addressOf(ascii).call()] as [string, string]))
 
-      const zipped = zip(bytesKeys, contractAddresses) as [string, string][];
-
-      const object = zipped.reduce(
-        (acc, [key, value]) => ({
-          ...acc,
-          [key!]: value
-        }),
-        {}
-      ) as RegisteredContracts;
+      const object = fromPairs(contractAddresses) as unknown as RegisteredContracts;
       this.setContractAddresses(object);
       return object;
     } catch (e) {

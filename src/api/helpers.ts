@@ -950,6 +950,8 @@ export interface ConverterV2Row {
   }[];
 }
 
+export const formatLockDuration = (seconds: number): string =>
+  moment.duration(seconds, "seconds").humanize();
 interface BaseSymbol {
   symbol: string;
   precision: number;

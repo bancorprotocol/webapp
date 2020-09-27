@@ -127,7 +127,7 @@ export const existingPool = async (
 export const protectionById = async (
   storeContract: string,
   protectionId: string
-) => {
+): Promise<ProtectedLiquidity> => {
   const contract = buildLiquidityProtectionStoreContract(storeContract);
   const res = await contract.methods.protectedLiquidity(protectionId).call();
   const keys = [
@@ -140,7 +140,9 @@ export const protectionById = async (
     "reserveRateD",
     "timestamp"
   ];
-  return (fromPairs(
-    keys.map((key, index) => [key, res[index]])
-  ) as unknown) as ProtectedLiquidity;
+  const base = fromPairs(keys.map((key, index) => [key, res[index]]));
+  return {
+    ...base,
+    id: protectionId
+  } as ProtectedLiquidity;
 };
