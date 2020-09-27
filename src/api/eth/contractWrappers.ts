@@ -2,9 +2,12 @@ import {
   buildTokenContract,
   buildNetworkContract,
   buildV2Converter,
-  buildRegistryContract
+  buildRegistryContract,
+  buildLiquidityProtectionStoreContract
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
+import { fromPairs } from "lodash";
+import { ProtectedLiquidity } from "@/types/bancor";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -119,4 +122,25 @@ export const existingPool = async (
 
   if (res == zeroAddress) return false;
   return res;
+};
+
+export const protectionById = async (
+  storeContract: string,
+  protectionId: string
+) => {
+  const contract = buildLiquidityProtectionStoreContract(storeContract);
+  const res = await contract.methods.protectedLiquidity(protectionId).call();
+  const keys = [
+    "owner",
+    "poolToken",
+    "reserveToken",
+    "poolAmount",
+    "reserveAmount",
+    "reserveRateN",
+    "reserveRateD",
+    "timestamp"
+  ];
+  return (fromPairs(
+    keys.map((key, index) => [key, res[index]])
+  ) as unknown) as ProtectedLiquidity;
 };

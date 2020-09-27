@@ -75,6 +75,16 @@ export interface ViewAmountWithMeta extends ViewAmount {
 
 type OnUpdate = (index: number, sections: Section[]) => void;
 
+export interface ProtectedLiquidity {
+  owner: string;
+  poolToken: string;
+  reserveToken: string;
+  poolAmount: string;
+  reserveAmount: string;
+  reserveRateN: string;
+  reserveRateD: string;
+  timestamp: string;
+}
 export interface ProtectLiquidityParams {
   amount: ViewAmount;
   onUpdate?: OnUpdate;

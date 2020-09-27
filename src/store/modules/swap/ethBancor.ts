@@ -32,7 +32,7 @@ import {
   ViewRemoveEvent,
   ViewAddEvent,
   ViewAmountWithMeta,
-  FocusPoolRes, ProtectLiquidityParams
+  FocusPoolRes, ProtectLiquidityParams, ProtectedLiquidity
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -85,7 +85,7 @@ import {
   getConvertibleTokenAnchors,
   conversionPath,
   getTokenSupplyWei,
-  existingPool
+  existingPool, protectionById
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
@@ -99,7 +99,7 @@ import {
   partition,
   first,
   omit,
-  toPairs
+  toPairs, fromPairs
 } from "lodash";
 import {
   buildNetworkContract,
@@ -1781,6 +1781,27 @@ export class EthBancorModule
     })
   }
 
+  protectedPositionsArr: ProtectedLiquidity[] = []
+
+
+  @mutation setProtectedPositions(positions: ProtectedLiquidity[]) {
+    this.protectedPositionsArr = positions;
+  }
+
+  @action async fetchProtectionPositions() {
+    const liquidityStore = '';
+    const contract = buildLiquidityProtectionStoreContract(liquidityStore);
+    const owner = this.isAuthenticated
+    const idCount = await contract.methods.protectedLiquidityCount(owner).call()
+    const ids = await contract.methods.protectedLiquidityIds(owner).call();
+    const allPositions = await Promise.all(ids.map(id => protectionById(liquidityStore, id)));
+    this.setProtectedPositions(allPositions)
+    return allPositions;
+    // # poolTokenRate
+    // is this public
+
+  }
+
   @action async protectLiquidity({ amount, onUpdate }: ProtectLiquidityParams): Promise<TxResponse> {
     
     const liquidityProtectionContractAddress = ''
@@ -1803,15 +1824,21 @@ export class EthBancorModule
         {
           description: "Adding liquidity protection...",
           task: async() => {
-            return this.protectLiquidityTx({ anchorAddress: poolToken.contract, amountWei: poolTokenWei })
+            return this.protectLiquidityTx({ anchorAddress: poolToken.contract, amountWei: poolTokenWei });
           }
         },
-        // maybe go ahead and perform a fetch of new positions now that this has resolved? 
-        // not sure if we can expect the api to have it ready as soon as conf 
-        // or should wait a few seconds...
+        
       ],
       onUpdate
-  })
+  });
+
+  (async() => {
+    this.fetchProtectionPositions()
+    await wait(2000)
+    this.fetchProtectionPositions()
+    await wait(5000)
+    this.fetchProtectionPositions()
+  })()
 
   return {
     blockExplorerLink: await this.createExplorerLink(txHash),
