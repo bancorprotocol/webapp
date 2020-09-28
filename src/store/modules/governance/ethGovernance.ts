@@ -247,14 +247,10 @@ export class EthereumGovernance extends VuexModule.With({
     const proposals: Proposal[] = [];
     const currentBlock = await web3.eth.getBlock("latest");
 
-    for (let i = 0; i <= proposalCount; i++) {
+    for (let i = 0; i < proposalCount; i++) {
       const proposal = await this.governanceContract.methods
         .proposals(i)
         .call();
-
-      if (Number(proposal.end) === 0) {
-        continue;
-      }
 
       const totalVotesFor = parseFloat(
         shrinkToken(proposal.totalVotesFor, decimals)
