@@ -11,6 +11,13 @@
       @select="selectPool"
     />
 
+    <alert-block
+      v-if="whitelistWarning.show"
+      variant="warning"
+      :msg="whitelistWarning.msg"
+      class="mt-3"
+    />
+
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split label="Value you receive" value="????" />
       <label-content-split value="????" class="mb-2" />
@@ -50,9 +57,11 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
   components: {
+    AlertBlock,
     LabelContentSplit,
     GrayBorderBlock,
     TokenInputField,
@@ -96,6 +105,14 @@ export default class AddProtectionV1 extends Vue {
 
     if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
     else return "";
+  }
+
+  get whitelistWarning() {
+    const msg =
+      "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
+    const show = true;
+
+    return { show, msg };
   }
 
   initAction() {
