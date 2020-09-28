@@ -1822,14 +1822,15 @@ export class EthBancorModule
 
 
   @action async protectLiquidityTx({ anchorAddress, amountWei } : { anchorAddress: string, amountWei: string }) {
-    const liquidityProtectionAddress = this.contracts.liquidityProtection;
-    const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
-    return this.resolveTxOnConfirmation({
-      tx: contract.methods.protectLiquidity(
-        anchorAddress,
-        amountWei
-      )
-    });
+    return '0x7ff995d2fb4c62193114deb01f02416cecf79195d8cc81f1ab12975822768842';
+    // const liquidityProtectionAddress = this.contracts.liquidityProtection;
+    // const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
+    // return this.resolveTxOnConfirmation({
+      // tx: contract.methods.protectLiquidity(
+        // anchorAddress,
+        // amountWei
+      // )
+    // });
   }
 
   @action async unProtectLiquidityTx({ id1, id2 }: { id1: string; id2: string }) {
@@ -1861,8 +1862,6 @@ export class EthBancorModule
 
   @action async protectLiquidity({ amount, onUpdate }: ProtectLiquidityParams): Promise<TxResponse> {
 
-
-    
     const liquidityProtectionContractAddress = this.contracts.liquidityProtection;
 
     const pool = await this.traditionalRelayById(amount.id);
@@ -1889,6 +1888,10 @@ export class EthBancorModule
       ],
       onUpdate
   });
+
+  // gBNT should be here too
+  const gBntAddress = '';
+  this.spamBalances([poolToken.contract, gBntAddress]);
 
   (async() => {
     this.fetchProtectionPositions()
