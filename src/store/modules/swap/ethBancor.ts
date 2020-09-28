@@ -72,7 +72,7 @@ import {
   AddLiquidityEvent,
   RemoveLiquidityEvent,
   bancorSubgraph, 
-  chainlinkSubgraph
+  chainlinkSubgraph, traverseLockedBalances
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -1102,6 +1102,16 @@ const v2PoolBalanceShape = (
   };
 };
 
+
+const liquidityProtectionShape = (contractAddress: string) => {
+  const contract = buildLiquidityProtectionContract(contractAddress);
+  return {
+    minProtectionDelay: contract.methods.minProtectionDelay(),
+    maxProtectionDelay: contract.methods.maxProtectionDelay(),
+    lockDuration: contract.methods.lockDuration()
+  }
+}
+
 interface TokenWei {
   tokenContract: string;
   weiAmount: string;
@@ -1715,6 +1725,18 @@ const VuexModule = createModule({
   strict: false
 });
 
+interface LiquidityProtectionSettings {
+  minDelay: number;
+  maxDelay: number;
+  lockedDelay: number
+}
+
+interface RawLiquidityProtectionSettings {
+  minProtectionDelay: string;
+  maxProtectionDelay: string;
+  lockDuration: string;
+}
+
 export class EthBancorModule
   extends VuexModule.With({ namespaced: "ethBancor/" })
   implements TradingModule, LiquidityModule, CreatePoolModule, HistoryModule {
@@ -1739,6 +1761,31 @@ export class EthBancorModule
   failedPools: string[] = [];
   currentNetwork: EthNetworks = EthNetworks.Mainnet;
   slippageTolerance = 0;
+
+  liquidityProtectionSettings: LiquidityProtectionSettings = {
+    minDelay: 0,
+    maxDelay: 0,
+    lockedDelay: 0
+  }
+
+
+  @mutation setLiquidityProtectionSettings(settings: LiquidityProtectionSettings) {
+    this.liquidityProtectionSettings = settings;
+  }
+
+  @action async fetchLiquidityProtectionSettings(contractAddress: string) {
+
+    const [[settings]] = ((await this.multi([
+      [
+        liquidityProtectionShape(contractAddress)
+      ]
+    ])) as unknown) as [RawLiquidityProtectionSettings][];
+
+    const newSettings = { minDelay: Number(settings.minProtectionDelay), maxDelay: Number(settings.maxProtectionDelay), lockedDelay: Number(settings.lockDuration)} as LiquidityProtectionSettings
+    this.setLiquidityProtectionSettings(newSettings)
+    return newSettings;
+  }
+
 
   get stats() {
     return {
@@ -1871,10 +1918,35 @@ export class EthBancorModule
     this.bancorApiTokens = tokens;
   }
 
+
+  lockedBalancesArr: any = [{ amountWei: web3.utils.toWei('1'), expirationTime: moment().add('1', 'week').unix() }, { amountWei: web3.utils.toWei('1'), expirationTime: moment().subtract('1', 'day').unix() }]
+
+  get lockedEth() {
+    return this.lockedBalancesArr
+  }
+
+  @mutation setLockedBalances(lockedBalances: any[]) {
+    this.lockedBalancesArr = lockedBalances
+  }
+
+  @action async fetchLockedBalances() {
+    if (!this.isAuthenticated) return;
+
+    const owner = this.isAuthenticated
+    const storeContract = buildLiquidityProtectionStoreContract(this.contracts.liquidityProtectionStore);
+    const lockedBalanceCount = Number(await storeContract.methods.lockedBalanceCount(owner).call());
+    if (lockedBalanceCount == 0) return;
+
+    const lockedBalances = await traverseLockedBalances(this.contracts.liquidityProtectionStore, owner, lockedBalanceCount)
+
+    this.setLockedBalances(lockedBalances);
+    return lockedBalances;
+  }
+
   get protectedPositions() {
 
-    const minimumProtection = 0;
-    const maxProtectionDelay = 0;
+    const minProtectionDelay = this.liquidityProtectionSettings.minDelay;
+    const maxProtectionDelay = this.liquidityProtectionSettings.maxDelay;
 
     const allPositions = this.protectedPositionsArr.filter(position => compareString(position.owner, this.isAuthenticated))
 
@@ -1895,7 +1967,7 @@ export class EthBancorModule
         whitelisted: isWhiteListed,
         endTime: startTime,
         startTime,
-        protectionPercent: calculateProtectionLevel(startTime),
+        protectionPercent: calculateProtectionLevel(startTime, minProtectionDelay, maxProtectionDelay),
         relay: this.relay(singleEntry.poolToken),
         tokensCovered: [{ id: singleEntry.reserveToken, amount: shrinkToken(singleEntry.reserveAmount, this.token(singleEntry.reserveToken).precision) }],
         type: PositionType.single
@@ -4089,7 +4161,10 @@ export class EthBancorModule
   }
 
   @mutation setContractAddresses(contracts: RegisteredContracts) {
-    this.contracts = contracts;
+    this.contracts = {
+      ...this.contracts,
+      ...contracts,
+    };
   }
 
   @action async warmEthApi() {
@@ -5037,6 +5112,11 @@ export class EthBancorModule
       ]);
 
       this.pullBntInformation({ latestBlock: String(currentBlock) });
+
+      // TO DO
+      // WARNING
+      // THIS SHOULD USE CONTRACT ADDRESSES ABOVE.
+      this.fetchLiquidityProtectionSettings(this.contracts.liquidityProtection)
 
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");

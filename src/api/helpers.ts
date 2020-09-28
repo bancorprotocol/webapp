@@ -22,7 +22,10 @@ import {
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
-import { buildConverterContract } from "./eth/contractTypes";
+import {
+  buildConverterContract,
+  buildLiquidityProtectionStoreContract
+} from "./eth/contractTypes";
 import { shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
@@ -43,6 +46,36 @@ const chainlinkSubgraphInstance = axios.create({
   baseURL: "https://api.thegraph.com/subgraphs/name/melonproject/chainlink",
   method: "post"
 });
+
+export const traverseLockedBalances = async (
+  contract: string,
+  owner: string,
+  expectedCount: number
+) => {
+  const storeContract = buildLiquidityProtectionStoreContract(contract);
+  let lockedBalances: any = [];
+
+  const scopeRange = 5;
+  for (var i = 0; i < 10; i++) {
+    const startIndex = i * scopeRange;
+    const endIndex = startIndex + scopeRange;
+    let lockedBalanceRes = await storeContract.methods.lockedBalanceRange(
+      owner,
+      String(startIndex),
+      String(endIndex)
+    );
+    lockedBalances = lockedBalances.concat(lockedBalanceRes);
+    if (lockedBalances.length >= expectedCount) break;
+  }
+  console.log(lockedBalances, "should be inspected");
+  return [
+    {
+      amountWei: web3.utils.toWei("1"),
+      expirationTime: moment().unix()
+    }
+  ];
+  // return lockedBalances.map() as any[];
+};
 
 export const chainlinkSubgraph = async (query: string) => {
   const res = await chainlinkSubgraphInstance.post("", { query });
