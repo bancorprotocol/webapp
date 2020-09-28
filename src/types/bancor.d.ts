@@ -1,5 +1,42 @@
 import { Contract } from "web3-eth-contract";
 
+export interface ProtectedViewPosition {
+  type: number;
+  whitelisted: boolean;
+  relay: ViewRelay;
+  tokensCovered: ViewAmount[];
+  startTime: number;
+  endTime: number;
+  protectionPercent: number;
+}
+export interface ProtectedLiquidity {
+  id: string;
+  owner: string;
+  poolToken: string;
+  reserveToken: string;
+  poolAmount: string;
+  reserveAmount: string;
+  reserveRateN: string;
+  reserveRateD: string;
+  timestamp: string;
+}
+
+export interface ProtectLiquidityParams {
+  amount: ViewAmount;
+  onUpdate?: OnUpdate;
+}
+
+export interface ProtectedLiquidity {
+  id: string;
+  owner: string;
+  poolToken: string;
+  reserveToken: string;
+  poolAmount: string;
+  reserveAmount: string;
+  reserveRateN: string;
+  reserveRateD: string;
+  timestamp: string;
+}
 export interface TokenPrice {
   id: string;
   code: string;

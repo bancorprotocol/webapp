@@ -7,18 +7,7 @@ import {
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
 import { fromPairs } from "lodash";
-
-interface ProtectedLiquidity {
-  id: string;
-  owner: string;
-  poolToken: string;
-  reserveToken: string;
-  poolAmount: string;
-  reserveAmount: string;
-  reserveRateN: string;
-  reserveRateD: string;
-  timestamp: string;
-}
+import { ProtectedLiquidity } from "@/types/bancor";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,

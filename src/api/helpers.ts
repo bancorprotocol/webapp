@@ -37,6 +37,11 @@ import { pick } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
 
+export enum PositionType {
+  single,
+  double
+}
+
 const bancorSubgraphInstance = axios.create({
   baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
   method: "post"
