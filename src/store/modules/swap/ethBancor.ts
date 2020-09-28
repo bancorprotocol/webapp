@@ -37,7 +37,7 @@ import {
   ProtectedLiquidity,
   PositionType,
   ProtectedViewPosition,
-} from "@/types/bancor";
+} from "../../../types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
   web3,
@@ -133,8 +133,6 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
-import { timeout } from 'blend-promise-utils'
-
 
 const daysAsSeconds = (days: number): number => moment.duration(days, 'days').asSeconds() 
 const thirtyDaysInSeconds = daysAsSeconds(30)

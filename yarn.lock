@@ -4647,11 +4647,6 @@ blakejs@^1.1.0:
   resolved "https://registry.yarnpkg.com/blakejs/-/blakejs-1.1.0.tgz#69df92ef953aa88ca51a32df6ab1c54a155fc7a5"
   integrity sha1-ad+S75U6qIylGjLfarHFShVfx6U=
 
-blend-promise-utils@^1.27.0:
-  version "1.27.0"
-  resolved "https://registry.yarnpkg.com/blend-promise-utils/-/blend-promise-utils-1.27.0.tgz#16a882d4da09b0f748c5b380bc7a26a386622e71"
-  integrity sha512-JvpnIZfjT5dU1nDGBI1hdJqQUT+CtpPtmhy8IfIeQg+AWjcH0M+AndJuj0OG3iN44Ws6I0854/mcXYs8apD9LQ==
-
 block-stream@*:
   version "0.0.9"
   resolved "https://registry.yarnpkg.com/block-stream/-/block-stream-0.0.9.tgz#13ebfe778a03205cfe03751481ebb4b3300c126a"

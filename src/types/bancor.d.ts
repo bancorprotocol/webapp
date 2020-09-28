@@ -1,4 +1,4 @@
-import { Contract, ContractSendMethod } from "web3-eth-contract";
+import { Contract } from "web3-eth-contract";
 
 export interface TokenPrice {
   id: string;
