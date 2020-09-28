@@ -28,7 +28,7 @@
 
     <b-row>
       <b-col cols="12">
-        <protectable-liquidity />
+        <protectable-liquidity class="mb-3" />
       </b-col>
     </b-row>
 

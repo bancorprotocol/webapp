@@ -1,10 +1,12 @@
 <template>
   <div>
-    <content-block :shadow="true" class="mb-3">
-      <template slot="header">
-        <pool-actions-header title="Create a Pool" @back="back" />
-      </template>
-
+    <content-block
+      :shadow="true"
+      title="Create a Pool"
+      :back-button="true"
+      @back="back"
+      class="mb-3"
+    >
       <div class="mt-3">
         <label-content-split v-if="step === 1" label="Pool Type">
           <b-badge variant="primary" size="sm" class="px-2">V1</b-badge>
@@ -97,7 +99,6 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import CreateV1Step1 from "@/components/pool/create/CreateV1Step1.vue";
 import CreateV1Step2 from "@/components/pool/create/CreateV1Step2.vue";
@@ -135,7 +136,6 @@ export interface CreateStep2 {
     BancorCheckbox,
     ActionModalStatus,
     LabelContentSplit,
-    PoolActionsHeader,
     ContentBlock,
     CreateV1Step1,
     CreateV1Step2,
