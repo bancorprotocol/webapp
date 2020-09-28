@@ -1943,7 +1943,7 @@ export class EthBancorModule
     return lockedBalances;
   }
 
-  get protectedPositions() {
+  get protectedPositions(): ProtectedViewPosition[] {
 
     const minProtectionDelay = this.liquidityProtectionSettings.minDelay;
     const maxProtectionDelay = this.liquidityProtectionSettings.maxDelay;
