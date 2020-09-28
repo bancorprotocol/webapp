@@ -67,20 +67,6 @@ export interface ViewAmount {
   amount: string;
 }
 
-export enum PositionType {
-  single,
-  double
-}
-export interface ProtectedViewPosition {
-  type: PositionType;
-  whitelisted: boolean;
-  relay: ViewRelay;
-  tokensCovered: ViewAmount[];
-  startTime: number;
-  endTime: number;
-  protectionPercent: number;
-}
-
 export interface ViewAmountWithMeta extends ViewAmount {
   symbol: string;
   logo: string;
@@ -88,22 +74,6 @@ export interface ViewAmountWithMeta extends ViewAmount {
 }
 
 type OnUpdate = (index: number, sections: Section[]) => void;
-
-export interface ProtectedLiquidity {
-  id: string;
-  owner: string;
-  poolToken: string;
-  reserveToken: string;
-  poolAmount: string;
-  reserveAmount: string;
-  reserveRateN: string;
-  reserveRateD: string;
-  timestamp: string;
-}
-export interface ProtectLiquidityParams {
-  amount: ViewAmount;
-  onUpdate?: OnUpdate;
-}
 
 export interface LiquidityParams {
   id: string;

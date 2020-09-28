@@ -33,11 +33,7 @@ import {
   ViewAddEvent,
   ViewAmountWithMeta,
   FocusPoolRes, 
-  ProtectLiquidityParams,
-  ProtectedLiquidity,
-  PositionType,
-  ProtectedViewPosition,
-} from "../../../types/bancor";
+} from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
   web3,
@@ -72,7 +68,8 @@ import {
   AddLiquidityEvent,
   RemoveLiquidityEvent,
   bancorSubgraph, 
-  chainlinkSubgraph, traverseLockedBalances
+  chainlinkSubgraph, 
+  traverseLockedBalances
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -133,6 +130,40 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
+
+interface ProtectedViewPosition {
+  type: PositionType;
+  whitelisted: boolean;
+  relay: ViewRelay;
+  tokensCovered: ViewAmount[];
+  startTime: number;
+  endTime: number;
+  protectionPercent: number;
+}
+
+enum PositionType {
+  single,
+  double
+}
+
+
+interface ProtectedLiquidity {
+  id: string;
+  owner: string;
+  poolToken: string;
+  reserveToken: string;
+  poolAmount: string;
+  reserveAmount: string;
+  reserveRateN: string;
+  reserveRateD: string;
+  timestamp: string;
+}
+
+interface ProtectLiquidityParams {
+  amount: ViewAmount;
+  onUpdate?: any;
+}
+
 
 const daysAsSeconds = (days: number): number => moment.duration(days, 'days').asSeconds() 
 const thirtyDaysInSeconds = daysAsSeconds(30)
