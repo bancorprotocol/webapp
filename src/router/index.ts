@@ -11,8 +11,9 @@ import CreateHome from "@/views/CreateHome.vue";
 import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
 import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
-import LiquidityProtection from "@/views/LiquidityProtection.vue";
-import AddLiqProtection from "@/components/pool/protection/AddLiqProtection.vue";
+import LiquidityProtectionSummary from "@/views/LiquidityProtectionSummary.vue";
+import AddProtectionHome from "@/views/AddProtectionHome.vue";
+import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 
 Vue.use(Router);
 
@@ -89,7 +90,23 @@ export const router = new Router({
       name: "LiqProtection",
       components: {
         Nav: Navigation,
-        default: LiquidityProtection
+        default: LiquidityProtectionSummary
+      }
+    },
+    {
+      path: "/:service/liquidity-protection/add",
+      name: "AddProtection",
+      components: {
+        Nav: Navigation,
+        Hero: AddProtectionHome
+      }
+    },
+    {
+      path: "/:service/liquidity-protection/:action/:id",
+      name: "ProtectionAction",
+      components: {
+        Nav: Navigation,
+        Hero: ProtectionActions
       },
       props: true
     },
