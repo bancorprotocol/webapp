@@ -2,7 +2,7 @@
   <content-block
     :px0="true"
     :shadow-light="true"
-    title="Protected Transactions"
+    title="Protected Liquidities"
     :search.sync="search"
   >
     <table-wrapper
@@ -19,7 +19,7 @@
               v-text="`${data.value.amount} ${poolName(data.value.poolId)}`"
             />
             <span
-              v-text="formatDate(data.item.unixTime.staked).dateTime"
+              v-text="formatDate(data.item.stake.unixTime).dateTime"
               class="font-size-12 font-w400"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             />
@@ -39,13 +39,35 @@
             class="font-size-12 font-w400 text-primary ml-2"
           />
         </div>
+        <b-badge
+          v-if="data.item.whitelisted"
+          variant="danger"
+          class="px-2 pt-1"
+        >
+          Pool is not whitelisted
+        </b-badge>
+      </template>
+
+      <template v-slot:cell(apr)="data">
+        <div class="d-flex align-items-center">
+          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
+          {{ stringifyPercentage(data.value.day) }}
+        </div>
+        <div class="d-flex align-items-center my-1">
+          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+          {{ stringifyPercentage(data.value.week) }}
+        </div>
+        <div class="d-flex align-items-center">
+          <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge>
+          {{ stringifyPercentage(data.value.month) }}
+        </div>
       </template>
 
       <template v-slot:cell(insuranceStart)="data">
         <div class="d-flex flex-column">
-          <span v-text="formatDate(data.item.unixTime.insuranceStart).date" />
+          <span v-text="formatDate(data.item.insuranceStart).date" />
           <span
-            v-text="formatDate(data.item.unixTime.insuranceStart).time"
+            v-text="formatDate(data.item.insuranceStart).time"
             class="font-size-12 font-w400"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           />
@@ -57,16 +79,16 @@
           <span
             v-text="
               calculateFullCoverage(
-                data.item.unixTime.insuranceStart,
-                data.item.unixTime.fullCoverage
+                data.item.insuranceStart,
+                data.item.fullCoverage
               ).percentage
             "
           />
           <b-progress
             :value="
               calculateFullCoverage(
-                data.item.unixTime.insuranceStart,
-                data.item.unixTime.fullCoverage
+                data.item.insuranceStart,
+                data.item.fullCoverage
               ).percentage
             "
             :max="100"
@@ -76,8 +98,8 @@
           <span class="text-primary">
             {{
               calculateFullCoverage(
-                data.item.unixTime.insuranceStart,
-                data.item.unixTime.fullCoverage
+                data.item.insuranceStart,
+                data.item.fullCoverage
               ).timeLeft
             }}
           </span>
@@ -125,8 +147,8 @@ export default class ProtectedLiquidities extends Vue {
     const now = Date.now() / 1000;
     const deltaStartToCoverage = fullCoverage - start;
     const deltaStartToNow = now - start;
-    const percentage = numeral(deltaStartToNow / deltaStartToCoverage).format(
-      "0%"
+    const percentage = this.stringifyPercentage(
+      deltaStartToNow / deltaStartToCoverage
     );
     const timeLeft = moment(fullCoverage * 1000).fromNow(true);
 
@@ -146,41 +168,55 @@ export default class ProtectedLiquidities extends Vue {
     return formatUnixTime(unixTime);
   }
 
+  stringifyPercentage(percentage: number) {
+    return numeral(percentage).format("0%");
+  }
+
   get protectedTxTable() {
     const items: any[] = [
       {
         stake: {
-          amount: 250,
-          poolId: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-          usdValue: 56.86
-        },
-        protectedAmount: {
-          amount: 115,
-          symbol: "ETH",
-          usdValue: 35.11
-        },
-        unixTime: {
-          staked: 1600583447,
-          insuranceStart: 1600646400,
-          fullCoverage: 1600688926
-        }
-      },
-      {
-        stake: {
           amount: 5123.7865,
           poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
-          usdValue: 1146.86
+          usdValue: 1146.86,
+          unixTime: 1599583447
         },
         protectedAmount: {
           amount: 3000,
           symbol: "ETH",
           usdValue: 3589.11
         },
-        unixTime: {
-          staked: 1599583447,
-          insuranceStart: 1600445900,
-          fullCoverage: 1601688926
-        }
+        roi: 0.8,
+        apr: {
+          day: 0.25,
+          week: 0.29,
+          month: 0.8
+        },
+        whitelisted: false,
+        insuranceStart: 1600445900,
+        fullCoverage: 1601688926
+      },
+      {
+        stake: {
+          amount: 5123.7865,
+          poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
+          usdValue: 1146.86,
+          unixTime: 1599583447
+        },
+        protectedAmount: {
+          amount: 3000,
+          symbol: "ETH",
+          usdValue: 3589.11
+        },
+        roi: 0.8,
+        apr: {
+          day: 0.25,
+          week: 0.29,
+          month: 0.8
+        },
+        whitelisted: true,
+        insuranceStart: 1600445900,
+        fullCoverage: 1601688926
       }
     ];
     const fields: any[] = [
@@ -190,8 +226,20 @@ export default class ProtectedLiquidities extends Vue {
       },
       {
         key: "protectedAmount",
+        label: "Fully Protected Value",
         sortable: true,
-        thStyle: { "min-width": "180px" }
+        thStyle: { "min-width": "210px" }
+      },
+      {
+        key: "roi",
+        sortable: true,
+        thStyle: { "min-width": "60px" },
+        formatter: (value: number) => this.stringifyPercentage(value)
+      },
+      {
+        key: "apr",
+        sortable: false,
+        thStyle: { "min-width": "100px" }
       },
       {
         key: "insuranceStart",
