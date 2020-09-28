@@ -57,7 +57,10 @@
           :error-msg="balanceError"
         />
 
-        <label-content-split label="Full Coverage Date" value="??/??/??" />
+        <label-content-split
+          label="Full Coverage Date"
+          :value="fullCoverageDate"
+        />
 
         <main-button
           @click="modal = true"
@@ -131,6 +134,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BigNumber from "bignumber.js";
 import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquidity.vue";
+import moment from 'moment'
 
 @Component({
   components: {
@@ -161,6 +165,12 @@ export default class AddLiqProtection extends Vue {
   error = "";
   sections: Step[] = [];
   stepIndex = 0;
+
+  get fullCoverageDate() {
+    const waitTime = moment.duration(vxm.ethBancor.liquidityProtectionSettings.maxDelay, 'seconds');
+    return moment().add(waitTime).format("DD/MM/YY")
+  }
+
 
   get pool(): ViewRelay {
     return vxm.bancor.relay(this.$route.params.id);

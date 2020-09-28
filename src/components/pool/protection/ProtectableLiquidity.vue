@@ -20,11 +20,11 @@
                   v-text="`(~$${item.usdValue})`"
                   class="font-size-12 font-w400 text-primary"
                 />
-                <span
+                <!-- <span
                   v-text="formatDate(item.unixTime).dateTime"
                   class="font-size-12 font-w400"
                   :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-                />
+                /> -->
               </div>
             </div>
           </b-col>

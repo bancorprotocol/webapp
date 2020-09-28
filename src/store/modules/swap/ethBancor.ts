@@ -1765,9 +1765,9 @@ export class EthBancorModule
   slippageTolerance = 0;
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
-    minDelay: 0,
-    maxDelay: 0,
-    lockedDelay: 0
+    minDelay: moment.duration('30', 'days').asSeconds(),
+    maxDelay: moment.duration('100', 'days').asSeconds(),
+    lockedDelay: moment.duration('24', 'hours').asSeconds()
   }
 
 
