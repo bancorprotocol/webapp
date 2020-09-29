@@ -8,7 +8,7 @@
               class="font-size-24 font-w600 mr-2"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              {{ amount1 }} {{ token1.symbol }}
+              {{ Number(amount1) }} {{ token1.symbol }}
             </div>
             <font-awesome-icon
               icon="exchange-alt"
@@ -19,7 +19,7 @@
               class="font-size-24 font-w600 mr-2"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              {{ amount2 }} {{ token2.symbol }}
+              {{ Number(amount2) }} {{ token2.symbol }}
             </div>
           </div>
         </b-col>
@@ -149,8 +149,8 @@ export default class ModalSwapAction extends Vue {
 
   async initAction() {
     if (this.success) {
-      this.$bvModal.hide("modal-swap-action");
-      this.success = null;
+      this.show = false;
+      this.setDefault();
       return;
     }
 
