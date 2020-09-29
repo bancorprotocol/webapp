@@ -14,6 +14,8 @@ import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
 import LiquidityProtectionSummary from "@/views/LiquidityProtectionSummary.vue";
 import AddProtectionHome from "@/views/AddProtectionHome.vue";
 import ProtectionActions from "@/components/protection/ProtectionActions.vue";
+import GovernancePage from "@/components/governance/GovernancePage.vue";
+import Governance from "@/views/Governance.vue";
 
 Vue.use(Router);
 
@@ -162,6 +164,21 @@ export const router = new Router({
           path: "pool/:id",
           name: "DetailsPool",
           component: DataDetailsPool
+        }
+      ]
+    },
+    {
+      path: "/:service/Governance",
+      name: "Governance",
+      components: {
+        Nav: Navigation,
+        default: Governance
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          component: GovernancePage
         }
       ]
     },

@@ -4,7 +4,7 @@
       <th
         @click="setSortBy(column)"
         v-for="column in fields"
-        :key="column.label"
+        :key="column.key"
         scope="col"
         :class="column.key ? 'cursor' : ''"
         :style="getWidthStyle(column)"
