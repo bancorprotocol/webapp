@@ -11,6 +11,13 @@
       @select="selectPool"
     />
 
+    <alert-block
+      v-if="whitelistWarning.show"
+      variant="warning"
+      :msg="whitelistWarning.msg"
+      class="mt-3"
+    />
+
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split label="Value you receive" value="????" />
       <label-content-split value="????" class="mb-2" />
@@ -32,27 +39,71 @@
 
     <main-button
       :label="actionButtonLabel"
-      @click="initAction"
+      @click="openModal"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
     />
+
+    <modal-base
+      title="You are adding liquidity protection"
+      v-model="modal"
+      @input="setDefault"
+    >
+      <b-row v-if="!(txBusy || success || error)">
+        <b-col cols="12" class="text-center mb-3">
+          <span
+            class="font-size-24 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+          >
+            ????/????
+          </span>
+        </b-col>
+        <b-col cols="12">
+          <gray-border-block>
+            <label-content-split label="???" value="????" />
+            <label-content-split label="???" value="????" />
+            <label-content-split label="???" value="????" />
+          </gray-border-block>
+        </b-col>
+      </b-row>
+
+      <action-modal-status
+        v-else
+        :error="error"
+        :success="success"
+        :step-description="currentStatus"
+      />
+
+      <main-button
+        @click="initAction"
+        class="mt-3"
+        :label="modalConfirmButton"
+        :active="true"
+        :large="true"
+        :disabled="txBusy"
+      />
+    </modal-base>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay } from "@/types/bancor";
+import { Step, TxResponse, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
 
 @Component({
   components: {
+    ModalBase,
+    AlertBlock,
     LabelContentSplit,
     GrayBorderBlock,
     TokenInputField,
@@ -65,6 +116,11 @@ export default class AddProtectionV1 extends Vue {
   amount: string = "";
 
   modal = false;
+  txBusy = false;
+  success: TxResponse | string | null = null;
+  error = "";
+  sections: Step[] = [];
+  stepIndex = 0;
 
   get pools() {
     return vxm.bancor.relays.filter(x => !x.v2);
@@ -83,6 +139,10 @@ export default class AddProtectionV1 extends Vue {
     else return "Stake and Protect";
   }
 
+  get isAuthenticated() {
+    return vxm.wallet.isAuthenticated;
+  }
+
   get disableActionButton() {
     if (!this.amount) return true;
     else return this.inputError ? true : false;
@@ -98,8 +158,51 @@ export default class AddProtectionV1 extends Vue {
     else return "";
   }
 
+  get whitelistWarning() {
+    const msg =
+      "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
+    const show = true;
+
+    return { show, msg };
+  }
+
+  get modalConfirmButton() {
+    return this.error
+      ? "Try Again"
+      : this.success
+      ? "Close"
+      : this.txBusy
+      ? "processing ..."
+      : "Confirm";
+  }
+
   initAction() {
-    this.modal = true;
+    this.setDefault();
+    this.modal = false;
+  }
+
+  async openModal() {
+    if (this.isAuthenticated) this.modal = true;
+    //@ts-ignore
+    else await this.promptAuth();
+  }
+
+  setDefault() {
+    this.sections = [];
+    this.error = "";
+    this.success = null;
+  }
+
+  get currentStatus() {
+    if (this.sections.length) {
+      return this.sections[this.stepIndex].description;
+    }
+    return undefined;
+  }
+
+  onUpdate(index: number, steps: any[]) {
+    this.sections = steps;
+    this.stepIndex = index;
   }
 
   async selectPool(id: string) {
