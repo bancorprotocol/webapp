@@ -1,12 +1,7 @@
 <template>
   <div class="d-flex justify-content-between mt-2">
     <div v-for="x in options" :key="x" class="w-100 mr-2">
-      <b-btn
-        @click="setSlippage(x, true)"
-        :variant="getVariant(x)"
-        size="xs"
-        block
-      >
+      <b-btn @click="setSlippage(x)" :variant="getVariant(x)" size="xs" block>
         {{ x }}%
       </b-btn>
     </div>
@@ -16,9 +11,8 @@
           class="text-right custom-input-field pr-1"
           :class="formInputStyles"
           v-model="custom"
-          @input="setSlippage"
+          @input="setCustomSlippage"
           placeholder="Custom"
-          number
         />
         <b-input-group-append>
           <div
@@ -56,9 +50,13 @@ export default class SettingsMenu extends Vue {
     else return this.darkMode ? "text-dark" : "text-light";
   }
 
-  setSlippage(percentage: number, resetCustom = false) {
+  setSlippage(percentage: number) {
     vxm.bancor.setSlippageTolerance(percentage / 100);
-    if (resetCustom) this.custom = "";
+    this.custom = "";
+  }
+
+  setCustomSlippage(percentage: string) {
+    vxm.bancor.setSlippageTolerance(Number(percentage) / 100);
   }
 
   getVariant(percentage: number) {
@@ -70,14 +68,15 @@ export default class SettingsMenu extends Vue {
 
   @Watch("currentSlippage")
   onSlippageChange(slippage: number) {
-    console.log("slippage");
     if (!this.options.find(x => x / 100 === slippage))
       this.custom = (slippage * 100).toString();
+    else this.custom = "";
   }
 
   created() {
     if (!this.options.find(x => x / 100 === this.currentSlippage))
       this.custom = (this.currentSlippage * 100).toString();
+    else this.custom = "";
   }
 }
 </script>
