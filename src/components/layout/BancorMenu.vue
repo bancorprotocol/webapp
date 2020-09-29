@@ -107,6 +107,17 @@
         </div>
       </b-dropdown-text>
     </b-dropdown-group>
+    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-group id="dropdown-group-3">
+      <b-dropdown-item @click="navPrivacy"
+        >
+        Privacy Policy</b-dropdown-item
+      >
+      <b-dropdown-item @click="navTermsofUse"
+        >
+        Terms of Use</b-dropdown-item
+      >
+    </b-dropdown-group>
   </b-dropdown>
 </template>
 
@@ -137,6 +148,46 @@ export default class BancorMenu extends Vue {
     } else {
       console.log("failed to determine route...");
       this.openUrl(`https://swap.bancor.network/${service}/data`);
+    }
+  }
+
+  navPrivacy() {
+    const hostbase = window.location.hostname;
+    const service = this.$route.params.service;
+
+    const isDev = hostbase == "localhost";
+    const isStaging = hostbase.includes("staging");
+    const isProd = !isDev && !isStaging;
+
+    if (isDev) {
+      this.openUrl(`http://localhost:8080/${service}/privacy-policy`);
+    } else if (isStaging) {
+      this.openUrl(`https://staging.swap.bancor.network/${service}/privacy-policy`);
+    } else if (isProd) {
+      this.openUrl(`https://swap.bancor.network/${service}/privacy-policy`);
+    } else {
+      console.log("failed to determine route...");
+      this.openUrl(`https://swap.bancor.network/${service}/privacy-policy`);
+    }
+  }
+
+  navTermsofUse() {
+    const hostbase = window.location.hostname;
+    const service = this.$route.params.service;
+
+    const isDev = hostbase == "localhost";
+    const isStaging = hostbase.includes("staging");
+    const isProd = !isDev && !isStaging;
+
+    if (isDev) {
+      this.openUrl(`http://localhost:8080/${service}/terms-of-use`);
+    } else if (isStaging) {
+      this.openUrl(`https://staging.swap.bancor.network/${service}/terms-of-use`);
+    } else if (isProd) {
+      this.openUrl(`https://swap.bancor.network/${service}/terms-of-use`);
+    } else {
+      console.log("failed to determine route...");
+      this.openUrl(`https://swap.bancor.network/${service}/terms-of-use`);
     }
   }
 
