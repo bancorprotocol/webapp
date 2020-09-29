@@ -67,7 +67,7 @@ import {
   DecodedTimedEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
-  bancorSubgraph, 
+  bancorSubgraph,
   chainlinkSubgraph
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
@@ -233,11 +233,11 @@ const getVolumeStats = async (blockNumbers: string[]) => {
     anchor: string;
     id: string;
     volumes: Volume[];
-    balances: Balance[]
+    balances: Balance[];
   }
 
   interface Balance {
-    token: Token
+    token: Token;
     stakedAmount: string;
     balance: string;
     weight: string;
@@ -287,15 +287,14 @@ const getVolumeStats = async (blockNumbers: string[]) => {
 
 const bntToken = "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c";
 
-const usdPriceOfEth = async(blockNumbers: string[]) => {
-
+const usdPriceOfEth = async (blockNumbers: string[]) => {
   interface ChainkLinkRes {
-    assetPair:          AssetPair;
+    assetPair: AssetPair;
     latestHourlyCandle: LatestHourlyCandle;
   }
 
   enum AssetPair {
-    EthUsd = "ETH/USD",
+    EthUsd = "ETH/USD"
   }
 
   interface LatestHourlyCandle {
@@ -318,56 +317,67 @@ const usdPriceOfEth = async(blockNumbers: string[]) => {
 
   `
   );
-  
+
   const finalRequest = ["{", ...requests, "}"].join("");
   const res = await chainlinkSubgraph(finalRequest);
-  const arrRes = toPairs(res).filter(([_, data]) => data) as [string, ChainkLinkRes][]
+  const arrRes = toPairs(res).filter(([_, data]) => data) as [
+    string,
+    ChainkLinkRes
+  ][];
 
-  const medianPriceToDec = (medianPrice: string) => new BigNumber(medianPrice).dividedBy(100000000).toNumber();
-  const data = arrRes.map(([blockLabel, data]) => [blockLabel.slice(1), data] as [string, ChainkLinkRes]);
+  const medianPriceToDec = (medianPrice: string) =>
+    new BigNumber(medianPrice).dividedBy(100000000).toNumber();
+  const data = arrRes.map(
+    ([blockLabel, data]) =>
+      [blockLabel.slice(1), data] as [string, ChainkLinkRes]
+  );
 
-  const prices = data.map(([blockNumber, data]) => [blockNumber, medianPriceToDec(data.latestHourlyCandle.medianPrice)] as [string, number]);
-  return prices as [block: string, priceOfBnt: number][]
-}
+  const prices = data.map(
+    ([blockNumber, data]) =>
+      [blockNumber, medianPriceToDec(data.latestHourlyCandle.medianPrice)] as [
+        string,
+        number
+      ]
+  );
+  return prices as [block: string, priceOfBnt: number][];
+};
 
+const converterBalances = async (skip: number = 0) => {
+  console.log("converterBalances", "skipping", skip);
 
-const converterBalances = async(skip: number = 0) => {
+  interface Data {
+    converterBalances: ConverterBalance[];
+  }
 
-  console.log('converterBalances', 'skipping', skip)
+  interface ConverterBalance {
+    balance: string;
+    converter: Converter;
+    id: string;
+    poolToken: PoolToken | null;
+    stakedAmount: string;
+    token: Token;
+    weight: string;
+  }
 
- interface Data {
-  converterBalances: ConverterBalance[];
-}
+  interface Converter {
+    activated: boolean;
+    anchor: string;
+    createdAtBlockNumber: string;
+    id: string;
+    type: string;
+  }
 
- interface ConverterBalance {
-  balance:      string;
-  converter:    Converter;
-  id:           string;
-  poolToken:    PoolToken | null;
-  stakedAmount: string;
-  token:        Token;
-  weight:       string;
-}
+  interface PoolToken {
+    id: string;
+    supply: string;
+    symbol: string;
+  }
 
- interface Converter {
-  activated:            boolean;
-  anchor:               string;
-  createdAtBlockNumber: string;
-  id:                   string;
-  type:                 string;
-}
+  interface Token {
+    symbol: string;
+  }
 
- interface PoolToken {
-  id:     string;
-  supply: string;
-  symbol: string;
-}
-
- interface Token {
-  symbol: string;
-}
-
-const res = await bancorSubgraph(`
+  const res = (await bancorSubgraph(`
 {
   converterBalances(skip: ${skip}) {
     id
@@ -393,16 +403,12 @@ const res = await bancorSubgraph(`
 }
 
 
-`) as Data
+`)) as Data;
 
-return res;
-
-
-}
+  return res;
+};
 
 const getPool = async (anchorId: string) => {
-
-
   const res = await bancorSubgraph(`
     
     {
@@ -414,26 +420,37 @@ const getPool = async (anchorId: string) => {
       }
     }
     
-  `
-  );
+  `);
 
   return res;
-}
+};
 
-const totalBntVolumeAtBlocks = async (blocks: string[])=> {
-  const [usdPrices, res] = await Promise.all([usdPriceOfEth(blocks), getVolumeStats(blocks)]);
+const totalBntVolumeAtBlocks = async (blocks: string[]) => {
+  const [usdPrices, res] = await Promise.all([
+    usdPriceOfEth(blocks),
+    getVolumeStats(blocks)
+  ]);
 
-    console.log(res, 'duprew');
-    // For every block
-    // Get the BNT/ETH anchor
-    // Work out the price of BNT in ETH tokens
-    // Times that by the price of ETH to work out the USD price of BNT
-    // Return an array of [block, usdPriceOfBnt] 
+  console.log(res, "duprew");
+  // For every block
+  // Get the BNT/ETH anchor
+  // Work out the price of BNT in ETH tokens
+  // Times that by the price of ETH to work out the USD price of BNT
+  // Return an array of [block, usdPriceOfBnt]
 
-    const xx = res.map(([blockNumber, converters]) => [blockNumber, converters.filter(converter => converter.balances.some(balance => compareString(balance.token.id, '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c')))])
+  const xx = res.map(([blockNumber, converters]) => [
+    blockNumber,
+    converters.filter(converter =>
+      converter.balances.some(balance =>
+        compareString(
+          balance.token.id,
+          "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"
+        )
+      )
+    )
+  ]);
 
-    console.log(xx, 'doubt you can')
-  
+  console.log(xx, "doubt you can");
 
   const totalVolumeAtBlock = res.map(([block, converters]) => {
     const uniqueAnchors = uniqWith(
@@ -446,7 +463,6 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
         .filter(converter => compareString(converter.anchor, anchor))
         .map(obj => omit(obj, "anchor"))
     }));
-
 
     const volumes = groupedByAnchors.map(group =>
       group.converters.flatMap(converter =>
@@ -480,7 +496,6 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
           )
         : "0";
 
-
     const filteredVolumes = volumes
       .filter(vol => vol && vol.length > 0)
       .map(vol => vol.filter(Boolean))
@@ -496,7 +511,7 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
             new BigNumber(item).plus(acc).toString()
           )
         : "0";
-    return [block, totalVolume, totalLiquidity] as VolumeAndLiq
+    return [block, totalVolume, totalLiquidity] as VolumeAndLiq;
   });
 
   const blockSummaries = totalVolumeAtBlock.sort((a, b) =>
@@ -1029,8 +1044,17 @@ const buildReserveFeedsChainlink = (
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
-type TotalVolumeAndLiquidity = [blockNumber: string, totalVolume: string, totalLiquidity: string, unixTime: number];
-type VolumeAndLiq = [blockNumber: string, totalVolume: string, totalLiquidity: string]
+type TotalVolumeAndLiquidity = [
+  blockNumber: string,
+  totalVolume: string,
+  totalLiquidity: string,
+  unixTime: number
+];
+type VolumeAndLiq = [
+  blockNumber: string,
+  totalVolume: string,
+  totalLiquidity: string
+];
 
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
@@ -2667,8 +2691,7 @@ export class EthBancorModule
         : "0";
 
     if (!reserveBalancesAboveZero) {
-
-      console.log('is fresh')
+      console.log("is fresh");
       const matchedInputs = reservesViewAmounts.map(viewAmount => ({
         decAmount: viewAmount.amount,
         decimals: findOrThrow(reserves, reserve =>
@@ -2676,15 +2699,17 @@ export class EthBancorModule
         ).decimals
       }));
 
-      const notAllInputsAreNumbers = matchedInputs.some(input => new BigNumber(input.decAmount).isNaN());
+      const notAllInputsAreNumbers = matchedInputs.some(input =>
+        new BigNumber(input.decAmount).isNaN()
+      );
       if (notAllInputsAreNumbers) {
         return {
           shareOfPool: 0,
-          smartTokenAmountWei: { amount: '1', id: smartTokenAddress },
+          smartTokenAmountWei: { amount: "1", id: smartTokenAddress },
           singleUnitCosts: [],
           opposingAmount: undefined,
           reserveBalancesAboveZero
-        }
+        };
       }
       const weiInputs = matchedInputs.map(input =>
         expandToken(input.decAmount, input.decimals)
@@ -3046,12 +3071,14 @@ export class EthBancorModule
           poolTokenBalance.poolToken.decimals
         );
 
-        const maxWithdrawWei = (await v2Converter.methods
-          .removeLiquidityReturnAndFee(
-            poolTokenBalance.poolToken.contract,
-            poolTokenBalanceWei
-          )
-          .call())[0];
+        const maxWithdrawWei = (
+          await v2Converter.methods
+            .removeLiquidityReturnAndFee(
+              poolTokenBalance.poolToken.contract,
+              poolTokenBalanceWei
+            )
+            .call()
+        )[0];
 
         return {
           ...poolTokenBalance,
@@ -4185,7 +4212,10 @@ export class EthBancorModule
     ) as ChainLinkRelay[];
 
     const v1RelayShapes = v1Relays.map(relay =>
-      reserveBalanceShape(relay.contract, relay.reserves.map(r => r.contract))
+      reserveBalanceShape(
+        relay.contract,
+        relay.reserves.map(r => r.contract)
+      )
     );
     const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
       v2PoolBalanceShape(
@@ -4678,14 +4708,21 @@ export class EthBancorModule
 
     console.log(data, "came back in vuex");
 
-    const withTimestamp = data.map(([blockNumber, totalVolume, totalLiquidity]) => {
-      const unixTime = estimateBlockTimeUnix(
-        Number(blockNumber),
-        Number(latestBlock),
-        timeNow
-      );
-      return [blockNumber, totalVolume, totalLiquidity, unixTime] as TotalVolumeAndLiquidity;
-    });
+    const withTimestamp = data.map(
+      ([blockNumber, totalVolume, totalLiquidity]) => {
+        const unixTime = estimateBlockTimeUnix(
+          Number(blockNumber),
+          Number(latestBlock),
+          timeNow
+        );
+        return [
+          blockNumber,
+          totalVolume,
+          totalLiquidity,
+          unixTime
+        ] as TotalVolumeAndLiquidity;
+      }
+    );
 
     this.setVolume(withTimestamp);
   }
@@ -4702,7 +4739,10 @@ export class EthBancorModule
     const res = await getLogs(network, networkContract, fromBlock);
     console.log(res, "was res");
 
-    const uniqTxHashes = uniqWith(res.map(x => x.txHash), compareString);
+    const uniqTxHashes = uniqWith(
+      res.map(x => x.txHash),
+      compareString
+    );
 
     const groups = uniqTxHashes.map(hash =>
       res.filter(x => compareString(x.txHash, hash))
@@ -4984,7 +5024,7 @@ export class EthBancorModule
         );
         this.addPoolsBulk(newSet).then(() => {
           this.addPoolsBulk(droppedAnchors);
-        })
+        });
       }
       this.moduleInitiated();
 
@@ -5205,27 +5245,28 @@ export class EthBancorModule
     console.timeEnd("addPoolsBulk");
 
     if (convertersAndAnchors.length > 40) {
-      this.createReport()
+      this.createReport();
     }
     return { pools: allPools, reserveFeeds: allReserveFeeds };
   }
 
   @action async createReport() {
-    console.log('create report triggered');
+    console.log("create report triggered");
 
     const allAnchors = this.relaysList.map(relay => relay.id.toLowerCase());
 
-    const poolResults = await Promise.all(allAnchors.map(async anchor => {
+    const poolResults = await Promise.all(
+      allAnchors.map(async anchor => {
+        try {
+          const poolRes = await getPool(anchor);
+          return { anchor, poolRes: poolRes.converters };
+        } catch (e) {
+          return { anchor, poolRes: false };
+        }
+      })
+    );
 
-    try {
-        const poolRes = await getPool(anchor);
-        return { anchor, poolRes: poolRes.converters }
-      } catch(e) {
-        return { anchor, poolRes: false }
-      }
-    }))
-
-    console.log(poolResults, 'is the finished report');
+    console.log(poolResults, "is the finished report");
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {
