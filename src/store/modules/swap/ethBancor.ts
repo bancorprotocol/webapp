@@ -451,7 +451,6 @@ const getPool = async (anchorId: string) => {
 const totalBntVolumeAtBlocks = async (blocks: string[])=> {
   const [usdPrices, res] = await Promise.all([usdPriceOfEth(blocks), getVolumeStats(blocks)]);
 
-    console.log(res, 'duprew');
     // For every block
     // Get the BNT/ETH anchor
     // Work out the price of BNT in ETH tokens
@@ -460,7 +459,6 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
 
     const xx = res.map(([blockNumber, converters]) => [blockNumber, converters.filter(converter => converter.balances.some(balance => compareString(balance.token.id, '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c')))])
 
-    console.log(xx, 'doubt you can')
   
 
   const totalVolumeAtBlock = res.map(([block, converters]) => {
@@ -1763,6 +1761,7 @@ export class EthBancorModule
   failedPools: string[] = [];
   currentNetwork: EthNetworks = EthNetworks.Mainnet;
   slippageTolerance = 0;
+  useTraditionalCalls = true;
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
     minDelay: moment.duration('30', 'days').asSeconds(),
@@ -1770,6 +1769,10 @@ export class EthBancorModule
     lockedDelay: moment.duration('24', 'hours').asSeconds()
   }
 
+
+  @mutation setTraditionalCalls(status: boolean) {
+    this.useTraditionalCalls = status;
+  }
 
   @mutation setLiquidityProtectionSettings(settings: LiquidityProtectionSettings) {
     this.liquidityProtectionSettings = settings;
@@ -4436,7 +4439,7 @@ export class EthBancorModule
       return allPools.slice(0, 3);
     }
   }
-
+  
   @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
     const networkVars = getNetworkVariables(this.currentNetwork);
     const multi = new MultiCall(web3, networkVars.multiCall, [
@@ -4446,7 +4449,10 @@ export class EthBancorModule
       10,
       1
     ]);
-    return multi.all(groupsOfShapes);
+
+    const res = await multi.all(groupsOfShapes, { traditional: this.useTraditionalCalls });
+    console.log(res, 'was resx')
+    return res;
   }
 
   @action async refreshReserveBalances() {
@@ -4949,8 +4955,6 @@ export class EthBancorModule
       );
     const data = await totalBntVolumeAtBlocks(blocksToRequest);
 
-    console.log(data, "came back in vuex");
-
     const withTimestamp = data.map(([blockNumber, totalVolume, totalLiquidity]) => {
       const unixTime = estimateBlockTimeUnix(
         Number(blockNumber),
@@ -5121,7 +5125,7 @@ export class EthBancorModule
       // TO DO
       // WARNING
       // THIS SHOULD USE CONTRACT ADDRESSES ABOVE.
-      this.fetchLiquidityProtectionSettings(this.contracts.liquidityProtection)
+      // this.fetchLiquidityProtectionSettings(this.contracts.liquidityProtection)
 
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
@@ -5223,13 +5227,17 @@ export class EthBancorModule
       console.log("trying...");
       console.timeEnd("timeToGetToInitialBulk");
       console.time("initialPools");
-      const x = await this.addPoolsBulk([
+      const initialBulk = [
         ...initialLoad,
         {
           anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
           converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
         }
-      ]);
+      ]
+      console.log(initialBulk.length, 'is the initial bulk length');
+      this.setTraditionalCalls(false)
+      const x = await this.addPoolsBulk(initialBulk);
+      this.setTraditionalCalls(false);
       this.setLoadingPools(false);
       console.timeEnd("initialPools");
       console.log("finished add pools...", x);

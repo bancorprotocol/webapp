@@ -110,15 +110,15 @@ export const router = new Router({
       },
       props: true
     },
-    {
-      path: "/:service/liquidity-protection/add/:id",
-      name: "AddLiqProtection",
-      components: {
-        Nav: Navigation,
-        Hero: AddLiqProtection
-      },
-      props: true
-    },
+    // {
+    //   path: "/:service/liquidity-protection/add/:id",
+    //   name: "AddLiqProtection",
+    //   components: {
+    //     Nav: Navigation,
+    //     Hero: AddLiqProtection
+    //   },
+    //   props: true
+    // },
     {
       path: "/:service/pool/create/",
       name: "PoolCreate",
