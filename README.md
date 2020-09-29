@@ -5,7 +5,7 @@
 Open Source Token Swap and Pool Liquidity Portal
 
 ## Project setup
-
+Node Version: `12.18.2`
 ```
 yarn install
 ```
