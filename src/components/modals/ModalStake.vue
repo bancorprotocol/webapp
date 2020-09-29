@@ -45,11 +45,7 @@
       <div class="input-currency mt-1">
         <b-form-input
           v-model="stakeValue"
-          :state="
-            (stakeValue.length === 0 ||
-              (stakeValue > 0 && stakeValue <= currentBalance)) &&
-              undefined
-          "
+          :state="state"
           @keypress="isNumber($event)"
           :max="currentBalance"
           type="number"
@@ -152,6 +148,15 @@ export default class ModalStake extends Vue {
   step: "stake" | "staking" | "staked" = "stake";
   symbol: string = "";
 
+  get state() {
+    return (
+      (String(this.stakeValue).length === 0 ||
+        (this.stakeValue &&
+          this.stakeValue > 0 &&
+          this.stakeValue <= this.currentBalance)) &&
+      undefined
+    );
+  }
   get darkMode(): boolean {
     return vxm.general.darkMode;
   }

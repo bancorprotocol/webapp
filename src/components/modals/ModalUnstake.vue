@@ -45,11 +45,7 @@
       <div class="input-currency mt-1">
         <b-form-input
           v-model="unstakeValue"
-          :state="
-            (unstakeValue.length === 0 ||
-              (unstakeValue > 0 && unstakeValue <= currentStake)) &&
-              undefined
-          "
+          :state="state"
           :max="currentStake"
           type="number"
           placeholder="0"
@@ -150,6 +146,16 @@ export default class ModalUnstake extends Vue {
   unstakeValue?: number = "" as any;
   step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";
+
+  get state() {
+    return (
+      (String(this.unstakeValue).length === 0 ||
+        (this.unstakeValue &&
+          this.unstakeValue > 0 &&
+          this.unstakeValue <= this.currentStake)) &&
+      undefined
+    );
+  }
 
   getEtherscanUrl() {
     return `${etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
