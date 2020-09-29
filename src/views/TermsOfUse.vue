@@ -4,11 +4,13 @@
       <b-col cols="12">
         <div class="mt-2">
           <h1 :class="headingsMode">
-            {{title}}
+            {{ title }}
           </h1>
           <div v-html="intro"></div>
           <div v-for="content in contents" :key="content.id">
-            <h2 :class="headingsMode">{{content.id+`. `+content.subtitle}}</h2>
+            <h2 :class="headingsMode">
+              {{ content.id + `. ` + content.subtitle }}
+            </h2>
             <div v-html="content.html"></div>
           </div>
         </div>
@@ -28,7 +30,7 @@ export default class TermsOfUse extends Vue {
   }
 
   get headingsMode() {
-    return vxm.general.darkMode ? 'headings-dark' : 'hedadings-light';
+    return vxm.general.darkMode ? "headings-dark" : "hedadings-light";
   }
 
   get title() {

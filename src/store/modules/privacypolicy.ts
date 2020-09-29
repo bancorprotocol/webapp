@@ -8,7 +8,7 @@ export class PrivacyPolicyModule extends VuexModule.With({
   namespaced: "privacypolicy/"
 }) {
   title: string = "PRIVACY POLICY";
-  contents: Array<{id: number, subtitle: string, subcontent: string}> = Array (
+  contents: Array<{ id: number; subtitle: string; subcontent: string }> = Array(
     {
       id: 1,
       subtitle: "About Us",
@@ -74,6 +74,6 @@ export class PrivacyPolicyModule extends VuexModule.With({
       subtitle: "Contact Us",
       subcontent:
         "For any questions about this Privacy Policy or any other issue regarding the Bacnor Network or our Services please contact us at: privacy@bancor.network"
-    },
+    }
   );
 }
