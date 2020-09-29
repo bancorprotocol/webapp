@@ -152,7 +152,7 @@ export default class ModalUnstake extends Vue {
   symbol: string = "";
 
   getEtherscanUrl() {
-    return `${etherscanUrl}address/${this.account}#tokentxns`;
+    return `${etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
   }
 
   get darkMode(): boolean {
@@ -168,7 +168,7 @@ export default class ModalUnstake extends Vue {
 
   async doUnstake() {
     await vxm.ethGovernance.unstake({
-      account: this.account,
+      account: this.isAuthenticated,
       amount: expandToken(this.unstakeValue!.toString(), 18)
     });
   }
@@ -181,16 +181,16 @@ export default class ModalUnstake extends Vue {
     }
   }
 
-  get account() {
+  get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
 
   @Watch("step")
-  @Watch("account")
+  @Watch("isAuthenticated")
   @Watch("show")
   async update() {
     this.currentStake = await vxm.ethGovernance.getVotes({
-      voter: this.account
+      voter: this.isAuthenticated
     });
   }
 

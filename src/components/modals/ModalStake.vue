@@ -157,7 +157,7 @@ export default class ModalStake extends Vue {
   }
 
   getEtherscanUrl() {
-    return `${etherscanUrl}address/${this.account}#tokentxns`;
+    return `${etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
   }
 
   stake() {
@@ -169,7 +169,7 @@ export default class ModalStake extends Vue {
 
   async doStake() {
     await vxm.ethGovernance.stake({
-      account: this.account,
+      account: this.isAuthenticated,
       amount: expandToken(this.stakeValue!.toString(), 18)
     });
   }
@@ -182,7 +182,7 @@ export default class ModalStake extends Vue {
     }
   }
 
-  get account() {
+  get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
 
@@ -200,11 +200,11 @@ export default class ModalStake extends Vue {
   }
 
   @Watch("step")
-  @Watch("account")
+  @Watch("isAuthenticated")
   @Watch("show")
   async update() {
     this.currentBalance = await vxm.ethGovernance.getBalance({
-      account: this.account
+      account: this.isAuthenticated
     });
   }
 

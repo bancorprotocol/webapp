@@ -51,14 +51,14 @@ export default class Proposals extends Vue {
     return vxm.general.darkMode;
   }
 
-  get account() {
+  get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
 
-  @Watch("account")
+  @Watch("isAuthenticated")
   async updateProposals() {
     this.proposals = await vxm.ethGovernance.getProposals({
-      voter: this.account
+      voter: this.isAuthenticated
     });
   }
 

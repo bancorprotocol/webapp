@@ -146,7 +146,7 @@ export default class Stake extends Vue {
     return vxm.general.darkMode;
   }
 
-  get account() {
+  get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
 
@@ -166,20 +166,20 @@ export default class Stake extends Vue {
     return this.lock.till;
   }
 
-  @Watch("account")
+  @Watch("isAuthenticated")
   @Watch("stakeModal")
   @Watch("unstakeModal")
   async update() {
     this.balance = await vxm.ethGovernance.getBalance({
-      account: this.account
+      account: this.isAuthenticated
     });
 
     this.votes = await vxm.ethGovernance.getVotes({
-      voter: this.account
+      voter: this.isAuthenticated
     });
 
     this.lock = await vxm.ethGovernance.getLock({
-      account: this.account
+      account: this.isAuthenticated
     });
 
     this.tokenAddress = await vxm.ethGovernance.getTokenAddress();
