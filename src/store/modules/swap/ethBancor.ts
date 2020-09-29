@@ -2552,6 +2552,8 @@ export class EthBancorModule
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
+          whitelisted: false,
+          liquidityProtection: false,
           focusAvailable: false,
           v2: true
         } as ViewRelay;
@@ -2598,6 +2600,8 @@ export class EthBancorModule
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
+          liquidityProtection: false,
+          whitelisted: false,
           focusAvailable: hasHistory,
           v2: false
         } as ViewRelay;
