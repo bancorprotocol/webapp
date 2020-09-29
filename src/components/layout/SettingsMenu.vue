@@ -1,6 +1,7 @@
 <template>
   <b-dropdown
     id="dropdown-settings"
+    ref="dropdown"
     right
     variant="white"
     size="sm"
@@ -165,15 +166,9 @@ export default class SettingsMenu extends Vue {
   }
 
   async changeModule(id: string) {
-    const currentRoute = this.$route.fullPath;
-    const currentModule = currentRoute.split("/")[1];
-    const currentService = currentRoute.split("/")[2].split("?")[0];
-    let hostbase = window.location.hostname;
-    if (hostbase === "localhost") hostbase = "http://" + hostbase + ":8080";
-    else hostbase = "https://" + hostbase;
-
-    if (id === currentModule) return;
-    window.location.replace([hostbase, id, currentService].join("/"));
+    await this.$router.push({ name: "Swap", params: { service: id } });
+    //@ts-ignore
+    this.$refs.dropdown.hide(true);
   }
 
   @Watch("customSlippage")
