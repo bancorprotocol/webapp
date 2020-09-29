@@ -1,8 +1,12 @@
 import { createModule, action, mutation } from "vuex-class-component";
-import { web3 } from "@/api/helpers";
-import { ABIBancorGovernance, ABISmartToken } from "@/api/eth/ethAbis";
-import { EthAddress } from "@/types/bancor";
+import { ContractMethods, EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
+import {
+  buildGovernanceContract,
+  buildTokenContract
+} from "@/api/eth/contractTypes";
+import { CallReturn } from "eth-multicall";
+import { ContractSendMethod } from "web3-eth-contract";
 
 export const governanceContractAddress =
   "0x6F1DfdA2a7303d88d9a5AEe694988158102de668";
@@ -37,17 +41,55 @@ export interface Proposal {
   };
 }
 
+interface Token
+  extends ContractMethods<{
+    symbol: () => CallReturn<string>;
+    decimals: () => CallReturn<string>;
+    totalSupply: () => CallReturn<string>;
+    allowance: (owner: string, spender: string) => CallReturn<string>;
+    balanceOf: (owner: string) => CallReturn<string>;
+    transferOwnership: (converterAddress: string) => ContractSendMethod;
+    issue: (address: string, wei: string) => ContractSendMethod;
+    transfer: (to: string, weiAmount: string) => ContractSendMethod;
+    approve: (
+      approvedAddress: string,
+      approvedAmount: string
+    ) => ContractSendMethod;
+  }> {}
+
+interface Governance
+  extends ContractMethods<{
+    voteFor: (proposalId: string) => ContractSendMethod;
+    voteAgainst: (proposalId: string) => ContractSendMethod;
+    stake: (amount: string) => ContractSendMethod;
+    unstake: (amount: string) => ContractSendMethod;
+    decimals: () => CallReturn<string>;
+    proposalCount: () => CallReturn<number>;
+    proposals: (proposalI: number) => CallReturn<Proposal>;
+    votesOf: (voter: string) => CallReturn<string>;
+    votesForOf: (voter: string, proposalId: number) => CallReturn<string>;
+    votesAgainstOf: (voter: string, proposalId: number) => CallReturn<string>;
+    voteLocks: (voter: string) => CallReturn<string>;
+    govToken: () => CallReturn<string>;
+  }> {}
+
 export class EthereumGovernance extends VuexModule.With({
   namespaced: "ethGovernance/"
 }) {
-  governanceContract: any = undefined;
-  tokenContract: any = undefined;
+  governanceContract: Governance = {} as Governance;
+  tokenContract: Token = {} as Token;
 
   isLoaded: boolean = false;
   symbol?: string;
 
   @mutation
-  setContracts({ governance, token }: { governance: any; token: any }) {
+  setContracts({
+    governance,
+    token
+  }: {
+    governance: Governance;
+    token: Token;
+  }) {
     this.tokenContract = token;
     this.governanceContract = governance;
     this.isLoaded = true;
@@ -71,16 +113,16 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async init() {
-    const governanceContract = new web3.eth.Contract(
-      ABIBancorGovernance,
+    const governanceContract: Governance = buildGovernanceContract(
       governanceContractAddress
     );
+
     const tokenAddress = await governanceContract.methods.govToken().call();
     console.log("vote token address", tokenAddress);
 
     await this.setContracts({
       governance: governanceContract,
-      token: new web3.eth.Contract(ABISmartToken, tokenAddress)
+      token: buildTokenContract(tokenAddress)
     });
   }
 
@@ -113,8 +155,8 @@ export class EthereumGovernance extends VuexModule.With({
 
     console.log("getting balance");
     const [decimals, weiBalance] = await Promise.all([
-      this.tokenContract.methods.decimals().call() as string,
-      this.tokenContract.methods.balanceOf(account).call() as string
+      this.tokenContract.methods.decimals().call(),
+      this.tokenContract.methods.balanceOf(account).call()
     ]);
     return parseFloat(shrinkToken(weiBalance, Number(decimals)));
   }
@@ -131,11 +173,11 @@ export class EthereumGovernance extends VuexModule.With({
       Number(await this.governanceContract.methods.voteLocks(account).call()) *
       1000;
     // for
-    const f = till - Date.now();
+    const lockedFor = till - Date.now();
 
     const lock = {
       till,
-      for: f > 0 ? f : 0
+      for: lockedFor > 0 ? lockedFor : 0
     };
 
     console.log(lock);

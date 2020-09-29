@@ -59,8 +59,8 @@
         <modal-unstake v-model="unstakeModal" />
       </div>
 
-      <span v-if="lockedTill() > Date.now()">
-        <remaining-time type="warn" :from="Date.now()" :to="lockedTill()" />
+      <span v-if="lock.till > Date.now()">
+        <remaining-time type="warn" :from="Date.now()" :to="lock.till" />
       </span>
 
       <div
@@ -160,10 +160,6 @@ export default class Stake extends Vue {
 
   shortAddress(address: EthAddress) {
     return shortenEthAddress(address);
-  }
-
-  lockedTill(): number {
-    return this.lock.till;
   }
 
   @Watch("isAuthenticated")
