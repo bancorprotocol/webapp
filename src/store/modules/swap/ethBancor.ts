@@ -5150,15 +5150,7 @@ export class EthBancorModule
           )
         );
 
-        this.setLiquidityHistory(withDates);
-
-        console.log(
-          withDates.map(x => ({
-            ...x,
-            formatted: moment.unix(x.blockTime).format()
-          })),
-          "have dates"
-        );
+        this.setLiquidityHistory(withDates); 
       })();
 
       console.timeEnd("SecondPromise");
