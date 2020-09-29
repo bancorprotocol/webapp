@@ -113,7 +113,7 @@
         >
         Privacy Policy</b-dropdown-item
       >
-      <b-dropdown-item @click="navTermsofUse"
+      <b-dropdown-item @click="navTermsOfUse"
         >
         Terms of Use</b-dropdown-item
       >
@@ -152,43 +152,11 @@ export default class BancorMenu extends Vue {
   }
 
   navPrivacy() {
-    const hostbase = window.location.hostname;
-    const service = this.$route.params.service;
-
-    const isDev = hostbase == "localhost";
-    const isStaging = hostbase.includes("staging");
-    const isProd = !isDev && !isStaging;
-
-    if (isDev) {
-      this.openUrl(`http://localhost:8080/${service}/privacy-policy`);
-    } else if (isStaging) {
-      this.openUrl(`https://staging.swap.bancor.network/${service}/privacy-policy`);
-    } else if (isProd) {
-      this.openUrl(`https://swap.bancor.network/${service}/privacy-policy`);
-    } else {
-      console.log("failed to determine route...");
-      this.openUrl(`https://swap.bancor.network/${service}/privacy-policy`);
-    }
+    this.$router.push({ name: "PrivacyPolicy" });
   }
 
-  navTermsofUse() {
-    const hostbase = window.location.hostname;
-    const service = this.$route.params.service;
-
-    const isDev = hostbase == "localhost";
-    const isStaging = hostbase.includes("staging");
-    const isProd = !isDev && !isStaging;
-
-    if (isDev) {
-      this.openUrl(`http://localhost:8080/${service}/terms-of-use`);
-    } else if (isStaging) {
-      this.openUrl(`https://staging.swap.bancor.network/${service}/terms-of-use`);
-    } else if (isProd) {
-      this.openUrl(`https://swap.bancor.network/${service}/terms-of-use`);
-    } else {
-      console.log("failed to determine route...");
-      this.openUrl(`https://swap.bancor.network/${service}/terms-of-use`);
-    }
+  navTermsOfUse() {
+    this.$router.push({ name: "TermsOfUse" });
   }
 
   openUrl(url: string) {

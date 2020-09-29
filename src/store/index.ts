@@ -11,6 +11,8 @@ import { WalletModule } from "./modules/wallet/index";
 import { NetworkModule } from "./modules/network/index";
 import { EosNetworkModule } from "./modules/network/eosNetwork";
 import { createProxy, extractVuexModule } from "vuex-class-component";
+import { PrivacyPolicyModule } from "./modules/privacypolicy";
+import { TermsOfUseModule } from "./modules/termsofuse";
 
 Vue.use(Vuex);
 
@@ -24,7 +26,9 @@ export const store = new Vuex.Store({
     ...extractVuexModule(BancorModule),
     ...extractVuexModule(WalletModule),
     ...extractVuexModule(NetworkModule),
-    ...extractVuexModule(EosNetworkModule)
+    ...extractVuexModule(EosNetworkModule),
+    ...extractVuexModule(PrivacyPolicyModule),
+    ...extractVuexModule(TermsOfUseModule)
   },
   strict: process.env.NODE_ENV !== "production"
 });
@@ -38,5 +42,7 @@ export const vxm = {
   ethBancor: createProxy(store, EthBancorModule),
   bancor: createProxy(store, BancorModule),
   eosNetwork: createProxy(store, EosNetworkModule),
-  network: createProxy(store, NetworkModule)
+  network: createProxy(store, NetworkModule),
+  termsofuse: createProxy(store, TermsOfUseModule),
+  privacypolicy: createProxy(store, PrivacyPolicyModule)
 };
