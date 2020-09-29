@@ -107,7 +107,6 @@ import MainButton from "@/components/common/Button.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import ModalStake from "@/components/modals/ModalStake.vue";
-import { blockTime } from "@/store/modules/governance/ethGovernance";
 import ModalUnstake from "@/components/modals/ModalUnstake.vue";
 
 @Component({
@@ -130,11 +129,9 @@ export default class Stake extends Vue {
 
   lock: {
     till: number;
-    now: number;
     for: number;
   } = {
     till: 0,
-    now: 0,
     for: 0
   };
 
@@ -166,10 +163,7 @@ export default class Stake extends Vue {
   }
 
   lockedTill(): number {
-    const till = Date.now() + this.lock.for * blockTime * 1000;
-
-    console.log("lock", Date.now(), till);
-    return till;
+    return this.lock.till;
   }
 
   @Watch("account")

@@ -37,10 +37,10 @@
                 Vote Start
               </span>
               <span class="font-size-12 font-w500 pl-1 pr-1">
-                {{ formatDate(proposal.startDate) }}
+                {{ formatDate(proposal.start) }}
               </span>
               <span class="font-size-12 font-w500 text-muted-light">
-                {{ formatTime(proposal.startDate) }}
+                {{ formatTime(proposal.start) }}
               </span>
             </div>
             <div>
@@ -48,10 +48,10 @@
                 Vote End
               </span>
               <span class="font-size-12 font-w500 pl-1 pr-1">
-                {{ formatDate(proposal.endDate) }}
+                {{ formatDate(proposal.end) }}
               </span>
               <span class="font-size-12 font-w500 text-muted-light">
-                {{ formatTime(proposal.endDate) }}
+                {{ formatTime(proposal.end) }}
               </span>
             </div>
           </b-col>
@@ -88,8 +88,8 @@
         <div class="pt-2">
           <remaining-time
             type="warn"
-            :from="proposal.startDate"
-            :to="proposal.endDate"
+            :from="proposal.start"
+            :to="proposal.end"
           />
         </div>
       </td>

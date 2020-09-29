@@ -5,12 +5,9 @@ import { EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
 
 export const governanceContractAddress =
-  "0x05AA3da21D2706681837a896433E62deEeEaB1f1";
-export const etherscanUrl = "https://ropsten.etherscan.io/";
+  "0x6F1DfdA2a7303d88d9a5AEe694988158102de668";
+export const etherscanUrl = "https://kovan.etherscan.io/";
 export const ipfsUrl = "https://ipfs.io/ipfs/";
-
-// block time in seconds
-export const blockTime = 15;
 
 const VuexModule = createModule({
   strict: false
@@ -18,14 +15,10 @@ const VuexModule = createModule({
 
 export interface Proposal {
   id: number;
-  // block number
+  // timestamp
   start: number;
   // timestamp
-  startDate: number;
-  // block number
   end: number;
-  // timestamp
-  endDate: number;
   name: string;
   executor: EthAddress;
   hash: string;
@@ -131,18 +124,16 @@ export class EthereumGovernance extends VuexModule.With({
     account
   }: {
     account: EthAddress;
-  }): Promise<{ now: number; till: number; for: number }> {
+  }): Promise<{ till: number; for: number }> {
     if (!account) throw new Error("Cannot get lock without address");
 
-    const till = Number(
-      await this.governanceContract.methods.voteLocks(account).call()
-    );
-    const now = await web3.eth.getBlockNumber();
+    const till =
+      Number(await this.governanceContract.methods.voteLocks(account).call()) *
+      1000;
     // for
-    const f = till - now;
+    const f = till - Date.now();
 
     const lock = {
-      now,
       till,
       for: f > 0 ? f : 0
     };
@@ -245,7 +236,6 @@ export class EthereumGovernance extends VuexModule.With({
 
     const decimals = Number(await this.tokenContract.methods.decimals().call());
     const proposals: Proposal[] = [];
-    const currentBlock = await web3.eth.getBlock("latest");
 
     for (let i = 0; i < proposalCount; i++) {
       const proposal = await this.governanceContract.methods
@@ -278,13 +268,8 @@ export class EthereumGovernance extends VuexModule.With({
 
       const prop = {
         id: Number(proposal.id),
-        start: Number(proposal.start),
-        startDate:
-          Number((await web3.eth.getBlock(proposal.start)).timestamp) * 1000,
-        end: Number(proposal.end),
-        endDate:
-          Date.now() +
-          (Number(proposal.end) - currentBlock.number) * blockTime * 1000,
+        start: Number(proposal.start) * 1000,
+        end: Number(proposal.end) * 1000,
         executor: proposal.executor,
         hash: proposal.hash,
         open: proposal.open,
@@ -339,11 +324,12 @@ export class EthereumGovernance extends VuexModule.With({
     timeoutInSeconds: number;
   }): Promise<any> {
     return new Promise((resolve, reject) => {
+      const url = `${ipfsUrl}${hash}`;
       const t = setTimeout(() => {
-        return reject("timeout");
+        return reject(`Timeout at: ${url}`);
       }, timeoutInSeconds * 1000);
 
-      fetch(`${ipfsUrl}${hash}`, {
+      fetch(url, {
         method: "GET"
       })
         .then(response => response.json())

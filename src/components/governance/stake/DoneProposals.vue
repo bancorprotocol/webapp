@@ -39,18 +39,18 @@
         </td>
         <!--       <td>
           <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.startDate) }}
+            {{ formatDate(proposal.start) }}
           </div>
           <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.startDate) }} UTC
+            {{ formatTime(proposal.start) }} UTC
           </div>
         </td> -->
         <td>
           <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.endDate) }}
+            {{ formatDate(proposal.end) }}
           </div>
           <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.endDate) }} UTC
+            {{ formatTime(proposal.end) }} UTC
           </div>
         </td>
         <td @click="() => openProposal(proposal)" class="cursor">
@@ -100,10 +100,10 @@
               Vote Start
             </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
-              {{ formatDate(proposal.startDate) }}
+              {{ formatDate(proposal.start) }}
             </span>
             <span class="font-size-12 font-w500 text-muted-light">
-              {{ formatTime(proposal.startDate) }}
+              {{ formatTime(proposal.start) }}
             </span>
           </div>
           <div>
@@ -168,58 +168,8 @@ export default class DoneProposals extends Vue {
   symbol: string = "";
   opened?: number = undefined;
 
-  mockData: Proposal[] = [
-    {
-      id: 1,
-      proposer: "0x" + "1".repeat(40),
-      executor: "0x" + "1".repeat(40),
-      totalVotesAgainst: 3777,
-      totalVotesFor: 1900,
-      totalVotesAvailable: 10000,
-      totalVotes: 1900 + 3777,
-      start: 0,
-      end: 0,
-      name: "Test1",
-      startDate: 1600348747298,
-      endDate: 1600248747298,
-      open: false,
-      hash: "sdadsa",
-      quorum: "10000",
-      quorumRequired: "100000",
-      votes: {
-        voted: "for",
-        for: 10,
-        against: 0
-      }
-    },
-    {
-      id: 2,
-      proposer: "0x" + "3".repeat(40),
-      executor: "0x" + "2".repeat(40),
-      totalVotesAgainst: 1299,
-      totalVotesFor: 1900,
-      totalVotesAvailable: 10000,
-      totalVotes: 1900 + 1299,
-      start: 0,
-      end: 0,
-      name: "Test2",
-      startDate: 1600348747298,
-      endDate: 1600268747298,
-      open: false,
-      hash: "sdadsa",
-      quorum: "10000",
-      quorumRequired: "100000",
-      votes: {
-        voted: "for",
-        for: 10,
-        against: 0
-      }
-    }
-  ];
-
   get proposalsToDisplay() {
-    // @ts-ignore
-    return this.proposals.length > 0 ? this.proposals : this.mockData;
+    return this.proposals;
   }
 
   get fields(): ViewTableFields[] {
