@@ -111,8 +111,8 @@
               Quorum/Required
             </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
-              {{ proposal.quorum / 100 }}% /
-              {{ proposal.quorumRequired / 100 }}%
+              {{ proposal.quorum / 10000 }}% /
+              {{ proposal.quorumRequired / 10000 }}%
             </span>
           </div>
         </td>
