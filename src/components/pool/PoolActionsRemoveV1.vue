@@ -30,7 +30,7 @@
         class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 pt-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        <span> {{ smartTokenAmount }} <span>(~??.??)</span> </span>
+        <span> (??.??????) <span>(~??.??)</span> </span>
         <div class="d-flex align-items-center">
           <img
             :src="pool.reserves[0].logo"
@@ -45,7 +45,7 @@
         class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 py-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        <span> {{ smartTokenAmount }} <span>(~$??.??)</span></span>
+        <span> (??.??????) <span>(~$??.??)</span></span>
         <div class="d-flex align-items-center">
           <img
             :src="pool.reserves[1].logo"
@@ -76,7 +76,7 @@
       <token-input-field
         label="Output"
         :token="reserveOne"
-        v-model="amount1"
+        v-model="amountToken1"
         @input="tokenOneChanged"
         :balance="balance1"
         :error-msg="token1Error"
@@ -93,7 +93,7 @@
       <token-input-field
         label="Output"
         :token="reserveTwo"
-        v-model="amount2"
+        v-model="amountToken2"
         @input="tokenTwoChanged"
         class="ml-3 mb-3"
         :balance="balance2"
@@ -136,6 +136,7 @@
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { 
+  LiquidityModule,
   ViewRelay, 
   ViewAmount,
   ViewReserve
@@ -148,6 +149,9 @@ import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import BigNumber from "bignumber.js";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import { compareString, formatNumber, formatPercent } from "../../api/helpers";
+import { namespace } from "vuex-class";
+
+const bancor = namespace("bancor");
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -168,15 +172,17 @@ interface PoolTokenUI {
   }
 })
 export default class PoolActionsRemoveV1 extends Vue {
+  @bancor.Action
+  calculateOpposingWithdraw!: LiquidityModule["calculateOpposingWithdraw"];
+  @bancor.Action
+  getUserBalances!: LiquidityModule["getUserBalances"];
   
   @Prop() pool!: ViewRelay;
 
   errorMsg = ""
 
-  smartTokenAmount: string = "??.??????";
-  amount1: string = "";
-  amount2: string = "";
-  amount: string = "";
+  amountToken1: string = "";
+  amountToken2: string = "";
   modal = false;
 
   singleUnitCosts: any[] = [];
@@ -186,11 +192,14 @@ export default class PoolActionsRemoveV1 extends Vue {
 
   token1Error = "";
   token2Error = "";
+  balance1 = "";
+  balance2 = "";
+
+  res: any = null;
 
   poolSelectModal = false;
 
   percentage: string = "50";
-  exitFee = 0;
   percentageDirty: boolean = false;
 
   selectedToken: string = "";
@@ -259,20 +268,12 @@ export default class PoolActionsRemoveV1 extends Vue {
     return (
       this.token1Error !== "" ||
       this.token2Error !== "" ||
-      !(this.amount1 && this.amount2)
+      !(this.amountToken1 && this.amountToken2)
     );
   }
 
   get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
-  }
-
-  get balance1() {
-    return vxm.bancor.token(this.reserveOne.id).balance ?? "0";
-  }
-
-  get balance2() {
-    return vxm.bancor.token(this.reserveTwo.id).balance ?? "0";
   }
 
   get reserveOne() {
@@ -283,8 +284,94 @@ export default class PoolActionsRemoveV1 extends Vue {
     return this.pool.reserves[1];
   }
 
+  setDefault() {
+    this.amountToken1 = "";
+    this.amountToken2 = "";
+    this.token1Error = "";
+    this.token2Error = "";
+  }
+
   async tokenInputChanged(tokenAmount: string) {
 
+  }
+
+  async tokenOneChanged(tokenAmount: string) {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
+      this.setDefault();
+      return;
+    }
+    this.rateLoading = true;
+    try {
+      const results = await this.calculateOpposingWithdraw({
+        id: this.pool.id,
+        reserves: [
+          { id: this.pool.reserves[0].id, amount: tokenAmount },
+          { id: this.pool.reserves[1].id, amount: this.amountToken2 }
+        ],
+        changedReserveId: this.pool.reserves[0].id
+      });
+      if (typeof results.opposingAmount !== "undefined") {
+        this.amountToken2 = results.opposingAmount;
+      }
+      this.token1Error =
+        this.balance1 < tokenAmount ? "Insufficient balance" : "";
+      this.token2Error =
+        this.balance2 < this.amountToken2 ? "Insufficient balance" : "";
+    } catch (e) {
+      this.token1Error = e.message;
+      this.token2Error = "";
+    }
+    this.rateLoading = false;
+  }
+
+  async tokenTwoChanged(tokenAmount: string) {
+    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
+      this.setDefault();
+      return;
+    }
+    this.rateLoading = true;
+    try {
+      const results = await this.calculateOpposingWithdraw({
+        id: this.pool.id,
+        reserves: [
+          { id: this.pool.reserves[0].id, amount: this.amountToken1 },
+          { id: this.pool.reserves[1].id, amount: tokenAmount }
+        ],
+        changedReserveId: this.pool.reserves[1].id
+      });
+      if (typeof results.opposingAmount !== "undefined") {
+        this.amountToken1 = results.opposingAmount;
+      }
+      this.token1Error =
+        this.balance1 < this.amountToken1
+          ? "Token balance is currently insufficient"
+          : "";
+      this.token2Error =
+        this.balance2 < tokenAmount
+          ? "Token balance is currently insufficient"
+          : "";
+    } catch (e) {
+      this.token2Error = e.message;
+      this.token1Error = "";
+    }
+    this.rateLoading = false;
+  }
+
+  async fetchBalances() {
+    if (!this.isAuthenticated) return;
+    const res = await this.getUserBalances(this.pool.id);
+    if (this.pool.reserves[0].id === res.maxWithdrawals[0].id) {
+      this.balance1 = res.maxWithdrawals[0].amount;
+      this.balance2 = res.maxWithdrawals[1].amount;
+    } else {
+      this.balance1 = res.maxWithdrawals[1].amount;
+      this.balance2 = res.maxWithdrawals[0].amount;
+    }
+    this.res = res.maxWithdrawals;
+  }
+
+  created () {
+    this.fetchBalances();
   }
 }
 </script>
