@@ -80,7 +80,7 @@
         @input="tokenOneChanged"
         :balance="balance1"
         :error-msg="token1Error"
-        class="ml-2"
+        class="ml-3"
       />
 
       <div class="text-center my-3">
@@ -95,14 +95,14 @@
         :token="reserveTwo"
         v-model="amount2"
         @input="tokenTwoChanged"
-        class="ml-2 mb-3"
+        class="ml-3 mb-3"
         :balance="balance2"
         :error-msg="token2Error"
       />
     </div>
 
-    <div class="row">
-      <div class="col-6">
+    <b-row>
+      <b-col cols="6" class="pr-1">
         <main-button
           label="Approve"
           :active="true"
@@ -111,8 +111,8 @@
           :loading="rateLoading"
           :disabled="disableApproveButton"
         />
-      </div>
-      <div class="col-6">
+      </b-col>
+      <b-col cols="6" class="pr-1">
         <main-button
           label="Remove"
           :active="true"
@@ -121,8 +121,8 @@
           :loading="rateLoading"
           :disabled="disableRemoveButton"
         />
-      </div>
-    </div>
+      </b-col>
+    </b-row>
 
     <modal-pool-action
       v-model="modal"
