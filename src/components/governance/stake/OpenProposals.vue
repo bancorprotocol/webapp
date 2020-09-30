@@ -103,7 +103,7 @@
       </td>
       <td>
         <div class="pl-3 container-border">
-          <div v-if="!proposal.votes.voted">
+          <div v-if="!proposal.votes.voted && proposal.end > Date.now()">
             <main-button
               @click="() => voteFor(proposal.id.toString())"
               label="Vote for"
