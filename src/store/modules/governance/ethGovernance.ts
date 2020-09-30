@@ -39,6 +39,10 @@ export interface Proposal {
     for: number;
     against: number;
   };
+  metadata: {
+    github: string;
+    discourse: string;
+  };
 }
 
 interface Token
@@ -295,6 +299,8 @@ export class EthereumGovernance extends VuexModule.With({
       );
 
       let name;
+      let github;
+      let discourse;
 
       try {
         const metadata = await this.getFromIPFS({
@@ -304,6 +310,18 @@ export class EthereumGovernance extends VuexModule.With({
         console.log(metadata);
 
         name = (metadata && metadata.payload && metadata.payload.name) || null;
+        github =
+          (metadata &&
+            metadata.payload &&
+            metadata.payload.metadata &&
+            metadata.payload.metadata.github) ||
+          null;
+        discourse =
+          (metadata &&
+            metadata.payload &&
+            metadata.payload.metadata &&
+            metadata.payload.metadata.discourse) ||
+          null;
       } catch (err) {
         console.log("Getting metadata failed!", err);
       }
@@ -344,7 +362,11 @@ export class EthereumGovernance extends VuexModule.With({
                 )
               )
             : 0
-        } as any
+        } as any,
+        metadata: {
+          github,
+          discourse
+        }
       };
       const { for: vFor, against: vAgainst } = prop.votes;
       prop.votes.voted =

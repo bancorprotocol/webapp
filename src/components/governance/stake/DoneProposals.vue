@@ -118,21 +118,33 @@
         </td>
         <td colspan="3">
           <div class="buttons-container">
-            <main-button
-              :small="true"
-              :active="true"
-              class="font-w400 mt-0 mb-0"
+            <a
+              :href="
+                proposal.metadata.discourse ? proposal.metadata.discourse : '#'
+              "
+              target="_blank"
+              style="width: 100%; display: inline-block;"
             >
-              BIP
-              <font-awesome-icon icon="external-link-alt" />
-            </main-button>
+              <main-button
+                :small="true"
+                :active="true"
+                class="font-w400 mt-0 mb-0"
+              >
+                BIP
+                <font-awesome-icon icon="external-link-alt" />
+              </main-button>
+            </a>
 
-            <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
-              <a :href="getIPFSUrl(proposal.hash)" target="_blank">
+            <a
+              :href="getIPFSUrl(proposal.hash)"
+              target="_blank"
+              style="width: 100%; display: inline-block;"
+            >
+              <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
                 IPFS
                 <font-awesome-icon icon="external-link-alt" />
-              </a>
-            </main-button>
+              </main-button>
+            </a>
           </div>
         </td>
       </tr>
@@ -312,6 +324,7 @@ export default class DoneProposals extends Vue {
 
 .buttons-container {
   display: flex;
+  margin-right: 20px;
   align-items: center;
   justify-content: space-between;
 }

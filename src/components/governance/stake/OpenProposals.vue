@@ -20,11 +20,19 @@
 
         <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
           More about proposal:
-          <a target="_blank" class="font-size-14 font-w500 fix-a pl-2">
+          <a
+            target="_blank"
+            class="font-size-14 font-w500 fix-a pl-2"
+            :href="proposal.metadata.discourse"
+          >
             <font-awesome-icon icon="external-link-alt" />
             Discussion Forum
           </a>
-          <a target="_blank" class="font-size-14 font-w500 fix-a pl-2">
+          <a
+            target="_blank"
+            class="font-size-14 font-w500 fix-a pl-2"
+            :href="proposal.metadata.github"
+          >
             <font-awesome-icon :icon="['fab', 'github']" />
             GitHub
           </a>
