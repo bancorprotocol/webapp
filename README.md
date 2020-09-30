@@ -20,7 +20,7 @@ Daily standups
 |                 | City                                                                  | Start   | End     |
 | --------------- | --------------------------------------------------------------------- | ------- | ------- |
 | John Williamson | [Brisbane](https://www.timeanddate.com/worldclock/australia/)         | 10:00pm | 8:00am  |
-| Jan Lghr        | [Stuttgart](https://www.timeanddate.com/worldclock/germany/stuttgart) | 8:00am  | 6:00pm  |
+| Jan Langheimer  | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg)   | 8:00am  | 6:00pm  |
 | Dmitry          | [Dnipro](https://www.timeanddate.com/worldclock/ukraine/dnipro)       | 12:00pm | 10:00pm |
 | Gury            | [Jerusalem](https://www.timeanddate.com/worldclock/israel/jerusalem)  |         |         |
 
