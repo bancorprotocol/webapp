@@ -172,8 +172,8 @@
             <span class="mini-pie-wrapper">
               <pie-chart
                 class="fix-pie"
-                width="16"
-                height="16"
+                :width="16"
+                :height="16"
                 :chart-data="generateChartData(proposal)"
                 :options="{
                   legend: false,
