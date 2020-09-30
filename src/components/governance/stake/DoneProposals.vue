@@ -142,7 +142,6 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import PieChart from "vue-pie-chart";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -159,7 +158,6 @@ import {
   components: {
     ContentBlock,
     DataTable,
-    PieChart,
     MainButton
   }
 })

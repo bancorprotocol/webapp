@@ -166,10 +166,12 @@
                 class="fix-pie"
                 width="16"
                 height="16"
-                :ratio="proposal.totalVotesFor / proposal.totalVotes"
-                :stroke-width="10"
-                :opacity="1"
-                color="#3ec8c8"
+                :chart-data="generateChartData(proposal)"
+                :options="{
+                  legend: false,
+                  lineWidth: 0,
+                  tooltips: { enabled: false }
+                }"
               />
             </span>
             <span>
@@ -222,7 +224,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import PieChart from "vue-pie-chart";
+import PieChart from "@/components/data/charts/PieChart.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -272,6 +274,21 @@ export default class OpenProposals extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  generateChartData(proposal: Proposal) {
+    return {
+      datasets: [
+        {
+          backgroundColor: ["#3ec8c8", "#de4a5c"],
+          borderWidth: 0,
+          data:
+            proposal.totalVotesFor === 0 && proposal.totalVotesAgainst === 0
+              ? [1, 1]
+              : [proposal.totalVotesFor, proposal.totalVotesAgainst]
+        }
+      ]
+    };
   }
 
   formatDate(date: number) {
@@ -325,11 +342,13 @@ export default class OpenProposals extends Vue {
   cursor: pointer;
   color: $primary !important;
 }
+
 .align-rows-cells {
   @at-root .table & > td {
     vertical-align: top !important;
   }
 }
+
 .container-border {
   border-left: 1px solid $gray-border;
 }
@@ -350,6 +369,7 @@ export default class OpenProposals extends Vue {
   outline: none !important;
   box-shadow: none !important;
 }
+
 .square {
   @include vote-bg;
 
@@ -364,8 +384,6 @@ export default class OpenProposals extends Vue {
 .mini-pie-wrapper {
   height: 16px;
   width: 16px;
-  background: #de4a5c;
-  border-radius: 8px;
   display: inline-flex;
   vertical-align: middle;
 }
@@ -400,6 +418,7 @@ export default class OpenProposals extends Vue {
       content: "For";
     }
   }
+
   &--against {
     color: #de4a5c;
 
