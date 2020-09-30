@@ -28,13 +28,30 @@
 
     <b-row>
       <b-col cols="12">
-        <protectable-liquidity class="mb-3" />
-      </b-col>
-    </b-row>
+        <content-block :px0="true" :shadow-light="true" :no-header="true">
+          <div class="pt-2">
+            <div class="float-right mr-2">
+              <multi-input-field
+                v-model="searchProtected"
+                placeholder="Search"
+                prepend="search"
+              />
+            </div>
 
-    <b-row>
-      <b-col cols="12">
-        <protected-liquidities />
+            <b-tabs
+              v-model="tabIndex"
+              no-fade
+              :class="darkMode ? 'tabs-dark' : 'tabs-light'"
+            >
+              <b-tab title="Protected">
+                <protected :search="searchProtected" />
+              </b-tab>
+              <b-tab title="Claim">
+                <claim :search="searchProtected" />
+              </b-tab>
+            </b-tabs>
+          </div>
+        </content-block>
       </b-col>
     </b-row>
   </b-container>
@@ -44,15 +61,24 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ProtectableLiquidity from "@/components/protection/ProtectableLiquidity.vue";
-import ProtectedLiquidities from "@/components/protection/ProtectedLiquidities.vue";
+import Protected from "@/components/protection/Protected.vue";
+import ContentBlock from "@/components/common/ContentBlock.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
+import Claim from "@/components/protection/Claim.vue";
 
 @Component({
   components: {
-    ProtectedLiquidities,
+    Claim,
+    MultiInputField,
+    ContentBlock,
+    Protected,
     ProtectableLiquidity
   }
 })
 export default class LiquidityProtectionSummary extends Vue {
+  tabIndex = 0;
+  searchProtected = "";
+
   get darkMode() {
     return vxm.general.darkMode;
   }
