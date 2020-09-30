@@ -9,6 +9,7 @@ const VuexModule = createModule({
 export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   language: string = "en";
   darkMode: boolean = false;
+  detailMode: boolean = false;
   countryCode: string = "";
   bannedCountries: string[] = [
     "UNKOWN",
@@ -53,6 +54,11 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   @mutation toggleDarkMode() {
     this.darkMode = !this.darkMode;
     localStorage.setItem("darkMode", this.darkMode.toString());
+  }
+
+  @mutation toggleDetailMode() {
+    this.detailMode = !this.detailMode;
+    localStorage.setItem("detailMode", this.detailMode.toString());
   }
 
   @mutation setLanguage(lang?: string) {

@@ -1,23 +1,36 @@
 <template>
   <div>
-    <div v-if="!advanced" class="text-center my-3">
-      <font-awesome-icon
-        icon="long-arrow-alt-down"
-        class="text-primary font-size-16"
+    <label-content-split label="Selected Pool" class="my-3">
+      <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
+      <modal-pool-select
+        v-model="poolSelectModal"
+        :pools="pools"
+        @select="select"
       />
-    </div>
+    </label-content-split>
 
-    <div
-      v-if="!advanced"
-      class="block block-rounded block-bordered mb-4"
-      :class="darkMode ? 'block-light-blue-dark' : 'block-light-blue-light'"
-    >
+    <percentage-slider
+      label="AMOUNT"
+      class="mt-3"
+      v-model="percentage"
+      @input="percentageUpdate"
+      :show-buttons="true"
+      :buttons-dirty="percentageDirty"
+    />
+
+    <div v-if="!detailMode">
+      <div class="text-center my-3">
+        <font-awesome-icon
+          icon="long-arrow-alt-down"
+          class="text-primary font-size-16"
+        />
+      </div>
+
       <div
-        v-if="!advanced"
         class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 pt-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        <span>?????.??????? <span>(~$??.??)</span></span>
+        <span> {{ smartTokenAmount }} <span>(~??.??)</span> </span>
         <div class="d-flex align-items-center">
           <img
             :src="pool.reserves[0].logo"
@@ -29,11 +42,10 @@
       </div>
 
       <div
-        v-if="!advanced"
         class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 py-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        <span>?????.??????? <span>(~$??.??)</span></span>
+        <span> {{ smartTokenAmount }} <span>(~$??.??)</span></span>
         <div class="d-flex align-items-center">
           <img
             :src="pool.reserves[1].logo"
@@ -47,79 +59,75 @@
 
     <div v-else>
       <token-input-field
-        v-if="!advanced"
         label="Input"
         v-model="amountSmartToken"
+        @input="tokenInputChanged"
         :pool="pool"
         class="mt-4"
       />
 
-      <div v-if="!advanced" class="text-center my-3">
+      <div class="text-center my-3">
         <font-awesome-icon
           icon="long-arrow-alt-down"
           class="text-primary font-size-16"
         />
       </div>
+
       <token-input-field
         label="Output"
-        v-model="amountToken1"
+        :token="reserveOne"
+        v-model="amount1"
         @input="tokenOneChanged"
-        :token="pool.reserves[0]"
-        class="my-3"
         :balance="balance1"
         :error-msg="token1Error"
+        class="ml-2"
       />
 
       <div class="text-center my-3">
-        <font-awesome-icon icon="plus" class="text-primary font-size-16" />
+        <font-awesome-icon 
+          icon="plus" 
+          class="text-primary font-size-16"
+        />
       </div>
+
       <token-input-field
         label="Output"
-        v-model="amountToken2"
+        :token="reserveTwo"
+        v-model="amount2"
         @input="tokenTwoChanged"
-        :token="pool.reserves[1]"
+        class="ml-2 mb-3"
         :balance="balance2"
         :error-msg="token2Error"
-        class="mb-4"
       />
     </div>
 
-    <!--    // missing data-->
-    <label-content-split
-      v-if="false"
-      label="Price"
-      :value="
-        `1 ${pool.reserves[1].symbol} = ${rate} ${pool.reserves[0].symbol}`
-      "
-      class="my-3"
-    />
-    <div
-      v-if="!advanced"
-      class="font-size-12 font-w600 text-center"
-      :class="darkMode ? 'text-link-dark' : 'text-link-light'"
-    >
-      <span class="cursor" @click="advanced = !advanced">
-        {{ advanced ? "Simple" : "Advanced" }}
-      </span>
+    <div class="row">
+      <div class="col-6">
+        <main-button
+          label="Approve"
+          :active="true"
+          :large="true"
+          class="mt-3"
+          :loading="rateLoading"
+          :disabled="disableApproveButton"
+        />
+      </div>
+      <div class="col-6">
+        <main-button
+          label="Remove"
+          :active="true"
+          :large="true"
+          class="mt-3"
+          :loading="rateLoading"
+          :disabled="disableRemoveButton"
+        />
+      </div>
     </div>
-
-    <main-button
-      @click="initAction"
-      label="Remove"
-      :active="true"
-      :large="true"
-      class="mt-1"
-      :disabled="
-        token1Error !== '' ||
-          token2Error !== '' ||
-          !(amountToken1 && amountToken2)
-      "
-    />
 
     <modal-pool-action
       v-model="modal"
-      :amounts-array="[amountSmartToken, amountToken1, amountToken2]"
-      :advanced-block-items="advancedBlockItems"
+      :selected-token="selectedToken"
+      :amounts-array="[amountSmartToken, amount]"
     />
   </div>
 </template>
@@ -127,12 +135,27 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay } from "@/types/bancor";
+import { 
+  ViewRelay, 
+  ViewAmount,
+  ViewReserve
+} from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
+import BigNumber from "bignumber.js";
+import PercentageSlider from "@/components/common/PercentageSlider.vue";
+import { compareString, formatNumber, formatPercent } from "../../api/helpers";
+
+interface PoolTokenUI {
+  disabled: boolean;
+  balance: string;
+  id: string;
+  symbol: string;
+  logo: string[];
+}
 
 @Component({
   components: {
@@ -140,167 +163,131 @@ import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
     LabelContentSplit,
     TokenInputField,
     PoolLogos,
-    MainButton
+    MainButton,
+    PercentageSlider
   }
 })
 export default class PoolActionsRemoveV1 extends Vue {
+  
   @Prop() pool!: ViewRelay;
 
-  advanced = true;
+  errorMsg = ""
+
+  smartTokenAmount: string = "??.??????";
+  amount1: string = "";
+  amount2: string = "";
+  amount: string = "";
+  modal = false;
+
+  singleUnitCosts: any[] = [];
+  shareOfPool = 0;
+
   rateLoading = false;
-
-  // selectedToken: ViewReserve = this.pool.reserves[0];
-  percentage: string = "50";
-  rate = "??????.?????";
-
-  amountSmartToken = "";
-  amountToken1 = "";
-  amountToken2 = "";
 
   token1Error = "";
   token2Error = "";
-  balance1 = "";
-  balance2 = "";
-  modal = false;
 
-  res: any = null;
+  poolSelectModal = false;
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  percentage: string = "50";
+  exitFee = 0;
+  percentageDirty: boolean = false;
+
+  selectedToken: string = "";
+
+  amountSmartToken = "";
+
+  poolTokens: PoolTokenUI[] = [];
+  insufficientBalance: boolean = false;
+
+  poolLogosClick() {
+    this.poolSelectModal = true;
   }
 
-  async initAction() {
-    if (this.isAuthenticated) this.modal = true;
-    //@ts-ignore
-    else await this.promptAuth();
-  }
-
-  get advancedBlockItems() {
-    return [
-      // {
-      //   label: "UNI Burned",
-      //   value: "????"
-      // },
-      // {
-      //   label: "Price",
-      //   value: "????"
-      // },
-      // {
-      //   label: "",
-      //   value: "??.??"
-      // }
-    ];
-  }
-
-  setDefault() {
-    this.amountToken1 = "";
-    this.amountToken2 = "";
-    this.token1Error = "";
-    this.token2Error = "";
-  }
-
-  async tokenOneChanged(tokenAmount: string) {
-    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
-      this.setDefault();
-      return;
-    }
-    this.rateLoading = true;
-    try {
-      const results = await vxm.bancor.calculateOpposingWithdraw({
-        id: this.pool.id,
-        reserves: [
-          { id: this.pool.reserves[0].id, amount: tokenAmount },
-          { id: this.pool.reserves[1].id, amount: this.amountToken2 }
-        ],
-        changedReserveId: this.pool.reserves[0].id
-      });
-      if (typeof results.opposingAmount !== "undefined") {
-        this.amountToken2 = results.opposingAmount;
+  select(id: string) {
+    this.$router.push({
+      name: "PoolAction",
+      params: {
+        poolAction: "add",
+        account: id
       }
-      this.token1Error =
-        this.balance1 < tokenAmount ? "Insufficient balance" : "";
-      this.token2Error =
-        this.balance2 < this.amountToken2 ? "Insufficient balance" : "";
-    } catch (e) {
-      this.token1Error = e.message;
-      this.token2Error = "";
-    }
-    this.rateLoading = false;
+    });
   }
 
-  async tokenTwoChanged(tokenAmount: string) {
-    if (!tokenAmount || tokenAmount === "0" || tokenAmount === ".") {
-      this.setDefault();
-      return;
-    }
-    this.rateLoading = true;
-    try {
-      const results = await vxm.bancor.calculateOpposingWithdraw({
-        id: this.pool.id,
-        reserves: [
-          { id: this.pool.reserves[0].id, amount: this.amountToken1 },
-          { id: this.pool.reserves[1].id, amount: tokenAmount }
-        ],
-        changedReserveId: this.pool.reserves[1].id
-      });
-      if (typeof results.opposingAmount !== "undefined") {
-        this.amountToken1 = results.opposingAmount;
-      }
-      this.token1Error =
-        this.balance1 < this.amountToken1
-          ? "Token balance is currently insufficient"
-          : "";
-      this.token2Error =
-        this.balance2 < tokenAmount
-          ? "Token balance is currently insufficient"
-          : "";
-    } catch (e) {
-      this.token2Error = e.message;
-      this.token1Error = "";
-    }
-    this.rateLoading = false;
+  percentageUpdate(percent: string) {
+    this.insufficientBalance = false;
+    this.percentageDirty = true;
+    const decPercent = Number(percent) / 100;
+    if (decPercent === 1)
+      this.amountSmartToken = this.selectedPoolToken.balance;
+
+    const BN = BigNumber.clone({ DECIMAL_PLACES: 18, EXPONENTIAL_AT: 256 });
+    const poolTokenAmount = new BN(this.selectedPoolToken.balance)
+      .times(decPercent)
+      .toString();
+
+    this.amountSmartToken = poolTokenAmount;
+  }
+
+  get selectedPoolToken() {
+    const selectedToken = this.poolTokens.find(
+      token => token.id == this.selectedToken
+    );
+    return selectedToken!;
+  }
+
+  get pools() {
+    return vxm.bancor.relays.filter(x => x.v2)
   }
 
   get darkMode() {
     return vxm.general.darkMode;
   }
 
-  @Watch("isAuthenticated")
-  async onAuthChange(auth: boolean) {
-    await this.fetchBalances();
+  get detailMode() {
+    return vxm.general.detailMode;
   }
 
-  async fetchBalances() {
-    if (!this.isAuthenticated) return;
-    const res = await vxm.bancor.getUserBalances(this.pool.id);
-    if (this.pool.reserves[0].id === res.maxWithdrawals[0].id) {
-      this.balance1 = res.maxWithdrawals[0].amount;
-      this.balance2 = res.maxWithdrawals[1].amount;
-    } else {
-      this.balance1 = res.maxWithdrawals[1].amount;
-      this.balance2 = res.maxWithdrawals[0].amount;
-    }
-    this.res = res.maxWithdrawals;
+  get disableApproveButton() {
+    return (
+      this.token1Error !== "" ||
+      this.token2Error !== "" 
+    );
   }
 
-  created() {
-    this.fetchBalances();
+  get disableRemoveButton() {
+    return (
+      this.token1Error !== "" ||
+      this.token2Error !== "" ||
+      !(this.amount1 && this.amount2)
+    );
   }
-  // @Watch("pool")
-  // async updateSelection(pool: ViewRelay) {
-  //   if (pool.reserves[0] === this.selectedToken) return;
-  //   this.selectedToken = pool.reserves[0];
-  // }
+
+  get isAuthenticated() {
+    return vxm.wallet.isAuthenticated;
+  }
+
+  get balance1() {
+    return vxm.bancor.token(this.reserveOne.id).balance ?? "0";
+  }
+
+  get balance2() {
+    return vxm.bancor.token(this.reserveTwo.id).balance ?? "0";
+  }
+
+  get reserveOne() {
+    return this.pool.reserves[0];
+  }
+
+  get reserveTwo() {
+    return this.pool.reserves[1];
+  }
+
+  async tokenInputChanged(tokenAmount: string) {
+
+  }
 }
 </script>
 
 <style lang="scss">
-.custom-control-inline {
-  margin-right: 0 !important;
-  margin-left: 1rem !important;
-}
-.custom-control-label {
-  display: inline-flex !important;
-  align-items: center !important;
-}
 </style>

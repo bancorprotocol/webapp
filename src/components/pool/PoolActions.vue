@@ -5,6 +5,7 @@
     :back-button="true"
     @back="back"
     :version="version"
+    :detail-info="detailInfo"
   >
     <div v-if="!withdrawLiquidity">
       <pool-actions-add-v1 v-if="!pool.v2" :pool="pool" />
@@ -42,6 +43,10 @@ export default class PoolActions extends Vue {
 
   get title() {
     return (this.withdrawLiquidity ? "Remove" : "Add") + " Liquidity";
+  }
+
+  get detailInfo() {
+    return this.withdrawLiquidity ? true : false;
   }
 
   get version() {

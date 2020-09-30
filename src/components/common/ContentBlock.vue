@@ -31,6 +31,15 @@
 
       <div v-if="backButton" class="fix-width d-flex justify-content-end">
         <version-badge v-if="version !== null" :version="version" />
+      </div>     
+
+      <div v-if="detailInfo" 
+        class="font-size-12 font-w600 text-right"
+        :class="darkMode ? 'text-link-dark' : 'text-link-light'"
+      >
+        <span class="cursor" @click="toggleDetailMode">
+          {{ detailMode ? "Simple" : "Detailed" }}
+        </span>
       </div>
 
       <div v-if="searchInput !== null" class="float-right">
@@ -68,12 +77,25 @@ export default class ContentBlock extends Vue {
   @Prop({ default: false }) backButton!: boolean;
   @Prop({ default: null }) version!: 1 | 2 | null;
   @PropSync("search", { default: null }) searchInput!: string | null;
+  @Prop({ default: false }) detailInfo?: boolean;
 
   @Emit()
   back() {}
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  toggleDetailMode() {
+    vxm.general.toggleDetailMode();
+  }
+
+  set detailMode(value: boolean) {
+    vxm.general.toggleDetailMode();
+  }
+
+  get detailMode() {
+    return vxm.general.detailMode;
   }
 }
 </script>
