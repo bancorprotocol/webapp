@@ -4,26 +4,6 @@
 
 Open Source Token Swap and Pool Liquidity Portal
 
-## Project setup
-
-Node Version: `12.18.2`
-
-```
-yarn install
-```
-
-### Compiles and hot-reloads for development
-
-```
-yarn start
-```
-
-### Compiles and minifies for production
-
-```
-yarn build
-```
-
 ## House keeping
 
 _All times in UTC_
@@ -47,3 +27,25 @@ Daily standups
 ### Git Strategy
 
 Please create new features in new branches forked from `staging` and submit work at the end of your session as a Drafted PR towards staging.
+
+![DraftPR](https://github.com/bancorprotocol/webapp/raw/master/docs/media/draftPr.png)
+
+## Project setup
+
+Node Version: `12.18.2`
+
+```
+yarn install
+```
+
+### Compiles and hot-reloads for development
+
+```
+yarn start
+```
+
+### Compiles and minifies for production
+
+```
+yarn build
+```
