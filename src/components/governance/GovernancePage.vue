@@ -29,7 +29,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import Stake from "@/components/governance/stake/Stake.vue";
-import Proposals from "@/components/governance/stake/Proposals.vue";
+import Proposals from "@/components/governance/proposals/Proposals.vue";
 
 @Component({
   components: {

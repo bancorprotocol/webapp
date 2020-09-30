@@ -28,8 +28,8 @@ import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 
-import OpenProposals from "@/components/governance/stake/OpenProposals.vue";
-import DoneProposals from "@/components/governance/stake/DoneProposals.vue";
+import OpenProposals from "@/components/governance/proposals/OpenProposals.vue";
+import DoneProposals from "@/components/governance/proposals/DoneProposals.vue";
 
 @Component({
   components: {
