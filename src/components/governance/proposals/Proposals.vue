@@ -15,6 +15,9 @@
         <b-tab title="History">
           <done-proposals :proposals="proposals.filter(p => !p.open)" />
         </b-tab>
+        <b-tab title="+add">
+          <add-proposal />
+        </b-tab>
       </b-tabs>
     </div>
   </content-block>
@@ -30,6 +33,7 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 
 import OpenProposals from "@/components/governance/proposals/OpenProposals.vue";
 import DoneProposals from "@/components/governance/proposals/DoneProposals.vue";
+import AddProposal from "@/components/governance/proposals/AddProposal.vue";
 
 @Component({
   components: {
@@ -37,7 +41,8 @@ import DoneProposals from "@/components/governance/proposals/DoneProposals.vue";
     ProgressBar,
     RemainingTime,
     OpenProposals,
-    DoneProposals
+    DoneProposals,
+    AddProposal
   }
 })
 export default class Proposals extends Vue {
