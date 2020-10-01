@@ -2,7 +2,7 @@
   <content-block :px0="true" :shadow-light="true" :no-header="true">
     <div>
       <b-tabs
-        class="overlap-tabs"
+        class="overlap-tabs add-proposal-button"
         no-fade
         :class="darkMode ? 'tabs-dark' : 'tabs-light'"
       >
@@ -15,7 +15,7 @@
         <b-tab title="History">
           <done-proposals :proposals="proposals.filter(p => !p.open)" />
         </b-tab>
-        <b-tab title="Add proposal">
+        <b-tab title="+ New Proposal">
           <add-proposal />
         </b-tab>
       </b-tabs>
@@ -80,5 +80,22 @@ export default class Proposals extends Vue {
   margin-bottom: -1px;
   border-bottom: 1px solid $gray-border !important;
   position: relative;
+}
+
+.add-proposal-button > * > .nav.nav-tabs {
+  align-items: center;
+  height: 44px;
+
+  & > .nav-item:nth-child(3) > a {
+    margin-left: auto;
+    height: 24px;
+    line-height: 21px;
+    padding: 0 20px;
+    border-radius: 8px !important;
+    border: 1px solid $gray-placeholder !important;
+    color: $text-color-light !important;
+    margin-right: 16px !important;
+    font-size: 13px !important;
+  }
 }
 </style>
