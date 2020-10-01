@@ -1,13 +1,16 @@
 <template>
   <content-block>
     <multi-input-field
+      class="mb-3"
       v-model="name"
       type="text"
+      height="48"
       placeholder="Add Liquidity pool xyz"
       label="Proposal Name"
     />
     <label-content-split label="Description" class="mb-2" />
     <b-form-textarea
+      class="mb-3"
       v-model="description"
       placeholder="I would like to propose to ..."
       rows="8"
@@ -17,26 +20,37 @@
       ]"
     />
     <multi-input-field
+      class="mb-3"
       v-model="contractAddress"
       type="text"
-      placeholder="0x0"
+      placeholder="0x0..."
+      height="48"
       label="Contract to Execute"
     />
     <multi-input-field
+      class="mb-3"
       v-model="githubUrl"
       type="url"
       placeholder="https://github.com/..."
+      height="48"
       label="Github Url"
     />
     <multi-input-field
+      class="mb-3"
       v-model="discourseUrl"
       type="url"
       placeholder="https://www.reddit.com/r/Bancor/comments/iv39oc"
+      height="48"
       label="Discourse Url"
     />
-    <content-block>
-      <main-button @click="saveToIPFS" label="Propose" :active="true" />
-    </content-block>
+
+    <div class="pt-3"/>
+
+    <main-button
+      @click="saveToIPFS"
+      label="Propose"
+      :large="true"
+      :active="true" />
   </content-block>
 </template>
 

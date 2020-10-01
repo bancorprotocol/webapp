@@ -195,20 +195,20 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "Result",
-        maxWidth: "140px",
-        minWidth: "140px"
+        maxWidth: "120px",
+        minWidth: "120px"
       },
       {
         label: "Votes for",
         key: "votesFor",
-        maxWidth: "130px",
-        minWidth: "130px"
+        maxWidth: "140px",
+        minWidth: "140px"
       },
       {
         label: "Votes against",
         key: "votesAgainst",
-        maxWidth: "130px",
-        minWidth: "130px"
+        maxWidth: "140px",
+        minWidth: "140px"
       },
       {
         label: "Vote start",

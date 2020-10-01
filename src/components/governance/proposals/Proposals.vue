@@ -15,7 +15,7 @@
         <b-tab title="History">
           <done-proposals :proposals="proposals.filter(p => !p.open)" />
         </b-tab>
-        <b-tab title="+add">
+        <b-tab title="Add proposal">
           <add-proposal />
         </b-tab>
       </b-tabs>
@@ -73,4 +73,12 @@ export default class Proposals extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+@import "@/assets/_scss/custom/_variables";
+
+.overlap-tabs > * > .nav.nav-tabs {
+  margin-bottom: -1px;
+  border-bottom: 1px solid $gray-border !important;
+  position: relative;
+}
+</style>
