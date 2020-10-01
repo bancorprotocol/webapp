@@ -35,7 +35,7 @@
       label="Discourse Url"
     />
     <content-block>
-      <main-button @click="saveToIPFS" label="Propose" />
+      <main-button @click="saveToIPFS" label="Propose" :active="true" />
     </content-block>
   </content-block>
 </template>
