@@ -42,6 +42,7 @@ export const buildTokenContract = (
 export const buildGovernanceContract = (
   contractAddress?: string
 ): ContractMethods<{
+  propose: (executor: string, hash: string) => ContractSendMethod;
   voteFor: (proposalId: string) => ContractSendMethod;
   voteAgainst: (proposalId: string) => ContractSendMethod;
   stake: (amount: string) => ContractSendMethod;

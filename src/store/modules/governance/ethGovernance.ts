@@ -7,11 +7,14 @@ import {
 } from "@/api/eth/contractTypes";
 import { CallReturn } from "eth-multicall";
 import { ContractSendMethod } from "web3-eth-contract";
+// @ts-ignore
+import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 
 export const governanceContractAddress =
   "0x6F1DfdA2a7303d88d9a5AEe694988158102de668";
 export const etherscanUrl = "https://kovan.etherscan.io/";
 export const ipfsUrl = "https://ipfs.io/ipfs/";
+const infuraIpfsUrl = "https://ipfs.infura.io:5001";
 
 const VuexModule = createModule({
   strict: false
@@ -63,6 +66,7 @@ interface Token
 
 interface Governance
   extends ContractMethods<{
+    propose: (executor: string, hash: string) => ContractSendMethod;
     voteFor: (proposalId: string) => ContractSendMethod;
     voteAgainst: (proposalId: string) => ContractSendMethod;
     stake: (amount: string) => ContractSendMethod;
@@ -223,6 +227,26 @@ export class EthereumGovernance extends VuexModule.With({
       throw new Error("Cannot unstake without address or amount");
 
     await this.governanceContract.methods.unstake(amount.toString()).send({
+      from: account
+    });
+
+    return true;
+  }
+
+  @action
+  async propose({
+    account,
+    executor,
+    hash
+  }: {
+    account: EthAddress;
+    executor: EthAddress;
+    hash: string;
+  }): Promise<boolean> {
+    if (!executor || !hash || !account)
+      throw new Error("Cannot propose without execturo and hash");
+
+    await this.governanceContract.methods.propose(executor, hash).send({
       from: account
     });
 
@@ -404,5 +428,20 @@ export class EthereumGovernance extends VuexModule.With({
         })
         .catch(reject);
     });
+  }
+
+  @action async storeInIPFS({
+    proposalMetaData
+  }: {
+    proposalMetaData: any;
+  }): Promise<string> {
+    console.log(proposalMetaData);
+
+    const ipfs = ipfsHttpClient(infuraIpfsUrl);
+
+    const { path } = await ipfs.add(
+      Buffer.from(JSON.stringify(proposalMetaData, null, 2))
+    );
+    return path;
   }
 }
