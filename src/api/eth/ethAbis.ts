@@ -4029,6 +4029,19 @@ export const ABIBancorGovernance: AbiItem[] = [
     anonymous: false,
     inputs: [
       {
+        indexed: false,
+        internalType: "uint256",
+        name: "_minimum",
+        type: "uint256"
+      }
+    ],
+    name: "NewProposalMinimumUpdated",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "_prevOwner",
@@ -4203,19 +4216,6 @@ export const ABIBancorGovernance: AbiItem[] = [
     type: "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_voteMinimum",
-        type: "uint256"
-      }
-    ],
-    name: "VoteMinimumUpdated",
-    type: "event"
-  },
-  {
     inputs: [],
     name: "acceptOwnership",
     outputs: [],
@@ -4244,6 +4244,20 @@ export const ABIBancorGovernance: AbiItem[] = [
         internalType: "address",
         name: "",
         type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function",
+    constant: true
+  },
+  {
+    inputs: [],
+    name: "newProposalMinimum",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
       }
     ],
     stateMutability: "view",
@@ -4462,20 +4476,6 @@ export const ABIBancorGovernance: AbiItem[] = [
     constant: true
   },
   {
-    inputs: [],
-    name: "voteMinimum",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    stateMutability: "view",
-    type: "function",
-    constant: true
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -4619,11 +4619,11 @@ export const ABIBancorGovernance: AbiItem[] = [
     inputs: [
       {
         internalType: "uint256",
-        name: "_voteMinimum",
+        name: "_minimum",
         type: "uint256"
       }
     ],
-    name: "setVoteMinimum",
+    name: "setNewProposalMinimum",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

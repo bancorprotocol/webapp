@@ -11,8 +11,8 @@ import { ContractSendMethod } from "web3-eth-contract";
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 
 export const governanceContractAddress =
-  "0x6F1DfdA2a7303d88d9a5AEe694988158102de668";
-export const etherscanUrl = "https://kovan.etherscan.io/";
+  "0xdEC39088ee1A837090a7647Be0039b2E8B3a8349";
+export const etherscanUrl = "https://ropsten.etherscan.io/";
 export const ipfsUrl = "https://ipfs.io/ipfs/";
 const infuraIpfsUrl = "https://ipfs.infura.io:5001";
 
