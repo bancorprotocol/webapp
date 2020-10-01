@@ -22,6 +22,7 @@
     <multi-input-field
       class="mb-3"
       v-model="contractAddress"
+      @input="onAddressInput"
       type="text"
       placeholder="0x0..."
       height="48"
@@ -47,10 +48,10 @@
     <div class="pt-3" />
 
     <main-button
-      @click="saveToIPFS"
+      @click="propose"
       label="Propose"
       :large="true"
-      :active="true"
+      :active="!this.hasError"
     />
   </content-block>
 </template>
@@ -62,6 +63,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
+import { isAddress } from "web3-utils";
 
 @Component({
   components: {
@@ -77,12 +79,32 @@ export default class AddProposal extends Vue {
   contractAddress: string = "";
   description: string = "";
   name: string = "";
+  error: boolean = false;
 
   get darkMode() {
     return vxm.general.darkMode;
   }
 
-  async saveToIPFS() {
+  onAddressInput(input: string) {
+    this.error = !isAddress(input);
+  }
+
+  get hasError() {
+    return (
+      this.error ||
+      this.discourseUrl.length === 0 ||
+      this.githubUrl.length === 0 ||
+      this.description.length === 0 ||
+      this.contractAddress.length === 0 ||
+      this.name.length === 0
+    );
+  }
+
+  async propose() {
+    if (this.hasError) {
+      return;
+    }
+
     const proposalMetaData = {
       payload: {
         body: this.description,
@@ -96,10 +118,12 @@ export default class AddProposal extends Vue {
       revision: "0.0.1"
     };
 
+    // store in ipfs!
     const hash = await vxm.ethGovernance.storeInIPFS({
       proposalMetaData
     });
 
+    // propose!
     await vxm.ethGovernance.propose({
       account: vxm.wallet.isAuthenticated,
       executor: this.contractAddress,
