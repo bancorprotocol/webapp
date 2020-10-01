@@ -23,7 +23,7 @@
           <a
             target="_blank"
             class="font-size-14 font-w500 fix-a pl-2"
-            :href="proposal.metadata.discourse"
+            :href="proposal.metadata.payload.metadata.discourse"
           >
             <font-awesome-icon icon="external-link-alt" />
             Discussion Forum
@@ -31,7 +31,7 @@
           <a
             target="_blank"
             class="font-size-14 font-w500 fix-a pl-2"
-            :href="proposal.metadata.github"
+            :href="proposal.metadata.payload.metadata.github"
           >
             <font-awesome-icon :icon="['fab', 'github']" />
             GitHub

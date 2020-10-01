@@ -120,7 +120,12 @@
           <div class="buttons-container">
             <a
               :href="
-                proposal.metadata.discourse ? proposal.metadata.discourse : '#'
+                proposal.metadata &&
+                proposal.metadata.payload &&
+                proposal.metadata.payload.metadata &&
+                proposal.metadata.payload.metadata.discourse
+                  ? proposal.metadata.payload.metadata.discourse
+                  : '#'
               "
               target="_blank"
               style="width: 100%; display: inline-block;"
@@ -162,7 +167,7 @@ import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
 import {
   etherscanUrl,
-  ipfsUrl,
+  ipfsViewUrl,
   Proposal
 } from "@/store/modules/governance/ethGovernance";
 
@@ -228,7 +233,7 @@ export default class DoneProposals extends Vue {
   }
 
   getIPFSUrl(hash: string) {
-    return `${ipfsUrl}/${hash}`;
+    return `${ipfsViewUrl}/${hash}`;
   }
 
   getEtherscanUrl(address: string) {

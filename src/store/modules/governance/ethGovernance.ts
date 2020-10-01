@@ -13,12 +13,25 @@ import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 export const governanceContractAddress =
   "0xdEC39088ee1A837090a7647Be0039b2E8B3a8349";
 export const etherscanUrl = "https://ropsten.etherscan.io/";
-export const ipfsUrl = "https://ipfs.io/ipfs/";
-const infuraIpfsUrl = "https://ipfs.infura.io:5001";
+export const ipfsViewUrl = "https://ipfs.io/ipfs/";
+const ipfsUrl = "https://ipfs.infura.io:5001";
 
 const VuexModule = createModule({
   strict: false
 });
+
+export interface ProposalMetaData {
+  payload: {
+    body: string;
+    metadata: {
+      github: string;
+      discourse: string;
+    };
+    name: string;
+  };
+  timestamp: number;
+  revision: string;
+}
 
 export interface Proposal {
   id: number;
@@ -42,10 +55,7 @@ export interface Proposal {
     for: number;
     against: number;
   };
-  metadata: {
-    github: string;
-    discourse: string;
-  };
+  metadata?: ProposalMetaData;
 }
 
 interface Token
@@ -322,30 +332,13 @@ export class EthereumGovernance extends VuexModule.With({
         shrinkToken(proposal.totalVotesAvailable, decimals)
       );
 
-      let name;
-      let github;
-      let discourse;
+      let metadata;
 
       try {
-        const metadata = await this.getFromIPFS({
+        metadata = await this.getFromIPFS({
           hash: proposal.hash,
           timeoutInSeconds: 5
         });
-        console.log(metadata);
-
-        name = (metadata && metadata.payload && metadata.payload.name) || null;
-        github =
-          (metadata &&
-            metadata.payload &&
-            metadata.payload.metadata &&
-            metadata.payload.metadata.github) ||
-          null;
-        discourse =
-          (metadata &&
-            metadata.payload &&
-            metadata.payload.metadata &&
-            metadata.payload.metadata.discourse) ||
-          null;
       } catch (err) {
         console.log("Getting metadata failed!", err);
       }
@@ -357,7 +350,7 @@ export class EthereumGovernance extends VuexModule.With({
         executor: proposal.executor,
         hash: proposal.hash,
         open: proposal.open,
-        name,
+        name: (metadata && metadata.payload && metadata.payload.name) || "",
         proposer: proposal.proposer,
         quorum: proposal.quorum,
         quorumRequired: proposal.quorumRequired,
@@ -387,10 +380,7 @@ export class EthereumGovernance extends VuexModule.With({
               )
             : 0
         } as any,
-        metadata: {
-          github,
-          discourse
-        }
+        metadata: metadata
       };
       const { for: vFor, against: vAgainst } = prop.votes;
       prop.votes.voted =
@@ -404,40 +394,39 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  getFromIPFS({
+  async getFromIPFS({
     hash,
     timeoutInSeconds
   }: {
     hash: string;
     timeoutInSeconds: number;
-  }): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const url = `${ipfsUrl}${hash}`;
-      const t = setTimeout(() => {
-        return reject(`Timeout at: ${url}`);
-      }, timeoutInSeconds * 1000);
+  }): Promise<ProposalMetaData> {
+    const ipfs = ipfsHttpClient(ipfsUrl);
 
-      fetch(url, {
-        method: "GET"
-      })
-        .then(response => response.json())
-        .then(data => {
-          clearTimeout(t);
-          console.log(data);
-          return resolve(data);
-        })
-        .catch(reject);
-    });
+    let metadata;
+
+    for await (const file of ipfs.get(hash, {
+      timeout: timeoutInSeconds * 1000
+    })) {
+      if (!file.content) continue;
+
+      for await (const chunk of file.content) {
+        metadata = JSON.parse(chunk.toString("utf8"));
+        break;
+      }
+
+      break;
+    }
+
+    return metadata;
   }
 
   @action async storeInIPFS({
     proposalMetaData
   }: {
-    proposalMetaData: any;
+    proposalMetaData: ProposalMetaData;
   }): Promise<string> {
-    console.log(proposalMetaData);
-
-    const ipfs = ipfsHttpClient(infuraIpfsUrl);
+    const ipfs = ipfsHttpClient(ipfsUrl);
 
     const { path } = await ipfs.add(
       Buffer.from(JSON.stringify(proposalMetaData, null, 2))

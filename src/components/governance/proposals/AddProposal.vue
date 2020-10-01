@@ -64,6 +64,7 @@ import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
+import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -105,7 +106,7 @@ export default class AddProposal extends Vue {
       return;
     }
 
-    const proposalMetaData = {
+    const proposalMetaData: ProposalMetaData = {
       payload: {
         body: this.description,
         metadata: {
