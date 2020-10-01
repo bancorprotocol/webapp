@@ -8,7 +8,7 @@
       placeholder="Add Liquidity pool xyz"
       label="Proposal Name"
     />
-    <label-content-split label="Description" class="mb-2" />
+    <label-content-split label="Proposal Description" class="mb-2" />
     <b-form-textarea
       class="mb-3"
       v-model="description"
@@ -44,13 +44,14 @@
       label="Discourse Url"
     />
 
-    <div class="pt-3"/>
+    <div class="pt-3" />
 
     <main-button
       @click="saveToIPFS"
       label="Propose"
       :large="true"
-      :active="true" />
+      :active="true"
+    />
   </content-block>
 </template>
 
