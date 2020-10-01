@@ -47,9 +47,51 @@
       darkMode ? 'bg-body-dark text-body-dark' : 'bg-body-light text-body-light'
     "
   >
-    <div>
-      <router-view name="Nav"></router-view>
-
+    <div
+      class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
+    >
+      This interface is in beta. Use it at your own risk.
+    </div>
+    <div 
+      name="MainLayout"
+      class="main-layout"
+    >      
+      <div name="side-bar" class="side-bar">
+        <b-navbar-brand class="pb-1 brand-icon">
+          <router-link
+            :to="{ name: 'Swap', params: { service: selectedNetwork } }"
+          >
+            <img
+              v-if="darkMode"
+              src="@/assets/media/logos/bancor-white.png"
+              height="35px"
+              class="mb-1"
+            />
+            <img
+              v-else
+              src="@/assets/media/logos/bancor-black.png"
+              height="35px"
+              class="mb-1"
+            />
+          </router-link>
+        </b-navbar-brand>
+        <div class="side-bar-links">
+          <div 
+            v-for="link in links" :key="link.key"
+            @click="sideLinkClicked(link.key)"
+            :class="selectedLink === link.key ? 'clicked-link' : ''"
+            class="side-bar-link">
+            <img 
+              class="side-bar-link-icon"
+              :src="
+                require(`@/assets/media/icons/${link.key}.svg`)
+              " />
+            <span>{{link.label}}</span>
+          </div>
+        </div>
+        <div class="middle-space" />
+        <p class="tm-text">© Bancor 2020</p>
+      </div>
       <main
         id="main-container"
         :class="
@@ -57,7 +99,9 @@
             ? 'bg-body-dark text-body-dark'
             : 'bg-body-light text-body-light'
         "
+        style="flex-grow: 1"
       >
+        <router-view name="Nav"></router-view>
         <b-container fluid="xl" class="pt-1">
           <b-row class="d-flex justify-content-center">
             <b-col cols="12" style="max-width: 460px">
@@ -89,7 +133,17 @@ import wait from "waait";
 export default class App extends Vue {
   loading = true;
   error = false;
+  selectedLink = 'swap';
+  links = [{key: 'swap', label: 'Swap'},
+    {key: 'data', label: 'Data'}, 
+    {key:'governance', label: 'Governance'}, 
+    {key: 'liquidity', label: 'Liquidity'}, 
+    {key: 'bancorx', label: 'BancorX'}
+  ];
 
+  get selectedNetwork() {
+    return vxm.bancor.currentNetwork
+  }
   get darkMode() {
     return vxm.general.darkMode;
   }
@@ -134,6 +188,10 @@ export default class App extends Vue {
         throw new Error(e);
       }
     }
+  }
+
+  sideLinkClicked(newSelected: string) {
+    this.selectedLink = newSelected;
   }
 
   async created() {
@@ -184,5 +242,142 @@ h2 {
 .fade-leave-to
 /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
+}
+.main-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100%;  
+  flex-grow: 1;
+}
+.side-bar {
+  display: flex;
+  flex-direction: column;
+  width: 230px;
+  background-color: #e6ebf2;
+  @media (max-width: 899px) {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 56px;
+      background-color: white;
+      border-top: 1px solid #e6ebf2;
+  }
+  .brand-icon {
+    @media (max-width: 899px) {
+      display: none;
+    }
+    margin-top: 18px;
+    margin-left: 25px;
+    width: 80.9px;
+    height: 22px;
+    object-fit: contain;
+  }
+  .side-bar-links {
+    margin-top: 28px;
+    @media (max-width: 899px) {
+      width: 100%;
+      height: 56px;
+      align-items: center;
+      margin-top: 0px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+    }
+  }
+  .side-bar-link {    
+    padding-left: 25px;
+    width: 100%;
+    cursor: pointer;
+    height: 40px;
+    position: relative;
+    @media (max-width: 899px) {
+      display: flex;
+      flex-direction: column;
+    }
+    span {
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      font-family: Inter;
+      font-size: 14px;
+      font-weight: 500;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: normal;
+      letter-spacing: normal;
+      color: #6b7c93;
+      @media (max-width: 899px) {
+        align-self: center;
+        font-size: 10px;
+      }
+    }
+    .side-bar-link-icon {
+      align-self: center;
+      width: 14px;
+      height: 14px;
+      margin-right: 12px;
+      @media (max-width: 899px) {
+        width: 22px;
+        height: 20px;
+        margin-right: 0px;
+      }
+    }
+  }  
+  .middle-space {
+    flex-grow: 1;
+  }
+  .tm-text {
+    width: 88px;
+    height: 15px;
+    font-family: Inter;
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #97a5b8;
+    margin-left: 25px;
+    @media (max-width: 899px) {
+      display: none;
+    }
+  }
+  .clicked-link {
+    span {
+      color: #0f59d1;
+    }
+    img {
+      // fill: #0f59d1;
+      filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg) brightness(0.7);
+      color: #0f59d1;
+    }
+    @media (min-width: 900px) {    
+      background-color: #f8f9fd;
+      border-left: 2px solid #0f59d1;
+      &::before {
+        content:'';
+        position: absolute;
+        left: 202px;
+        top: -26px;
+        width: 26px;
+        height:  26px;
+        background-color: transparent;
+        border-bottom-right-radius: 14px;
+        box-shadow: 0 11px 0 0 #f8f9fd;    
+      }
+      &::after {
+        content:'';
+        position: absolute;
+        left: 202px;
+        top: 40px;
+        width: 26px;
+        height: 26px;
+        background-color: transparent;
+        border-top-right-radius: 14px;
+        box-shadow: 0 -11px 0 0 #f8f9fd;    
+      }
+    }
+  }
 }
 </style>
