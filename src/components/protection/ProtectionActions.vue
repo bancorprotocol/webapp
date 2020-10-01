@@ -1,5 +1,11 @@
 <template>
-  <content-block :shadow="true" :title="title" :back-button="true" @back="back">
+  <content-block
+    :shadow="true"
+    :title="title"
+    :back-button="true"
+    @back="back"
+    :version="version"
+  >
     <div v-if="!withdrawProtection">
       <add-protection-v1 v-if="!pool.v2" :pool="pool" />
       <add-protection-v2 v-else :pool="pool" />
@@ -44,6 +50,10 @@ export default class ProtectionActions extends Vue {
 
   get pool(): ViewRelay {
     return vxm.bancor.relay(this.$route.params.id);
+  }
+
+  get version() {
+    return this.pool.v2 ? 2 : 1;
   }
 
   back() {
