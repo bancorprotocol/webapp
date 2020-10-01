@@ -1,126 +1,115 @@
 <template>
-  <content-block
-    :px0="true"
-    :shadow-light="true"
-    title="Protected Liquidities"
-    :search.sync="search"
+  <table-wrapper
+    :items="protectedTxTable.items"
+    :fields="protectedTxTable.fields"
+    :filter="search"
+    sort-by="insuranceStart"
   >
-    <table-wrapper
-      :items="protectedTxTable.items"
-      :fields="protectedTxTable.fields"
-      :filter="search"
-      sort-by="insuranceStart"
-    >
-      <template v-slot:cell(stake)="data">
-        <div class="d-flex align-items-start">
-          <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
-          <div class="d-flex flex-column ml-2">
-            <span
-              v-text="`${data.value.amount} ${poolName(data.value.poolId)}`"
-            />
-            <span
-              v-text="formatDate(data.item.stake.unixTime).dateTime"
-              class="font-size-12 font-w400"
-              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-            />
-          </div>
+    <template v-slot:cell(stake)="data">
+      <div class="d-flex align-items-start">
+        <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
+        <div class="d-flex flex-column ml-2">
+          <span
+            v-text="`${data.value.amount} ${poolName(data.value.poolId)}`"
+          />
           <span
             v-text="`(~$${data.value.usdValue})`"
-            class="font-size-12 font-w400 text-primary ml-2"
+            class="font-size-12 font-w400 text-primary"
           />
-        </div>
-      </template>
-
-      <template v-slot:cell(protectedAmount)="data">
-        <div class="d-flex align-items-start">
-          <span v-text="`${data.value.amount} ${data.value.symbol}`" />
           <span
-            v-text="`(~$${data.value.usdValue})`"
-            class="font-size-12 font-w400 text-primary ml-2"
-          />
-        </div>
-        <b-badge
-          v-if="data.item.whitelisted"
-          variant="danger"
-          class="px-2 pt-1"
-        >
-          Pool is not whitelisted
-        </b-badge>
-      </template>
-
-      <template v-slot:cell(apr)="data">
-        <div class="d-flex align-items-center">
-          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
-          {{ stringifyPercentage(data.value.day) }}
-        </div>
-        <div class="d-flex align-items-center my-1">
-          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
-          {{ stringifyPercentage(data.value.week) }}
-        </div>
-        <div class="d-flex align-items-center">
-          <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge>
-          {{ stringifyPercentage(data.value.month) }}
-        </div>
-      </template>
-
-      <template v-slot:cell(insuranceStart)="data">
-        <div class="d-flex flex-column">
-          <span v-text="formatDate(data.item.insuranceStart).date" />
-          <span
-            v-text="formatDate(data.item.insuranceStart).time"
+            v-text="formatDate(data.item.stake.unixTime).dateTime"
             class="font-size-12 font-w400"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           />
         </div>
-      </template>
+      </div>
+    </template>
 
-      <template v-slot:cell(currentCoverage)="data">
-        <div class="d-flex flex-column font-size-12 font-w600">
-          <span
-            v-text="
-              calculateFullCoverage(
-                data.item.insuranceStart,
-                data.item.fullCoverage
-              ).percentage
-            "
-          />
-          <b-progress
-            :value="
-              calculateFullCoverage(
-                data.item.insuranceStart,
-                data.item.fullCoverage
-              ).percentage
-            "
-            :max="100"
-            height="7px"
-            class="my-1"
-          />
-          <span class="text-primary">
-            {{
-              calculateFullCoverage(
-                data.item.insuranceStart,
-                data.item.fullCoverage
-              ).timeLeft
-            }}
-          </span>
-        </div>
-      </template>
+    <template v-slot:cell(protectedAmount)="data">
+      <div class="d-flex align-items-start">
+        <span v-text="`${data.value.amount} ${data.value.symbol}`" />
+        <span
+          v-text="`(~$${data.value.usdValue})`"
+          class="font-size-12 font-w400 text-primary ml-2"
+        />
+      </div>
+      <b-badge v-if="data.item.whitelisted" variant="danger" class="px-2 pt-1">
+        Pool is not whitelisted
+      </b-badge>
+    </template>
 
-      <template v-slot:cell(actionButtons)="data">
-        <b-btn
-          @click="goToWithdraw(data.item.stake.poolId)"
-          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-          class="table-button"
-        >
-          Withdraw
-        </b-btn>
-      </template>
-    </table-wrapper>
-  </content-block>
+    <template v-slot:cell(apr)="data">
+      <div class="d-flex align-items-center">
+        <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
+        {{ stringifyPercentage(data.value.day) }}
+      </div>
+      <div class="d-flex align-items-center my-1">
+        <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+        {{ stringifyPercentage(data.value.week) }}
+      </div>
+      <div class="d-flex align-items-center">
+        <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge>
+        {{ stringifyPercentage(data.value.month) }}
+      </div>
+    </template>
+
+    <template v-slot:cell(insuranceStart)="data">
+      <div class="d-flex flex-column">
+        <span v-text="formatDate(data.item.insuranceStart).date" />
+        <span
+          v-text="formatDate(data.item.insuranceStart).time"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        />
+      </div>
+    </template>
+
+    <template v-slot:cell(currentCoverage)="data">
+      <div class="d-flex flex-column font-size-12 font-w600">
+        <span
+          v-text="
+            calculateFullCoverage(
+              data.item.insuranceStart,
+              data.item.fullCoverage
+            ).percentage
+          "
+        />
+        <b-progress
+          :value="
+            calculateFullCoverage(
+              data.item.insuranceStart,
+              data.item.fullCoverage
+            ).percentage
+          "
+          :max="100"
+          height="7px"
+          class="my-1"
+        />
+        <span class="text-primary">
+          {{
+            calculateFullCoverage(
+              data.item.insuranceStart,
+              data.item.fullCoverage
+            ).timeLeft
+          }}
+        </span>
+      </div>
+    </template>
+
+    <template v-slot:cell(actionButtons)="data">
+      <b-btn
+        @click="goToWithdraw(data.item.stake.poolId)"
+        :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+        class="table-button"
+      >
+        Withdraw
+      </b-btn>
+    </template>
+  </table-wrapper>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import TableWrapper from "@/components/common/TableWrapper.vue";
@@ -136,8 +125,8 @@ import moment from "moment";
     ContentBlock
   }
 })
-export default class ProtectedLiquidities extends Vue {
-  search: string = "";
+export default class Protected extends Vue {
+  @Prop({ default: "" }) search!: string;
 
   poolName(id: string): string {
     return buildPoolName(id);
@@ -221,8 +210,7 @@ export default class ProtectedLiquidities extends Vue {
     ];
     const fields: any[] = [
       {
-        key: "stake",
-        thStyle: { "min-width": "300px" }
+        key: "stake"
       },
       {
         key: "protectedAmount",
