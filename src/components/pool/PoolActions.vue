@@ -4,7 +4,8 @@
     :title="title"
     :back-button="true"
     @back="back"
-    :show-detailed-toggle.sync="detailMode"
+    :version="version"
+    :detail-mode.sync="detailMode"
   >
     <div v-if="!withdrawLiquidity">
       <pool-actions-add-v1 v-if="!pool.v2" :pool="pool" />
@@ -43,14 +44,15 @@ import PoolActionsRemoveV2 from "@/components/pool/PoolActionsRemoveV2.vue";
 })
 export default class PoolActions extends Vue {
   withdrawLiquidity = false;
-  detailMode = false;
+  detailMode: boolean | null = null;
 
   get title() {
     return (this.withdrawLiquidity ? "Remove" : "Add") + " Liquidity";
   }
 
   get version() {
-    return this.pool.v2 ? 2 : 1;
+    if (this.detailMode === null) return this.pool.v2 ? 2 : 1;
+    else return null;
   }
 
   back() {
@@ -63,6 +65,7 @@ export default class PoolActions extends Vue {
 
   created() {
     this.withdrawLiquidity = this.$route.params.poolAction === "remove";
+    if (this.withdrawLiquidity && !this.pool.v2) this.detailMode = false;
   }
 }
 </script>

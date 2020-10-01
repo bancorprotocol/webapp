@@ -18,7 +18,7 @@
         searchInput !== null ? 'pr-2' : ''
       ]"
     >
-      <div v-if="backButton" class="w-100">
+      <div v-if="backButton" class="fix-width">
         <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
       </div>
 
@@ -29,17 +29,15 @@
         {{ title }}
       </h3>
 
-      <div v-if="version !== null" class="w-100 d-flex justify-content-end">
-        <version-badge :version="version" />
-      </div>
-
-      <div v-if="detailMode !== null" class="w-100 d-flex justify-content-end">
+      <div class="fix-width d-flex justify-content-end">
         <span
-          @click="detailMode = !detailMode"
+          v-if="detailModeProp !== null"
+          @click="detailModeProp = !detailModeProp"
           class="text-primary cursor font-size-12 font-w500"
         >
-          {{ detailMode ? "Simple" : "Detailed" }}
+          {{ detailModeProp ? "Simple" : "Detailed" }}
         </span>
+        <version-badge v-if="version !== null" :version="version" />
       </div>
 
       <div v-if="searchInput !== null" class="float-right">
@@ -77,9 +75,7 @@ export default class ContentBlock extends Vue {
   @Prop({ default: false }) backButton!: boolean;
   @Prop({ default: null }) version!: 1 | 2 | null;
   @PropSync("search", { default: null }) searchInput!: string | null;
-  @PropSync("showDetailedToggle", { default: null }) detailMode!:
-    | boolean
-    | null;
+  @PropSync("detailMode", { default: null }) detailModeProp!: boolean | null;
 
   @Emit()
   back() {}
@@ -108,6 +104,6 @@ export default class ContentBlock extends Vue {
 }
 
 .fix-width {
-  width: 35px;
+  width: 120px;
 }
 </style>
