@@ -12,25 +12,34 @@
     <div v-if="noHeader"></div>
     <div
       v-else-if="title"
-      class="block-header d-flex justify-content-between"
+      class="d-flex justify-content-between align-items-center py-2 px-3"
       :class="[
         darkMode ? 'border-bottom-dark' : 'border-bottom-light',
         searchInput !== null ? 'pr-2' : ''
       ]"
     >
-      <div v-if="backButton" class="fix-width">
+      <div v-if="backButton" class="w-100">
         <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
       </div>
 
       <h3
-        class="m-0 p-0 my-1 font-size-14 font-w600"
-        :class="darkMode ? 'text-dark' : 'text-light'"
+        class="m-0 p-0 my-2 font-size-14 font-w600 w-100"
+        :class="titleClasses"
       >
         {{ title }}
       </h3>
 
-      <div v-if="backButton" class="fix-width d-flex justify-content-end">
-        <version-badge v-if="version !== null" :version="version" />
+      <div v-if="version !== null" class="w-100 d-flex justify-content-end">
+        <version-badge :version="version" />
+      </div>
+
+      <div v-if="detailMode !== null" class="w-100 d-flex justify-content-end">
+        <span
+          @click="detailMode = !detailMode"
+          class="text-primary cursor font-size-12 font-w500"
+        >
+          {{ detailMode ? "Simple" : "Detailed" }}
+        </span>
       </div>
 
       <div v-if="searchInput !== null" class="float-right">
@@ -68,9 +77,18 @@ export default class ContentBlock extends Vue {
   @Prop({ default: false }) backButton!: boolean;
   @Prop({ default: null }) version!: 1 | 2 | null;
   @PropSync("search", { default: null }) searchInput!: string | null;
+  @PropSync("showDetailedToggle", { default: null }) detailMode!:
+    | boolean
+    | null;
 
   @Emit()
   back() {}
+
+  get titleClasses() {
+    const color = this.darkMode ? "text-dark" : "text-light";
+    const alignment = this.backButton ? "text-center" : "text-left";
+    return [color, alignment];
+  }
 
   get darkMode() {
     return vxm.general.darkMode;
