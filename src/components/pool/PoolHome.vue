@@ -59,11 +59,8 @@ export default class PoolHome extends Vue {
 
   selectPool(id: string) {
     this.$router.push({
-      name: "PoolAction",
-      params: {
-        poolAction: "add",
-        account: id
-      }
+      name: "PoolAdd",
+      params: { id }
     });
     this.modal = false;
   }
