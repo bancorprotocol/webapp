@@ -38,9 +38,4 @@ export default class PoolLogosOverlapped extends Vue {
 .overlap {
   margin-left: -10px;
 }
-
-.logo-shadow {
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
-  border: solid 1px $gray-border;
-}
 </style>
