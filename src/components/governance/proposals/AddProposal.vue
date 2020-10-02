@@ -14,7 +14,7 @@
       v-model="discourseUrl"
       @input="onDiscourseInput"
       type="url"
-      placeholder="https://www.reddit.com/r/Bancor/comments/iv39oc"
+      placeholder="https://gov.bancor.network/t/solution-to-make-voting-www-affordable/31"
       height="48"
       label="Discourse Url"
     />
