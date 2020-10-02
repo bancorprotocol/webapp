@@ -1,5 +1,14 @@
 <template>
-  <content-block>
+    <b-modal
+    scrollable
+    centered
+    v-model="show"
+    hide-footer
+    @close="onHide"
+    @cancel="onHide"
+    @hide="onHide"
+    @show="update"
+  >
     <multi-input-field
       class="mb-3"
       v-model="name"
@@ -53,7 +62,7 @@
       :large="true"
       :active="!this.hasError"
     />
-  </content-block>
+  </b-modal>
 </template>
 
 <script lang="ts">
@@ -64,6 +73,7 @@ import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
+import { VModel } from "@/api/helpers";
 import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 
 @Component({
@@ -75,6 +85,8 @@ import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
   }
 })
 export default class AddProposal extends Vue {
+  @VModel({ type: Boolean }) show!: boolean;
+
   discourseUrl: string = "";
   githubUrl: string = "";
   contractAddress: string = "";
@@ -130,6 +142,10 @@ export default class AddProposal extends Vue {
       executor: this.contractAddress,
       hash
     });
+  }
+
+  onHide() {
+    this.show = false;
   }
 }
 </script>
