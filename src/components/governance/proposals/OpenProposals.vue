@@ -103,14 +103,14 @@
       </td>
       <td>
         <div class="pl-3 container-border">
-          <div v-if="!proposal.votes.voted && proposal.end > Date.now()">
+          <div v-if="!proposal.votes.voted && proposal.end > Date.now()" class="d-flex align-items-center">
             <main-button
               @click="() => voteFor(proposal.id.toString())"
               label="Vote for"
               :large="true"
               :active="true"
               :block="true"
-              class="font-size-14 font-w400 mb-2 text-uppercase button-vote button-vote--for"
+              class="font-size-14 font-w400 mr-3 text-uppercase button-vote button-vote--for"
             />
 
             <main-button
@@ -119,27 +119,36 @@
               :large="true"
               :active="true"
               :block="true"
-              class="font-size-14 font-w400 text-uppercase button-vote button-vote--against"
+              class="font-size-14 font-w400 mt-0 text-uppercase button-vote button-vote--against"
             />
           </div>
 
-          <div v-if="proposal.votes.voted">
-            <div class="voted-box">
+          <div v-if="proposal.votes.voted" class="switch-on-hover">
+            <div class="switch-on-hover__visible votes-bar votes-bar--empty" :class="'votes-bar--' + proposal.votes.voted">
+              <div class="votes-bar__content">
+                <span>Your Vote: <span class="text-uppercase">{{proposal.votes.voted}}</span></span>
+                <span>
+                  {{ proposal.votes.for || proposal.votes.against }}
+                  {{ symbol }}
+                </span>
+              </div>
+              
+            </div>
+
+            <div class="voted-box switch-on-hover__hidden">
               <div class="voted-box__row">
                 <div class="font-size-12 font-w500 text-muted-light">
-                  My vote
-                </div>
-                <div class="font-size-12 font-w500">
-                  <span
-                    class="vote-chip"
-                    :class="'vote-chip--' + proposal.votes.voted"
-                  ></span>
-                  <a
-                    v-show="false"
-                    target="_blank"
-                    class="font-size-12 font-w500 fix-a ml-2"
-                    >Unvote</a
-                  >
+                  <span class="square" :class="'square--' + proposal.votes.voted"/>
+                  <span class="text-uppercase">
+                    {{proposal.votes.voted}}
+                    {{
+                      (
+                        (100 / proposal.totalVotes)
+                        * (proposal.votes.voted === 'for' ? proposal.totalVotesFor : proposal.totalVotesAgainst)
+                        || 0
+                      ).toFixed(1)
+                    }}%
+                  </span>
                 </div>
               </div>
               <div class="voted-box__row">
@@ -169,42 +178,28 @@
           </div>
 
           <div class="font-size-12 font-w500 text-uppercase pt-3">
-            <span class="mini-pie-wrapper">
-              <pie-chart
-                class="fix-pie"
-                :width="16"
-                :height="16"
-                :chart-data="generateChartData(proposal)"
-                :options="{
-                  legend: false,
-                  lineWidth: 0,
-                  tooltips: { enabled: false }
-                }"
-              />
-            </span>
-            <span>
-              <span class="square square--for"></span>
-              <span
-                >For
-                {{
-                  (
-                    (100 / proposal.totalVotes) * proposal.totalVotesFor || 0
-                  ).toFixed(1)
-                }}%</span
-              >
-            </span>
-            <span>
-              <span class="square square--against"></span>
-              <span
-                >Against
-                {{
-                  (
-                    (100 / proposal.totalVotes) * proposal.totalVotesAgainst ||
-                    0
-                  ).toFixed(1)
-                }}%</span
-              >
-            </span>
+            <div class="votes-bar">
+              <div class="votes-bar__progress" :style="{width: `${(100 / proposal.totalVotes) * proposal.totalVotesFor}%`}" />
+              <div class="votes-bar__content text-uppercase">
+                <span>
+                  For
+                  {{
+                    (
+                      (100 / proposal.totalVotes) * proposal.totalVotesFor || 0
+                    ).toFixed(1)
+                  }}%
+                </span>
+                <span>
+                  Against
+                  {{
+                    (
+                      (100 / proposal.totalVotes) * proposal.totalVotesAgainst ||
+                      0
+                    ).toFixed(1)
+                  }}%
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </td>
@@ -275,7 +270,9 @@ export default class OpenProposals extends Vue {
         maxWidth: "500px"
       },
       {
-        label: "Vote"
+        label: "Vote",
+        maxWidth: "320px",
+        minWidth: "320px",
       }
     ];
   }
@@ -386,7 +383,6 @@ export default class OpenProposals extends Vue {
   width: 4px;
   vertical-align: middle;
   margin-right: 8px;
-  margin-left: 16px;
 }
 
 .mini-pie-wrapper {
@@ -406,7 +402,7 @@ export default class OpenProposals extends Vue {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 24px + 8px;
+    height: 16px + 8px;
   }
 }
 
@@ -433,6 +429,55 @@ export default class OpenProposals extends Vue {
     &:before {
       content: "Against";
     }
+  }
+}
+
+.votes-bar {
+  height: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #de4a5c;
+  position: relative;
+  color: #ffffff;
+  font-size: 12px;
+
+  &__progress {
+    background: #3ec8c8;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+  }
+
+  &__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
+  }
+
+  &--empty {
+    border: 1px solid currentColor;
+    background: transparent;
+  }
+
+  &--for {
+    color: #3ec8c8;
+  }
+  &--against {
+    color: #de4a5c;
+  }
+}
+
+.switch-on-hover {
+  &:hover &__visible,
+  &:not(:hover) &__hidden {
+    display: none;
   }
 }
 </style>
