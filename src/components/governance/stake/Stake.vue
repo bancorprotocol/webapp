@@ -60,7 +60,7 @@
       </div>
 
       <span v-if="lock.till > Date.now()">
-        <remaining-time type="warn" :from="Date.now()" :to="lock.till" />
+        <remaining-time class="mb-2" type="warn" :from="Date.now()" :to="lock.till" />
       </span>
 
       <div

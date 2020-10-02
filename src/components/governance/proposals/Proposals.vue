@@ -49,7 +49,7 @@ import AddProposal from "@/components/governance/proposals/AddProposal.vue";
 })
 export default class Proposals extends Vue {
   proposals: Proposal[] = [];
-  showNewProposal = true;
+  showNewProposal = false
 
   get isEth() {
     return this.$route.params.service === "eth";
