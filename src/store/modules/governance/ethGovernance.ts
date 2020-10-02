@@ -15,6 +15,9 @@ export const governanceContractAddress =
 export const etherscanUrl = "https://ropsten.etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001";
+// const discourseUrl = "https://gov.bancor.network/";
+const discourseUrl =
+  "https://cors-anywhere.herokuapp.com/https://gov.uniswap.org/";
 
 const VuexModule = createModule({
   strict: false
@@ -432,5 +435,49 @@ export class EthereumGovernance extends VuexModule.With({
       Buffer.from(JSON.stringify(proposalMetaData, null, 2))
     );
     return path;
+  }
+
+  @action async getPostFromDiscourse({
+    postId
+  }: {
+    postId: string;
+  }): Promise<{ description: string }> {
+    const post = await fetch(`${discourseUrl}posts/${postId}.json`, {}).then(
+      response => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      }
+    );
+
+    const description = post.raw;
+    return {
+      description
+    };
+  }
+
+  @action async getTopicFromDiscourse({
+    topicId
+  }: {
+    topicId: string;
+  }): Promise<{ title: string; description: string }> {
+    const topic = await fetch(`${discourseUrl}t/${topicId}.json`, {}).then(
+      response => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      }
+    );
+
+    const postId = topic.post_stream.posts[0].id;
+    const { description } = await this.getPostFromDiscourse({
+      postId
+    });
+    return {
+      title: topic.title,
+      description
+    };
   }
 }

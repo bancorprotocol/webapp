@@ -1,5 +1,5 @@
 <template>
-    <b-modal
+  <b-modal
     scrollable
     title="Create Proposal"
     centered
@@ -9,7 +9,6 @@
     @cancel="onHide"
     @hide="onHide"
   >
-
     <multi-input-field
       class="mb-3"
       v-model="discourseUrl"
@@ -21,7 +20,7 @@
 
     <template v-if="name || description">
       <label-content-split label="Title and description" class="mb-2" />
-      
+
       <b-form-input
         v-model="name"
         type="text"
@@ -167,7 +166,7 @@ export default class AddProposal extends Vue {
     background: $block-bg-blue !important;
     pointer-events: none;
   }
-  
+
   &#{&}--title {
     border-bottom-right-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
