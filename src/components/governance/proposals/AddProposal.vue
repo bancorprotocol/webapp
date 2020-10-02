@@ -1,50 +1,15 @@
 <template>
     <b-modal
     scrollable
+    title="Create Proposal"
     centered
     v-model="show"
     hide-footer
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
-    @show="update"
   >
-    <multi-input-field
-      class="mb-3"
-      v-model="name"
-      type="text"
-      height="48"
-      placeholder="Add Liquidity pool xyz"
-      label="Proposal Name"
-    />
-    <label-content-split label="Proposal Description" class="mb-2" />
-    <b-form-textarea
-      class="mb-3"
-      v-model="description"
-      placeholder="I would like to propose to ..."
-      rows="8"
-      :class="[
-        !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
-        'font-size-14'
-      ]"
-    />
-    <multi-input-field
-      class="mb-3"
-      v-model="contractAddress"
-      @input="onAddressInput"
-      type="text"
-      placeholder="0x0..."
-      height="48"
-      label="Contract to Execute"
-    />
-    <multi-input-field
-      class="mb-3"
-      v-model="githubUrl"
-      type="url"
-      placeholder="https://github.com/..."
-      height="48"
-      label="Github Url"
-    />
+
     <multi-input-field
       class="mb-3"
       v-model="discourseUrl"
@@ -54,13 +19,57 @@
       label="Discourse Url"
     />
 
+    <template v-if="name || description">
+      <label-content-split label="Title and description" class="mb-2" />
+      
+      <b-form-input
+        v-model="name"
+        type="text"
+        height="48"
+        placeholder="Add Liquidity pool xyz"
+        class="combo combo--title"
+        :class="[
+          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
+          fontSizeClass
+        ]"
+      />
+      <b-form-textarea
+        class="mb-3 combo combo--desc"
+        v-model="description"
+        placeholder="I would like to propose to ..."
+        rows="8"
+        :class="[
+          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
+          'font-size-14'
+        ]"
+      />
+    </template>
+
+    <multi-input-field
+      class="mb-3"
+      v-model="contractAddress"
+      @input="onAddressInput"
+      type="text"
+      placeholder="0x0..."
+      height="48"
+      label="Contract address"
+    />
+    <multi-input-field
+      class="mb-3"
+      v-model="githubUrl"
+      type="url"
+      placeholder="https://github.com/..."
+      height="48"
+      label="Github URL"
+    />
     <div class="pt-3" />
 
     <main-button
       @click="propose"
       label="Propose"
       :large="true"
-      :active="!this.hasError"
+      :active="true"
+      :disabled="this.hasError"
     />
   </b-modal>
 </template>
@@ -150,4 +159,29 @@ export default class AddProposal extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+@import "@/assets/_scss/custom/_variables";
+
+.combo {
+  @at-root body &#{&} {
+    background: $block-bg-blue !important;
+    pointer-events: none;
+  }
+  
+  &#{&}--title {
+    border-bottom-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom: 0 !important;
+    font-weight: 500;
+    height: 48px;
+  }
+  &#{&}--desc {
+    border-top-right-radius: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top: 0 !important;
+    height: 120px !important;
+    min-height: 120px !important;
+    max-height: 120px !important;
+  }
+}
+</style>
