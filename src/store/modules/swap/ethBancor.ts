@@ -366,6 +366,11 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
   return blockSummaries;
 };
 
+const notBadRelay = (converterAndAnchor: ConverterAndAnchor) => !compareString(converterAndAnchor.anchorAddress, '0x368B3D50E51e8bf62E6C73fc389e4102B9aEB8e2')
+
+
+
+
 const main = async () => {
   const converter = "0x25b970d6b92a2b38fdd84c7dc7d9de3830128c90";
   const v = await get_volumes(converter);
@@ -4122,11 +4127,18 @@ export class EthBancorModule
       allAnchors.map(poolTokenShape)
     ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
+
+    console.log(rawRelays, 'are all raw relays')
+    const badRelays = rawRelays.filter(rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2))
+    console.log(badRelays, 'was the bad relays')
+    const badRelay = rawRelays.filter(x => x.connectorTokenCount == '2').find(rawRelay => compareString(rawRelay.connectorToken1, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3') || compareString(rawRelay.connectorToken2, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3'))
+    console.log(badRelay, 'was the bad relay')
+
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
     );
 
-    const polished: RefinedAbiRelay[] = rawRelays.map(half => ({
+    const polished: RefinedAbiRelay[] = rawRelays.filter(x => x.connectorTokenCount == '2').map(half => ({
       ...half,
       anchorAddress: findOrThrow(
         convertersAndAnchors,
@@ -4850,6 +4862,7 @@ export class EthBancorModule
         priorityAnchors
       );
 
+
       console.log("trying...");
       console.timeEnd("timeToGetToInitialBulk");
       console.time("initialPools");
@@ -4859,7 +4872,7 @@ export class EthBancorModule
           anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
           converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
         }
-      ]);
+      ].filter(notBadRelay));
       this.setLoadingPools(false);
       console.timeEnd("initialPools");
       console.log("finished add pools...", x);
@@ -4883,13 +4896,13 @@ export class EthBancorModule
               anchorAndConverter.converterAddress,
               anchorAndConverter.anchorAddress
             ].some(address => potentialUnfitConverters.some(x => x == address))
-        );
+        ).filter(notBadRelay)
 
         const droppedAnchors = differenceWith(
           remainingLoad,
           newSet,
           compareAnchorAndConverter
-        );
+        ).filter(notBadRelay)
         this.addPoolsBulk(newSet).then(() => {
           this.addPoolsBulk(droppedAnchors);
         });
