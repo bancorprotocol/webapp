@@ -103,6 +103,8 @@ export class EthereumGovernance extends VuexModule.With({
   isLoaded: boolean = false;
   symbol?: string;
 
+  metaDataCache: { [id: string]: ProposalMetaData } = {};
+
   @mutation
   setContracts({
     governance,
@@ -343,7 +345,7 @@ export class EthereumGovernance extends VuexModule.With({
           timeoutInSeconds: 5
         });
       } catch (err) {
-        console.log("Getting metadata failed!", err);
+        console.log("Getting metadata failed!", err, proposal.hash);
       }
 
       const prop = {
@@ -404,6 +406,10 @@ export class EthereumGovernance extends VuexModule.With({
     hash: string;
     timeoutInSeconds: number;
   }): Promise<ProposalMetaData> {
+    if (this.metaDataCache[hash]) {
+      return this.metaDataCache[hash];
+    }
+
     const ipfs = ipfsHttpClient(ipfsUrl);
 
     let metadata;
@@ -413,15 +419,28 @@ export class EthereumGovernance extends VuexModule.With({
     })) {
       if (!file.content) continue;
 
+      let content = "";
+
       for await (const chunk of file.content) {
-        metadata = JSON.parse(chunk.toString("utf8"));
-        break;
+        content += chunk.toString("utf8");
       }
+
+      metadata = JSON.parse(content);
+      const newCache = this.metaDataCache;
+
+      newCache[hash] = metadata;
+      this.setMetaDataCache(newCache);
 
       break;
     }
 
     return metadata;
+  }
+
+  @mutation setMetaDataCache(metaDataCache: {
+    [id: string]: ProposalMetaData;
+  }) {
+    this.metaDataCache = metaDataCache;
   }
 
   @action async storeInIPFS({
