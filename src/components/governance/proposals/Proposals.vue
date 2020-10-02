@@ -64,6 +64,7 @@ export default class Proposals extends Vue {
   }
 
   @Watch("isAuthenticated")
+  @Watch("showNewProposal")
   async updateProposals() {
     this.proposals = await vxm.ethGovernance.getProposals({
       voter: this.isAuthenticated
