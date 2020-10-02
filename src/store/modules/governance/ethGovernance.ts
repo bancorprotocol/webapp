@@ -16,6 +16,7 @@ export const etherscanUrl = "https://ropsten.etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001";
 // const discourseUrl = "https://gov.bancor.network/";
+// const discourseUrl = "http://localhost:3000/https://gov.uniswap.org/";
 const discourseUrl =
   "https://cors-anywhere.herokuapp.com/https://gov.uniswap.org/";
 
@@ -442,7 +443,7 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     postId: string;
   }): Promise<{ description: string }> {
-    const post = await fetch(`${discourseUrl}posts/${postId}.json`, {}).then(
+    const post = await fetch(`${discourseUrl}posts/${postId}.json`).then(
       response => {
         if (!response.ok) {
           throw new Error(response.statusText);
@@ -462,7 +463,7 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     topicId: string;
   }): Promise<{ title: string; description: string }> {
-    const topic = await fetch(`${discourseUrl}t/${topicId}.json`, {}).then(
+    const topic = await fetch(`${discourseUrl}t/${topicId}.json`).then(
       response => {
         if (!response.ok) {
           throw new Error(response.statusText);

@@ -103,7 +103,10 @@
       </td>
       <td>
         <div class="pl-3 container-border">
-          <div v-if="!proposal.votes.voted && proposal.end > Date.now()" class="d-flex align-items-center">
+          <div
+            v-if="!proposal.votes.voted && proposal.end > Date.now()"
+            class="d-flex align-items-center"
+          >
             <main-button
               @click="() => voteFor(proposal.id.toString())"
               label="Vote for"
@@ -124,28 +127,39 @@
           </div>
 
           <div v-if="proposal.votes.voted" class="switch-on-hover">
-            <div class="switch-on-hover__visible votes-bar votes-bar--empty" :class="'votes-bar--' + proposal.votes.voted">
+            <div
+              class="switch-on-hover__visible votes-bar votes-bar--empty"
+              :class="'votes-bar--' + proposal.votes.voted"
+            >
               <div class="votes-bar__content">
-                <span>Your Vote: <span class="text-uppercase">{{proposal.votes.voted}}</span></span>
+                <span
+                  >Your Vote:
+                  <span class="text-uppercase">{{
+                    proposal.votes.voted
+                  }}</span></span
+                >
                 <span>
                   {{ proposal.votes.for || proposal.votes.against }}
                   {{ symbol }}
                 </span>
               </div>
-              
             </div>
 
             <div class="voted-box switch-on-hover__hidden">
               <div class="voted-box__row">
                 <div class="font-size-12 font-w500 text-muted-light">
-                  <span class="square" :class="'square--' + proposal.votes.voted"/>
+                  <span
+                    class="square"
+                    :class="'square--' + proposal.votes.voted"
+                  />
                   <span class="text-uppercase">
-                    {{proposal.votes.voted}}
+                    {{ proposal.votes.voted }}
                     {{
                       (
-                        (100 / proposal.totalVotes)
-                        * (proposal.votes.voted === 'for' ? proposal.totalVotesFor : proposal.totalVotesAgainst)
-                        || 0
+                        (100 / proposal.totalVotes) *
+                          (proposal.votes.voted === "for"
+                            ? proposal.totalVotesFor
+                            : proposal.totalVotesAgainst) || 0
                       ).toFixed(1)
                     }}%
                   </span>
@@ -179,7 +193,13 @@
 
           <div class="font-size-12 font-w500 text-uppercase pt-3">
             <div class="votes-bar">
-              <div class="votes-bar__progress" :style="{width: `${(100 / proposal.totalVotes) * proposal.totalVotesFor}%`}" />
+              <div
+                class="votes-bar__progress"
+                :style="{
+                  width: `${(100 / proposal.totalVotes) *
+                    proposal.totalVotesFor}%`
+                }"
+              />
               <div class="votes-bar__content text-uppercase">
                 <span>
                   For
@@ -193,8 +213,8 @@
                   Against
                   {{
                     (
-                      (100 / proposal.totalVotes) * proposal.totalVotesAgainst ||
-                      0
+                      (100 / proposal.totalVotes) *
+                        proposal.totalVotesAgainst || 0
                     ).toFixed(1)
                   }}%
                 </span>
@@ -272,7 +292,7 @@ export default class OpenProposals extends Vue {
       {
         label: "Vote",
         maxWidth: "320px",
-        minWidth: "320px",
+        minWidth: "320px"
       }
     ];
   }

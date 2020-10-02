@@ -12,6 +12,7 @@
     <multi-input-field
       class="mb-3"
       v-model="discourseUrl"
+      @input="onDiscourseInput"
       type="url"
       placeholder="https://www.reddit.com/r/Bancor/comments/iv39oc"
       height="48"
@@ -106,6 +107,28 @@ export default class AddProposal extends Vue {
     return vxm.general.darkMode;
   }
 
+  onDiscourseInput(input: string) {
+    const parseIdRegex = new RegExp("\\/(\\d+)\\/?");
+    const match = input.match(parseIdRegex);
+    console.log(match);
+    if (match) {
+      const topicId = match[1];
+
+      console.log(topicId);
+      if (topicId) {
+        vxm.ethGovernance
+          .getTopicFromDiscourse({
+            topicId
+          })
+          .then(result => {
+            console.log(result);
+            this.description = result.description;
+            this.name = result.title;
+          });
+      }
+    }
+  }
+
   onAddressInput(input: string) {
     this.error = !isAddress(input);
   }
@@ -150,6 +173,8 @@ export default class AddProposal extends Vue {
       executor: this.contractAddress,
       hash
     });
+
+    this.onHide();
   }
 
   onHide() {
