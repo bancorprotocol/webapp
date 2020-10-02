@@ -17,7 +17,7 @@ export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001";
 // const discourseUrl = "https://gov.bancor.network/";
 const discourseUrl =
-  "https://thingproxy.freeboard.io/fetch/https://gov.uniswap.org/";
+  "https://api.allorigins.win/raw?url=https://gov.uniswap.org/";
 
 const VuexModule = createModule({
   strict: false
