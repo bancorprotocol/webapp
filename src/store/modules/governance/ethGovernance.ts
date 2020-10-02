@@ -16,9 +16,8 @@ export const etherscanUrl = "https://ropsten.etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001";
 // const discourseUrl = "https://gov.bancor.network/";
-// const discourseUrl = "http://localhost:3000/https://gov.uniswap.org/";
 const discourseUrl =
-  "https://cors-anywhere.herokuapp.com/https://gov.uniswap.org/";
+  "https://thingproxy.freeboard.io/fetch/https://gov.uniswap.org/";
 
 const VuexModule = createModule({
   strict: false
