@@ -94,10 +94,10 @@
         id="main-container"
         :class="
           darkMode
-            ? 'bg-body-dark text-body-dark'
-            : 'bg-body-light text-body-light'
+            ? 'bg-body-dark text-body-dark main-container'
+            : 'bg-body-light text-body-light main-container'
         "
-        style="flex-grow: 1 overflow-y: scroll"
+        style="flex-grow: 1"
       >
         <router-view name="Nav" />
         <b-container fluid="xl" class="pt-1">
@@ -131,7 +131,7 @@ import wait from "waait";
 export default class App extends Vue {
   loading = true;
   error = false;
-  selectedLink = "swap";
+  selectedLink = this.$route.fullPath.split('/')[this.$route.fullPath.split('/').length - 1];
   links = [
     { route: "Swap", key: "swap", label: "Swap" },
     { route: "Data", key: "data", label: "Data" },
@@ -152,7 +152,6 @@ export default class App extends Vue {
     console.log("feature:", this.$route.meta.feature);
     console.log("service:", this.$route.params.service);
     console.log("query:", this.$route.query);
-
     const trade = this.$route.meta.feature == "Trade";
 
     const service = this.$route.params && this.$route.params.service;
@@ -254,6 +253,10 @@ h2 {
   height: 100%;
   flex-grow: 1;
   overflow-y: hidden;
+}
+.main-container {
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 .side-bar {
   overflow: hidden;
