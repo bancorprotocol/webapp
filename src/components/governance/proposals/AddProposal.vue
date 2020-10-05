@@ -128,7 +128,7 @@ export default class AddProposal extends Vue {
     return vxm.general.darkMode;
   }
 
-  onDiscourseInput(input: string) {
+  async onDiscourseInput(input: string) {
     const parseIdRegex = new RegExp("\\/(\\d+)\\/?");
     const match = input.match(parseIdRegex);
     console.log(match);
@@ -137,15 +137,12 @@ export default class AddProposal extends Vue {
 
       console.log(topicId);
       if (topicId) {
-        vxm.ethGovernance
-          .getTopicFromDiscourse({
-            topicId
-          })
-          .then(result => {
-            console.log(result);
-            this.description = result.description;
-            this.name = result.title;
-          });
+        const result = await vxm.ethGovernance.getTopicFromDiscourse({
+          topicId
+        });
+
+        this.description = result.description;
+        this.name = result.title;
       }
     }
   }
