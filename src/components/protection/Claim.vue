@@ -49,7 +49,7 @@ export default class Claim extends Vue {
         id: 0,
         amount: 5480.75438,
         usdValue: 759.69,
-        lockedUntil: 1601483050
+        lockedUntil: 1601534050
       },
       {
         id: 1,

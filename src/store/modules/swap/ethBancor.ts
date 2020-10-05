@@ -5205,25 +5205,16 @@ export class EthBancorModule
 
     const tokenAddresses: string[][] = [];
 
-    const subgraphRes = await this.getPoolsViaSubgraph();
+    // const subgraphRes = await this.getPoolsViaSubgraph();
+    // console.log(subgraphRes, 'is the subgraphs')
 
-    const notCoveredBySubGraph = convertersAndAnchors.filter(
-      anchor =>
-        !subgraphRes.pools.some(relay =>
-          compareString(relay.id, anchor.anchorAddress)
-        )
-    );
 
-    console.log(
-      subgraphRes.pools.length,
-      "covered by subgraph",
-      notCoveredBySubGraph.length,
-      "left for rpc"
-    );
+    const notCoveredBySubGraph = convertersAndAnchors
+
     const { pools, reserveFeeds } = await this.addPoolsV2(notCoveredBySubGraph);
 
-    const allPools = [...subgraphRes.pools, ...pools];
-    const allReserveFeeds = [...subgraphRes.reserveFeeds, ...reserveFeeds];
+    const allPools = [...pools];
+    const allReserveFeeds = [...reserveFeeds];
 
     const poolsFailed = differenceWith(convertersAndAnchors, allPools, (a, b) =>
       compareString(a.anchorAddress, b.id)
