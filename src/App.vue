@@ -135,14 +135,14 @@ export default class App extends Vue {
   links = [
     { route: "Swap", key: "swap", label: "Swap" },
     { route: "Data", key: "data", label: "Data" },
-    { route: "swap", key: "governance", label: "Governance" },
-    { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
-    { route: "swap", key: "bancorx", label: "BancorX" }
+    // { route: "swap", key: "governance", label: "Governance" },
+    // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
+    // { route: "swap", key: "bancorx", label: "BancorX" }
   ];
 
-  get isMobile() {
-    return window.innerWidth < 450;
-  }
+  // get isMobile() {
+  //   return window.innerWidth < 450;
+  // }
 
   get selectedNetwork() {
     return vxm.bancor.currentNetwork;
@@ -262,7 +262,7 @@ h2 {
   flex-direction: column;
   width: 230px;
   background-color: #e6ebf2;
-  @media (max-width: 899px) {
+  @media (max-width: 450px) {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -272,7 +272,7 @@ h2 {
     border-top: 1px solid #e6ebf2;
   }
   .brand-icon {
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
       display: none;
     }
     margin-top: 18px;
@@ -283,7 +283,7 @@ h2 {
   }
   .side-bar-links {
     margin-top: 28px;
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
       width: 100%;
       height: 56px;
       align-items: center;
@@ -299,7 +299,8 @@ h2 {
     cursor: pointer;
     height: 40px;
     position: relative;
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
+      padding-left: 0px;
       display: flex;
       flex-direction: column;
     }
@@ -315,7 +316,7 @@ h2 {
       line-height: normal;
       letter-spacing: normal;
       color: #6b7c93;
-      @media (max-width: 899px) {
+      @media (max-width: 450px) {
         align-self: center;
         font-size: 10px;
       }
@@ -325,7 +326,7 @@ h2 {
       width: 14px;
       height: 14px;
       margin-right: 12px;
-      @media (max-width: 899px) {
+      @media (max-width: 450px) {
         width: 22px;
         height: 20px;
         margin-right: 0px;
@@ -347,7 +348,7 @@ h2 {
     letter-spacing: normal;
     color: #97a5b8;
     margin-left: 25px;
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
       display: none;
     }
   }
@@ -361,7 +362,7 @@ h2 {
         brightness(0.7);
       color: #0f59d1;
     }
-    @media (min-width: 900px) {
+    @media (min-width: 450px) {
       background-color: #f8f9fd;
       border-left: 2px solid #0f59d1;
       &::before {
