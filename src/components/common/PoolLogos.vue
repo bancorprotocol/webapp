@@ -8,7 +8,7 @@
       <pool-logos-overlapped :pool-id="pool.id" size="20" />
       <span class="ml-2">{{ poolName }}</span>
       <font-awesome-icon v-if="dropdown" icon="caret-down" class="ml-2" />
-      <version-badge v-if="version" :version="pool.v2 ? 2 : 1" />
+      <version-badge v-if="version" :version="pool.v2 ? 2 : 1" class="ml-2" />
     </div>
     <div
       v-else-if="token"
