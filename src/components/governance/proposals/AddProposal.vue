@@ -1,14 +1,35 @@
 <template>
   <b-modal
     scrollable
-    title="Create Proposal"
     centered
     v-model="show"
     hide-footer
+    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
   >
+    <template slot="modal-header">
+      <div class="w-100">
+        <b-row>
+          <b-col cols="12" class="d-flex justify-content-between mb-2">
+            <span
+              class="font-size-14 font-w600"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+            >
+              Create Proposal
+            </span>
+            <font-awesome-icon
+              class="cursor font-size-lg"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+              @click="onHide"
+              icon="times"
+            />
+          </b-col>
+        </b-row>
+      </div>
+    </template>
+
     <multi-input-field
       class="mb-3"
       v-model="discourseUrl"

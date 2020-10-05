@@ -1,7 +1,11 @@
 <template>
   <content-block :px0="true" :shadow-light="true" :no-header="true">
     <div>
-      <div class="new-proposal-button cursor" @click="showNewProposal = true">
+      <div
+        class="new-proposal-button cursor"
+        @click="showNewProposal = true"
+        :class="darkMode ? 'text-dark' : 'text-light'"
+      >
         + New Proposal
       </div>
       <add-proposal v-model="showNewProposal" />

@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
     scrollable
     size="sm"
     centered
@@ -157,6 +158,7 @@ export default class ModalStake extends Vue {
       undefined
     );
   }
+
   get darkMode(): boolean {
     return vxm.general.darkMode;
   }

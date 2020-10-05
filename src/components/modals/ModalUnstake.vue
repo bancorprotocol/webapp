@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
     scrollable
     size="sm"
     centered
