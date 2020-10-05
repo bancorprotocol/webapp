@@ -52,10 +52,7 @@
     >
       This interface is in beta. Use it at your own risk.
     </div>
-    <div 
-      name="MainLayout"
-      class="main-layout"
-    >      
+    <div name="MainLayout" class="main-layout">
       <div name="side-bar" class="side-bar">
         <b-navbar-brand class="pb-1 brand-icon">
           <router-link
@@ -76,17 +73,18 @@
           </router-link>
         </b-navbar-brand>
         <div class="side-bar-links">
-          <div 
-            v-for="link in links" :key="link.key"
+          <div
+            v-for="link in links"
+            :key="link.key"
             @click="sideLinkClicked(link.key)"
             :class="selectedLink === link.key ? 'clicked-link' : ''"
-            class="side-bar-link">
-            <img 
+            class="side-bar-link"
+          >
+            <img
               class="side-bar-link-icon"
-              :src="
-                require(`@/assets/media/icons/${link.key}.svg`)
-              " />
-            <span>{{link.label}}</span>
+              :src="require(`@/assets/media/icons/${link.key}.svg`)"
+            />
+            <span>{{ link.label }}</span>
           </div>
         </div>
         <div class="middle-space" />
@@ -133,16 +131,21 @@ import wait from "waait";
 export default class App extends Vue {
   loading = true;
   error = false;
-  selectedLink = 'swap';
-  links = [{key: 'swap', label: 'Swap'},
-    {key: 'data', label: 'Data'}, 
-    {key:'governance', label: 'Governance'}, 
-    {key: 'liquidity', label: 'Liquidity'}, 
-    {key: 'bancorx', label: 'BancorX'}
+  selectedLink = "swap";
+  links = [
+    { route: "Swap", key: "swap", label: "Swap" },
+    { route: "Data", key: "data", label: "Data" },
+    { route: "swap", key: "governance", label: "Governance" },
+    { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
+    { route: "swap", key: "bancorx", label: "BancorX" }
   ];
 
+  get isMobile() {
+    return window.innerWidth < 450;
+  }
+
   get selectedNetwork() {
-    return vxm.bancor.currentNetwork
+    return vxm.bancor.currentNetwork;
   }
   get darkMode() {
     return vxm.general.darkMode;
@@ -191,6 +194,11 @@ export default class App extends Vue {
   }
 
   sideLinkClicked(newSelected: string) {
+    const linkSelected = this.links.find(link => link.key == newSelected)!;
+    this.$router.push({
+      name: linkSelected.route,
+      params: { service: this.$route.params.service }
+    });
     this.selectedLink = newSelected;
   }
 
@@ -246,7 +254,7 @@ h2 {
 .main-layout {
   display: flex;
   flex-direction: row;
-  height: 100%;  
+  height: 100%;
   flex-grow: 1;
 }
 .side-bar {
@@ -255,13 +263,13 @@ h2 {
   width: 230px;
   background-color: #e6ebf2;
   @media (max-width: 899px) {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 56px;
-      background-color: white;
-      border-top: 1px solid #e6ebf2;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background-color: white;
+    border-top: 1px solid #e6ebf2;
   }
   .brand-icon {
     @media (max-width: 899px) {
@@ -285,7 +293,7 @@ h2 {
       justify-content: space-around;
     }
   }
-  .side-bar-link {    
+  .side-bar-link {
     padding-left: 25px;
     width: 100%;
     cursor: pointer;
@@ -323,7 +331,7 @@ h2 {
         margin-right: 0px;
       }
     }
-  }  
+  }
   .middle-space {
     flex-grow: 1;
   }
@@ -349,25 +357,26 @@ h2 {
     }
     img {
       // fill: #0f59d1;
-      filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg) brightness(0.7);
+      filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg)
+        brightness(0.7);
       color: #0f59d1;
     }
-    @media (min-width: 900px) {    
+    @media (min-width: 900px) {
       background-color: #f8f9fd;
       border-left: 2px solid #0f59d1;
       &::before {
-        content:'';
+        content: "";
         position: absolute;
         left: 202px;
         top: -26px;
         width: 26px;
-        height:  26px;
+        height: 26px;
         background-color: transparent;
         border-bottom-right-radius: 14px;
-        box-shadow: 0 11px 0 0 #f8f9fd;    
+        box-shadow: 0 11px 0 0 #f8f9fd;
       }
       &::after {
-        content:'';
+        content: "";
         position: absolute;
         left: 202px;
         top: 40px;
@@ -375,7 +384,7 @@ h2 {
         height: 26px;
         background-color: transparent;
         border-top-right-radius: 14px;
-        box-shadow: 0 -11px 0 0 #f8f9fd;    
+        box-shadow: 0 -11px 0 0 #f8f9fd;
       }
     }
   }
