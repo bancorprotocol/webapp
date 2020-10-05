@@ -46,6 +46,14 @@
 //  font-weight: bold;
 //}
 
+.headings-light {
+  color: $headings-color-light !important;
+}
+
+.headings-dark {
+  color: $headings-color-dark !important;
+}
+
 .text-body-light {
   color: rgba(87, 87, 87, 0.85) !important;
   font-weight: bold;
@@ -287,4 +295,9 @@
     background-color: transparent !important;
   }
 
+}
+
+.logo-shadow {
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+  border: solid 1px $gray-border;
 }

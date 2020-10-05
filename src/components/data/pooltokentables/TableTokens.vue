@@ -6,9 +6,11 @@
     sort-by="liqDepth"
   >
     <template v-slot:cell(symbol)="data">
-      <router-link :to="{ name: 'DetailsToken', params: { id: data.item.id } }">
-        <pool-logos :token="data.item" :cursor="false" />
-      </router-link>
+      <pool-logos :token="data.item" :cursor="false" />
+
+      <!--      <router-link :to="{ name: 'DetailsToken', params: { id: data.item.id } }">-->
+      <!--        <pool-logos :token="data.item" :cursor="false" />-->
+      <!--      </router-link>-->
     </template>
 
     <template v-slot:cell(change24h)="data">

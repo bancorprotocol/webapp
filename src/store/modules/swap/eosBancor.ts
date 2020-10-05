@@ -1535,7 +1535,7 @@ export class EosBancorModule
 
   @action async init(param?: ModuleParam) {
     console.count("eosInit");
-    console.time("eos");
+    console.time("eosResolved");
     console.log("eosInit received", param);
 
     this.pullEvents();
@@ -1598,7 +1598,7 @@ export class EosBancorModule
 
       this.setInitialised(true);
       this.setLoadingPools(false);
-      console.timeEnd("eos");
+      console.timeEnd("eosResolved");
     } catch (e) {
       throw new Error(`Threw inside eosBancor: ${e.message}`);
     }

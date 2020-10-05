@@ -131,11 +131,11 @@ export default class PoolActionsAddV1 extends Vue {
     return [
       {
         label: this.reserveOne.symbol + " Deposit",
-        value: this.amount1
+        value: Number(this.amount1)
       },
       {
         label: this.reserveTwo.symbol + " Deposit",
-        value: this.amount2
+        value: Number(this.amount2)
       },
       {
         label: "Rates",
