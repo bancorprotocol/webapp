@@ -171,20 +171,25 @@ export default class Stake extends Vue {
   @Watch("stakeModal")
   @Watch("unstakeModal")
   async update() {
-    this.balance = await vxm.ethGovernance.getBalance({
-      account: this.isAuthenticated
-    });
+    const [balance, votes, lock, tokenAddress, symbol] = await Promise.all([
+      vxm.ethGovernance.getBalance({
+        account: this.isAuthenticated
+      }),
+      vxm.ethGovernance.getVotes({
+        voter: this.isAuthenticated
+      }),
+      vxm.ethGovernance.getLock({
+        account: this.isAuthenticated
+      }),
+      vxm.ethGovernance.getTokenAddress(),
+      vxm.ethGovernance.getSymbol()
+    ]);
 
-    this.votes = await vxm.ethGovernance.getVotes({
-      voter: this.isAuthenticated
-    });
-
-    this.lock = await vxm.ethGovernance.getLock({
-      account: this.isAuthenticated
-    });
-
-    this.tokenAddress = await vxm.ethGovernance.getTokenAddress();
-    this.symbol = await vxm.ethGovernance.getSymbol();
+    this.balance = balance;
+    this.votes = votes;
+    this.lock = lock;
+    this.tokenAddress = tokenAddress;
+    this.symbol = symbol;
   }
 
   async mounted() {
