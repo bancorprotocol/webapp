@@ -209,7 +209,7 @@ export default class AddProposal extends Vue {
 
 .combo {
   @at-root body &#{&} {
-    background: $block-bg-blue !important;
+    color: $text-muted-light;
     pointer-events: none;
   }
 
