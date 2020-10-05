@@ -65,13 +65,7 @@
 
       <main-button
         @click="unstake"
-        :label="
-          unstakeValue.length === 0
-            ? 'Enter Amount'
-            : unstakeValue > 0 && unstakeValue <= currentStake
-            ? 'Unstake Tokens'
-            : 'Insufficient Amount'
-        "
+        :label="unstakeLabel"
         :active="true"
         :block="true"
         :disabled="!(unstakeValue && unstakeValue <= currentStake)"
@@ -156,6 +150,16 @@ export default class ModalUnstake extends Vue {
           this.unstakeValue <= this.currentStake)) &&
       undefined
     );
+  }
+
+  get unstakeLabel() {
+    return this.unstakeValue && String(this.unstakeValue).length === 0
+      ? "Enter Amount"
+      : this.unstakeValue &&
+        this.unstakeValue > 0 &&
+        this.unstakeValue <= this.currentStake
+      ? "Unstake Tokens"
+      : "Insufficient Amount";
   }
 
   getEtherscanUrl() {
