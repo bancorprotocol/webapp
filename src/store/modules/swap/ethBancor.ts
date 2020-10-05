@@ -452,6 +452,7 @@ const getPool = async (anchorId: string) => {
 
   return res;
 
+}
 const totalBntVolumeAtBlocks = async (blocks: string[]) => {
   const [usdPrices, res] = await Promise.all([
     usdPriceOfEth(blocks),
@@ -1697,14 +1698,6 @@ const getTokenMeta = async (currentNetwork: EthNetworks) => {
         symbol: "XXX"
       },
       {
-        contract: networkVars.bntToken,
-        symbol: "BNT"
-      },
-      {
-        contract: networkVars.ethToken,
-        symbol: "ETH"
-      },
-      {
         contract: "0xe4158797A5D87FB3080846e019b9Efc4353F58cC",
         symbol: "XXX"
       }
@@ -1847,19 +1840,18 @@ export class EthBancorModule
 
 
   @action async protectLiquidityTx({ anchorAddress, amountWei } : { anchorAddress: string, amountWei: string }) {
-    return '0x7ff995d2fb4c62193114deb01f02416cecf79195d8cc81f1ab12975822768842';
-    // const liquidityProtectionAddress = this.contracts.liquidityProtection;
-    // const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
-    // return this.resolveTxOnConfirmation({
-      // tx: contract.methods.protectLiquidity(
-        // anchorAddress,
-        // amountWei
-      // )
-    // });
+    const liquidityProtectionAddress = this.contracts.LiquidityProtection;
+    const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
+    return this.resolveTxOnConfirmation({
+      tx: contract.methods.protectLiquidity(
+        anchorAddress,
+        amountWei
+      )
+    });
   }
 
   @action async unProtectLiquidityTx({ id1, id2 }: { id1: string; id2: string }) {
-    const liquidityProtectionAddress = this.contracts.liquidityProtection
+    const liquidityProtectionAddress = this.contracts.LiquidityProtection
     const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
     return this.resolveTxOnConfirmation({
       tx: contract.methods.unprotectLiquidity(id1, id2)
@@ -1874,7 +1866,7 @@ export class EthBancorModule
   }
 
   @action async fetchProtectionPositions() {
-    const liquidityStore = this.contracts.liquidityProtectionStore
+    const liquidityStore = this.contracts.LiquidityProtectionStore
     const contract = buildLiquidityProtectionStoreContract(liquidityStore);
     const owner = this.isAuthenticated
     const idCount = Number(await contract.methods.protectedLiquidityCount(owner).call())
@@ -1887,7 +1879,7 @@ export class EthBancorModule
 
   @action async protectLiquidity({ amount, onUpdate }: ProtectLiquidityParams): Promise<TxResponse> {
 
-    const liquidityProtectionContractAddress = this.contracts.liquidityProtection;
+    const liquidityProtectionContractAddress = this.contracts.LiquidityProtection;
 
     const pool = await this.traditionalRelayById(amount.id);
     const poolToken = pool.anchor;
@@ -1963,11 +1955,11 @@ export class EthBancorModule
     if (!this.isAuthenticated) return;
 
     const owner = this.isAuthenticated
-    const storeContract = buildLiquidityProtectionStoreContract(this.contracts.liquidityProtectionStore);
+    const storeContract = buildLiquidityProtectionStoreContract(this.contracts.LiquidityProtectionStore);
     const lockedBalanceCount = Number(await storeContract.methods.lockedBalanceCount(owner).call());
     if (lockedBalanceCount == 0) return;
 
-    const lockedBalances = await traverseLockedBalances(this.contracts.liquidityProtectionStore, owner, lockedBalanceCount)
+    const lockedBalances = await traverseLockedBalances(this.contracts.LiquidityProtectionStore, owner, lockedBalanceCount)
 
     this.setLockedBalances(lockedBalances);
     return lockedBalances;
@@ -2835,8 +2827,6 @@ export class EthBancorModule
           whitelisted: false,
           liquidityProtection: false,
           focusAvailable: false,
-          liquidityProtection: true,
-          whitelisted: false,
           v2: true
         } as ViewRelay;
       });
@@ -2889,12 +2879,10 @@ export class EthBancorModule
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
-          liquidityProtection: false,
-          whitelisted: false,
+          liquidityProtection,
+          whitelisted,
           focusAvailable: hasHistory,
           v2: false,
-          liquidityProtection,
-          whitelisted
         } as ViewRelay;
       });
   }
