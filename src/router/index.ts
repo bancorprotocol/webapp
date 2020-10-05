@@ -16,6 +16,7 @@ import AddProtectionHome from "@/views/AddProtectionHome.vue";
 import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
 import TermsOfUse from "@/views/TermsOfUse.vue";
+import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
 
 Vue.use(Router);
 
@@ -69,6 +70,18 @@ export const router = new Router({
       components: {
         Nav: Navigation,
         Hero: PoolHome
+      },
+      props: true,
+      meta: {
+        feature: "Liquidity"
+      }
+    },
+    {
+      path: "/:service/pool/:id",
+      name: "PoolAdd",
+      components: {
+        Nav: Navigation,
+        Hero: PoolActionsAddHome
       },
       props: true,
       meta: {

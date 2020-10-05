@@ -75,7 +75,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
 import { vxm } from "@/store/";
 import { WalletProvider } from "eos-transit";
@@ -151,6 +151,11 @@ export default class App extends Vue {
     await vxm.general.getUserCountry();
     await this.loadBancor();
     if (this.$route.name === "404") this.loading = false;
+  }
+
+  @Watch("$route.params.service")
+  async onServiceChange() {
+    await this.loadBancor();
   }
 }
 </script>

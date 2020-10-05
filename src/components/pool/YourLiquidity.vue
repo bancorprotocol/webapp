@@ -64,6 +64,13 @@
                 label="Remove Liquidity"
               />
             </b-col>
+            <b-col cols="12">
+              <main-button
+                @click="goToProtect(pool.relay)"
+                label="Protect My Pool Token"
+                class="mt-2"
+              />
+            </b-col>
           </b-row>
         </b-collapse>
       </div>
@@ -128,6 +135,16 @@ export default class YourLiquidity extends Vue {
       params: {
         poolAction: "add",
         account: pool.id
+      }
+    });
+  }
+
+  goToProtect(pool: ViewRelay) {
+    this.$router.push({
+      name: "ProtectionAction",
+      params: {
+        action: "add",
+        id: pool.id
       }
     });
   }

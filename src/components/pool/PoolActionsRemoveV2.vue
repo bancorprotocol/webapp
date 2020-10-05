@@ -223,7 +223,8 @@ export default class PoolActionsRemoveV2 extends Vue {
     return [
       {
         label: "Liquidate ",
-        value: this.amountSmartToken + " " + this.selectedPoolToken.symbol
+        value:
+          Number(this.amountSmartToken) + " " + this.selectedPoolToken.symbol
       },
       {
         label: "Exit Fee",
