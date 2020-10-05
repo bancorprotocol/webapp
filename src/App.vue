@@ -97,9 +97,9 @@
             ? 'bg-body-dark text-body-dark'
             : 'bg-body-light text-body-light'
         "
-        style="flex-grow: 1"
+        style="flex-grow: 1 overflow-y: scroll"
       >
-        <router-view name="Nav"></router-view>
+        <router-view name="Nav" />
         <b-container fluid="xl" class="pt-1">
           <b-row class="d-flex justify-content-center">
             <b-col cols="12" style="max-width: 460px">
@@ -107,7 +107,7 @@
             </b-col>
           </b-row>
         </b-container>
-        <router-view></router-view>
+        <router-view />
       </main>
     </div>
     <div>
@@ -253,15 +253,19 @@ h2 {
   flex-direction: row;
   height: 100%;
   flex-grow: 1;
+  overflow-y: hidden;
 }
 .side-bar {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   width: 230px;
   background-color: #e6ebf2;
+  z-index: 10;
   @media (max-width: 450px) {
     position: fixed;
-    bottom: 0;
+    overflow: hidden;
+    top: calc(100vh - 56px);
     left: 0;
     width: 100%;
     height: 56px;
