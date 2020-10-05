@@ -66,13 +66,7 @@
 
       <main-button
         @click="stake"
-        :label="
-          stakeValue.length === 0
-            ? 'Enter Amount'
-            : stakeValue > 0 && stakeValue <= currentBalance
-            ? 'Stake Tokens'
-            : 'Insufficient Amount'
-        "
+        :label="stakeLabel"
         :active="true"
         :block="true"
         :disabled="!(stakeValue > 0 && stakeValue <= currentBalance)"
@@ -159,6 +153,15 @@ export default class ModalStake extends Vue {
     );
   }
 
+  get stakeLabel() {
+    return this.stakeValue && String(this.stakeValue).length === 0
+      ? "Enter Amount"
+      : this.stakeValue &&
+        this.stakeValue > 0 &&
+        this.stakeValue <= this.currentBalance
+      ? "Stake Tokens"
+      : "Insufficient Amount";
+  }
   get darkMode(): boolean {
     return vxm.general.darkMode;
   }
