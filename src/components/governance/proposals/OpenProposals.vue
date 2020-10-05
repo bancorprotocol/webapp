@@ -166,14 +166,7 @@
                   />
                   <span class="text-uppercase">
                     {{ proposal.votes.voted }}
-                    {{
-                      (
-                        (100 / proposal.totalVotes) *
-                          (proposal.votes.voted === "for"
-                            ? proposal.totalVotesFor
-                            : proposal.totalVotesAgainst) || 0
-                      ).toFixed(1)
-                    }}%
+                    {{ getVotePercent(proposal) }}%
                   </span>
                 </div>
               </div>
@@ -311,6 +304,15 @@ export default class OpenProposals extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  getVotePercent(proposal: Proposal) {
+    return (
+      (100 / proposal.totalVotes) *
+        (proposal.votes.voted === "for"
+          ? proposal.totalVotesFor
+          : proposal.totalVotesAgainst) || 0
+    ).toFixed(1);
   }
 
   generateChartData(proposal: Proposal) {
