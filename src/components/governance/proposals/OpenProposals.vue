@@ -129,7 +129,7 @@
             />
 
             <main-button
-              @click="() => voteAgainst(proposal.id.toString())"
+              @click="voteAgainst(proposal.id.toString())"
               label="Vote against"
               :large="true"
               :active="true"
