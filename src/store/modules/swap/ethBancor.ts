@@ -1539,6 +1539,8 @@ const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
 interface RegisteredContracts {
   BancorNetwork: string;
   BancorConverterRegistry: string;
+  LiquidityProtection: string;
+  LiquidityProtectionStore: string;
 }
 
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
@@ -1719,7 +1721,9 @@ export class EthBancorModule
   availableHistories: string[] = [];
   contracts: RegisteredContracts = {
     BancorNetwork: "",
-    BancorConverterRegistry: ""
+    BancorConverterRegistry: "",
+    LiquidityProtection: "",
+    LiquidityProtectionStore: ""
   };
   initiated: boolean = false;
   failedPools: string[] = [];
@@ -3886,7 +3890,9 @@ export class EthBancorModule
   @action async fetchContractAddresses(contractRegistry: string) {
     const hardCodedBytes: RegisteredContracts = {
       BancorNetwork: asciiToHex("BancorNetwork"),
-      BancorConverterRegistry: asciiToHex("BancorConverterRegistry")
+      BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
+      LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
+      LiquidityProtection: asciiToHex("LiquidityProtection")
     };
 
     const registryContract = new web3.eth.Contract(
@@ -5215,8 +5221,8 @@ export class EthBancorModule
 
     const tokenAddresses: string[][] = [];
 
-    // const subgraphRes = await this.getPoolsViaSubgraph();
-    // console.log(subgraphRes, 'is the subgraphs')
+    const subgraphRes = await this.getPoolsViaSubgraph();
+    console.log(subgraphRes, 'is the subgraphs')
 
 
     const notCoveredBySubGraph = convertersAndAnchors
