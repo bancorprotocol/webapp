@@ -177,7 +177,10 @@ export default class ModalStake extends Vue {
   async doStake() {
     await vxm.ethGovernance.stake({
       account: this.isAuthenticated,
-      amount: expandToken(this.stakeValue!.toString(), 18)
+      amount: expandToken(
+        this.stakeValue!.toString(),
+        await vxm.ethGovernance.getDecimals()
+      )
     });
   }
 

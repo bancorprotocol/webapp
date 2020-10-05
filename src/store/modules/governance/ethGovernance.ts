@@ -102,6 +102,7 @@ export class EthereumGovernance extends VuexModule.With({
 
   isLoaded: boolean = false;
   symbol?: string;
+  decimals?: number;
 
   metaDataCache: { [id: string]: ProposalMetaData } = {};
 
@@ -127,6 +128,11 @@ export class EthereumGovernance extends VuexModule.With({
   @mutation
   setSymbol(symbol: string) {
     this.symbol = symbol;
+  }
+
+  @mutation
+  setDecimals(decimals: number) {
+    this.decimals = decimals;
   }
 
   @action
@@ -161,12 +167,25 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
+  async getDecimals(): Promise<number> {
+    if (!this.decimals) {
+      const decimals = Number(
+        await this.tokenContract.methods.decimals().call()
+      );
+      this.setDecimals(decimals);
+      return decimals;
+    } else {
+      return this.decimals;
+    }
+  }
+
+  @action
   async getVotes({ voter }: { voter: EthAddress }): Promise<number> {
     if (!voter) throw new Error("Cannot get votes without voter address");
 
     console.log("getting votes");
     const [decimals, weiVotes] = await Promise.all([
-      Number(await this.tokenContract.methods.decimals().call()),
+      this.getDecimals(),
       this.governanceContract.methods.votesOf(voter).call()
     ]);
     return parseFloat(shrinkToken(weiVotes, decimals));
@@ -178,7 +197,7 @@ export class EthereumGovernance extends VuexModule.With({
 
     console.log("getting balance");
     const [decimals, weiBalance] = await Promise.all([
-      this.tokenContract.methods.decimals().call(),
+      this.getDecimals(),
       this.tokenContract.methods.balanceOf(account).call()
     ]);
     return parseFloat(shrinkToken(weiBalance, Number(decimals)));
@@ -319,7 +338,7 @@ export class EthereumGovernance extends VuexModule.With({
       .proposalCount()
       .call();
 
-    const decimals = Number(await this.tokenContract.methods.decimals().call());
+    const decimals = await this.getDecimals();
     const proposals: Proposal[] = [];
 
     for (let i = 0; i < proposalCount; i++) {

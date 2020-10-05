@@ -176,7 +176,10 @@ export default class ModalUnstake extends Vue {
   async doUnstake() {
     await vxm.ethGovernance.unstake({
       account: this.isAuthenticated,
-      amount: expandToken(this.unstakeValue!.toString(), 18)
+      amount: expandToken(
+        this.unstakeValue!.toString(),
+        await vxm.ethGovernance.getDecimals()
+      )
     });
   }
 
