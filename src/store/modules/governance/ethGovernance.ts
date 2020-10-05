@@ -326,6 +326,86 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
+  @action async getProposal({
+    proposalId,
+    voter
+  }: {
+    proposalId: number;
+    voter?: string;
+  }): Promise<Proposal> {
+    const decimals = await this.getDecimals();
+
+    const proposal: Proposal = await this.governanceContract.methods
+      .proposals(proposalId)
+      .call();
+
+    const totalVotesFor = parseFloat(
+      shrinkToken(proposal.totalVotesFor, decimals)
+    );
+    const totalVotesAgainst = parseFloat(
+      shrinkToken(proposal.totalVotesAgainst, decimals)
+    );
+    const totalVotesAvailable = parseFloat(
+      shrinkToken(proposal.totalVotesAvailable, decimals)
+    );
+
+    let metadata;
+
+    try {
+      metadata = await this.getFromIPFS({
+        hash: proposal.hash,
+        timeoutInSeconds: 5
+      });
+    } catch (err) {
+      console.log("Getting metadata failed!", err, proposal.hash);
+    }
+
+    const prop = {
+      id: Number(proposal.id),
+      start: Number(proposal.start) * 1000,
+      end: Number(proposal.end) * 1000,
+      executor: proposal.executor,
+      hash: proposal.hash,
+      open: proposal.open,
+      name: (metadata && metadata.payload && metadata.payload.name) || "",
+      proposer: proposal.proposer,
+      quorum: proposal.quorum,
+      quorumRequired: proposal.quorumRequired,
+      totalVotesAgainst,
+      totalVotesFor,
+      totalVotesAvailable,
+      totalVotes: totalVotesFor + totalVotesAgainst,
+      votes: {
+        for: voter
+          ? parseFloat(
+              shrinkToken(
+                await this.governanceContract.methods
+                  .votesForOf(voter, proposal.id)
+                  .call(),
+                decimals
+              )
+            )
+          : 0,
+        against: voter
+          ? parseFloat(
+              shrinkToken(
+                await this.governanceContract.methods
+                  .votesAgainstOf(voter, proposal.id)
+                  .call(),
+                decimals
+              )
+            )
+          : 0
+      } as any,
+      metadata: metadata
+    };
+    const { for: vFor, against: vAgainst } = prop.votes;
+    prop.votes.voted =
+      vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
+
+    return prop;
+  }
+
   @action
   async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
     console.log(
@@ -339,79 +419,18 @@ export class EthereumGovernance extends VuexModule.With({
       .proposalCount()
       .call();
 
-    const decimals = await this.getDecimals();
-    const proposals: Proposal[] = [];
+    const p: Promise<Proposal>[] = [];
 
     for (let i = 0; i < proposalCount; i++) {
-      const proposal = await this.governanceContract.methods
-        .proposals(i)
-        .call();
-
-      const totalVotesFor = parseFloat(
-        shrinkToken(proposal.totalVotesFor, decimals)
+      p.push(
+        this.getProposal({
+          proposalId: i,
+          voter
+        })
       );
-      const totalVotesAgainst = parseFloat(
-        shrinkToken(proposal.totalVotesAgainst, decimals)
-      );
-      const totalVotesAvailable = parseFloat(
-        shrinkToken(proposal.totalVotesAvailable, decimals)
-      );
-
-      let metadata;
-
-      try {
-        metadata = await this.getFromIPFS({
-          hash: proposal.hash,
-          timeoutInSeconds: 5
-        });
-      } catch (err) {
-        console.log("Getting metadata failed!", err, proposal.hash);
-      }
-
-      const prop = {
-        id: Number(proposal.id),
-        start: Number(proposal.start) * 1000,
-        end: Number(proposal.end) * 1000,
-        executor: proposal.executor,
-        hash: proposal.hash,
-        open: proposal.open,
-        name: (metadata && metadata.payload && metadata.payload.name) || "",
-        proposer: proposal.proposer,
-        quorum: proposal.quorum,
-        quorumRequired: proposal.quorumRequired,
-        totalVotesAgainst,
-        totalVotesFor,
-        totalVotesAvailable,
-        totalVotes: totalVotesFor + totalVotesAgainst,
-        votes: {
-          for: voter
-            ? parseFloat(
-                shrinkToken(
-                  await this.governanceContract.methods
-                    .votesForOf(voter, proposal.id)
-                    .call(),
-                  decimals
-                )
-              )
-            : 0,
-          against: voter
-            ? parseFloat(
-                shrinkToken(
-                  await this.governanceContract.methods
-                    .votesAgainstOf(voter, proposal.id)
-                    .call(),
-                  decimals
-                )
-              )
-            : 0
-        } as any,
-        metadata: metadata
-      };
-      const { for: vFor, against: vAgainst } = prop.votes;
-      prop.votes.voted =
-        vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
-      proposals.push(prop);
     }
+
+    const proposals: Proposal[] = await Promise.all(p);
 
     console.log("proposals", proposals);
 
