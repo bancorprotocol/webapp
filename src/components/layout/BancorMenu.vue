@@ -22,50 +22,46 @@
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-2">
       <b-dropdown-header class="text-uppercase">Apps</b-dropdown-header>
-      <b-dropdown-item v-if="false" :to="{ name: 'Swap' }"
-        ><font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
-        Bancor Swap</b-dropdown-item
-      >
-      <b-dropdown-item @click="navData"
-        ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
-        Data</b-dropdown-item
-      >
-      <b-dropdown-item :to="{ name: 'LiqProtection' }">
+      <b-dropdown-item v-if="isDataPage" @click="navSwap">
+        <font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
+        Bancor Swap
+      </b-dropdown-item>
+      <b-dropdown-item v-else @click="navData">
+        <font-awesome-icon icon="chart-line" class="mr-2" fixed-width />
+        Bancor Data
+      </b-dropdown-item>
+      <b-dropdown-item v-if="false" :to="{ name: 'LiqProtection' }">
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
         Liquidity Protection
       </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://x.bancor.network/')"
-        ><font-awesome-icon icon="times" class="mr-2" fixed-width /> Bancor
-        X</b-dropdown-item
-      >
-      <b-dropdown-item @click="openUrl('https://bancor.network/')"
-        ><font-awesome-icon icon="chart-bar" class="mr-2" fixed-width /> Bancor
-        Wallet</b-dropdown-item
-      >
+      <b-dropdown-item @click="openUrl('https://x.bancor.network/')">
+        <font-awesome-icon icon="times" class="mr-2" fixed-width />
+        Bancor X
+      </b-dropdown-item>
+      <b-dropdown-item @click="openUrl('https://bancor.network/')">
+        <font-awesome-icon icon="chart-bar" class="mr-2" fixed-width />
+        Bancor Wallet
+      </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header class="text-uppercase">Developers</b-dropdown-header>
-      <b-dropdown-item @click="openUrl('https://docs.bancor.network/')"
-        ><font-awesome-icon icon="book-open" class="mr-2" fixed-width />
-        Gitbook</b-dropdown-item
-      >
-      <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')"
-        ><font-awesome-icon
-          :icon="['fab', 'github']"
-          class="mr-2"
-          fixed-width
-        />
-        GitHub</b-dropdown-item
-      >
-      <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')"
-        ><font-awesome-icon
+      <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
+        <font-awesome-icon icon="book-open" class="mr-2" fixed-width />
+        Gitbook
+      </b-dropdown-item>
+      <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')">
+        <font-awesome-icon :icon="['fab', 'github']" class="mr-2" fixed-width />
+        GitHub
+      </b-dropdown-item>
+      <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')">
+        <font-awesome-icon
           :icon="['fab', 'telegram-plane']"
           class="mr-2"
           fixed-width
         />
-        Chat</b-dropdown-item
-      >
+        Chat
+      </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
@@ -108,15 +104,9 @@
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-item @click="navPrivacy"
-        >
-        Privacy Policy</b-dropdown-item
-      >
-      <b-dropdown-item @click="navTermsOfUse"
-        >
-        Terms of Use</b-dropdown-item
-      >
+    <b-dropdown-group id="dropdown-group-3" class="font-size-12">
+      <b-dropdown-item @click="navPrivacy"> Privacy Policy</b-dropdown-item>
+      <b-dropdown-item @click="navTermsOfUse"> Terms of Use</b-dropdown-item>
     </b-dropdown-group>
   </b-dropdown>
 </template>
@@ -129,6 +119,10 @@ import { vxm } from "@/store";
 export default class BancorMenu extends Vue {
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  get isDataPage() {
+    return this.$route.fullPath.includes("data");
   }
 
   navData() {
@@ -149,6 +143,11 @@ export default class BancorMenu extends Vue {
       console.log("failed to determine route...");
       this.openUrl(`https://swap.bancor.network/${service}/data`);
     }
+  }
+
+  navSwap() {
+    let routeData = this.$router.resolve({ name: "Swap" });
+    this.openUrl(routeData.href);
   }
 
   navPrivacy() {
