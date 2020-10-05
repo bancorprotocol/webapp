@@ -10,7 +10,11 @@
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <tr :key="'r1-' + proposal.id" class="align-rows-cells">
+      <tr
+        :key="'r1-' + proposal.id"
+        class="align-rows-cells cursor"
+        @click="() => openProposal(proposal)"
+      >
         <td>{{ proposal.id }}</td>
         <td class="font-size-14 font-w500">
           {{ proposal.name }}
@@ -53,7 +57,7 @@
             {{ formatTime(proposal.end) }} UTC
           </div>
         </td>
-        <td @click="() => openProposal(proposal)" class="cursor">
+        <td>
           <font-awesome-icon
             :icon="opened && proposal.id === opened ? 'caret-up' : 'caret-down'"
           />
