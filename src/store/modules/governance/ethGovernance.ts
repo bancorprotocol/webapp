@@ -9,6 +9,7 @@ import { CallReturn } from "eth-multicall";
 import { ContractSendMethod } from "web3-eth-contract";
 // @ts-ignore
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
+import axios from "axios";
 
 export const governanceContractAddress =
   "0xdEC39088ee1A837090a7647Be0039b2E8B3a8349";
@@ -480,14 +481,15 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     postId: string;
   }): Promise<{ description: string }> {
-    const post = await fetch(`${discourseUrl}posts/${postId}.json`).then(
-      response => {
-        if (!response.ok) {
+    const post = await axios
+      .get(`${discourseUrl}posts/${postId}.json`)
+      .then(response => {
+        if (response.status >= 200 && response.status < 300) {
+          return response.data;
+        } else {
           throw new Error(response.statusText);
         }
-        return response.json();
-      }
-    );
+      });
 
     const description = post.raw;
     return {
@@ -500,14 +502,15 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     topicId: string;
   }): Promise<{ title: string; description: string }> {
-    const topic = await fetch(`${discourseUrl}t/${topicId}.json`).then(
-      response => {
-        if (!response.ok) {
+    const topic = await axios
+      .get(`${discourseUrl}t/${topicId}.json`)
+      .then(response => {
+        if (response.status >= 200 && response.status < 300) {
+          return response.data;
+        } else {
           throw new Error(response.statusText);
         }
-        return response.json();
-      }
-    );
+      });
 
     const postId = topic.post_stream.posts[0].id;
     const { description } = await this.getPostFromDiscourse({
