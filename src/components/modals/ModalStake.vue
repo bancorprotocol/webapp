@@ -64,6 +64,10 @@
         </div>
       </div>
 
+      <b-alert show variant="warning" class="my-3 p-3 font-size-14 alert-over">
+        Your {{ symbol }} tokens will be locked for 48h.
+      </b-alert>
+
       <main-button
         @click="stake"
         :label="stakeLabel"
@@ -278,5 +282,11 @@ export default class ModalStake extends Vue {
     background: $gray-placeholder !important;
     border-color: transparent !important;
   }
+}
+
+.alert-over {
+  border: 1px solid #ffeeba !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
 }
 </style>

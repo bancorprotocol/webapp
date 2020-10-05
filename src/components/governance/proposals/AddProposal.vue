@@ -30,6 +30,11 @@
       </div>
     </template>
 
+
+    <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
+      New proposal requires you to hold at least {{2}} {{symbol}} which will be locked for 72 hrs.
+    </b-alert>
+
     <multi-input-field
       class="mb-3"
       v-model="discourseUrl"
