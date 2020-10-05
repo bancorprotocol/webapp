@@ -42,6 +42,8 @@ export const buildTokenContract = (
 export const buildGovernanceContract = (
   contractAddress?: string
 ): ContractMethods<{
+  voteDuration: () => CallReturn<string>;
+  voteLockDuration: () => CallReturn<string>;
   propose: (executor: string, hash: string) => ContractSendMethod;
   voteFor: (proposalId: string) => ContractSendMethod;
   voteAgainst: (proposalId: string) => ContractSendMethod;

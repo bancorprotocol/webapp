@@ -80,6 +80,8 @@ interface Token
 
 interface Governance
   extends ContractMethods<{
+    voteDuration: () => CallReturn<string>;
+    voteLockDuration: () => CallReturn<string>;
     propose: (executor: string, hash: string) => ContractSendMethod;
     voteFor: (proposalId: string) => ContractSendMethod;
     voteAgainst: (proposalId: string) => ContractSendMethod;
@@ -102,6 +104,7 @@ export class EthereumGovernance extends VuexModule.With({
   tokenContract: Token = {} as Token;
 
   isLoaded: boolean = false;
+
   symbol?: string;
   decimals?: number;
 
@@ -178,6 +181,18 @@ export class EthereumGovernance extends VuexModule.With({
     } else {
       return this.decimals;
     }
+  }
+
+  @action
+  async getVoteLockDuration(): Promise<number> {
+    return Number(
+      await this.governanceContract.methods.voteLockDuration().call()
+    );
+  }
+
+  @action
+  async getVoteDuration(): Promise<number> {
+    return Number(await this.governanceContract.methods.voteDuration().call());
   }
 
   @action
