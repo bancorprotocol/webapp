@@ -127,14 +127,7 @@
         <td colspan="3">
           <div class="buttons-container">
             <a
-              :href="
-                proposal.metadata &&
-                proposal.metadata.payload &&
-                proposal.metadata.payload.metadata &&
-                proposal.metadata.payload.metadata.discourse
-                  ? proposal.metadata.payload.metadata.discourse
-                  : '#'
-              "
+              :href="getBIPLink(proposal)"
               target="_blank"
               style="width: 100%; display: inline-block;"
             >
@@ -273,6 +266,10 @@ export default class DoneProposals extends Vue {
 
   isApproved(proposal: Proposal) {
     return proposal.totalVotesFor > proposal.totalVotesAgainst;
+  }
+
+  getBIPLink(proposal: Proposal) {
+    return proposal?.metadata?.payload?.metadata?.discourse || "#";
   }
 
   openProposal(proposal: any) {

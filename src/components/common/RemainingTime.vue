@@ -75,7 +75,7 @@ export default class RemainingTime extends Vue {
   updateTime() {
     const { from = 0, to = 0 } = this;
     const now = Date.now();
-    this.remainingPercentage = ((now - +from) / (+to - +from));
+    this.remainingPercentage = (now - +from) / (+to - +from);
     this.remainingTime = +to - now;
   }
 
