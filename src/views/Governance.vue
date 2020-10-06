@@ -10,7 +10,6 @@ import { vxm } from "@/store";
 
 @Component({})
 export default class Governance extends Vue {
-  selected: string = "pools";
   filter: string = "";
 
   get darkMode() {
