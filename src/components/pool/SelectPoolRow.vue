@@ -5,12 +5,7 @@
     @click="click"
   >
     <div class="d-flex justify-content-center">
-      <pool-logos :pool="pool" />
-      <div>
-        <b-badge variant="primary" class="px-2">{{
-          pool.v2 ? "V2" : "V1"
-        }}</b-badge>
-      </div>
+      <pool-logos :pool="pool" :version="true" />
     </div>
   </div>
 </template>
