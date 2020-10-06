@@ -59,7 +59,11 @@
         </td>
         <td>
           <font-awesome-icon
-            :icon="!isNaN(opened) && proposal.id === opened ? 'caret-up' : 'caret-down'"
+            :icon="
+              !isNaN(opened) && proposal.id === opened
+                ? 'caret-up'
+                : 'caret-down'
+            "
           />
         </td>
       </tr>

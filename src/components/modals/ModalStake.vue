@@ -90,7 +90,12 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <b-spinner variant="primary"></b-spinner>
-      <h3 class="font-size-lg mt-4">Waiting For Confirmation</h3>
+      <h3
+        class="font-size-lg mt-4"
+        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+      >
+        Waiting For Confirmation
+      </h3>
       <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
       <div
         class="font-size-12 font-w500"
@@ -106,7 +111,12 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
-      <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
+      <h3
+        class="font-size-lg mt-4"
+        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+      >
+        Transaction Submitted
+      </h3>
       <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
       <a
         target="_blank"
