@@ -770,10 +770,6 @@ export const ABILiquidityProtection: AbiItem[] = [
     type: "function"
   },
   {
-    stateMutability: "payable",
-    type: "function"
-  },
-  {
     inputs: [
       {
         internalType: "address",

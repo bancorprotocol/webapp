@@ -1334,7 +1334,7 @@ const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
     case EthNetworks.Ropsten:
       return {
         contractRegistry: "0xA6DB4B0963C37Bc959CbC0a874B5bDDf2250f26F",
-        bntToken: "0x98474564A00d15989F16BFB7c162c782b0e2b336",
+        bntToken: "0x1EbA072625E50a85Ca91151ECBDeAb4BD198E6a5",
         ethToken,
         liquidityProtectionToken: ethToken,
         multiCall: "0xf3ad7e31b052ff96566eedd218a823430e74b406",
@@ -1832,7 +1832,7 @@ export class EthBancorModule
   }
 
   @action async fetchWhiteListedV1Pools() {
-    const liquidityProtection = buildLiquidityProtectionStoreContract('') 
+    const liquidityProtection = buildLiquidityProtectionStoreContract(this.contracts.LiquidityProtectionStore);
     const whiteListedPools = await liquidityProtection.methods.whitelistedPools().call();
     this.setWhiteListedPools(whiteListedPools);
     return whiteListedPools;
@@ -4470,7 +4470,6 @@ export class EthBancorModule
     ]);
 
     const res = await multi.all(groupsOfShapes, { traditional: this.useTraditionalCalls });
-    console.log(res, 'was resx')
     return res;
   }
 
@@ -4786,13 +4785,16 @@ export class EthBancorModule
 
     const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
 
+    const knownPrices = [
+      { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
+      ...trustedStables(this.currentNetwork)
+    ];
+    console.log(completeV1Pools, 'pools in', knownPrices)
     const traditionalRelayFeeds = buildPossibleReserveFeedsTraditional(
       completeV1Pools,
-      [
-        { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
-        ...trustedStables(this.currentNetwork)
-      ]
+      knownPrices
     );
+    console.log(traditionalRelayFeeds, 'came back out')
 
     const reserveFeeds = [...traditionalRelayFeeds, ...v2RelayFeeds];
     const pools = [...v2Pools, ...completeV1Pools];
@@ -5474,11 +5476,6 @@ export class EthBancorModule
     this.setLoadingPools(true);
 
     const tokenAddresses: string[][] = [];
-
-    const subgraphRes = await this.getPoolsViaSubgraph();
-    console.log(subgraphRes, 'is the subgraphs')
-
-
     const notCoveredBySubGraph = convertersAndAnchors
 
     const { pools, reserveFeeds } = await this.addPoolsV2(notCoveredBySubGraph);
