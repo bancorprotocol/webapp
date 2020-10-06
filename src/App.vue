@@ -145,11 +145,11 @@ export default class App extends Vue {
   error = false;
   selectedLink = "swap";
   links = [
-    { route: "Swap", key: "swap", label: "Swap" },
     { route: "Data", key: "data", label: "Data" },
+    { route: "Swap", key: "swap", label: "Swap" },
     { route: "GovernancePage", key: "governance", label: "Governance" }
     // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
-    // { route: "swap", key: "bancorx", label: "BancorX" }
+    { route: "swap", key: "bancorx", label: "BancorX" }
   ];
 
   // get isMobile() {
@@ -219,6 +219,8 @@ export default class App extends Vue {
       `/${currentService}`;
     if (newSelected == "swap") {
       this.openUrl(`${path}/swap`);
+    } else if (newSelected == "bancorx") {
+      this.openUrl("https://x.bancor.network/");
     } else if (newSelected == "data") {
       this.openUrl(`${path}/data`);
     } else if (newSelected == "governance") {
@@ -233,7 +235,23 @@ export default class App extends Vue {
     // this.selectedLink = newSelected;
   }
 
+  detectSubdomain() {
+    const hostname = window.location.hostname;
+    const splitted = hostname.split(".");
+    const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
+    console.log(withoutStaging, "is without staging");
+    const subDomain = withoutStaging[0];
+    if (subDomain == "localhost") return;
+    if (subDomain == "data") {
+      this.selectedLink = "data";
+    } else if (subDomain == "swap") {
+      this.selectedLink = "swap";
+    }
+  }
+
   async created() {
+    this.detectSubdomain();
+    console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
     if (darkMode) vxm.general.toggleDarkMode();
 
@@ -247,16 +265,21 @@ export default class App extends Vue {
     vxm.general.setLanguage();
     await vxm.general.getUserCountry();
     await this.loadBancor();
-    if (this.$route.name == "DataSummary") this.selectedLink = "data";
+    if (this.$route.name == "DataSummary") {
+      this.selectedLink = "data";
+    }
+    if (this.$route.name == "Swap") {
+      this.selectedLink = "swap";
+    }
     if (this.$route.name === "404") this.loading = false;
-    const a = this.$route.fullPath.lastIndexOf("/") + 1;
-    const b = this.$route.fullPath.indexOf("?");
-    console.log(a, b);
-    this.selectedLink =
-      b > 0
-        ? this.$route.fullPath.substring(a, b)
-        : this.$route.fullPath.slice(a);
-    console.log("SELECTED LINK", this.selectedLink);
+    // const a = this.$route.fullPath.lastIndexOf("/") + 1;
+    // const b = this.$route.fullPath.indexOf("?");
+    // console.log(a, b);
+    // this.selectedLink =
+    //   b > 0
+    //     ? this.$route.fullPath.substring(a, b)
+    //     : this.$route.fullPath.slice(a);
+    // console.log("SELECTED LINK", this.selectedLink);
   }
 
   @Watch("$route.params.service")
@@ -296,17 +319,18 @@ h2 {
   flex-direction: row;
   height: 100%;
   flex-grow: 1;
-  overflow-y: hidden;
+  overflow: hidden;
 }
 .main-container {
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 12px;
 }
 .side-bar {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: 230px;
+  min-width: 230px;
   background-color: #e6ebf2;
   z-index: 10;
   @media (max-width: 450px) {
@@ -375,8 +399,8 @@ h2 {
       height: 14px;
       margin-right: 12px;
       @media (max-width: 450px) {
-        width: 22px;
-        height: 20px;
+        width: 32px;
+        height: 32px;
         margin-right: 0px;
       }
     }
@@ -438,7 +462,7 @@ h2 {
   }
 }
 .side-bar-dark {
-  background-color: #0f59d1;
+  background-color: #0a2540;
 }
 .side-bar-link-dark {
   span {

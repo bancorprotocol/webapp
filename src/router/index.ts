@@ -53,9 +53,9 @@ export const router = new Router({
           const foundService = services.find(
             service => service.namespace == preferredService
           );
-          if (foundService) return `/${foundService.namespace}/swap`;
+          if (foundService) return `/${foundService.namespace}/data`;
         }
-        return `/${defaultModule}/swap`;
+        return `/${defaultModule}/data`;
       }
     },
     {
