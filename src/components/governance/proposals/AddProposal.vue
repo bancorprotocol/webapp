@@ -40,7 +40,7 @@
       v-model="discourseUrl"
       @input="onDiscourseInput"
       type="url"
-      placeholder="https://gov.bancor.network/t/solution-to-make-voting-www-affordable/31"
+      placeholder="https://gov.bancor.network/t/..."
       height="48"
       label="Discourse Url"
     />
