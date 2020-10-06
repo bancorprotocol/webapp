@@ -10,6 +10,7 @@
       :sort-by.sync="sortByProp"
       :sort-desc.sync="sortDescProp"
       :filter="filter"
+      @filtered="onFiltered"
     >
       <slot v-for="(_, name) in $slots" :name="name" :slot="name" />
       <template
@@ -62,9 +63,15 @@ export default class TableWrapper extends Vue {
   @Prop({ default: 10 }) perPage!: number;
 
   currentPage = 1;
+  totalRows = 1;
 
   sortByProp = this.sortBy;
   sortDescProp = this.sortDesc;
+
+  onFiltered(filteredItems: any) {
+    this.totalRows = filteredItems.length;
+    this.currentPage = 1;
+  }
 
   iconClass(disabled: boolean) {
     return disabled
@@ -74,8 +81,8 @@ export default class TableWrapper extends Vue {
       : "text-primary";
   }
 
-  get totalRows() {
-    return this.items.length;
+  mounted() {
+    this.totalRows = this.items.length;
   }
 
   get darkMode() {
