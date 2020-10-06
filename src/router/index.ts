@@ -103,7 +103,6 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection",
-      redirect: "/404",
       name: "LiqProtection",
       components: {
         Nav: Navigation,
@@ -112,7 +111,6 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection/add",
-      redirect: "/404",
       name: "AddProtection",
       components: {
         Nav: Navigation,
@@ -121,7 +119,6 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection/:action/:id",
-      redirect: "/404",
       name: "ProtectionAction",
       components: {
         Nav: Navigation,
