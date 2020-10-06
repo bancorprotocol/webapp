@@ -10,6 +10,7 @@
       :sort-by.sync="sortByProp"
       :sort-desc.sync="sortDescProp"
       :filter="filter"
+      :filter-function="doFilter"
       @filtered="onFiltered"
     >
       <slot v-for="(_, name) in $slots" :name="name" :slot="name" />
@@ -83,6 +84,11 @@ export default class TableWrapper extends Vue {
 
   mounted() {
     this.totalRows = this.items.length;
+  }
+
+  doFilter(row: any, filter: string) {
+    return row.name && row.name.toLowerCase().indexOf(filter) >= 0 ||
+      row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0;
   }
 
   get darkMode() {
