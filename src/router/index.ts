@@ -14,6 +14,8 @@ import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
 import LiquidityProtectionSummary from "@/views/LiquidityProtectionSummary.vue";
 import AddProtectionHome from "@/views/AddProtectionHome.vue";
 import ProtectionActions from "@/components/protection/ProtectionActions.vue";
+import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
+import TermsOfUse from "@/views/TermsOfUse.vue";
 import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
 
 Vue.use(Router);
@@ -76,6 +78,7 @@ export const router = new Router({
     },
     {
       path: "/:service/pool/:id",
+      redirect: "/404",
       name: "PoolAdd",
       components: {
         Nav: Navigation,
@@ -100,6 +103,7 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection",
+      redirect: "/404",
       name: "LiqProtection",
       components: {
         Nav: Navigation,
@@ -108,6 +112,7 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection/add",
+      redirect: "/404",
       name: "AddProtection",
       components: {
         Nav: Navigation,
@@ -116,6 +121,7 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection/:action/:id",
+      redirect: "/404",
       name: "ProtectionAction",
       components: {
         Nav: Navigation,
@@ -123,6 +129,15 @@ export const router = new Router({
       },
       props: true
     },
+    // {
+    //   path: "/:service/liquidity-protection/add/:id",
+    //   name: "AddLiqProtection",
+    //   components: {
+    //     Nav: Navigation,
+    //     Hero: AddLiqProtection
+    //   },
+    //   props: true
+    // },
     {
       path: "/:service/pool/create/",
       name: "PoolCreate",
@@ -160,11 +175,13 @@ export const router = new Router({
         {
           path: "token/:id",
           name: "DetailsToken",
+          redirect: "/404",
           component: DataDetailsToken
         },
         {
           path: "pool/:id",
           name: "DetailsPool",
+          redirect: "/404",
           component: DataDetailsPool
         }
       ]
@@ -177,6 +194,22 @@ export const router = new Router({
           service => service.namespace == to.params.service
         );
         return foundService ? `/${foundService.namespace}/swap` : "/404";
+      }
+    },
+    {
+      path: "/privacy-policy",
+      name: "PrivacyPolicy",
+      components: {
+        Nav: Navigation,
+        default: PrivacyPolicy
+      }
+    },
+    {
+      path: "/terms-of-use",
+      name: "TermsOfUse",
+      components: {
+        Nav: Navigation,
+        default: TermsOfUse
       }
     },
     {
