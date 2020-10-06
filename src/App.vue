@@ -134,10 +134,10 @@ export default class App extends Vue {
   selectedLink = "swap";
   links = [
     { route: "Swap", key: "swap", label: "Swap" },
-    { route: "Data", key: "data", label: "Data" },
-    { route: "swap", key: "governance", label: "Governance" },
-    { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
-    { route: "swap", key: "bancorx", label: "BancorX" }
+    { route: "Data", key: "data", label: "Data" }
+    // { route: "swap", key: "governance", label: "Governance" },
+    // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
+    // { route: "swap", key: "bancorx", label: "BancorX" }
   ];
 
   get isMobile() {
@@ -193,13 +193,31 @@ export default class App extends Vue {
     }
   }
 
+  openUrl(url: string) {
+    window.open(url, "_blank");
+  }
+
   sideLinkClicked(newSelected: string) {
-    const linkSelected = this.links.find(link => link.key == newSelected)!;
-    this.$router.push({
-      name: linkSelected.route,
-      params: { service: this.$route.params.service }
-    });
-    this.selectedLink = newSelected;
+    if (this.selectedLink == newSelected) return;
+    const currentService = this.$route.params.service;
+    const path =
+      window.location.protocol +
+      "//" +
+      window.location.hostname +
+      `:${window.location.port}` +
+      `/${currentService}`;
+    if (newSelected == "swap") {
+      this.openUrl(`${path}/swap`);
+    } else {
+      this.openUrl(`${path}/data`);
+    }
+    return;
+    // const linkSelected = this.links.find(link => link.key == newSelected)!;
+    // this.$router.push({
+    // name: linkSelected.route,
+    // params: { service: this.$route.params.service }
+    // });
+    // this.selectedLink = newSelected;
   }
 
   async created() {
@@ -216,6 +234,7 @@ export default class App extends Vue {
     vxm.general.setLanguage();
     await vxm.general.getUserCountry();
     await this.loadBancor();
+    if (this.$route.name == "DataSummary") this.selectedLink = "data";
     if (this.$route.name === "404") this.loading = false;
   }
 

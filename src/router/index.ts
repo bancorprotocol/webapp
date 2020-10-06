@@ -170,6 +170,7 @@ export const router = new Router({
       children: [
         {
           path: "",
+          name: "DataSummary",
           component: DataSummary
         },
         {
