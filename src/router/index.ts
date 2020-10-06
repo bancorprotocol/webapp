@@ -190,7 +190,7 @@ export const router = new Router({
       ]
     },
     {
-      path: "/:service/Governance",
+      path: "/:service/governance",
       name: "Governance",
       components: {
         Nav: Navigation,
