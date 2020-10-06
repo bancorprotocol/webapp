@@ -218,11 +218,11 @@ export default class App extends Vue {
       `:${window.location.port}` +
       `/${currentService}`;
     if (newSelected == "swap") {
-      this.openUrl(`${path}/swap`);
+      this.openUrl(`https://swap.bancor.network/`);
     } else if (newSelected == "bancorx") {
       this.openUrl("https://x.bancor.network/");
     } else {
-      this.openUrl(`${path}/data`);
+      this.openUrl(`https://data.bancor.network/`);
     }
     return;
     // const linkSelected = this.links.find(link => link.key == newSelected)!;
