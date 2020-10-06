@@ -147,7 +147,12 @@ export default class App extends Vue {
   links = [
     { route: "DataSummary", key: "data", label: "Data", newTab: false },
     { route: "Swap", key: "swap", label: "Swap" },
-    { route: "GovernancePage", key: "governance", label: "Governance", newTab: false },
+    {
+      route: "GovernancePage",
+      key: "governance",
+      label: "Governance",
+      newTab: false
+    },
     // { route: "swap", key: "governance", label: "Governance" },
     // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
     { route: "swap", key: "bancorx", label: "Bancor X", newTab: true },
