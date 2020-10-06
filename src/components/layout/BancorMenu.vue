@@ -35,7 +35,7 @@
         Liquidity Protection
       </b-dropdown-item>
       <b-dropdown-item :to="{ name: 'GovernancePage' }">
-        <font-awesome-icon icon="poll" class="mr-2" fixed-width />
+        <font-awesome-icon icon="thumbs-up" class="mr-2" fixed-width />
         Bancor Governance
       </b-dropdown-item>
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')">
