@@ -76,7 +76,7 @@
       v-model="contractAddress"
       @input="onAddressInput"
       type="text"
-      placeholder="0x0..."
+      placeholder="0x0000000000000000000000000000000000000000"
       height="48"
       label="Contract address"
     />
