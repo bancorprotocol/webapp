@@ -5,7 +5,7 @@
     <div class="remaining-time__progress" :style="{ width: percentage }"></div>
     <div v-if="remainingTime !== 0" class="remaining-time__content">
       <font-awesome-icon
-        v-if="!isUnlook"
+        v-if="!isUnlook && remainingPercentage < 1"
         icon="clock"
         class="remaining-time__icon"
       />
@@ -35,6 +35,8 @@ export default class RemainingTime extends Vue {
       return "info";
     } else if (this.remainingPercentage <= 0.9) {
       return "";
+    } else if (this.remainingPercentage >= 1) {
+      return "done";
     } else {
       return "warn";
     }
@@ -53,7 +55,7 @@ export default class RemainingTime extends Vue {
 
   get remaining() {
     if (this.remainingTime < 0) {
-      return "No time left";
+      return "Vote Ended";
     }
     if (this.isUnlook) {
       return new Date((this.to || 0) - Date.now()).toISOString().substr(11, 8);
@@ -152,6 +154,12 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   }
   &--info {
     @include remaining-time-background($remaining-time--info---background);
+  }
+
+  &--done &__progress,
+  &--done &__content {
+    background: $block-bg-blue;
+    color: $text-color-light;
   }
 
   &--unlock {
