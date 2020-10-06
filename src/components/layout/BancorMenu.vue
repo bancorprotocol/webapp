@@ -20,15 +20,27 @@
       </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-2">
+    <b-dropdown-group v-if="false" id="dropdown-group-2">
       <b-dropdown-header class="text-uppercase">Apps</b-dropdown-header>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
-        <font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
-        Bancor Swap
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/swap.svg`)"
+          />
+          <span class="ml-3">Swap</span>
+        </div>
       </b-dropdown-item>
       <b-dropdown-item v-else @click="navData">
-        <font-awesome-icon icon="chart-line" class="mr-2" fixed-width />
-        Bancor Data
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/data.svg`)"
+          />
+          <span class="ml-3">Data</span>
+        </div>
       </b-dropdown-item>
       <b-dropdown-item v-if="false" :to="{ name: 'LiqProtection' }">
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
@@ -39,29 +51,49 @@
         Bancor Governance
       </b-dropdown-item>
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')">
-        <font-awesome-icon icon="times" class="mr-2" fixed-width />
-        Bancor X
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/bancorx.svg`)"
+          />
+          <span class="ml-3">Bancor X</span>
+        </div>
       </b-dropdown-item>
       <b-dropdown-item @click="openUrl('https://bancor.network/')">
-        <font-awesome-icon icon="chart-bar" class="mr-2" fixed-width />
-        Bancor Wallet
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/bancor.svg`)"
+          />
+          <span class="ml-3">Bancor Wallet</span>
+        </div>
       </b-dropdown-item>
     </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header class="text-uppercase">Developers</b-dropdown-header>
       <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
-        <font-awesome-icon icon="book-open" class="mr-2" fixed-width />
+        <font-awesome-icon
+          icon="book-open"
+          class="mr-2 menu-icon"
+          fixed-width
+        />
         Gitbook
       </b-dropdown-item>
       <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')">
-        <font-awesome-icon :icon="['fab', 'github']" class="mr-2" fixed-width />
+        <font-awesome-icon
+          :icon="['fab', 'github']"
+          class="mr-2 menu-icon"
+          fixed-width
+        />
         GitHub
       </b-dropdown-item>
       <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')">
         <font-awesome-icon
           :icon="['fab', 'telegram-plane']"
-          class="mr-2"
+          class="mr-2 menu-icon"
           fixed-width
         />
         Chat
@@ -75,13 +107,13 @@
           <font-awesome-icon
             @click="openUrl('https://www.facebook.com/bancor/')"
             :icon="['fab', 'facebook']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
           <font-awesome-icon
             @click="openUrl('https://twitter.com/Bancor')"
             :icon="['fab', 'twitter']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
           <font-awesome-icon
@@ -89,19 +121,19 @@
               openUrl('https://www.linkedin.com/company/bancor-foundation/')
             "
             :icon="['fab', 'linkedin']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
           <font-awesome-icon
             @click="openUrl('https://www.reddit.com/r/Bancor/')"
             :icon="['fab', 'reddit-alien']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
           <font-awesome-icon
             @click="openUrl('https://t.me/bancor')"
             :icon="['fab', 'telegram-plane']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
         </div>
@@ -176,4 +208,8 @@ export default class BancorMenu extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.menu-icon {
+  color: #6b7c93;
+}
+</style>

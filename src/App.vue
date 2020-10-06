@@ -218,11 +218,11 @@ export default class App extends Vue {
       `:${window.location.port}` +
       `/${currentService}`;
     if (newSelected == "swap") {
-      this.openUrl(`${path}/swap`);
+      this.openUrl(`https://swap.bancor.network/`);
     } else if (newSelected == "bancorx") {
       this.openUrl("https://x.bancor.network/");
     } else if (newSelected == "data") {
-      this.openUrl(`${path}/data`);
+      this.openUrl(`https://data.bancor.network/`);
     } else if (newSelected == "governance") {
       this.$router.push({ name: "GovernancePage" });
     }
@@ -235,22 +235,7 @@ export default class App extends Vue {
     // this.selectedLink = newSelected;
   }
 
-  detectSubdomain() {
-    const hostname = window.location.hostname;
-    const splitted = hostname.split(".");
-    const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
-    console.log(withoutStaging, "is without staging");
-    const subDomain = withoutStaging[0];
-    if (subDomain == "localhost") return;
-    if (subDomain == "data") {
-      this.selectedLink = "data";
-    } else if (subDomain == "swap") {
-      this.selectedLink = "swap";
-    }
-  }
-
   async created() {
-    this.detectSubdomain();
     console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
     if (darkMode) vxm.general.toggleDarkMode();
@@ -263,7 +248,7 @@ export default class App extends Vue {
       // if (provider) vxm.eosWallet.initLogin(provider);
     }
     vxm.general.setLanguage();
-    await vxm.general.getUserCountry();
+    vxm.general.getUserCountry();
     await this.loadBancor();
     if (this.$route.name == "DataSummary") {
       this.selectedLink = "data";
