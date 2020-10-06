@@ -3,6 +3,7 @@
     :items="items"
     :fields="fields"
     :filter="filter"
+    :filterFunction="doFilter"
     sort-by="liqDepth"
   >
     <template v-slot:cell(symbol)="data">
@@ -65,6 +66,9 @@ export default class TablePools extends Vue {
       thStyle: { width: "310px", "min-width": "310px" }
     }
   ];
+  doFilter(row: any, filter: string) {
+    return row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0;
+  }
 }
 </script>
 

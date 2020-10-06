@@ -3,6 +3,7 @@
     :items="items"
     :fields="fields"
     :filter="filter"
+    :filterFunction="doFilter"
     sort-by="unixTime"
   >
     <template v-slot:cell(description)="data">
@@ -79,6 +80,11 @@ export default class TableTransactions extends Vue {
       formatter: (value: number) => moment.unix(value).fromNow()
     }
   ];
+  doFilter(row: any, filter: string) {
+    const fromSymbol = row.data.from.symbol;
+    const toSymbol = row.data.to.symbol;
+    return fromSymbol && fromSymbol.toLowerCase().indexOf(filter) >= 0 || toSymbol && toSymbol.toLowerCase().indexOf(filter) >= 0;
+  }
 }
 </script>
 
