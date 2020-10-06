@@ -244,7 +244,7 @@ export default class ModalStake extends Vue {
       vxm.ethGovernance.getVoteLockFraction()
     ]);
 
-    this.maxLock = (voteDuration /voteLockFraction) / 60 / 60;
+    this.maxLock = voteDuration / voteLockFraction / 60 / 60;
   }
 
   async mounted() {

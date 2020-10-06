@@ -199,16 +199,17 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async getVoteLockFraction(): Promise<number> {
-    return Number(await this.governanceContract.methods.voteLockFraction().call());
+    return Number(
+      await this.governanceContract.methods.voteLockFraction().call()
+    );
   }
 
   @action
   async getNewProposalMinimum(): Promise<number> {
     const [min, decimals] = await Promise.all([
-        this.governanceContract.methods.newProposalMinimum().call(),
-        this.getDecimals()
-      ]
-    )
+      this.governanceContract.methods.newProposalMinimum().call(),
+      this.getDecimals()
+    ]);
     return Number(shrinkToken(min, decimals));
   }
 
