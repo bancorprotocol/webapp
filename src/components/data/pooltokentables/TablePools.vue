@@ -6,7 +6,7 @@
     sort-by="liqDepth"
   >
     <template v-slot:cell(symbol)="data">
-      <pool-logos :pool="data.item" :cursor="false" :version="true" />
+      <pool-logos :pool="data.item" :cursor="false" />
 
       <!-- <router-link :to="{ name: 'DetailsPool', params: { id: data.item.id } }">
         <pool-logos :pool="data.item" :cursor="false" :version="true" />
@@ -38,7 +38,8 @@ export default class TablePools extends Vue {
     {
       key: "symbol",
       label: "Name",
-      sortable: true
+      sortable: true,
+      thStyle: { "min-width": "250px" }
     },
     {
       key: "liqDepth",
