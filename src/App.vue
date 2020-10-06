@@ -317,17 +317,18 @@ h2 {
   flex-direction: row;
   height: 100%;
   flex-grow: 1;
-  overflow-y: hidden;
+  overflow: hidden;
 }
 .main-container {
   overflow-y: scroll;
-  overflow-x: hidden;
+  overflow-x: scroll;
+  padding: 12px;
 }
 .side-bar {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: 230px;
+  min-width: 230px;
   background-color: #e6ebf2;
   z-index: 10;
   @media (max-width: 450px) {
@@ -396,8 +397,8 @@ h2 {
       height: 14px;
       margin-right: 12px;
       @media (max-width: 450px) {
-        width: 22px;
-        height: 20px;
+        width: 32px;
+        height: 32px;
         margin-right: 0px;
       }
     }
@@ -459,7 +460,7 @@ h2 {
   }
 }
 .side-bar-dark {
-  background-color: #0f59d1;
+  background-color: #0a2540;
 }
 .side-bar-link-dark {
   span {
