@@ -5163,10 +5163,7 @@ export class EthBancorModule
 
       this.pullBntInformation({ latestBlock: String(currentBlock) });
 
-      // TO DO
-      // WARNING
-      // THIS SHOULD USE CONTRACT ADDRESSES ABOVE.
-      // this.fetchLiquidityProtectionSettings(this.contracts.liquidityProtection)
+      this.fetchLiquidityProtectionSettings(contractAddresses.LiquidityProtection)
 
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
