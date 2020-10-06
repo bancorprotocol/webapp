@@ -299,6 +299,7 @@ h2 {
 .main-container {
   overflow-y: scroll;
   overflow-x: scroll;
+  padding: 12px;
 }
 .side-bar {
   overflow: hidden;
