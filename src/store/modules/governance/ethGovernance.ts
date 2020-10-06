@@ -82,6 +82,8 @@ interface Governance
   extends ContractMethods<{
     voteDuration: () => CallReturn<string>;
     voteLockDuration: () => CallReturn<string>;
+    voteLockFraction: () => CallReturn<string>;
+    newProposalMinimum: () => CallReturn<string>;
     propose: (executor: string, hash: string) => ContractSendMethod;
     voteFor: (proposalId: string) => ContractSendMethod;
     voteAgainst: (proposalId: string) => ContractSendMethod;
@@ -193,6 +195,21 @@ export class EthereumGovernance extends VuexModule.With({
   @action
   async getVoteDuration(): Promise<number> {
     return Number(await this.governanceContract.methods.voteDuration().call());
+  }
+
+  @action
+  async getVoteLockFraction(): Promise<number> {
+    return Number(await this.governanceContract.methods.voteLockFraction().call());
+  }
+
+  @action
+  async getNewProposalMinimum(): Promise<number> {
+    const [min, decimals] = await Promise.all([
+        this.governanceContract.methods.newProposalMinimum().call(),
+        this.getDecimals()
+      ]
+    )
+    return Number(shrinkToken(min, decimals));
   }
 
   @action

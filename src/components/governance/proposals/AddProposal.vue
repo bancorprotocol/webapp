@@ -31,8 +31,8 @@
     </template>
 
     <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
-      New proposal requires you to hold at least {{ 2 }} {{ symbol }} which will
-      be locked for 72 hrs.
+      New proposal requires you to hold at least {{ proposalMinimum }} {{ symbol }} which will
+      be locked up to {{ maxLock }}h.
     </b-alert>
 
     <multi-input-field
@@ -128,6 +128,9 @@ export default class AddProposal extends Vue {
   description: string = "";
   name: string = "";
   error: boolean = false;
+  maxLock: number = 0;
+  proposalMinimum: number = 0
+  symbol: string = ""
 
   get darkMode() {
     return vxm.general.darkMode;
@@ -198,6 +201,21 @@ export default class AddProposal extends Vue {
     });
 
     this.onHide();
+  }
+
+  async updateMaxLock() {
+    const [voteDuration, voteLockDuration] = await Promise.all([
+      vxm.ethGovernance.getVoteDuration(),
+      vxm.ethGovernance.getVoteLockDuration()
+    ]);
+
+    this.maxLock = Math.max(voteDuration, voteLockDuration) / 60 / 60;
+  }
+
+  async created(){
+    await this.updateMaxLock()
+    this.proposalMinimum = await vxm.ethGovernance.getNewProposalMinimum()
+    this.symbol = await vxm.ethGovernance.getSymbol()
   }
 
   onHide() {

@@ -44,6 +44,8 @@ export const buildGovernanceContract = (
 ): ContractMethods<{
   voteDuration: () => CallReturn<string>;
   voteLockDuration: () => CallReturn<string>;
+  voteLockFraction: () => CallReturn<string>;
+  newProposalMinimum: () => CallReturn<string>;
   propose: (executor: string, hash: string) => ContractSendMethod;
   voteFor: (proposalId: string) => ContractSendMethod;
   voteAgainst: (proposalId: string) => ContractSendMethod;

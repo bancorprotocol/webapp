@@ -65,7 +65,7 @@
       </div>
 
       <b-alert show variant="warning" class="my-3 p-3 font-size-14 alert-over">
-        Your {{ symbol }} tokens will be locked for 48h.
+        Your {{ symbol }} tokens will be locked for up to {{ maxLock }}h.
       </b-alert>
 
       <main-button
@@ -156,6 +156,7 @@ export default class ModalStake extends Vue {
   stakeValue?: number = "" as any;
   step: "stake" | "staking" | "staked" = "stake";
   symbol: string = "";
+  maxLock: number = 0;
 
   get state() {
     return (
@@ -233,6 +234,17 @@ export default class ModalStake extends Vue {
     this.currentBalance = await vxm.ethGovernance.getBalance({
       account: this.isAuthenticated
     });
+
+    await this.updateMaxLock();
+  }
+
+  async updateMaxLock() {
+    const [voteDuration, voteLockFraction] = await Promise.all([
+      vxm.ethGovernance.getVoteLockDuration(),
+      vxm.ethGovernance.getVoteLockFraction()
+    ]);
+
+    this.maxLock = (voteDuration /voteLockFraction) / 60 / 60;
   }
 
   async mounted() {
