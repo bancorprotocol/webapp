@@ -34,7 +34,7 @@
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
         Liquidity Protection
       </b-dropdown-item>
-      <b-dropdown-item :to="{ name: 'Governance' }">
+      <b-dropdown-item :to="{ name: 'GovernancePage' }">
         <font-awesome-icon icon="poll" class="mr-2" fixed-width />
         Bancor Governance
       </b-dropdown-item>

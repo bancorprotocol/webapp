@@ -200,6 +200,7 @@ export const router = new Router({
       children: [
         {
           path: "",
+          name: "GovernancePage",
           component: GovernancePage
         }
       ]
