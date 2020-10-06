@@ -20,7 +20,7 @@
       </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-2">
+    <b-dropdown-group v-if="false" id="dropdown-group-2">
       <b-dropdown-header class="text-uppercase">Apps</b-dropdown-header>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
@@ -67,7 +67,7 @@
         </div>
       </b-dropdown-item>
     </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header class="text-uppercase">Developers</b-dropdown-header>
       <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
