@@ -31,9 +31,9 @@ export default class RemainingTime extends Vue {
   private interval: any;
 
   get type(): string {
-    if (this.remainingPercentage <= 20) {
+    if (this.remainingPercentage <= 0.2) {
       return "info";
-    } else if (this.remainingPercentage <= 90) {
+    } else if (this.remainingPercentage <= 0.9) {
       return "";
     } else {
       return "warn";
@@ -48,7 +48,7 @@ export default class RemainingTime extends Vue {
     if (this.remainingPercentage < 0) {
       return "100%";
     }
-    return `${Math.min(100, this.remainingPercentage).toFixed(2)}%`;
+    return `${Math.min(100, this.remainingPercentage * 100).toFixed(2)}%`;
   }
 
   get remaining() {
@@ -75,7 +75,7 @@ export default class RemainingTime extends Vue {
   updateTime() {
     const { from = 0, to = 0 } = this;
     const now = Date.now();
-    this.remainingPercentage = ((now - +from) / (+to - +from)) * 100;
+    this.remainingPercentage = ((now - +from) / (+to - +from));
     this.remainingTime = +to - now;
   }
 
