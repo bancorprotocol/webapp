@@ -3,6 +3,7 @@
     :items="protectedTxTable.items"
     :fields="protectedTxTable.fields"
     :filter="search"
+    :filterFunction="doFilter"
     sort-by="insuranceStart"
   >
     <template v-slot:cell(stake)="data">
@@ -249,6 +250,9 @@ export default class Protected extends Vue {
     return { items, fields };
   }
 
+  doFilter(row: any, filter: string) {    
+    return true;
+  }
   get darkMode() {
     return vxm.general.darkMode;
   }

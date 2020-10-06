@@ -75,6 +75,7 @@
             :items="poolTokensTable.items"
             :fields="poolTokensTable.fields"
             :filter="searchTokens"
+            :filterFunction="doFilter"
             sort-by="reserveWeight"
           >
             <template v-slot:cell(symbol)="data">
@@ -251,6 +252,9 @@ export default class DataPool extends Vue {
     return this.txHistory.conversionEvents;
   }
 
+  doFilter(row: any, filter: string) {    
+    return row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0;
+  }
   async loadFocusPool() {
     this.loadingFocusPool = true;
     try {
