@@ -62,7 +62,7 @@
       <span v-if="lock.till > Date.now()">
         <remaining-time
           class="mb-2"
-          type="warn"
+          variant="unlock"
           :from="Date.now()"
           :to="lock.till"
         />

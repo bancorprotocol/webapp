@@ -1,9 +1,10 @@
 <template>
-  <div :class="`remaining-time remaining-time--${type}`">
+  <div :class="`remaining-time remaining-time--${type} remaining-time--${variant}`">
     <div class="remaining-time__progress" :style="{ width: percentage }"></div>
     <div v-if="remainingTime !== 0" class="remaining-time__content">
-      <font-awesome-icon icon="clock" class="remaining-time__icon" />
-      {{ remaining }}
+      <font-awesome-icon v-if="!isUnlook" icon="clock" class="remaining-time__icon" />
+      <span class="remaining-time__progress-text">{{ remaining }}</span>
+      <span v-if="isUnlook" class="remaining-time__desc">left to unlock</span>
     </div>
   </div>
 </template>
@@ -17,6 +18,7 @@ import numeral from "numeral";
 export default class RemainingTime extends Vue {
   @Prop() from?: number;
   @Prop() to?: number;
+  @Prop() variant?: string;
 
   private remainingPercentage: number = 0;
   private remainingTime: number = 0;
@@ -32,6 +34,10 @@ export default class RemainingTime extends Vue {
     }
   }
 
+  get isUnlook() {
+    return this.variant === 'unlock'
+  }
+
   get percentage() {
     if (this.remainingPercentage < 0) {
       return "100%";
@@ -42,6 +48,9 @@ export default class RemainingTime extends Vue {
   get remaining() {
     if (this.remainingTime < 0) {
       return "No time left";
+    }
+    if (this.isUnlook) {
+      return new Date(this.to - Date.now()).toISOString().substr(11, 8)
     }
 
     const m = this.remainingTime / 60 / 1000;
@@ -137,6 +146,33 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   }
   &--info {
     @include remaining-time-background($remaining-time--info---background);
+  }
+
+  &--unlock {
+    border: 1px solid $gray-placeholder;
+    background: transparent !important;
+    font-size: 12px;
+    font-weight: 400;
+    padding: 8px !important;
+    height: auto;
+  }
+  &--unlock &__progress {
+    display: none;
+  }
+  &--unlock &__content {
+    position: relative;
+    color: $text-muted-light;
+    display: flex;
+    align-items: center;
+  }
+  &--unlock &__progress-text {
+    padding-right: 8px;
+    font-size: 18px;
+    color: $primary;
+    font-weight: 600;
+  }
+  &--unlock &__desc {
+    padding-top: 4px;
   }
 }
 </style>
