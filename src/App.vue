@@ -145,11 +145,11 @@ export default class App extends Vue {
   error = false;
   selectedLink = "swap";
   links = [
+    { route: "Data", key: "data", label: "Data" },
     { route: "Swap", key: "swap", label: "Swap" },
-    { route: "Data", key: "data", label: "Data" }
     // { route: "swap", key: "governance", label: "Governance" },
     // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
-    // { route: "swap", key: "bancorx", label: "BancorX" }
+    { route: "swap", key: "bancorx", label: "BancorX" }
   ];
 
   // get isMobile() {
@@ -219,6 +219,8 @@ export default class App extends Vue {
       `/${currentService}`;
     if (newSelected == "swap") {
       this.openUrl(`${path}/swap`);
+    } else if (newSelected == "bancorx") {
+      this.openUrl("https://x.bancor.network/");
     } else {
       this.openUrl(`${path}/data`);
     }
@@ -231,7 +233,23 @@ export default class App extends Vue {
     // this.selectedLink = newSelected;
   }
 
+  detectSubdomain() {
+    const hostname = window.location.hostname;
+    const splitted = hostname.split(".");
+    const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
+    console.log(withoutStaging, "is without staging");
+    const subDomain = withoutStaging[0];
+    if (subDomain == "localhost") return;
+    if (subDomain == "data") {
+      this.selectedLink = "data";
+    } else if (subDomain == "swap") {
+      this.selectedLink = "swap";
+    }
+  }
+
   async created() {
+    this.detectSubdomain();
+    console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
     if (darkMode) vxm.general.toggleDarkMode();
 
@@ -245,16 +263,21 @@ export default class App extends Vue {
     vxm.general.setLanguage();
     await vxm.general.getUserCountry();
     await this.loadBancor();
-    if (this.$route.name == "DataSummary") this.selectedLink = "data";
+    if (this.$route.name == "DataSummary") {
+      this.selectedLink = "data";
+    }
+    if (this.$route.name == "Swap") {
+      this.selectedLink = "swap";
+    }
     if (this.$route.name === "404") this.loading = false;
-    const a = this.$route.fullPath.lastIndexOf("/") + 1;
-    const b = this.$route.fullPath.indexOf("?");
-    console.log(a, b);
-    this.selectedLink =
-      b > 0
-        ? this.$route.fullPath.substring(a, b)
-        : this.$route.fullPath.slice(a);
-    console.log("SELECTED LINK", this.selectedLink);
+    // const a = this.$route.fullPath.lastIndexOf("/") + 1;
+    // const b = this.$route.fullPath.indexOf("?");
+    // console.log(a, b);
+    // this.selectedLink =
+    //   b > 0
+    //     ? this.$route.fullPath.substring(a, b)
+    //     : this.$route.fullPath.slice(a);
+    // console.log("SELECTED LINK", this.selectedLink);
   }
 
   @Watch("$route.params.service")
