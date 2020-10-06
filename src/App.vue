@@ -145,11 +145,12 @@ export default class App extends Vue {
   error = false;
   selectedLink = "swap";
   links = [
-    { route: "Data", key: "data", label: "Data" },
-    { route: "Swap", key: "swap", label: "Swap" },
+    { route: "DataSummary", key: "data", label: "Data", newTab: false },
+    { route: "Swap", key: "swap", label: "Swap", newTab: false },
     // { route: "swap", key: "governance", label: "Governance" },
     // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
-    { route: "swap", key: "bancorx", label: "BancorX" }
+    { route: "swap", key: "bancorx", label: "Bancor X", newTab: true },
+    { route: "swap", key: "bancor", label: "Bancor Wallet", newTab: true }
   ];
 
   // get isMobile() {
@@ -210,6 +211,12 @@ export default class App extends Vue {
 
   sideLinkClicked(newSelected: string) {
     if (this.selectedLink == newSelected) return;
+    const link = this.links.find(x => x.key === newSelected);
+    if (link && !link.newTab) {
+      this.$router.push({ name: link.route });
+      this.selectedLink = newSelected;
+      return;
+    }
     const currentService = this.$route.params.service;
     const path =
       window.location.protocol +
@@ -221,6 +228,8 @@ export default class App extends Vue {
       this.openUrl(`https://swap.bancor.network/`);
     } else if (newSelected == "bancorx") {
       this.openUrl("https://x.bancor.network/");
+    } else if (newSelected == "bancor") {
+      this.openUrl("https://bancor.network/");
     } else {
       this.openUrl(`https://data.bancor.network/`);
     }
