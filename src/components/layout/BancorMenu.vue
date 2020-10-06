@@ -34,7 +34,7 @@
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
         Liquidity Protection
       </b-dropdown-item>
-      <b-dropdown-item @click="navigate('governance')">
+      <b-dropdown-item :to="{ name: 'Governance' }">
         <font-awesome-icon icon="poll" class="mr-2" fixed-width />
         Bancor Governance
       </b-dropdown-item>
@@ -138,14 +138,14 @@ export default class BancorMenu extends Vue {
     const isProd = !isDev && !isStaging;
 
     if (isDev) {
-      this.openUrl(`http://localhost:8080/${service}/${page}`);
+      this.openUrl(`http://localhost:8080/${service}/data`);
     } else if (isStaging) {
-      this.openUrl(`https://staging.swap.bancor.network/${service}/${page}`);
+      this.openUrl(`https://staging.swap.bancor.network/${service}/data`);
     } else if (isProd) {
-      this.openUrl(`https://swap.bancor.network/${service}/${page}`);
+      this.openUrl(`https://swap.bancor.network/${service}/data`);
     } else {
       console.log("failed to determine route...");
-      this.openUrl(`https://swap.bancor.network/${service}/${page}`);
+      this.openUrl(`https://swap.bancor.network/${service}/data`);
     }
   }
 

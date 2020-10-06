@@ -146,8 +146,8 @@ export default class App extends Vue {
   selectedLink = "swap";
   links = [
     { route: "Swap", key: "swap", label: "Swap" },
-    { route: "Data", key: "data", label: "Data" }
-    // { route: "swap", key: "governance", label: "Governance" },
+    { route: "Data", key: "data", label: "Data" },
+    { route: "Governance", key: "governance", label: "Governance" }
     // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
     // { route: "swap", key: "bancorx", label: "BancorX" }
   ];
