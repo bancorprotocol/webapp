@@ -114,13 +114,13 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue, Watch} from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
-import {Step, TxResponse, ViewRelay, ViewReserve} from "@/types/bancor";
+import { Step, TxResponse, ViewRelay, ViewReserve } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -175,8 +175,7 @@ export default class AddLiqProtection extends Vue {
   get balanceError() {
     const amountNumber = new BigNumber(this.amount);
     const balanceNumber = new BigNumber(this.balance);
-    if (amountNumber.gt(balanceNumber))
-      return "Insufficient balance";
+    if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
     else return "";
   }
 
@@ -216,14 +215,14 @@ export default class AddLiqProtection extends Vue {
     this.success = null;
   }
 
-  @Watch('pool')
+  @Watch("pool")
   onPoolChange() {
     this.selectedToken = this.pool.reserves[0];
     this.amount = "";
   }
 
   mounted() {
-    this.selectedToken = this.pool.reserves[0]
+    this.selectedToken = this.pool.reserves[0];
   }
 
   get darkMode() {

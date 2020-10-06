@@ -1,8 +1,14 @@
 <template>
-  <div :class="`remaining-time remaining-time--${type} remaining-time--${variant}`">
+  <div
+    :class="`remaining-time remaining-time--${type} remaining-time--${variant}`"
+  >
     <div class="remaining-time__progress" :style="{ width: percentage }"></div>
     <div v-if="remainingTime !== 0" class="remaining-time__content">
-      <font-awesome-icon v-if="!isUnlook" icon="clock" class="remaining-time__icon" />
+      <font-awesome-icon
+        v-if="!isUnlook"
+        icon="clock"
+        class="remaining-time__icon"
+      />
       <span class="remaining-time__progress-text">{{ remaining }}</span>
       <span v-if="isUnlook" class="remaining-time__desc">left to unlock</span>
     </div>
@@ -35,7 +41,7 @@ export default class RemainingTime extends Vue {
   }
 
   get isUnlook() {
-    return this.variant === 'unlock'
+    return this.variant === "unlock";
   }
 
   get percentage() {
@@ -50,7 +56,7 @@ export default class RemainingTime extends Vue {
       return "No time left";
     }
     if (this.isUnlook) {
-      return new Date(this.to - Date.now()).toISOString().substr(11, 8)
+      return new Date((this.to || 0) - Date.now()).toISOString().substr(11, 8);
     }
 
     const m = this.remainingTime / 60 / 1000;

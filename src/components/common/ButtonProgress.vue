@@ -37,7 +37,7 @@ export default class ButtonProgress extends Vue {
   @Prop() click?: any;
 
   get percentageValue() {
-    return `${(+(this.percentage || 0))?.toFixed(1)}%`.replace('.0%', '%');
+    return `${(+(this.percentage || 0))?.toFixed(1)}%`.replace(".0%", "%");
   }
 
   get darkMode() {

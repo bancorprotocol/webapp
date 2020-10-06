@@ -113,14 +113,8 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-item @click="navPrivacy"
-        >
-        Privacy Policy</b-dropdown-item
-      >
-      <b-dropdown-item @click="navTermsOfUse"
-        >
-        Terms of Use</b-dropdown-item
-      >
+      <b-dropdown-item @click="navPrivacy"> Privacy Policy</b-dropdown-item>
+      <b-dropdown-item @click="navTermsOfUse"> Terms of Use</b-dropdown-item>
     </b-dropdown-group>
   </b-dropdown>
 </template>

@@ -95,8 +95,8 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
-import numeral from "numeral"
-import { formatNumber } from "@/api/helpers"
+import numeral from "numeral";
+import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 
 @Component({
@@ -121,40 +121,56 @@ export default class SwapAction extends Vue {
   errorToken1 = "";
   errorToken2 = "";
 
-  rateLoading = false
-  initialRate = ""
+  rateLoading = false;
+  initialRate = "";
   numeral = numeral;
 
   modal = false;
   advancedOpen = false;
 
   get tokens() {
-    return vxm.bancor.tokens
+    return vxm.bancor.tokens;
   }
 
   get rate() {
-    let rate = ""
-    if (this.amount1 && this.amount2) rate = formatNumber((parseFloat(this.amount2) / parseFloat(this.amount1)), 9)
-    else rate = formatNumber(parseFloat(this.initialRate), 9)
-    return "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
+    let rate = "";
+    if (this.amount1 && this.amount2)
+      rate = formatNumber(
+        parseFloat(this.amount2) / parseFloat(this.amount1),
+        9
+      );
+    else rate = formatNumber(parseFloat(this.initialRate), 9);
+    return "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol;
   }
 
   get disableButton() {
-    if (!this.isAuthenticated && this.amount1) return false
-    else if (this.amount1 && this.amount2 && !this.errorToken1 && !this.errorToken2) return false
-    else return true
+    if (!this.isAuthenticated && this.amount1) return false;
+    else if (
+      this.amount1 &&
+      this.amount2 &&
+      !this.errorToken1 &&
+      !this.errorToken2
+    )
+      return false;
+    else return true;
   }
 
   get swapButtonLabel() {
-    if (!this.amount1) return 'Enter an Amount'
-    else return 'Swap'
+    if (!this.amount1) return "Enter an Amount";
+    else return "Swap";
   }
 
   get advancedBlockItems() {
     return [
       {
         label: "Rate",
-        value: "1 " + this.token1.symbol + " = " + (parseFloat(this.amount2) / parseFloat(this.amount1)) + " " + this.token2.symbol
+        value:
+          "1 " +
+          this.token1.symbol +
+          " = " +
+          parseFloat(this.amount2) / parseFloat(this.amount1) +
+          " " +
+          this.token2.symbol
       },
       // {
       //   label: "Minimum Received",
@@ -162,8 +178,11 @@ export default class SwapAction extends Vue {
       // },
       {
         label: "Price Impact",
-        value: this.slippage !== null && this.slippage !== undefined ? numeral(this.slippage).format('0.0000%') : '0.00%'
-      },
+        value:
+          this.slippage !== null && this.slippage !== undefined
+            ? numeral(this.slippage).format("0.0000%")
+            : "0.00%"
+      }
       // {
       //   label: "Liquidity Provider Fee",
       //   value: "??.??"
@@ -210,7 +229,7 @@ export default class SwapAction extends Vue {
   }
 
   sanitizeAmount(amount: string) {
-    this.setDefault()
+    this.setDefault();
   }
 
   invertSelection() {
@@ -220,7 +239,7 @@ export default class SwapAction extends Vue {
         from: this.token2.id,
         to: this.token1.id
       }
-    })
+    });
   }
 
   get isAuthenticated() {
@@ -228,18 +247,18 @@ export default class SwapAction extends Vue {
   }
 
   async initConvert() {
-    if (this.isAuthenticated) this.modal = true
+    if (this.isAuthenticated) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }
 
   async updatePriceReturn(amount: string) {
-    if (!amount || amount === "0" || amount === '.') {
+    if (!amount || amount === "0" || amount === ".") {
       this.setDefault();
       return;
     }
     try {
-      this.rateLoading = true
+      this.rateLoading = true;
       const reward = await vxm.bancor.getReturn({
         from: {
           id: this.token1.id,
@@ -254,16 +273,20 @@ export default class SwapAction extends Vue {
         this.fee = reward.fee;
       }
       this.amount2 = reward.amount;
-      console.log(`Balance is currently known as balance1: ${this.balance1} ${amount} was just pushed`)
+      console.log(
+        `Balance is currently known as balance1: ${this.balance1} ${amount} was just pushed`
+      );
       const raiseError = Number(this.balance1) < Number(amount);
-      console.log(raiseError, 'is the status of raise error')
-      this.errorToken1 = raiseError ? "Token balance is currently insufficient" : "";
+      console.log(raiseError, "is the status of raise error");
+      this.errorToken1 = raiseError
+        ? "Token balance is currently insufficient"
+        : "";
       this.errorToken2 = "";
     } catch (e) {
       this.errorToken1 = e.message;
       this.errorToken2 = "";
     } finally {
-      this.rateLoading = false
+      this.rateLoading = false;
     }
   }
 
@@ -276,7 +299,7 @@ export default class SwapAction extends Vue {
   }
 
   async calculateRate() {
-    this.rateLoading = true
+    this.rateLoading = true;
     try {
       const reward = await vxm.bancor.getReturn({
         from: {
@@ -285,9 +308,9 @@ export default class SwapAction extends Vue {
         },
         toId: this.token2.id
       });
-      this.initialRate = reward.amount
+      this.initialRate = reward.amount;
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
     this.rateLoading = false;
   }
@@ -313,9 +336,14 @@ export default class SwapAction extends Vue {
       this.token2 = vxm.bancor.tokens[1];
     }
     const raiseError = Number(this.balance1) < Number(this.amount1);
-    console.log('route query watcher is passing updatePriceReturn', this.amount1, raiseError, 'is raise error status')
+    console.log(
+      "route query watcher is passing updatePriceReturn",
+      this.amount1,
+      raiseError,
+      "is raise error status"
+    );
     await this.updatePriceReturn(this.amount1);
-    await this.calculateRate()
+    await this.calculateRate();
   }
 
   async created() {
@@ -325,13 +353,13 @@ export default class SwapAction extends Vue {
       const defaultQuery = {
         from: vxm.bancor.tokens[1].id,
         to: vxm.bancor.tokens[0].id
-      }
-      if (this.$route.query.from) defaultQuery.from = this.$route.query.from
-      if (this.$route.query.to) defaultQuery.to = this.$route.query.to
-      await this.$router.push({name: "Swap", query: defaultQuery})
+      };
+      if (this.$route.query.from) defaultQuery.from = this.$route.query.from;
+      if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
+      await this.$router.push({ name: "Swap", query: defaultQuery });
     }
 
-    await this.calculateRate()
+    await this.calculateRate();
   }
 }
 </script>
