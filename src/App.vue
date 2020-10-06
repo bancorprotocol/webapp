@@ -83,7 +83,7 @@
             @click="sideLinkClicked(link.key)"
             class="side-bar-link"
             :class="
-              selectedLink === link.key
+              $route.name === link.route
                 ? darkMode
                   ? 'clicked-link-dark'
                   : 'clicked-link'
@@ -147,7 +147,7 @@ export default class App extends Vue {
   links = [
     { route: "Swap", key: "swap", label: "Swap" },
     { route: "Data", key: "data", label: "Data" },
-    { route: "Governance", key: "governance", label: "Governance" }
+    { route: "GovernancePage", key: "governance", label: "Governance" }
     // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
     // { route: "swap", key: "bancorx", label: "BancorX" }
   ];
@@ -219,8 +219,10 @@ export default class App extends Vue {
       `/${currentService}`;
     if (newSelected == "swap") {
       this.openUrl(`${path}/swap`);
-    } else {
+    } else if (newSelected == "data") {
       this.openUrl(`${path}/data`);
+    } else if (newSelected == "governance") {
+      this.$router.push({ name: "GovernancePage" });
     }
     return;
     // const linkSelected = this.links.find(link => link.key == newSelected)!;
