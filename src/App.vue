@@ -53,7 +53,11 @@
       This interface is in beta. Use it at your own risk.
     </div>
     <div name="MainLayout" class="main-layout">
-      <div name="side-bar" class="side-bar">
+      <div
+        name="side-bar"
+        class="side-bar"
+        :class="darkMode ? 'side-bar-dark' : ''"
+      >
         <b-navbar-brand class="pb-1 brand-icon">
           <router-link
             :to="{ name: 'Swap', params: { service: selectedNetwork } }"
@@ -77,8 +81,16 @@
             v-for="link in links"
             :key="link.key"
             @click="sideLinkClicked(link.key)"
-            :class="selectedLink === link.key ? 'clicked-link' : ''"
             class="side-bar-link"
+            :class="
+              selectedLink === link.key
+                ? darkMode
+                  ? 'clicked-link-dark'
+                  : 'clicked-link'
+                : darkMode
+                ? 'side-bar-link-dark'
+                : 'side-bar-link'
+            "
           >
             <img
               class="side-bar-link-icon"
@@ -94,12 +106,12 @@
         id="main-container"
         :class="
           darkMode
-            ? 'bg-body-dark text-body-dark'
-            : 'bg-body-light text-body-light'
+            ? 'bg-body-dark text-body-dark main-container'
+            : 'bg-body-light text-body-light main-container'
         "
         style="flex-grow: 1"
       >
-        <router-view name="Nav"></router-view>
+        <router-view name="Nav" />
         <b-container fluid="xl" class="pt-1">
           <b-row class="d-flex justify-content-center">
             <b-col cols="12" style="max-width: 460px">
@@ -107,7 +119,7 @@
             </b-col>
           </b-row>
         </b-container>
-        <router-view></router-view>
+        <router-view />
       </main>
     </div>
     <div>
@@ -140,9 +152,9 @@ export default class App extends Vue {
     // { route: "swap", key: "bancorx", label: "BancorX" }
   ];
 
-  get isMobile() {
-    return window.innerWidth < 450;
-  }
+  // get isMobile() {
+  //   return window.innerWidth < 450;
+  // }
 
   get selectedNetwork() {
     return vxm.bancor.currentNetwork;
@@ -155,7 +167,6 @@ export default class App extends Vue {
     console.log("feature:", this.$route.meta.feature);
     console.log("service:", this.$route.params.service);
     console.log("query:", this.$route.query);
-
     const trade = this.$route.meta.feature == "Trade";
 
     const service = this.$route.params && this.$route.params.service;
@@ -236,6 +247,14 @@ export default class App extends Vue {
     await this.loadBancor();
     if (this.$route.name == "DataSummary") this.selectedLink = "data";
     if (this.$route.name === "404") this.loading = false;
+    const a = this.$route.fullPath.lastIndexOf("/") + 1;
+    const b = this.$route.fullPath.indexOf("?");
+    console.log(a, b);
+    this.selectedLink =
+      b > 0
+        ? this.$route.fullPath.substring(a, b)
+        : this.$route.fullPath.slice(a);
+    console.log("SELECTED LINK", this.selectedLink);
   }
 
   @Watch("$route.params.service")
@@ -275,15 +294,23 @@ h2 {
   flex-direction: row;
   height: 100%;
   flex-grow: 1;
+  overflow-y: hidden;
+}
+.main-container {
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 .side-bar {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   width: 230px;
   background-color: #e6ebf2;
-  @media (max-width: 899px) {
+  z-index: 10;
+  @media (max-width: 450px) {
     position: fixed;
-    bottom: 0;
+    overflow: hidden;
+    top: calc(100vh - 56px);
     left: 0;
     width: 100%;
     height: 56px;
@@ -291,7 +318,7 @@ h2 {
     border-top: 1px solid #e6ebf2;
   }
   .brand-icon {
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
       display: none;
     }
     margin-top: 18px;
@@ -302,7 +329,7 @@ h2 {
   }
   .side-bar-links {
     margin-top: 28px;
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
       width: 100%;
       height: 56px;
       align-items: center;
@@ -318,7 +345,8 @@ h2 {
     cursor: pointer;
     height: 40px;
     position: relative;
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
+      padding-left: 0px;
       display: flex;
       flex-direction: column;
     }
@@ -334,7 +362,7 @@ h2 {
       line-height: normal;
       letter-spacing: normal;
       color: #6b7c93;
-      @media (max-width: 899px) {
+      @media (max-width: 450px) {
         align-self: center;
         font-size: 10px;
       }
@@ -344,7 +372,7 @@ h2 {
       width: 14px;
       height: 14px;
       margin-right: 12px;
-      @media (max-width: 899px) {
+      @media (max-width: 450px) {
         width: 22px;
         height: 20px;
         margin-right: 0px;
@@ -366,7 +394,7 @@ h2 {
     letter-spacing: normal;
     color: #97a5b8;
     margin-left: 25px;
-    @media (max-width: 899px) {
+    @media (max-width: 450px) {
       display: none;
     }
   }
@@ -375,12 +403,11 @@ h2 {
       color: #0f59d1;
     }
     img {
-      // fill: #0f59d1;
       filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg)
         brightness(0.7);
       color: #0f59d1;
     }
-    @media (min-width: 900px) {
+    @media (min-width: 450px) {
       background-color: #f8f9fd;
       border-left: 2px solid #0f59d1;
       &::before {
@@ -405,6 +432,49 @@ h2 {
         border-top-right-radius: 14px;
         box-shadow: 0 -11px 0 0 #f8f9fd;
       }
+    }
+  }
+}
+.side-bar-dark {
+  background-color: #0f59d1;
+}
+.side-bar-link-dark {
+  span {
+    color: #aaa !important;
+  }
+}
+.clicked-link-dark {
+  span {
+    color: #fff !important;
+  }
+  img {
+    filter: invert(0.2) saturate(5) brightness(1);
+    color: #0f59d1;
+  }
+  @media (min-width: 450px) {
+    background-color: #1c344e;
+    border-left: 2px solid #0f59d1;
+    &::before {
+      content: "";
+      position: absolute;
+      left: 202px;
+      top: -26px;
+      width: 26px;
+      height: 26px;
+      background-color: transparent;
+      border-bottom-right-radius: 14px;
+      box-shadow: 0 11px 0 0 #1c344e;
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      left: 202px;
+      top: 40px;
+      width: 26px;
+      height: 26px;
+      background-color: transparent;
+      border-top-right-radius: 14px;
+      box-shadow: 0 -11px 0 0 #1c344e;
     }
   }
 }
