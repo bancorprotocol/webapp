@@ -26,11 +26,9 @@
       v-model="currentPage"
       :total-rows="totalRows"
       :per-page="perPage"
-      hide-goto-end-buttons
       align="center"
-      limit="3"
     >
-      <template v-slot:prev-text="{ disabled }">
+      <!--   <template v-slot:prev-text="{ disabled }">
         <font-awesome-icon
           icon="long-arrow-alt-left"
           :class="iconClass(disabled)"
@@ -41,7 +39,7 @@
           icon="long-arrow-alt-right"
           :class="iconClass(disabled)"
         />
-      </template>
+      </template>-->w
     </b-pagination>
 
     <div v-if="!totalRows" class="text-center">

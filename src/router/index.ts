@@ -80,6 +80,7 @@ export const router = new Router({
     },
     {
       path: "/:service/pool/:id",
+      redirect: "/404",
       name: "PoolAdd",
       components: {
         Nav: Navigation,
@@ -104,6 +105,7 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection",
+      redirect: "/404",
       name: "LiqProtection",
       components: {
         Nav: Navigation,
@@ -112,6 +114,7 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection/add",
+      redirect: "/404",
       name: "AddProtection",
       components: {
         Nav: Navigation,
@@ -120,6 +123,7 @@ export const router = new Router({
     },
     {
       path: "/:service/liquidity-protection/:action/:id",
+      redirect: "/404",
       name: "ProtectionAction",
       components: {
         Nav: Navigation,
@@ -168,16 +172,19 @@ export const router = new Router({
       children: [
         {
           path: "",
+          name: "DataSummary",
           component: DataSummary
         },
         {
           path: "token/:id",
           name: "DetailsToken",
+          redirect: "/404",
           component: DataDetailsToken
         },
         {
           path: "pool/:id",
           name: "DetailsPool",
+          redirect: "/404",
           component: DataDetailsPool
         }
       ]
@@ -208,7 +215,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/privacy-policy",
+      path: "/privacy-policy",
       name: "PrivacyPolicy",
       components: {
         Nav: Navigation,
@@ -216,7 +223,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/terms-of-use",
+      path: "/terms-of-use",
       name: "TermsOfUse",
       components: {
         Nav: Navigation,
