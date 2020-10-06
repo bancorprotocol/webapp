@@ -305,8 +305,8 @@ h2 {
   overflow: hidden;
 }
 .main-container {
-  overflow-y: scroll;
-  overflow-x: scroll;
+  overflow-y: auto;
+  overflow-x: auto;
   padding: 12px;
 }
 .side-bar {
