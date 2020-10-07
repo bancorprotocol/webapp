@@ -4999,17 +4999,7 @@ export class EthBancorModule
       console.log("trying...");
       console.timeEnd("timeToGetToInitialBulk");
       console.time("initialPools");
-      const x = await this.addPoolsBulk([
-        ...initialLoad,
-        {
-          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
-        }
-      ].filter(notBadRelay));
-      this.setLoadingPools(false);
-      console.timeEnd("initialPools");
-      console.log("finished add pools...", x);
-
+      
       if (remainingLoad.length > 0) {
         const potentialUnfitConverters = [
           "0xfb64059D18BbfDc5EEdCc6e65C9F09de8ccAf5b6",
@@ -5040,11 +5030,25 @@ export class EthBancorModule
           this.addPoolsBulk(droppedAnchors);
         });
       }
+      
+      
+      await this.addPoolsBulk([
+        ...initialLoad,
+        {
+          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
+        }
+      ].filter(notBadRelay));
+      this.setLoadingPools(false);
+      console.timeEnd("initialPools");
+
       this.moduleInitiated();
 
       if (this.relaysList.length < 1) {
         console.error("Init resolved with less than 2 relay feeds or 1 relay.");
       }
+      // @ts-ignore
+      console.log('Eth resolving at', new Date() / 1)
       console.timeEnd("ethResolved");
     } catch (e) {
       console.error(`Threw inside ethBancor ${e.message}`);
@@ -5211,6 +5215,7 @@ export class EthBancorModule
     if (!convertersAndAnchors || convertersAndAnchors.length == 0)
       throw new Error("Received nothing for addPoolsBulk");
 
+      const startTime = new Date()
     this.setLoadingPools(true);
 
     const tokenAddresses: string[][] = [];
@@ -5249,6 +5254,8 @@ export class EthBancorModule
 
     console.timeEnd("addPoolsBulk");
 
+    const endTime = new Date()
+    // console.log('it took', endTime - startTime, 'ms', 'to load', pools.length, 'pools')
     if (convertersAndAnchors.length > 40) {
       this.createReport();
     }
