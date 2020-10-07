@@ -51,9 +51,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { Method } from 'axios';
 
 @Component
 export default class TableWrapper extends Vue {
@@ -82,8 +81,13 @@ export default class TableWrapper extends Vue {
         : "text-muted-light"
       : "text-primary";
   }
-  mounted() {
+
+  @Watch("items")
+  onItemsChange() {
     this.totalRows = this.items.length;
+  }
+  mounted() {
+    this.onItemsChange();
   }
 
   get darkMode() {
