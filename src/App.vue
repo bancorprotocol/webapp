@@ -200,6 +200,8 @@ export default class App extends Vue {
     console.log({ service, feature, query, initParams, paramsSatisfied });
     try {
       await vxm.bancor.init(initParams);
+      // @ts-ignore
+      console.log(new Date() / 1, "stopped loading");
       this.loading = false;
       // @ts-ignore
       this.$gtag.event("initBancor", {
