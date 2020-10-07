@@ -999,7 +999,7 @@ export const ABILiquidityProtection: AbiItem[] = [
       },
       {
         internalType: "address",
-        name: "_newOwner",
+        name: "_newProvider",
         type: "address"
       }
     ],
@@ -1025,16 +1025,6 @@ export const ABILiquidityProtection: AbiItem[] = [
         internalType: "uint32",
         name: "_portion",
         type: "uint32"
-      },
-      {
-        internalType: "uint256",
-        name: "_removeRateN",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256",
-        name: "_removeRateD",
-        type: "uint256"
       },
       {
         internalType: "uint256",
@@ -1069,6 +1059,55 @@ export const ABILiquidityProtection: AbiItem[] = [
     name: "claimBalance",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "_poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "_reserveToken",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "_reserveAmount",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_poolRateN",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_poolRateD",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_reserveRateN",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_reserveRateD",
+        type: "uint256"
+      }
+    ],
+    name: "poolROI",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
     type: "function"
   },
   {
