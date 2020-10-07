@@ -260,5 +260,20 @@ export const buildLiquidityProtectionContract = (
     reserveAmountWei: string
   ) => ContractSendMethod;
   removeLiquidity: (dbId: string, ppmPercent: string) => ContractSendMethod;
-  claimTokens: (startIndex: string, endIndex: string) => ContractSendMethod;
+  claimBalance: (startIndex: string, endIndex: string) => ContractSendMethod;
+  transferLiquidity: (id: string, newProvider: string) => ContractSendMethod;
+  removeLiquidityReturn: (
+    id: string,
+    portion: string,
+    removeTimeStamp: string
+  ) => CallReturn<string>;
+  poolROI: (
+    poolToken: string,
+    reserveToken: string,
+    reserveAmount: string,
+    poolRateN: string,
+    poolRateD: string,
+    reserveRateN: string,
+    reserveRateD: string
+  ) => CallReturn<string>;
 }> => buildContract(ABILiquidityProtection, contractAddress);

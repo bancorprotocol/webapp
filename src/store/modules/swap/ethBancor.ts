@@ -5395,12 +5395,12 @@ export class EthBancorModule
           newSet,
           compareAnchorAndConverter
         ).filter(notBadRelay)
+
         this.addPoolsBulk(newSet).then(() => {
           this.addPoolsBulk(droppedAnchors);
         });
       }
-      
-      
+
       await this.addPoolsBulk([
         ...initialLoad,
         {
