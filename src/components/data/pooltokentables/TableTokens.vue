@@ -47,6 +47,7 @@ export default class TableTokens extends Vue {
     {
       key: "symbol",
       label: "Name",
+      thStyle: { "min-width": "160px" },
       sortable: true
     },
     {
