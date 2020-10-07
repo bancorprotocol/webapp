@@ -61,7 +61,7 @@
         :value="
           slippage !== null && slippage !== undefined
             ? numeral(this.slippage).format('0.0000%')
-            : '0.00%'
+            : '0.0000%'
         "
       />
       <label-content-split v-if="fee !== null" label="Fee" :value="fee" />
@@ -268,6 +268,8 @@ export default class SwapAction extends Vue {
       });
       if (reward.slippage) {
         this.slippage = reward.slippage;
+      } else {
+        this.slippage = 0
       }
       if (reward.fee) {
         this.fee = reward.fee;
