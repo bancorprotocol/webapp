@@ -15,7 +15,9 @@
         class="align-rows-cells cursor"
         @click="() => openProposal(proposal)"
       >
-        <td>{{ proposal.id }}</td>
+        <td :class="{'no-border': !isNaN(opened) && proposal.id === opened}">
+          {{ proposal.id }}
+        </td>
         <td class="font-size-14 font-w500">
           {{ proposal.name }}
         </td>
@@ -72,7 +74,7 @@
         class="align-rows-cells"
         v-if="!isNaN(opened) && proposal.id === opened"
       >
-        <td class="no-border"></td>
+        <td></td>
         <td>
           <div
             class="font-size-12 pb-1"
@@ -318,18 +320,9 @@ export default class DoneProposals extends Vue {
   }
 }
 
-.no-border {
-  position: relative;
-
-  &:before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    height: 1px;
-    width: 100%;
-    left: 0;
-    background: #ffffff;
-  }
+.dark-table td.no-border,
+.table td.no-border {
+  border-bottom: 0 !important;
 }
 
 .buttons-container {
