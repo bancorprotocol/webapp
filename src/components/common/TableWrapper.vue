@@ -10,6 +10,8 @@
       :sort-by.sync="sortByProp"
       :sort-desc.sync="sortDescProp"
       :filter="filter"
+      :filter-function="filterFunction"
+      @filtered="onFiltered"
     >
       <slot v-for="(_, name) in $slots" :name="name" :slot="name" />
       <template
@@ -49,8 +51,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Emit, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { Method } from 'axios';
 
 @Component
 export default class TableWrapper extends Vue {
@@ -60,11 +63,17 @@ export default class TableWrapper extends Vue {
   @Prop({ default: "" }) filter!: string;
   @Prop({ default: true }) sortDesc!: boolean;
   @Prop({ default: 10 }) perPage!: number;
-
+  @Prop() filterFunction!: Function;
   currentPage = 1;
+  totalRows = 1;
 
   sortByProp = this.sortBy;
   sortDescProp = this.sortDesc;
+
+  onFiltered(filteredItems: any) {
+    this.totalRows = filteredItems.length;
+    this.currentPage = 1;
+  }
 
   iconClass(disabled: boolean) {
     return disabled
@@ -73,9 +82,8 @@ export default class TableWrapper extends Vue {
         : "text-muted-light"
       : "text-primary";
   }
-
-  get totalRows() {
-    return this.items.length;
+  mounted() {
+    this.totalRows = this.items.length;
   }
 
   get darkMode() {

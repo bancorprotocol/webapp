@@ -5,7 +5,7 @@
     @click="click"
   >
     <div class="d-flex justify-content-center">
-      <pool-logos :pool="pool" :version="true" />
+      <pool-logos :pool="pool" />
     </div>
   </div>
 </template>

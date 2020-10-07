@@ -155,13 +155,19 @@ export default class App extends Vue {
     },
     // { route: "swap", key: "governance", label: "Governance" },
     // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
-    { route: "swap", key: "bancorx", label: "Bancor X", newTab: true },
-    { route: "swap", key: "bancor", label: "Bancor Wallet", newTab: true }
+    {
+      route: "https://x.bancor.network/",
+      key: "bancorx",
+      label: "Bancor X",
+      newTab: true
+    },
+    {
+      route: "https://bancor.network/",
+      key: "bancor",
+      label: "Bancor Wallet",
+      newTab: true
+    }
   ];
-
-  // get isMobile() {
-  //   return window.innerWidth < 450;
-  // }
 
   get selectedNetwork() {
     return vxm.bancor.currentNetwork;
@@ -221,33 +227,9 @@ export default class App extends Vue {
     if (link && !link.newTab) {
       this.$router.push({ name: link.route });
       this.selectedLink = newSelected;
-      return;
+    } else if (link) {
+      this.openUrl(link.route);
     }
-    const currentService = this.$route.params.service;
-    const path =
-      window.location.protocol +
-      "//" +
-      window.location.hostname +
-      `:${window.location.port}` +
-      `/${currentService}`;
-    if (newSelected == "swap") {
-      this.openUrl(`https://swap.bancor.network/`);
-    } else if (newSelected == "bancorx") {
-      this.openUrl("https://x.bancor.network/");
-    } else if (newSelected == "bancor") {
-      this.openUrl("https://bancor.network/");
-    } else if (newSelected == "data") {
-      this.openUrl(`https://data.bancor.network/`);
-    } else if (newSelected == "governance") {
-      this.$router.push({ name: "GovernancePage" });
-    }
-    return;
-    // const linkSelected = this.links.find(link => link.key == newSelected)!;
-    // this.$router.push({
-    // name: linkSelected.route,
-    // params: { service: this.$route.params.service }
-    // });
-    // this.selectedLink = newSelected;
   }
 
   async created() {
@@ -265,26 +247,20 @@ export default class App extends Vue {
     vxm.general.setLanguage();
     vxm.general.getUserCountry();
     await this.loadBancor();
-    if (this.$route.name == "DataSummary") {
-      this.selectedLink = "data";
-    }
-    if (this.$route.name == "Swap") {
-      this.selectedLink = "swap";
-    }
+
     if (this.$route.name === "404") this.loading = false;
-    // const a = this.$route.fullPath.lastIndexOf("/") + 1;
-    // const b = this.$route.fullPath.indexOf("?");
-    // console.log(a, b);
-    // this.selectedLink =
-    //   b > 0
-    //     ? this.$route.fullPath.substring(a, b)
-    //     : this.$route.fullPath.slice(a);
-    // console.log("SELECTED LINK", this.selectedLink);
   }
 
   @Watch("$route.params.service")
   async onServiceChange() {
     await this.loadBancor();
+  }
+  @Watch("$route")
+  async onRouteChange() {
+    const path = this.$route.fullPath;
+    if (path.includes("swap")) this.selectedLink = "swap";
+    if (path.includes("pool")) this.selectedLink = "swap";
+    if (path.includes("data")) this.selectedLink = "data";
   }
 }
 </script>
