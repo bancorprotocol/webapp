@@ -49,7 +49,8 @@ export default class ProtectionActions extends Vue {
   }
 
   get pool(): ViewRelay {
-    return vxm.bancor.relay(this.$route.params.id);
+    const [poolId] = this.$route.params.id.split(":");
+    return vxm.bancor.relay(poolId);
   }
 
   get version() {

@@ -99,7 +99,7 @@
 
     <template v-slot:cell(actionButtons)="data">
       <b-btn
-        @click="goToWithdraw(data.item.stake.poolId)"
+        @click="goToWithdraw(data.item.id)"
         :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
         class="table-button"
       >
@@ -118,6 +118,7 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
+import { ViewProtectedLiquidity } from "@/types/bancor";
 
 @Component({
   components: {
@@ -148,6 +149,7 @@ export default class Protected extends Vue {
   }
 
   goToWithdraw(id: string) {
+    console.log("going to withdraw with", id);
     this.$router.push({
       name: "ProtectionAction",
       params: { action: "withdraw", id }
@@ -162,53 +164,12 @@ export default class Protected extends Vue {
     return numeral(percentage).format("0%");
   }
 
+  get protectedLiquidity() {
+    return vxm.ethBancor.protectedLiquidity;
+  }
+
   get protectedTxTable() {
-    const items: any[] = [
-      {
-        stake: {
-          amount: 5123.7865,
-          poolId: "0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3",
-          usdValue: 1146.86,
-          unixTime: 1599583447
-        },
-        protectedAmount: {
-          amount: 3000,
-          symbol: "ETH",
-          usdValue: 3589.11
-        },
-        roi: 0.8,
-        apr: {
-          day: 0.25,
-          week: 0.29,
-          month: 0.8
-        },
-        whitelisted: false,
-        insuranceStart: 1600445900,
-        fullCoverage: 1601688926
-      },
-      {
-        stake: {
-          amount: 5123.7865,
-          poolId: "0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3",
-          usdValue: 1146.86,
-          unixTime: 1599583447
-        },
-        protectedAmount: {
-          amount: 3000,
-          symbol: "ETH",
-          usdValue: 3589.11
-        },
-        roi: 0.8,
-        apr: {
-          day: 0.25,
-          week: 0.29,
-          month: 0.8
-        },
-        whitelisted: true,
-        insuranceStart: 1600445900,
-        fullCoverage: 1601688926
-      }
-    ];
+    const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
     const fields: any[] = [
       {
         key: "stake"
@@ -224,11 +185,6 @@ export default class Protected extends Vue {
         sortable: true,
         thStyle: { "min-width": "60px" },
         formatter: (value: number) => this.stringifyPercentage(value)
-      },
-      {
-        key: "apr",
-        sortable: false,
-        thStyle: { "min-width": "100px" }
       },
       {
         key: "insuranceStart",

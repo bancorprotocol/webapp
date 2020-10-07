@@ -661,6 +661,7 @@ export interface Service {
 }
 
 export interface ViewProtectedLiquidity {
+  id: string;
   stake: {
     amount: string;
     poolId: string;

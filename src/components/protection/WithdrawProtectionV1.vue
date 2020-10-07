@@ -3,8 +3,12 @@
     <label-content-split label="Stake" value="????" />
     <label-content-split value="????" class="mb-2" />
 
-    <label-content-split label="Fully Protected Value" value="????" />
-    <label-content-split value="????" />
+    <label-content-split
+      v-if="poolWhitelisted"
+      label="Fully Protected Value"
+      value="????"
+    />
+    <label-content-split v-if="poolWhitelisted" value="????" />
 
     <alert-block
       variant="warning"
@@ -14,6 +18,7 @@
     />
 
     <percentage-slider
+      v-if="poolWhitelisted"
       label="Input"
       v-model="percentage"
       :show-buttons="true"
@@ -66,6 +71,10 @@ export default class WithdrawProtectionV1 extends Vue {
 
   modal = false;
 
+  get poolWhitelisted() {
+    return false;
+  }
+
   get disableActionButton() {
     if (parseFloat(this.percentage) === 0) return true;
     else return this.inputError ? true : false;
@@ -76,8 +85,19 @@ export default class WithdrawProtectionV1 extends Vue {
     else return "";
   }
 
-  initAction() {
+  async initAction() {
     this.modal = true;
+    const [poolId, first, second] = this.$route.params.id.split(":");
+    console.log({ poolId, first, second });
+    try {
+      const txRes = await vxm.ethBancor.unProtectLiquidityTx({
+        id1: first,
+        id2: second
+      });
+      console.log(txRes, "was tx res");
+    } catch (e) {
+      console.log("derp", e.message);
+    }
   }
 
   get darkMode() {

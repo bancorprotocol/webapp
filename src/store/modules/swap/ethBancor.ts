@@ -1858,54 +1858,65 @@ export class EthBancorModule
     const contract = buildLiquidityProtectionContract(liquidityProtectionAddress);
     return this.resolveTxOnConfirmation({
       tx: contract.methods.unprotectLiquidity(id1, id2)
-    })
+    });
+  }
+
+  @action async unprotectLiquidity({ id1, id2 }: { id1: string, id2: string }) {
+    return this.unProtectLiquidityTx({ id1, id2 });
   }
 
   protectedPositionsArr: ProtectedLiquidity[] = []
 
 
-  get protectedLiquidity(): ViewProtectedLiquidity[] {
-    return [
-      {
-        apr: {
-          day: 2,
-          month: 3,
-          week: 2
-        },
-        whitelisted: false,
-         fullCoverage: moment().add('1', 'day').unix(),
-          insuranceStart: moment().subtract('2', 'hours').unix(),
-           protectedAmount: {
-             amount: '2',
-             symbol: 'BNT',
-             usdValue: 3.25
-           },
-           roi: 3,
-           stake: { 
-             amount: '12',
-             poolId: '0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3',
-             unixTime: moment().unix(),
-             usdValue: 3,
-           }
-      }
-    ];
-  }
+  // get protectedLiquidity(): ViewProtectedLiquidity[] {
+
+  //   return [
+  //     {
+  //       apr: {
+  //         day: 2,
+  //         month: 3,
+  //         week: 2
+  //       },
+  //       whitelisted: false,
+  //       fullCoverage: moment().add('1', 'day').unix(),
+  //         insuranceStart: moment().subtract('2', 'hours').unix(),
+  //          protectedAmount: {
+  //            amount: '2',
+  //            symbol: 'BNT',
+  //            usdValue: 3.25
+  //          },
+  //          roi: 3,
+  //          stake: { 
+  //            amount: '12',
+  //            poolId: '0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3',
+  //            unixTime: moment().unix(),
+  //            usdValue: 3,
+  //          }
+  //     }
+  //   ];
+  // }
 
   @mutation setProtectedPositions(positions: ProtectedLiquidity[]) {
     console.log(positions, 'are the positions getting set!')
     this.protectedPositionsArr = positions;
   }
 
-  @action async fetchProtectionPositions() {
-    const liquidityStore = this.contracts.LiquidityProtectionStore
-    const contract = buildLiquidityProtectionStoreContract(liquidityStore);
-    const owner = this.isAuthenticated
-    const idCount = Number(await contract.methods.protectedLiquidityCount(owner).call())
-    const ids = await contract.methods.protectedLiquidityIds(owner).call();
-    const allPositions = await Promise.all(ids.map(id => protectionById(liquidityStore, id)));
-    if (allPositions.length !== idCount) throw new Error("ID count does not match returned positions");
-    this.setProtectedPositions(allPositions);
-    return allPositions;
+  @action async fetchProtectionPositions(storeAddress?: string) {
+    console.log(storeAddress, 'is the new address')
+    if (!this.isAuthenticated) return;
+    try {
+      const liquidityStore = storeAddress || this.contracts.LiquidityProtectionStore
+      const contract = buildLiquidityProtectionStoreContract(liquidityStore);
+      const owner = this.isAuthenticated
+      const idCount = Number(await contract.methods.protectedLiquidityCount(owner).call())
+      const ids = await contract.methods.protectedLiquidityIds(owner).call();
+      const allPositions = await Promise.all(ids.map(id => protectionById(liquidityStore, id)));
+      if (allPositions.length !== idCount) throw new Error("ID count does not match returned positions");
+      this.setProtectedPositions(allPositions);
+      return allPositions;
+    } catch(e) {
+      console.error('Failed fetching protection positions', e.message);
+    }
   }
 
   @action async protectLiquidity({ amount, onUpdate }: ProtectLiquidityParams): Promise<TxResponse> {
@@ -1996,7 +2007,7 @@ export class EthBancorModule
     return lockedBalances;
   }
 
-  get protectedPositions(): ProtectedViewPosition[] {
+  get protectedLiquidity(): ViewProtectedLiquidity[] {
 
     const minProtectionDelay = this.liquidityProtectionSettings.minDelay;
     const maxProtectionDelay = this.liquidityProtectionSettings.maxDelay;
@@ -2027,36 +2038,51 @@ export class EthBancorModule
       }
     })
 
-    const reviewedDoubles = doublesArr.flatMap((doubles): ProtectedViewPosition[] | ProtectedViewPosition => {
+    const reviewedDoubles = doublesArr.flatMap((doubles): ViewProtectedLiquidity => {
       const first = doubles[0]
       const commonPoolToken = first.poolToken;
       const commonViewRelay = this.relay(commonPoolToken);
+      const commonRelay = findOrThrow(this.relaysList, relay => compareString(relay.id, commonPoolToken))
       const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor => compareString(commonPoolToken, whitelistedAnchor));
       
       const startTime = Number(first.timestamp)
-      if (isWhiteListed) {
-        return doubles.map(entry => ({
-          type: PositionType.single,
-          whitelisted: isWhiteListed,
-          relay: commonViewRelay,
-          endTime: startTime,
-          startTime,
-          protectionPercent: calculateProtectionLevel(startTime),
-          tokensCovered: [{ id: entry.reserveToken, amount: shrinkToken(entry.reserveAmount, this.token(entry.reserveToken).precision)}]
-        }))
-      } else {
+      // if (isWhiteListed) {
+      //   return doubles.map(entry => ({
+      //     type: PositionType.single,
+      //     whitelisted: isWhiteListed,
+      //     relay: commonViewRelay,
+      //     endTime: startTime,
+      //     startTime,
+      //     protectionPercent: calculateProtectionLevel(startTime),
+      //     tokensCovered: [{ id: entry.reserveToken, amount: shrinkToken(entry.reserveAmount, this.token(entry.reserveToken).precision)}]
+      //   }))
+      // } else {
+      const smartToken = (commonRelay.anchor as SmartToken)
+      const smartTokensWei = doubles.reduce((acc, item) => new BigNumber(item.poolAmount).plus(acc), new BigNumber(0)).toString();
+      const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
         return {
-          type: PositionType.double,
-          endTime: startTime,
-          startTime,
-          protectionPercent: calculateProtectionLevel(startTime),
-          relay: commonViewRelay,
-          tokensCovered: doubles.map(entry => ({ id: entry.reserveToken, amount: shrinkToken(entry.reserveAmount, this.token(entry.reserveToken).precision) }))
-        } as ProtectedViewPosition
-      }
-    })
+          id: `${commonPoolToken}:${doubles.map(pos => pos.id).join(':')}`,
+          whitelisted: isWhiteListed,
+          stake: {
+            amount: smartTokensDec,
+            poolId: commonViewRelay.id,
+            unixTime: startTime,
+            usdValue: 1
+          },
+          apr: {
+            day: 0,
+          month: 0,
+           week: 0,
+          },
+          insuranceStart: startTime + this.liquidityProtectionSettings.minDelay,
+          fullCoverage: startTime + this.liquidityProtectionSettings.maxDelay,
+          protectedAmount: { usdValue: 3, amount: smartTokensDec, symbol: smartToken.symbol},
+          roi: 0
+        } as ViewProtectedLiquidity
+      })
+    
 
-    return [...reviewedDoubles, ...reviewedSingles];
+    return [...reviewedDoubles];
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
@@ -4227,6 +4253,7 @@ export class EthBancorModule
 
   @action async warmEthApi() {
     const tokens = await ethBancorApi.getTokens();
+    console.log(tokens, 'are the tokens')
     this.setBancorApiTokens(tokens);
     return tokens;
   }
@@ -5248,8 +5275,8 @@ export class EthBancorModule
       ]);
 
       this.pullBntInformation({ latestBlock: String(currentBlock) });
-
       this.fetchLiquidityProtectionSettings(contractAddresses.LiquidityProtection)
+      this.fetchProtectionPositions(contractAddresses.LiquidityProtectionStore)
 
       console.log(contractAddresses, "are contract addresses");
       console.timeEnd("FirstPromise");
@@ -5711,6 +5738,7 @@ export class EthBancorModule
       allTokens.map(token => token.contract),
       compareString
     );
+    this.fetchProtectionPositions();
     uniqueTokenAddresses.forEach(tokenContractAddress =>
       this.getUserBalance({
         tokenContractAddress,
