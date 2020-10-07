@@ -1,12 +1,5 @@
 <template>
-  <content-block
-    :shadow="true"
-    :title="title"
-    :back-button="true"
-    @back="back"
-    :version="version"
-    :detail-mode.sync="detailMode"
-  >
+  <content-block :shadow="true" :title="title" :back-button="true" @back="back">
     <div v-if="!withdrawLiquidity">
       <pool-actions-add-v1 v-if="!pool.v2" :pool="pool" />
       <pool-actions-add-v2 v-else :pool="pool" />

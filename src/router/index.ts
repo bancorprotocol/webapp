@@ -20,6 +20,20 @@ import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
 
 Vue.use(Router);
 
+const detectSubdomain = () => {
+  const hostname = window.location.hostname;
+  const splitted = hostname.split(".");
+  const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
+  console.log(withoutStaging, "is without staging");
+  const subDomain = withoutStaging[0];
+  if (subDomain == "localhost") return;
+  if (subDomain == "data") {
+    return "data";
+  } else if (subDomain == "swap") {
+    return "swap";
+  }
+};
+
 export const defaultModule = "eth";
 const PREFERRED_SERVICE = "preferredService";
 
@@ -47,13 +61,14 @@ export const router = new Router({
       name: "Root",
       redirect: () => {
         const preferredService = localStorage.getItem(PREFERRED_SERVICE);
+        const subdomain = detectSubdomain() || "data";
         if (preferredService) {
           const foundService = services.find(
             service => service.namespace == preferredService
           );
-          if (foundService) return `/${foundService.namespace}/swap`;
+          if (foundService) return `/${foundService.namespace}/${subdomain}`;
         }
-        return `/${defaultModule}/swap`;
+        return `/${defaultModule}/${subdomain}`;
       }
     },
     {
@@ -167,6 +182,7 @@ export const router = new Router({
       children: [
         {
           path: "",
+          name: "DataSummary",
           component: DataSummary
         },
         {
