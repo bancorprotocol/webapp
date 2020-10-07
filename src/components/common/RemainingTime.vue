@@ -65,7 +65,7 @@ export default class RemainingTime extends Vue {
     const h = m / 60;
     const d = h / 24;
 
-    return `${Math.round(d)}d ${Math.round(h % 24)}h ${Math.round(
+    return `${Math.floor(d)}d ${Math.floor(h % 24)}h ${Math.floor(
       m % 60
     )}m left`;
   }
