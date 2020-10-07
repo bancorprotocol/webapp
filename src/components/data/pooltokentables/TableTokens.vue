@@ -94,15 +94,17 @@ export default class TableTokens extends Vue {
       label: "Action",
       thStyle: { width: "160px", "min-width": "160px" }
     }
-  ];  
-  
+  ];
+
   get items() {
     return vxm.bancor.tokens;
   }
 
   doFilter(row: any, filter: string) {
-    return row.name && row.name.toLowerCase().indexOf(filter) >= 0 ||
-      row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0;
+    return (
+      (row.name && row.name.toLowerCase().indexOf(filter) >= 0) ||
+      (row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0)
+    );
   }
 }
 </script>
