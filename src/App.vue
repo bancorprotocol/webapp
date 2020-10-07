@@ -148,7 +148,7 @@ export default class App extends Vue {
     { route: "DataSummary", key: "data", label: "Data", newTab: false },
     { route: "Swap", key: "swap", label: "Swap", newTab: false },
     // { route: "swap", key: "governance", label: "Governance" },
-    // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
+    { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
     {
       route: "https://x.bancor.network/",
       key: "bancorx",

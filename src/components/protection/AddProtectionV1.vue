@@ -95,10 +95,12 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { formatUnixTime } from "@/api/helpers";
+import { compareString, compareToken, formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
+import moment from "moment";
+import { format } from "numeral";
 
 @Component({
   components: {
@@ -127,11 +129,16 @@ export default class AddProtectionV1 extends Vue {
   }
 
   get balance() {
-    return "0";
+    const poolBalance = vxm.ethBancor.poolTokenPositions.find(position =>
+      compareString(position.relay.id as string, this.pool.id)
+    );
+    return poolBalance ? poolBalance.smartTokenAmount : "0";
   }
 
   get fullCoverageDate() {
-    return formatUnixTime(Date.now()).date;
+    const maxDelayTime = vxm.ethBancor.liquidityProtectionSettings.maxDelay;
+    const currentTime = moment().unix();
+    return formatUnixTime(currentTime + maxDelayTime).date;
   }
 
   get actionButtonLabel() {
@@ -176,7 +183,18 @@ export default class AddProtectionV1 extends Vue {
       : "Confirm";
   }
 
-  initAction() {
+  async initAction() {
+    try {
+      const txRes = await vxm.ethBancor.protectLiquidity({
+        amount: { amount: this.amount, id: this.pool.id },
+        onUpdate: this.onUpdate
+      });
+      console.log(txRes, "was tx res");
+    } catch (e) {
+      this.error = e.message;
+      this.modal = false;
+    }
+
     this.setDefault();
     this.modal = false;
   }

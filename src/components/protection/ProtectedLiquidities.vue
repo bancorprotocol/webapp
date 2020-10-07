@@ -128,6 +128,7 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
+import { ViewProtectedLiquidity } from "@/types/bancor";
 
 @Component({
   components: {
@@ -172,53 +173,12 @@ export default class ProtectedLiquidities extends Vue {
     return numeral(percentage).format("0%");
   }
 
+  get protectedLiquidity() {
+    return vxm.ethBancor.protectedLiquidity;
+  }
+
   get protectedTxTable() {
-    const items: any[] = [
-      {
-        stake: {
-          amount: 5123.7865,
-          poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
-          usdValue: 1146.86,
-          unixTime: 1599583447
-        },
-        protectedAmount: {
-          amount: 3000,
-          symbol: "ETH",
-          usdValue: 3589.11
-        },
-        roi: 0.8,
-        apr: {
-          day: 0.25,
-          week: 0.29,
-          month: 0.8
-        },
-        whitelisted: false,
-        insuranceStart: 1600445900,
-        fullCoverage: 1601688926
-      },
-      {
-        stake: {
-          amount: 5123.7865,
-          poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
-          usdValue: 1146.86,
-          unixTime: 1599583447
-        },
-        protectedAmount: {
-          amount: 3000,
-          symbol: "ETH",
-          usdValue: 3589.11
-        },
-        roi: 0.8,
-        apr: {
-          day: 0.25,
-          week: 0.29,
-          month: 0.8
-        },
-        whitelisted: true,
-        insuranceStart: 1600445900,
-        fullCoverage: 1601688926
-      }
-    ];
+    const items = this.protectedLiquidity;
     const fields: any[] = [
       {
         key: "stake",

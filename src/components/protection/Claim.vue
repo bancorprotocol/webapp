@@ -26,6 +26,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import moment from "moment";
+import { vxm } from "@/store";
 
 @Component({
   components: { ClaimBnt, SubContentBlock }
@@ -36,52 +37,11 @@ export default class Claim extends Vue {
   now = Date.now() / 1000;
 
   get available() {
-    return this.claim.filter(x => x.lockedUntil < this.now);
+    return vxm.ethBancor.availableBalances;
   }
 
   get locked() {
-    return this.claim.filter(x => x.lockedUntil > this.now);
-  }
-
-  get claim() {
-    return [
-      {
-        id: 0,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601534050
-      },
-      {
-        id: 1,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601482000
-      },
-      {
-        id: 2,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601482000
-      },
-      {
-        id: 3,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601688926
-      },
-      {
-        id: 4,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601481618
-      },
-      {
-        id: 5,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601688926
-      }
-    ];
+    return vxm.ethBancor.lockedBalances;
   }
 
   created() {

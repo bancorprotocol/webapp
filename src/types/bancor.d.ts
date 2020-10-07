@@ -659,3 +659,33 @@ export interface Service {
   namespace: string;
   features: Feature[];
 }
+
+export interface ViewProtectedLiquidity {
+  stake: {
+    amount: string;
+    poolId: string;
+    usdValue: number;
+    unixTime: number;
+  };
+  protectedAmount: {
+    amount: string;
+    symbol: string;
+    usdValue: number;
+  };
+  roi: number;
+  apr: {
+    day: number;
+    week: number;
+    month: number;
+  };
+  whitelisted: boolean;
+  insuranceStart: number;
+  fullCoverage: number;
+}
+
+export interface ViewLockedBalance {
+  id: string;
+  amount: string;
+  usdValue: number;
+  lockedUntil: number;
+}

@@ -167,7 +167,7 @@ export default class Protected extends Vue {
       {
         stake: {
           amount: 5123.7865,
-          poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
+          poolId: "0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3",
           usdValue: 1146.86,
           unixTime: 1599583447
         },
@@ -189,7 +189,7 @@ export default class Protected extends Vue {
       {
         stake: {
           amount: 5123.7865,
-          poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
+          poolId: "0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3",
           usdValue: 1146.86,
           unixTime: 1599583447
         },
@@ -250,7 +250,7 @@ export default class Protected extends Vue {
     return { items, fields };
   }
 
-  doFilter(row: any, filter: string) {    
+  doFilter(row: any, filter: string) {
     return true;
   }
   get darkMode() {

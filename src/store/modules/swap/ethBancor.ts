@@ -35,7 +35,9 @@ import {
   FocusPoolRes,
   ProtectedLiquidity,
   ProtectLiquidityParams,
-  ProtectedViewPosition,
+  ProtectedViewPosition, 
+  ViewProtectedLiquidity,
+  ViewLockedBalance
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -90,7 +92,8 @@ import {
   getConvertibleTokenAnchors,
   conversionPath,
   getTokenSupplyWei,
-  existingPool, protectionById
+  existingPool, 
+  protectionById
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
@@ -1861,7 +1864,35 @@ export class EthBancorModule
   protectedPositionsArr: ProtectedLiquidity[] = []
 
 
+  get protectedLiquidity(): ViewProtectedLiquidity[] {
+    return [
+      {
+        apr: {
+          day: 2,
+          month: 3,
+          week: 2
+        },
+        whitelisted: false,
+         fullCoverage: moment().add('1', 'day').unix(),
+          insuranceStart: moment().subtract('2', 'hours').unix(),
+           protectedAmount: {
+             amount: '2',
+             symbol: 'BNT',
+             usdValue: 3.25
+           },
+           roi: 3,
+           stake: { 
+             amount: '12',
+             poolId: '0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3',
+             unixTime: moment().unix(),
+             usdValue: 3,
+           }
+      }
+    ];
+  }
+
   @mutation setProtectedPositions(positions: ProtectedLiquidity[]) {
+    console.log(positions, 'are the positions getting set!')
     this.protectedPositionsArr = positions;
   }
 
@@ -2873,7 +2904,7 @@ export class EthBancorModule
             contract: reserve.contract,
             smartTokenSymbol: relay.anchor.contract
           })),
-          fee: relay.fee / 100,
+        fee: relay.fee / 100,
           liqDepth,
           owner: relay.owner,
           symbol: tokenReserve.symbol,
@@ -5104,6 +5135,59 @@ export class EthBancorModule
       blockHoursAgo: currentBlock - blocksToRewind,
       currentBlock: currentBlock
     };
+  }
+
+
+  get availableBalances(): ViewLockedBalance[] {
+    return [    {
+      id: '1',
+      amount: '5480.75438',
+      usdValue: 759.69,
+      lockedUntil: 1601482000
+    }]
+  }
+
+  get lockedBalances(): ViewLockedBalance[] {
+    return [
+      {
+        id: '0',
+        amount: '5480.75438',
+        usdValue: 759.69,
+        lockedUntil: moment()
+          .add(1, "day")
+          .unix()
+      },
+      {
+        id: '1',
+        amount: '5480.75438',
+        usdValue: 759.69,
+        lockedUntil: 1601482000
+      },
+      {
+        id: '2',
+        amount: '5480.75438',
+        usdValue: 759.69,
+        lockedUntil: 1601482000
+      },
+      {
+        id: '3',
+        amount: '5480.75438',
+        usdValue: 759.69,
+        lockedUntil: 1601688926
+      },
+      {
+        id: '4',
+        amount: '5480.75438',
+        usdValue: 759.69,
+        lockedUntil: 1601481618
+      },
+      {
+        id: '5',
+        amount: '5480.75438',
+        usdValue: 759.69,
+        lockedUntil: 1601688926
+      }
+    ];
   }
 
   @action async init(params?: ModuleParam) {
