@@ -91,7 +91,7 @@ export default class RemainingTime extends Vue {
     [10, 100, 500, 1000, 2000].map(time =>
       setTimeout(() => this.updateTime(), time)
     );
-    this.interval = setInterval(() => this.updateTime(), 10 * 1000);
+    this.interval = setInterval(() => this.updateTime(), 1000);
   }
 
   destroyed() {
