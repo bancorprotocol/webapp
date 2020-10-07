@@ -4573,11 +4573,8 @@ export class EthBancorModule
     ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
 
-    console.log(rawRelays, 'are all raw relays')
     const badRelays = rawRelays.filter(rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2))
-    console.log(badRelays, 'was the bad relays')
     const badRelay = rawRelays.filter(x => x.connectorTokenCount == '2').find(rawRelay => compareString(rawRelay.connectorToken1, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3') || compareString(rawRelay.connectorToken2, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3'))
-    console.log(badRelay, 'was the bad relay')
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
@@ -4923,7 +4920,6 @@ export class EthBancorModule
     );
 
     const tokens = this.tokens;
-    console.log(tokens, "is tokens");
 
     const blockNow = await this.blockNumberHoursAgo(0);
     const timeNow = moment().unix();
@@ -4981,8 +4977,6 @@ export class EthBancorModule
         )
       );
 
-    console.log(addEvents, "are add events");
-    console.log(removeEvents, "are generated remove events");
 
     const conversionEvents = res.conversions
       .filter((event, index) => {
@@ -5044,7 +5038,6 @@ export class EthBancorModule
       );
     const data = await totalBntVolumeAtBlocks(blocksToRequest);
 
-    console.log(data, "came back in vuex");
 
     const withTimestamp = data.map(
       ([blockNumber, totalVolume, totalLiquidity]) => {
@@ -5075,7 +5068,6 @@ export class EthBancorModule
     fromBlock: number;
   }) {
     const res = await getLogs(network, networkContract, fromBlock);
-    console.log(res, "was res");
 
     const uniqTxHashes = uniqWith(
       res.map(x => x.txHash),
@@ -5330,10 +5322,6 @@ export class EthBancorModule
         notBlackListed(blackListedAnchors)
       );
 
-      console.log({
-        anchorAndConvertersMatched: passedAnchorAndConvertersMatched,
-        bareMinimumAnchorAddresses
-      });
 
       const requiredAnchors = bareMinimumAnchorAddresses.map(anchor =>
         findOrThrow(
@@ -5350,7 +5338,6 @@ export class EthBancorModule
         tokenPrices: bancorApiTokens
       });
 
-      console.log({ priorityAnchors });
 
       const initialLoad = uniqWith(
         [...requiredAnchors],
@@ -5368,7 +5355,6 @@ export class EthBancorModule
       );
 
 
-      console.log("trying...");
       console.timeEnd("timeToGetToInitialBulk");
       console.time("initialPools");
       const initialBulk = [
@@ -5413,11 +5399,25 @@ export class EthBancorModule
           this.addPoolsBulk(droppedAnchors);
         });
       }
+      
+      
+      await this.addPoolsBulk([
+        ...initialLoad,
+        {
+          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
+        }
+      ].filter(notBadRelay));
+      this.setLoadingPools(false);
+      console.timeEnd("initialPools");
+
       this.moduleInitiated();
 
       if (this.relaysList.length < 1) {
         console.error("Init resolved with less than 2 relay feeds or 1 relay.");
       }
+      // @ts-ignore
+      console.log('Eth resolving at', new Date() / 1)
       console.timeEnd("ethResolved");
     } catch (e) {
       console.error(`Threw inside ethBancor ${e.message}`);
@@ -5584,6 +5584,7 @@ export class EthBancorModule
     if (!convertersAndAnchors || convertersAndAnchors.length == 0)
       throw new Error("Received nothing for addPoolsBulk");
 
+      const startTime = new Date()
     this.setLoadingPools(true);
 
     const tokenAddresses: string[][] = [];
@@ -5617,6 +5618,8 @@ export class EthBancorModule
 
     console.timeEnd("addPoolsBulk");
 
+    const endTime = new Date()
+    // console.log('it took', endTime - startTime, 'ms', 'to load', pools.length, 'pools')
     if (convertersAndAnchors.length > 40) {
       this.createReport();
     }

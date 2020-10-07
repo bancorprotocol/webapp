@@ -194,6 +194,8 @@ export default class App extends Vue {
     console.log({ service, feature, query, initParams, paramsSatisfied });
     try {
       await vxm.bancor.init(initParams);
+      // @ts-ignore
+      console.log(new Date() / 1, "stopped loading");
       this.loading = false;
       // @ts-ignore
       this.$gtag.event("initBancor", {
@@ -240,6 +242,7 @@ export default class App extends Vue {
     }
     vxm.general.setLanguage();
     vxm.general.getUserCountry();
+    this.onRouteChange();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;

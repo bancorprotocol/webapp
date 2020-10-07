@@ -80,6 +80,22 @@ export const router = new Router({
       }
     },
     {
+      path: "/swap",
+      redirect: `/${defaultModule}/swap`
+    },
+    {
+      path: "/swap/:service/swap",
+      redirect: `/${defaultModule}/swap`
+    },
+    {
+      path: "/data",
+      redirect: `/${defaultModule}/data`
+    },
+    {
+      path: "/data/:service/swap",
+      redirect: `/${defaultModule}/swap`
+    },
+    {
       path: "/:service/pool",
       name: "Pool",
       components: {
