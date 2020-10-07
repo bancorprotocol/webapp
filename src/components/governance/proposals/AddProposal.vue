@@ -63,7 +63,6 @@
         class="mb-3 combo combo--desc"
         v-model="description"
         placeholder="I would like to propose to ..."
-        rows="8"
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
           'font-size-14'
@@ -237,16 +236,17 @@ export default class AddProposal extends Vue {
     border-bottom-right-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
     border-bottom: 0 !important;
-    font-weight: 500;
+    font-weight: 500 !important;
     height: 48px;
   }
   &#{&}--desc {
     border-top-right-radius: 0 !important;
     border-top-left-radius: 0 !important;
     border-top: 0 !important;
-    height: 120px !important;
-    min-height: 120px !important;
-    max-height: 120px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 999999px !important;
+    padding-bottom: 16px;
   }
 }
 </style>
