@@ -158,7 +158,7 @@ export default class Protected extends Vue {
   }
 
   formatNumber(amount: string) {
-    return formatNumber(amount, 6);
+    return parseFloat(formatNumber(amount, 6));
   }
 
   get protectedTxTable() {
