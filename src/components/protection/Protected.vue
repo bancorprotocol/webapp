@@ -14,6 +14,7 @@
             v-text="`${data.value.amount} ${poolName(data.value.poolId)}`"
           />
           <span
+            v-if="data.value.usdValue !== undefined"
             v-text="`(~$${data.value.usdValue})`"
             class="font-size-12 font-w400 text-primary"
           />
@@ -30,6 +31,7 @@
       <div class="d-flex align-items-start">
         <span v-text="`${data.value.amount} ${data.value.symbol}`" />
         <span
+          v-if="data.value.usdValue !== undefined"
           v-text="`(~$${data.value.usdValue})`"
           class="font-size-12 font-w400 text-primary ml-2"
         />
