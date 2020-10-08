@@ -153,7 +153,7 @@ export default class Protected extends Vue {
     return numeral(percentage).format("0%");
   }
 
-  get protectedLiquidity() {
+  get protectedLiquidity(): ViewProtectedLiquidity[] {
     return vxm.ethBancor.protectedLiquidity;
   }
 
@@ -165,7 +165,8 @@ export default class Protected extends Vue {
     const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
     const fields: any[] = [
       {
-        key: "stake"
+        key: "stake",
+        thStyle: { "min-width": "250px" }
       },
       {
         key: "protectedAmount",
