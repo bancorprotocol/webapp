@@ -13,6 +13,11 @@ export const ethBancorApiDictionary: DictionaryItem[] = [
     tokenAddress: "0x514910771af9ca656af840dff83e8264ecf986ca"
   },
   {
+    smartTokenAddress: "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306",
+    tokenAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    tokenId: "5f594426f70c287d69d1873b"
+  },
+  {
     tokenId: "5b27eb613751b7bb8dad1750",
     smartTokenAddress: "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
     tokenAddress: "0x408e41876cccdc0f92210600ef50372656052a38"

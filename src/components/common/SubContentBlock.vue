@@ -1,0 +1,66 @@
+<template>
+  <div :class="contentClass" class="mb-3">
+    <div class="sub-content-header px-3 py-3">{{ title }}</div>
+    <div class="sub-content-body">
+      <slot />
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue } from "vue-property-decorator";
+import { vxm } from "@/store/";
+
+@Component
+export default class SubContentBlock extends Vue {
+  @Prop() title!: string;
+
+  get contentClass() {
+    return this.darkMode ? "sub-content-dark" : "sub-content";
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode;
+  }
+}
+</script>
+<style lang="scss">
+@import "../../assets/_scss/custom/variables";
+
+.sub-content {
+  border: solid 1px $gray-border;
+  border-radius: $border-radius;
+
+  .sub-content-header {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: $text-muted-light;
+    background-color: $block-bg-blue;
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: $border-radius;
+    border-bottom: solid 1px $gray-border;
+  }
+
+  .sub-content-body {
+    font-size: 14px;
+    font-weight: 500;
+    color: $text-color-light;
+  }
+}
+
+.sub-content-dark {
+  @extend .sub-content;
+  border: solid 1px $gray-border-dark !important;
+
+  .sub-content-header {
+    color: $text-muted-dark !important;
+    background-color: $modal-backdrop-bg !important;
+    border-bottom: solid 1px $gray-border-dark !important;
+  }
+
+  .sub-content-body {
+    color: $text-color-dark !important;
+  }
+}
+</style>

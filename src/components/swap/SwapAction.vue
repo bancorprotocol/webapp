@@ -33,19 +33,35 @@
     />
 
     <div class="my-3">
+      <div class="mb-3">
+        <label-content-split :label="advancedOpen ? 'Slippage Tolerance' : ''">
+          <span
+            @click="advancedOpen = !advancedOpen"
+            class="text-primary font-size-12 font-w500 cursor"
+          >
+            Advanced settings
+            <font-awesome-icon
+              :icon="advancedOpen ? 'caret-up' : 'caret-down'"
+            />
+          </span>
+        </label-content-split>
+        <b-collapse id="advanced-swap" v-model="advancedOpen">
+          <slippage-tolerance />
+        </b-collapse>
+      </div>
+
       <label-content-split
         label="Rate"
         :value="rate"
         :loading="rateLoading"
         class="mb-2"
       />
-
       <label-content-split
         label="Price Impact"
         :value="
           slippage !== null && slippage !== undefined
             ? numeral(this.slippage).format('0.0000%')
-            : '0.00%'
+            : '0.0000%'
         "
       />
       <label-content-split v-if="fee !== null" label="Fee" :value="fee" />
@@ -81,9 +97,11 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral"
 import { formatNumber } from "@/api/helpers"
+import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 
 @Component({
   components: {
+    SlippageTolerance,
     ModalSwapAction,
     LabelContentSplit,
     TokenInputField,
@@ -108,6 +126,7 @@ export default class SwapAction extends Vue {
   numeral = numeral;
 
   modal = false;
+  advancedOpen = false;
 
   get tokens() {
     return vxm.bancor.tokens
@@ -230,6 +249,8 @@ export default class SwapAction extends Vue {
       });
       if (reward.slippage) {
         this.slippage = reward.slippage;
+      } else {
+        this.slippage = 0
       }
       if (reward.fee) {
         this.fee = reward.fee;

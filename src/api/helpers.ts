@@ -32,11 +32,24 @@ import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
+import moment from "moment";
 
 const bancorSubgraphInstance = axios.create({
   baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
   method: "post"
 });
+
+const chainlinkSubgraphInstance = axios.create({
+  baseURL: "https://api.thegraph.com/subgraphs/name/melonproject/chainlink",
+  method: "post"
+});
+
+export const chainlinkSubgraph = async (query: string) => {
+  const res = await chainlinkSubgraphInstance.post("", { query });
+  if (res.data.errors && res.data.errors.length > 0)
+    throw new Error(res.data.errors[0].message);
+  return res.data.data;
+};
 
 export const bancorSubgraph = async (query: string) => {
   const res = await bancorSubgraphInstance.post("", { query });
@@ -1144,4 +1157,14 @@ export const buildPoolName = (
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   const symbols = pool.reserves.map(x => x.symbol);
   return symbols.join(separator);
+};
+
+export const formatUnixTime = (
+  unixTime: number
+): { date: string; time: string; dateTime: string } => {
+  const date = moment(unixTime * 1000).format("DD/MM/YY");
+  const time = moment(unixTime * 1000).format("HH:mm");
+  const dateTime = `${date} ${time}`;
+
+  return { date, time, dateTime };
 };

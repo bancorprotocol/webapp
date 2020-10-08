@@ -20,7 +20,6 @@ describe("Relay Fee Adjuster", () => {
 
     expect(updateFeeEvents).toHaveLength(1);
     expect(updateFeeEvents[0][0]).toBe(0.2);
-
   });
 
   test("component emits new event when incrementing", async () => {
@@ -31,20 +30,21 @@ describe("Relay Fee Adjuster", () => {
     const emitted = wrapper.emitted();
     const updateFeeEvents = emitted["update:fee"];
     expect(updateFeeEvents).toHaveLength(2);
-
   });
 
   test("component will decrement", async () => {
     const $decrement = wrapper.find('[aria-label="Decrement"]');
     const emitted = wrapper.emitted();
 
-    const lastEmitted = emitted["update:fee"][emitted["update:fee"].length - 1][0];
+    const lastEmitted =
+      emitted["update:fee"][emitted["update:fee"].length - 1][0];
 
     await $decrement.trigger("touchstart");
     await $decrement.trigger("touchend");
 
     const newEmits = wrapper.emitted();
-    const newLastEmitted = newEmits["update:fee"][emitted["update:fee"].length - 1][0];
+    const newLastEmitted =
+      newEmits["update:fee"][emitted["update:fee"].length - 1][0];
 
     expect(newLastEmitted).not.toBe(lastEmitted);
     expect(newLastEmitted).toBeCloseTo(lastEmitted - 0.1);

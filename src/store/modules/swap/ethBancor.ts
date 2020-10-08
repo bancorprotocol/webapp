@@ -67,7 +67,8 @@ import {
   DecodedTimedEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
-  bancorSubgraph
+  bancorSubgraph,
+  chainlinkSubgraph
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -126,7 +127,6 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
-import { blockTimestampToDate } from "eosjs/dist/eosjs-serialize";
 
 const get_volumes = async (converter: string) =>
   bancorSubgraph(`
@@ -233,11 +233,11 @@ const getVolumeStats = async (blockNumbers: string[]) => {
     anchor: string;
     id: string;
     volumes: Volume[];
-    balances: Balance[]
+    balances: Balance[];
   }
 
   interface Balance {
-    token: Token
+    token: Token;
     stakedAmount: string;
     balance: string;
     weight: string;
@@ -273,8 +273,6 @@ const getVolumeStats = async (blockNumbers: string[]) => {
         weight
       }
     }
-  
-  
   `
   );
   const finalRequest = ["{", ...requests, "}"].join("");
@@ -289,11 +287,170 @@ const getVolumeStats = async (blockNumbers: string[]) => {
 
 const bntToken = "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c";
 
-const totalBntVolumeAtBlocks = async (blocks: string[])=> {
-  console.count('volumeRequest')
-  const res = await getVolumeStats(blocks);
+const usdPriceOfEth = async (blockNumbers: string[]) => {
+  interface ChainkLinkRes {
+    assetPair: AssetPair;
+    latestHourlyCandle: LatestHourlyCandle;
+  }
 
-  console.log(res, 'was res volume stat')
+  enum AssetPair {
+    EthUsd = "ETH/USD"
+  }
+
+  interface LatestHourlyCandle {
+    medianPrice: string;
+  }
+
+  const labelAndBlocks = blockNumbers.map(
+    number => [`a${number}`, number] as [string, string]
+  );
+
+  const requests = labelAndBlocks.map(
+    ([label, block]) => `
+
+    ${label}:priceFeed(block:{number:${block}} id: "0xf79d6afbb6da890132f9d7c355e3015f15f3406f") {
+      assetPair
+      latestHourlyCandle {
+        medianPrice
+      }
+    }
+
+  `
+  );
+
+  const finalRequest = ["{", ...requests, "}"].join("");
+  const res = await chainlinkSubgraph(finalRequest);
+  const arrRes = toPairs(res).filter(([_, data]) => data) as [
+    string,
+    ChainkLinkRes
+  ][];
+
+  const medianPriceToDec = (medianPrice: string) =>
+    new BigNumber(medianPrice).dividedBy(100000000).toNumber();
+  const data = arrRes.map(
+    ([blockLabel, data]) =>
+      [blockLabel.slice(1), data] as [string, ChainkLinkRes]
+  );
+
+  const prices = data.map(
+    ([blockNumber, data]) =>
+      [blockNumber, medianPriceToDec(data.latestHourlyCandle.medianPrice)] as [
+        string,
+        number
+      ]
+  );
+  return prices as [block: string, priceOfBnt: number][];
+};
+
+const converterBalances = async (skip: number = 0) => {
+  console.log("converterBalances", "skipping", skip);
+
+  interface Data {
+    converterBalances: ConverterBalance[];
+  }
+
+  interface ConverterBalance {
+    balance: string;
+    converter: Converter;
+    id: string;
+    poolToken: PoolToken | null;
+    stakedAmount: string;
+    token: Token;
+    weight: string;
+  }
+
+  interface Converter {
+    activated: boolean;
+    anchor: string;
+    createdAtBlockNumber: string;
+    id: string;
+    type: string;
+  }
+
+  interface PoolToken {
+    id: string;
+    supply: string;
+    symbol: string;
+  }
+
+  interface Token {
+    symbol: string;
+  }
+
+  const res = (await bancorSubgraph(`
+{
+  converterBalances(skip: ${skip}) {
+    id
+    converter {
+      id
+      anchor
+      activated
+      createdAtBlockNumber
+      type
+    }
+    poolToken {
+      id
+      symbol
+      supply
+    }
+    token {
+      symbol
+    }
+    stakedAmount
+    balance
+    weight
+  }
+}
+
+
+`)) as Data;
+
+  return res;
+};
+
+const getPool = async (anchorId: string) => {
+  const res = await bancorSubgraph(`
+    
+    {
+      converters(
+        where: {anchor: "${anchorId}"}, 
+      ) {
+        id
+        anchor
+      }
+    }
+    
+  `);
+
+  return res;
+};
+
+const totalBntVolumeAtBlocks = async (blocks: string[]) => {
+  const [usdPrices, res] = await Promise.all([
+    usdPriceOfEth(blocks),
+    getVolumeStats(blocks)
+  ]);
+
+  console.log(res, "duprew");
+  // For every block
+  // Get the BNT/ETH anchor
+  // Work out the price of BNT in ETH tokens
+  // Times that by the price of ETH to work out the USD price of BNT
+  // Return an array of [block, usdPriceOfBnt]
+
+  const xx = res.map(([blockNumber, converters]) => [
+    blockNumber,
+    converters.filter(converter =>
+      converter.balances.some(balance =>
+        compareString(
+          balance.token.id,
+          "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"
+        )
+      )
+    )
+  ]);
+
+  console.log(xx, "doubt you can");
 
   const totalVolumeAtBlock = res.map(([block, converters]) => {
     const uniqueAnchors = uniqWith(
@@ -306,7 +463,6 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
         .filter(converter => compareString(converter.anchor, anchor))
         .map(obj => omit(obj, "anchor"))
     }));
-
 
     const volumes = groupedByAnchors.map(group =>
       group.converters.flatMap(converter =>
@@ -325,22 +481,20 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
     );
 
     const filteredLiquidity = liquidity
-    .filter(vol => vol && vol.length > 0)
-    .map(vol => vol.filter(Boolean))
-    .filter(vol => vol && vol.length > 0)
-    .map(vol => vol!.map(con => con!.balance))
-    .map(vol =>
-      vol.reduce((acc, item) => new BigNumber(item).plus(acc).toString())
-    );
+      .filter(vol => vol && vol.length > 0)
+      .map(vol => vol.filter(Boolean))
+      .filter(vol => vol && vol.length > 0)
+      .map(vol => vol!.map(con => con!.balance))
+      .map(vol =>
+        vol.reduce((acc, item) => new BigNumber(item).plus(acc).toString())
+      );
 
     const totalLiquidity =
-    filteredLiquidity.length > 0
-      ? filteredLiquidity.reduce((acc, item) =>
-          new BigNumber(item).plus(acc).toString()
-        )
-      : "0";
-
-
+      filteredLiquidity.length > 0
+        ? filteredLiquidity.reduce((acc, item) =>
+            new BigNumber(item).plus(acc).toString()
+          )
+        : "0";
 
     const filteredVolumes = volumes
       .filter(vol => vol && vol.length > 0)
@@ -357,7 +511,7 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
             new BigNumber(item).plus(acc).toString()
           )
         : "0";
-    return [block, totalVolume, totalLiquidity] as VolumeAndLiq
+    return [block, totalVolume, totalLiquidity] as VolumeAndLiq;
   });
 
   const blockSummaries = totalVolumeAtBlock.sort((a, b) =>
@@ -367,55 +521,6 @@ const totalBntVolumeAtBlocks = async (blocks: string[])=> {
 };
 
 const notBadRelay = (converterAndAnchor: ConverterAndAnchor) => !compareString(converterAndAnchor.anchorAddress, '0x368B3D50E51e8bf62E6C73fc389e4102B9aEB8e2')
-
-
-
-
-const main = async () => {
-  const converter = "0x25b970d6b92a2b38fdd84c7dc7d9de3830128c90";
-  const v = await get_volumes(converter);
-  console.log(v, "was v");
-  const formattedTime = moment.unix(v.converter.createdAtTimestamp).format();
-  console.log(formattedTime, "was formatted time");
-  // const xx = await get_exchange_snapshot_volume(converter, "10871720");
-
-  const averageBlockTimeSeconds = 13;
-  const blocksPerMinute = 60 / averageBlockTimeSeconds;
-  const blocksPerDay = blocksPerMinute * 60 * 24;
-  const blocksPerWeek = blocksPerDay * 7;
-
-  const backBlocks = parseInt(String(blocksPerWeek));
-  const rootBlocks = "10872376";
-  const blocksToRequest = [...Array(26)]
-    .map((_, index) => index + 1)
-    .map(backNumber =>
-      new BigNumber(rootBlocks)
-        .minus(new BigNumber(backBlocks).times(backNumber))
-        .toString()
-    );
-  const d = await totalBntVolumeAtBlocks(blocksToRequest);
-
-  console.log("ferrari", d);
-  // console.log(filteredVolumes, "are filtered", totalVolume, "is total volume");
-
-  // console.log(volumes, "are the volumes now");
-  // const backBlocks = "100";
-  // const rootBlocks = "10871720";
-  // const requests = [...Array(50)]
-  //   .map((_, index) => index + 1)
-  //   .map(backNumber =>
-  //     new BigNumber(rootBlocks)
-  //       .minus(new BigNumber(backBlocks).times(backNumber))
-  //       .toNumber()
-  //   );
-  // const labelledRequests = requests.map(
-  //   number => [`a${number}`, String(number)] as [string, string]
-  // );
-  // const y = await get_exchange_snapshots(converter, labelledRequests);
-  // console.log(y, "came back for y", xx, labelledRequests);
-};
-
-// main();
 
 const decodedToTimedDecoded = <T>(
   event: DecodedEvent<T>,
@@ -941,8 +1046,17 @@ const buildReserveFeedsChainlink = (
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
-type TotalVolumeAndLiquidity = [blockNumber: string, totalVolume: string, totalLiquidity: string, unixTime: number];
-type VolumeAndLiq = [blockNumber: string, totalVolume: string, totalLiquidity: string]
+type TotalVolumeAndLiquidity = [
+  blockNumber: string,
+  totalVolume: string,
+  totalLiquidity: string,
+  unixTime: number
+];
+type VolumeAndLiq = [
+  blockNumber: string,
+  totalVolume: string,
+  totalLiquidity: string
+];
 
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
@@ -2440,6 +2554,8 @@ export class EthBancorModule
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
+          whitelisted: false,
+          liquidityProtection: false,
           focusAvailable: false,
           v2: true
         } as ViewRelay;
@@ -2486,6 +2602,8 @@ export class EthBancorModule
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
+          liquidityProtection: false,
+          whitelisted: false,
           focusAvailable: hasHistory,
           v2: false
         } as ViewRelay;
@@ -2959,12 +3077,14 @@ export class EthBancorModule
           poolTokenBalance.poolToken.decimals
         );
 
-        const maxWithdrawWei = (await v2Converter.methods
-          .removeLiquidityReturnAndFee(
-            poolTokenBalance.poolToken.contract,
-            poolTokenBalanceWei
-          )
-          .call())[0];
+        const maxWithdrawWei = (
+          await v2Converter.methods
+            .removeLiquidityReturnAndFee(
+              poolTokenBalance.poolToken.contract,
+              poolTokenBalanceWei
+            )
+            .call()
+        )[0];
 
         return {
           ...poolTokenBalance,
@@ -4098,7 +4218,10 @@ export class EthBancorModule
     ) as ChainLinkRelay[];
 
     const v1RelayShapes = v1Relays.map(relay =>
-      reserveBalanceShape(relay.contract, relay.reserves.map(r => r.contract))
+      reserveBalanceShape(
+        relay.contract,
+        relay.reserves.map(r => r.contract)
+      )
     );
     const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
       v2PoolBalanceShape(
@@ -4128,11 +4251,8 @@ export class EthBancorModule
     ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
 
-    console.log(rawRelays, 'are all raw relays')
     const badRelays = rawRelays.filter(rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2))
-    console.log(badRelays, 'was the bad relays')
     const badRelay = rawRelays.filter(x => x.connectorTokenCount == '2').find(rawRelay => compareString(rawRelay.connectorToken1, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3') || compareString(rawRelay.connectorToken2, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3'))
-    console.log(badRelay, 'was the bad relay')
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
@@ -4475,7 +4595,6 @@ export class EthBancorModule
     );
 
     const tokens = this.tokens;
-    console.log(tokens, "is tokens");
 
     const blockNow = await this.blockNumberHoursAgo(0);
     const timeNow = moment().unix();
@@ -4533,8 +4652,6 @@ export class EthBancorModule
         )
       );
 
-    console.log(addEvents, "are add events");
-    console.log(removeEvents, "are generated remove events");
 
     const conversionEvents = res.conversions
       .filter((event, index) => {
@@ -4596,16 +4713,22 @@ export class EthBancorModule
       );
     const data = await totalBntVolumeAtBlocks(blocksToRequest);
 
-    console.log(data, "came back in vuex");
 
-    const withTimestamp = data.map(([blockNumber, totalVolume, totalLiquidity]) => {
-      const unixTime = estimateBlockTimeUnix(
-        Number(blockNumber),
-        Number(latestBlock),
-        timeNow
-      );
-      return [blockNumber, totalVolume, totalLiquidity, unixTime] as TotalVolumeAndLiquidity;
-    });
+    const withTimestamp = data.map(
+      ([blockNumber, totalVolume, totalLiquidity]) => {
+        const unixTime = estimateBlockTimeUnix(
+          Number(blockNumber),
+          Number(latestBlock),
+          timeNow
+        );
+        return [
+          blockNumber,
+          totalVolume,
+          totalLiquidity,
+          unixTime
+        ] as TotalVolumeAndLiquidity;
+      }
+    );
 
     this.setVolume(withTimestamp);
   }
@@ -4620,9 +4743,11 @@ export class EthBancorModule
     fromBlock: number;
   }) {
     const res = await getLogs(network, networkContract, fromBlock);
-    console.log(res, "was res");
 
-    const uniqTxHashes = uniqWith(res.map(x => x.txHash), compareString);
+    const uniqTxHashes = uniqWith(
+      res.map(x => x.txHash),
+      compareString
+    );
 
     const groups = uniqTxHashes.map(hash =>
       res.filter(x => compareString(x.txHash, hash))
@@ -4825,10 +4950,6 @@ export class EthBancorModule
         notBlackListed(blackListedAnchors)
       );
 
-      console.log({
-        anchorAndConvertersMatched: passedAnchorAndConvertersMatched,
-        bareMinimumAnchorAddresses
-      });
 
       const requiredAnchors = bareMinimumAnchorAddresses.map(anchor =>
         findOrThrow(
@@ -4845,7 +4966,6 @@ export class EthBancorModule
         tokenPrices: bancorApiTokens
       });
 
-      console.log({ priorityAnchors });
 
       const initialLoad = uniqWith(
         [...requiredAnchors],
@@ -4863,20 +4983,9 @@ export class EthBancorModule
       );
 
 
-      console.log("trying...");
       console.timeEnd("timeToGetToInitialBulk");
       console.time("initialPools");
-      const x = await this.addPoolsBulk([
-        ...initialLoad,
-        {
-          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
-        }
-      ].filter(notBadRelay));
-      this.setLoadingPools(false);
-      console.timeEnd("initialPools");
-      console.log("finished add pools...", x);
-
+      
       if (remainingLoad.length > 0) {
         const potentialUnfitConverters = [
           "0xfb64059D18BbfDc5EEdCc6e65C9F09de8ccAf5b6",
@@ -4907,11 +5016,25 @@ export class EthBancorModule
           this.addPoolsBulk(droppedAnchors);
         });
       }
+      
+      
+      await this.addPoolsBulk([
+        ...initialLoad,
+        {
+          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
+        }
+      ].filter(notBadRelay));
+      this.setLoadingPools(false);
+      console.timeEnd("initialPools");
+
       this.moduleInitiated();
 
       if (this.relaysList.length < 1) {
         console.error("Init resolved with less than 2 relay feeds or 1 relay.");
       }
+      // @ts-ignore
+      console.log('Eth resolving at', new Date() / 1)
       console.timeEnd("ethResolved");
     } catch (e) {
       console.error(`Threw inside ethBancor ${e.message}`);
@@ -5078,6 +5201,7 @@ export class EthBancorModule
     if (!convertersAndAnchors || convertersAndAnchors.length == 0)
       throw new Error("Received nothing for addPoolsBulk");
 
+      const startTime = new Date()
     this.setLoadingPools(true);
 
     const tokenAddresses: string[][] = [];
@@ -5093,7 +5217,7 @@ export class EthBancorModule
     const allPools = [...pools];
     const allReserveFeeds = [...reserveFeeds];
 
-    const poolsFailed = differenceWith(convertersAndAnchors, pools, (a, b) =>
+    const poolsFailed = differenceWith(convertersAndAnchors, allPools, (a, b) =>
       compareString(a.anchorAddress, b.id)
     );
     this.updateFailedPools(
@@ -5115,7 +5239,32 @@ export class EthBancorModule
     this.setLoadingPools(false);
 
     console.timeEnd("addPoolsBulk");
+
+    const endTime = new Date()
+    // console.log('it took', endTime - startTime, 'ms', 'to load', pools.length, 'pools')
+    if (convertersAndAnchors.length > 40) {
+      this.createReport();
+    }
     return { pools: allPools, reserveFeeds: allReserveFeeds };
+  }
+
+  @action async createReport() {
+    console.log("create report triggered");
+
+    const allAnchors = this.relaysList.map(relay => relay.id.toLowerCase());
+
+    const poolResults = await Promise.all(
+      allAnchors.map(async anchor => {
+        try {
+          const poolRes = await getPool(anchor);
+          return { anchor, poolRes: poolRes.converters };
+        } catch (e) {
+          return { anchor, poolRes: false };
+        }
+      })
+    );
+
+    console.log(poolResults, "is the finished report");
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {

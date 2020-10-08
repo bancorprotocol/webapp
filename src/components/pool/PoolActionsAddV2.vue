@@ -222,7 +222,7 @@ export default class PoolActionsAddV2 extends Vue {
     return [
       {
         label: this.selectedToken.symbol + " Deposit",
-        value: this.amount
+        value: Number(this.amount)
       },
       {
         label: "Rates",

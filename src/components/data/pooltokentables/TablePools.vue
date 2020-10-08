@@ -3,12 +3,15 @@
     :items="items"
     :fields="fields"
     :filter="filter"
+    :filterFunction="doFilter"
     sort-by="liqDepth"
   >
     <template v-slot:cell(symbol)="data">
-      <router-link :to="{ name: 'DetailsPool', params: { id: data.item.id } }">
+      <pool-logos :pool="data.item" :cursor="false" />
+
+      <!-- <router-link :to="{ name: 'DetailsPool', params: { id: data.item.id } }">
         <pool-logos :pool="data.item" :cursor="false" :version="true" />
-      </router-link>
+      </router-link>-->
     </template>
 
     <template v-slot:cell(actionButtons)="data">
@@ -36,7 +39,8 @@ export default class TablePools extends Vue {
     {
       key: "symbol",
       label: "Name",
-      sortable: true
+      sortable: true,
+      thStyle: { "min-width": "250px" }
     },
     {
       key: "liqDepth",
@@ -62,6 +66,14 @@ export default class TablePools extends Vue {
       thStyle: { width: "310px", "min-width": "310px" }
     }
   ];
+  doFilter(row: any, filter: string) {
+    const symbols = row.reserves.map((reserve: any) => reserve.symbol)
+    let r = false;
+    symbols.forEach((s: string) => {
+      r = r || (s.toLowerCase().indexOf(filter) >= 0);
+    });
+    return r;
+  }
 }
 </script>
 

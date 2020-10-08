@@ -19,7 +19,7 @@ $gray-900: #212529 !default;
 $black: #000 !default;
 
 $primary: $primary !default;
-$secondary: $gray-600 !default;
+$secondary: $text-muted-light !default;
 $success: #46c37b !default;
 $info: #70b9eb !default;
 $warning: #f3b760 !default;
@@ -294,7 +294,7 @@ $alert-border-width: 0 !default;
 // Progress bars
 
 $progress-height: 1.5rem !default;
-$progress-border-radius: 0 !default;
+$progress-border-radius: 0.25 !default;
 $progress-height: 1.25rem !default;
 $progress-font-size: 1rem !default;
 

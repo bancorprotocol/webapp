@@ -11,8 +11,28 @@ import CreateHome from "@/views/CreateHome.vue";
 import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
 import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
+import LiquidityProtectionSummary from "@/views/LiquidityProtectionSummary.vue";
+import AddProtectionHome from "@/views/AddProtectionHome.vue";
+import ProtectionActions from "@/components/protection/ProtectionActions.vue";
+import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
+import TermsOfUse from "@/views/TermsOfUse.vue";
+import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
 
 Vue.use(Router);
+
+const detectSubdomain = () => {
+  const hostname = window.location.hostname;
+  const splitted = hostname.split(".");
+  const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
+  console.log(withoutStaging, "is without staging");
+  const subDomain = withoutStaging[0];
+  if (subDomain == "localhost") return;
+  if (subDomain == "data") {
+    return "data";
+  } else if (subDomain == "swap") {
+    return "swap";
+  }
+};
 
 export const defaultModule = "eth";
 const PREFERRED_SERVICE = "preferredService";
@@ -41,13 +61,14 @@ export const router = new Router({
       name: "Root",
       redirect: () => {
         const preferredService = localStorage.getItem(PREFERRED_SERVICE);
+        const subdomain = detectSubdomain() || "data";
         if (preferredService) {
           const foundService = services.find(
             service => service.namespace == preferredService
           );
-          if (foundService) return `/${foundService.namespace}/swap`;
+          if (foundService) return `/${foundService.namespace}/${subdomain}`;
         }
-        return `/${defaultModule}/swap`;
+        return `/${defaultModule}/${subdomain}`;
       }
     },
     {
@@ -59,11 +80,40 @@ export const router = new Router({
       }
     },
     {
+      path: "/swap",
+      redirect: `/${defaultModule}/swap`
+    },
+    {
+      path: "/swap/:service/swap",
+      redirect: `/${defaultModule}/swap`
+    },
+    {
+      path: "/data",
+      redirect: `/${defaultModule}/data`
+    },
+    {
+      path: "/data/:service/swap",
+      redirect: `/${defaultModule}/swap`
+    },
+    {
       path: "/:service/pool",
       name: "Pool",
       components: {
         Nav: Navigation,
         Hero: PoolHome
+      },
+      props: true,
+      meta: {
+        feature: "Liquidity"
+      }
+    },
+    {
+      path: "/:service/pool/:id",
+      redirect: "/404",
+      name: "PoolAdd",
+      components: {
+        Nav: Navigation,
+        Hero: PoolActionsAddHome
       },
       props: true,
       meta: {
@@ -82,6 +132,43 @@ export const router = new Router({
         feature: "Liquidity"
       }
     },
+    {
+      path: "/:service/liquidity-protection",
+      redirect: "/404",
+      name: "LiqProtection",
+      components: {
+        Nav: Navigation,
+        default: LiquidityProtectionSummary
+      }
+    },
+    {
+      path: "/:service/liquidity-protection/add",
+      redirect: "/404",
+      name: "AddProtection",
+      components: {
+        Nav: Navigation,
+        Hero: AddProtectionHome
+      }
+    },
+    {
+      path: "/:service/liquidity-protection/:action/:id",
+      redirect: "/404",
+      name: "ProtectionAction",
+      components: {
+        Nav: Navigation,
+        Hero: ProtectionActions
+      },
+      props: true
+    },
+    // {
+    //   path: "/:service/liquidity-protection/add/:id",
+    //   name: "AddLiqProtection",
+    //   components: {
+    //     Nav: Navigation,
+    //     Hero: AddLiqProtection
+    //   },
+    //   props: true
+    // },
     {
       path: "/:service/pool/create/",
       name: "PoolCreate",
@@ -115,16 +202,19 @@ export const router = new Router({
       children: [
         {
           path: "",
+          name: "DataSummary",
           component: DataSummary
         },
         {
           path: "token/:id",
           name: "DetailsToken",
+          redirect: "/404",
           component: DataDetailsToken
         },
         {
           path: "pool/:id",
           name: "DetailsPool",
+          redirect: "/404",
           component: DataDetailsPool
         }
       ]
@@ -137,6 +227,22 @@ export const router = new Router({
           service => service.namespace == to.params.service
         );
         return foundService ? `/${foundService.namespace}/swap` : "/404";
+      }
+    },
+    {
+      path: "/privacy-policy",
+      name: "PrivacyPolicy",
+      components: {
+        Nav: Navigation,
+        default: PrivacyPolicy
+      }
+    },
+    {
+      path: "/terms-of-use",
+      name: "TermsOfUse",
+      components: {
+        Nav: Navigation,
+        default: TermsOfUse
       }
     },
     {
