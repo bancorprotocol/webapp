@@ -56,25 +56,18 @@ export default class AddProtectionHome extends Vue {
   stakeOptions = [
     {
       id: 0,
-      title: "Single Liquidity",
+      title: "Protect Single Token",
       desc:
-        "Add liquidity with one reserve, be exposed to t only and protect it from impermanent loss.",
-      buttonTxt: "I want to stake & protect token",
+        "Add liquidity with one reserve, be exposed to it only and protect it from impermanent loss.",
+      buttonTxt: "Stake & protect token",
       buttonActive: true
     },
     {
       id: 1,
-      title: "Pool token for Protection",
+      title: "Protect Pool Token",
       desc:
-        "Stake pool tokens of any 50/50 pool to protect them from impermanent loss.",
-      buttonTxt: "I want to stake pool token",
-      buttonActive: false
-    },
-    {
-      id: 2,
-      title: "Pool token to claim gBNT",
-      desc: "Stake any pool token with BNT to receive gBNT tokens.",
-      buttonTxt: "I want to stake pool token",
+        "Stake pool tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
+      buttonTxt: "Stake pool token",
       buttonActive: false
     }
   ];
