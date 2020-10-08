@@ -1886,14 +1886,17 @@ export class EthBancorModule
       if (idCount == 0) return;
       const ids = await contract.methods.protectedLiquidityIds(owner).call();
       const allPositions = await Promise.all(ids.map(id => protectionById(liquidityStore, id)));
+      console.log(allPositions, 'are all positions')
       if (allPositions.length !== idCount) throw new Error("ID count does not match returned positions");
       
       const firstId = ids[0]
-      const targetTime = moment().add('2', 'weeks').unix()
+      const targetTime = moment().add('2', 'months').unix()
       console.log(firstId, 'are the ids', targetTime)
-      const lpContract = buildLiquidityProtectionContract('0x7eDB7d3A04e90D93c445477b708e51Ac02b18F43');
-      const x = await lpContract.methods.removeLiquidityReturn(firstId, '1000000', String(targetTime)).call()
-      console.log(x, 'was remove liquidity return')
+      // const lpContract = buildLiquidityProtectionContract('0x7eDB7d3A04e90D93c445477b708e51Ac02b18F43');
+      // console.log('params', [firstId, '1000000', String(targetTime)])
+      // const poolRois = await Promise.all(allPositions.map(position => lpContract.methods.poolROI(position.poolToken, position.reserveToken, position.reserveAmount, position.).call()))
+      // const x = await lpContract.methods.removeLiquidityReturn(firstId, '1000000', String(targetTime)).call()
+      // console.log(x, 'was remove liquidity return')
       this.setProtectedPositions(allPositions);
       return allPositions;
     } catch(e) {
