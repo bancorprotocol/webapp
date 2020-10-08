@@ -136,7 +136,8 @@ import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 })
 export default class PoolActionsRemoveV1 extends Vue {
   @Prop() pool!: ViewRelay;
-  @Prop() detailMode!: boolean;
+
+  detailMode = true;
 
   rateLoading = false;
 

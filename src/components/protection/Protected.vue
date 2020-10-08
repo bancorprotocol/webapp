@@ -250,7 +250,7 @@ export default class Protected extends Vue {
     return { items, fields };
   }
 
-  doFilter(row: any, filter: string) {    
+  doFilter(row: any, filter: string) {
     return true;
   }
   get darkMode() {

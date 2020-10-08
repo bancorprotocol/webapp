@@ -105,22 +105,8 @@
       <b-dropdown-text>
         <div class="d-flex justify-content-between cursor">
           <font-awesome-icon
-            @click="openUrl('https://www.facebook.com/bancor/')"
-            :icon="['fab', 'facebook']"
-            class="mr-2 menu-icon"
-            fixed-width
-          />
-          <font-awesome-icon
             @click="openUrl('https://twitter.com/Bancor')"
             :icon="['fab', 'twitter']"
-            class="mr-2 menu-icon"
-            fixed-width
-          />
-          <font-awesome-icon
-            @click="
-              openUrl('https://www.linkedin.com/company/bancor-foundation/')
-            "
-            :icon="['fab', 'linkedin']"
             class="mr-2 menu-icon"
             fixed-width
           />

@@ -120,7 +120,6 @@
           </b-row>
         </b-container>
         <router-view />
-        
       </main>
     </div>
     <div>
