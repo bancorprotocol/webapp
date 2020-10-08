@@ -3,7 +3,9 @@
     <label-content-split
       label="Stake"
       :value="
-        `${position.protectedAmount.amount} ${position.protectedAmount.symbol}`
+        `${formatNumber(position.protectedAmount.amount)} ${
+          position.protectedAmount.symbol
+        }`
       "
     />
     <!-- <label-content-split value="????" class="mb-2" /> -->
@@ -48,22 +50,44 @@
       :large="true"
       :disabled="disableActionButton"
     />
+
+    <modal-base title="You will receive" v-model="modal" @input="setDefault">
+      <action-modal-status :error="error" :success="success" />
+
+      <main-button
+        @click="onModalClick"
+        class="mt-3"
+        :label="modalConfirmButton"
+        :active="true"
+        :large="true"
+        :disabled="txBusy"
+      />
+    </modal-base>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay } from "@/types/bancor";
+import { TxResponse, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { compareString, compareToken, findOrThrow } from "@/api/helpers";
+import {
+  compareString,
+  compareToken,
+  findOrThrow,
+  formatNumber
+} from "@/api/helpers";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 
 @Component({
   components: {
+    ActionModalStatus,
+    ModalBase,
     AlertBlock,
     PercentageSlider,
     LabelContentSplit,
@@ -77,6 +101,9 @@ export default class WithdrawProtectionV1 extends Vue {
   percentage: string = "50";
 
   modal = false;
+  txBusy = false;
+  success: TxResponse | string | null = null;
+  error = "";
 
   get poolWhitelisted() {
     return false;
@@ -102,7 +129,9 @@ export default class WithdrawProtectionV1 extends Vue {
   }
 
   async initAction() {
+    this.setDefault();
     this.modal = true;
+    this.txBusy = true;
     const [poolId, first, second] = this.$route.params.id.split(":");
     console.log({ poolId, first, second });
     try {
@@ -111,9 +140,41 @@ export default class WithdrawProtectionV1 extends Vue {
         id2: second
       });
       console.log(txRes, "was tx res");
-    } catch (e) {
-      console.log("derp", e.message);
+      this.success = txRes;
+    } catch (err) {
+      this.error = err.message;
+    } finally {
+      this.txBusy = false;
     }
+  }
+
+  onModalClick() {
+    if (this.success) {
+      this.setDefault();
+      this.modal = false;
+    } else if (this.error) {
+      this.initAction();
+    }
+  }
+
+  formatNumber(amount: string) {
+    return parseFloat(formatNumber(amount, 6));
+  }
+
+  setDefault() {
+    this.error = "";
+    this.success = null;
+    this.txBusy = false;
+  }
+
+  get modalConfirmButton() {
+    return this.error
+      ? "Try Again"
+      : this.success
+      ? "Close"
+      : this.txBusy
+      ? "processing ..."
+      : "Confirm";
   }
 
   get darkMode() {
