@@ -23,6 +23,19 @@
         </sub-content-block>
       </b-col>
     </b-row>
+
+    <modal-base title="Claim BNT" v-model="modal" @input="setDefault">
+      <action-modal-status :error="error" :success="success" />
+
+      <main-button
+        @click="onModalClick"
+        class="mt-3"
+        :label="modalConfirmButton"
+        :active="true"
+        :large="true"
+        :disabled="txBusy"
+      />
+    </modal-base>
   </div>
 </template>
 
@@ -32,12 +45,27 @@ import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import moment from "moment";
 import { vxm } from "@/store";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import MainButton from "@/components/common/Button.vue";
+import { TxResponse } from "@/types/bancor";
 
 @Component({
-  components: { ClaimBnt, SubContentBlock }
+  components: {
+    ActionModalStatus,
+    ModalBase,
+    ClaimBnt,
+    SubContentBlock,
+    MainButton
+  }
 })
 export default class Claim extends Vue {
   @Prop({ default: "" }) search!: string;
+
+  modal = false;
+  txBusy = false;
+  success: TxResponse | string | null = null;
+  error = "";
 
   now = Date.now() / 1000;
 
@@ -50,7 +78,42 @@ export default class Claim extends Vue {
   }
 
   async onClick() {
-    await vxm.ethBancor.claimBnt();
+    this.setDefault();
+    this.modal = true;
+    this.txBusy = true;
+    try {
+      const result = await vxm.ethBancor.claimBnt();
+      this.success = result;
+    } catch (err) {
+      this.error = err.message;
+    } finally {
+      this.txBusy = false;
+    }
+  }
+
+  onModalClick() {
+    if (this.success) {
+      this.setDefault();
+      this.modal = false;
+    } else if (this.error) {
+      this.onClick();
+    }
+  }
+
+  get modalConfirmButton() {
+    return this.error
+      ? "Try Again"
+      : this.success
+      ? "Close"
+      : this.txBusy
+      ? "processing ..."
+      : "Confirm";
+  }
+
+  setDefault() {
+    this.error = "";
+    this.success = null;
+    this.txBusy = false;
   }
 
   created() {
