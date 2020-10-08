@@ -12,9 +12,7 @@ import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
 
 export const governanceContractAddress =
-  "0xdEC39088ee1A837090a7647Be0039b2E8B3a8349";
-// export const governanceContractAddress =
-//  "0x161f28A417361961E946Ae03EF0A425008b7F01B";
+  "0x161f28A417361961E946Ae03EF0A425008b7F01B";
 export const etherscanUrl = "https://ropsten.etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001";
