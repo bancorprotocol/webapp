@@ -169,11 +169,11 @@ export default class Protected extends Vue {
         thStyle: { "min-width": "60px" },
         formatter: (value: number) => this.stringifyPercentage(value)
       },
-      {
-        key: "apr",
-        sortable: false,
-        thStyle: { "min-width": "100px" }
-      },
+      // {
+      //   key: "apr",
+      //   sortable: false,
+      //   thStyle: { "min-width": "100px" }
+      // },
       {
         key: "insuranceStart",
         sortable: true,
