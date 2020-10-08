@@ -30,7 +30,7 @@
       <b-col cols="12">
         <content-block :px0="true" :shadow-light="true" :no-header="true">
           <div class="pt-2">
-            <div class="float-right mr-2">
+            <div v-if="tabIndex === 0" class="float-right mr-2">
               <multi-input-field
                 v-model="searchProtected"
                 placeholder="Search"
