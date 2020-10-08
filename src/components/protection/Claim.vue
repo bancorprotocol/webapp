@@ -3,7 +3,12 @@
     <b-row>
       <b-col md="6">
         <sub-content-block title="Available to claim">
-          <claim-bnt v-for="item in available" :key="item.id" :item="item" />
+          <claim-bnt
+            v-for="item in available"
+            :key="item.id"
+            :item="item"
+            @click="onClick"
+          />
           <div v-if="!available.length" class="no-claim-results">
             No BNT to claim.
           </div>
@@ -42,6 +47,10 @@ export default class Claim extends Vue {
 
   get locked() {
     return vxm.ethBancor.lockedBalances;
+  }
+
+  async onClick() {
+    await vxm.ethBancor.claimBnt();
   }
 
   created() {

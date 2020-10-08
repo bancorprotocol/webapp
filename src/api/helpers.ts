@@ -53,6 +53,7 @@ const chainlinkSubgraphInstance = axios.create({
 });
 
 export interface LockedBalance {
+  index: number;
   amountWei: string;
   expirationTime: number;
 }
@@ -63,28 +64,33 @@ export const traverseLockedBalances = async (
   expectedCount: number
 ): Promise<LockedBalance[]> => {
   const storeContract = buildLiquidityProtectionStoreContract(contract);
-  let lockedBalances: any = [];
+  let lockedBalances: {
+    index: number;
+    "0": string;
+    "1": string;
+  }[] = [];
 
   const scopeRange = 5;
   for (var i = 0; i < 10; i++) {
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
-    let lockedBalanceRes = await storeContract.methods.lockedBalanceRange(
-      owner,
-      String(startIndex),
-      String(endIndex)
-    );
-    lockedBalances = lockedBalances.concat(lockedBalanceRes);
+    let lockedBalanceRes = await storeContract.methods
+      .lockedBalanceRange(owner, String(startIndex), String(endIndex))
+      .call();
+    const withIndex = lockedBalanceRes.map((res, index) => ({
+      ...res,
+      index: index + startIndex
+    }));
+    lockedBalances = lockedBalances.concat(withIndex);
     if (lockedBalances.length >= expectedCount) break;
   }
   console.log(lockedBalances, "should be inspected");
-  return [
-    {
-      amountWei: web3.utils.toWei("1"),
-      expirationTime: moment().unix()
-    }
-  ];
-  // return lockedBalances.map() as any[];
+
+  return lockedBalances.map(balance => ({
+    amountWei: balance[0],
+    expirationTime: Number(balance[1]),
+    index: balance.index
+  }));
 };
 
 export const chainlinkSubgraph = async (query: string) => {

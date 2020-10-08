@@ -1,7 +1,12 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Stake" value="????" />
-    <label-content-split value="????" class="mb-2" />
+    <label-content-split
+      label="Stake"
+      :value="
+        `${position.protectedAmount.amount} ${position.protectedAmount.symbol}`
+      "
+    />
+    <!-- <label-content-split value="????" class="mb-2" /> -->
 
     <label-content-split
       v-if="poolWhitelisted"
@@ -23,11 +28,12 @@
       v-model="percentage"
       :show-buttons="true"
     />
-    <div class="d-flex justify-content-center">
+
+    <div class="d-flex justify-content-center mb-3">
       <font-awesome-icon icon="arrow-down" class="mt-3" />
     </div>
 
-    <gray-border-block :gray-bg="true" class="my-3">
+    <gray-border-block :gray-bg="true" class="my-3" v-if="false">
       <label-content-split label="Output value of" value="????" />
       <label-content-split value="????" class="mb-2" />
 
@@ -54,6 +60,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import { compareString, compareToken, findOrThrow } from "@/api/helpers";
 
 @Component({
   components: {
@@ -85,12 +92,21 @@ export default class WithdrawProtectionV1 extends Vue {
     else return "";
   }
 
+  get position() {
+    const [poolId, first, second] = this.$route.params.id.split(":");
+
+    const pos = findOrThrow(vxm.ethBancor.protectedLiquidity, position =>
+      compareString(poolId, position.stake.poolId)
+    );
+    return pos;
+  }
+
   async initAction() {
     this.modal = true;
     const [poolId, first, second] = this.$route.params.id.split(":");
     console.log({ poolId, first, second });
     try {
-      const txRes = await vxm.ethBancor.unProtectLiquidityTx({
+      const txRes = await vxm.ethBancor.unprotectLiquidity({
         id1: first,
         id2: second
       });

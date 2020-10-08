@@ -108,7 +108,7 @@ import {
   partition,
   first,
   omit,
-  toPairs, fromPairs
+  toPairs, fromPairs, chunk, last
 } from "lodash";
 import {
   buildNetworkContract,
@@ -1305,6 +1305,7 @@ interface EthNetworkVariables {
   contractRegistry: string;
   bntToken: string;
   ethToken: string;
+  gBntToken: string;
   multiCall: string;
   liquidityProtectionToken: string;
   converterContractForMaths: string;
@@ -1319,6 +1320,7 @@ const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
         contractRegistry: "0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4",
         bntToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
         ethToken,
+        gBntToken: ethToken,
         liquidityProtectionToken: ethToken,
         multiCall: "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2",
         converterContractForMaths: "0xe870d00176b2c71afd4c43cea550228e22be4abd"
@@ -1328,6 +1330,7 @@ const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
         contractRegistry: "0xA6DB4B0963C37Bc959CbC0a874B5bDDf2250f26F",
         bntToken: "0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5",
         ethToken,
+        gBntToken: '0x83ec8129b1f54ba5b0f47bd902a79c803e20a249',
         liquidityProtectionToken: ethToken,
         multiCall: "0xf3ad7e31b052ff96566eedd218a823430e74b406",
         converterContractForMaths: "0x9a36b31ca768a860dab246cf080e7f042d1b7c0f"
@@ -1850,40 +1853,22 @@ export class EthBancorModule
     });
   }
 
-  @action async unprotectLiquidity({ id1, id2 }: { id1: string, id2: string }) {
-    return this.unProtectLiquidityTx({ id1, id2 });
+  @action async unprotectLiquidity({ id1, id2 }: { id1: string, id2: string }): Promise<TxResponse> {
+    const res = await this.unProtectLiquidityTx({ id1, id2 });
+
+    (async () => {
+      await wait(700);
+      this.fetchLockedBalances()
+      this.fetchProtectionPositions()
+    })();
+
+    return {
+      blockExplorerLink: await this.createExplorerLink(res),
+      txId: res
+    }
   }
 
   protectedPositionsArr: ProtectedLiquidity[] = []
-
-
-  // get protectedLiquidity(): ViewProtectedLiquidity[] {
-
-  //   return [
-  //     {
-  //       apr: {
-  //         day: 2,
-  //         month: 3,
-  //         week: 2
-  //       },
-  //       whitelisted: false,
-  //       fullCoverage: moment().add('1', 'day').unix(),
-  //         insuranceStart: moment().subtract('2', 'hours').unix(),
-  //          protectedAmount: {
-  //            amount: '2',
-  //            symbol: 'BNT',
-  //            usdValue: 3.25
-  //          },
-  //          roi: 3,
-  //          stake: { 
-  //            amount: '12',
-  //            poolId: '0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3',
-  //            unixTime: moment().unix(),
-  //            usdValue: 3,
-  //          }
-  //     }
-  //   ];
-  // }
 
   @mutation setProtectedPositions(positions: ProtectedLiquidity[]) {
     console.log(positions, 'are the positions getting set!')
@@ -1903,12 +1888,12 @@ export class EthBancorModule
       const allPositions = await Promise.all(ids.map(id => protectionById(liquidityStore, id)));
       if (allPositions.length !== idCount) throw new Error("ID count does not match returned positions");
       
-      // const firstId = ids[0]
-      // const targetTime = moment().add(2, 'months').unix()
-      // console.log(firstId, 'are the ids', targetTime)
-      // const lpContract = buildLiquidityProtectionContract('0x7eDB7d3A04e90D93c445477b708e51Ac02b18F43');
-      // const x = await lpContract.methods.removeLiquidityReturn(firstId, '1000000', String(targetTime)).call()
-      // console.log(x, 'was remove liquidity return')
+      const firstId = ids[0]
+      const targetTime = moment().add('2', 'weeks').unix()
+      console.log(firstId, 'are the ids', targetTime)
+      const lpContract = buildLiquidityProtectionContract('0x7eDB7d3A04e90D93c445477b708e51Ac02b18F43');
+      const x = await lpContract.methods.removeLiquidityReturn(firstId, '1000000', String(targetTime)).call()
+      console.log(x, 'was remove liquidity return')
       this.setProtectedPositions(allPositions);
       return allPositions;
     } catch(e) {
@@ -1931,7 +1916,12 @@ export class EthBancorModule
         {
           description: "Approving transfer...",
           task: async () => {
-            await this.approveTokenWithdrawals([{ amount: poolTokenWei, approvedAddress: liquidityProtectionContractAddress, tokenAddress: poolToken.contract }])
+            await this.triggerApprovalIfRequired({ 
+              amount: poolTokenWei, 
+              owner: this.isAuthenticated, 
+              spender: liquidityProtectionContractAddress, 
+              tokenAddress: poolToken.contract
+            })
           }
         },
         {
@@ -1982,14 +1972,21 @@ export class EthBancorModule
 
   lockedBalancesArr: LockedBalance[] = [
     { 
-      amountWei: web3.utils.toWei('2.5'), 
+      index: 0,
+      amountWei: web3.utils.toWei('2.875'), 
       expirationTime: moment().add('16', 'hours').unix() 
     },
     { 
+      index: 1,
+      amountWei: web3.utils.toWei('3.21'), 
+      expirationTime: moment().add('18', 'hours').add('23', 'minutes').unix() 
+    },
+    { 
+      index: 2,
       amountWei: web3.utils.toWei('0.4'), 
       expirationTime: moment().subtract('1', 'day').unix() 
     }
-  ];
+  ]
 
   get lockedEth() {
     return this.lockedBalancesArr;
@@ -2684,6 +2681,25 @@ export class EthBancorModule
         });
       })
     );
+  }
+
+  @action async claimBnt(): Promise<TxResponse> {
+    const contract = buildLiquidityProtectionContract(this.contracts.LiquidityProtection);
+    
+    const now = moment();
+    const availableClaims = this.lockedBalancesArr.filter(balance => moment.unix(balance.expirationTime).isBefore(now)).sort((a,b) => a.index - b.index)
+
+    const chunked = chunk(availableClaims, 5)
+    const txRes = await Promise.all(chunked.map(arr => {
+      const first = arr[0].index
+      const last = arr[arr.length - 1].index
+      return this.resolveTxOnConfirmation({ tx: contract.methods.claimBalance(String(first), String(last)) })
+    }))
+    const hash = last(txRes) as string;
+    return {
+      blockExplorerLink: await this.createExplorerLink(hash),
+      txId: hash
+    }
   }
 
   @action async claimOwnership(converterAddress: string) {
