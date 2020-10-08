@@ -17,12 +17,18 @@
       >
         <b-tab title="Open Proposals" active>
           <open-proposals
-            :proposals="proposals.filter(p => p.open)"
+            :proposals="
+              proposalsLoaded ? proposals.filter(p => p.open) : undefined
+            "
             :update="updateProposals.bind(this)"
           />
         </b-tab>
         <b-tab title="History">
-          <done-proposals :proposals="proposals.filter(p => !p.open)" />
+          <done-proposals
+            :proposals="
+              proposalsLoaded ? proposals.filter(p => !p.open) : undefined
+            "
+          />
         </b-tab>
       </b-tabs>
     </div>
@@ -53,6 +59,7 @@ import AddProposal from "@/components/governance/proposals/AddProposal.vue";
 })
 export default class Proposals extends Vue {
   proposals: Proposal[] = [];
+  proposalsLoaded: boolean = false;
   showNewProposal = false;
 
   get isEth() {
@@ -73,6 +80,7 @@ export default class Proposals extends Vue {
     this.proposals = await vxm.ethGovernance.getProposals({
       voter: this.isAuthenticated
     });
+    this.proposalsLoaded = true;
   }
 
   async mounted() {

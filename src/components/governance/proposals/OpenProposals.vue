@@ -1,6 +1,33 @@
 <template>
+  <div v-if="!proposals">
+    <div class="d-flex justify-content-center align-items-center my-5">
+      <b-spinner
+        style="display: block; width: 2rem; height: 2rem;"
+        class="align-self-center align-middle"
+        :class="darkMode ? 'text-primary' : 'text-primary'"
+        label="Loading..."
+      ></b-spinner>
+      <h5
+        class="m-0 ml-3"
+        :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+      >
+        Just a moment ...
+      </h5>
+    </div>
+  </div>
+  <div
+    v-else-if="proposals && proposals.length === 0"
+    class="d-flex justify-content-center align-items-center my-5"
+  >
+    <h5
+      class="m-0 ml-3"
+      :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+    >
+      No Proposals yet ...
+    </h5>
+  </div>
   <data-table
-    v-if="proposals.length > 0"
+    v-else-if="proposals"
     :items="proposals"
     :fields="fields"
     default-sort="to"
@@ -230,23 +257,6 @@
       </td>
     </tr>
   </data-table>
-
-  <div v-else>
-    <div class="d-flex justify-content-center align-items-center my-5">
-      <b-spinner
-        style="display: block; width: 2rem; height: 2rem;"
-        class="align-self-center align-middle"
-        :class="darkMode ? 'text-primary' : 'text-primary'"
-        label="Loading..."
-      ></b-spinner>
-      <h5
-        class="m-0 ml-3"
-        :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
-      >
-        Just a moment ...
-      </h5>
-    </div>
-  </div>
 </template>
 
 <script lang="ts">
