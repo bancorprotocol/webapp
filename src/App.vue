@@ -120,6 +120,7 @@
           </b-row>
         </b-container>
         <router-view />
+        
       </main>
     </div>
     <div>
@@ -304,7 +305,11 @@ h2 {
   overflow-y: auto;
   overflow-x: auto;
   padding: 12px;
+  @media screen and (max-width: 768px) {
+    margin-bottom: 56px;
+  }
 }
+
 .side-bar {
   overflow: hidden;
   display: flex;
@@ -312,10 +317,10 @@ h2 {
   min-width: 230px;
   background-color: #e6ebf2;
   z-index: 10;
-  @media (max-width: 450px) {
+  @media screen and (max-width: 768px) {
     position: fixed;
     overflow: hidden;
-    top: calc(100vh - 56px);
+    bottom: 0px;
     left: 0;
     width: 100%;
     height: 56px;
@@ -323,7 +328,7 @@ h2 {
     border-top: 1px solid #e6ebf2;
   }
   .brand-icon {
-    @media (max-width: 450px) {
+    @media screen and (max-width: 768px) {
       display: none;
     }
     margin-top: 18px;
@@ -334,7 +339,7 @@ h2 {
   }
   .side-bar-links {
     margin-top: 28px;
-    @media (max-width: 450px) {
+    @media screen and (max-width: 768px) {
       width: 100%;
       height: 56px;
       align-items: center;
@@ -350,7 +355,7 @@ h2 {
     cursor: pointer;
     height: 40px;
     position: relative;
-    @media (max-width: 450px) {
+    @media screen and (max-width: 768px) {
       padding-left: 0px;
       display: flex;
       flex-direction: column;
@@ -367,7 +372,7 @@ h2 {
       line-height: normal;
       letter-spacing: normal;
       color: #6b7c93;
-      @media (max-width: 450px) {
+      @media screen and (max-width: 768px) {
         align-self: center;
         font-size: 10px;
       }
@@ -377,7 +382,7 @@ h2 {
       width: 14px;
       height: 14px;
       margin-right: 12px;
-      @media (max-width: 450px) {
+      @media screen and (max-width: 768px) {
         width: 32px;
         height: 32px;
         margin-right: 0px;
@@ -399,7 +404,7 @@ h2 {
     letter-spacing: normal;
     color: #97a5b8;
     margin-left: 25px;
-    @media (max-width: 450px) {
+    @media screen and (max-width: 768px) {
       display: none;
     }
   }
@@ -412,7 +417,7 @@ h2 {
         brightness(0.7);
       color: #0f59d1;
     }
-    @media (min-width: 450px) {
+    @media screen and (min-width: 769px) {
       background-color: #f8f9fd;
       border-left: 2px solid #0f59d1;
       &::before {
@@ -456,7 +461,7 @@ h2 {
     filter: invert(0.2) saturate(5) brightness(1);
     color: #0f59d1;
   }
-  @media (min-width: 450px) {
+  @media screen and (min-width: 769px) {
     background-color: #1c344e;
     border-left: 2px solid #0f59d1;
     &::before {
