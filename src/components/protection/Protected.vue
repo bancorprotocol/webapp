@@ -34,7 +34,7 @@
           class="font-size-12 font-w400 text-primary ml-2"
         />
       </div>
-      <b-badge v-if="data.item.whitelisted" variant="danger" class="px-2 pt-1">
+      <b-badge v-if="!data.item.whitelisted" variant="danger" class="px-2 pt-1">
         Pool is not whitelisted
       </b-badge>
     </template>
@@ -67,32 +67,15 @@
 
     <template v-slot:cell(currentCoverage)="data">
       <div class="d-flex flex-column font-size-12 font-w600">
-        <span
-          v-text="
-            calculateFullCoverage(
-              data.item.insuranceStart,
-              data.item.fullCoverage
-            ).percentage
-          "
-        />
+        <span v-text="stringifyPercentage(data.item.coverageDecPercent)" />
         <b-progress
-          :value="
-            calculateFullCoverage(
-              data.item.insuranceStart,
-              data.item.fullCoverage
-            ).percentage
-          "
+          :value="data.item.coverageDecPercent * 100"
           :max="100"
           height="7px"
           class="my-1"
         />
         <span class="text-primary">
-          {{
-            calculateFullCoverage(
-              data.item.insuranceStart,
-              data.item.fullCoverage
-            ).timeLeft
-          }}
+          {{ formatEndTime(data.item.fullCoverage) }}
         </span>
       </div>
     </template>
@@ -134,18 +117,16 @@ export default class Protected extends Vue {
     return buildPoolName(id);
   }
 
-  calculateFullCoverage(start: number, fullCoverage: number) {
-    const now = Date.now() / 1000;
-    const deltaStartToCoverage = fullCoverage - start;
-    const deltaStartToNow = now - start;
-    const percentage = this.stringifyPercentage(
-      deltaStartToNow / deltaStartToCoverage
-    );
-    const timeLeft = moment(fullCoverage * 1000).fromNow(true);
-
-    if (parseInt(percentage) < 100)
-      return { percentage, timeLeft: timeLeft + " left till full coverage" };
-    else return { percentage: "100%", timeLeft: "Full coverage achieved" };
+  formatEndTime(fullCoverageSeconds: number) {
+    const timeNow = moment();
+    const fullCoverage = moment.unix(fullCoverageSeconds);
+    const reachedFullCoverage = timeNow.isAfter(fullCoverage);
+    if (reachedFullCoverage) {
+      return "Full coverage achieved";
+    } else {
+      const timeLeft = moment.unix(fullCoverageSeconds).fromNow(true);
+      return `${timeLeft} left till full coverage`;
+    }
   }
 
   goToWithdraw(id: string) {
@@ -185,6 +166,11 @@ export default class Protected extends Vue {
         sortable: true,
         thStyle: { "min-width": "60px" },
         formatter: (value: number) => this.stringifyPercentage(value)
+      },
+      {
+        key: "apr",
+        sortable: false,
+        thStyle: { "min-width": "100px" }
       },
       {
         key: "insuranceStart",

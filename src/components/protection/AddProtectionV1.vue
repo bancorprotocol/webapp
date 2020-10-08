@@ -12,13 +12,13 @@
     />
 
     <alert-block
-      v-if="whitelistWarning.show"
+      v-if="!isWhitelisted"
       variant="warning"
       :msg="whitelistWarning.msg"
-      class="mt-3"
+      class="mt-3 mb-3"
     />
 
-    <gray-border-block :gray-bg="true" class="my-3">
+    <gray-border-block v-else :gray-bg="true" class="my-3">
       <label-content-split label="Value you receive" value="????" />
       <label-content-split value="????" class="mb-2" />
 
@@ -128,7 +128,12 @@ export default class AddProtectionV1 extends Vue {
     return vxm.bancor.relays.filter(x => !x.v2);
   }
 
+  get isWhitelisted() {
+    return this.pool.whitelisted;
+  }
+
   get balance() {
+    console.log(vxm.ethBancor.poolTokenPositions, "are pool token positions");
     const poolBalance = vxm.ethBancor.poolTokenPositions.find(position =>
       compareString(position.relay.id as string, this.pool.id)
     );
@@ -159,7 +164,7 @@ export default class AddProtectionV1 extends Vue {
     if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
 
     const amountNumber = new BigNumber(this.amount);
-    const balanceNumber = new BigNumber(this.balance);
+    const balanceNumber = new BigNumber(this.balance || 0);
 
     if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
     else return "";

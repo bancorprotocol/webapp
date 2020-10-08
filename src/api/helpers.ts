@@ -228,6 +228,24 @@ export interface StringPool {
 export const formatPercent = (decNumber: number) =>
   numeral(decNumber).format("0.00%");
 
+export const calculateProtectionLevel = (
+  startTimeSeconds: number,
+  minimumDelaySeconds: number,
+  maximumDelaySeconds: number
+): number => {
+  const nowSeconds = moment().unix();
+
+  const timeElaspedSeconds = nowSeconds - startTimeSeconds;
+
+  if (timeElaspedSeconds < minimumDelaySeconds) return 0;
+  if (timeElaspedSeconds >= maximumDelaySeconds) return 1;
+
+  const timeProgressedPastMinimum = timeElaspedSeconds - minimumDelaySeconds;
+  const waitingPeriod = maximumDelaySeconds - minimumDelaySeconds;
+
+  return new BigNumber(timeProgressedPastMinimum).div(waitingPeriod).toNumber();
+};
+
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))

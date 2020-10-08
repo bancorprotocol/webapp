@@ -681,6 +681,7 @@ export interface ViewProtectedLiquidity {
   };
   whitelisted: boolean;
   insuranceStart: number;
+  coverageDecPercent: number;
   fullCoverage: number;
 }
 
