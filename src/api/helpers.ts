@@ -52,11 +52,16 @@ const chainlinkSubgraphInstance = axios.create({
   method: "post"
 });
 
+export interface LockedBalance {
+  amountWei: string;
+  expirationTime: number;
+}
+
 export const traverseLockedBalances = async (
   contract: string,
   owner: string,
   expectedCount: number
-) => {
+): Promise<LockedBalance[]> => {
   const storeContract = buildLiquidityProtectionStoreContract(contract);
   let lockedBalances: any = [];
 

@@ -76,7 +76,7 @@ import {
   chainlinkSubgraph, 
   traverseLockedBalances,
   PositionType,
-  calculateProtectionLevel
+  calculateProtectionLevel, LockedBalance
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -1898,9 +1898,17 @@ export class EthBancorModule
       const contract = buildLiquidityProtectionStoreContract(liquidityStore);
       const owner = this.isAuthenticated
       const idCount = Number(await contract.methods.protectedLiquidityCount(owner).call())
+      if (idCount == 0) return;
       const ids = await contract.methods.protectedLiquidityIds(owner).call();
       const allPositions = await Promise.all(ids.map(id => protectionById(liquidityStore, id)));
       if (allPositions.length !== idCount) throw new Error("ID count does not match returned positions");
+      
+      // const firstId = ids[0]
+      // const targetTime = moment().add(2, 'months').unix()
+      // console.log(firstId, 'are the ids', targetTime)
+      // const lpContract = buildLiquidityProtectionContract('0x7eDB7d3A04e90D93c445477b708e51Ac02b18F43');
+      // const x = await lpContract.methods.removeLiquidityReturn(firstId, '1000000', String(targetTime)).call()
+      // console.log(x, 'was remove liquidity return')
       this.setProtectedPositions(allPositions);
       return allPositions;
     } catch(e) {
@@ -1972,30 +1980,35 @@ export class EthBancorModule
   }
 
 
-  lockedBalancesArr: any = [{ amountWei: web3.utils.toWei('1'), expirationTime: moment().add('1', 'week').unix() }, { amountWei: web3.utils.toWei('1'), expirationTime: moment().subtract('1', 'day').unix() }]
+  lockedBalancesArr: LockedBalance[] = [
+    { 
+      amountWei: web3.utils.toWei('2.5'), 
+      expirationTime: moment().add('16', 'hours').unix() 
+    },
+    { 
+      amountWei: web3.utils.toWei('0.4'), 
+      expirationTime: moment().subtract('1', 'day').unix() 
+    }
+  ];
 
   get lockedEth() {
-    return this.lockedBalancesArr
+    return this.lockedBalancesArr;
   }
 
-  @mutation setLockedBalances(lockedBalances: any[]) {
-    this.lockedBalancesArr = lockedBalances
+  @mutation setLockedBalances(lockedBalances: LockedBalance[]) {
+    this.lockedBalancesArr = lockedBalances;
   }
 
   @action async fetchLockedBalances(storeAddress?: string) {
-    if (!this.isAuthenticated) return;
-
-    const contractAddress = storeAddress || this.contracts.LiquidityProtectionStore 
-
     const owner = this.isAuthenticated;
     if (!owner) return;
+
+    const contractAddress = storeAddress || this.contracts.LiquidityProtectionStore;
     const storeContract = buildLiquidityProtectionStoreContract(contractAddress);
     const lockedBalanceCount = Number(await storeContract.methods.lockedBalanceCount(owner).call());
-    console.log(lockedBalanceCount, 'is the locked balance count');
     if (lockedBalanceCount == 0) return;
 
-    const lockedBalances = await traverseLockedBalances(this.contracts.LiquidityProtectionStore, owner, lockedBalanceCount)
-    console.log(lockedBalances, 'are locked balances!')
+    const lockedBalances = await traverseLockedBalances(contractAddress, owner, lockedBalanceCount)
     this.setLockedBalances(lockedBalances);
     return lockedBalances;
   }
@@ -2066,8 +2079,8 @@ export class EthBancorModule
           },
           apr: {
             day: 0,
-          month: 0,
-           week: 0,
+            month: 0,
+            week: 0,
           },
           insuranceStart: startTime + minDelay,
           fullCoverage: startTime + maxDelay,
@@ -5156,55 +5169,35 @@ export class EthBancorModule
 
 
   get availableBalances(): ViewLockedBalance[] {
-    return [    {
-      id: '1',
-      amount: '5480.75438',
-      usdValue: 759.69,
-      lockedUntil: 1601482000
-    }]
+    const now = moment();
+    const bntPrice = this.bntUsdPrice;
+    const balances = this.lockedBalancesArr.filter(lockedBalance => moment.unix(lockedBalance.expirationTime).isSameOrBefore(now));
+    return balances.map((balance): ViewLockedBalance => {
+      const decBnt = shrinkToken(balance.amountWei, 18);
+      const usdValue = new BigNumber(decBnt).times(bntPrice).toNumber();
+      return {
+        id: String(balance.expirationTime),
+        amount: decBnt,
+        lockedUntil: balance.expirationTime,
+        usdValue: usdValue
+      }
+    });
   }
 
   get lockedBalances(): ViewLockedBalance[] {
-    return [
-      {
-        id: '0',
-        amount: '5480.75438',
-        usdValue: 759.69,
-        lockedUntil: moment()
-          .add(1, "day")
-          .unix()
-      },
-      {
-        id: '1',
-        amount: '5480.75438',
-        usdValue: 759.69,
-        lockedUntil: 1601482000
-      },
-      {
-        id: '2',
-        amount: '5480.75438',
-        usdValue: 759.69,
-        lockedUntil: 1601482000
-      },
-      {
-        id: '3',
-        amount: '5480.75438',
-        usdValue: 759.69,
-        lockedUntil: 1601688926
-      },
-      {
-        id: '4',
-        amount: '5480.75438',
-        usdValue: 759.69,
-        lockedUntil: 1601481618
-      },
-      {
-        id: '5',
-        amount: '5480.75438',
-        usdValue: 759.69,
-        lockedUntil: 1601688926
+    const now = moment();
+    const bntPrice = this.bntUsdPrice;
+    const balances = this.lockedBalancesArr.filter(lockedBalance => moment.unix(lockedBalance.expirationTime).isAfter(now));
+    return balances.map((balance): ViewLockedBalance => {
+      const decBnt = shrinkToken(balance.amountWei, 18);
+      const usdValue = new BigNumber(decBnt).times(bntPrice).toNumber();
+      return {
+        id: String(balance.expirationTime),
+        amount: decBnt,
+        lockedUntil: balance.expirationTime,
+        usdValue: usdValue
       }
-    ];
+    });
   }
 
   @action async init(params?: ModuleParam) {
