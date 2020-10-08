@@ -35,6 +35,12 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
     "ZWE"
   ];
 
+  phase2: boolean = false;
+
+  @mutation setPhase(phaseStatus: boolean) {
+    this.phase2 = phaseStatus;
+  }
+
   get isCountryBanned() {
     return this.bannedCountries.some(
       (code: string) => this.countryCode === code
