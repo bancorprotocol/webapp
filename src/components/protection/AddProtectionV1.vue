@@ -56,10 +56,10 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            ????/????
+            {{ `${formatNumber(amount)} ${poolName}` }}
           </span>
         </b-col>
-        <b-col cols="12">
+        <b-col v-if="false" cols="12">
           <gray-border-block>
             <label-content-split label="???" value="????" />
             <label-content-split label="???" value="????" />
@@ -95,15 +95,25 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { compareString, compareToken, formatUnixTime } from "@/api/helpers";
+import {
+  compareString,
+  compareToken,
+  formatUnixTime,
+  formatNumber,
+  buildPoolName
+} from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import moment from "moment";
 import { format } from "numeral";
+import PoolLogos from "@/components/common/PoolLogos.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 
 @Component({
   components: {
+    ActionModalStatus,
+    PoolLogos,
     ModalBase,
     AlertBlock,
     LabelContentSplit,
@@ -126,6 +136,10 @@ export default class AddProtectionV1 extends Vue {
 
   get pools() {
     return vxm.bancor.relays.filter(x => !x.v2);
+  }
+
+  get poolName() {
+    return buildPoolName(this.pool.id);
   }
 
   get isWhitelisted() {
@@ -189,24 +203,33 @@ export default class AddProtectionV1 extends Vue {
   }
 
   async initAction() {
+    if (this.success) {
+      this.setDefault();
+      this.modal = false;
+      return;
+    } else if (this.error) {
+      this.setDefault();
+      return;
+    }
+
+    this.txBusy = true;
     try {
       const txRes = await vxm.ethBancor.protectLiquidity({
         amount: { amount: this.amount, id: this.pool.id },
         onUpdate: this.onUpdate
       });
       console.log(txRes, "was tx res");
+      this.success = txRes;
     } catch (e) {
       this.error = e.message;
-      this.modal = false;
+    } finally {
+      this.txBusy = false;
     }
-
-    this.setDefault();
-    this.modal = false;
   }
 
   async openModal() {
     if (this.isAuthenticated) this.modal = true;
-    //@ts-ignore
+    // @ts-ignore
     else await this.promptAuth();
   }
 
@@ -214,6 +237,10 @@ export default class AddProtectionV1 extends Vue {
     this.sections = [];
     this.error = "";
     this.success = null;
+  }
+
+  formatNumber(amount: string) {
+    return parseFloat(formatNumber(amount, 6));
   }
 
   get currentStatus() {
