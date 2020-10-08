@@ -5172,7 +5172,7 @@ export class EthBancorModule
     const now = moment();
     const bntPrice = this.bntUsdPrice;
     const balances = this.lockedBalancesArr.filter(lockedBalance => moment.unix(lockedBalance.expirationTime).isSameOrBefore(now));
-    return balances.map((balance): ViewLockedBalance => {
+    return [balances.map((balance): ViewLockedBalance => {
       const decBnt = shrinkToken(balance.amountWei, 18);
       const usdValue = new BigNumber(decBnt).times(bntPrice).toNumber();
       return {
@@ -5181,7 +5181,7 @@ export class EthBancorModule
         lockedUntil: balance.expirationTime,
         usdValue: usdValue
       }
-    });
+    }).reduce((acc, item) => ({ ...item, amount: new BigNumber(acc.amount).plus(item.amount).toString() }))]
   }
 
   get lockedBalances(): ViewLockedBalance[] {
