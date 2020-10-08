@@ -11,7 +11,11 @@
         <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
         <div class="d-flex flex-column ml-2">
           <span
-            v-text="`${data.value.amount} ${poolName(data.value.poolId)}`"
+            v-text="
+              `${formatNumber(data.value.amount)} ${poolName(
+                data.value.poolId
+              )}`
+            "
           />
           <span
             v-if="data.value.usdValue !== undefined"
@@ -29,7 +33,9 @@
 
     <template v-slot:cell(protectedAmount)="data">
       <div class="d-flex align-items-start">
-        <span v-text="`${data.value.amount} ${data.value.symbol}`" />
+        <span
+          v-text="`${formatNumber(data.value.amount)} ${data.value.symbol}`"
+        />
         <span
           v-if="data.value.usdValue !== undefined"
           v-text="`(~$${data.value.usdValue})`"
@@ -100,7 +106,7 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
-import { buildPoolName, formatUnixTime } from "@/api/helpers";
+import { buildPoolName, formatUnixTime, formatNumber } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
@@ -149,6 +155,10 @@ export default class Protected extends Vue {
 
   get protectedLiquidity() {
     return vxm.ethBancor.protectedLiquidity;
+  }
+
+  formatNumber(amount: string) {
+    return formatNumber(amount, 6);
   }
 
   get protectedTxTable() {
