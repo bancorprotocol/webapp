@@ -1,5 +1,5 @@
 <template>
-  <div>    
+  <div>
     <b-navbar class="navBar">
       <div class="d-flex justify-content-between container-xl">
         <div />
