@@ -10,6 +10,7 @@
       <div class="d-flex align-items-start">
         <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
         <div class="d-flex flex-column ml-2">
+          <span>{{ poolName(data.value.poolId) }}</span>
           <span
             v-text="
               `${formatNumber(data.value.amount)} ${data.item.stake.symbol}`
@@ -30,7 +31,7 @@
     </template>
 
     <template v-slot:cell(protectedAmount)="data">
-      <div class="d-flex align-items-start">
+      <div v-if="data.item.whitelisted" class="d-flex align-items-start">
         <span
           v-text="`${formatNumber(data.value.amount)} ${data.value.symbol}`"
         />
@@ -40,9 +41,14 @@
           class="font-size-12 font-w400 text-primary ml-2"
         />
       </div>
-      <b-badge v-if="!data.item.whitelisted" variant="danger" class="px-2 pt-1">
+      <b-badge v-else variant="danger" class="px-2 pt-1">
         Pool is not whitelisted
       </b-badge>
+    </template>
+
+    <template v-slot:cell(roi)="data">
+      <span v-if="data.item.whitelisted">{{ data.value }}</span>
+      <span v-else>N/A</span>
     </template>
 
     <template v-slot:cell(apr)="data">
@@ -95,6 +101,10 @@
         Withdraw
       </b-btn>
     </template>
+
+    <template v-slot:empty>
+      <protected-empty />
+    </template>
   </table-wrapper>
 </template>
 
@@ -108,9 +118,11 @@ import { buildPoolName, formatUnixTime, formatNumber } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
+import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 
 @Component({
   components: {
+    ProtectedEmpty,
     PoolLogosOverlapped,
     TableWrapper,
     ContentBlock
