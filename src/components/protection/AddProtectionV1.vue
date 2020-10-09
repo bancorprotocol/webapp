@@ -206,6 +206,7 @@ export default class AddProtectionV1 extends Vue {
     if (this.success) {
       this.setDefault();
       this.modal = false;
+      this.$router.push({ name: "LiqProtection" });
       return;
     } else if (this.error) {
       this.setDefault();
