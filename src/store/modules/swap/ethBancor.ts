@@ -1661,6 +1661,11 @@ const getTokenMeta = async (currentNetwork: EthNetworks) => {
   if (currentNetwork == EthNetworks.Ropsten) {
     return [
       {
+        symbol: "BNT",
+        contract: networkVars.bntToken,
+        decimals: 18
+      },
+      {
         symbol: "DAI",
         contract: "0xc2118d4d90b274016cb7a54c03ef52e6c537d957",
         decimals: 18
@@ -2051,23 +2056,7 @@ export class EthBancorModule
   }
 
 
-  lockedBalancesArr: LockedBalance[] = [
-    { 
-      index: 0,
-      amountWei: web3.utils.toWei('2.875'), 
-      expirationTime: moment().add('16', 'hours').unix() 
-    },
-    { 
-      index: 1,
-      amountWei: web3.utils.toWei('3.21'), 
-      expirationTime: moment().add('18', 'hours').add('23', 'minutes').unix() 
-    },
-    { 
-      index: 2,
-      amountWei: web3.utils.toWei('0.4'), 
-      expirationTime: moment().subtract('1', 'day').unix() 
-    }
-  ]
+  lockedBalancesArr: LockedBalance[] = [];
 
   get lockedEth() {
     return this.lockedBalancesArr;
@@ -2366,7 +2355,7 @@ export class EthBancorModule
     const addedMeta = toOffer
       .map(offer => ({
         ...offer,
-        meta: this.tokenMeta.find(meta => meta.symbol == offer.symbolName)!
+        meta: this.tokenMeta.find(meta => compareString(meta.symbol, offer.symbolName))!
       }))
       .filter(offer => offer.meta);
 
