@@ -33,7 +33,7 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
-import { pick } from "lodash";
+import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
 
@@ -63,34 +63,36 @@ export const traverseLockedBalances = async (
   owner: string,
   expectedCount: number
 ): Promise<LockedBalance[]> => {
+  console.log('traverseHit')
   const storeContract = buildLiquidityProtectionStoreContract(contract);
-  let lockedBalances: {
-    index: number;
-    "0": string;
-    "1": string;
-  }[] = [];
+  let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
   for (var i = 0; i < 10; i++) {
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
+
+    console.log(startIndex, endIndex, 'is start and end index')
     let lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
-    const withIndex = lockedBalanceRes.map((res, index) => ({
-      ...res,
+      console.log('traverseHit 33')
+
+    const bntWeis = lockedBalanceRes["0"];
+    const expirys = lockedBalanceRes["1"];
+
+    const zipped = zip(bntWeis, expirys) as [bntWei: string, timestamp: string][]
+    const withIndex = zipped.map(([bntWei, expiry], index) => ({
+      amountWei: bntWei,
+      expirationTime: Number(expiry),
       index: index + startIndex
-    }));
+    }) as LockedBalance);
     lockedBalances = lockedBalances.concat(withIndex);
     if (lockedBalances.length >= expectedCount) break;
   }
-  console.log(lockedBalances, "should be inspected");
 
-  return lockedBalances.map(balance => ({
-    amountWei: balance[0],
-    expirationTime: Number(balance[1]),
-    index: balance.index
-  }));
+  console.log(lockedBalances, "should be inspected");
+  return lockedBalances;
 };
 
 export const chainlinkSubgraph = async (query: string) => {

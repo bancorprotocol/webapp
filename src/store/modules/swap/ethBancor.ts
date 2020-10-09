@@ -35,7 +35,7 @@ import {
   FocusPoolRes,
   ProtectedLiquidity,
   ProtectLiquidityParams,
-  ProtectedViewPosition, 
+  OnUpdate, 
   ViewProtectedLiquidity,
   ViewLockedBalance
 } from "@/types/bancor";
@@ -1907,11 +1907,74 @@ export class EthBancorModule
     }
   }
 
+  @action async addProtection({ poolId, reserveAmount, onUpdate }: { poolId: string, reserveAmount: ViewAmount, onUpdate: OnUpdate }): Promise<TxResponse> {
+
+    const pool = this.relay(poolId);
+
+    if (!pool.whitelisted) {
+      throw new Error("Pool must be whitelisted to protect liquidity");
+    };
+
+    const liqudityProtectionContractAddress = this.contracts.LiquidityProtection
+    const contract = buildLiquidityProtectionContract(liqudityProtectionContractAddress);
+
+    const reserveTokenAddress = reserveAmount.id
+    const token = this.token(reserveTokenAddress)
+    const reserveAmountWei = expandToken(reserveAmount.amount, token.precision);
+
+    const depositIsEth = compareString(reserveAmount.id, ethReserveAddress)
+
+    const txHash = await multiSteps({ 
+      items: [
+        {
+          description: "Triggering approval..",
+          task: async() => {
+            if (!depositIsEth) {
+              await this.triggerApprovalIfRequired({ 
+                owner: this.isAuthenticated, 
+                spender: liqudityProtectionContractAddress, 
+                amount: reserveAmountWei, 
+                tokenAddress: reserveTokenAddress
+              })
+            }
+          }
+        },
+        {
+          description: "Adding liquidity..",
+          task: async() => {
+            return this.resolveTxOnConfirmation({ 
+              tx: contract.methods.addLiquidity(poolId, reserveTokenAddress, reserveAmountWei ), 
+              ...(depositIsEth && { value: reserveAmountWei }) 
+            })
+          }
+        }
+    ], 
+    onUpdate 
+  }) as string;
+
+
+  return {
+    blockExplorerLink: await this.createExplorerLink(txHash),
+    txId: txHash
+  }
+
+
+  }
+
   @action async removeProtection({ decPercent, id } : { decPercent: number, id: string }): Promise<TxResponse> {
 
     const dbId = id.split(':')[1]
     const contract = buildLiquidityProtectionContract(this.contracts.LiquidityProtection);
-    const txHash = await this.resolveTxOnConfirmation({ tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent)) })
+    const txHash = await this.resolveTxOnConfirmation({ tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent)) });
+
+    (async () => {
+      await wait(600);
+      this.fetchLockedBalances()
+      this.fetchProtectionPositions()
+      await wait(2000);
+      this.fetchLockedBalances()
+      this.fetchProtectionPositions()
+    })();
 
     return {
       blockExplorerLink: await this.createExplorerLink(txHash),
@@ -2021,7 +2084,10 @@ export class EthBancorModule
     const contractAddress = storeAddress || this.contracts.LiquidityProtectionStore;
     const storeContract = buildLiquidityProtectionStoreContract(contractAddress);
     const lockedBalanceCount = Number(await storeContract.methods.lockedBalanceCount(owner).call());
-    if (lockedBalanceCount == 0) return;
+    if (lockedBalanceCount == 0) {
+      console.log('Skipped locked balanace fetch as theres no count');
+      return; 
+    }
 
     const lockedBalances = await traverseLockedBalances(contractAddress, owner, lockedBalanceCount)
     this.setLockedBalances(lockedBalances);
@@ -2049,17 +2115,16 @@ export class EthBancorModule
 
       const startTime = Number(singleEntry.timestamp);
       const relay = findOrThrow(this.relaysList, relay => compareString(relay.id, singleEntry.poolToken))
-      const smartToken = (relay.anchor as SmartToken)
-      const smartTokensWei = singleEntry.reserveAmount
-      const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
 
+      const reserveToken = this.token(singleEntry.reserveToken);
+      const reserveTokenDec = shrinkToken(singleEntry.reserveAmount, reserveToken.precision)
 
       return {
         id: `${singleEntry.poolToken}:${singleEntry.id}`,
         whitelisted: isWhiteListed,
         stake: {
-          amount: smartTokensDec,
-          symbol: smartToken.symbol,
+          amount: reserveTokenDec,
+          symbol: reserveToken.symbol,
           poolId: relay.id,
           unixTime: startTime,
         },
@@ -2070,7 +2135,10 @@ export class EthBancorModule
         },
         insuranceStart: startTime + minDelay,
         fullCoverage: startTime + maxDelay,
-        protectedAmount: { amount: smartTokensDec, symbol: smartToken.symbol},
+        protectedAmount: { 
+          amount: reserveTokenDec,
+          symbol: reserveToken.symbol,
+        },
         coverageDecPercent: calculateProtectionLevel(startTime, minDelay, maxDelay),
         roi: 0
       } as ViewProtectedLiquidity
@@ -2152,6 +2220,7 @@ export class EthBancorModule
       })
     
 
+      console.log({ reviewedDoubles, reviewedSingles })
     return [...reviewedDoubles, ...reviewedSingles];
   }
 
@@ -2757,9 +2826,19 @@ export class EthBancorModule
     const txRes = await Promise.all(chunked.map(arr => {
       const first = arr[0].index
       const last = arr[arr.length - 1].index
-      return this.resolveTxOnConfirmation({ tx: contract.methods.claimBalance(String(first), String(last)) })
+      return this.resolveTxOnConfirmation({ tx: contract.methods.claimBalance(String(first), String(50)) })
     }))
     const hash = last(txRes) as string;
+
+    const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
+    this.spamBalances([bntAddress]);
+
+    (async () => {
+      await wait(1000);
+      this.fetchLockedBalances()
+    })();
+    this.fetchLockedBalances()
+
     return {
       blockExplorerLink: await this.createExplorerLink(hash),
       txId: hash

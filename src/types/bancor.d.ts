@@ -110,7 +110,7 @@ export interface ViewAmountWithMeta extends ViewAmount {
   decimals: number;
 }
 
-type OnUpdate = (index: number, sections: Section[]) => void;
+export type OnUpdate = (index: number, sections: Section[]) => void;
 
 export interface LiquidityParams {
   id: string;

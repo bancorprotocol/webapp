@@ -228,7 +228,7 @@ export const buildLiquidityProtectionStoreContract = (
     owner: string,
     startIndex: string,
     endIndex: string
-  ): CallReturn<{ "0": string; "1": string }[]>;
+  ): CallReturn<{ "0": string[]; "1": string[] }>;
   systemBalance(tokenAddress: string): CallReturn<string>;
   totalProtectedPoolAmount(poolTokenAddress: string): CallReturn<string>;
   totalProtectedReserveAmount(
