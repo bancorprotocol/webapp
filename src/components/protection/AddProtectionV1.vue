@@ -220,6 +220,7 @@ export default class AddProtectionV1 extends Vue {
       });
       console.log(txRes, "was tx res");
       this.success = txRes;
+      this.amount = "";
     } catch (e) {
       this.error = e.message;
     } finally {

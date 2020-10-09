@@ -52,7 +52,7 @@
     >
       This interface is in beta. Use it at your own risk.
       <b-form-checkbox v-model="status">
-        Enable Phase 2
+        Dev option: Phase 2
       </b-form-checkbox>
     </div>
     <div name="MainLayout" class="main-layout">

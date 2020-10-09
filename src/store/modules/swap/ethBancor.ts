@@ -1798,6 +1798,7 @@ export class EthBancorModule
 
     const newSettings = { minDelay: Number(settings.minProtectionDelay), maxDelay: Number(settings.maxProtectionDelay), lockedDelay: Number(settings.lockDuration)} as LiquidityProtectionSettings
     this.setLiquidityProtectionSettings(newSettings)
+    console.log(newSettings, 'are the new settings');
     return newSettings;
   }
 
@@ -1826,10 +1827,12 @@ export class EthBancorModule
     this.whiteListedPools = anchors;
   }
 
-  @action async fetchWhiteListedV1Pools() {
-    const liquidityProtection = buildLiquidityProtectionStoreContract(this.contracts.LiquidityProtectionStore);
+  @action async fetchWhiteListedV1Pools(liquidityProtectionStoreAddress?: string) {
+    const contractAddress = liquidityProtectionStoreAddress  || this.contracts.LiquidityProtectionStore
+    const liquidityProtection = buildLiquidityProtectionStoreContract(contractAddress);
     const whiteListedPools = await liquidityProtection.methods.whitelistedPools().call();
     this.setWhiteListedPools(whiteListedPools);
+    console.log(whiteListedPools, 'are white listed pools')
     return whiteListedPools;
   }
 
@@ -2015,36 +2018,52 @@ export class EthBancorModule
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
 
-    const minProtectionDelay = this.liquidityProtectionSettings.minDelay;
-    const maxProtectionDelay = this.liquidityProtectionSettings.maxDelay;
+    const { minDelay, maxDelay } = this.liquidityProtectionSettings;
 
     const allPositions = this.protectedPositionsArr.filter(position => compareString(position.owner, this.isAuthenticated))
 
     const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) => compareString(a.poolToken, b.poolToken) && a.timestamp == b.timestamp && compareString(a.owner, b.owner);
     const seperatedEntries = uniqWith(allPositions, samePointOfEntry);
 
-    const binded = seperatedEntries.map(entry => allPositions.filter(position => samePointOfEntry(position, entry)));
-    const allFoundAtLeastOne = binded.every(entries => entries.length > 0 && entries.length < 3);
-    if (!allFoundAtLeastOne) throw new Error("Failed finding at least one entry");
+    const joined = seperatedEntries.map(entry => allPositions.filter(position => samePointOfEntry(position, entry)));
+    const allFoundAtLeastOne = joined.every(entries => entries.length > 0 && entries.length < 3);
+    if (!allFoundAtLeastOne) throw new Error("Failed finding at least one entry or found above 2");
 
-    const [singlesArr, doublesArr] = partition(binded, entries => entries.length == 1);
+    const [singlesArr, doublesArr] = partition(joined, entries => entries.length == 1);
 
-    const reviewedSingles = singlesArr.map(x => x[0]).map((singleEntry): ProtectedViewPosition => {
+    const reviewedSingles = singlesArr.map(x => x[0]).map((singleEntry): ViewProtectedLiquidity => {
       const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor => compareString(singleEntry.poolToken, whitelistedAnchor));
 
-      const startTime = Number(singleEntry.timestamp)
+      const startTime = Number(singleEntry.timestamp);
+      const relay = findOrThrow(this.relaysList, relay => compareString(relay.id, singleEntry.poolToken))
+      const smartToken = (relay.anchor as SmartToken)
+      const smartTokensWei = singleEntry.poolAmount
+      const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
+
+
       return {
+        id: `${singleEntry.poolToken}:${singleEntry.id}`,
         whitelisted: isWhiteListed,
-        endTime: startTime,
-        startTime,
-        protectionPercent: calculateProtectionLevel(startTime, minProtectionDelay, maxProtectionDelay),
-        relay: this.relay(singleEntry.poolToken),
-        tokensCovered: [{ id: singleEntry.reserveToken, amount: shrinkToken(singleEntry.reserveAmount, this.token(singleEntry.reserveToken).precision) }],
-        type: PositionType.single
-      }
+        stake: {
+          amount: smartTokensDec,
+          symbol: smartToken.symbol,
+          poolId: relay.id,
+          unixTime: startTime,
+        },
+        apr: {
+          day: 10,
+          month: 10,
+          week: 10,
+        },
+        insuranceStart: startTime + minDelay,
+        fullCoverage: startTime + maxDelay,
+        protectedAmount: { amount: smartTokensDec, symbol: smartToken.symbol},
+        coverageDecPercent: calculateProtectionLevel(startTime, minDelay, maxDelay),
+        roi: 0
+      } as ViewProtectedLiquidity
     })
 
-    const reviewedDoubles = doublesArr.flatMap((doubles): ViewProtectedLiquidity => {
+    const reviewedDoubles = doublesArr.flatMap((doubles): ViewProtectedLiquidity | ViewProtectedLiquidity[] => {
       const first = doubles[0]
       const commonPoolToken = first.poolToken;
       const commonViewRelay = this.relay(commonPoolToken);
@@ -2052,27 +2071,52 @@ export class EthBancorModule
       const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor => compareString(commonPoolToken, whitelistedAnchor));
       
       const startTime = Number(first.timestamp)
-      // if (isWhiteListed) {
-      //   return doubles.map(entry => ({
-      //     type: PositionType.single,
-      //     whitelisted: isWhiteListed,
-      //     relay: commonViewRelay,
-      //     endTime: startTime,
-      //     startTime,
-      //     protectionPercent: calculateProtectionLevel(startTime),
-      //     tokensCovered: [{ id: entry.reserveToken, amount: shrinkToken(entry.reserveAmount, this.token(entry.reserveToken).precision)}]
-      //   }))
-      // } else {
+      if (isWhiteListed) {
+        return doubles.map((singleEntry): ViewProtectedLiquidity => {
+          const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor => compareString(singleEntry.poolToken, whitelistedAnchor));
+
+          const startTime = Number(singleEntry.timestamp);
+          const relay = findOrThrow(this.relaysList, relay => compareString(relay.id, singleEntry.poolToken))
+          const smartToken = (relay.anchor as SmartToken)
+          const smartTokensWei = singleEntry.poolAmount
+          const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
+
+          const reserveToken = this.token(singleEntry.reserveToken);
+          const reserveTokenDec = shrinkToken(singleEntry.reserveAmount, reserveToken.precision)
+    
+    
+          return {
+            id: `${singleEntry.poolToken}:${singleEntry.id}`,
+            whitelisted: isWhiteListed,
+            stake: {
+              amount: smartTokensDec,
+              symbol: reserveToken.symbol,
+              poolId: relay.id,
+              unixTime: startTime,
+            },
+            apr: {
+              day: 0,
+              month: 0,
+              week: 0,
+            },
+            insuranceStart: startTime + minDelay,
+            fullCoverage: startTime + maxDelay,
+            protectedAmount: { amount: reserveTokenDec, symbol: reserveToken.symbol },
+            coverageDecPercent: calculateProtectionLevel(startTime, minDelay, maxDelay),
+            roi: 0
+          } as ViewProtectedLiquidity
+        })
+      } else {
       const smartToken = (commonRelay.anchor as SmartToken)
       const smartTokensWei = doubles.reduce((acc, item) => new BigNumber(item.poolAmount).plus(acc), new BigNumber(0)).toString();
       const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
 
-      const { minDelay, maxDelay } = this.liquidityProtectionSettings;
         return {
           id: `${commonPoolToken}:${doubles.map(pos => pos.id).join(':')}`,
           whitelisted: isWhiteListed,
           stake: {
             amount: smartTokensDec,
+            symbol: smartToken.symbol,
             poolId: commonViewRelay.id,
             unixTime: startTime,
             usdValue: 1
@@ -2088,10 +2132,11 @@ export class EthBancorModule
           coverageDecPercent: calculateProtectionLevel(startTime, minDelay, maxDelay),
           roi: 0
         } as ViewProtectedLiquidity
+      }
       })
     
 
-    return [...reviewedDoubles];
+    return [...reviewedDoubles, ...reviewedSingles];
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
@@ -5280,6 +5325,7 @@ export class EthBancorModule
 
       this.pullBntInformation({ latestBlock: String(currentBlock) });
       this.fetchLiquidityProtectionSettings(contractAddresses.LiquidityProtection);
+      this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore)
       if (this.isAuthenticated) {
         this.fetchProtectionPositions(contractAddresses.LiquidityProtectionStore);
         this.fetchLockedBalances(contractAddresses.LiquidityProtectionStore);

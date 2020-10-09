@@ -38,6 +38,7 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   phase2: boolean = false;
 
   @mutation setPhase(phaseStatus: boolean) {
+    console.log(phaseStatus, "is getting set");
     this.phase2 = phaseStatus;
   }
 

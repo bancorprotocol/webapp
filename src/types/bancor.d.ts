@@ -665,13 +665,13 @@ export interface ViewProtectedLiquidity {
   stake: {
     amount: string;
     poolId: string;
-    usdValue: number;
+    usdValue?: number;
     unixTime: number;
   };
   protectedAmount: {
     amount: string;
     symbol: string;
-    usdValue: number;
+    usdValue?: number;
   };
   roi: number;
   apr: {

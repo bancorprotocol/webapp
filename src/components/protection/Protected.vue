@@ -12,9 +12,7 @@
         <div class="d-flex flex-column ml-2">
           <span
             v-text="
-              `${formatNumber(data.value.amount)} ${poolName(
-                data.value.poolId
-              )}`
+              `${formatNumber(data.value.amount)} ${data.item.stake.symbol}`
             "
           />
           <span

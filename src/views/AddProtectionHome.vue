@@ -21,8 +21,9 @@
         <main-button
           @click="openModal(option.id)"
           :label="option.buttonTxt"
-          :active="option.buttonActive"
+          :active="option.buttonEnabled"
           :large="true"
+          :disabled="!option.buttonEnabled"
           class="mb-2 font-size-14"
         />
       </gray-border-block>
@@ -53,24 +54,32 @@ export default class AddProtectionHome extends Vue {
 
   version: 1 | 2 | null = null;
 
-  stakeOptions = [
-    {
-      id: 0,
-      title: "Protect Single Token",
-      desc:
-        "Add liquidity with one reserve, be exposed to it only and protect it from impermanent loss.",
-      buttonTxt: "Stake & protect token",
-      buttonActive: true
-    },
-    {
-      id: 1,
-      title: "Protect Pool Token",
-      desc:
-        "Stake pool tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
-      buttonTxt: "Stake pool token",
-      buttonActive: false
-    }
-  ];
+  get phase2() {
+    return vxm.general.phase2;
+  }
+
+  get stakeOptions() {
+    return [
+      {
+        id: 0,
+        title: `Protect Single Token ${this.phase2 ? "" : "(Coming Soon)"}`,
+        desc:
+          "Add liquidity with one reserve, be exposed to it only and protect it from impermanent loss.",
+        buttonTxt: "Stake & protect token",
+        buttonActive: true,
+        buttonEnabled: this.phase2
+      },
+      {
+        id: 1,
+        title: "Protect Pool Token",
+        desc:
+          "Stake pool tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
+        buttonTxt: "Stake pool token",
+        buttonActive: false,
+        buttonEnabled: true
+      }
+    ];
+  }
 
   get pools() {
     if (this.version === 2) return vxm.bancor.relays.filter(x => x.v2);
