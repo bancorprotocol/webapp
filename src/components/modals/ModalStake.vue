@@ -65,7 +65,8 @@
       </div>
 
       <b-alert show variant="warning" class="my-3 p-3 font-size-14 alert-over">
-        Your {{ symbol }} tokens will be locked for up to {{ maxLock }}h.
+        Staking {{ symbol }} enables you to vote on proposals. You will be able
+        to unstake once the lock period is over (up to {{ maxLock }}h)
       </b-alert>
 
       <main-button
