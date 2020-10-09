@@ -145,14 +145,14 @@ export default class WithdrawProtectionV1 extends Vue {
           decPercent: Number(this.percentage) / 100,
           id: this.position.id
         });
+        this.success = txRes;
       } else {
         const txRes = await vxm.ethBancor.unprotectLiquidity({
           id1: first,
           id2: second
         });
-        this.success = txRes.txId;
+        this.success = txRes;
       }
-      this.$router.push({ name: "LiqProtection" });
     } catch (err) {
       this.error = err.message;
     } finally {
@@ -164,6 +164,7 @@ export default class WithdrawProtectionV1 extends Vue {
     if (this.success) {
       this.setDefault();
       this.modal = false;
+      this.$router.push({ name: "LiqProtection" });
     } else if (this.error) {
       this.initAction();
     }
