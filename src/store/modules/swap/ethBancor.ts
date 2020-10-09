@@ -1907,6 +1907,18 @@ export class EthBancorModule
     }
   }
 
+  @action async removeProtection({ decPercent, id } : { decPercent: number, id: string }): Promise<TxResponse> {
+
+    const dbId = id.split(':')[1]
+    const contract = buildLiquidityProtectionContract(this.contracts.LiquidityProtection);
+    const txHash = await this.resolveTxOnConfirmation({ tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent)) })
+
+    return {
+      blockExplorerLink: await this.createExplorerLink(txHash),
+      txId: txHash
+    }
+  }
+
   @action async protectLiquidity({ amount, onUpdate }: ProtectLiquidityParams): Promise<TxResponse> {
 
     const liquidityProtectionContractAddress = this.contracts.LiquidityProtection;
@@ -2020,6 +2032,7 @@ export class EthBancorModule
 
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
 
+    console.log(this.protectedPositionsArr, 'was thing')
     const allPositions = this.protectedPositionsArr.filter(position => compareString(position.owner, this.isAuthenticated))
 
     const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) => compareString(a.poolToken, b.poolToken) && a.timestamp == b.timestamp && compareString(a.owner, b.owner);
@@ -2037,7 +2050,7 @@ export class EthBancorModule
       const startTime = Number(singleEntry.timestamp);
       const relay = findOrThrow(this.relaysList, relay => compareString(relay.id, singleEntry.poolToken))
       const smartToken = (relay.anchor as SmartToken)
-      const smartTokensWei = singleEntry.poolAmount
+      const smartTokensWei = singleEntry.reserveAmount
       const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
 
 
@@ -2078,7 +2091,7 @@ export class EthBancorModule
           const startTime = Number(singleEntry.timestamp);
           const relay = findOrThrow(this.relaysList, relay => compareString(relay.id, singleEntry.poolToken))
           const smartToken = (relay.anchor as SmartToken)
-          const smartTokensWei = singleEntry.poolAmount
+          const smartTokensWei = singleEntry.reserveAmount
           const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
 
           const reserveToken = this.token(singleEntry.reserveToken);
@@ -2094,6 +2107,10 @@ export class EthBancorModule
               poolId: relay.id,
               unixTime: startTime,
             },
+            protectedAmount: { 
+              amount: reserveTokenDec, 
+              symbol: reserveToken.symbol 
+            },
             apr: {
               day: 0,
               month: 0,
@@ -2101,7 +2118,6 @@ export class EthBancorModule
             },
             insuranceStart: startTime + minDelay,
             fullCoverage: startTime + maxDelay,
-            protectedAmount: { amount: reserveTokenDec, symbol: reserveToken.symbol },
             coverageDecPercent: calculateProtectionLevel(startTime, minDelay, maxDelay),
             roi: 0
           } as ViewProtectedLiquidity

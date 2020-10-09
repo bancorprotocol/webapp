@@ -2,11 +2,7 @@
   <div class="mt-3">
     <label-content-split
       label="Stake"
-      :value="
-        `${formatNumber(position.protectedAmount.amount)} ${
-          position.protectedAmount.symbol
-        }`
-      "
+      :value="`${formatNumber(position.stake.amount)} ${position.stake.symbol}`"
     />
     <!-- <label-content-split value="????" class="mb-2" /> -->
 
@@ -18,9 +14,10 @@
     <label-content-split v-if="poolWhitelisted" value="????" />
 
     <alert-block
+      v-if="warning"
       variant="warning"
       title="Important"
-      msg="You still haven’t reached full coverage. There is a risk for impermanent loss."
+      :msg="warning"
       class="my-3"
     />
 
@@ -106,7 +103,13 @@ export default class WithdrawProtectionV1 extends Vue {
   error = "";
 
   get poolWhitelisted() {
-    return false;
+    return this.position.whitelisted;
+  }
+
+  get warning() {
+    return this.position.whitelisted && this.position.coverageDecPercent !== 1
+      ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
+      : "";
   }
 
   get disableActionButton() {
@@ -123,8 +126,9 @@ export default class WithdrawProtectionV1 extends Vue {
     const [poolId, first, second] = this.$route.params.id.split(":");
 
     const pos = findOrThrow(vxm.ethBancor.protectedLiquidity, position =>
-      compareString(poolId, position.stake.poolId)
+      compareString(position.id, this.$route.params.id)
     );
+    console.log(pos, "is the selected pos");
     return pos;
   }
 
@@ -135,12 +139,20 @@ export default class WithdrawProtectionV1 extends Vue {
     const [poolId, first, second] = this.$route.params.id.split(":");
     console.log({ poolId, first, second });
     try {
-      const txRes = await vxm.ethBancor.unprotectLiquidity({
-        id1: first,
-        id2: second
-      });
-      console.log(txRes, "was tx res");
-      this.success = txRes;
+      let txHash: string;
+      if (this.poolWhitelisted) {
+        const txRes = await vxm.ethBancor.removeProtection({
+          decPercent: Number(this.percentage) / 100,
+          id: this.position.id
+        });
+      } else {
+        const txRes = await vxm.ethBancor.unprotectLiquidity({
+          id1: first,
+          id2: second
+        });
+        this.success = txRes.txId;
+      }
+      this.$router.push({ name: "LiqProtection" });
     } catch (err) {
       this.error = err.message;
     } finally {
