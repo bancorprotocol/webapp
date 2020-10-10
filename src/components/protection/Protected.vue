@@ -13,7 +13,7 @@
           <span>{{ poolName(data.value.poolId) }}</span>
           <span
             v-text="
-              `${formatNumber(data.value.amount)} ${data.item.stake.symbol}`
+              `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}`
             "
           />
           <span
@@ -33,7 +33,7 @@
     <template v-slot:cell(protectedAmount)="data">
       <div v-if="data.item.whitelisted" class="d-flex align-items-start">
         <span
-          v-text="`${formatNumber(data.value.amount)} ${data.value.symbol}`"
+          v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
         />
         <span
           v-if="data.value.usdValue !== undefined"
@@ -114,7 +114,7 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
-import { buildPoolName, formatUnixTime, formatNumber } from "@/api/helpers";
+import { buildPoolName, formatUnixTime, prettifyNumber } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
@@ -148,10 +148,14 @@ export default class Protected extends Vue {
   }
 
   goToWithdraw(id: string) {
-    console.log("going to withdraw with", id);
+    const [poolId] = id.split(":");
+    const pool = vxm.bancor.relay(poolId);
+    const routeName = pool.whitelisted
+      ? "WithdrawProtectionSingle"
+      : "WithdrawProtectionDouble";
     this.$router.push({
-      name: "ProtectionAction",
-      params: { action: "withdraw", id }
+      name: routeName,
+      params: { id }
     });
   }
 
@@ -167,8 +171,8 @@ export default class Protected extends Vue {
     return vxm.ethBancor.protectedLiquidity;
   }
 
-  formatNumber(amount: string) {
-    return parseFloat(formatNumber(amount, 6));
+  prettifyNumber(number: string | number): string {
+    return prettifyNumber(number);
   }
 
   get protectedTxTable() {

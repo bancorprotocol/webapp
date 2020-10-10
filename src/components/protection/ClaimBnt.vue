@@ -14,7 +14,7 @@
         :src="bntLogoSrc"
         alt="Token Logo"
       />
-      <span class="mx-2">{{ `${item.amount} BNT` }}</span>
+      <span class="mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
       <!-- <span class="text-primary font-size-12">
         {{ `(~$${item.usdValue})` }}
       </span> -->
@@ -42,6 +42,7 @@
 import { Component, Prop, Vue, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
 import moment from "moment";
+import { prettifyNumber } from "@/api/helpers";
 
 @Component
 export default class ClaimBnt extends Vue {
@@ -80,6 +81,10 @@ export default class ClaimBnt extends Vue {
 
   get textMutedClass() {
     return this.darkMode ? "text-muted-dark" : "text-muted-light";
+  }
+
+  prettifyNumber(number: string | number): string {
+    return prettifyNumber(number);
   }
 
   get darkMode() {

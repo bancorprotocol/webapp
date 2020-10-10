@@ -17,6 +17,10 @@ import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
 import TermsOfUse from "@/views/TermsOfUse.vue";
 import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
+import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
+import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
+import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
+import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 
 Vue.use(Router);
 
@@ -141,31 +145,41 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection/add",
-      name: "AddProtection",
-      components: {
-        Nav: Navigation,
-        Hero: AddProtectionHome
-      }
-    },
-    {
-      path: "/:service/liquidity-protection/:action/:id",
+      path: "/:service/liquidity-protection/stake",
       name: "ProtectionAction",
       components: {
         Nav: Navigation,
         Hero: ProtectionActions
       },
-      props: true
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "AddProtectionHome",
+          component: AddProtectionHome
+        },
+        {
+          path: "add/single/:id",
+          name: "AddProtectionSingle",
+          component: AddProtectionSingle
+        },
+        {
+          path: "add/double/:id",
+          name: "AddProtectionDouble",
+          component: AddProtectionDouble
+        },
+        {
+          path: "withdraw/single/:id",
+          name: "WithdrawProtectionSingle",
+          component: WithdrawProtectionSingle
+        },
+        {
+          path: "withdraw/double/:id",
+          name: "WithdrawProtectionDouble",
+          component: WithdrawProtectionDouble
+        }
+      ]
     },
-    // {
-    //   path: "/:service/liquidity-protection/add/:id",
-    //   name: "AddLiqProtection",
-    //   components: {
-    //     Nav: Navigation,
-    //     Hero: AddLiqProtection
-    //   },
-    //   props: true
-    // },
     {
       path: "/:service/pool/create/",
       name: "PoolCreate",

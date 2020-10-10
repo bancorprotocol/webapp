@@ -4,7 +4,6 @@
       label="Stake"
       :value="`${formatNumber(position.stake.amount)} ${position.stake.symbol}`"
     />
-    <!-- <label-content-split value="????" class="mb-2" /> -->
 
     <label-content-split
       v-if="poolWhitelisted"
@@ -80,9 +79,11 @@ import {
 } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 
 @Component({
   components: {
+    LogoAmountSymbol,
     ActionModalStatus,
     ModalBase,
     AlertBlock,
@@ -92,7 +93,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     MainButton
   }
 })
-export default class WithdrawProtection extends Vue {
+export default class WithdrawProtectionDouble extends Vue {
   @Prop() pool!: ViewRelay;
 
   percentage: string = "50";
@@ -139,7 +140,6 @@ export default class WithdrawProtection extends Vue {
     const [poolId, first, second] = this.$route.params.id.split(":");
     console.log({ poolId, first, second });
     try {
-      let txHash: string;
       if (this.poolWhitelisted) {
         const txRes = await vxm.ethBancor.removeProtection({
           decPercent: Number(this.percentage) / 100,

@@ -2,18 +2,14 @@
   <div class="mt-3">
     <token-input-field
       label="Stake Amount"
-      :token="token"
+      :pool="pool"
       v-model="amount"
       @input="amountChanged"
       :balance="balance"
       :error-msg="inputError"
-      :tokens="tokens"
-      @select="toggleReserveIndex"
+      :pools="pools"
+      @select="selectPool"
     />
-
-    <div class="mt-2 d-flex flex-row-reverse">
-      <pool-logos :pool="pool" />
-    </div>
 
     <alert-block
       v-if="!isWhitelisted"
@@ -30,7 +26,7 @@
         class="font-size-14 font-w400"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        If pool ratio is changed during the protection period - you’ll receive
+        If pool ratio will be changed during protection period - you’ll receive
         change value in BNT.
       </span>
     </gray-border-block>
@@ -126,8 +122,11 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     MainButton
   }
 })
-export default class AddProtectionV2 extends Vue {
-  @Prop() pool!: ViewRelay;
+export default class AddProtectionDouble extends Vue {
+  get pool(): ViewRelay {
+    const [poolId] = this.$route.params.id.split(":");
+    return vxm.bancor.relay(poolId);
+  }
 
   amount: string = "";
 
@@ -137,29 +136,6 @@ export default class AddProtectionV2 extends Vue {
   error = "";
   sections: Step[] = [];
   stepIndex = 0;
-  preTxError = "";
-
-  selectedTokenIndex = 0;
-
-  toggleReserveIndex(x: string) {
-    this.selectedTokenIndex = this.pool.reserves.findIndex(
-      reserve => reserve.id == x
-    );
-  }
-
-  get token() {
-    return this.pool.reserves[this.selectedTokenIndex];
-  }
-
-  get opposingToken() {
-    return this.pool.reserves.find(
-      (reserve, index) => index !== this.selectedTokenIndex
-    );
-  }
-
-  get tokens() {
-    return this.pool.reserves;
-  }
 
   get pools() {
     return vxm.bancor.relays.filter(x => !x.v2);
@@ -174,8 +150,11 @@ export default class AddProtectionV2 extends Vue {
   }
 
   get balance() {
-    const poolBalance = vxm.ethBancor.tokenBalance(this.token.id);
-    return poolBalance ? poolBalance.balance : "0";
+    console.log(vxm.ethBancor.poolTokenPositions, "are pool token positions");
+    const poolBalance = vxm.ethBancor.poolTokenPositions.find(position =>
+      compareString(position.relay.id as string, this.pool.id)
+    );
+    return poolBalance ? poolBalance.smartTokenAmount : "0";
   }
 
   get fullCoverageDate() {
@@ -199,8 +178,6 @@ export default class AddProtectionV2 extends Vue {
   }
 
   get inputError() {
-    if (this.amount == "") return "";
-    if (this.preTxError) return this.preTxError;
     if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
 
     const amountNumber = new BigNumber(this.amount);
@@ -241,40 +218,17 @@ export default class AddProtectionV2 extends Vue {
 
     this.txBusy = true;
     try {
-      const txRes = await vxm.ethBancor.addProtection({
-        poolId: this.pool.id,
-        reserveAmount: {
-          id: this.token.id,
-          amount: this.amount
-        },
+      const txRes = await vxm.ethBancor.protectLiquidity({
+        amount: { amount: this.amount, id: this.pool.id },
         onUpdate: this.onUpdate
       });
+      console.log(txRes, "was tx res");
       this.success = txRes;
       this.amount = "";
     } catch (e) {
       this.error = e.message;
     } finally {
       this.txBusy = false;
-    }
-  }
-
-  async amountChanged(tokenAmount: string) {
-    const input = new BigNumber(tokenAmount);
-    const inputIsNumber = !input.isNaN() && input.isGreaterThan(0);
-
-    console.log(inputIsNumber);
-    if (inputIsNumber) {
-      const res = await vxm.ethBancor.calculateProtection({
-        poolId: this.pool.id,
-        reserveAmount: { id: this.token.id, amount: this.amount }
-      });
-
-      this.preTxError =
-        res == "Insufficient store balance"
-          ? `Insufficient store balance, please add pool tokens instead or wait for other Liquidity Providers to supply more ${
-              this.opposingToken!.symbol
-            } tokens`
-          : res;
     }
   }
 
@@ -308,10 +262,12 @@ export default class AddProtectionV2 extends Vue {
 
   async selectPool(id: string) {
     await this.$router.replace({
-      name: "ProtectionAction",
-      params: { action: "add", id }
+      name: "AddProtectionDouble",
+      params: { id }
     });
   }
+
+  async amountChanged(tokenAmount: string) {}
 
   get darkMode() {
     return vxm.general.darkMode;
