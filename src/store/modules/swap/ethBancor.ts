@@ -1900,11 +1900,84 @@ export class EthBancorModule
       const firstId = ids[0]
       const targetTime = moment().add('2', 'months').unix()
       console.log(firstId, 'are the ids', targetTime)
-      // const lpContract = buildLiquidityProtectionContract('0x7eDB7d3A04e90D93c445477b708e51Ac02b18F43');
-      // console.log('params', [firstId, '1000000', String(targetTime)])
-      // const poolRois = await Promise.all(allPositions.map(position => lpContract.methods.poolROI(position.poolToken, position.reserveToken, position.reserveAmount, position.).call()))
-      // const x = await lpContract.methods.removeLiquidityReturn(firstId, '1000000', String(targetTime)).call()
-      // console.log(x, 'was remove liquidity return')
+
+      console.log('contracts', this.contracts.LiquidityProtection)
+
+      const lpContract = buildLiquidityProtectionContract(this.contracts.LiquidityProtection);
+ 
+      // const rois = await Promise.all(allPositions.map(async position => {
+
+
+      //   const poolBalances = await this.fetchRelayBalances(position.poolToken)
+
+      //   const [reserveBalance, opposingReserveBalance] = partition(poolBalances.reserves, reserve => compareString(reserve.contract, position.reserveToken))
+
+      //   const poolRateN = new BigNumber(reserveBalance[0].weiAmount).times(2).toString()
+      //   const poolRateD = poolBalances.smartTokenSupplyWei;
+
+      //   const reserveRateN = opposingReserveBalance[0].weiAmount;
+      //   const reserveRateD = reserveBalance[0].weiAmount;
+
+      //   try {
+      //     console.log(
+      //       'params',
+      //       position.poolToken,
+      //       position.reserveToken,
+      //       position.reserveAmount,
+      //       poolRateN,
+      //       poolRateD,
+      //       reserveRateN,
+      //       reserveRateD
+      //     )
+
+      //     const roiRes = await lpContract.methods.poolROI(
+      //       position.poolToken,
+      //       position.reserveToken,
+      //       position.reserveAmount,
+      //       poolRateN,
+      //       poolRateD,
+      //       reserveRateN,
+      //       reserveRateD
+      //       ).call();
+      //      return roiRes 
+      //     } catch(e) {
+      //       console.error("failed again", e)
+      //     }
+      // }))
+
+      // console.log('success!', rois);
+ 
+ 
+ 
+ 
+      const fullyProtectedReturns = await Promise.all(allPositions.map(async position => {
+
+        console.log(position, 'fire would have to go')
+        try {
+          const liquidityReturn = await lpContract.methods.removeLiquidityReturn(
+            '0', 
+            oneMillion.toString(), 
+            position.timestamp + 300
+          ).call()
+  
+          console.log(liquidityReturn, 'came back');
+          return ({ 
+            protectionReturn: liquidityReturn
+          })
+        } catch(e) {
+          console.log('failed with params',   
+          // @ts-ignore
+          Number(position.id), 
+          // @ts-ignore
+          new BigNumber(50).toNumber(), 
+          // @ts-ignore
+          moment().unix())
+        }
+      }))
+
+      console.log(fullyProtectedReturns, 'xyz')
+      
+
       this.setProtectedPositions(allPositions);
       return allPositions;
     } catch(e) {
@@ -2073,12 +2146,8 @@ export class EthBancorModule
     const contractAddress = storeAddress || this.contracts.LiquidityProtectionStore;
     const storeContract = buildLiquidityProtectionStoreContract(contractAddress);
     const lockedBalanceCount = Number(await storeContract.methods.lockedBalanceCount(owner).call());
-    if (lockedBalanceCount == 0) {
-      console.log('Skipped locked balanace fetch as theres no count');
-      return; 
-    }
 
-    const lockedBalances = await traverseLockedBalances(contractAddress, owner, lockedBalanceCount)
+    const lockedBalances = lockedBalanceCount > 0 ? await traverseLockedBalances(contractAddress, owner, lockedBalanceCount) : []
     this.setLockedBalances(lockedBalances);
     return lockedBalances;
   }
@@ -2823,8 +2892,8 @@ export class EthBancorModule
     this.spamBalances([bntAddress]);
 
     (async () => {
-      await wait(1000);
-      this.fetchLockedBalances()
+      await wait(2000);
+      this.fetchLockedBalances();
     })();
     this.fetchLockedBalances()
 
@@ -5422,7 +5491,7 @@ export class EthBancorModule
 
       this.pullBntInformation({ latestBlock: String(currentBlock) });
       this.fetchLiquidityProtectionSettings(contractAddresses.LiquidityProtection);
-      this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore)
+      this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.isAuthenticated) {
         this.fetchProtectionPositions(contractAddresses.LiquidityProtectionStore);
         this.fetchLockedBalances(contractAddresses.LiquidityProtectionStore);
