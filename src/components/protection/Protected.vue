@@ -216,7 +216,9 @@ export default class Protected extends Vue {
   }
 
   doFilter(row: any, filter: string) {
-    return true;
+    return (row.stake.symbol as string)
+      .toLowerCase()
+      .includes(filter.toLowerCase());
   }
   get darkMode() {
     return vxm.general.darkMode;
