@@ -1930,6 +1930,11 @@ export class EthBancorModule
       console.log('contracts', this.contracts.LiquidityProtection)
 
       const lpContract = buildLiquidityProtectionContract(this.contracts.LiquidityProtection);
+      const x = await lpContract.methods.store().call();
+      const y = await contract.methods.protectedLiquidity('32').call()
+      console.log(y, 'was y')
+
+      console.log(x, 'is the store on contract', this.contracts.LiquidityProtectionStore, 'is what is set elsewhere')
  
       // const rois = await Promise.all(allPositions.map(async position => {
 
