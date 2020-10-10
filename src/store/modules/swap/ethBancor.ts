@@ -2053,12 +2053,16 @@ export class EthBancorModule
     onUpdate 
   }) as string;
 
+  this.fetchProtectionPositions();
+  wait(2000).then(() => {
+    this.fetchProtectionPositions();
+  })
 
-  return {
-    blockExplorerLink: await this.createExplorerLink(txHash),
-    txId: txHash
-  }
 
+    return {
+      blockExplorerLink: await this.createExplorerLink(txHash),
+      txId: txHash
+    }
 
   }
 
