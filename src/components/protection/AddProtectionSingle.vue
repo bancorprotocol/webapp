@@ -1,5 +1,6 @@
 <template>
   <div class="mt-3">
+    <h2>this is single</h2>
     <token-input-field
       label="Stake Amount"
       :token="token"
@@ -126,8 +127,11 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     MainButton
   }
 })
-export default class AddProtectionV2 extends Vue {
-  @Prop() pool!: ViewRelay;
+export default class AddProtectionSingle extends Vue {
+  get pool(): ViewRelay {
+    const [poolId] = this.$route.params.id.split(":");
+    return vxm.bancor.relay(poolId);
+  }
 
   amount: string = "";
 
