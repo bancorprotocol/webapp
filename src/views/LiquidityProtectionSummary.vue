@@ -13,7 +13,7 @@
           <b-btn
             variant="primary"
             class="float-right"
-            :to="{ name: 'AddProtection' }"
+            :to="{ name: 'AddProtectionHome' }"
             >Stake</b-btn
           >
         </div>
