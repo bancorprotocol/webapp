@@ -33,7 +33,7 @@ export default class ProtectionActions extends Vue {
   }
 
   back() {
-    this.$router.push({ name: "LiqProtection" });
+    this.$router.go(-1);
   }
 }
 </script>
