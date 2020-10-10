@@ -1,6 +1,6 @@
 <template>
   <div class="mt-3">
-    <h2>this is v1</h2>
+    <h2>this is double</h2>
     <token-input-field
       label="Stake Amount"
       :pool="pool"
@@ -123,8 +123,11 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     MainButton
   }
 })
-export default class AddProtectionV1 extends Vue {
-  @Prop() pool!: ViewRelay;
+export default class AddProtectionDouble extends Vue {
+  get pool(): ViewRelay {
+    const [poolId] = this.$route.params.id.split(":");
+    return vxm.bancor.relay(poolId);
+  }
 
   amount: string = "";
 
