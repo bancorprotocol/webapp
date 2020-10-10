@@ -47,3 +47,16 @@ Daily standups
 ### Git Strategy
 
 Please create new features in new branches forked from `staging` and submit work at the end of your session as a Drafted PR towards staging.
+
+## Liquidity Protection Terminology
+
+Single Reserve Token Staking / Single mode: Protecting a bare reserve token, either reserve tokens of a pool. BNT or ETH or Whatever.
+
+Pool Token Staking / Double mode: Protecting pool tokens for a pool.
+
+Whitelisted pools support both single mode and double mode.
+
+- Most cases the user will wanna single mode.
+- But if the user is already holding pool tokens, they might still want to stake them to a whitelisted pool, which 'Protect My Token' needs to go to.
+
+Non-whitelisted pools only support double mode.
