@@ -1,7 +1,5 @@
 <template>
   <div class="mt-3">
-    <h2>this is double</h2>
-
     <label-content-split
       label="Stake"
       :value="`${formatNumber(position.stake.amount)} ${position.stake.symbol}`"

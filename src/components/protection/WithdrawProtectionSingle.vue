@@ -1,7 +1,5 @@
 <template>
   <div class="mt-3">
-    <h2>this is single</h2>
-
     <label-content-split label="Stake">
       <logo-amount-symbol
         :pool-id="position.stake.poolId"

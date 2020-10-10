@@ -1,6 +1,5 @@
 <template>
   <div class="mt-3">
-    <h2>this is single</h2>
     <token-input-field
       label="Stake Amount"
       :token="token"
