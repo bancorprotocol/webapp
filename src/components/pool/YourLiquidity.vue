@@ -53,20 +53,20 @@
           <b-row>
             <b-col cols="6" class="pr-1">
               <main-button
-                @click="goToAdd(pool.relay)"
+                @click="goToAdd(pool.relay.id)"
                 label="Add Liquidity"
                 :active="true"
               />
             </b-col>
             <b-col cols="6" class="pl-1">
               <main-button
-                @click="goToRemove(pool.relay)"
+                @click="goToRemove(pool.relay.id)"
                 label="Remove Liquidity"
               />
             </b-col>
-            <b-col cols="12">
+            <b-col cols="12" v-if="!pool.relay.v2">
               <main-button
-                @click="goToProtect(pool.relay)"
+                @click="goToProtect(pool.relay.id)"
                 label="Protect My Pool Token"
                 class="mt-2"
               />
@@ -129,32 +129,31 @@ export default class YourLiquidity extends Vue {
     return `${reserves[0].symbol}/${reserves[1].symbol}`;
   }
 
-  goToAdd(pool: ViewRelay) {
+  goToAdd(id: string) {
     this.$router.push({
       name: "PoolAction",
       params: {
         poolAction: "add",
-        account: pool.id
+        account: id
       }
     });
   }
 
-  goToProtect(pool: ViewRelay) {
+  goToProtect(id: string) {
     this.$router.push({
-      name: "ProtectionAction",
+      name: "AddProtectionDouble",
       params: {
-        action: "add",
-        id: pool.id
+        id: id
       }
     });
   }
 
-  goToRemove(pool: ViewRelay) {
+  goToRemove(id: string) {
     this.$router.push({
       name: "PoolAction",
       params: {
         poolAction: "remove",
-        account: pool.id
+        account: id
       }
     });
   }
