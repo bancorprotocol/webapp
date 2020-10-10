@@ -71,7 +71,7 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ `${formatNumber(amount)} ${poolName}` }}
+            {{ `${formatNumber(amount)} ${token.symbol}` }}
           </span>
         </b-col>
         <b-col v-if="false" cols="12">
