@@ -1,7 +1,7 @@
 <template>
   <div class="px-4 pt-4 border-top">
     <b-row>
-      <b-col md="6">
+      <b-col xl="6">
         <sub-content-block title="Available to claim">
           <claim-bnt
             v-for="item in available"
@@ -14,7 +14,7 @@
           </div>
         </sub-content-block>
       </b-col>
-      <b-col md="6">
+      <b-col xl="6">
         <sub-content-block title="Locked">
           <claim-bnt v-for="item in locked" :key="item.id" :item="item" />
           <div v-if="!locked.length" class="no-claim-results">
