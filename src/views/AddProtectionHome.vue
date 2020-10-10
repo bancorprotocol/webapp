@@ -5,7 +5,10 @@
       :key="option.id"
       :class="option.id <= stakeOptions.length ? 'mb-3' : ''"
     >
-      <h5 class="font-size-12 font-w500 text-uppercase mb-2">
+      <h5
+        class="font-size-14 font-w600 text-uppercase my-2"
+        :class="darkMode ? 'text-white' : 'text-primary'"
+      >
         {{ option.title }}
       </h5>
       <p class="font-size-14 font-w400 mb-3">
@@ -93,6 +96,10 @@ export default class AddProtectionHome extends Vue {
         params: { id }
       });
     }
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode;
   }
 }
 </script>
