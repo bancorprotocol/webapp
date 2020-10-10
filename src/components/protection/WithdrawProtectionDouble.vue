@@ -1,5 +1,7 @@
 <template>
   <div class="mt-3">
+    <h2>this is double</h2>
+
     <label-content-split
       label="Stake"
       :value="`${formatNumber(position.stake.amount)} ${position.stake.symbol}`"
@@ -92,7 +94,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     MainButton
   }
 })
-export default class WithdrawProtection extends Vue {
+export default class WithdrawProtectionDouble extends Vue {
   @Prop() pool!: ViewRelay;
 
   percentage: string = "50";
