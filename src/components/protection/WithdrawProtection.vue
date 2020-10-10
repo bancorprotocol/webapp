@@ -92,7 +92,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     MainButton
   }
 })
-export default class WithdrawProtectionV1 extends Vue {
+export default class WithdrawProtection extends Vue {
   @Prop() pool!: ViewRelay;
 
   percentage: string = "50";

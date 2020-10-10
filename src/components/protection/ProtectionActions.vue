@@ -12,8 +12,7 @@
     </div>
 
     <div v-else>
-      <withdraw-protection-v1 v-if="!pool.whitelisted" :pool="pool" />
-      <withdraw-protection-v2 v-else :pool="pool" />
+      <withdraw-protection :pool="pool" />
     </div>
   </content-block>
 </template>
@@ -25,13 +24,11 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import { ViewRelay } from "@/types/bancor";
 import AddProtectionV1 from "@/components/protection/AddProtectionV1.vue";
 import AddProtectionV2 from "@/components/protection/AddProtectionV2.vue";
-import WithdrawProtectionV1 from "@/components/protection/WithdrawProtectionV1.vue";
-import WithdrawProtectionV2 from "@/components/protection/WithdrawProtectionV2.vue";
+import WithdrawProtection from "@/components/protection/WithdrawProtection.vue";
 
 @Component({
   components: {
-    WithdrawProtectionV2,
-    WithdrawProtectionV1,
+    WithdrawProtection,
     AddProtectionV1,
     AddProtectionV2,
     ContentBlock
