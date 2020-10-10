@@ -82,7 +82,7 @@ export default class AddProtectionHome extends Vue {
   }
 
   get pools() {
-    if (this.version === 2) return vxm.bancor.relays.filter(x => x.v2);
+    if (this.version === 2) return vxm.bancor.relays.filter(x => x.whitelisted);
     else if (this.version === 1) return vxm.bancor.relays.filter(x => !x.v2);
     else return vxm.bancor.relays;
   }
