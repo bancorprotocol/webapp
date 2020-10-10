@@ -1891,6 +1891,9 @@ export class EthBancorModule
       await wait(700);
       this.fetchLockedBalances()
       this.fetchProtectionPositions()
+      await wait(4000);
+      this.fetchLockedBalances()
+      this.fetchProtectionPositions()
     })();
 
     return {
