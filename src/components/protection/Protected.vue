@@ -148,10 +148,14 @@ export default class Protected extends Vue {
   }
 
   goToWithdraw(id: string) {
-    console.log("going to withdraw with", id);
+    const [poolId] = id.split(":");
+    const pool = vxm.bancor.relay(poolId);
+    const routeName = pool.whitelisted
+      ? "WithdrawProtectionSingle"
+      : "WithdrawProtectionDouble";
     this.$router.push({
-      name: "ProtectionAction",
-      params: { action: "withdraw", id }
+      name: routeName,
+      params: { id }
     });
   }
 
