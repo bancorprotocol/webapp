@@ -12,9 +12,19 @@
       @select="toggleReserveIndex"
     />
 
-    <div class="mt-2 d-flex flex-row-reverse">
-      <pool-logos :pool="pool" />
-    </div>
+    <label-content-split label="Stake in Pool" class="mt-3">
+      <pool-logos
+        :pool="pool"
+        :dropdown="true"
+        :cursor="true"
+        @click="openPoolSelectModal"
+      />
+      <modal-pool-select
+        @select="selectPool"
+        v-model="poolSelectModal"
+        :pools="pools"
+      />
+    </label-content-split>
 
     <alert-block
       v-if="!isWhitelisted"
@@ -114,9 +124,11 @@ import moment from "moment";
 import { format } from "numeral";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 @Component({
   components: {
+    ModalPoolSelect,
     ActionModalStatus,
     PoolLogos,
     ModalBase,
@@ -136,6 +148,8 @@ export default class AddProtectionSingle extends Vue {
   amount: string = "";
 
   modal = false;
+  poolSelectModal = false;
+
   txBusy = false;
   success: TxResponse | string | null = null;
   error = "";
@@ -166,7 +180,7 @@ export default class AddProtectionSingle extends Vue {
   }
 
   get pools() {
-    return vxm.bancor.relays.filter(x => !x.v2);
+    return vxm.bancor.relays.filter(x => x.whitelisted);
   }
 
   get poolName() {
@@ -288,6 +302,10 @@ export default class AddProtectionSingle extends Vue {
     else await this.promptAuth();
   }
 
+  openPoolSelectModal() {
+    this.poolSelectModal = true;
+  }
+
   setDefault() {
     this.sections = [];
     this.error = "";
@@ -312,8 +330,8 @@ export default class AddProtectionSingle extends Vue {
 
   async selectPool(id: string) {
     await this.$router.replace({
-      name: "ProtectionAction",
-      params: { action: "add", id }
+      name: "AddProtectionSingle",
+      params: { id }
     });
   }
 
