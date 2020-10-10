@@ -92,17 +92,22 @@ export default class AddProtectionHome extends Vue {
       this.version = 2;
     } else if (optionId === 1) {
       this.version = 1;
-    } else if (optionId === 2) {
-      this.version = null;
     }
     this.modal = true;
   }
 
   selectPool(id: string) {
-    this.$router.push({
-      name: "ProtectionAction",
-      params: { action: "add", id }
-    });
+    if (this.version == 2) {
+      this.$router.push({
+        name: "ProtectionAction",
+        params: { action: "add", id }
+      });
+    } else {
+      this.$router.push({
+        name: "ProtectionAction",
+        params: { action: "add", id }
+      });
+    }
   }
 
   back() {

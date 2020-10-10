@@ -7,12 +7,12 @@
     :version="version"
   >
     <div v-if="!withdrawProtection">
-      <add-protection-v1 v-if="!pool.v2" :pool="pool" />
+      <add-protection-v1 v-if="!pool.whitelisted" :pool="pool" />
       <add-protection-v2 v-else :pool="pool" />
     </div>
 
     <div v-else>
-      <withdraw-protection-v1 v-if="!pool.v2" :pool="pool" />
+      <withdraw-protection-v1 v-if="!pool.whitelisted" :pool="pool" />
       <withdraw-protection-v2 v-else :pool="pool" />
     </div>
   </content-block>

@@ -2,7 +2,10 @@
   <div>
     <content-block :shadow="true" class="mb-4">
       <template slot="header">
-        <pool-actions-header title="Add Liquidity Protection" @back="back" />
+        <pool-actions-header
+          title="Add Liquidity Protection is here"
+          @back="back"
+        />
       </template>
 
       <div class="mt-3">
