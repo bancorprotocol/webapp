@@ -2,18 +2,19 @@
   <div class="mt-3">
     <h2>this is single</h2>
 
-    <label-content-split
-      label="Stake"
-      :value="`${formatNumber(position.stake.amount)} ${position.stake.symbol}`"
-    />
-    <!-- <label-content-split value="????" class="mb-2" /> -->
+    <label-content-split label="Stake">
+      <logo-amount-symbol
+        :pool-id="position.stake.poolId"
+        :amount="prettifyNumber(position.stake.amount)"
+        :symbol="position.stake.symbol"
+      />
+    </label-content-split>
 
     <label-content-split
-      v-if="poolWhitelisted"
       label="Fully Protected Value"
       value="????"
+      class="my-3"
     />
-    <label-content-split v-if="poolWhitelisted" value="????" />
 
     <alert-block
       v-if="warning"
@@ -24,7 +25,6 @@
     />
 
     <percentage-slider
-      v-if="poolWhitelisted"
       label="Input"
       v-model="percentage"
       :show-buttons="true"
@@ -78,13 +78,16 @@ import {
   compareString,
   compareToken,
   findOrThrow,
-  formatNumber
+  formatNumber,
+  prettifyNumber
 } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 
 @Component({
   components: {
+    LogoAmountSymbol,
     ActionModalStatus,
     ModalBase,
     AlertBlock,
@@ -103,10 +106,6 @@ export default class WithdrawProtectionSingle extends Vue {
   txBusy = false;
   success: TxResponse | string | null = null;
   error = "";
-
-  get poolWhitelisted() {
-    return this.position.whitelisted;
-  }
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
@@ -141,20 +140,11 @@ export default class WithdrawProtectionSingle extends Vue {
     const [poolId, first, second] = this.$route.params.id.split(":");
     console.log({ poolId, first, second });
     try {
-      let txHash: string;
-      if (this.poolWhitelisted) {
-        const txRes = await vxm.ethBancor.removeProtection({
-          decPercent: Number(this.percentage) / 100,
-          id: this.position.id
-        });
-        this.success = txRes;
-      } else {
-        const txRes = await vxm.ethBancor.unprotectLiquidity({
-          id1: first,
-          id2: second
-        });
-        this.success = txRes;
-      }
+      const txRes = await vxm.ethBancor.removeProtection({
+        decPercent: Number(this.percentage) / 100,
+        id: this.position.id
+      });
+      this.success = txRes;
     } catch (err) {
       this.error = err.message;
     } finally {
@@ -172,8 +162,8 @@ export default class WithdrawProtectionSingle extends Vue {
     }
   }
 
-  formatNumber(amount: string) {
-    return parseFloat(formatNumber(amount, 6));
+  prettifyNumber(amount: string) {
+    return parseFloat(prettifyNumber(amount));
   }
 
   setDefault() {
