@@ -1,6 +1,8 @@
 <template>
   <content-block :shadow="true" :title="title" :back-button="true" @back="back">
-    <router-view />
+    <transition name="fade" mode="out-in">
+      <router-view />
+    </transition>
   </content-block>
 </template>
 
@@ -38,4 +40,14 @@ export default class ProtectionActions extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.fade-enter-active {
+  transition: opacity 0.3s;
+}
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+</style>
