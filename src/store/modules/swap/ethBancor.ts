@@ -139,8 +139,7 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 
-
-
+const calculatePoolTokenRate = (poolTokenSupply: string, reserveTokenBalance: string) => new BigNumber(reserveTokenBalance).times(2).div(poolTokenSupply);
 
 const daysAsSeconds = (days: number): number => moment.duration(days, 'days').asSeconds() 
 const thirtyDaysInSeconds = daysAsSeconds(30)
@@ -1127,7 +1126,11 @@ const liquidityProtectionShape = (contractAddress: string) => {
   return {
     minProtectionDelay: contract.methods.minProtectionDelay(),
     maxProtectionDelay: contract.methods.maxProtectionDelay(),
-    lockDuration: contract.methods.lockDuration()
+    lockDuration: contract.methods.lockDuration(),
+    networkToken: contract.methods.networkToken(),
+    govToken: contract.methods.govToken(),
+    maxSystemNetworkTokenAmount: contract.methods.maxSystemNetworkTokenAmount(),
+    maxSystemNetworkTokenRatio: contract.methods.maxSystemNetworkTokenRatio(),
   }
 }
 
@@ -1745,12 +1748,20 @@ interface LiquidityProtectionSettings {
   minDelay: number;
   maxDelay: number;
   lockedDelay: number
+  govToken: string;
+  networkToken: string;
+  maxSystemNetworkTokenAmount: string;
+  maxSystemNetworkTokenRatio: string;
 }
 
 interface RawLiquidityProtectionSettings {
   minProtectionDelay: string;
   maxProtectionDelay: string;
   lockDuration: string;
+  govToken: string;
+  networkToken: string;
+  maxSystemNetworkTokenAmount: string;
+  maxSystemNetworkTokenRatio: string;
 }
 
 export class EthBancorModule
@@ -1781,7 +1792,11 @@ export class EthBancorModule
   liquidityProtectionSettings: LiquidityProtectionSettings = {
     minDelay: moment.duration('30', 'days').asSeconds(),
     maxDelay: moment.duration('100', 'days').asSeconds(),
-    lockedDelay: moment.duration('24', 'hours').asSeconds()
+    lockedDelay: moment.duration('24', 'hours').asSeconds(),
+    networkToken: "",
+    govToken: "",
+    maxSystemNetworkTokenAmount: '',
+    maxSystemNetworkTokenRatio: '',
   }
 
 
@@ -1801,7 +1816,15 @@ export class EthBancorModule
       ]
     ])) as unknown) as [RawLiquidityProtectionSettings][];
 
-    const newSettings = { minDelay: Number(settings.minProtectionDelay), maxDelay: Number(settings.maxProtectionDelay), lockedDelay: Number(settings.lockDuration)} as LiquidityProtectionSettings
+    const newSettings = { 
+      minDelay: Number(settings.minProtectionDelay), 
+      maxDelay: Number(settings.maxProtectionDelay), 
+      lockedDelay: Number(settings.lockDuration),
+      govToken: settings.govToken,
+      networkToken: settings.networkToken,
+      maxSystemNetworkTokenRatio: settings.maxSystemNetworkTokenRatio,
+      maxSystemNetworkTokenAmount: settings.maxSystemNetworkTokenAmount
+    } as LiquidityProtectionSettings
     this.setLiquidityProtectionSettings(newSettings)
     console.log(newSettings, 'are the new settings');
     return newSettings;
@@ -3481,6 +3504,76 @@ export class EthBancorModule
     };
     console.log(result, "was the result");
     return result;
+  }
+
+
+  @action async fetchSystemBalance(tokenAddress: string): Promise<string> {
+    const isValidAddress = web3.utils.isAddress(tokenAddress);
+    if (!isValidAddress) throw new Error(`${tokenAddress} is not a valid address`);
+    const contract = buildLiquidityProtectionStoreContract(this.contracts.LiquidityProtectionStore);
+    return contract.methods.systemBalance(tokenAddress).call();
+  }
+
+  @action async calculateProtectionNetworkToken({ poolId, reserveAmount } : { poolId: string, reserveAmount: ViewAmount }) {
+
+    console.log('network token called')
+    const reserveToken = this.token(reserveAmount.id);
+
+    const [balances, poolTokenBalance] = await Promise.all([this.fetchRelayBalances(poolId), this.fetchSystemBalance(reserveToken.contract)])
+
+    const reserveBalance = findOrThrow(balances.reserves, balance => compareString(balance.contract, reserveToken.id));
+
+    const reserveAmountWei = expandToken(reserveAmount.amount, reserveToken.precision);
+    const poolTokenRate = calculatePoolTokenRate(balances.smartTokenSupplyWei, reserveBalance.weiAmount);
+    const poolTokenAmount = poolTokenRate.times(reserveAmountWei);
+    const notEnoughInStore = poolTokenAmount.isGreaterThan(poolTokenBalance);
+    return notEnoughInStore ? "Insufficient store balance" : ''
+
+  }
+
+  @action async calculateProtectionBaseToken({ poolId, reserveAmount } : { poolId: string, reserveAmount: ViewAmount }) {
+
+    const reserveToken = this.token(reserveAmount.id);
+    const [balances, poolTokenBalance] = await Promise.all([this.fetchRelayBalances(poolId), this.fetchSystemBalance(reserveToken.contract)])
+
+    const networkTokenAddress = this.liquidityProtectionSettings.networkToken
+    const networkAmountWei = expandToken(reserveAmount.amount, 18);
+
+    const networkReserve = findOrThrow(balances.reserves, reserve => compareString(reserve.contract, networkTokenAddress), 'failed finding network token in pool balances')
+    const networkBalanceWei = networkReserve.weiAmount;
+    const baseReserve = findOrThrow(balances.reserves, reserve => !compareString(reserve.contract, networkTokenAddress), 'failed finding base token in pool balances')
+    const baseBalanceWei = baseReserve.weiAmount;
+
+    const networkTokensToBeMinted =  new BigNumber(networkAmountWei).times(networkBalanceWei).div(baseBalanceWei);
+    const poolTokenRate = calculatePoolTokenRate(balances.smartTokenSupplyWei, networkBalanceWei);
+
+    const currentPoolTokenSystemBalance = new BigNumber(poolTokenBalance);
+    const newPoolTokenSystemBalance = (currentPoolTokenSystemBalance.times(poolTokenRate).div(2)).plus(networkTokensToBeMinted);
+
+    const breachesMaxSystemBalance = newPoolTokenSystemBalance.isGreaterThan(this.liquidityProtectionSettings.maxSystemNetworkTokenAmount);
+    const breachesRatio = newPoolTokenSystemBalance.times(oneMillion).isGreaterThan(newPoolTokenSystemBalance.plus(networkBalanceWei).times(this.liquidityProtectionSettings.maxSystemNetworkTokenRatio))
+    console.log({ currentPoolTokenSystemBalance: currentPoolTokenSystemBalance.toString(), proposedPoolTokenSystemBalance: newPoolTokenSystemBalance.toString() }, 'awkies');
+    
+    if (breachesMaxSystemBalance) {
+      return "Deposit breaches maximum liquidity"
+    } else if (breachesRatio) {
+      return `Deposit breaches maximum ratio between ${networkReserve.symbol} and ${baseReserve.symbol}`
+    } else {
+      return ""
+    }
+  }
+
+
+
+  @action async calculateProtection(params: { poolId: string, reserveAmount: ViewAmount }) {
+
+    const depositingNetworkToken = compareString(this.liquidityProtectionSettings.networkToken, params.reserveAmount.id);
+
+    if (depositingNetworkToken) {
+      return this.calculateProtectionNetworkToken(params);
+    } else {
+      return this.calculateProtectionBaseToken(params);
+    }
   }
 
   @action async calculateOpposingDeposit(

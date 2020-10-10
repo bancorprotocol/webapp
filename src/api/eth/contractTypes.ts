@@ -245,8 +245,12 @@ export const buildLiquidityProtectionStoreContract = (
 export const buildLiquidityProtectionContract = (
   contractAddress: string
 ): ContractMethods<{
+  networkToken: () => CallReturn<string>;
+  govToken: () => CallReturn<string>;
   minProtectionDelay: () => CallReturn<string>;
   maxProtectionDelay: () => CallReturn<string>;
+  maxSystemNetworkTokenAmount: () => CallReturn<string>;
+  maxSystemNetworkTokenRatio: () => CallReturn<string>;
   lockDuration: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
   protectLiquidity: (
