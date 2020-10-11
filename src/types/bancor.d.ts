@@ -686,6 +686,7 @@ export interface ViewProtectedLiquidity {
     week: number;
     month: number;
   };
+  single: boolean;
   whitelisted: boolean;
   insuranceStart: number;
   coverageDecPercent: number;

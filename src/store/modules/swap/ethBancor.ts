@@ -2344,16 +2344,25 @@ export class EthBancorModule
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
+    const allowSingles = false;
 
     console.log(this.protectedPositionsArr, "was thing");
-    const allPositions = this.protectedPositionsArr.filter(position =>
-      compareString(position.owner, this.isAuthenticated)
-    );
+    const allPositions = this.protectedPositionsArr
+      .filter(position => compareString(position.owner, this.isAuthenticated))
+      .filter(position =>
+        this.whiteListedPools.some(anchor =>
+          compareString(position.poolToken, anchor)
+        )
+      );
+    // this filter of removing white listed pools shouldn't stick around forever as it just kills any positions that might exist on non-whitelisted pools
+    // in the event a white listed pool runs, LP creates a position then gov kills it
+    // filter currently in place to clean up existing positions on ropsten essentially.
 
     const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) =>
       compareString(a.poolToken, b.poolToken) &&
       a.timestamp == b.timestamp &&
       compareString(a.owner, b.owner);
+
     const seperatedEntries = uniqWith(allPositions, samePointOfEntry);
 
     const joined = seperatedEntries.map(entry =>
@@ -2371,6 +2380,7 @@ export class EthBancorModule
     );
 
     const reviewedSingles = singlesArr
+      .filter(() => allowSingles)
       .map(x => x[0])
       .map(
         (singleEntry): ViewProtectedLiquidity => {
@@ -2424,6 +2434,7 @@ export class EthBancorModule
                   .toNumber()
               })
             },
+            single: true,
             apr: {
               day: minimalDayDecPercent.toNumber(),
               month: minimalMonthDecPercent.toNumber(),
@@ -2467,7 +2478,7 @@ export class EthBancorModule
       );
 
       const startTime = Number(first.timestamp);
-      if (isWhiteListed) {
+      if (allowSingles) {
         return doubles.map(
           (singleEntry): ViewProtectedLiquidity => {
             const isWhiteListed = this.whiteListedPools.some(
@@ -2539,6 +2550,7 @@ export class EthBancorModule
                 month: minimalMonthDecPercent.toNumber(),
                 week: minimalWeekDecPercent.toNumber()
               },
+              single: true,
               insuranceStart: startTime + minDelay,
               fullCoverage: startTime + maxDelay,
               coverageDecPercent: calculateProtectionLevel(
@@ -2577,6 +2589,7 @@ export class EthBancorModule
             week: 0
           },
           insuranceStart: startTime + minDelay,
+          single: false,
           fullCoverage: startTime + maxDelay,
           protectedAmount: {
             amount: smartTokensDec,

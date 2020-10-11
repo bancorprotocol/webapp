@@ -114,7 +114,12 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
-import { buildPoolName, formatUnixTime, prettifyNumber } from "@/api/helpers";
+import {
+  buildPoolName,
+  compareString,
+  formatUnixTime,
+  prettifyNumber
+} from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
@@ -148,9 +153,10 @@ export default class Protected extends Vue {
   }
 
   goToWithdraw(id: string) {
-    const [poolId] = id.split(":");
-    const pool = vxm.bancor.relay(poolId);
-    const routeName = pool.whitelisted
+    const position = this.protectedLiquidity.find(pos =>
+      compareString(pos.id, id)
+    )!;
+    const routeName = position.single
       ? "WithdrawProtectionSingle"
       : "WithdrawProtectionDouble";
     this.$router.push({
