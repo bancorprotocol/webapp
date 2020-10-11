@@ -1910,6 +1910,35 @@ export class EthBancorModule
     this.protectedPositionsArr = positions;
   }
 
+
+  @action async calculateHistoricPoolBalanceByConversions(
+    { currentReserveBalances, conversionEvents }: 
+    { 
+      currentReserveBalances: WeiExtendedAsset[], conversionEvents: { from: WeiExtendedAsset, to: WeiExtendedAsset }[] }
+    ) {
+      return conversionEvents.reduce((acc, item) => {
+
+
+        const fromBalance = findOrThrow(acc, balance => compareString(balance.contract, item.from.contract));
+        const toBalance = findOrThrow(acc, balance => compareString(balance.contract, item.to.contract));
+        
+        const newFromBalanceWei = new BigNumber(fromBalance.weiAmount).minus(item.from.weiAmount).toString();
+        const newToBalanceWei = new BigNumber(toBalance.weiAmount).plus(item.to.weiAmount).toString();
+
+        return [
+          {
+            contract: fromBalance.contract,
+            weiAmount: newFromBalanceWei
+          },
+          {
+            contract: toBalance.contract,
+            weiAmount: newToBalanceWei
+          }
+        ] as WeiExtendedAsset[]
+        
+      }, currentReserveBalances)
+  }
+
   @action async fetchProtectionPositions(storeAddress?: string) {
     console.log(storeAddress, 'is the new address')
     if (!this.isAuthenticated) return;
@@ -1940,30 +1969,63 @@ export class EthBancorModule
       const rois = await Promise.all(allPositions.map(async position => {
 
         const poolBalances = await this.fetchRelayBalances(position.poolToken);
-        const [reserveBalance, opposingReserveBalance] = partition(poolBalances.reserves, reserve => compareString(reserve.contract, position.reserveToken));
-
-        const poolRateN = new BigNumber(reserveBalance[0].weiAmount).times(2).toString();
-        const poolRateD = poolBalances.smartTokenSupplyWei;
-
-        const reserveRateN = opposingReserveBalance[0].weiAmount;
-        const reserveRateD = reserveBalance[0].weiAmount;
 
         try {
-          const poolRoi = await lpContract.methods.poolROI(
-              position.poolToken,
-              position.reserveToken,
-              position.reserveAmount,
-              poolRateN,
-              poolRateD,
-              reserveRateN,
-              reserveRateD
-           ).call();
 
-           console.log(poolRoi, 'about no')
+          const events = await this.focusPool(position.poolToken)
+
+
+          const historicalBalance = await this.calculateHistoricPoolBalanceByConversions(
+            { 
+              currentReserveBalances: poolBalances.reserves.map((reserve): WeiExtendedAsset => ({ weiAmount: reserve.weiAmount, contract: reserve.contract })),
+              conversionEvents: events.conversionEvents.map(event => ({ 
+                from: {
+                 contract: event.data.from.id,
+                 weiAmount: expandToken(event.data.from.amount, event.data.from.decimals)
+                }, 
+                to: {
+                 contract: event.data.to.id,
+                 weiAmount: expandToken(event.data.to.amount, event.data.to.decimals)
+                }  
+             })) 
+            }
+          )
+
+          const [historicReserveBalance, historicOpposingReserveBalance] = partition(historicalBalance, balance => compareString(balance.contract, position.reserveToken));
+
+
+          const poolRateN = new BigNumber(historicReserveBalance[0].weiAmount).times(2).toString();
+          const poolRateD = poolBalances.smartTokenSupplyWei;
+  
+          const reserveRateN = historicOpposingReserveBalance[0].weiAmount;
+          const reserveRateD = historicReserveBalance[0].weiAmount;
+
+          const [liquidityReturn, poolRoi] = await Promise.all([
+            
+          getRemoveLiquidityReturn(
+            this.contracts.LiquidityProtection,
+            position.id, 
+            oneMillion.toString(), 
+            Number(position.timestamp) + Number(this.liquidityProtectionSettings.maxDelay)
+          ), 
+          lpContract.methods.poolROI(
+            position.poolToken,
+            position.reserveToken,
+            position.reserveAmount,
+            poolRateN,
+            poolRateD,
+            reserveRateN,
+            reserveRateD
+         ).call(), 
+        ]);
+
+  
+           console.log(poolRoi, 'about no', events.conversionEvents, 'are conversion events', historicalBalance, 'historic balances');
 
            return {
              ...position,
-             poolRoi
+             poolRoi,
+             liquidityReturn
            }
           } catch(e) {
             console.error("failed again", e);
@@ -1977,31 +2039,9 @@ export class EthBancorModule
       console.log('success!', rois);
  
  
-      const fullyProtectedReturns = await Promise.all(rois.map(async position => {
 
-        console.log(position, 'fire would have to go')
-        try {
-          const liquidityReturn = await getRemoveLiquidityReturn(
-            this.contracts.LiquidityProtection,
-            position.id, 
-            oneMillion.toString(), 
-            Number(position.timestamp) + Number(this.liquidityProtectionSettings.maxDelay)
-          );
-  
-          console.log(liquidityReturn, 'came back');
-          return {
-            ...position,
-            liquidityReturn
-          }
-        } catch(e) {
-          throw new Error("Failed to get liquidity return")
-        }
-      }));
-
-      console.log(fullyProtectedReturns, 'xyz')
-
-      this.setProtectedPositions(fullyProtectedReturns);
-      return fullyProtectedReturns;
+      this.setProtectedPositions(rois);
+      return rois;
     } catch(e) {
       console.error('Failed fetching protection positions', e.message);
     }
@@ -5240,8 +5280,6 @@ export class EthBancorModule
       res.removeLiquidity.map(event => event.txHash),
       compareString
     );
-
-    const conversions = res.conversions;
 
     const groupedAddLiquidityEvents = uniqueAddHashes.map(hash =>
       res.addLiquidity.filter(event => compareString(event.txHash, hash))
