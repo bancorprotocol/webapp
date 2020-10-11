@@ -12,13 +12,13 @@
     />
 
     <alert-block
-      v-if="whitelistWarning.show"
+      v-if="!isWhitelisted"
       variant="warning"
       :msg="whitelistWarning.msg"
-      class="mt-3"
+      class="mt-3 mb-3"
     />
 
-    <gray-border-block :gray-bg="true" class="my-3">
+    <gray-border-block v-else :gray-bg="true" class="my-3">
       <label-content-split label="Value you receive" value="????" />
       <label-content-split value="????" class="mb-2" />
 
@@ -56,10 +56,10 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            ????/????
+            {{ `${formatNumber(amount)} ${poolName}` }}
           </span>
         </b-col>
-        <b-col cols="12">
+        <b-col v-if="false" cols="12">
           <gray-border-block>
             <label-content-split label="???" value="????" />
             <label-content-split label="???" value="????" />
@@ -95,13 +95,25 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { formatUnixTime } from "@/api/helpers";
+import {
+  compareString,
+  compareToken,
+  formatUnixTime,
+  formatNumber,
+  buildPoolName
+} from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
+import moment from "moment";
+import { format } from "numeral";
+import PoolLogos from "@/components/common/PoolLogos.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 
 @Component({
   components: {
+    ActionModalStatus,
+    PoolLogos,
     ModalBase,
     AlertBlock,
     LabelContentSplit,
@@ -110,8 +122,11 @@ import ModalBase from "@/components/modals/ModalBase.vue";
     MainButton
   }
 })
-export default class AddProtectionV1 extends Vue {
-  @Prop() pool!: ViewRelay;
+export default class AddProtectionDouble extends Vue {
+  get pool(): ViewRelay {
+    const [poolId] = this.$route.params.id.split(":");
+    return vxm.bancor.relay(poolId);
+  }
 
   amount: string = "";
 
@@ -126,12 +141,26 @@ export default class AddProtectionV1 extends Vue {
     return vxm.bancor.relays.filter(x => !x.v2);
   }
 
+  get poolName() {
+    return buildPoolName(this.pool.id);
+  }
+
+  get isWhitelisted() {
+    return this.pool.whitelisted;
+  }
+
   get balance() {
-    return "0";
+    console.log(vxm.ethBancor.poolTokenPositions, "are pool token positions");
+    const poolBalance = vxm.ethBancor.poolTokenPositions.find(position =>
+      compareString(position.relay.id as string, this.pool.id)
+    );
+    return poolBalance ? poolBalance.smartTokenAmount : "0";
   }
 
   get fullCoverageDate() {
-    return formatUnixTime(Date.now()).date;
+    const maxDelayTime = vxm.ethBancor.liquidityProtectionSettings.maxDelay;
+    const currentTime = moment().unix();
+    return formatUnixTime(currentTime + maxDelayTime).date;
   }
 
   get actionButtonLabel() {
@@ -152,7 +181,7 @@ export default class AddProtectionV1 extends Vue {
     if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
 
     const amountNumber = new BigNumber(this.amount);
-    const balanceNumber = new BigNumber(this.balance);
+    const balanceNumber = new BigNumber(this.balance || 0);
 
     if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
     else return "";
@@ -176,14 +205,36 @@ export default class AddProtectionV1 extends Vue {
       : "Confirm";
   }
 
-  initAction() {
-    this.setDefault();
-    this.modal = false;
+  async initAction() {
+    if (this.success) {
+      this.setDefault();
+      this.modal = false;
+      this.$router.push({ name: "LiqProtection" });
+      return;
+    } else if (this.error) {
+      this.setDefault();
+      return;
+    }
+
+    this.txBusy = true;
+    try {
+      const txRes = await vxm.ethBancor.protectLiquidity({
+        amount: { amount: this.amount, id: this.pool.id },
+        onUpdate: this.onUpdate
+      });
+      console.log(txRes, "was tx res");
+      this.success = txRes;
+      this.amount = "";
+    } catch (e) {
+      this.error = e.message;
+    } finally {
+      this.txBusy = false;
+    }
   }
 
   async openModal() {
     if (this.isAuthenticated) this.modal = true;
-    //@ts-ignore
+    // @ts-ignore
     else await this.promptAuth();
   }
 
@@ -191,6 +242,10 @@ export default class AddProtectionV1 extends Vue {
     this.sections = [];
     this.error = "";
     this.success = null;
+  }
+
+  formatNumber(amount: string) {
+    return parseFloat(formatNumber(amount, 6));
   }
 
   get currentStatus() {
@@ -207,8 +262,8 @@ export default class AddProtectionV1 extends Vue {
 
   async selectPool(id: string) {
     await this.$router.replace({
-      name: "ProtectionAction",
-      params: { action: "add", id }
+      name: "AddProtectionDouble",
+      params: { id }
     });
   }
 

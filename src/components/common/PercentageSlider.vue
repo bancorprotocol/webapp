@@ -19,12 +19,9 @@
     ></b-form-input>
     <b-row v-if="showButtons">
       <b-col cols="3" v-for="p in percentages" :key="p">
-        <main-button
-          @click="percentage = p"
-          :label="`${p}%`"
-          :active="buttonsDirty && p === percentage"
-          :small="true"
-        />
+        <b-btn @click="percentage = p" :variant="getVariant(p)" size="xs" block>
+          {{ p }}%
+        </b-btn>
       </b-col>
     </b-row>
   </div>
@@ -49,10 +46,23 @@ export default class PercentageSlider extends Vue {
 
   percentages = ["25", "50", "75", "100"];
 
+  getVariant(percentage: string) {
+    if (this.percentage === percentage) return "primary";
+    else if (this.darkMode) return "outline-gray-dark";
+    else return "outline-gray";
+  }
+
   get darkMode() {
     return vxm.general.darkMode;
   }
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.btn-xs {
+  padding: 0.25rem 0.4rem !important;
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+  border-radius: 8px !important;
+}
+</style>

@@ -14,13 +14,16 @@
         :src="bntLogoSrc"
         alt="Token Logo"
       />
-      <span class="mx-2">{{ `${item.amount} BNT` }}</span>
-      <span class="text-primary font-size-12">
+      <span class="mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
+      <!-- <span class="text-primary font-size-12">
         {{ `(~$${item.usdValue})` }}
-      </span>
+      </span> -->
     </div>
     <div v-if="!locked">
-      <b-btn variant="primary" class="font-size-14 font-w500 px-4"
+      <b-btn
+        variant="primary"
+        @click="click"
+        class="font-size-14 font-w500 px-4"
         >Claim BNT</b-btn
       >
     </div>
@@ -36,9 +39,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
 import moment from "moment";
+import { prettifyNumber } from "@/api/helpers";
 
 @Component
 export default class ClaimBnt extends Vue {
@@ -47,6 +51,9 @@ export default class ClaimBnt extends Vue {
   locked = true;
 
   lockDuration = "00:00:00";
+
+  @Emit()
+  click() {}
 
   countdown(eventTime: number) {
     const currentTime = Date.now() / 1000;
@@ -74,6 +81,10 @@ export default class ClaimBnt extends Vue {
 
   get textMutedClass() {
     return this.darkMode ? "text-muted-dark" : "text-muted-light";
+  }
+
+  prettifyNumber(number: string | number): string {
+    return prettifyNumber(number);
   }
 
   get darkMode() {

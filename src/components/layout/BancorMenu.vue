@@ -42,7 +42,7 @@
           <span class="ml-3">Data</span>
         </div>
       </b-dropdown-item>
-      <b-dropdown-item v-if="false" :to="{ name: 'LiqProtection' }">
+      <b-dropdown-item :to="{ name: 'LiqProtection' }">
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
         Liquidity Protection
       </b-dropdown-item>

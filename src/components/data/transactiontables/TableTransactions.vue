@@ -83,7 +83,10 @@ export default class TableTransactions extends Vue {
   doFilter(row: any, filter: string) {
     const fromSymbol = row.data.from.symbol;
     const toSymbol = row.data.to.symbol;
-    return fromSymbol && fromSymbol.toLowerCase().indexOf(filter) >= 0 || toSymbol && toSymbol.toLowerCase().indexOf(filter) >= 0;
+    return (
+      (fromSymbol && fromSymbol.toLowerCase().indexOf(filter) >= 0) ||
+      (toSymbol && toSymbol.toLowerCase().indexOf(filter) >= 0)
+    );
   }
 }
 </script>

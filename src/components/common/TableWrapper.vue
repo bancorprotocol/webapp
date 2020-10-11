@@ -12,6 +12,8 @@
       :filter="filter"
       :filter-function="filterFunction"
       @filtered="onFiltered"
+      emptyFilteredText="No results found"
+      show-empty
     >
       <slot v-for="(_, name) in $slots" :name="name" :slot="name" />
       <template
@@ -21,6 +23,13 @@
       >
         <slot :name="name" v-bind="slotData" />
       </template>
+
+      <template v-slot:emptyfiltered="scope">
+        <div class="font-size-14 font-w500 text-center mt-4">
+          {{ scope.emptyFilteredText }}
+        </div>
+        <h4></h4>
+      </template>
     </b-table>
 
     <b-pagination
@@ -29,24 +38,7 @@
       :total-rows="totalRows"
       :per-page="perPage"
       align="center"
-    >
-      <!--   <template v-slot:prev-text="{ disabled }">
-        <font-awesome-icon
-          icon="long-arrow-alt-left"
-          :class="iconClass(disabled)"
-        />
-      </template>
-      <template v-slot:next-text="{ disabled }">
-        <font-awesome-icon
-          icon="long-arrow-alt-right"
-          :class="iconClass(disabled)"
-        />
-      </template>-->w
-    </b-pagination>
-
-    <div v-if="!totalRows" class="text-center">
-      <span class="font-size-14 font-w500">No results found</span>
-    </div>
+    />
   </div>
 </template>
 
@@ -72,14 +64,6 @@ export default class TableWrapper extends Vue {
   onFiltered(filteredItems: any) {
     this.totalRows = filteredItems.length;
     this.currentPage = 1;
-  }
-
-  iconClass(disabled: boolean) {
-    return disabled
-      ? this.darkMode
-        ? "text-muted-dark"
-        : "text-muted-light"
-      : "text-primary";
   }
 
   @Watch("items")

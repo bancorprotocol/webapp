@@ -252,7 +252,7 @@ export default class DataPool extends Vue {
     return this.txHistory.conversionEvents;
   }
 
-  doFilter(row: any, filter: string) {    
+  doFilter(row: any, filter: string) {
     return row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0;
   }
   async loadFocusPool() {
