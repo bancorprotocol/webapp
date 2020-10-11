@@ -86,7 +86,7 @@
             @click="sideLinkClicked(link.key)"
             class="side-bar-link"
             :class="
-              selectedLink === link.key
+              $route.name === link.route
                 ? darkMode
                   ? 'clicked-link-dark'
                   : 'clicked-link'
@@ -149,7 +149,13 @@ export default class App extends Vue {
   selectedLink = "swap";
   links = [
     { route: "DataSummary", key: "data", label: "Data", newTab: false },
-    { route: "Swap", key: "swap", label: "Swap", newTab: false },
+    { route: "Swap", key: "swap", label: "Swap" },
+    {
+      route: "GovernancePage",
+      key: "governance",
+      label: "Governance",
+      newTab: false
+    },
     // { route: "swap", key: "governance", label: "Governance" },
     { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
     {

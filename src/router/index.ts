@@ -17,6 +17,8 @@ import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
 import TermsOfUse from "@/views/TermsOfUse.vue";
 import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
+import GovernancePage from "@/components/governance/GovernancePage.vue";
+import Governance from "@/views/Governance.vue";
 import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
 import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
@@ -226,6 +228,22 @@ export const router = new Router({
           name: "DetailsPool",
           redirect: "/404",
           component: DataDetailsPool
+        }
+      ]
+    },
+    {
+      path: "/:service/governance",
+      name: "Governance",
+      components: {
+        Nav: Navigation,
+        default: Governance
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "GovernancePage",
+          component: GovernancePage
         }
       ]
     },
