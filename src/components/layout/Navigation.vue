@@ -1,13 +1,9 @@
 <template>
   <div>
-    <div
-      class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
-    >
-      This interface is in beta. Use it at your own risk.
-    </div>
     <b-navbar class="navBar">
       <div class="d-flex justify-content-between container-xl">
-        <b-navbar-brand class="pb-1" style="width: 250px">
+        <div />
+        <!-- <b-navbar-brand class="pb-1" style="width: 250px">
           <router-link
             :to="{ name: 'Swap', params: { service: selectedNetwork } }"
           >
@@ -24,7 +20,7 @@
               class="mb-1"
             />
           </router-link>
-        </b-navbar-brand>
+        </b-navbar-brand> -->
 
         <div class="d-flex justify-content-end" style="width: 250px">
           <b-navbar-nav class="mr-2">

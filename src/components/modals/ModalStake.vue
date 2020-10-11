@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
     scrollable
     size="sm"
     centered
@@ -45,11 +46,7 @@
       <div class="input-currency mt-1">
         <b-form-input
           v-model="stakeValue"
-          :state="
-            (stakeValue.length === 0 ||
-              (stakeValue > 0 && stakeValue <= currentBalance)) &&
-              undefined
-          "
+          :state="state"
           @keypress="isNumber($event)"
           :max="currentBalance"
           type="number"
@@ -67,15 +64,14 @@
         </div>
       </div>
 
+      <b-alert show variant="warning" class="my-3 p-3 font-size-14 alert-over">
+        Staking {{ symbol }} enables you to vote on proposals. You will be able
+        to unstake once the lock period is over (up to {{ maxLock }}h)
+      </b-alert>
+
       <main-button
         @click="stake"
-        :label="
-          stakeValue.length === 0
-            ? 'Enter Amount'
-            : stakeValue > 0 && stakeValue <= currentBalance
-            ? 'Stake Tokens'
-            : 'Insufficient Amount'
-        "
+        :label="stakeLabel"
         :active="true"
         :block="true"
         :disabled="!(stakeValue > 0 && stakeValue <= currentBalance)"
@@ -95,7 +91,12 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <b-spinner variant="primary"></b-spinner>
-      <h3 class="font-size-lg mt-4">Waiting For Confirmation</h3>
+      <h3
+        class="font-size-lg mt-4"
+        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+      >
+        Waiting For Confirmation
+      </h3>
       <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
       <div
         class="font-size-12 font-w500"
@@ -111,7 +112,12 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
-      <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
+      <h3
+        class="font-size-lg mt-4"
+        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+      >
+        Transaction Submitted
+      </h3>
       <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
       <a
         target="_blank"
@@ -151,13 +157,33 @@ export default class ModalStake extends Vue {
   stakeValue?: number = "" as any;
   step: "stake" | "staking" | "staked" = "stake";
   symbol: string = "";
+  maxLock: number = 0;
 
+  get state() {
+    return (
+      (String(this.stakeValue).length === 0 ||
+        (this.stakeValue &&
+          this.stakeValue > 0 &&
+          this.stakeValue <= this.currentBalance)) &&
+      undefined
+    );
+  }
+
+  get stakeLabel() {
+    return this.stakeValue && String(this.stakeValue).length === 0
+      ? "Enter Amount"
+      : this.stakeValue &&
+        this.stakeValue > 0 &&
+        this.stakeValue <= this.currentBalance
+      ? "Stake Tokens"
+      : "Insufficient Amount";
+  }
   get darkMode(): boolean {
     return vxm.general.darkMode;
   }
 
   getEtherscanUrl() {
-    return `${etherscanUrl}address/${this.account}#tokentxns`;
+    return `${etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
   }
 
   stake() {
@@ -169,8 +195,11 @@ export default class ModalStake extends Vue {
 
   async doStake() {
     await vxm.ethGovernance.stake({
-      account: this.account,
-      amount: expandToken(this.stakeValue!.toString(), 18)
+      account: this.isAuthenticated,
+      amount: expandToken(
+        this.stakeValue!.toString(),
+        await vxm.ethGovernance.getDecimals()
+      )
     });
   }
 
@@ -182,7 +211,7 @@ export default class ModalStake extends Vue {
     }
   }
 
-  get account() {
+  get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
 
@@ -200,12 +229,23 @@ export default class ModalStake extends Vue {
   }
 
   @Watch("step")
-  @Watch("account")
+  @Watch("isAuthenticated")
   @Watch("show")
   async update() {
     this.currentBalance = await vxm.ethGovernance.getBalance({
-      account: this.account
+      account: this.isAuthenticated
     });
+
+    await this.updateMaxLock();
+  }
+
+  async updateMaxLock() {
+    const [voteDuration, voteLockFraction] = await Promise.all([
+      vxm.ethGovernance.getVoteLockDuration(),
+      vxm.ethGovernance.getVoteLockFraction()
+    ]);
+
+    this.maxLock = voteDuration / voteLockFraction / 60 / 60;
   }
 
   async mounted() {
@@ -265,5 +305,11 @@ export default class ModalStake extends Vue {
     background: $gray-placeholder !important;
     border-color: transparent !important;
   }
+}
+
+.alert-over {
+  border: 1px solid #ffeeba !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
 }
 </style>

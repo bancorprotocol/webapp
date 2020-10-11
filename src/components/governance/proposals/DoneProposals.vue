@@ -1,17 +1,51 @@
 <template>
+  <div v-if="!proposals">
+    <div class="d-flex justify-content-center align-items-center my-5">
+      <b-spinner
+        style="display: block; width: 2rem; height: 2rem;"
+        class="align-self-center align-middle"
+        :class="darkMode ? 'text-primary' : 'text-primary'"
+        label="Loading..."
+      ></b-spinner>
+      <h5
+        class="m-0 ml-3"
+        :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+      >
+        Just a moment ...
+      </h5>
+    </div>
+  </div>
+  <div
+    v-else-if="proposals && proposals.length === 0"
+    class="d-flex justify-content-center align-items-center my-5"
+  >
+    <h5
+      class="m-0 ml-3"
+      :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+    >
+      No Proposals yet ...
+    </h5>
+  </div>
   <data-table
-    :items="proposalsToDisplay"
+    v-else-if="proposals"
+    :items="proposals"
     :fields="fields"
     default-sort="to"
     :hidePagination="true"
   >
     <template
-      v-for="proposal in proposalsToDisplay"
+      v-for="proposal in proposals"
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <tr :key="'r1-' + proposal.id" class="align-rows-cells">
-        <td>{{ proposal.id }}</td>
+      <tr
+        :key="'r1-' + proposal.id"
+        class="align-rows-cells cursor"
+        @click="() => openProposal(proposal)"
+      >
+        <td :class="{ 'no-border': !isNaN(opened) && proposal.id === opened }">
+          {{ proposal.id }}
+        </td>
         <td class="font-size-14 font-w500">
           {{ proposal.name }}
         </td>
@@ -39,32 +73,36 @@
         </td>
         <!--       <td>
           <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.startDate) }}
+            {{ formatDate(proposal.start) }}
           </div>
           <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.startDate) }} UTC
+            {{ formatTime(proposal.start) }} UTC
           </div>
         </td> -->
         <td>
           <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.endDate) }}
+            {{ formatDate(proposal.end) }}
           </div>
           <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.endDate) }} UTC
+            {{ formatTime(proposal.end) }} UTC
           </div>
         </td>
-        <td @click="() => openProposal(proposal)" class="cursor">
+        <td>
           <font-awesome-icon
-            :icon="opened && proposal.id === opened ? 'caret-up' : 'caret-down'"
+            :icon="
+              !isNaN(opened) && proposal.id === opened
+                ? 'caret-up'
+                : 'caret-down'
+            "
           />
         </td>
       </tr>
       <tr
         :key="'r2-' + proposal.id"
         class="align-rows-cells"
-        v-if="opened && proposal.id === opened"
+        v-if="!isNaN(opened) && proposal.id === opened"
       >
-        <td class="no-border"></td>
+        <td></td>
         <td>
           <div
             class="font-size-12 pb-1"
@@ -100,10 +138,10 @@
               Vote Start
             </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
-              {{ formatDate(proposal.startDate) }}
+              {{ formatDate(proposal.start) }}
             </span>
             <span class="font-size-12 font-w500 text-muted-light">
-              {{ formatTime(proposal.startDate) }}
+              {{ formatTime(proposal.start) }}
             </span>
           </div>
           <div>
@@ -111,28 +149,38 @@
               Quorum/Required
             </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
-              {{ proposal.quorum / 100 }}% /
-              {{ proposal.quorumRequired / 100 }}%
+              {{ proposal.quorum / 10000 }}% /
+              {{ proposal.quorumRequired / 10000 }}%
             </span>
           </div>
         </td>
         <td colspan="3">
           <div class="buttons-container">
-            <main-button
-              :small="true"
-              :active="true"
-              class="font-w400 mt-0 mb-0"
+            <a
+              :href="getBIPLink(proposal)"
+              target="_blank"
+              style="width: 100%; display: inline-block;"
             >
-              BIP
-              <font-awesome-icon icon="external-link-alt" />
-            </main-button>
+              <main-button
+                :small="true"
+                :active="true"
+                class="font-w400 mt-0 mb-0"
+              >
+                BIP
+                <font-awesome-icon icon="external-link-alt" />
+              </main-button>
+            </a>
 
-            <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
-              <a :href="getIPFSUrl(proposal.hash)" target="_blank">
+            <a
+              :href="getIPFSUrl(proposal.hash)"
+              target="_blank"
+              style="width: 100%; display: inline-block;"
+            >
+              <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
                 IPFS
                 <font-awesome-icon icon="external-link-alt" />
-              </a>
-            </main-button>
+              </main-button>
+            </a>
           </div>
         </td>
       </tr>
@@ -142,7 +190,6 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import PieChart from "vue-pie-chart";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -151,7 +198,7 @@ import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
 import {
   etherscanUrl,
-  ipfsUrl,
+  ipfsViewUrl,
   Proposal
 } from "@/store/modules/governance/ethGovernance";
 
@@ -159,7 +206,6 @@ import {
   components: {
     ContentBlock,
     DataTable,
-    PieChart,
     MainButton
   }
 })
@@ -167,60 +213,6 @@ export default class DoneProposals extends Vue {
   @Prop() proposals?: Proposal[];
   symbol: string = "";
   opened?: number = undefined;
-
-  mockData: Proposal[] = [
-    {
-      id: 1,
-      proposer: "0x" + "1".repeat(40),
-      executor: "0x" + "1".repeat(40),
-      totalVotesAgainst: 3777,
-      totalVotesFor: 1900,
-      totalVotesAvailable: 10000,
-      totalVotes: 1900 + 3777,
-      start: 0,
-      end: 0,
-      name: "Test1",
-      startDate: 1600348747298,
-      endDate: 1600248747298,
-      open: false,
-      hash: "sdadsa",
-      quorum: "10000",
-      quorumRequired: "100000",
-      votes: {
-        voted: "for",
-        for: 10,
-        against: 0
-      }
-    },
-    {
-      id: 2,
-      proposer: "0x" + "3".repeat(40),
-      executor: "0x" + "2".repeat(40),
-      totalVotesAgainst: 1299,
-      totalVotesFor: 1900,
-      totalVotesAvailable: 10000,
-      totalVotes: 1900 + 1299,
-      start: 0,
-      end: 0,
-      name: "Test2",
-      startDate: 1600348747298,
-      endDate: 1600268747298,
-      open: false,
-      hash: "sdadsa",
-      quorum: "10000",
-      quorumRequired: "100000",
-      votes: {
-        voted: "for",
-        for: 10,
-        against: 0
-      }
-    }
-  ];
-
-  get proposalsToDisplay() {
-    // @ts-ignore
-    return this.proposals.length > 0 ? this.proposals : this.mockData;
-  }
 
   get fields(): ViewTableFields[] {
     return [
@@ -235,20 +227,20 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "Result",
-        maxWidth: "140px",
-        minWidth: "140px"
+        maxWidth: "120px",
+        minWidth: "120px"
       },
       {
         label: "Votes for",
         key: "votesFor",
-        maxWidth: "130px",
-        minWidth: "130px"
+        maxWidth: "140px",
+        minWidth: "140px"
       },
       {
         label: "Votes against",
         key: "votesAgainst",
-        maxWidth: "130px",
-        minWidth: "130px"
+        maxWidth: "140px",
+        minWidth: "140px"
       },
       {
         label: "Vote start",
@@ -268,7 +260,7 @@ export default class DoneProposals extends Vue {
   }
 
   getIPFSUrl(hash: string) {
-    return `${ipfsUrl}/${hash}`;
+    return `${ipfsViewUrl}/${hash}`;
   }
 
   getEtherscanUrl(address: string) {
@@ -300,6 +292,10 @@ export default class DoneProposals extends Vue {
 
   isApproved(proposal: Proposal) {
     return proposal.totalVotesFor > proposal.totalVotesAgainst;
+  }
+
+  getBIPLink(proposal: Proposal) {
+    return proposal?.metadata?.payload?.metadata?.discourse || "#";
   }
 
   openProposal(proposal: any) {
@@ -348,22 +344,14 @@ export default class DoneProposals extends Vue {
   }
 }
 
-.no-border {
-  position: relative;
-
-  &:before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    height: 1px;
-    width: 100%;
-    left: 0;
-    background: #ffffff;
-  }
+.dark-table td.no-border,
+.table td.no-border {
+  border-bottom: 0 !important;
 }
 
 .buttons-container {
   display: flex;
+  margin-right: 20px;
   align-items: center;
   justify-content: space-between;
 }

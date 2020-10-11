@@ -34,24 +34,36 @@ export default class ActionButtons extends Vue {
   }
 
   goToPool() {
-    let routeData = this.$router.resolve({
+    this.$router.push({
       name: "PoolAction",
-      params: {
-        poolAction: "add",
-        account: this.pool!.id
-      }
+      params: { poolAction: "add", account: this.pool!.id }
     });
-    window.open(routeData.href, "_blank");
+
+    // let routeData = this.$router.resolve({
+    //   name: "PoolAction",
+    //   params: {
+    //     poolAction: "add",
+    //     account: this.pool!.id
+    //   }
+    // });
+    // window.open(routeData.href, "_blank");
   }
 
   goToSwap() {
-    let routeData = this.$router.resolve({
+    this.$router.push({
       name: "Swap",
       query: {
         from: this.getId
       }
     });
-    window.open(routeData.href, "_blank");
+    //
+    // let routeData = this.$router.resolve({
+    //   name: "Swap",
+    //   query: {
+    //     from: this.getId
+    //   }
+    // });
+    // window.open(routeData.href, "_blank");
   }
 
   get getId() {

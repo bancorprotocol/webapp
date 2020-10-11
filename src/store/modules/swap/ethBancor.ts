@@ -520,6 +520,8 @@ const totalBntVolumeAtBlocks = async (blocks: string[]) => {
   return blockSummaries;
 };
 
+const notBadRelay = (converterAndAnchor: ConverterAndAnchor) => !compareString(converterAndAnchor.anchorAddress, '0x368B3D50E51e8bf62E6C73fc389e4102B9aEB8e2')
+
 const decodedToTimedDecoded = <T>(
   event: DecodedEvent<T>,
   knownBlockNumber: number,
@@ -4248,11 +4250,15 @@ export class EthBancorModule
       allAnchors.map(poolTokenShape)
     ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
+
+    const badRelays = rawRelays.filter(rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2))
+    const badRelay = rawRelays.filter(x => x.connectorTokenCount == '2').find(rawRelay => compareString(rawRelay.connectorToken1, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3') || compareString(rawRelay.connectorToken2, '0x57Ab1E02fEE23774580C119740129eAC7081e9D3'))
+
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
     );
 
-    const polished: RefinedAbiRelay[] = rawRelays.map(half => ({
+    const polished: RefinedAbiRelay[] = rawRelays.filter(x => x.connectorTokenCount == '2').map(half => ({
       ...half,
       anchorAddress: findOrThrow(
         convertersAndAnchors,
@@ -4589,7 +4595,6 @@ export class EthBancorModule
     );
 
     const tokens = this.tokens;
-    console.log(tokens, "is tokens");
 
     const blockNow = await this.blockNumberHoursAgo(0);
     const timeNow = moment().unix();
@@ -4647,8 +4652,6 @@ export class EthBancorModule
         )
       );
 
-    console.log(addEvents, "are add events");
-    console.log(removeEvents, "are generated remove events");
 
     const conversionEvents = res.conversions
       .filter((event, index) => {
@@ -4710,7 +4713,6 @@ export class EthBancorModule
       );
     const data = await totalBntVolumeAtBlocks(blocksToRequest);
 
-    console.log(data, "came back in vuex");
 
     const withTimestamp = data.map(
       ([blockNumber, totalVolume, totalLiquidity]) => {
@@ -4741,7 +4743,6 @@ export class EthBancorModule
     fromBlock: number;
   }) {
     const res = await getLogs(network, networkContract, fromBlock);
-    console.log(res, "was res");
 
     const uniqTxHashes = uniqWith(
       res.map(x => x.txHash),
@@ -4949,10 +4950,6 @@ export class EthBancorModule
         notBlackListed(blackListedAnchors)
       );
 
-      console.log({
-        anchorAndConvertersMatched: passedAnchorAndConvertersMatched,
-        bareMinimumAnchorAddresses
-      });
 
       const requiredAnchors = bareMinimumAnchorAddresses.map(anchor =>
         findOrThrow(
@@ -4969,7 +4966,6 @@ export class EthBancorModule
         tokenPrices: bancorApiTokens
       });
 
-      console.log({ priorityAnchors });
 
       const initialLoad = uniqWith(
         [...requiredAnchors],
@@ -4986,20 +4982,10 @@ export class EthBancorModule
         priorityAnchors
       );
 
-      console.log("trying...");
+
       console.timeEnd("timeToGetToInitialBulk");
       console.time("initialPools");
-      const x = await this.addPoolsBulk([
-        ...initialLoad,
-        {
-          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
-        }
-      ]);
-      this.setLoadingPools(false);
-      console.timeEnd("initialPools");
-      console.log("finished add pools...", x);
-
+      
       if (remainingLoad.length > 0) {
         const potentialUnfitConverters = [
           "0xfb64059D18BbfDc5EEdCc6e65C9F09de8ccAf5b6",
@@ -5019,22 +5005,36 @@ export class EthBancorModule
               anchorAndConverter.converterAddress,
               anchorAndConverter.anchorAddress
             ].some(address => potentialUnfitConverters.some(x => x == address))
-        );
+        ).filter(notBadRelay)
 
         const droppedAnchors = differenceWith(
           remainingLoad,
           newSet,
           compareAnchorAndConverter
-        );
+        ).filter(notBadRelay)
         this.addPoolsBulk(newSet).then(() => {
           this.addPoolsBulk(droppedAnchors);
         });
       }
+      
+      
+      await this.addPoolsBulk([
+        ...initialLoad,
+        {
+          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
+        }
+      ].filter(notBadRelay));
+      this.setLoadingPools(false);
+      console.timeEnd("initialPools");
+
       this.moduleInitiated();
 
       if (this.relaysList.length < 1) {
         console.error("Init resolved with less than 2 relay feeds or 1 relay.");
       }
+      // @ts-ignore
+      console.log('Eth resolving at', new Date() / 1)
       console.timeEnd("ethResolved");
     } catch (e) {
       console.error(`Threw inside ethBancor ${e.message}`);
@@ -5201,29 +5201,21 @@ export class EthBancorModule
     if (!convertersAndAnchors || convertersAndAnchors.length == 0)
       throw new Error("Received nothing for addPoolsBulk");
 
+      const startTime = new Date()
     this.setLoadingPools(true);
 
     const tokenAddresses: string[][] = [];
 
-    const subgraphRes = await this.getPoolsViaSubgraph();
+    // const subgraphRes = await this.getPoolsViaSubgraph();
+    // console.log(subgraphRes, 'is the subgraphs')
 
-    const notCoveredBySubGraph = convertersAndAnchors.filter(
-      anchor =>
-        !subgraphRes.pools.some(relay =>
-          compareString(relay.id, anchor.anchorAddress)
-        )
-    );
 
-    console.log(
-      subgraphRes.pools.length,
-      "covered by subgraph",
-      notCoveredBySubGraph.length,
-      "left for rpc"
-    );
+    const notCoveredBySubGraph = convertersAndAnchors
+
     const { pools, reserveFeeds } = await this.addPoolsV2(notCoveredBySubGraph);
 
-    const allPools = [...subgraphRes.pools, ...pools];
-    const allReserveFeeds = [...subgraphRes.reserveFeeds, ...reserveFeeds];
+    const allPools = [...pools];
+    const allReserveFeeds = [...reserveFeeds];
 
     const poolsFailed = differenceWith(convertersAndAnchors, allPools, (a, b) =>
       compareString(a.anchorAddress, b.id)
@@ -5248,6 +5240,8 @@ export class EthBancorModule
 
     console.timeEnd("addPoolsBulk");
 
+    const endTime = new Date()
+    // console.log('it took', endTime - startTime, 'ms', 'to load', pools.length, 'pools')
     if (convertersAndAnchors.length > 40) {
       this.createReport();
     }

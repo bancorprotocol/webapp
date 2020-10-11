@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="!advanced" class="text-center my-3">
+    <div v-if="!detailMode" class="text-center my-3">
       <font-awesome-icon
         icon="long-arrow-alt-down"
         class="text-primary font-size-16"
@@ -8,12 +8,12 @@
     </div>
 
     <div
-      v-if="!advanced"
+      v-if="!detailMode"
       class="block block-rounded block-bordered mb-4"
       :class="darkMode ? 'block-light-blue-dark' : 'block-light-blue-light'"
     >
       <div
-        v-if="!advanced"
+        v-if="!detailMode"
         class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 pt-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
@@ -29,7 +29,7 @@
       </div>
 
       <div
-        v-if="!advanced"
+        v-if="!detailMode"
         class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 py-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
@@ -47,14 +47,14 @@
 
     <div v-else>
       <token-input-field
-        v-if="!advanced"
+        v-if="!detailMode"
         label="Input"
         v-model="amountSmartToken"
         :pool="pool"
         class="mt-4"
       />
 
-      <div v-if="!advanced" class="text-center my-3">
+      <div v-if="!detailMode" class="text-center my-3">
         <font-awesome-icon
           icon="long-arrow-alt-down"
           class="text-primary font-size-16"
@@ -93,15 +93,6 @@
       "
       class="my-3"
     />
-    <div
-      v-if="!advanced"
-      class="font-size-12 font-w600 text-center"
-      :class="darkMode ? 'text-link-dark' : 'text-link-light'"
-    >
-      <span class="cursor" @click="advanced = !advanced">
-        {{ advanced ? "Simple" : "Advanced" }}
-      </span>
-    </div>
 
     <main-button
       @click="initAction"
@@ -146,7 +137,8 @@ import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 export default class PoolActionsRemoveV1 extends Vue {
   @Prop() pool!: ViewRelay;
 
-  advanced = true;
+  detailMode = true;
+
   rateLoading = false;
 
   // selectedToken: ViewReserve = this.pool.reserves[0];

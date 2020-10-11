@@ -91,7 +91,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import {ViewRelay, ViewReserve, ViewToken} from "@/types/bancor";
+import { ViewRelay, ViewReserve, ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
@@ -175,7 +175,9 @@ export default class DataDetailsToken extends Vue {
   }
 
   get poolTableItems() {
-    return vxm.bancor.relays.filter((x: ViewRelay) => x.reserves.find((x: ViewReserve) => x.symbol === this.token.symbol));
+    return vxm.bancor.relays.filter((x: ViewRelay) =>
+      x.reserves.find((x: ViewReserve) => x.symbol === this.token.symbol)
+    );
   }
 
   get txItemsSwap() {

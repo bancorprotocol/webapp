@@ -11,7 +11,7 @@
             class="font-size-24 font-w600 mr-2"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ amountsArray[0] }}
+            {{ Number(amountsArray[0]) }}
           </span>
           <pool-logos :pool="pool" />
         </b-col>
@@ -22,14 +22,14 @@
             class="font-size-24 font-w600 mr-2"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ amountsArray[1] }} {{ selectedToken.symbol }}
+            {{ Number(amountsArray[1]) }} {{ selectedToken.symbol }}
           </div>
           <div v-else>
             <div
               class="font-size-24 font-w600 mr-2"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              {{ amountsArray[1] }} {{ pool.reserves[0].symbol }}
+              {{ Number(amountsArray[1]) }} {{ pool.reserves[0].symbol }}
             </div>
             <font-awesome-icon
               v-if="!pool.v2"
@@ -41,7 +41,7 @@
               class="font-size-24 font-w600 mr-2"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              {{ amountsArray[2] }} {{ pool.reserves[1].symbol }}
+              {{ Number(amountsArray[2]) }} {{ pool.reserves[1].symbol }}
             </div>
           </div>
         </b-col>

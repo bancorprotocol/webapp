@@ -7,7 +7,7 @@
     :disabled="disabled || loading"
   >
     <font-awesome-icon v-if="loading" icon="circle-notch" spin />
-    <span v-else-if="label">{{ label }}</span>
+    <span v-else-if="label" class="font-size-14 font-w500">{{ label }}</span>
     <slot v-else></slot>
   </b-btn>
 </template>

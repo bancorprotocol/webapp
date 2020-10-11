@@ -20,56 +20,84 @@
       </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-2">
+    <b-dropdown-group v-if="false" id="dropdown-group-2">
       <b-dropdown-header class="text-uppercase">Apps</b-dropdown-header>
-      <b-dropdown-item v-if="false" :to="{ name: 'Swap' }"
-        ><font-awesome-icon icon="exchange-alt" class="mr-2" fixed-width />
-        Bancor Swap</b-dropdown-item
-      >
-      <b-dropdown-item @click="navigate('data')"
-        ><font-awesome-icon icon="chart-line" class="mr-2" fixed-width /> Bancor
-        Data</b-dropdown-item
-      >
-      <b-dropdown-item :to="{ name: 'LiqProtection' }">
+      <b-dropdown-item v-if="isDataPage" @click="navSwap">
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/swap.svg`)"
+          />
+          <span class="ml-3">Swap</span>
+        </div>
+      </b-dropdown-item>
+      <b-dropdown-item v-else @click="navData">
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/data.svg`)"
+          />
+          <span class="ml-3">Data</span>
+        </div>
+      </b-dropdown-item>
+      <b-dropdown-item v-if="false" :to="{ name: 'LiqProtection' }">
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
         Liquidity Protection
       </b-dropdown-item>
-      <b-dropdown-item @click="navigate('governance')"
-        ><font-awesome-icon icon="poll" class="mr-2" fixed-width /> Bancor
-        Governance</b-dropdown-item
-      >
-      <b-dropdown-item @click="openUrl('https://x.bancor.network/')"
-        ><font-awesome-icon icon="times" class="mr-2" fixed-width /> Bancor
-        X</b-dropdown-item
-      >
-      <b-dropdown-item @click="openUrl('https://bancor.network/')"
-        ><font-awesome-icon icon="chart-bar" class="mr-2" fixed-width /> Bancor
-        Wallet</b-dropdown-item
-      >
+      <b-dropdown-item :to="{ name: 'GovernancePage' }">
+        <font-awesome-icon icon="thumbs-up" class="mr-2" fixed-width />
+        Bancor Governance
+      </b-dropdown-item>
+      <b-dropdown-item @click="openUrl('https://x.bancor.network/')">
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/bancorx.svg`)"
+          />
+          <span class="ml-3">Bancor X</span>
+        </div>
+      </b-dropdown-item>
+      <b-dropdown-item @click="openUrl('https://bancor.network/')">
+        <div class="d-flex align-items-center">
+          <img
+            height="16"
+            width="16"
+            :src="require(`@/assets/media/icons/bancor.svg`)"
+          />
+          <span class="ml-3">Bancor Wallet</span>
+        </div>
+      </b-dropdown-item>
     </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header class="text-uppercase">Developers</b-dropdown-header>
-      <b-dropdown-item @click="openUrl('https://docs.bancor.network/')"
-        ><font-awesome-icon icon="book-open" class="mr-2" fixed-width />
-        Gitbook</b-dropdown-item
-      >
-      <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')"
-        ><font-awesome-icon
+      <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
+        <font-awesome-icon
+          icon="book-open"
+          class="mr-2 menu-icon"
+          fixed-width
+        />
+        Gitbook
+      </b-dropdown-item>
+      <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')">
+        <font-awesome-icon
           :icon="['fab', 'github']"
-          class="mr-2"
+          class="mr-2 menu-icon"
           fixed-width
         />
-        GitHub</b-dropdown-item
-      >
-      <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')"
-        ><font-awesome-icon
+        GitHub
+      </b-dropdown-item>
+      <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')">
+        <font-awesome-icon
           :icon="['fab', 'telegram-plane']"
-          class="mr-2"
+          class="mr-2 menu-icon"
           fixed-width
         />
-        Chat</b-dropdown-item
-      >
+        Chat
+      </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
@@ -77,39 +105,30 @@
       <b-dropdown-text>
         <div class="d-flex justify-content-between cursor">
           <font-awesome-icon
-            @click="openUrl('https://www.facebook.com/bancor/')"
-            :icon="['fab', 'facebook']"
-            class="mr-2"
-            fixed-width
-          />
-          <font-awesome-icon
             @click="openUrl('https://twitter.com/Bancor')"
             :icon="['fab', 'twitter']"
-            class="mr-2"
-            fixed-width
-          />
-          <font-awesome-icon
-            @click="
-              openUrl('https://www.linkedin.com/company/bancor-foundation/')
-            "
-            :icon="['fab', 'linkedin']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
           <font-awesome-icon
             @click="openUrl('https://www.reddit.com/r/Bancor/')"
             :icon="['fab', 'reddit-alien']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
           <font-awesome-icon
             @click="openUrl('https://t.me/bancor')"
             :icon="['fab', 'telegram-plane']"
-            class="mr-2"
+            class="mr-2 menu-icon"
             fixed-width
           />
         </div>
       </b-dropdown-text>
+    </b-dropdown-group>
+    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-group id="dropdown-group-3" class="font-size-12">
+      <b-dropdown-item @click="navPrivacy"> Privacy Policy</b-dropdown-item>
+      <b-dropdown-item @click="navTermsOfUse"> Terms of Use</b-dropdown-item>
     </b-dropdown-group>
   </b-dropdown>
 </template>
@@ -124,7 +143,11 @@ export default class BancorMenu extends Vue {
     return vxm.general.darkMode;
   }
 
-  navigate(page: string) {
+  get isDataPage() {
+    return this.$route.fullPath.includes("data");
+  }
+
+  navData() {
     const hostbase = window.location.hostname;
     const service = this.$route.params.service;
 
@@ -133,15 +156,28 @@ export default class BancorMenu extends Vue {
     const isProd = !isDev && !isStaging;
 
     if (isDev) {
-      this.openUrl(`http://localhost:8080/${service}/${page}`);
+      this.openUrl(`http://localhost:8080/${service}/data`);
     } else if (isStaging) {
-      this.openUrl(`https://staging.swap.bancor.network/${service}/${page}`);
+      this.openUrl(`https://staging.swap.bancor.network/${service}/data`);
     } else if (isProd) {
-      this.openUrl(`https://swap.bancor.network/${service}/${page}`);
+      this.openUrl(`https://swap.bancor.network/${service}/data`);
     } else {
       console.log("failed to determine route...");
-      this.openUrl(`https://swap.bancor.network/${service}/${page}`);
+      this.openUrl(`https://swap.bancor.network/${service}/data`);
     }
+  }
+
+  navSwap() {
+    let routeData = this.$router.resolve({ name: "Swap" });
+    this.openUrl(routeData.href);
+  }
+
+  navPrivacy() {
+    this.$router.push({ name: "PrivacyPolicy" });
+  }
+
+  navTermsOfUse() {
+    this.$router.push({ name: "TermsOfUse" });
   }
 
   openUrl(url: string) {
@@ -158,4 +194,8 @@ export default class BancorMenu extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.menu-icon {
+  color: #6b7c93;
+}
+</style>

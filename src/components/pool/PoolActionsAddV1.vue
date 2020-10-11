@@ -41,10 +41,7 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import {
-  ViewRelay,
-  ViewAmount
-} from "@/types/bancor";
+import { ViewRelay, ViewAmount } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -80,7 +77,11 @@ export default class PoolActionsAddV1 extends Vue {
   token2Error = "";
 
   get disableMainButton() {
-    return this.token1Error !== '' || this.token2Error !== '' || !(this.amount1 && this.amount2)
+    return (
+      this.token1Error !== "" ||
+      this.token2Error !== "" ||
+      !(this.amount1 && this.amount2)
+    );
   }
 
   get isAuthenticated() {
@@ -102,7 +103,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   get share() {
-    return formatPercent(this.shareOfPool)
+    return formatPercent(this.shareOfPool);
   }
 
   get shareBlockItems() {
@@ -131,11 +132,11 @@ export default class PoolActionsAddV1 extends Vue {
     return [
       {
         label: this.reserveOne.symbol + " Deposit",
-        value: this.amount1
+        value: Number(this.amount1)
       },
       {
         label: this.reserveTwo.symbol + " Deposit",
-        value: this.amount2
+        value: Number(this.amount2)
       },
       {
         label: "Rates",
@@ -175,7 +176,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async tokenOneChanged(tokenAmount: string) {
-    if (!tokenAmount || tokenAmount === '.') {
+    if (!tokenAmount || tokenAmount === ".") {
       this.setDefault();
       return;
     }
@@ -183,25 +184,33 @@ export default class PoolActionsAddV1 extends Vue {
     try {
       const results = await vxm.bancor.calculateOpposingDeposit({
         id: this.pool.id,
-        reserves: [{ id: this.reserveOne.id, amount: tokenAmount }, { id: this.reserveTwo.id, amount: this.amount2 }],
+        reserves: [
+          { id: this.reserveOne.id, amount: tokenAmount },
+          { id: this.reserveTwo.id, amount: this.amount2 }
+        ],
         changedReserveId: this.reserveOne.id
       });
       if (typeof results.opposingAmount !== "undefined") {
         this.amount2 = results.opposingAmount;
       }
 
-      const raiseToken1InsufficientBalance = Number(this.balance1) < Number(tokenAmount);
-      this.token1Error = raiseToken1InsufficientBalance ? "Insufficient balance" : "";
+      const raiseToken1InsufficientBalance =
+        Number(this.balance1) < Number(tokenAmount);
+      this.token1Error = raiseToken1InsufficientBalance
+        ? "Insufficient balance"
+        : "";
 
-      const raiseToken2InsufficientBalance = Number(this.balance2) < Number(this.amount2);
-      this.token2Error =
-        raiseToken2InsufficientBalance ? "Insufficient balance" : "";
+      const raiseToken2InsufficientBalance =
+        Number(this.balance2) < Number(this.amount2);
+      this.token2Error = raiseToken2InsufficientBalance
+        ? "Insufficient balance"
+        : "";
 
       this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);
     } catch (e) {
-        this.token1Error = e.message;
-        this.token2Error = "";
+      this.token1Error = e.message;
+      this.token2Error = "";
     }
     this.rateLoading = false;
   }
@@ -224,7 +233,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   async tokenTwoChanged(tokenAmount: string) {
-    if (!tokenAmount || tokenAmount === '.') {
+    if (!tokenAmount || tokenAmount === ".") {
       this.setDefault();
       return;
     }
@@ -232,7 +241,10 @@ export default class PoolActionsAddV1 extends Vue {
     try {
       const results = await vxm.bancor.calculateOpposingDeposit({
         id: this.pool.id,
-        reserves: [{ id: this.reserveTwo.id, amount: tokenAmount }, { id: this.reserveOne.id, amount: this.amount1 }],
+        reserves: [
+          { id: this.reserveTwo.id, amount: tokenAmount },
+          { id: this.reserveOne.id, amount: this.amount1 }
+        ],
         changedReserveId: this.reserveTwo.id
       });
       if (typeof results.opposingAmount !== "undefined") {
@@ -241,17 +253,20 @@ export default class PoolActionsAddV1 extends Vue {
       this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);
 
-      const raiseToken1InsufficientBalance = Number(this.balance1) < Number(this.amount1);
-      this.token1Error = raiseToken1InsufficientBalance ? "Insufficient balance" : "";
+      const raiseToken1InsufficientBalance =
+        Number(this.balance1) < Number(this.amount1);
+      this.token1Error = raiseToken1InsufficientBalance
+        ? "Insufficient balance"
+        : "";
 
-      const raiseToken2InsufficientBalance = Number(this.balance2) < Number(tokenAmount);
-      this.token2Error =
-        raiseToken2InsufficientBalance ? "Insufficient balance" : "";
-
-
+      const raiseToken2InsufficientBalance =
+        Number(this.balance2) < Number(tokenAmount);
+      this.token2Error = raiseToken2InsufficientBalance
+        ? "Insufficient balance"
+        : "";
     } catch (e) {
-        this.token1Error = "";
-        this.token2Error = e.message;
+      this.token1Error = "";
+      this.token2Error = e.message;
     }
     this.rateLoading = false;
   }
@@ -259,7 +274,10 @@ export default class PoolActionsAddV1 extends Vue {
   async initialLoadPrices() {
     const results = await vxm.bancor.calculateOpposingDeposit({
       id: this.pool.id,
-      reserves: [{ id: this.reserveOne.id, amount: this.amount1 }, { id: this.reserveTwo.id, amount: this.amount2 }],
+      reserves: [
+        { id: this.reserveOne.id, amount: this.amount1 },
+        { id: this.reserveTwo.id, amount: this.amount2 }
+      ],
       changedReserveId: this.reserveOne.id
     });
     this.setSingleUnitCosts(results.singleUnitCosts);

@@ -1,31 +1,48 @@
 import { createModule, action, mutation } from "vuex-class-component";
-import { web3 } from "@/api/helpers";
-import { ABIBancorGovernance, ABISmartToken } from "@/api/eth/ethAbis";
-import { EthAddress } from "@/types/bancor";
+import { ContractMethods, EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
+import {
+  buildGovernanceContract,
+  buildTokenContract
+} from "@/api/eth/contractTypes";
+import { CallReturn } from "eth-multicall";
+import { ContractSendMethod } from "web3-eth-contract";
+// @ts-ignore
+import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
+import axios from "axios";
 
 export const governanceContractAddress =
-  "0x05AA3da21D2706681837a896433E62deEeEaB1f1";
+  "0x161f28A417361961E946Ae03EF0A425008b7F01B";
 export const etherscanUrl = "https://ropsten.etherscan.io/";
-export const ipfsUrl = "https://ipfs.io/ipfs/";
-
-// block time in seconds
-export const blockTime = 15;
+export const ipfsViewUrl = "https://ipfs.io/ipfs/";
+const ipfsUrl = "https://ipfs.infura.io:5001";
+// const discourseUrl = "https://gov.bancor.network/";
+const discourseUrl =
+  "https://api.allorigins.win/raw?url=https://gov.uniswap.org/";
 
 const VuexModule = createModule({
   strict: false
 });
 
+export interface ProposalMetaData {
+  payload: {
+    body: string;
+    metadata: {
+      github: string;
+      discourse: string;
+    };
+    name: string;
+  };
+  timestamp: number;
+  revision: string;
+}
+
 export interface Proposal {
   id: number;
-  // block number
+  // timestamp
   start: number;
   // timestamp
-  startDate: number;
-  // block number
   end: number;
-  // timestamp
-  endDate: number;
   name: string;
   executor: EthAddress;
   hash: string;
@@ -42,19 +59,67 @@ export interface Proposal {
     for: number;
     against: number;
   };
+  metadata?: ProposalMetaData;
 }
+
+interface Token
+  extends ContractMethods<{
+    symbol: () => CallReturn<string>;
+    decimals: () => CallReturn<string>;
+    totalSupply: () => CallReturn<string>;
+    allowance: (owner: string, spender: string) => CallReturn<string>;
+    balanceOf: (owner: string) => CallReturn<string>;
+    transferOwnership: (converterAddress: string) => ContractSendMethod;
+    issue: (address: string, wei: string) => ContractSendMethod;
+    transfer: (to: string, weiAmount: string) => ContractSendMethod;
+    approve: (
+      approvedAddress: string,
+      approvedAmount: string
+    ) => ContractSendMethod;
+  }> {}
+
+interface Governance
+  extends ContractMethods<{
+    voteDuration: () => CallReturn<string>;
+    voteLockDuration: () => CallReturn<string>;
+    voteLockFraction: () => CallReturn<string>;
+    newProposalMinimum: () => CallReturn<string>;
+    propose: (executor: string, hash: string) => ContractSendMethod;
+    voteFor: (proposalId: string) => ContractSendMethod;
+    voteAgainst: (proposalId: string) => ContractSendMethod;
+    stake: (amount: string) => ContractSendMethod;
+    unstake: (amount: string) => ContractSendMethod;
+    decimals: () => CallReturn<string>;
+    proposalCount: () => CallReturn<number>;
+    proposals: (proposalI: number) => CallReturn<Proposal>;
+    votesOf: (voter: string) => CallReturn<string>;
+    votesForOf: (voter: string, proposalId: number) => CallReturn<string>;
+    votesAgainstOf: (voter: string, proposalId: number) => CallReturn<string>;
+    voteLocks: (voter: string) => CallReturn<string>;
+    govToken: () => CallReturn<string>;
+  }> {}
 
 export class EthereumGovernance extends VuexModule.With({
   namespaced: "ethGovernance/"
 }) {
-  governanceContract: any = undefined;
-  tokenContract: any = undefined;
+  governanceContract: Governance = {} as Governance;
+  tokenContract: Token = {} as Token;
 
   isLoaded: boolean = false;
+
   symbol?: string;
+  decimals?: number;
+
+  metaDataCache: { [id: string]: ProposalMetaData } = {};
 
   @mutation
-  setContracts({ governance, token }: { governance: any; token: any }) {
+  setContracts({
+    governance,
+    token
+  }: {
+    governance: Governance;
+    token: Token;
+  }) {
     this.tokenContract = token;
     this.governanceContract = governance;
     this.isLoaded = true;
@@ -71,6 +136,11 @@ export class EthereumGovernance extends VuexModule.With({
     this.symbol = symbol;
   }
 
+  @mutation
+  setDecimals(decimals: number) {
+    this.decimals = decimals;
+  }
+
   @action
   async getTokenAddress(): Promise<EthAddress> {
     return this.tokenContract.options.address;
@@ -78,16 +148,16 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async init() {
-    const governanceContract = new web3.eth.Contract(
-      ABIBancorGovernance,
+    const governanceContract: Governance = buildGovernanceContract(
       governanceContractAddress
     );
+
     const tokenAddress = await governanceContract.methods.govToken().call();
     console.log("vote token address", tokenAddress);
 
     await this.setContracts({
       governance: governanceContract,
-      token: new web3.eth.Contract(ABISmartToken, tokenAddress)
+      token: buildTokenContract(tokenAddress)
     });
   }
 
@@ -103,12 +173,53 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
+  async getDecimals(): Promise<number> {
+    if (!this.decimals) {
+      const decimals = Number(
+        await this.tokenContract.methods.decimals().call()
+      );
+      this.setDecimals(decimals);
+      return decimals;
+    } else {
+      return this.decimals;
+    }
+  }
+
+  @action
+  async getVoteLockDuration(): Promise<number> {
+    return Number(
+      await this.governanceContract.methods.voteLockDuration().call()
+    );
+  }
+
+  @action
+  async getVoteDuration(): Promise<number> {
+    return Number(await this.governanceContract.methods.voteDuration().call());
+  }
+
+  @action
+  async getVoteLockFraction(): Promise<number> {
+    return Number(
+      await this.governanceContract.methods.voteLockFraction().call()
+    );
+  }
+
+  @action
+  async getNewProposalMinimum(): Promise<number> {
+    const [min, decimals] = await Promise.all([
+      this.governanceContract.methods.newProposalMinimum().call(),
+      this.getDecimals()
+    ]);
+    return Number(shrinkToken(min, decimals));
+  }
+
+  @action
   async getVotes({ voter }: { voter: EthAddress }): Promise<number> {
     if (!voter) throw new Error("Cannot get votes without voter address");
 
     console.log("getting votes");
     const [decimals, weiVotes] = await Promise.all([
-      Number(await this.tokenContract.methods.decimals().call()),
+      this.getDecimals(),
       this.governanceContract.methods.votesOf(voter).call()
     ]);
     return parseFloat(shrinkToken(weiVotes, decimals));
@@ -120,8 +231,8 @@ export class EthereumGovernance extends VuexModule.With({
 
     console.log("getting balance");
     const [decimals, weiBalance] = await Promise.all([
-      this.tokenContract.methods.decimals().call() as string,
-      this.tokenContract.methods.balanceOf(account).call() as string
+      this.getDecimals(),
+      this.tokenContract.methods.balanceOf(account).call()
     ]);
     return parseFloat(shrinkToken(weiBalance, Number(decimals)));
   }
@@ -131,20 +242,18 @@ export class EthereumGovernance extends VuexModule.With({
     account
   }: {
     account: EthAddress;
-  }): Promise<{ now: number; till: number; for: number }> {
+  }): Promise<{ till: number; for: number }> {
     if (!account) throw new Error("Cannot get lock without address");
 
-    const till = Number(
-      await this.governanceContract.methods.voteLocks(account).call()
-    );
-    const now = await web3.eth.getBlockNumber();
+    const till =
+      Number(await this.governanceContract.methods.voteLocks(account).call()) *
+      1000;
     // for
-    const f = till - now;
+    const lockedFor = till - Date.now();
 
     const lock = {
-      now,
       till,
-      for: f > 0 ? f : 0
+      for: lockedFor > 0 ? lockedFor : 0
     };
 
     console.log(lock);
@@ -193,6 +302,26 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
+  async propose({
+    account,
+    executor,
+    hash
+  }: {
+    account: EthAddress;
+    executor: EthAddress;
+    hash: string;
+  }): Promise<boolean> {
+    if (!executor || !hash || !account)
+      throw new Error("Cannot propose without execturo and hash");
+
+    await this.governanceContract.methods.propose(executor, hash).send({
+      from: account
+    });
+
+    return true;
+  }
+
+  @action
   async voteFor({
     account,
     proposalId
@@ -230,6 +359,86 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
+  @action async getProposal({
+    proposalId,
+    voter
+  }: {
+    proposalId: number;
+    voter?: string;
+  }): Promise<Proposal> {
+    const decimals = await this.getDecimals();
+
+    const proposal: Proposal = await this.governanceContract.methods
+      .proposals(proposalId)
+      .call();
+
+    const totalVotesFor = parseFloat(
+      shrinkToken(proposal.totalVotesFor, decimals)
+    );
+    const totalVotesAgainst = parseFloat(
+      shrinkToken(proposal.totalVotesAgainst, decimals)
+    );
+    const totalVotesAvailable = parseFloat(
+      shrinkToken(proposal.totalVotesAvailable, decimals)
+    );
+
+    let metadata;
+
+    try {
+      metadata = await this.getFromIPFS({
+        hash: proposal.hash,
+        timeoutInSeconds: 5
+      });
+    } catch (err) {
+      console.log("Getting metadata failed!", err, proposal.hash);
+    }
+
+    const prop = {
+      id: Number(proposal.id),
+      start: Number(proposal.start) * 1000,
+      end: Number(proposal.end) * 1000,
+      executor: proposal.executor,
+      hash: proposal.hash,
+      open: proposal.open,
+      name: (metadata && metadata.payload && metadata.payload.name) || "",
+      proposer: proposal.proposer,
+      quorum: proposal.quorum,
+      quorumRequired: proposal.quorumRequired,
+      totalVotesAgainst,
+      totalVotesFor,
+      totalVotesAvailable,
+      totalVotes: totalVotesFor + totalVotesAgainst,
+      votes: {
+        for: voter
+          ? parseFloat(
+              shrinkToken(
+                await this.governanceContract.methods
+                  .votesForOf(voter, proposal.id)
+                  .call(),
+                decimals
+              )
+            )
+          : 0,
+        against: voter
+          ? parseFloat(
+              shrinkToken(
+                await this.governanceContract.methods
+                  .votesAgainstOf(voter, proposal.id)
+                  .call(),
+                decimals
+              )
+            )
+          : 0
+      } as any,
+      metadata: metadata
+    };
+    const { for: vFor, against: vAgainst } = prop.votes;
+    prop.votes.voted =
+      vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
+
+    return prop;
+  }
+
   @action
   async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
     console.log(
@@ -243,87 +452,18 @@ export class EthereumGovernance extends VuexModule.With({
       .proposalCount()
       .call();
 
-    const decimals = Number(await this.tokenContract.methods.decimals().call());
-    const proposals: Proposal[] = [];
-    const currentBlock = await web3.eth.getBlock("latest");
+    const p: Promise<Proposal>[] = [];
 
     for (let i = 0; i < proposalCount; i++) {
-      const proposal = await this.governanceContract.methods
-        .proposals(i)
-        .call();
-
-      const totalVotesFor = parseFloat(
-        shrinkToken(proposal.totalVotesFor, decimals)
+      p.push(
+        this.getProposal({
+          proposalId: i,
+          voter
+        })
       );
-      const totalVotesAgainst = parseFloat(
-        shrinkToken(proposal.totalVotesAgainst, decimals)
-      );
-      const totalVotesAvailable = parseFloat(
-        shrinkToken(proposal.totalVotesAvailable, decimals)
-      );
-
-      let name;
-
-      try {
-        const metadata = await this.getFromIPFS({
-          hash: proposal.hash,
-          timeoutInSeconds: 5
-        });
-        console.log(metadata);
-
-        name = (metadata && metadata.payload && metadata.payload.name) || null;
-      } catch (err) {
-        console.log("Getting metadata failed!", err);
-      }
-
-      const prop = {
-        id: Number(proposal.id),
-        start: Number(proposal.start),
-        startDate:
-          Number((await web3.eth.getBlock(proposal.start)).timestamp) * 1000,
-        end: Number(proposal.end),
-        endDate:
-          Date.now() +
-          (Number(proposal.end) - currentBlock.number) * blockTime * 1000,
-        executor: proposal.executor,
-        hash: proposal.hash,
-        open: proposal.open,
-        name,
-        proposer: proposal.proposer,
-        quorum: proposal.quorum,
-        quorumRequired: proposal.quorumRequired,
-        totalVotesAgainst,
-        totalVotesFor,
-        totalVotesAvailable,
-        totalVotes: totalVotesFor + totalVotesAgainst,
-        votes: {
-          for: voter
-            ? parseFloat(
-                shrinkToken(
-                  await this.governanceContract.methods
-                    .votesForOf(voter, proposal.id)
-                    .call(),
-                  decimals
-                )
-              )
-            : 0,
-          against: voter
-            ? parseFloat(
-                shrinkToken(
-                  await this.governanceContract.methods
-                    .votesAgainstOf(voter, proposal.id)
-                    .call(),
-                  decimals
-                )
-              )
-            : 0
-        } as any
-      };
-      const { for: vFor, against: vAgainst } = prop.votes;
-      prop.votes.voted =
-        vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
-      proposals.push(prop);
     }
+
+    const proposals: Proposal[] = await Promise.all(p);
 
     console.log("proposals", proposals);
 
@@ -331,28 +471,106 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  getFromIPFS({
+  async getFromIPFS({
     hash,
     timeoutInSeconds
   }: {
     hash: string;
     timeoutInSeconds: number;
-  }): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const t = setTimeout(() => {
-        return reject("timeout");
-      }, timeoutInSeconds * 1000);
+  }): Promise<ProposalMetaData> {
+    if (this.metaDataCache[hash]) {
+      return this.metaDataCache[hash];
+    }
 
-      fetch(`${ipfsUrl}${hash}`, {
-        method: "GET"
-      })
-        .then(response => response.json())
-        .then(data => {
-          clearTimeout(t);
-          console.log(data);
-          return resolve(data);
-        })
-        .catch(reject);
+    const ipfs = ipfsHttpClient(ipfsUrl);
+
+    let metadata;
+
+    for await (const file of ipfs.get(hash, {
+      timeout: timeoutInSeconds * 1000
+    })) {
+      if (!file.content) continue;
+
+      let content = "";
+
+      for await (const chunk of file.content) {
+        content += chunk.toString("utf8");
+      }
+
+      metadata = JSON.parse(content);
+      const newCache = this.metaDataCache;
+
+      newCache[hash] = metadata;
+      this.setMetaDataCache(newCache);
+
+      break;
+    }
+
+    return metadata;
+  }
+
+  @mutation setMetaDataCache(metaDataCache: {
+    [id: string]: ProposalMetaData;
+  }) {
+    this.metaDataCache = metaDataCache;
+  }
+
+  @action async storeInIPFS({
+    proposalMetaData
+  }: {
+    proposalMetaData: ProposalMetaData;
+  }): Promise<string> {
+    const ipfs = ipfsHttpClient(ipfsUrl);
+
+    const { path } = await ipfs.add(
+      Buffer.from(JSON.stringify(proposalMetaData, null, 2))
+    );
+    return path;
+  }
+
+  @action async getPostFromDiscourse({
+    postId
+  }: {
+    postId: string;
+  }): Promise<{ description: string }> {
+    const post = await axios
+      .get(`${discourseUrl}posts/${postId}.json`)
+      .then(response => {
+        if (response.status >= 200 && response.status < 300) {
+          return response.data;
+        } else {
+          throw new Error(response.statusText);
+        }
+      });
+
+    const description = post.raw;
+    return {
+      description
+    };
+  }
+
+  @action async getTopicFromDiscourse({
+    topicId
+  }: {
+    topicId: string;
+  }): Promise<{ title: string; description: string }> {
+    const topic = await axios
+      .get(`${discourseUrl}t/${topicId}.json`)
+      .then(response => {
+        if (response.status >= 200 && response.status < 300) {
+          return response.data;
+        } else {
+          throw new Error(response.statusText);
+        }
+      });
+
+    const postId = topic.post_stream.posts[0].id;
+    const { description } = await this.getPostFromDiscourse({
+      postId
     });
+    return {
+      title: topic.title,
+      description
+    };
   }
 }

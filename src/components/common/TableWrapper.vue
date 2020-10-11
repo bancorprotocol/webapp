@@ -10,6 +10,8 @@
       :sort-by.sync="sortByProp"
       :sort-desc.sync="sortDescProp"
       :filter="filter"
+      :filter-function="filterFunction"
+      @filtered="onFiltered"
     >
       <slot v-for="(_, name) in $slots" :name="name" :slot="name" />
       <template
@@ -26,11 +28,9 @@
       v-model="currentPage"
       :total-rows="totalRows"
       :per-page="perPage"
-      hide-goto-end-buttons
       align="center"
-      limit="3"
     >
-      <template v-slot:prev-text="{ disabled }">
+      <!--   <template v-slot:prev-text="{ disabled }">
         <font-awesome-icon
           icon="long-arrow-alt-left"
           :class="iconClass(disabled)"
@@ -41,7 +41,7 @@
           icon="long-arrow-alt-right"
           :class="iconClass(disabled)"
         />
-      </template>
+      </template>-->w
     </b-pagination>
 
     <div v-if="!totalRows" class="text-center">
@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
 @Component
@@ -62,11 +62,17 @@ export default class TableWrapper extends Vue {
   @Prop({ default: "" }) filter!: string;
   @Prop({ default: true }) sortDesc!: boolean;
   @Prop({ default: 10 }) perPage!: number;
-
+  @Prop() filterFunction!: Function;
   currentPage = 1;
+  totalRows = 1;
 
   sortByProp = this.sortBy;
   sortDescProp = this.sortDesc;
+
+  onFiltered(filteredItems: any) {
+    this.totalRows = filteredItems.length;
+    this.currentPage = 1;
+  }
 
   iconClass(disabled: boolean) {
     return disabled
@@ -76,8 +82,12 @@ export default class TableWrapper extends Vue {
       : "text-primary";
   }
 
-  get totalRows() {
-    return this.items.length;
+  @Watch("items")
+  onItemsChange() {
+    this.totalRows = this.items.length;
+  }
+  mounted() {
+    this.onItemsChange();
   }
 
   get darkMode() {

@@ -5,12 +5,12 @@
         <statistics class="mt-3" />
       </content-block>
     </b-col>
-    <b-col md="6">
+    <b-col v-if="false" md="6">
       <content-block title="Liquidity">
         <liquidity-chart :data="liquidityChartData" class="mt-3" />
       </content-block>
     </b-col>
-    <b-col md="6">
+    <b-col v-if="false" md="6">
       <content-block title="Volume">
         <volume-chart :data="volumeChartData" class="mt-3" />
       </content-block>

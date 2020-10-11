@@ -1,9 +1,16 @@
 <template>
-  <div :class="`remaining-time remaining-time--${type}`">
+  <div
+    :class="`remaining-time remaining-time--${type} remaining-time--${variant}`"
+  >
     <div class="remaining-time__progress" :style="{ width: percentage }"></div>
     <div v-if="remainingTime !== 0" class="remaining-time__content">
-      <font-awesome-icon icon="clock" class="remaining-time__icon" />
-      {{ remaining }}
+      <font-awesome-icon
+        v-if="!isUnlook && remainingPercentage < 1"
+        icon="clock"
+        class="remaining-time__icon"
+      />
+      <span class="remaining-time__progress-text">{{ remaining }}</span>
+      <span v-if="isUnlook" class="remaining-time__desc">left to unlock</span>
     </div>
   </div>
 </template>
@@ -17,38 +24,55 @@ import numeral from "numeral";
 export default class RemainingTime extends Vue {
   @Prop() from?: number;
   @Prop() to?: number;
+  @Prop() variant?: string;
 
   private remainingPercentage: number = 0;
   private remainingTime: number = 0;
   private interval: any;
 
   get type(): string {
-    if (this.remainingPercentage <= 20) {
+    if (this.remainingPercentage <= 0.2) {
       return "info";
-    } else if (this.remainingPercentage <= 90) {
+    } else if (this.remainingPercentage <= 0.9) {
       return "";
+    } else if (this.remainingPercentage >= 1) {
+      return "done";
     } else {
       return "warn";
     }
+  }
+
+  get isUnlook() {
+    return this.variant === "unlock";
   }
 
   get percentage() {
     if (this.remainingPercentage < 0) {
       return "100%";
     }
-    return `${Math.min(100, this.remainingPercentage).toFixed(2)}%`;
+    return `${Math.min(100, this.remainingPercentage * 100).toFixed(2)}%`;
   }
 
   get remaining() {
     if (this.remainingTime < 0) {
-      return "No time left";
+      return "Vote Ended";
+    }
+    if (this.isUnlook) {
+      const diff = (this.to || 0) - Date.now()
+      const day = 24 * 60 * 60 * 1000
+      let remaining = ''
+      if (diff >= day) {
+        const days = Math.floor(diff / day)
+        remaining += `${days}d `
+      }
+      return remaining + new Date(diff).toISOString().substr(11, 8);
     }
 
     const m = this.remainingTime / 60 / 1000;
     const h = m / 60;
     const d = h / 24;
 
-    return `${Math.round(d)}d ${Math.round(h % 24)}h ${Math.round(
+    return `${Math.floor(d)}d ${Math.floor(h % 24)}h ${Math.floor(
       m % 60
     )}m left`;
   }
@@ -60,7 +84,7 @@ export default class RemainingTime extends Vue {
   updateTime() {
     const { from = 0, to = 0 } = this;
     const now = Date.now();
-    this.remainingPercentage = ((now - +from) / (+to - +from)) * 100;
+    this.remainingPercentage = (now - +from) / (+to - +from);
     this.remainingTime = +to - now;
   }
 
@@ -68,7 +92,7 @@ export default class RemainingTime extends Vue {
     [10, 100, 500, 1000, 2000].map(time =>
       setTimeout(() => this.updateTime(), time)
     );
-    this.interval = setInterval(() => this.updateTime(), 10 * 1000);
+    this.interval = setInterval(() => this.updateTime(), 1000);
   }
 
   destroyed() {
@@ -137,6 +161,39 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   }
   &--info {
     @include remaining-time-background($remaining-time--info---background);
+  }
+
+  &--done &__progress,
+  &--done &__content {
+    background: $block-bg-blue;
+    color: $text-color-light;
+  }
+
+  &--unlock {
+    border: 1px solid $gray-placeholder;
+    background: transparent !important;
+    font-size: 12px;
+    font-weight: 400;
+    padding: 8px !important;
+    height: auto;
+  }
+  &--unlock &__progress {
+    display: none;
+  }
+  &--unlock &__content {
+    position: relative;
+    color: $text-muted-light;
+    display: flex;
+    align-items: center;
+  }
+  &--unlock &__progress-text {
+    padding-right: 8px;
+    font-size: 18px;
+    color: $primary;
+    font-weight: 600;
+  }
+  &--unlock &__desc {
+    padding-top: 4px;
   }
 }
 </style>

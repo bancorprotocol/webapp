@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
     scrollable
     size="sm"
     centered
@@ -45,11 +46,7 @@
       <div class="input-currency mt-1">
         <b-form-input
           v-model="unstakeValue"
-          :state="
-            (unstakeValue.length === 0 ||
-              (unstakeValue > 0 && unstakeValue <= currentStake)) &&
-              undefined
-          "
+          :state="state"
           :max="currentStake"
           type="number"
           placeholder="0"
@@ -68,13 +65,7 @@
 
       <main-button
         @click="unstake"
-        :label="
-          unstakeValue.length === 0
-            ? 'Enter Amount'
-            : unstakeValue > 0 && unstakeValue <= currentStake
-            ? 'Unstake Tokens'
-            : 'Insufficient Amount'
-        "
+        :label="unstakeLabel"
         :active="true"
         :block="true"
         :disabled="!(unstakeValue && unstakeValue <= currentStake)"
@@ -94,7 +85,12 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <b-spinner variant="primary"></b-spinner>
-      <h3 class="font-size-lg mt-4">Waiting For Confirmation</h3>
+      <h3
+        class="font-size-lg mt-4"
+        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+      >
+        Waiting For Confirmation
+      </h3>
       <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
       <div
         class="font-size-12 font-w500"
@@ -110,7 +106,12 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <font-awesome-icon class="text-primary" size="4x" icon="check-circle" />
-      <h3 class="font-size-lg mt-4">Transaction Submitted</h3>
+      <h3
+        class="font-size-lg mt-4"
+        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+      >
+        Transaction Submitted
+      </h3>
       <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
       <a
         target="_blank"
@@ -151,8 +152,28 @@ export default class ModalUnstake extends Vue {
   step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";
 
+  get state() {
+    return (
+      (String(this.unstakeValue).length === 0 ||
+        (this.unstakeValue &&
+          this.unstakeValue > 0 &&
+          this.unstakeValue <= this.currentStake)) &&
+      undefined
+    );
+  }
+
+  get unstakeLabel() {
+    return this.unstakeValue && String(this.unstakeValue).length === 0
+      ? "Enter Amount"
+      : this.unstakeValue &&
+        this.unstakeValue > 0 &&
+        this.unstakeValue <= this.currentStake
+      ? "Unstake Tokens"
+      : "Insufficient Amount";
+  }
+
   getEtherscanUrl() {
-    return `${etherscanUrl}address/${this.account}#tokentxns`;
+    return `${etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
   }
 
   get darkMode(): boolean {
@@ -168,8 +189,11 @@ export default class ModalUnstake extends Vue {
 
   async doUnstake() {
     await vxm.ethGovernance.unstake({
-      account: this.account,
-      amount: expandToken(this.unstakeValue!.toString(), 18)
+      account: this.isAuthenticated,
+      amount: expandToken(
+        this.unstakeValue!.toString(),
+        await vxm.ethGovernance.getDecimals()
+      )
     });
   }
 
@@ -181,16 +205,16 @@ export default class ModalUnstake extends Vue {
     }
   }
 
-  get account() {
+  get isAuthenticated() {
     return vxm.wallet.isAuthenticated;
   }
 
   @Watch("step")
-  @Watch("account")
+  @Watch("isAuthenticated")
   @Watch("show")
   async update() {
     this.currentStake = await vxm.ethGovernance.getVotes({
-      voter: this.account
+      voter: this.isAuthenticated
     });
   }
 
