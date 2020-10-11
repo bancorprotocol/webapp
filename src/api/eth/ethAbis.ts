@@ -1038,6 +1038,16 @@ export const ABILiquidityProtection: AbiItem[] = [
         internalType: "uint256",
         name: "",
         type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
       }
     ],
     stateMutability: "view",

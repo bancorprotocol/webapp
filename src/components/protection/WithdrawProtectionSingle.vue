@@ -10,7 +10,7 @@
 
     <label-content-split
       label="Fully Protected Value"
-      value="????"
+      :value="position.fullyProtected.amount"
       class="my-3"
     />
 
@@ -32,9 +32,13 @@
       <font-awesome-icon icon="arrow-down" class="mt-3" />
     </div>
 
-    <gray-border-block :gray-bg="true" class="my-3" v-if="false">
-      <label-content-split label="Output value of" value="????" />
-      <label-content-split value="????" class="mb-2" />
+    <gray-border-block :gray-bg="true" class="my-3">
+      <label-content-split
+        label="Output value of"
+        :value="
+          `${position.protectedAmount.amount} ${position.protectedAmount.symbol}`
+        "
+      />
 
       <label-content-split label="Output breakdown" value="????" />
       <label-content-split value="????" />

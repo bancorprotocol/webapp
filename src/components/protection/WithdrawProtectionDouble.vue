@@ -119,8 +119,9 @@ export default class WithdrawProtectionDouble extends Vue {
   }
 
   get inputError() {
-    if (parseFloat(this.percentage) === 0) return "Percentage can not be Zero";
-    else return "";
+    return parseFloat(this.percentage) === 0
+      ? "Percentage can not be Zero"
+      : "";
   }
 
   get position() {

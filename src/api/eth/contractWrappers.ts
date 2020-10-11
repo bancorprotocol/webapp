@@ -3,10 +3,11 @@ import {
   buildNetworkContract,
   buildV2Converter,
   buildRegistryContract,
-  buildLiquidityProtectionStoreContract
+  buildLiquidityProtectionStoreContract,
+  buildLiquidityProtectionContract
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
-import { fromPairs } from "lodash";
+import { fromPairs, toPairs } from "lodash";
 import { ProtectedLiquidity } from "@/types/bancor";
 
 export const getApprovedBalanceWei = async ({
@@ -145,4 +146,30 @@ export const protectionById = async (
     ...base,
     id: protectionId
   } as ProtectedLiquidity;
+};
+
+export const getRemoveLiquidityReturn = async (
+  protectionContract: string,
+  id: string,
+  ppm: string,
+  removeTimestamp: number
+) => {
+  const contract = buildLiquidityProtectionContract(protectionContract);
+
+  const res = await contract.methods
+    .removeLiquidityReturn(id, ppm, String(removeTimestamp))
+    .call();
+
+  const keys = ["targetAmount", "baseAmount", "networkAmount"];
+  const pairs = toPairs(res).map(([key, value], index) => [keys[index], value]);
+
+  return fromPairs(pairs) as {
+    targetAmount: string;
+    baseAmount: string;
+    networkAmount: string;
+  };
+
+  // targetAmount - expected return amount in the reserve token
+  // baseAmount - actual return amount in the reserve token
+  // networkAmount - compensation in the network token
 };

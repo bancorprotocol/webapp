@@ -271,7 +271,7 @@ export const buildLiquidityProtectionContract = (
     id: string,
     portion: string,
     removeTimeStamp: string
-  ) => CallReturn<string>;
+  ) => CallReturn<{ "0": string; "1": string; "2": string }>;
   poolROI: (
     poolToken: string,
     reserveToken: string,

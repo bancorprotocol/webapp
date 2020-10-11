@@ -75,8 +75,8 @@ import {
   bancorSubgraph, 
   chainlinkSubgraph, 
   traverseLockedBalances,
-  PositionType,
-  calculateProtectionLevel, LockedBalance
+  calculateProtectionLevel, 
+  LockedBalance
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -94,7 +94,8 @@ import {
   conversionPath,
   getTokenSupplyWei,
   existingPool, 
-  protectionById
+  protectionById,
+  getRemoveLiquidityReturn
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
@@ -1936,81 +1937,71 @@ export class EthBancorModule
 
       console.log(x, 'is the store on contract', this.contracts.LiquidityProtectionStore, 'is what is set elsewhere')
  
-      // const rois = await Promise.all(allPositions.map(async position => {
+      const rois = await Promise.all(allPositions.map(async position => {
 
+        const poolBalances = await this.fetchRelayBalances(position.poolToken);
+        const [reserveBalance, opposingReserveBalance] = partition(poolBalances.reserves, reserve => compareString(reserve.contract, position.reserveToken));
 
-      //   const poolBalances = await this.fetchRelayBalances(position.poolToken)
+        const poolRateN = new BigNumber(reserveBalance[0].weiAmount).times(2).toString();
+        const poolRateD = poolBalances.smartTokenSupplyWei;
 
-      //   const [reserveBalance, opposingReserveBalance] = partition(poolBalances.reserves, reserve => compareString(reserve.contract, position.reserveToken))
+        const reserveRateN = opposingReserveBalance[0].weiAmount;
+        const reserveRateD = reserveBalance[0].weiAmount;
 
-      //   const poolRateN = new BigNumber(reserveBalance[0].weiAmount).times(2).toString()
-      //   const poolRateD = poolBalances.smartTokenSupplyWei;
+        try {
+          const poolRoi = await lpContract.methods.poolROI(
+              position.poolToken,
+              position.reserveToken,
+              position.reserveAmount,
+              poolRateN,
+              poolRateD,
+              reserveRateN,
+              reserveRateD
+           ).call();
 
-      //   const reserveRateN = opposingReserveBalance[0].weiAmount;
-      //   const reserveRateD = reserveBalance[0].weiAmount;
+           console.log(poolRoi, 'about no')
 
-      //   try {
-      //     console.log(
-      //       'params',
-      //       position.poolToken,
-      //       position.reserveToken,
-      //       position.reserveAmount,
-      //       poolRateN,
-      //       poolRateD,
-      //       reserveRateN,
-      //       reserveRateD
-      //     )
+           return {
+             ...position,
+             poolRoi
+           }
+          } catch(e) {
+            console.error("failed again", e);
+            return {
+              ...position,
+              poolRoi: ''
+            }
+          }
+      }))
 
-      //     const roiRes = await lpContract.methods.poolROI(
-      //       position.poolToken,
-      //       position.reserveToken,
-      //       position.reserveAmount,
-      //       poolRateN,
-      //       poolRateD,
-      //       reserveRateN,
-      //       reserveRateD
-      //       ).call();
-      //      return roiRes 
-      //     } catch(e) {
-      //       console.error("failed again", e)
-      //     }
-      // }))
-
-      // console.log('success!', rois);
+      console.log('success!', rois);
  
  
- 
- 
-      const fullyProtectedReturns = await Promise.all(allPositions.map(async position => {
+      const fullyProtectedReturns = await Promise.all(rois.map(async position => {
 
         console.log(position, 'fire would have to go')
         try {
-          const liquidityReturn = await lpContract.methods.removeLiquidityReturn(
-            '0', 
+          const liquidityReturn = await getRemoveLiquidityReturn(
+            this.contracts.LiquidityProtection,
+            position.id, 
             oneMillion.toString(), 
-            position.timestamp + 300
-          ).call()
+            Number(position.timestamp) + Number(this.liquidityProtectionSettings.maxDelay)
+          );
   
           console.log(liquidityReturn, 'came back');
-          return ({ 
-            protectionReturn: liquidityReturn
-          })
+          return {
+            ...position,
+            liquidityReturn
+          }
         } catch(e) {
-          console.log('failed with params',   
-          // @ts-ignore
-          Number(position.id), 
-          // @ts-ignore
-          new BigNumber(50).toNumber(), 
-          // @ts-ignore
-          moment().unix())
+          throw new Error("Failed to get liquidity return")
         }
-      }))
+      }));
 
       console.log(fullyProtectedReturns, 'xyz')
-      
 
-      this.setProtectedPositions(allPositions);
-      return allPositions;
+      this.setProtectedPositions(fullyProtectedReturns);
+      return fullyProtectedReturns;
     } catch(e) {
       console.error('Failed fetching protection positions', e.message);
     }
@@ -2210,7 +2201,12 @@ export class EthBancorModule
       const relay = findOrThrow(this.relaysList, relay => compareString(relay.id, singleEntry.poolToken))
 
       const reserveToken = this.token(singleEntry.reserveToken);
-      const reserveTokenDec = shrinkToken(singleEntry.reserveAmount, reserveToken.precision)
+      const reservePrecision = reserveToken.precision
+
+      const reserveTokenDec = shrinkToken(singleEntry.reserveAmount, reservePrecision)
+
+      const fullyProtectedDec = shrinkToken(singleEntry.liquidityReturn.targetAmount, reservePrecision);
+      const protectionAchieved = calculateProtectionLevel(startTime, minDelay, maxDelay)
 
       return {
         id: `${singleEntry.poolToken}:${singleEntry.id}`,
@@ -2228,11 +2224,14 @@ export class EthBancorModule
         },
         insuranceStart: startTime + minDelay,
         fullCoverage: startTime + maxDelay,
+        fullyProtected: {
+          amount: fullyProtectedDec,
+        },
         protectedAmount: { 
-          amount: reserveTokenDec,
+          amount: new BigNumber(fullyProtectedDec).times(protectionAchieved).toString(),
           symbol: reserveToken.symbol,
         },
-        coverageDecPercent: calculateProtectionLevel(startTime, minDelay, maxDelay),
+        coverageDecPercent: protectionAchieved,
         roi: 0
       } as ViewProtectedLiquidity
     })

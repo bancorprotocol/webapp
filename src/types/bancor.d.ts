@@ -36,6 +36,11 @@ export interface ProtectedLiquidity {
   reserveRateN: string;
   reserveRateD: string;
   timestamp: string;
+  liquidityReturn: {
+    baseAmount: string;
+    networkAmount: string;
+    targetAmount: string;
+  };
 }
 export interface TokenPrice {
   id: string;
