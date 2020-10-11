@@ -308,7 +308,7 @@ h2 {
 }
 .main-container {
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden !important;
   padding: 12px;
 }
 .side-bar {
