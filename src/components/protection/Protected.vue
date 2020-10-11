@@ -18,7 +18,7 @@
           />
           <span
             v-if="data.value.usdValue !== undefined"
-            v-text="`(~$${data.value.usdValue})`"
+            v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
             class="font-size-12 font-w400 text-primary"
           />
           <span
@@ -35,12 +35,12 @@
         <span
           v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
         />
-        <span
-          v-if="data.value.usdValue !== undefined"
-          v-text="`(~$${data.value.usdValue})`"
-          class="font-size-12 font-w400 text-primary ml-2"
-        />
       </div>
+      <span
+        v-if="data.value.usdValue !== undefined"
+        v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+        class="font-size-12 font-w400 text-primary"
+      />
       <b-badge v-else variant="danger" class="px-2 pt-1">
         Pool is not whitelisted
       </b-badge>
@@ -171,8 +171,8 @@ export default class Protected extends Vue {
     return vxm.ethBancor.protectedLiquidity;
   }
 
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
+  prettifyNumber(number: string | number, usd = false): string {
+    return prettifyNumber(number, usd);
   }
 
   get protectedTxTable() {
