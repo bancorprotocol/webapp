@@ -29,14 +29,14 @@ import { vxm } from "@/store";
 export default class ProtectedEmpty extends Vue {
   content = [
     {
-      route: "AddProtection",
+      route: "AddProtectionHome",
       linkText: "Stake your pool tokens for protections.",
       description:
         "Stake pool tokens of any 50/50 pool to protect them from impermanent loss.",
       buttonText: "Stake"
     },
     {
-      route: "AddProtection",
+      route: "AddProtectionHome",
       linkText: "Add single liquidity.",
       description:
         "Add liquidity with one reserve, be exposed to it only and protect it from impermanent loss. ",
