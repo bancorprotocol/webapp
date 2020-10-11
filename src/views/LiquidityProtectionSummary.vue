@@ -41,7 +41,6 @@
 
             <b-tabs
               v-model="tabIndex"
-              no-fade
               :class="darkMode ? 'tabs-dark' : 'tabs-light'"
             >
               <b-tab title="Protected">
