@@ -204,12 +204,18 @@ export const formatNumber = (num: number | string, size: number = 4) => {
   return reduced;
 };
 
-export const prettifyNumber = (num: number | string): string => {
+export const prettifyNumber = (num: number | string, usd = false): string => {
   const bigNum = new BigNumber(num);
-  if (bigNum.eq(0)) return "0";
-  else if (bigNum.gte(1000)) return numeral(bigNum).format("0,0.[00]");
-  else if (bigNum.lt(0.000001)) return "< 0.000001";
-  else return numeral(bigNum).format("0.[000000]");
+  if (usd) {
+    if (bigNum.eq(0)) return "$0.00";
+    else if (bigNum.lt(0.01)) return "< $0.01";
+    else return numeral(bigNum).format("$0,0.00");
+  } else {
+    if (bigNum.eq(0)) return "0";
+    else if (bigNum.gte(1000)) return numeral(bigNum).format("0,0.[00]");
+    else if (bigNum.lt(0.000001)) return "< 0.000001";
+    else return numeral(bigNum).format("0.[000000]");
+  }
 };
 
 export const findChangedReserve = (

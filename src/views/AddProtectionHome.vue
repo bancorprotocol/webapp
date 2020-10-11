@@ -76,7 +76,7 @@ export default class AddProtectionHome extends Vue {
 
   get pools() {
     if (this.singleMode) return vxm.bancor.relays.filter(x => x.whitelisted);
-    else return vxm.bancor.relays.filter(x => !x.v2);
+    else return vxm.bancor.relays.filter(x => x.whitelisted);
   }
 
   openModal(optionId: number) {
@@ -85,17 +85,20 @@ export default class AddProtectionHome extends Vue {
   }
 
   selectPool(id: string) {
-    if (this.singleMode) {
-      this.$router.push({
-        name: "AddProtectionSingle",
-        params: { id }
-      });
-    } else {
-      this.$router.push({
-        name: "AddProtectionDouble",
-        params: { id }
-      });
-    }
+    this.modal = false;
+    setTimeout(() => {
+      if (this.singleMode) {
+        this.$router.push({
+          name: "AddProtectionSingle",
+          params: { id }
+        });
+      } else {
+        this.$router.push({
+          name: "AddProtectionDouble",
+          params: { id }
+        });
+      }
+    }, 400);
   }
 
   get darkMode() {

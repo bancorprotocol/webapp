@@ -137,7 +137,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection",
+      path: "/:service/protection",
       name: "LiqProtection",
       components: {
         Nav: Navigation,
@@ -145,7 +145,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection/stake",
+      path: "/:service/protection/stake",
       name: "ProtectionAction",
       components: {
         Nav: Navigation,

@@ -197,7 +197,7 @@ export default class AddProtectionDouble extends Vue {
 
   get modalConfirmButton() {
     return this.error
-      ? "Try Again"
+      ? "Close"
       : this.success
       ? "Close"
       : this.txBusy
@@ -212,6 +212,7 @@ export default class AddProtectionDouble extends Vue {
       this.$router.push({ name: "LiqProtection" });
       return;
     } else if (this.error) {
+      this.modal = false;
       this.setDefault();
       return;
     }

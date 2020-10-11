@@ -1,111 +1,112 @@
 <template>
-  <table-wrapper
-    :items="protectedTxTable.items"
-    :fields="protectedTxTable.fields"
-    :filter="search"
-    :filterFunction="doFilter"
-    sort-by="insuranceStart"
-  >
-    <template v-slot:cell(stake)="data">
-      <div class="d-flex align-items-start">
-        <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
-        <div class="d-flex flex-column ml-2">
-          <span>{{ poolName(data.value.poolId) }}</span>
+  <div>
+    <table-wrapper
+      v-if="protectedTxTable.items.length"
+      :items="protectedTxTable.items"
+      :fields="protectedTxTable.fields"
+      :filter="search"
+      :filterFunction="doFilter"
+      sort-by="insuranceStart"
+    >
+      <template v-slot:cell(stake)="data">
+        <div class="d-flex align-items-start">
+          <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
+          <div class="d-flex flex-column ml-2">
+            <span>{{ poolName(data.value.poolId) }}</span>
+            <span
+              v-text="
+                `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}`
+              "
+            />
+            <span
+              v-if="data.value.usdValue !== undefined"
+              v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+              class="font-size-12 font-w400 text-primary"
+            />
+            <span
+              v-text="formatDate(data.item.stake.unixTime).dateTime"
+              class="font-size-12 font-w400"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            />
+          </div>
+        </div>
+      </template>
+
+      <template v-slot:cell(protectedAmount)="data">
+        <div v-if="data.item.whitelisted" class="d-flex align-items-start">
           <span
-            v-text="
-              `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}`
-            "
+            v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
           />
+        </div>
+        <span
+          v-if="data.value.usdValue !== undefined"
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+        <b-badge v-else variant="danger" class="px-2 pt-1">
+          Pool is not whitelisted
+        </b-badge>
+      </template>
+
+      <template v-slot:cell(roi)="data">
+        <span v-if="data.item.whitelisted">{{ data.value }}</span>
+        <span v-else>N/A</span>
+      </template>
+
+      <template v-slot:cell(apr)="data">
+        <div class="d-flex align-items-center">
+          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
+          {{ stringifyPercentage(data.value.day) }}
+        </div>
+        <div class="d-flex align-items-center my-1">
+          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+          {{ stringifyPercentage(data.value.week) }}
+        </div>
+        <div class="d-flex align-items-center">
+          <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge>
+          {{ stringifyPercentage(data.value.month) }}
+        </div>
+      </template>
+
+      <template v-slot:cell(insuranceStart)="data">
+        <div class="d-flex flex-column">
+          <span v-text="formatDate(data.item.insuranceStart).date" />
           <span
-            v-if="data.value.usdValue !== undefined"
-            v-text="`(~$${data.value.usdValue})`"
-            class="font-size-12 font-w400 text-primary"
-          />
-          <span
-            v-text="formatDate(data.item.stake.unixTime).dateTime"
+            v-text="formatDate(data.item.insuranceStart).time"
             class="font-size-12 font-w400"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           />
         </div>
-      </div>
-    </template>
+      </template>
 
-    <template v-slot:cell(protectedAmount)="data">
-      <div v-if="data.item.whitelisted" class="d-flex align-items-start">
-        <span
-          v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
-        />
-        <span
-          v-if="data.value.usdValue !== undefined"
-          v-text="`(~$${data.value.usdValue})`"
-          class="font-size-12 font-w400 text-primary ml-2"
-        />
-      </div>
-      <b-badge v-else variant="danger" class="px-2 pt-1">
-        Pool is not whitelisted
-      </b-badge>
-    </template>
+      <template v-slot:cell(currentCoverage)="data">
+        <div class="d-flex flex-column font-size-12 font-w600">
+          <span v-text="stringifyPercentage(data.item.coverageDecPercent)" />
+          <b-progress
+            :value="data.item.coverageDecPercent * 100"
+            :max="100"
+            height="7px"
+            class="my-1"
+          />
+          <span class="text-primary">
+            {{ formatEndTime(data.item.fullCoverage) }}
+          </span>
+        </div>
+      </template>
 
-    <template v-slot:cell(roi)="data">
-      <span v-if="data.item.whitelisted">{{ data.value }}</span>
-      <span v-else>N/A</span>
-    </template>
+      <template v-slot:cell(actionButtons)="data">
+        <b-btn
+          @click="goToWithdraw(data.item.id)"
+          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+          class="table-button"
+        >
+          Withdraw
+        </b-btn>
+      </template>
+    </table-wrapper>
 
-    <template v-slot:cell(apr)="data">
-      <div class="d-flex align-items-center">
-        <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
-        {{ stringifyPercentage(data.value.day) }}
-      </div>
-      <div class="d-flex align-items-center my-1">
-        <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
-        {{ stringifyPercentage(data.value.week) }}
-      </div>
-      <div class="d-flex align-items-center">
-        <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge>
-        {{ stringifyPercentage(data.value.month) }}
-      </div>
-    </template>
-
-    <template v-slot:cell(insuranceStart)="data">
-      <div class="d-flex flex-column">
-        <span v-text="formatDate(data.item.insuranceStart).date" />
-        <span
-          v-text="formatDate(data.item.insuranceStart).time"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
-      </div>
-    </template>
-
-    <template v-slot:cell(currentCoverage)="data">
-      <div class="d-flex flex-column font-size-12 font-w600">
-        <span v-text="stringifyPercentage(data.item.coverageDecPercent)" />
-        <b-progress
-          :value="data.item.coverageDecPercent * 100"
-          :max="100"
-          height="7px"
-          class="my-1"
-        />
-        <span class="text-primary">
-          {{ formatEndTime(data.item.fullCoverage) }}
-        </span>
-      </div>
-    </template>
-
-    <template v-slot:cell(actionButtons)="data">
-      <b-btn
-        @click="goToWithdraw(data.item.id)"
-        :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-        class="table-button"
-      >
-        Withdraw
-      </b-btn>
-    </template>
-
-    <template v-slot:empty>
-      <protected-empty />
-    </template>
-  </table-wrapper>
+    <protected-empty v-else class="mx-3" />
+  </div>
 </template>
 
 <script lang="ts">
@@ -177,8 +178,8 @@ export default class Protected extends Vue {
     return vxm.ethBancor.protectedLiquidity;
   }
 
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
+  prettifyNumber(number: string | number, usd = false): string {
+    return prettifyNumber(number, usd);
   }
 
   get protectedTxTable() {
