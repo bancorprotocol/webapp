@@ -1133,6 +1133,14 @@ const liquidityProtectionShape = (contractAddress: string) => {
   };
 };
 
+const calculatePercentIncrease = (
+  small: number | string,
+  big: number | string
+): string => {
+  const profit = new BigNumber(big).minus(small);
+  return profit.div(small).toString();
+};
+
 interface TokenWei {
   tokenContract: string;
   weiAmount: string;
@@ -2040,6 +2048,23 @@ export class EthBancorModule
               }
             );
 
+            console.log(
+              {
+                historicalBalance,
+                currentReserveBalances: poolBalances.reserves.map(
+                  (reserve): WeiExtendedAsset => ({
+                    weiAmount: reserve.weiAmount,
+                    contract: reserve.contract
+                  })
+                ),
+                reserveAmount: position.reserveAmount,
+                reserveToken: position.reserveToken,
+                id: position.id
+              },
+
+              "asaf"
+            );
+
             const [
               historicReserveBalance,
               historicOpposingReserveBalance
@@ -2376,6 +2401,15 @@ export class EthBancorModule
             maxDelay
           );
 
+          const res = new BigNumber(singleEntry.poolRoi);
+          const minimalDayDecPercent = res.div(oneMillion).minus(1);
+
+          const minimalYearDecPercent = minimalDayDecPercent.times(365);
+          const minimalMonthDecPercent = minimalYearDecPercent.div(12);
+          const minimalWeekDecPercent = minimalYearDecPercent.div(52);
+
+          console.log(minimalDayDecPercent.toString(), "is apr", singleEntry);
+
           return {
             id: `${singleEntry.poolToken}:${singleEntry.id}`,
             whitelisted: isWhiteListed,
@@ -2383,12 +2417,17 @@ export class EthBancorModule
               amount: reserveTokenDec,
               symbol: reserveToken.symbol,
               poolId: relay.id,
-              unixTime: startTime
+              unixTime: startTime,
+              ...(reserveToken.price && {
+                usdValue: new BigNumber(reserveTokenDec)
+                  .times(reserveToken.price)
+                  .toNumber()
+              })
             },
             apr: {
-              day: 10,
-              month: 10,
-              week: 10
+              day: minimalDayDecPercent.toNumber(),
+              month: minimalMonthDecPercent.toNumber(),
+              week: minimalWeekDecPercent.toNumber()
             },
             insuranceStart: startTime + minDelay,
             fullCoverage: startTime + maxDelay,
@@ -2399,10 +2438,17 @@ export class EthBancorModule
               amount: new BigNumber(fullyProtectedDec)
                 .times(protectionAchieved)
                 .toString(),
-              symbol: reserveToken.symbol
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price && {
+                usdValue: new BigNumber(fullyProtectedDec)
+                  .times(reserveToken.price!)
+                  .toNumber()
+              })
             },
             coverageDecPercent: protectionAchieved,
-            roi: 0
+            roi: Number(
+              calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+            )
           } as ViewProtectedLiquidity;
         }
       );
@@ -2441,10 +2487,29 @@ export class EthBancorModule
             );
 
             const reserveToken = this.token(singleEntry.reserveToken);
+            const reservePrecision = reserveToken.precision;
+
             const reserveTokenDec = shrinkToken(
               singleEntry.reserveAmount,
               reserveToken.precision
             );
+
+            const fullyProtectedDec = shrinkToken(
+              singleEntry.liquidityReturn.targetAmount,
+              reservePrecision
+            );
+            const protectionAchieved = calculateProtectionLevel(
+              startTime,
+              minDelay,
+              maxDelay
+            );
+
+            const res = new BigNumber(singleEntry.poolRoi);
+            const minimalDayDecPercent = res.div(oneMillion).minus(1);
+
+            const minimalYearDecPercent = minimalDayDecPercent.times(365);
+            const minimalMonthDecPercent = minimalYearDecPercent.div(12);
+            const minimalWeekDecPercent = minimalYearDecPercent.div(52);
 
             return {
               id: `${singleEntry.poolToken}:${singleEntry.id}`,
@@ -2453,16 +2518,26 @@ export class EthBancorModule
                 amount: smartTokensDec,
                 symbol: reserveToken.symbol,
                 poolId: relay.id,
-                unixTime: startTime
+                unixTime: startTime,
+                ...(reserveToken.price && {
+                  usdValue: new BigNumber(reserveTokenDec)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
               },
               protectedAmount: {
-                amount: reserveTokenDec,
-                symbol: reserveToken.symbol
+                amount: fullyProtectedDec,
+                symbol: reserveToken.symbol,
+                ...(reserveToken.price && {
+                  usdValue: new BigNumber(fullyProtectedDec)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
               },
               apr: {
-                day: 0,
-                month: 0,
-                week: 0
+                day: minimalDayDecPercent.toNumber(),
+                month: minimalMonthDecPercent.toNumber(),
+                week: minimalWeekDecPercent.toNumber()
               },
               insuranceStart: startTime + minDelay,
               fullCoverage: startTime + maxDelay,
@@ -2471,7 +2546,9 @@ export class EthBancorModule
                 minDelay,
                 maxDelay
               ),
-              roi: 0
+              roi: Number(
+                calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+              )
             } as ViewProtectedLiquidity;
           }
         );
@@ -2492,8 +2569,7 @@ export class EthBancorModule
             amount: smartTokensDec,
             symbol: smartToken.symbol,
             poolId: commonViewRelay.id,
-            unixTime: startTime,
-            usdValue: 1
+            unixTime: startTime
           },
           apr: {
             day: 0,
@@ -2503,7 +2579,6 @@ export class EthBancorModule
           insuranceStart: startTime + minDelay,
           fullCoverage: startTime + maxDelay,
           protectedAmount: {
-            usdValue: 3,
             amount: smartTokensDec,
             symbol: smartToken.symbol
           },
@@ -2512,7 +2587,7 @@ export class EthBancorModule
             minDelay,
             maxDelay
           ),
-          roi: 0
+          roi: Number(calculatePercentIncrease(smartTokensDec, smartTokensDec))
         } as ViewProtectedLiquidity;
       }
     });

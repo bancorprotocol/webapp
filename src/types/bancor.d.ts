@@ -36,6 +36,7 @@ export interface ProtectedLiquidity {
   reserveRateN: string;
   reserveRateD: string;
   timestamp: string;
+  poolRoi: string;
   liquidityReturn: {
     baseAmount: string;
     networkAmount: string;
@@ -671,6 +672,7 @@ export interface ViewProtectedLiquidity {
     amount: string;
     poolId: string;
     usdValue?: number;
+    symbol: string;
     unixTime: number;
   };
   protectedAmount: {
