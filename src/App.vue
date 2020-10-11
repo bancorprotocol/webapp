@@ -51,6 +51,9 @@
       class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
     >
       This interface is in beta. Use it at your own risk.
+      <b-form-checkbox v-model="status">
+        Dev option: Phase 2
+      </b-form-checkbox>
     </div>
     <div name="MainLayout" class="main-layout">
       <div
@@ -154,7 +157,7 @@ export default class App extends Vue {
       newTab: false
     },
     // { route: "swap", key: "governance", label: "Governance" },
-    // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
+    { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
     {
       route: "https://x.bancor.network/",
       key: "bancorx",
@@ -168,6 +171,14 @@ export default class App extends Vue {
       newTab: true
     }
   ];
+
+  get status() {
+    return vxm.general.phase2;
+  }
+
+  set status(value: boolean) {
+    vxm.general.setPhase(!!value);
+  }
 
   get selectedNetwork() {
     return vxm.bancor.currentNetwork;
@@ -264,6 +275,7 @@ export default class App extends Vue {
     if (path.includes("swap")) this.selectedLink = "swap";
     if (path.includes("pool")) this.selectedLink = "swap";
     if (path.includes("data")) this.selectedLink = "data";
+    if (path.includes("protection")) this.selectedLink = "liquidity";
   }
 }
 </script>
@@ -302,7 +314,7 @@ h2 {
 }
 .main-container {
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden !important;
   padding: 12px;
   @media screen and (max-width: 768px) {
     margin-bottom: 56px;

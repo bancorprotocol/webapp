@@ -11,7 +11,9 @@ import {
   V2PoolsTokenContainer,
   ABIMultiCallContract,
   ABIContainerContract,
-  ABIBancorGovernance
+  ABIBancorGovernance,
+  ABILiquidityProtection,
+  ABILiquidityProtectionStore
 } from "@/api/eth/ethAbis";
 import { web3 } from "@/api/helpers";
 import { AbiItem } from "web3-utils";
@@ -236,3 +238,71 @@ export const buildRegistryContract = (
     reserveWeight: string[]
   ) => CallReturn<string>;
 }> => buildContract(ABIConverterRegistry, contractAddress);
+
+export const buildLiquidityProtectionStoreContract = (
+  contractAddress: string
+): ContractMethods<{
+  whitelistedPools(): CallReturn<string[]>;
+  lockedBalanceCount(owner: string): CallReturn<string>;
+  lockedBalance(
+    owner: string,
+    index: string
+  ): CallReturn<{ "0": string; "1": string }>;
+  lockedBalanceRange(
+    owner: string,
+    startIndex: string,
+    endIndex: string
+  ): CallReturn<{ "0": string[]; "1": string[] }>;
+  systemBalance(tokenAddress: string): CallReturn<string>;
+  totalProtectedPoolAmount(poolTokenAddress: string): CallReturn<string>;
+  totalProtectedReserveAmount(
+    anchorAddress: string,
+    reserveAddress: string
+  ): CallReturn<string>;
+  protectedLiquidityCount(owner: string): CallReturn<string>;
+  protectedLiquidityIds(owner: string): CallReturn<string[]>;
+  protectedLiquidityId(owner: string): CallReturn<string>;
+  protectedLiquidity(id: string): CallReturn<{ [key: string]: string }>;
+  isPoolWhitelisted(anchorAddress: string): CallReturn<"0" | "1">;
+}> => buildContract(ABILiquidityProtectionStore, contractAddress);
+
+export const buildLiquidityProtectionContract = (
+  contractAddress: string
+): ContractMethods<{
+  store: () => CallReturn<string>;
+  networkToken: () => CallReturn<string>;
+  govToken: () => CallReturn<string>;
+  minProtectionDelay: () => CallReturn<string>;
+  maxProtectionDelay: () => CallReturn<string>;
+  maxSystemNetworkTokenAmount: () => CallReturn<string>;
+  maxSystemNetworkTokenRatio: () => CallReturn<string>;
+  lockDuration: () => CallReturn<string>;
+  isPoolSupported: (anchor: string) => CallReturn<boolean>;
+  protectLiquidity: (
+    anchor: string,
+    poolTokenWei: string
+  ) => ContractSendMethod;
+  unprotectLiquidity: (dbId1: string, dbId2: string) => ContractSendMethod;
+  addLiquidity: (
+    anchor: string,
+    reserveAddress: string,
+    reserveAmountWei: string
+  ) => ContractSendMethod;
+  removeLiquidity: (dbId: string, ppmPercent: string) => ContractSendMethod;
+  claimBalance: (startIndex: string, endIndex: string) => ContractSendMethod;
+  transferLiquidity: (id: string, newProvider: string) => ContractSendMethod;
+  removeLiquidityReturn: (
+    id: string,
+    portion: string,
+    removeTimeStamp: string
+  ) => CallReturn<{ "0": string; "1": string; "2": string }>;
+  poolROI: (
+    poolToken: string,
+    reserveToken: string,
+    reserveAmount: string,
+    poolRateN: string,
+    poolRateD: string,
+    reserveRateN: string,
+    reserveRateD: string
+  ) => CallReturn<string>;
+}> => buildContract(ABILiquidityProtection, contractAddress);

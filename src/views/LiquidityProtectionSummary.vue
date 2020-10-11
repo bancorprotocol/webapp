@@ -13,7 +13,7 @@
           <b-btn
             variant="primary"
             class="float-right"
-            :to="{ name: 'AddProtection' }"
+            :to="{ name: 'AddProtectionHome' }"
             >Stake</b-btn
           >
         </div>
@@ -30,8 +30,9 @@
       <b-col cols="12">
         <content-block :px0="true" :shadow-light="true" :no-header="true">
           <div class="pt-2">
-            <div class="float-right mr-2">
+            <div v-if="tabIndex === 0" class="float-right mr-2">
               <multi-input-field
+                class="max-search-width-xs"
                 v-model="searchProtected"
                 placeholder="Search"
                 prepend="search"
@@ -40,13 +41,12 @@
 
             <b-tabs
               v-model="tabIndex"
-              no-fade
               :class="darkMode ? 'tabs-dark' : 'tabs-light'"
             >
               <b-tab title="Protected">
                 <protected :search="searchProtected" />
               </b-tab>
-              <b-tab title="Claim">
+              <b-tab v-if="phase2" title="Claim">
                 <claim :search="searchProtected" />
               </b-tab>
             </b-tabs>
@@ -81,6 +81,10 @@ export default class LiquidityProtectionSummary extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  get phase2() {
+    return vxm.general.phase2;
   }
 }
 </script>

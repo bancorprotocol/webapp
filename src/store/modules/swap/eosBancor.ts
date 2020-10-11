@@ -1173,6 +1173,8 @@ export class EosBancorModule
           removeLiquiditySupported: true,
           focusAvailable: false,
           v2: false,
+          liquidityProtection: false,
+          whitelisted: false,
           reserves: sortedReserves.map((reserve: AgnosticToken) => ({
             ...reserve,
             reserveWeight: 0.5,

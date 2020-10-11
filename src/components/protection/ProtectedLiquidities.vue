@@ -1,27 +1,22 @@
 <template>
-  <div>
+  <content-block
+    :px0="true"
+    :shadow-light="true"
+    title="Protected Liquidities"
+    :search.sync="search"
+  >
     <table-wrapper
-      v-if="protectedTxTable.items.length"
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"
-      :filterFunction="doFilter"
       sort-by="insuranceStart"
     >
       <template v-slot:cell(stake)="data">
         <div class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
           <div class="d-flex flex-column ml-2">
-            <span>{{ poolName(data.value.poolId) }}</span>
             <span
-              v-text="
-                `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}`
-              "
-            />
-            <span
-              v-if="data.value.usdValue !== undefined"
-              v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
-              class="font-size-12 font-w400 text-primary"
+              v-text="`${data.value.amount} ${poolName(data.value.poolId)}`"
             />
             <span
               v-text="formatDate(data.item.stake.unixTime).dateTime"
@@ -29,32 +24,28 @@
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             />
           </div>
+          <span
+            v-text="`(~$${data.value.usdValue})`"
+            class="font-size-12 font-w400 text-primary ml-2"
+          />
         </div>
       </template>
 
       <template v-slot:cell(protectedAmount)="data">
-        <div v-if="data.item.whitelisted" class="d-flex align-items-start">
+        <div class="d-flex align-items-start">
+          <span v-text="`${data.value.amount} ${data.value.symbol}`" />
           <span
-            v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
+            v-text="`(~$${data.value.usdValue})`"
+            class="font-size-12 font-w400 text-primary ml-2"
           />
         </div>
-        <span
-          v-if="data.value.usdValue !== undefined"
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
         <b-badge
-          v-if="!data.item.whitelisted"
+          v-if="data.item.whitelisted"
           variant="danger"
           class="px-2 pt-1"
         >
           Pool is not whitelisted
         </b-badge>
-      </template>
-
-      <template v-slot:cell(roi)="data">
-        <span v-if="data.item.whitelisted">{{ data.value }}</span>
-        <span v-else>N/A</span>
       </template>
 
       <template v-slot:cell(apr)="data">
@@ -85,22 +76,39 @@
 
       <template v-slot:cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
-          <span v-text="stringifyPercentage(data.item.coverageDecPercent)" />
+          <span
+            v-text="
+              calculateFullCoverage(
+                data.item.insuranceStart,
+                data.item.fullCoverage
+              ).percentage
+            "
+          />
           <b-progress
-            :value="data.item.coverageDecPercent * 100"
+            :value="
+              calculateFullCoverage(
+                data.item.insuranceStart,
+                data.item.fullCoverage
+              ).percentage
+            "
             :max="100"
             height="7px"
             class="my-1"
           />
           <span class="text-primary">
-            {{ formatEndTime(data.item.fullCoverage) }}
+            {{
+              calculateFullCoverage(
+                data.item.insuranceStart,
+                data.item.fullCoverage
+              ).timeLeft
+            }}
           </span>
         </div>
       </template>
 
       <template v-slot:cell(actionButtons)="data">
         <b-btn
-          @click="goToWithdraw(data.item.id)"
+          @click="goToWithdraw(data.item.stake.poolId)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           class="table-button"
         >
@@ -108,65 +116,52 @@
         </b-btn>
       </template>
     </table-wrapper>
-
-    <protected-empty v-else class="mx-3" />
-  </div>
+  </content-block>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
-import {
-  buildPoolName,
-  compareString,
-  formatUnixTime,
-  prettifyNumber
-} from "@/api/helpers";
+import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
-import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 
 @Component({
   components: {
-    ProtectedEmpty,
     PoolLogosOverlapped,
     TableWrapper,
     ContentBlock
   }
 })
-export default class Protected extends Vue {
-  @Prop({ default: "" }) search!: string;
+export default class ProtectedLiquidities extends Vue {
+  search: string = "";
 
   poolName(id: string): string {
     return buildPoolName(id);
   }
 
-  formatEndTime(fullCoverageSeconds: number) {
-    const timeNow = moment();
-    const fullCoverage = moment.unix(fullCoverageSeconds);
-    const reachedFullCoverage = timeNow.isAfter(fullCoverage);
-    if (reachedFullCoverage) {
-      return "Full coverage achieved";
-    } else {
-      const timeLeft = moment.unix(fullCoverageSeconds).fromNow(true);
-      return `${timeLeft} left till full coverage`;
-    }
+  calculateFullCoverage(start: number, fullCoverage: number) {
+    const now = Date.now() / 1000;
+    const deltaStartToCoverage = fullCoverage - start;
+    const deltaStartToNow = now - start;
+    const percentage = this.stringifyPercentage(
+      deltaStartToNow / deltaStartToCoverage
+    );
+    const timeLeft = moment(fullCoverage * 1000).fromNow(true);
+
+    if (parseInt(percentage) < 100)
+      return { percentage, timeLeft: timeLeft + " left till full coverage" };
+    else return { percentage: "100%", timeLeft: "Full coverage achieved" };
   }
 
   goToWithdraw(id: string) {
-    const position = this.protectedLiquidity.find(pos =>
-      compareString(pos.id, id)
-    )!;
-    const routeName = position.single
-      ? "WithdrawProtectionSingle"
-      : "WithdrawProtectionDouble";
     this.$router.push({
-      name: routeName,
-      params: { id }
+      name: "ProtectionAction",
+      params: { action: "withdraw", id }
     });
   }
 
@@ -175,23 +170,19 @@ export default class Protected extends Vue {
   }
 
   stringifyPercentage(percentage: number) {
-    return numeral(percentage).format("0.00%");
+    return numeral(percentage).format("0%");
   }
 
-  get protectedLiquidity(): ViewProtectedLiquidity[] {
+  get protectedLiquidity() {
     return vxm.ethBancor.protectedLiquidity;
   }
 
-  prettifyNumber(number: string | number, usd = false): string {
-    return prettifyNumber(number, usd);
-  }
-
   get protectedTxTable() {
-    const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
+    const items = this.protectedLiquidity;
     const fields: any[] = [
       {
         key: "stake",
-        thStyle: { "min-width": "250px" }
+        thStyle: { "min-width": "300px" }
       },
       {
         key: "protectedAmount",
@@ -230,11 +221,6 @@ export default class Protected extends Vue {
     return { items, fields };
   }
 
-  doFilter(row: any, filter: string) {
-    return (row.stake.symbol as string)
-      .toLowerCase()
-      .includes(filter.toLowerCase());
-  }
   get darkMode() {
     return vxm.general.darkMode;
   }
