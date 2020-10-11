@@ -43,7 +43,11 @@
           v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
-        <b-badge v-else variant="danger" class="px-2 pt-1">
+        <b-badge
+          v-if="!data.item.whitelisted"
+          variant="danger"
+          class="px-2 pt-1"
+        >
           Pool is not whitelisted
         </b-badge>
       </template>

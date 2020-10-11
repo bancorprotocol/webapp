@@ -2344,7 +2344,7 @@ export class EthBancorModule
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
-    const allowSingles = false;
+    const allowSingles = vxm.general.phase2;
 
     console.log(this.protectedPositionsArr, "was thing");
     const allPositions = this.protectedPositionsArr

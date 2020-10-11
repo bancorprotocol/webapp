@@ -75,8 +75,7 @@ export default class AddProtectionHome extends Vue {
   }
 
   get pools() {
-    if (this.singleMode) return vxm.bancor.relays.filter(x => x.whitelisted);
-    else return vxm.bancor.relays.filter(x => x.whitelisted);
+    return vxm.bancor.relays.filter(pool => pool.whitelisted && !pool.v2);
   }
 
   openModal(optionId: number) {
