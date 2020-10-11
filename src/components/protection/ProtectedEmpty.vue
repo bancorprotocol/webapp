@@ -3,18 +3,22 @@
     <div
       v-for="(item, index) in content"
       :key="index"
-      class="protected-stake d-flex justify-content-between align-items-center p-3 my-3"
+      class="protected-stake d-lg-flex justify-content-lg-between align-items-lg-center p-3 my-3"
       :class="darkMode ? 'protected-stake-dark' : 'protected-stake'"
     >
-      <div>
+      <div class="d-flex flex-column">
         <router-link :to="{ name: item.route }" class="font-w600 font-size-16">
           {{ item.linkText }}
         </router-link>
-        <span>
+        <span class="mt-1">
           {{ item.description }}
         </span>
       </div>
-      <b-btn :to="{ name: item.route }" variant="primary" class="stake-button">
+      <b-btn
+        :to="{ name: item.route }"
+        variant="primary"
+        class="stake-button mt-3 mt-lg-0"
+      >
         {{ item.buttonText }}
       </b-btn>
     </div>
