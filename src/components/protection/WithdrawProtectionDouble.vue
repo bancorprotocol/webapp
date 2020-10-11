@@ -107,7 +107,13 @@ export default class WithdrawProtectionDouble extends Vue {
     return this.position.whitelisted;
   }
 
+  get phase2() {
+    return vxm.general.phase2;
+  }
+
   get warning() {
+    if (!this.phase2)
+      return "Pending protection vote. Until then, you are entitled to receive the same amount of pool tokens provided";
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
       ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
       : "";
