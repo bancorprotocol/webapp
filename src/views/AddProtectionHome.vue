@@ -85,17 +85,20 @@ export default class AddProtectionHome extends Vue {
   }
 
   selectPool(id: string) {
-    if (this.singleMode) {
-      this.$router.push({
-        name: "AddProtectionSingle",
-        params: { id }
-      });
-    } else {
-      this.$router.push({
-        name: "AddProtectionDouble",
-        params: { id }
-      });
-    }
+    this.modal = false;
+    setTimeout(() => {
+      if (this.singleMode) {
+        this.$router.push({
+          name: "AddProtectionSingle",
+          params: { id }
+        });
+      } else {
+        this.$router.push({
+          name: "AddProtectionDouble",
+          params: { id }
+        });
+      }
+    }, 400);
   }
 
   get darkMode() {
