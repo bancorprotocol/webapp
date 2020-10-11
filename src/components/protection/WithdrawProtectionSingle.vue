@@ -70,7 +70,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { TxResponse, ViewRelay } from "@/types/bancor";
+import { TxResponse, ViewAmount, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -86,6 +86,15 @@ import {
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
+
+interface ViewAmountUsd extends ViewAmount {
+  usdValue: number;
+}
+
+interface RemoveProtectionRes {
+  outputValue: ViewAmountUsd;
+  outputs: ViewAmountUsd[];
+}
 
 @Component({
   components: {
