@@ -167,7 +167,8 @@ export default class WithdrawProtectionDouble extends Vue {
       this.modal = false;
       this.$router.push({ name: "LiqProtection" });
     } else if (this.error) {
-      this.initAction();
+      this.setDefault();
+      this.modal = false;
     }
   }
 
@@ -183,7 +184,7 @@ export default class WithdrawProtectionDouble extends Vue {
 
   get modalConfirmButton() {
     return this.error
-      ? "Try Again"
+      ? "Close"
       : this.success
       ? "Close"
       : this.txBusy
