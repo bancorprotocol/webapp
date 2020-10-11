@@ -359,7 +359,7 @@ const usdPriceOfEth = async (blockNumbers: string[]) => {
         number
       ]
   );
-  return prices as [block: string, priceOfBnt: number][];
+  return prices as [string, number][];
 };
 
 const converterBalances = async (skip: number = 0) => {
@@ -1066,15 +1066,16 @@ const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
 type TotalVolumeAndLiquidity = [
-  blockNumber: string,
-  totalVolume: string,
-  totalLiquidity: string,
-  unixTime: number
+  string,
+  string,
+  string,
+  number
 ];
+
 type VolumeAndLiq = [
-  blockNumber: string,
-  totalVolume: string,
-  totalLiquidity: string
+  string,
+  string,
+  string
 ];
 
 const relayShape = (converterAddress: string) => {
@@ -4602,7 +4603,7 @@ export class EthBancorModule
       contractRegistry
     );
 
-    const arr = toPairs(hardCodedBytes) as [label: string, ascii: string][]
+    const arr = toPairs(hardCodedBytes) as [string, string][]
 
     try {
       const contractAddresses = await Promise.all(arr.map(async ([label, ascii]) => [label, await registryContract.methods.addressOf(ascii).call()] as [string, string]))
