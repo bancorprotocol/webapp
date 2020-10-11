@@ -10,7 +10,11 @@
 
     <label-content-split
       label="Fully Protected Value"
-      :value="position.fullyProtected.amount"
+      :value="
+        `${prettifyNumber(position.fullyProtected.amount)} ${
+          position.stake.symbol
+        }`
+      "
       class="my-3"
     />
 
@@ -36,7 +40,9 @@
       <label-content-split
         label="Output value of"
         :value="
-          `${position.protectedAmount.amount} ${position.protectedAmount.symbol}`
+          `${prettifyNumber(position.protectedAmount.amount)} ${
+            position.protectedAmount.symbol
+          }`
         "
       />
 
@@ -173,8 +179,8 @@ export default class WithdrawProtectionSingle extends Vue {
     }
   }
 
-  prettifyNumber(amount: string) {
-    return parseFloat(prettifyNumber(amount));
+  prettifyNumber(amount: string, usd = false) {
+    return prettifyNumber(amount, usd);
   }
 
   setDefault() {
