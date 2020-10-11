@@ -32,6 +32,7 @@
           <div class="pt-2">
             <div v-if="tabIndex === 0" class="float-right mr-2">
               <multi-input-field
+                class="max-search-width-xs"
                 v-model="searchProtected"
                 placeholder="Search"
                 prepend="search"
