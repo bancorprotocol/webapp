@@ -269,7 +269,7 @@ export default class App extends Vue {
     if (path.includes("swap")) this.selectedLink = "swap";
     if (path.includes("pool")) this.selectedLink = "swap";
     if (path.includes("data")) this.selectedLink = "data";
-    if (path.includes("liquidity-protection")) this.selectedLink = "liquidity";
+    if (path.includes("protection")) this.selectedLink = "liquidity";
   }
 }
 </script>
