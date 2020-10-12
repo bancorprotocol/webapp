@@ -12,13 +12,11 @@ import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
 
 export const governanceContractAddress =
-  "0x161f28A417361961E946Ae03EF0A425008b7F01B";
-export const etherscanUrl = "https://ropsten.etherscan.io/";
+  "0x892f481bd6e9d7d26ae365211d9b45175d5d00e4";
+export const etherscanUrl = "https://etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
-const ipfsUrl = "https://ipfs.infura.io:5001";
-// const discourseUrl = "https://gov.bancor.network/";
-const discourseUrl =
-  "https://api.allorigins.win/raw?url=https://gov.uniswap.org/";
+const ipfsUrl = "https://ipfs.infura.io:5001/";
+const discourseUrl = "https://gov.bancor.network/";
 
 const VuexModule = createModule({
   strict: false
