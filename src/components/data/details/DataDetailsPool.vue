@@ -192,9 +192,11 @@ export default class DataPool extends Vue {
   }
 
   get totalPoolWeight() {
-    const weights = this.poolTokensTable.items.map(x => x.reserveWeight)
-    const total = weights.reduce((accumulator, currentValue) => accumulator + currentValue)
-    return numeral(total).format('0%');
+    const weights = this.poolTokensTable.items.map(x => x.reserveWeight);
+    const total = weights.reduce(
+      (accumulator, currentValue) => accumulator + currentValue
+    );
+    return numeral(total).format("0%");
   }
 
   get poolVersion() {
@@ -206,7 +208,7 @@ export default class DataPool extends Vue {
   }
 
   get poolTokensTable() {
-    const items = this.pool.reserves
+    const items = this.pool.reserves;
 
     const fields: any[] = [
       {
@@ -252,7 +254,7 @@ export default class DataPool extends Vue {
     return this.txHistory.conversionEvents;
   }
 
-  doFilter(row: any, filter: string) {    
+  doFilter(row: any, filter: string) {
     return row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0;
   }
   async loadFocusPool() {

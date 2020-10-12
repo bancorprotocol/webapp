@@ -1,15 +1,20 @@
 <template>
   <div class="px-4 pt-4 border-top">
     <b-row>
-      <b-col md="6">
+      <b-col xl="6">
         <sub-content-block title="Available to claim">
-          <claim-bnt v-for="item in available" :key="item.id" :item="item" />
+          <claim-bnt
+            v-for="item in available"
+            :key="item.id"
+            :item="item"
+            @click="onClick"
+          />
           <div v-if="!available.length" class="no-claim-results">
             No BNT to claim.
           </div>
         </sub-content-block>
       </b-col>
-      <b-col md="6">
+      <b-col xl="6">
         <sub-content-block title="Locked">
           <claim-bnt v-for="item in locked" :key="item.id" :item="item" />
           <div v-if="!locked.length" class="no-claim-results">
@@ -18,6 +23,19 @@
         </sub-content-block>
       </b-col>
     </b-row>
+
+    <modal-base title="Claim BNT" v-model="modal" @input="setDefault">
+      <action-modal-status :error="error" :success="success" />
+
+      <main-button
+        @click="onModalClick"
+        class="mt-3"
+        :label="modalConfirmButton"
+        :active="true"
+        :large="true"
+        :disabled="txBusy"
+      />
+    </modal-base>
   </div>
 </template>
 
@@ -26,62 +44,76 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import moment from "moment";
+import { vxm } from "@/store";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import MainButton from "@/components/common/Button.vue";
+import { TxResponse } from "@/types/bancor";
 
 @Component({
-  components: { ClaimBnt, SubContentBlock }
+  components: {
+    ActionModalStatus,
+    ModalBase,
+    ClaimBnt,
+    SubContentBlock,
+    MainButton
+  }
 })
 export default class Claim extends Vue {
   @Prop({ default: "" }) search!: string;
 
+  modal = false;
+  txBusy = false;
+  success: TxResponse | string | null = null;
+  error = "";
+
   now = Date.now() / 1000;
 
   get available() {
-    return this.claim.filter(x => x.lockedUntil < this.now);
+    return vxm.ethBancor.availableBalances;
   }
 
   get locked() {
-    return this.claim.filter(x => x.lockedUntil > this.now);
+    return vxm.ethBancor.lockedBalances;
   }
 
-  get claim() {
-    return [
-      {
-        id: 0,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601534050
-      },
-      {
-        id: 1,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601482000
-      },
-      {
-        id: 2,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601482000
-      },
-      {
-        id: 3,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601688926
-      },
-      {
-        id: 4,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601481618
-      },
-      {
-        id: 5,
-        amount: 5480.75438,
-        usdValue: 759.69,
-        lockedUntil: 1601688926
-      }
-    ];
+  async onClick() {
+    this.setDefault();
+    this.modal = true;
+    this.txBusy = true;
+    try {
+      const result = await vxm.ethBancor.claimBnt();
+      this.success = result;
+    } catch (err) {
+      this.error = err.message;
+    } finally {
+      this.txBusy = false;
+    }
+  }
+
+  onModalClick() {
+    if (this.success) {
+      this.setDefault();
+      this.modal = false;
+    } else if (this.error) {
+      this.onClick();
+    }
+  }
+
+  get modalConfirmButton() {
+    return this.error
+      ? "Try Again"
+      : this.success
+      ? "Close"
+      : this.txBusy
+      ? "processing ..."
+      : "Confirm";
+  }
+
+  setDefault() {
+    this.error = "";
+    this.success = null;
+    this.txBusy = false;
   }
 
   created() {
