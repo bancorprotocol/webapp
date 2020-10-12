@@ -5339,7 +5339,7 @@ export class EthBancorModule
     ]);
 
     const res = await multi.all(groupsOfShapes, {
-      traditional: this.useTraditionalCalls
+      traditional: false
     });
     return res;
   }
