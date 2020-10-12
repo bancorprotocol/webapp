@@ -37,7 +37,9 @@ import {
   ProtectLiquidityParams,
   OnUpdate,
   ViewProtectedLiquidity,
-  ViewLockedBalance
+  ViewLockedBalance,
+  ProtectionRes,
+  ViewAmountDetail
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -143,6 +145,24 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 
+const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
+  const liq1 = new BigNumber(liq1Balance);
+  const liq2 = new BigNumber(liq2Balance);
+
+  const first = liq1.isLessThanOrEqualTo(liq2.plus(1));
+  const second = liq2.isLessThanOrEqualTo(liq1.plus(1));
+
+  const passed = first && second;
+  return passed;
+};
+
+const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) =>
+  compareString(a.poolToken, b.poolToken) &&
+  a.timestamp == b.timestamp &&
+  compareString(a.owner, b.owner) &&
+  samePoolAmount(a.poolAmount, b.poolAmount);
+
+// returns the rate of 1 pool token in reserve token units
 const calculatePoolTokenRate = (
   poolTokenSupply: string,
   reserveTokenBalance: string
@@ -1829,6 +1849,7 @@ export class EthBancorModule
       maxSystemNetworkTokenAmount: settings.maxSystemNetworkTokenAmount
     } as LiquidityProtectionSettings;
     this.setLiquidityProtectionSettings(newSettings);
+    this.fetchBulkTokenBalances([newSettings.govToken]);
     console.log(newSettings, "are the new settings");
     return newSettings;
   }
@@ -2128,6 +2149,10 @@ export class EthBancorModule
       console.log("success!", rois);
 
       this.setProtectedPositions(rois);
+      if (this.loadingProtectedPositions) {
+        await wait(2);
+        this.setLoadingPositions(false);
+      }
       return rois;
     } catch (e) {
       console.error("Failed fetching protection positions", e.message);
@@ -2317,6 +2342,10 @@ export class EthBancorModule
     this.lockedBalancesArr = lockedBalances;
   }
 
+  @mutation setLoadingPositions(value: boolean) {
+    this.loadingProtectedPositions = value;
+  }
+
   @action async fetchLockedBalances(storeAddress?: string) {
     const owner = this.isAuthenticated;
     if (!owner) return;
@@ -2339,8 +2368,11 @@ export class EthBancorModule
           )
         : [];
     this.setLockedBalances(lockedBalances);
+
     return lockedBalances;
   }
+
+  loadingProtectedPositions = true;
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
@@ -2358,11 +2390,6 @@ export class EthBancorModule
     // in the event a white listed pool runs, LP creates a position then gov kills it
     // filter currently in place to clean up existing positions on ropsten essentially.
 
-    const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) =>
-      compareString(a.poolToken, b.poolToken) &&
-      a.timestamp == b.timestamp &&
-      compareString(a.owner, b.owner);
-
     const seperatedEntries = uniqWith(allPositions, samePointOfEntry);
 
     const joined = seperatedEntries.map(entry =>
@@ -2371,6 +2398,7 @@ export class EthBancorModule
     const allFoundAtLeastOne = joined.every(
       entries => entries.length > 0 && entries.length < 3
     );
+    console.log({ seperatedEntries, joined, allFoundAtLeastOne }, "xp");
     if (!allFoundAtLeastOne)
       throw new Error("Failed finding at least one entry or found above 2");
 
@@ -2536,6 +2564,9 @@ export class EthBancorModule
                     .toNumber()
                 })
               },
+              fullyProtected: {
+                amount: "1.23"
+              },
               protectedAmount: {
                 amount: fullyProtectedDec,
                 symbol: reserveToken.symbol,
@@ -2574,6 +2605,15 @@ export class EthBancorModule
           .toString();
         const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
 
+        const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
+
+        const givenVBnt = shrinkToken(
+          doubles.find(position =>
+            compareString(bntAddress, position.reserveToken)
+          )!.reserveAmount,
+          18
+        );
+
         return {
           id: `${commonPoolToken}:${doubles.map(pos => pos.id).join(":")}`,
           whitelisted: isWhiteListed,
@@ -2591,6 +2631,9 @@ export class EthBancorModule
           insuranceStart: startTime + minDelay,
           single: false,
           fullCoverage: startTime + maxDelay,
+          fullyProtected: {
+            amount: "12345.6789"
+          },
           protectedAmount: {
             amount: smartTokensDec,
             symbol: smartToken.symbol
@@ -2600,7 +2643,8 @@ export class EthBancorModule
             minDelay,
             maxDelay
           ),
-          roi: Number(calculatePercentIncrease(smartTokensDec, smartTokensDec))
+          roi: Number(calculatePercentIncrease(smartTokensDec, smartTokensDec)),
+          givenVBnt
         } as ViewProtectedLiquidity;
       }
     });
@@ -3844,7 +3888,7 @@ export class EthBancorModule
   }: {
     poolId: string;
     reserveAmount: ViewAmount;
-  }) {
+  }): Promise<ProtectionRes> {
     console.log("network token called");
     const reserveToken = this.token(reserveAmount.id);
 
@@ -3867,7 +3911,10 @@ export class EthBancorModule
     );
     const poolTokenAmount = poolTokenRate.times(reserveAmountWei);
     const notEnoughInStore = poolTokenAmount.isGreaterThan(poolTokenBalance);
-    return notEnoughInStore ? "Insufficient store balance" : "";
+    return {
+      outputs: [],
+      ...(notEnoughInStore && { error: "Insufficient store balance" })
+    };
   }
 
   @action async calculateProtectionBaseToken({
@@ -3876,7 +3923,7 @@ export class EthBancorModule
   }: {
     poolId: string;
     reserveAmount: ViewAmount;
-  }) {
+  }): Promise<ProtectionRes> {
     const reserveToken = this.token(reserveAmount.id);
     const [balances, poolTokenBalance] = await Promise.all([
       this.fetchRelayBalances(poolId),
@@ -3931,19 +3978,24 @@ export class EthBancorModule
       "awkies"
     );
 
+    let errorMessage = "";
+
     if (breachesMaxSystemBalance) {
-      return "Deposit breaches maximum liquidity";
+      errorMessage = "Deposit breaches maximum liquidity";
     } else if (breachesRatio) {
-      return `Deposit breaches maximum ratio between ${networkReserve.symbol} and ${baseReserve.symbol}`;
-    } else {
-      return "";
+      errorMessage = `Deposit breaches maximum ratio between ${networkReserve.symbol} and ${baseReserve.symbol}`;
     }
+
+    return {
+      outputs: [],
+      ...(errorMessage && { error: errorMessage })
+    };
   }
 
-  @action async calculateProtection(params: {
+  @action async calculateProtectionSingle(params: {
     poolId: string;
     reserveAmount: ViewAmount;
-  }) {
+  }): Promise<ProtectionRes> {
     const depositingNetworkToken = compareString(
       this.liquidityProtectionSettings.networkToken,
       params.reserveAmount.id
@@ -3953,6 +4005,51 @@ export class EthBancorModule
       return this.calculateProtectionNetworkToken(params);
     } else {
       return this.calculateProtectionBaseToken(params);
+    }
+  }
+
+  @action async calculateProtectionDouble({
+    poolTokenAmount
+  }: {
+    poolTokenAmount: ViewAmount;
+  }): Promise<ProtectionRes> {
+    const phase2 = vxm.general.phase2;
+
+    const relay = findOrThrow(this.relaysList, relay =>
+      compareString(relay.id, poolTokenAmount.id)
+    );
+    const smartToken = relay.anchor as SmartToken;
+
+    const balances = await this.fetchRelayBalances(smartToken.contract);
+
+    const outputs = balances.reserves.map(reserve => {
+      console.log(reserve, balances, "dishes");
+      const rate = new BigNumber(
+        calculatePoolTokenRate(balances.smartTokenSupplyWei, reserve.weiAmount)
+      ).div(2);
+
+      const reserveAmount = rate.times(poolTokenAmount.amount);
+      console.log(rate, "is long string");
+      return {
+        id: reserve.contract,
+        amount: reserveAmount.toString(),
+        symbol: reserve.symbol
+      };
+    });
+
+    if (phase2) {
+      return {
+        outputs
+      };
+    } else {
+      return {
+        outputs: [
+          {
+            ...poolTokenAmount,
+            symbol: smartToken.symbol
+          }
+        ]
+      };
     }
   }
 
@@ -6380,8 +6477,18 @@ export class EthBancorModule
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {
-    tokenContractAddresses.forEach(address =>
-      this.getUserBalance({ tokenContractAddress: address })
+    const governanceToken =
+      web3.utils.isAddress(this.liquidityProtectionSettings.govToken) &&
+      this.liquidityProtectionSettings.govToken;
+    if (governanceToken) {
+      tokenContractAddresses.push(this.liquidityProtectionSettings.govToken);
+    }
+    const uniqueAddresses = uniqWith(
+      tokenContractAddresses.filter(web3.utils.isAddress),
+      compareString
+    );
+    uniqueAddresses.forEach(tokenContractAddress =>
+      this.getUserBalance({ tokenContractAddress })
     );
   }
 
@@ -6471,6 +6578,14 @@ export class EthBancorModule
   @action async onAuthChange(userAddress: string) {
     this.wipeTokenBalances();
     if (userAddress) {
+      const govAddress = web3.utils.isAddress(
+        this.liquidityProtectionSettings.govToken
+      );
+      if (govAddress) {
+        this.fetchBulkTokenBalances([
+          this.liquidityProtectionSettings.govToken
+        ]);
+      }
       this.fetchProtectionPositions();
       this.fetchLockedBalances();
       const allTokens = this.relaysList.flatMap(tokensInRelay);

@@ -1,16 +1,8 @@
 <template>
   <div class="mt-3">
-    <label-content-split
-      label="Stake"
-      :value="`${formatNumber(position.stake.amount)} ${position.stake.symbol}`"
-    />
-
-    <label-content-split
-      v-if="poolWhitelisted"
-      label="Fully Protected Value"
-      value="????"
-    />
-    <label-content-split v-if="poolWhitelisted" value="????" />
+    <label-content-split label="Stake in Pool" class="mt-3">
+      <pool-logos :pool="pool" :label="formatNumber(position.stake.amount)" />
+    </label-content-split>
 
     <alert-block
       v-if="warning"
@@ -20,8 +12,16 @@
       class="my-3"
     />
 
+    <alert-block
+      v-if="inputError"
+      variant="error"
+      title="Important"
+      :msg="inputError"
+      class="my-3"
+    />
+
     <percentage-slider
-      v-if="poolWhitelisted"
+      v-if="phase2"
       label="Input"
       v-model="percentage"
       :show-buttons="true"
@@ -80,6 +80,8 @@ import {
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
+import PoolLogos from "@/components/common/PoolLogos.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -87,6 +89,7 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
     ActionModalStatus,
     ModalBase,
     AlertBlock,
+    PoolLogos,
     PercentageSlider,
     LabelContentSplit,
     GrayBorderBlock,
@@ -94,14 +97,16 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
   }
 })
 export default class WithdrawProtectionDouble extends Vue {
-  @Prop() pool!: ViewRelay;
-
   percentage: string = "50";
 
   modal = false;
   txBusy = false;
   success: TxResponse | string | null = null;
   error = "";
+
+  get pool() {
+    return vxm.ethBancor.relay(this.poolIds.poolId);
+  }
 
   get poolWhitelisted() {
     return this.position.whitelisted;
@@ -113,8 +118,8 @@ export default class WithdrawProtectionDouble extends Vue {
 
   get warning() {
     if (!this.phase2)
-      return "Pending protection vote. Until then, you are entitled to receive the same amount of pool tokens provided";
-    return this.position.whitelisted && this.position.coverageDecPercent !== 1
+      return `Pending protection vote. Until then, you are entitled to receive the same amount of pool tokens originally provided.`;
+    return this.position.coverageDecPercent !== 1
       ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
       : "";
   }
@@ -125,29 +130,54 @@ export default class WithdrawProtectionDouble extends Vue {
   }
 
   get inputError() {
+    if (!this.sufficientVBnt) {
+      return `Insufficient vBNT balance, you must hold ${this.position.givenVBnt} vBNT before withdrawing position.`;
+    }
     return parseFloat(this.percentage) === 0
       ? "Percentage can not be Zero"
       : "";
   }
 
   get position() {
-    const [poolId, first, second] = this.$route.params.id.split(":");
-
-    const pos = findOrThrow(vxm.ethBancor.protectedLiquidity, position =>
+    const positions = vxm.ethBancor.protectedLiquidity;
+    console.log(positions, "x");
+    const pos = findOrThrow(positions, position =>
       compareString(position.id, this.$route.params.id)
     );
-    console.log(pos, "is the selected pos");
+    console.log(pos, "is the selected pos", this.pool, "is the pass pool");
     return pos;
+  }
+
+  get poolIds() {
+    const [poolId, first, second] = this.$route.params.id.split(":");
+    return {
+      poolId,
+      first,
+      second
+    };
+  }
+
+  get sufficientVBnt() {
+    return new BigNumber(this.position.givenVBnt!).isLessThanOrEqualTo(
+      this.vBntBalance
+    );
+  }
+
+  get vBntBalance() {
+    const balance = vxm.ethBancor.tokenBalance(
+      vxm.ethBancor.liquidityProtectionSettings.govToken
+    );
+    return balance ? balance.balance : "0";
   }
 
   async initAction() {
     this.setDefault();
     this.modal = true;
     this.txBusy = true;
-    const [poolId, first, second] = this.$route.params.id.split(":");
+    const { poolId, first, second } = this.poolIds;
     console.log({ poolId, first, second });
     try {
-      if (this.poolWhitelisted) {
+      if (this.phase2) {
         const txRes = await vxm.ethBancor.removeProtection({
           decPercent: Number(this.percentage) / 100,
           id: this.position.id

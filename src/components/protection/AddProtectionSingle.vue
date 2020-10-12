@@ -33,8 +33,12 @@
     />
 
     <gray-border-block v-else :gray-bg="true" class="my-3">
-      <label-content-split label="Value you receive" value="????" />
-      <label-content-split value="????" class="mb-2" />
+      <label-content-split
+        v-for="(output, index) in outputs"
+        :key="output.id"
+        :label="index == 0 ? `Value you receive` : ``"
+        :value="`${formatNumber(output.amount)} ${output.symbol}`"
+      />
 
       <span
         class="font-size-14 font-w400"
@@ -104,7 +108,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { Step, TxResponse, ViewRelay } from "@/types/bancor";
+import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -155,6 +159,7 @@ export default class AddProtectionSingle extends Vue {
   sections: Step[] = [];
   stepIndex = 0;
   preTxError = "";
+  outputs: ViewAmountDetail[] = [];
 
   selectedTokenIndex = 0;
 
@@ -282,17 +287,26 @@ export default class AddProtectionSingle extends Vue {
 
     console.log(inputIsNumber);
     if (inputIsNumber) {
-      const res = await vxm.ethBancor.calculateProtection({
+      const res = await vxm.ethBancor.calculateProtectionSingle({
         poolId: this.pool.id,
         reserveAmount: { id: this.token.id, amount: this.amount }
       });
+      this.outputs = res.outputs;
 
-      this.preTxError =
-        res == "Insufficient store balance"
-          ? `Insufficient store balance, please add pool tokens instead or wait for other Liquidity Providers to supply more ${
-              this.opposingToken!.symbol
-            } tokens`
-          : res;
+      console.log(res, "was res");
+
+      if (res.error) {
+        this.preTxError =
+          res.error == "Insufficient store balance"
+            ? `Insufficient store balance, please add pool tokens instead or wait for other Liquidity Providers to supply more ${
+                this.opposingToken!.symbol
+              } tokens`
+            : res.error;
+      } else {
+        this.preTxError = "";
+      }
+    } else {
+      this.outputs = [];
     }
   }
 

@@ -33,7 +33,7 @@
       </template>
 
       <template v-slot:cell(protectedAmount)="data">
-        <div v-if="data.item.whitelisted" class="d-flex align-items-start">
+        <div v-if="phase2" class="d-flex align-items-start">
           <span
             v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
           />
@@ -43,17 +43,13 @@
           v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
-        <b-badge
-          v-if="!data.item.whitelisted"
-          variant="danger"
-          class="px-2 pt-1"
-        >
-          Pool is not whitelisted
+        <b-badge v-if="!phase2" variant="danger" class="px-2 pt-1">
+          Pending community vote
         </b-badge>
       </template>
 
       <template v-slot:cell(roi)="data">
-        <span v-if="data.item.whitelisted">{{ data.value }}</span>
+        <span v-if="phase2">{{ data.value }}</span>
         <span v-else>N/A</span>
       </template>
 
@@ -186,6 +182,10 @@ export default class Protected extends Vue {
     return prettifyNumber(number, usd);
   }
 
+  get phase2() {
+    return vxm.general.phase2;
+  }
+
   get protectedTxTable() {
     const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
     const fields: any[] = [
@@ -205,11 +205,15 @@ export default class Protected extends Vue {
         thStyle: { "min-width": "60px" },
         formatter: (value: number) => this.stringifyPercentage(value)
       },
-      {
-        key: "apr",
-        sortable: false,
-        thStyle: { "min-width": "100px" }
-      },
+      ...(this.phase2
+        ? [
+            {
+              key: "apr",
+              sortable: false,
+              thStyle: { "min-width": "100px" }
+            }
+          ]
+        : []),
       {
         key: "insuranceStart",
         sortable: true,
