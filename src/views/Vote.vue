@@ -9,7 +9,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 
 @Component({})
-export default class Governance extends Vue {
+export default class Vote extends Vue {
   filter: string = "";
 
   get darkMode() {

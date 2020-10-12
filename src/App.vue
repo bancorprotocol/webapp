@@ -163,7 +163,7 @@ export default class App extends Vue {
       newTab: true
     },
     {
-      route: "GovernancePage",
+      route: "VotePage",
       key: "vote",
       label: "Vote",
       newTab: false

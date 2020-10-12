@@ -43,9 +43,9 @@ import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 
-import OpenProposals from "@/components/governance/proposals/OpenProposals.vue";
-import DoneProposals from "@/components/governance/proposals/DoneProposals.vue";
-import AddProposal from "@/components/governance/proposals/AddProposal.vue";
+import OpenProposals from "@/components/vote/proposals/OpenProposals.vue";
+import DoneProposals from "@/components/vote/proposals/DoneProposals.vue";
+import AddProposal from "@/components/vote/proposals/AddProposal.vue";
 
 @Component({
   components: {
