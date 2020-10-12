@@ -75,10 +75,8 @@ export default class AddProtectionHome extends Vue {
   }
 
   get pools() {
-    const supportedPoolVersion = 41;
     return vxm.bancor.relays.filter(
-      pool =>
-        pool.whitelisted && !pool.v2 && pool.version >= supportedPoolVersion
+      pool => pool.liquidityProtection
     );
   }
 

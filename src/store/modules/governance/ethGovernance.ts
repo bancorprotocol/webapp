@@ -16,6 +16,8 @@ export const governanceContractAddress =
 export const etherscanUrl = "https://etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
+// todo fix cors headers, if everything fails use this:
+// const discourseUrl = "https://cors-anywhere.herokuapp.com/https://gov.bancor.network/";
 const discourseUrl = "https://gov.bancor.network/";
 
 const VuexModule = createModule({
