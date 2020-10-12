@@ -83,7 +83,7 @@
             @click="sideLinkClicked(link.key)"
             class="side-bar-link"
             :class="
-              selectedLink === link.key
+              $route.name === link.route
                 ? darkMode
                   ? 'clicked-link-dark'
                   : 'clicked-link'
@@ -147,21 +147,39 @@ export default class App extends Vue {
   links = [
     { route: "DataSummary", key: "data", label: "Data", newTab: false },
     { route: "Swap", key: "swap", label: "Swap", newTab: false },
-    // { route: "swap", key: "governance", label: "Governance" },
-    // { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
+    {
+      route: "LiqProtection",
+      key: "liquidity",
+      label: "Protection",
+      newTab: false
+    },
+    {
+      route: "https://gov.bancor.network",
+      key: "governance",
+      label: "Governance",
+      newTab: true
+    },
+    {
+      route: "VotePage",
+      key: "vote",
+      label: "Vote",
+      newTab: false
+    },
     {
       route: "https://x.bancor.network/",
       key: "bancorx",
       label: "Bancor X",
       newTab: true
-    },
-    {
-      route: "https://bancor.network/",
-      key: "bancor",
-      label: "Bancor Wallet",
-      newTab: true
     }
   ];
+
+  get status() {
+    return vxm.general.phase2;
+  }
+
+  set status(value: boolean) {
+    vxm.general.setPhase(!!value);
+  }
 
   get selectedNetwork() {
     return vxm.bancor.currentNetwork;
@@ -258,6 +276,7 @@ export default class App extends Vue {
     if (path.includes("swap")) this.selectedLink = "swap";
     if (path.includes("pool")) this.selectedLink = "swap";
     if (path.includes("data")) this.selectedLink = "data";
+    if (path.includes("protection")) this.selectedLink = "liquidity";
   }
 }
 </script>
@@ -296,7 +315,7 @@ h2 {
 }
 .main-container {
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden !important;
   padding: 12px;
   @media screen and (max-width: 768px) {
     margin-bottom: 56px;

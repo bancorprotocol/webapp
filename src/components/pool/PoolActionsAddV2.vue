@@ -115,7 +115,7 @@ export default class PoolActionsAddV2 extends Vue {
   singleUnitCosts: any[] = [];
   shareOfPool = 0;
 
-  errorMsg = ""
+  errorMsg = "";
 
   select(id: string) {
     this.$router.push({
@@ -124,7 +124,7 @@ export default class PoolActionsAddV2 extends Vue {
         poolAction: "add",
         account: id
       }
-    })
+    });
   }
 
   poolLogosClick() {
@@ -132,12 +132,12 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   get pools() {
-    return vxm.bancor.relays.filter(x => x.v2)
+    return vxm.bancor.relays.filter(x => x.v2);
   }
 
   get supplyButtonLabel() {
-    if (this.amount === "") return "Enter an amount"
-    else return "Supply"
+    if (this.amount === "") return "Enter an amount";
+    else return "Supply";
   }
 
   get isAuthenticated() {
@@ -151,13 +151,20 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   get balanceError() {
-    const balanceError = Number(this.balance) < Number(this.amount)
-    console.log(this.balance, 'was balance', this.amount, 'was amount', balanceError, 'was balance error');
-    if (!this.isAuthenticated) return ""
-    else if (this.amount === "") return ""
-    else if (this.errorMsg !== "") return this.errorMsg
-    else if (balanceError) return "Insufficient balance"
-    else return ""
+    const balanceError = Number(this.balance) < Number(this.amount);
+    console.log(
+      this.balance,
+      "was balance",
+      this.amount,
+      "was amount",
+      balanceError,
+      "was balance error"
+    );
+    if (!this.isAuthenticated) return "";
+    else if (this.amount === "") return "";
+    else if (this.errorMsg !== "") return this.errorMsg;
+    else if (balanceError) return "Insufficient balance";
+    else return "";
   }
 
   get balance() {
@@ -203,18 +210,21 @@ export default class PoolActionsAddV2 extends Vue {
   }
 
   async loadPrices(amount: string) {
-    if (amount === '.') return
-    this.errorMsg = ""
+    if (amount === ".") return;
+    this.errorMsg = "";
     try {
       const results = await vxm.bancor.calculateOpposingDeposit({
         id: this.pool.id,
-        reserves: [{ id: this.selectedToken.id, amount: amount ? amount : "0" }],
+        reserves: [
+          { id: this.selectedToken.id, amount: amount ? amount : "0" }
+        ],
         changedReserveId: this.selectedToken.id
       });
-      if (amount !== "0" && amount !== "") this.shareOfPool = results.shareOfPool;
+      if (amount !== "0" && amount !== "")
+        this.shareOfPool = results.shareOfPool;
       this.setSingleUnitCosts(results.singleUnitCosts);
     } catch (e) {
-      this.errorMsg = e.message
+      this.errorMsg = e.message;
     }
   }
 

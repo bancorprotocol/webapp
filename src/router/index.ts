@@ -17,6 +17,12 @@ import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
 import TermsOfUse from "@/views/TermsOfUse.vue";
 import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
+import Vote from "@/views/Vote.vue";
+import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
+import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
+import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
+import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
+import VotePage from "@/components/vote/VotePage.vue";
 
 Vue.use(Router);
 
@@ -96,6 +102,10 @@ export const router = new Router({
       redirect: `/${defaultModule}/swap`
     },
     {
+      path: "/vote",
+      redirect: `/${defaultModule}/vote`
+    },
+    {
       path: "/:service/pool",
       name: "Pool",
       components: {
@@ -133,8 +143,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection",
-      redirect: "/404",
+      path: "/:service/protection",
       name: "LiqProtection",
       components: {
         Nav: Navigation,
@@ -142,33 +151,41 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection/add",
-      redirect: "/404",
-      name: "AddProtection",
-      components: {
-        Nav: Navigation,
-        Hero: AddProtectionHome
-      }
-    },
-    {
-      path: "/:service/liquidity-protection/:action/:id",
-      redirect: "/404",
+      path: "/:service/protection/stake",
       name: "ProtectionAction",
       components: {
         Nav: Navigation,
         Hero: ProtectionActions
       },
-      props: true
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "AddProtectionHome",
+          component: AddProtectionHome
+        },
+        {
+          path: "add/single/:id",
+          name: "AddProtectionSingle",
+          component: AddProtectionSingle
+        },
+        {
+          path: "add/double/:id",
+          name: "AddProtectionDouble",
+          component: AddProtectionDouble
+        },
+        {
+          path: "withdraw/single/:id",
+          name: "WithdrawProtectionSingle",
+          component: WithdrawProtectionSingle
+        },
+        {
+          path: "withdraw/double/:id",
+          name: "WithdrawProtectionDouble",
+          component: WithdrawProtectionDouble
+        }
+      ]
     },
-    // {
-    //   path: "/:service/liquidity-protection/add/:id",
-    //   name: "AddLiqProtection",
-    //   components: {
-    //     Nav: Navigation,
-    //     Hero: AddLiqProtection
-    //   },
-    //   props: true
-    // },
     {
       path: "/:service/pool/create/",
       name: "PoolCreate",
@@ -215,6 +232,22 @@ export const router = new Router({
           name: "DetailsPool",
           redirect: "/404",
           component: DataDetailsPool
+        }
+      ]
+    },
+    {
+      path: "/:service/vote",
+      name: "Vote",
+      components: {
+        Nav: Navigation,
+        default: Vote
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "VotePage",
+          component: VotePage
         }
       ]
     },

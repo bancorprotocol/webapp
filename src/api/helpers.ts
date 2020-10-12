@@ -22,7 +22,10 @@ import {
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
-import { buildConverterContract } from "./eth/contractTypes";
+import {
+  buildConverterContract,
+  buildLiquidityProtectionStoreContract
+} from "./eth/contractTypes";
 import { shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
@@ -30,9 +33,14 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
-import { pick } from "lodash";
+import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
+
+export enum PositionType {
+  single,
+  double
+}
 
 const bancorSubgraphInstance = axios.create({
   baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
@@ -43,6 +51,49 @@ const chainlinkSubgraphInstance = axios.create({
   baseURL: "https://api.thegraph.com/subgraphs/name/melonproject/chainlink",
   method: "post"
 });
+
+export interface LockedBalance {
+  index: number;
+  amountWei: string;
+  expirationTime: number;
+}
+
+export const traverseLockedBalances = async (
+  contract: string,
+  owner: string,
+  expectedCount: number
+): Promise<LockedBalance[]> => {
+  console.log('traverseHit')
+  const storeContract = buildLiquidityProtectionStoreContract(contract);
+  let lockedBalances: LockedBalance[] = [];
+
+  const scopeRange = 5;
+  for (var i = 0; i < 10; i++) {
+    const startIndex = i * scopeRange;
+    const endIndex = startIndex + scopeRange;
+
+    console.log(startIndex, endIndex, 'is start and end index')
+    let lockedBalanceRes = await storeContract.methods
+      .lockedBalanceRange(owner, String(startIndex), String(endIndex))
+      .call();
+      console.log('traverseHit 33')
+
+    const bntWeis = lockedBalanceRes["0"];
+    const expirys = lockedBalanceRes["1"];
+
+    const zipped = zip(bntWeis, expirys) as [bntWei: string, timestamp: string][]
+    const withIndex = zipped.map(([bntWei, expiry], index) => ({
+      amountWei: bntWei,
+      expirationTime: Number(expiry),
+      index: index + startIndex
+    }) as LockedBalance);
+    lockedBalances = lockedBalances.concat(withIndex);
+    if (lockedBalances.length >= expectedCount) break;
+  }
+
+  console.log(lockedBalances, "should be inspected");
+  return lockedBalances;
+};
 
 export const chainlinkSubgraph = async (query: string) => {
   const res = await chainlinkSubgraphInstance.post("", { query });
@@ -153,6 +204,20 @@ export const formatNumber = (num: number | string, size: number = 4) => {
   return reduced;
 };
 
+export const prettifyNumber = (num: number | string, usd = false): string => {
+  const bigNum = new BigNumber(num);
+  if (usd) {
+    if (bigNum.eq(0)) return "$0.00";
+    else if (bigNum.lt(0.01)) return "< $0.01";
+    else return numeral(bigNum).format("$0,0.00");
+  } else {
+    if (bigNum.eq(0)) return "0";
+    else if (bigNum.gte(1000)) return numeral(bigNum).format("0,0.[00]");
+    else if (bigNum.lt(0.000001)) return "< 0.000001";
+    else return numeral(bigNum).format("0.[000000]");
+  }
+};
+
 export const findChangedReserve = (
   amounts: ViewAmount[],
   changedReserveId: string
@@ -189,6 +254,24 @@ export interface StringPool {
 
 export const formatPercent = (decNumber: number) =>
   numeral(decNumber).format("0.00%");
+
+export const calculateProtectionLevel = (
+  startTimeSeconds: number,
+  minimumDelaySeconds: number,
+  maximumDelaySeconds: number
+): number => {
+  const nowSeconds = moment().unix();
+
+  const timeElaspedSeconds = nowSeconds - startTimeSeconds;
+
+  if (timeElaspedSeconds < minimumDelaySeconds) return 0;
+  if (timeElaspedSeconds >= maximumDelaySeconds) return 1;
+
+  const timeProgressedPastMinimum = timeElaspedSeconds - minimumDelaySeconds;
+  const waitingPeriod = maximumDelaySeconds - minimumDelaySeconds;
+
+  return new BigNumber(timeProgressedPastMinimum).div(waitingPeriod).toNumber();
+};
 
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
@@ -868,13 +951,11 @@ const isAuthenticatedViaModule = (module: EosTransitModule) => {
   return isAuthenticated;
 };
 
-export const getBankBalance = async (): Promise<
-  {
-    id: number;
-    quantity: string;
-    symbl: string;
-  }[]
-> => {
+export const getBankBalance = async (): Promise<{
+  id: number;
+  quantity: string;
+  symbl: string;
+}[]> => {
   const account = isAuthenticatedViaModule(vxm.eosWallet);
   const res: {
     rows: {
@@ -950,6 +1031,8 @@ export interface ConverterV2Row {
   }[];
 }
 
+export const formatLockDuration = (seconds: number): string =>
+  moment.duration(seconds, "seconds").humanize();
 interface BaseSymbol {
   symbol: string;
   precision: number;

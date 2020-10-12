@@ -67,10 +67,10 @@ export default class TablePools extends Vue {
     }
   ];
   doFilter(row: any, filter: string) {
-    const symbols = row.reserves.map((reserve: any) => reserve.symbol)
+    const symbols = row.reserves.map((reserve: any) => reserve.symbol);
     let r = false;
     symbols.forEach((s: string) => {
-      r = r || (s.toLowerCase().indexOf(filter) >= 0);
+      r = r || s.toLowerCase().indexOf(filter) >= 0;
     });
     return r;
   }

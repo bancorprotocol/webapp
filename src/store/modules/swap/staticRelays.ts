@@ -162,20 +162,6 @@ const oldRelays = [
     ]
   },
   {
-    contract: "bancorc11151",
-    smartToken: {
-      contract: "bancorr11151",
-      symbol: "10,BNTZOS"
-    },
-    reserves: [
-      {
-        contract: "zosdiscounts",
-        symbol: "4,ZOS"
-      },
-      bntToken
-    ]
-  },
-  {
     contract: "bancorc11152",
     smartToken: {
       contract: "bancorr11152",

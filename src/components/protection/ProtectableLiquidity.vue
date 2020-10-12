@@ -65,21 +65,21 @@ export default class ProtectableLiquidity extends Vue {
   get protectableLiquidity() {
     return [
       {
-        poolId: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
+        poolId: "0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3",
         amount: 5.123456,
         amountUnprotected: 345.123456,
         usdValue: 6754.85,
         unixTime: 1600646400
       },
       {
-        poolId: "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
+        poolId: "0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3",
         amount: 12345.123456,
         amountUnprotected: 345.123456,
         usdValue: 6754.85,
         unixTime: 1600506400
       },
       {
-        poolId: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C",
+        poolId: "0xdc80ED3b924b73433f57577443Ff3CFB90759Ef3",
         amount: 12345.123456,
         amountUnprotected: 345.123456,
         usdValue: 6754.85,

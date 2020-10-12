@@ -1163,6 +1163,7 @@ export class EosBancorModule
 
         return {
           ...relay,
+          version: relay.isMultiContract ? 2 : 1,
           id: buildTokenId({
             contract: relay.smartToken.contract,
             symbol: relay.smartToken.symbol
@@ -1173,6 +1174,8 @@ export class EosBancorModule
           removeLiquiditySupported: true,
           focusAvailable: false,
           v2: false,
+          liquidityProtection: false,
+          whitelisted: false,
           reserves: sortedReserves.map((reserve: AgnosticToken) => ({
             ...reserve,
             reserveWeight: 0.5,
