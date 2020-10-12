@@ -90,7 +90,7 @@
                 : darkMode
                 ? 'side-bar-link-dark'
                 : 'side-bar-link',
-              link.newTab ? 'hide-on-mobile' : ''
+              link.hideMobile ? 'hide-on-mobile' : ''
             ]"
           >
             <img
@@ -151,6 +151,7 @@ export default class App extends Vue {
       key: "data",
       label: "Data",
       newTab: false,
+      hideMobile: false,
       svgName: "data"
     },
     {
@@ -158,6 +159,7 @@ export default class App extends Vue {
       key: "swap",
       label: "Swap",
       newTab: false,
+      hideMobile: false,
       svgName: "swap"
     },
     {
@@ -165,6 +167,7 @@ export default class App extends Vue {
       key: "liquidity",
       label: "Protection",
       newTab: false,
+      hideMobile: false,
       svgName: "liquidity"
     },
     {
@@ -172,6 +175,7 @@ export default class App extends Vue {
       key: "governance",
       label: "Governance",
       newTab: true,
+      hideMobile: false,
       svgName: "governance"
     },
     {
@@ -179,6 +183,7 @@ export default class App extends Vue {
       key: "vote",
       label: "Vote",
       newTab: false,
+      hideMobile: false,
       svgName: "vote"
     },
     {
@@ -186,6 +191,7 @@ export default class App extends Vue {
       key: "bancorx",
       label: "Bancor X",
       newTab: true,
+      hideMobile: true,
       svgName: "bancorx"
     },
     {
@@ -193,6 +199,7 @@ export default class App extends Vue {
       key: "wallet",
       label: "Bancor Wallet",
       newTab: true,
+      hideMobile: true,
       svgName: "bancor"
     }
   ];
