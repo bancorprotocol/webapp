@@ -28,8 +28,8 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import Stake from "@/components/governance/stake/Stake.vue";
-import Proposals from "@/components/governance/proposals/Proposals.vue";
+import Stake from "@/components/vote/stake/Stake.vue";
+import Proposals from "@/components/vote/proposals/Proposals.vue";
 
 @Component({
   components: {
@@ -37,7 +37,7 @@ import Proposals from "@/components/governance/proposals/Proposals.vue";
     Proposals
   }
 })
-export default class GovernancePage extends Vue {
+export default class VotePage extends Vue {
   get isEth() {
     return this.$route.params.service === "eth";
   }
@@ -54,7 +54,7 @@ export default class GovernancePage extends Vue {
     try {
       await vxm.ethGovernance.init();
     } catch {
-      console.error("unable to load governance");
+      console.error("unable to load vote");
     }
   }
 }

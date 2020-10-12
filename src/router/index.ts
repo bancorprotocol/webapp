@@ -17,12 +17,12 @@ import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
 import TermsOfUse from "@/views/TermsOfUse.vue";
 import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
-import GovernancePage from "@/components/governance/GovernancePage.vue";
-import Governance from "@/views/Governance.vue";
+import Vote from "@/views/Vote.vue";
 import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
 import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
+import VotePage from "@/components/vote/VotePage.vue";
 
 Vue.use(Router);
 
@@ -233,17 +233,17 @@ export const router = new Router({
     },
     {
       path: "/:service/vote",
-      name: "Governance",
+      name: "Vote",
       components: {
         Nav: Navigation,
-        default: Governance
+        default: Vote
       },
       props: true,
       children: [
         {
           path: "",
-          name: "GovernancePage",
-          component: GovernancePage
+          name: "VotePage",
+          component: VotePage
         }
       ]
     },
