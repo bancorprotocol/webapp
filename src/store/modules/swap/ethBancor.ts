@@ -3470,6 +3470,7 @@ export class EthBancorModule
 
         return {
           id: poolContainerAddress,
+          version: Number(relay.version),
           reserves: relay.reserves.map(reserve => ({
             reserveWeight: reserve.reserveWeight,
             id: reserve.contract,
@@ -3536,6 +3537,7 @@ export class EthBancorModule
 
         return {
           id: relay.anchor.contract,
+          version: Number(relay.version),
           reserves: relay.reserves.map(reserve => ({
             id: reserve.contract,
             reserveWeight: reserve.reserveWeight,

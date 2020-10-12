@@ -1163,6 +1163,7 @@ export class EosBancorModule
 
         return {
           ...relay,
+          version: relay.isMultiContract ? 2 : 1,
           id: buildTokenId({
             contract: relay.smartToken.contract,
             symbol: relay.smartToken.symbol

@@ -271,6 +271,7 @@ export interface ViewRelay {
   liquidityProtection: boolean;
   whitelisted: boolean;
   v2: boolean;
+  version: number;
 }
 
 export interface ContractMethods<T> extends Contract {
