@@ -102,6 +102,10 @@ export const router = new Router({
       redirect: `/${defaultModule}/swap`
     },
     {
+      path: "/vote",
+      redirect: `/${defaultModule}/vote`
+    },
+    {
       path: "/:service/pool",
       name: "Pool",
       components: {
