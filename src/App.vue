@@ -82,15 +82,16 @@
             :key="link.key"
             @click="sideLinkClicked(link.key)"
             class="side-bar-link"
-            :class="
+            :class="[
               $route.name === link.route
                 ? darkMode
                   ? 'clicked-link-dark'
                   : 'clicked-link'
                 : darkMode
                 ? 'side-bar-link-dark'
-                : 'side-bar-link'
-            "
+                : 'side-bar-link',
+              link.newTab ? 'hide-on-mobile' : ''
+            ]"
           >
             <img
               class="side-bar-link-icon"
@@ -190,7 +191,7 @@ export default class App extends Vue {
     {
       route: "https://wallet.bancor.network/",
       key: "wallet",
-      label: "Wallet",
+      label: "Bancor Wallet",
       newTab: true,
       svgName: "bancor"
     }
@@ -307,7 +308,11 @@ export default class App extends Vue {
 h2 {
   padding: 25px;
 }
-
+.hide-on-mobile {
+  @media screen and (max-width: 768px) {
+    display: none !important;
+  }
+}
 #page-container {
   display: flex;
   flex-direction: column;
