@@ -60,7 +60,7 @@
           <span class="ml-3">Bancor X</span>
         </div>
       </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://bancor.network/')">
+      <b-dropdown-item @click="openUrl('https://wallet.bancor.network/')">
         <div class="d-flex align-items-center">
           <img
             height="16"
