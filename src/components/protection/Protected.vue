@@ -149,7 +149,7 @@ export default class Protected extends Vue {
       return "Full coverage achieved";
     } else {
       const timeLeft = moment.unix(fullCoverageSeconds).fromNow(true);
-      return `${timeLeft} left till full coverage`;
+      return `${timeLeft} left until full coverage`;
     }
   }
 
@@ -216,6 +216,7 @@ export default class Protected extends Vue {
         : []),
       {
         key: "insuranceStart",
+        label: "Protection Start",
         sortable: true,
         thStyle: { "min-width": "160px" }
       },
