@@ -157,9 +157,15 @@ export default class App extends Vue {
       newTab: false
     },
     {
-      route: "GovernancePage",
+      route: "https://gov.bancor.network",
       key: "governance",
       label: "Governance",
+      newTab: true
+    },
+    {
+      route: "GovernancePage",
+      key: "vote",
+      label: "Vote",
       newTab: false
     },
     {

@@ -232,7 +232,7 @@ export const router = new Router({
       ]
     },
     {
-      path: "/:service/governance",
+      path: "/:service/vote",
       name: "Governance",
       components: {
         Nav: Navigation,
