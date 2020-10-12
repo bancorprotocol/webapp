@@ -94,7 +94,7 @@
           >
             <img
               class="side-bar-link-icon"
-              :src="require(`@/assets/media/icons/${link.key}.svg`)"
+              :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
             />
             <span>{{ link.label }}</span>
           </div>
@@ -145,31 +145,54 @@ export default class App extends Vue {
   error = false;
   selectedLink = "swap";
   links = [
-    { route: "DataSummary", key: "data", label: "Data", newTab: false },
-    { route: "Swap", key: "swap", label: "Swap", newTab: false },
+    {
+      route: "DataSummary",
+      key: "data",
+      label: "Data",
+      newTab: false,
+      svgName: "data"
+    },
+    {
+      route: "Swap",
+      key: "swap",
+      label: "Swap",
+      newTab: false,
+      svgName: "swap"
+    },
     {
       route: "LiqProtection",
       key: "liquidity",
       label: "Protection",
-      newTab: false
+      newTab: false,
+      svgName: "liquidity"
     },
     {
       route: "https://gov.bancor.network",
       key: "governance",
       label: "Governance",
-      newTab: true
+      newTab: true,
+      svgName: "governance"
     },
     {
       route: "VotePage",
       key: "vote",
       label: "Vote",
-      newTab: false
+      newTab: false,
+      svgName: "vote"
     },
     {
       route: "https://x.bancor.network/",
       key: "bancorx",
       label: "Bancor X",
-      newTab: true
+      newTab: true,
+      svgName: "bancorx"
+    },
+    {
+      route: "https://wallet.bancor.network/",
+      key: "wallet",
+      label: "Wallet",
+      newTab: true,
+      svgName: "bancor"
     }
   ];
 
