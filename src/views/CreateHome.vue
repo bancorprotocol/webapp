@@ -8,10 +8,6 @@
       class="mb-3"
     >
       <div class="mt-3">
-        <label-content-split v-if="step === 1" label="Pool Type">
-          <b-badge variant="primary" size="sm" class="px-2">V1</b-badge>
-        </label-content-split>
-
         <div v-if="version === 1">
           <create-v1-step1 v-if="step === 1" v-model="stepOneProps" />
           <create-v1-step2 v-else v-model="stepTwoProps" />
