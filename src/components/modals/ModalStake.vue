@@ -205,10 +205,8 @@ export default class ModalStake extends Vue {
 
   onHide() {
     this.show = false;
-    if (this.step === "staked") {
-      this.step = "stake";
-      this.stakeValue = 0;
-    }
+    this.step = "stake";
+    this.stakeValue = 0;
   }
 
   get isAuthenticated() {
@@ -308,8 +306,10 @@ export default class ModalStake extends Vue {
 }
 
 .alert-over {
-  border: 1px solid #ffeeba !important;
-  border-radius: 8px !important;
   box-shadow: none !important;
+  border-radius: 8px !important;
+  border: solid 1px #f6ab30 !important;
+  color: #f6ab30 !important;
+  background-color: #fff8ed !important;
 }
 </style>

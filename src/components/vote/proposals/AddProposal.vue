@@ -31,7 +31,7 @@
     </template>
 
     <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
-      New proposal requires you to hold at least {{ proposalMinimum }}
+      New proposal requires you to hold at least {{ proposalMinimumFormatted }}
       {{ symbol }} which will be locked up to {{ maxLock }}h.
     </b-alert>
 
@@ -107,7 +107,7 @@ import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
-import { VModel } from "@/api/helpers";
+import { formatNumber, VModel } from "@/api/helpers";
 import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 
 @Component({
@@ -130,6 +130,10 @@ export default class AddProposal extends Vue {
   maxLock: number = 0;
   proposalMinimum: number = 0;
   symbol: string = "";
+
+  get proposalMinimumFormatted() {
+    return formatNumber(this.proposalMinimum, 2);
+  }
 
   get darkMode() {
     return vxm.general.darkMode;
