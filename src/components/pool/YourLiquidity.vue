@@ -1,19 +1,29 @@
 <template>
   <div class="mt-3">
     <b-row>
-      <b-col cols="6" class="d-flex align-items-center">
+      <b-col
+        cols="12"
+        class="d-flex align-items-center justify-content-between"
+      >
         <span
           class="font-size-12 font-w500 text-uppercase"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           Your Liquidity
         </span>
+        <router-link
+          :to="{ name: 'LiqProtection' }"
+          class="font-size-12 font-w500"
+        >
+          View protected tokens
+        </router-link>
       </b-col>
-      <b-col cols="6">
+      <b-col cols="12">
         <multi-input-field
           placeholder="Search"
           v-model="search"
           prepend="search"
+          class="my-2"
         />
       </b-col>
     </b-row>
