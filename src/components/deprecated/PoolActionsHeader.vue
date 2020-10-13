@@ -7,11 +7,6 @@
     >
       {{ title }}
     </span>
-    <div class="d-flex align-items-center">
-      <b-badge v-if="v2 !== null" variant="primary" class="px-2">{{
-        v2 ? "V2" : "V1"
-      }}</b-badge>
-    </div>
   </div>
 </template>
 
