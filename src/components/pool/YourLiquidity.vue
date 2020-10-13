@@ -24,9 +24,6 @@
           <div class="d-flex justify-content-between align-items-center">
             <pool-logos :pool="pool.relay" />
             <div>
-              <b-badge variant="primary" size="sm" class="mr-2 px-2">
-                {{ pool.relay.v2 ? "V2" : "V1" }}
-              </b-badge>
               <font-awesome-icon
                 icon="caret-down"
                 :class="darkMode ? 'text-white' : 'text-primary'"
