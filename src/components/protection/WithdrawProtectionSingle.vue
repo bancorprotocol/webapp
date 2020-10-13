@@ -10,7 +10,11 @@
 
     <label-content-split
       label="Fully Protected Value"
-      :value="position.fullyProtected.amount"
+      :value="
+        `${prettifyNumber(position.fullyProtected.amount)} ${
+          position.stake.symbol
+        }`
+      "
       class="my-3"
     />
 
@@ -36,12 +40,31 @@
       <label-content-split
         label="Output value of"
         :value="
-          `${position.protectedAmount.amount} ${position.protectedAmount.symbol}`
+          `${prettifyNumber(position.protectedAmount.amount)} ${
+            position.protectedAmount.symbol
+          }`
         "
       />
 
-      <label-content-split label="Output breakdown" value="????" />
-      <label-content-split value="????" />
+      <label-content-split label="Output breakdown">
+        <span class="font-size-14 font-w500">
+          {{ prettifyNumber(removeProtectionRes.outputValue.amount) }}
+        </span>
+        <span class="font-size-14 font-w500 text-primary">
+          {{ prettifyNumber(removeProtectionRes.outputValue.usdValue, true) }}
+        </span>
+      </label-content-split>
+      <label-content-split
+        v-for="output in removeProtectionRes.outputs"
+        :key="output.id"
+      >
+        <span class="font-size-14 font-w500">
+          {{ prettifyNumber(output.amount) }}
+        </span>
+        <span class="font-size-14 font-w500 text-primary">
+          {{ prettifyNumber(output.usdValue, true) }}
+        </span>
+      </label-content-split>
     </gray-border-block>
 
     <main-button
@@ -118,6 +141,28 @@ export default class WithdrawProtectionSingle extends Vue {
   success: TxResponse | string | null = null;
   error = "";
 
+  get removeProtectionRes() {
+    return {
+      outputValue: {
+        usdValue: 123.12,
+        id: "1",
+        amount: "5555.55555"
+      },
+      outputs: [
+        {
+          usdValue: 123.12,
+          id: "1",
+          amount: "5555.55555"
+        },
+        {
+          usdValue: 123.12,
+          id: "2",
+          amount: "5555.55555"
+        }
+      ]
+    };
+  }
+
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
       ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
@@ -169,12 +214,13 @@ export default class WithdrawProtectionSingle extends Vue {
       this.modal = false;
       this.$router.push({ name: "LiqProtection" });
     } else if (this.error) {
-      this.initAction();
+      this.setDefault();
+      this.modal = false;
     }
   }
 
-  prettifyNumber(amount: string) {
-    return parseFloat(prettifyNumber(amount));
+  prettifyNumber(amount: string | number, usd = false) {
+    return prettifyNumber(amount, usd);
   }
 
   setDefault() {
@@ -185,7 +231,7 @@ export default class WithdrawProtectionSingle extends Vue {
 
   get modalConfirmButton() {
     return this.error
-      ? "Try Again"
+      ? "Close"
       : this.success
       ? "Close"
       : this.txBusy

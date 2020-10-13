@@ -7,14 +7,19 @@ import {
   TransferParam,
   TokenBalance
 } from "@/types/bancor";
-import { getBalance, getTokenBalances, compareString, compareToken, assetToDecNumberString } from "@/api/helpers";
+import {
+  getBalance,
+  getTokenBalances,
+  compareString,
+  compareToken,
+  assetToDecNumberString
+} from "@/api/helpers";
 import { vxm } from "@/store";
 
 import _ from "lodash";
 import { multiContract } from "@/api/eos/multiContractTx";
 import wait from "waait";
 import { Asset, number_to_asset, Sym } from "eos-common";
-
 
 const requiredProps = ["balance", "contract", "symbol"];
 
@@ -87,7 +92,8 @@ export class EosNetworkModule
         if (!newBalanceArray) return [];
         const allBalancesDifferent = originalBalances.every(
           balance =>
-            newBalanceArray.find(b => compareString(b.symbol, balance.symbol))!.balance !== balance.balance
+            newBalanceArray.find(b => compareString(b.symbol, balance.symbol))!
+              .balance !== balance.balance
         );
         if (allBalancesDifferent) {
           this.updateTokenBalances(newBalanceArray);
@@ -101,7 +107,7 @@ export class EosNetworkModule
   }
 
   @action async transfer({ to, amount, id, memo }: TransferParam) {
-    if (!this.isAuthenticated) throw new Error("Not authenticated!")
+    if (!this.isAuthenticated) throw new Error("Not authenticated!");
     const symbol = id;
     const dirtyReserve = vxm.eosBancor.relaysList
       .flatMap(relay => relay.reserves)
@@ -130,8 +136,15 @@ export class EosNetworkModule
   ): Promise<TokenBalanceReturn[]> {
     const balances = await Promise.all(
       tokens.map(async token => {
-        const balance = await getBalance(token.contract, token.symbol, token.precision);
-        return { ...token, balance: assetToDecNumberString(new Asset(balance)) };
+        const balance = await getBalance(
+          token.contract,
+          token.symbol,
+          token.precision
+        );
+        return {
+          ...token,
+          balance: assetToDecNumberString(new Asset(balance))
+        };
       })
     );
     return balances;
@@ -144,7 +157,6 @@ export class EosNetworkModule
   @action async resetBalances() {
     this.clearBalances();
   }
-
 
   @action public async getBalances(params?: GetBalanceParam) {
     if (!this.isAuthenticated) throw new Error("Not logged in.");
@@ -167,7 +179,7 @@ export class EosNetworkModule
         compareToken
       );
       this.updateTokenBalances(merged);
-      return merged
+      return merged;
     }
 
     const tokensAskedFor = params!.tokens;

@@ -3,7 +3,7 @@
     <alert-block
       class="my-3"
       variant="info"
-      msg="In Bancor V1 total reserve of the pool you create should be less or equal 100%."
+      msg="Pools with 2 reserves and 50/50 weight can be voted for protection."
     />
 
     <div v-for="(props, index) in stepOneProps" :key="index">

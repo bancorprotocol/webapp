@@ -46,6 +46,10 @@
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
         Liquidity Protection
       </b-dropdown-item>
+      <b-dropdown-item :to="{ name: 'GovernancePage' }">
+        <font-awesome-icon icon="thumbs-up" class="mr-2" fixed-width />
+        Bancor Governance
+      </b-dropdown-item>
       <b-dropdown-item @click="openUrl('https://x.bancor.network/')">
         <div class="d-flex align-items-center">
           <img
@@ -56,7 +60,7 @@
           <span class="ml-3">Bancor X</span>
         </div>
       </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://bancor.network/')">
+      <b-dropdown-item @click="openUrl('https://wallet.bancor.network/')">
         <div class="d-flex align-items-center">
           <img
             height="16"
@@ -115,6 +119,12 @@
           <font-awesome-icon
             @click="openUrl('https://t.me/bancor')"
             :icon="['fab', 'telegram-plane']"
+            class="mr-2 menu-icon"
+            fixed-width
+          />
+          <font-awesome-icon
+            @click="openUrl('https://discord.gg/3wJxvP')"
+            :icon="['fab', 'discord']"
             class="mr-2 menu-icon"
             fixed-width
           />

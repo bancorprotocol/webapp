@@ -11,6 +11,7 @@ import { WalletModule } from "./modules/wallet/index";
 import { NetworkModule } from "./modules/network/index";
 import { EosNetworkModule } from "./modules/network/eosNetwork";
 import { createProxy, extractVuexModule } from "vuex-class-component";
+import { EthereumGovernance } from "@/store/modules/governance/ethGovernance";
 
 Vue.use(Vuex);
 
@@ -24,7 +25,8 @@ export const store = new Vuex.Store({
     ...extractVuexModule(BancorModule),
     ...extractVuexModule(WalletModule),
     ...extractVuexModule(NetworkModule),
-    ...extractVuexModule(EosNetworkModule)
+    ...extractVuexModule(EosNetworkModule),
+    ...extractVuexModule(EthereumGovernance)
   },
   strict: process.env.NODE_ENV !== "production"
 });
@@ -38,5 +40,6 @@ export const vxm = {
   ethBancor: createProxy(store, EthBancorModule),
   bancor: createProxy(store, BancorModule),
   eosNetwork: createProxy(store, EosNetworkModule),
-  network: createProxy(store, NetworkModule)
+  network: createProxy(store, NetworkModule),
+  ethGovernance: createProxy(store, EthereumGovernance)
 };

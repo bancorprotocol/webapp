@@ -110,6 +110,16 @@ export interface ViewAmount {
   amount: string;
 }
 
+export interface ViewAmountDetail extends ViewAmount {
+  usdPrice?: number;
+  symbol: string;
+}
+
+export interface ProtectionRes {
+  error?: string;
+  outputs: ViewAmountDetail[];
+}
+
 export interface ViewAmountWithMeta extends ViewAmount {
   symbol: string;
   logo: string;
@@ -261,6 +271,7 @@ export interface ViewRelay {
   liquidityProtection: boolean;
   whitelisted: boolean;
   v2: boolean;
+  version: number;
 }
 
 export interface ContractMethods<T> extends Contract {
@@ -686,10 +697,12 @@ export interface ViewProtectedLiquidity {
     week: number;
     month: number;
   };
+  single: boolean;
   whitelisted: boolean;
   insuranceStart: number;
   coverageDecPercent: number;
   fullCoverage: number;
+  givenVBnt?: string;
 }
 
 export interface ViewLockedBalance {

@@ -51,9 +51,6 @@
       class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
     >
       This interface is in beta. Use it at your own risk.
-      <b-form-checkbox v-model="status">
-        Dev option: Phase 2
-      </b-form-checkbox>
     </div>
     <div name="MainLayout" class="main-layout">
       <div
@@ -85,19 +82,20 @@
             :key="link.key"
             @click="sideLinkClicked(link.key)"
             class="side-bar-link"
-            :class="
-              selectedLink === link.key
+            :class="[
+              $route.name === link.route
                 ? darkMode
                   ? 'clicked-link-dark'
                   : 'clicked-link'
                 : darkMode
                 ? 'side-bar-link-dark'
-                : 'side-bar-link'
-            "
+                : 'side-bar-link',
+              link.hideMobile ? 'hide-on-mobile' : ''
+            ]"
           >
             <img
               class="side-bar-link-icon"
-              :src="require(`@/assets/media/icons/${link.key}.svg`)"
+              :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
             />
             <span>{{ link.label }}</span>
           </div>
@@ -148,21 +146,61 @@ export default class App extends Vue {
   error = false;
   selectedLink = "swap";
   links = [
-    { route: "DataSummary", key: "data", label: "Data", newTab: false },
-    { route: "Swap", key: "swap", label: "Swap", newTab: false },
-    // { route: "swap", key: "governance", label: "Governance" },
-    { route: "LiqProtection", key: "liquidity", label: "Liquidity" },
+    {
+      route: "DataSummary",
+      key: "data",
+      label: "Data",
+      newTab: false,
+      hideMobile: false,
+      svgName: "data"
+    },
+    {
+      route: "Swap",
+      key: "swap",
+      label: "Swap",
+      newTab: false,
+      hideMobile: false,
+      svgName: "swap"
+    },
+    {
+      route: "LiqProtection",
+      key: "liquidity",
+      label: "Protection",
+      newTab: false,
+      hideMobile: false,
+      svgName: "liquidity"
+    },
+    {
+      route: "https://gov.bancor.network",
+      key: "governance",
+      label: "Governance",
+      newTab: true,
+      hideMobile: false,
+      svgName: "governance"
+    },
+    {
+      route: "VotePage",
+      key: "vote",
+      label: "Vote",
+      newTab: false,
+      hideMobile: false,
+      svgName: "vote"
+    },
     {
       route: "https://x.bancor.network/",
       key: "bancorx",
       label: "Bancor X",
-      newTab: true
+      newTab: true,
+      hideMobile: true,
+      svgName: "bancorx"
     },
     {
-      route: "https://bancor.network/",
-      key: "bancor",
+      route: "https://wallet.bancor.network/",
+      key: "wallet",
       label: "Bancor Wallet",
-      newTab: true
+      newTab: true,
+      hideMobile: true,
+      svgName: "bancor"
     }
   ];
 
@@ -269,7 +307,7 @@ export default class App extends Vue {
     if (path.includes("swap")) this.selectedLink = "swap";
     if (path.includes("pool")) this.selectedLink = "swap";
     if (path.includes("data")) this.selectedLink = "data";
-    if (path.includes("liquidity-protection")) this.selectedLink = "liquidity";
+    if (path.includes("protection")) this.selectedLink = "liquidity";
   }
 }
 </script>
@@ -277,7 +315,11 @@ export default class App extends Vue {
 h2 {
   padding: 25px;
 }
-
+.hide-on-mobile {
+  @media screen and (max-width: 768px) {
+    display: none !important;
+  }
+}
 #page-container {
   display: flex;
   flex-direction: column;
@@ -308,7 +350,7 @@ h2 {
 }
 .main-container {
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden !important;
   padding: 12px;
   @media screen and (max-width: 768px) {
     margin-bottom: 56px;

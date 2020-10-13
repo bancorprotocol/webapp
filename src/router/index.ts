@@ -17,10 +17,12 @@ import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
 import TermsOfUse from "@/views/TermsOfUse.vue";
 import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
+import Vote from "@/views/Vote.vue";
 import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
 import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
+import VotePage from "@/components/vote/VotePage.vue";
 
 Vue.use(Router);
 
@@ -100,6 +102,10 @@ export const router = new Router({
       redirect: `/${defaultModule}/swap`
     },
     {
+      path: "/vote",
+      redirect: `/${defaultModule}/vote`
+    },
+    {
       path: "/:service/pool",
       name: "Pool",
       components: {
@@ -137,7 +143,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection",
+      path: "/:service/protection",
       name: "LiqProtection",
       components: {
         Nav: Navigation,
@@ -145,7 +151,7 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/liquidity-protection/stake",
+      path: "/:service/protection/stake",
       name: "ProtectionAction",
       components: {
         Nav: Navigation,
@@ -226,6 +232,22 @@ export const router = new Router({
           name: "DetailsPool",
           redirect: "/404",
           component: DataDetailsPool
+        }
+      ]
+    },
+    {
+      path: "/:service/vote",
+      name: "Vote",
+      components: {
+        Nav: Navigation,
+        default: Vote
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "VotePage",
+          component: VotePage
         }
       ]
     },

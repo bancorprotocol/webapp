@@ -12,15 +12,19 @@
     />
 
     <alert-block
-      v-if="!isWhitelisted"
+      v-if="warning"
       variant="warning"
-      :msg="whitelistWarning.msg"
+      :msg="warning"
       class="mt-3 mb-3"
     />
 
     <gray-border-block v-else :gray-bg="true" class="my-3">
-      <label-content-split label="Value you receive" value="????" />
-      <label-content-split value="????" class="mb-2" />
+      <label-content-split
+        v-for="(output, index) in outputs"
+        :key="output.id"
+        :label="index == 0 ? `Value you receive` : ``"
+        :value="`${formatNumber(output.amount)} ${output.symbol}`"
+      />
 
       <span
         class="font-size-14 font-w400"
@@ -90,7 +94,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { Step, TxResponse, ViewRelay } from "@/types/bancor";
+import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -136,6 +140,7 @@ export default class AddProtectionDouble extends Vue {
   error = "";
   sections: Step[] = [];
   stepIndex = 0;
+  outputs: ViewAmountDetail[] = [];
 
   get pools() {
     return vxm.bancor.relays.filter(x => !x.v2);
@@ -147,6 +152,13 @@ export default class AddProtectionDouble extends Vue {
 
   get isWhitelisted() {
     return this.pool.whitelisted;
+  }
+
+  get warning() {
+    return vxm.general.phase2
+      ? ""
+      : `Pool protection is pending first community vote. Your stake will provide you with vBNT voting power which can be used to participate in governmance.
+Once proposal is approved, your original stake time will be used for vesting.`;
   }
 
   get balance() {
@@ -197,7 +209,7 @@ export default class AddProtectionDouble extends Vue {
 
   get modalConfirmButton() {
     return this.error
-      ? "Try Again"
+      ? "Close"
       : this.success
       ? "Close"
       : this.txBusy
@@ -212,6 +224,7 @@ export default class AddProtectionDouble extends Vue {
       this.$router.push({ name: "LiqProtection" });
       return;
     } else if (this.error) {
+      this.modal = false;
       this.setDefault();
       return;
     }
@@ -267,7 +280,18 @@ export default class AddProtectionDouble extends Vue {
     });
   }
 
-  async amountChanged(tokenAmount: string) {}
+  async amountChanged(tokenAmount: string) {
+    const res = await vxm.ethBancor.calculateProtectionDouble({
+      poolTokenAmount: { amount: this.amount, id: this.pool.id }
+    });
+
+    this.outputs = res.outputs;
+    if (res.error) {
+      this.error = res.error;
+    } else {
+      this.error = "";
+    }
+  }
 
   get darkMode() {
     return vxm.general.darkMode;
