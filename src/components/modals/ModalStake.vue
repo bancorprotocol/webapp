@@ -205,10 +205,8 @@ export default class ModalStake extends Vue {
 
   onHide() {
     this.show = false;
-    if (this.step === "staked") {
-      this.step = "stake";
-      this.stakeValue = 0;
-    }
+    this.step = "stake";
+    this.stakeValue = 0;
   }
 
   get isAuthenticated() {

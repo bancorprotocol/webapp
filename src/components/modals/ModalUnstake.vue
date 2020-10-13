@@ -199,10 +199,8 @@ export default class ModalUnstake extends Vue {
 
   onHide() {
     this.show = false;
-    if (this.step === "unstaked") {
-      this.step = "unstake";
-      this.unstakeValue = 0;
-    }
+    this.step = "unstake";
+    this.unstakeValue = 0;
   }
 
   get isAuthenticated() {
