@@ -271,11 +271,20 @@ export class EthereumGovernance extends VuexModule.With({
     if (!account || !amount)
       throw new Error("Cannot stake without address or amount");
 
-    await this.tokenContract.methods
-      .approve(governanceContractAddress, amount.toString())
-      .send({
-        from: account
-      });
+    const allowance = await this.tokenContract.methods
+      .allowance(account, governanceContractAddress)
+      .call();
+
+    console.log("allowance", allowance);
+
+    if (Number(allowance) < Number(amount)) {
+      await this.tokenContract.methods
+        .approve(governanceContractAddress, amount.toString())
+        .send({
+          from: account
+        });
+    }
+
     await this.governanceContract.methods.stake(amount.toString()).send({
       from: account
     });
