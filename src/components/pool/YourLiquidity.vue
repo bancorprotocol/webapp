@@ -71,7 +71,7 @@
                 label="Remove Liquidity"
               />
             </b-col>
-            <b-col cols="12" v-if="!pool.relay.v2">
+            <b-col cols="12" v-if="pool.relay.liquidityProtection">
               <main-button
                 @click="goToProtect(pool.relay.id)"
                 label="Protect My Pool Token"
