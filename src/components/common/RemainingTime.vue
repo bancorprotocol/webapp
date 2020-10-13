@@ -58,12 +58,12 @@ export default class RemainingTime extends Vue {
       return "Vote Ended";
     }
     if (this.isUnlook) {
-      const diff = (this.to || 0) - Date.now()
-      const day = 24 * 60 * 60 * 1000
-      let remaining = ''
+      const diff = (this.to || 0) - Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      let remaining = "";
       if (diff >= day) {
-        const days = Math.floor(diff / day)
-        remaining += `${days}d `
+        const days = Math.floor(diff / day);
+        remaining += `${days}d `;
       }
       return remaining + new Date(diff).toISOString().substr(11, 8);
     }

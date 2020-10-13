@@ -1,11 +1,11 @@
 <template>
-  <b-row v-if="loaded" >
+  <b-row v-if="loaded">
     <b-col class="col-12 col-md-3">
       <stake />
     </b-col>
     <b-col class="col-12 col-md-9">
       <proposals />
-    </b-col>    
+    </b-col>
   </b-row>
   <span v-else>
     <div class="d-flex justify-content-center align-items-center my-5">
