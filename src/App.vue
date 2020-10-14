@@ -207,7 +207,7 @@ export default class App extends Vue {
     }
   ];
 
-  get isDev() {
+  get isDevOrStaging() {
     return (
       process.env.NODE_ENV == "development" ||
       window.location.host.includes("staging")
