@@ -2211,8 +2211,10 @@ export class EthBancorModule
     })) as string;
 
     this.fetchProtectionPositions();
+    this.fetchBulkTokenBalances([this.liquidityProtectionSettings.govToken, reserveTokenAddress])
     wait(2000).then(() => {
       this.fetchProtectionPositions();
+      this.fetchBulkTokenBalances([this.liquidityProtectionSettings.govToken, reserveTokenAddress])
     });
 
     return {
@@ -2290,9 +2292,7 @@ export class EthBancorModule
       onUpdate
     });
 
-    // gBNT should be here too
-    const gBntAddress = "";
-    this.spamBalances([poolToken.contract, gBntAddress]);
+    this.spamBalances([poolToken.contract, this.liquidityProtectionSettings.govToken]);
 
     (async () => {
       this.fetchProtectionPositions();
