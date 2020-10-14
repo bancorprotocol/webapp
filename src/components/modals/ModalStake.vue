@@ -34,21 +34,25 @@
 
     <div v-if="step === 'stake'">
       <div
-        class="font-size-12 font-w500"
+        class="font-size-12 font-w500 text-nowrap"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        <span class="text-uppercase">Stake your tokens</span>
-        <span class="float-right cursor" @click="() => useMax()">
+        <div class="text-uppercase d-inline-block">Stake your tokens</div>
+        <div
+          class="text-nowrap d-inline-block text-right balance cursor"
+          @click="useMax"
+        >
           Balance: {{ currentBalance }} {{ symbol }}
-        </span>
+        </div>
       </div>
 
       <div class="input-currency mt-1">
         <b-form-input
-          v-model="stakeValue"
+          v-model="stakeInput"
           :state="state"
-          @keypress="isNumber($event)"
-          :max="currentBalance"
+          @keypress="setStakeInput"
+          @input="setStakeInput"
+          :max="currentBalance.toNumber()"
           type="number"
           placeholder="0"
           size="lg"
@@ -74,12 +78,18 @@
         :label="stakeLabel"
         :active="true"
         :block="true"
-        :disabled="!(stakeValue > 0 && stakeValue <= currentBalance)"
+        :disabled="
+          !(
+            stakeValue.isGreaterThan(0) &&
+            currentBalance.isGreaterThanOrEqualTo(stakeValue)
+          )
+        "
         class="font-size-14 font-w400 mt-3 button-status"
         :class="{
-          'button-status--empty': stakeValue.length === 0,
+          'button-status--empty': stakeInput.length === 0,
           'button-status--invalid': !(
-            stakeValue > 0 && stakeValue <= currentBalance
+            stakeValue.isGreaterThan(0) &&
+            currentBalance.isGreaterThanOrEqualTo(stakeValue)
           )
         }"
       />
@@ -142,8 +152,8 @@ import { vxm } from "@/store/";
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
-import { expandToken } from "@/api/eth/helpers";
 import { etherscanUrl } from "@/store/modules/governance/ethGovernance";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -153,33 +163,43 @@ import { etherscanUrl } from "@/store/modules/governance/ethGovernance";
 export default class ModalStake extends Vue {
   @VModel({ type: Boolean }) show!: boolean;
 
-  currentBalance: number = 0;
-  stakeValue?: number = "" as any;
+  currentBalance: BigNumber = new BigNumber(0);
+  stakeInput: string = "";
+  stakeValue: BigNumber = new BigNumber(0);
   step: "stake" | "staking" | "staked" = "stake";
   symbol: string = "";
   maxLock: number = 0;
 
   get state() {
     return (
-      (String(this.stakeValue).length === 0 ||
+      (this.stakeInput.length === 0 ||
         (this.stakeValue &&
-          this.stakeValue > 0 &&
-          this.stakeValue <= this.currentBalance)) &&
+          this.stakeValue.isGreaterThan(0) &&
+          this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue))) &&
       undefined
     );
   }
 
   get stakeLabel() {
-    return this.stakeValue && String(this.stakeValue).length === 0
+    return this.stakeValue && this.stakeInput.length === 0
       ? "Enter Amount"
       : this.stakeValue &&
-        this.stakeValue > 0 &&
-        this.stakeValue <= this.currentBalance
+        this.stakeValue.isGreaterThan(0) &&
+        this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
       ? "Stake Tokens"
       : "Insufficient Amount";
   }
+
   get darkMode(): boolean {
     return vxm.general.darkMode;
+  }
+
+  get isAuthenticated() {
+    return vxm.wallet.isAuthenticated;
+  }
+
+  setStakeInput() {
+    this.stakeValue = new BigNumber(this.stakeInput);
   }
 
   getEtherscanUrl() {
@@ -198,34 +218,23 @@ export default class ModalStake extends Vue {
   async doStake() {
     await vxm.ethGovernance.stake({
       account: this.isAuthenticated,
-      amount: expandToken(
-        this.stakeValue!.toString(),
-        await vxm.ethGovernance.getDecimals()
-      )
+      amount: this.stakeValue
+        .multipliedBy(
+          new BigNumber(10).pow(await vxm.ethGovernance.getDecimals())
+        )
+        .toString()
     });
   }
 
   onHide() {
     this.show = false;
     this.step = "stake";
-    this.stakeValue = 0;
-  }
-
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+    this.stakeValue = new BigNumber(0);
   }
 
   useMax() {
     this.stakeValue = this.currentBalance;
-  }
-
-  isNumber(event: KeyboardEvent) {
-    const char = event.keyCode;
-    if (char > 31 && (char < 48 || char > 57) && char !== 46) {
-      event.preventDefault();
-    } else {
-      return true;
-    }
+    this.stakeInput = this.currentBalance.toString(10);
   }
 
   @Watch("step")
@@ -235,6 +244,8 @@ export default class ModalStake extends Vue {
     this.currentBalance = await vxm.ethGovernance.getBalance({
       account: this.isAuthenticated
     });
+
+    this.setStakeInput();
 
     await this.updateMaxLock();
   }
@@ -313,5 +324,10 @@ export default class ModalStake extends Vue {
   border: solid 1px #f6ab30 !important;
   color: #f6ab30 !important;
   background-color: #fff8ed !important;
+}
+
+.balance {
+  min-width: 225px;
+  padding-left: 5px;
 }
 </style>
