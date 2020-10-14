@@ -128,6 +128,12 @@
             class="mr-2 menu-icon"
             fixed-width
           />
+          <font-awesome-icon
+            @click="openUrl('https://gov.bancor.network')"
+            :icon="['fab', 'discourse']"
+            class="mr-2 menu-icon"
+            fixed-width
+          />
         </div>
       </b-dropdown-text>
     </b-dropdown-group>
