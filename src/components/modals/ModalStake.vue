@@ -188,9 +188,11 @@ export default class ModalStake extends Vue {
 
   stake() {
     this.step = "staking";
-    this.doStake().then(() => {
-      this.step = "staked";
-    });
+    this.doStake()
+      .then(() => {
+        this.step = "staked";
+      })
+      .catch(() => this.onHide());
   }
 
   async doStake() {

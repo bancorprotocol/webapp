@@ -182,9 +182,13 @@ export default class ModalUnstake extends Vue {
 
   unstake() {
     this.step = "unstaking";
-    this.doUnstake().then(() => {
-      this.step = "unstaked";
-    });
+    this.doUnstake()
+      .then(() => {
+        this.step = "unstaked";
+      })
+      .catch(() => {
+        this.onHide();
+      });
   }
 
   async doUnstake() {
