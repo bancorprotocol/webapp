@@ -14,7 +14,7 @@
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        {{ balance }} {{ symbol }}
+        {{ prettifyNumber(balance.toNumber()) }} {{ symbol }}
       </div>
     </div>
 
@@ -32,7 +32,7 @@
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        {{ votes }} {{ symbol }}
+        {{ prettifyNumber(votes.toNumber()) }} {{ symbol }}
       </div>
     </div>
 
@@ -107,12 +107,13 @@ import {
   etherscanUrl,
   governanceContractAddress
 } from "@/store/modules/governance/ethGovernance";
-import { shortenEthAddress } from "@/api/helpers";
+import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import ModalStake from "@/components/modals/ModalStake.vue";
 import ModalUnstake from "@/components/modals/ModalUnstake.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -128,8 +129,8 @@ export default class Stake extends Vue {
   stakeModal = false;
   unstakeModal = false;
 
-  votes: number = 0;
-  balance: number = 0;
+  votes: BigNumber = new BigNumber(0);
+  balance: BigNumber = new BigNumber(0);
   symbol: string = "";
 
   lock: {
@@ -165,6 +166,10 @@ export default class Stake extends Vue {
 
   shortAddress(address: EthAddress) {
     return shortenEthAddress(address);
+  }
+
+  prettifyNumber(number: string | number): string {
+    return prettifyNumber(number);
   }
 
   @Watch("isAuthenticated")

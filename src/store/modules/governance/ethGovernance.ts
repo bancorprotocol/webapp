@@ -10,6 +10,7 @@ import { ContractSendMethod } from "web3-eth-contract";
 // @ts-ignore
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
+import BigNumber from "bignumber.js";
 
 export const governanceContractAddress =
   "0x892f481bd6e9d7d26ae365211d9b45175d5d00e4";
@@ -214,27 +215,31 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getVotes({ voter }: { voter: EthAddress }): Promise<number> {
+  async getVotes({ voter }: { voter: EthAddress }): Promise<BigNumber> {
     if (!voter) throw new Error("Cannot get votes without voter address");
 
-    console.log("getting votes");
     const [decimals, weiVotes] = await Promise.all([
       this.getDecimals(),
       this.governanceContract.methods.votesOf(voter).call()
     ]);
-    return parseFloat(shrinkToken(weiVotes, decimals));
+
+    console.log(`votes: ${weiVotes}`);
+
+    return new BigNumber(weiVotes).dividedBy(new BigNumber(10).pow(decimals));
   }
 
   @action
-  async getBalance({ account }: { account: EthAddress }): Promise<number> {
+  async getBalance({ account }: { account: EthAddress }): Promise<BigNumber> {
     if (!account) throw new Error("Cannot get balance without address");
 
-    console.log("getting balance");
     const [decimals, weiBalance] = await Promise.all([
       this.getDecimals(),
       this.tokenContract.methods.balanceOf(account).call()
     ]);
-    return parseFloat(shrinkToken(weiBalance, Number(decimals)));
+
+    console.log(`balance: ${weiBalance}`);
+
+    return new BigNumber(weiBalance).dividedBy(new BigNumber(10).pow(decimals));
   }
 
   @action
@@ -275,6 +280,7 @@ export class EthereumGovernance extends VuexModule.With({
       .allowance(account, governanceContractAddress)
       .call();
 
+    console.log("staking", amount);
     console.log("allowance", allowance);
 
     if (Number(allowance) < Number(amount)) {
