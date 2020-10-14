@@ -11,7 +11,6 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   darkMode: boolean = false;
   countryCode: string = "";
   bannedCountries: string[] = [
-    "UNKOWN",
     "USA",
     "BLR",
     "BDI",
@@ -34,6 +33,12 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
     "YEM",
     "ZWE"
   ];
+
+  phase2: boolean = false;
+
+  @mutation setPhase(phaseStatus: boolean) {
+    this.phase2 = phaseStatus;
+  }
 
   get isCountryBanned() {
     return this.bannedCountries.some(

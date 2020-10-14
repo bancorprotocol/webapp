@@ -1,5 +1,48 @@
-import { Contract, ContractSendMethod } from "web3-eth-contract";
+import { Contract } from "web3-eth-contract";
 
+export interface ProtectedViewPosition {
+  type: number;
+  whitelisted: boolean;
+  relay: ViewRelay;
+  tokensCovered: ViewAmount[];
+  startTime: number;
+  endTime: number;
+  protectionPercent: number;
+}
+export interface ProtectedLiquidity {
+  id: string;
+  owner: string;
+  poolToken: string;
+  reserveToken: string;
+  poolAmount: string;
+  reserveAmount: string;
+  reserveRateN: string;
+  reserveRateD: string;
+  timestamp: string;
+}
+
+export interface ProtectLiquidityParams {
+  amount: ViewAmount;
+  onUpdate?: OnUpdate;
+}
+
+export interface ProtectedLiquidity {
+  id: string;
+  owner: string;
+  poolToken: string;
+  reserveToken: string;
+  poolAmount: string;
+  reserveAmount: string;
+  reserveRateN: string;
+  reserveRateD: string;
+  timestamp: string;
+  poolRoi: string;
+  liquidityReturn: {
+    baseAmount: string;
+    networkAmount: string;
+    targetAmount: string;
+  };
+}
 export interface TokenPrice {
   id: string;
   code: string;
@@ -67,13 +110,23 @@ export interface ViewAmount {
   amount: string;
 }
 
+export interface ViewAmountDetail extends ViewAmount {
+  usdPrice?: number;
+  symbol: string;
+}
+
+export interface ProtectionRes {
+  error?: string;
+  outputs: ViewAmountDetail[];
+}
+
 export interface ViewAmountWithMeta extends ViewAmount {
   symbol: string;
   logo: string;
   decimals: number;
 }
 
-type OnUpdate = (index: number, sections: Section[]) => void;
+export type OnUpdate = (index: number, sections: Section[]) => void;
 
 export interface LiquidityParams {
   id: string;
@@ -215,7 +268,10 @@ export interface ViewRelay {
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
   focusAvailable?: boolean;
+  liquidityProtection: boolean;
+  whitelisted: boolean;
   v2: boolean;
+  version: number;
 }
 
 export interface ContractMethods<T> extends Contract {
@@ -619,4 +675,39 @@ export enum Feature {
 export interface Service {
   namespace: string;
   features: Feature[];
+}
+
+export interface ViewProtectedLiquidity {
+  id: string;
+  stake: {
+    amount: string;
+    poolId: string;
+    usdValue?: number;
+    symbol: string;
+    unixTime: number;
+  };
+  protectedAmount: {
+    amount: string;
+    symbol: string;
+    usdValue?: number;
+  };
+  roi: number;
+  apr: {
+    day: number;
+    week: number;
+    month: number;
+  };
+  single: boolean;
+  whitelisted: boolean;
+  insuranceStart: number;
+  coverageDecPercent: number;
+  fullCoverage: number;
+  givenVBnt?: string;
+}
+
+export interface ViewLockedBalance {
+  id: string;
+  amount: string;
+  usdValue: number;
+  lockedUntil: number;
 }

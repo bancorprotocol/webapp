@@ -6,7 +6,7 @@
       :class="[darkMode ? 'text-dark' : 'text-light', cursor ? 'cursor' : '']"
     >
       <pool-logos-overlapped :pool-id="pool.id" size="20" />
-      <span class="ml-2">{{ poolName }}</span>
+      <span class="ml-2">{{ baseLabel }} </span>
       <font-awesome-icon v-if="dropdown" icon="caret-down" class="ml-2" />
     </div>
     <div
@@ -43,9 +43,14 @@ export default class PoolLogos extends Vue {
   @Prop({ default: false }) dropdown!: boolean;
   @Prop({ default: true }) cursor!: boolean;
   @Prop({ default: false }) version!: boolean;
+  @Prop({ default: "" }) label?: string;
 
   @Emit()
   click() {}
+
+  get baseLabel() {
+    return `${this.label ? `${this.label} ` : ""}${this.poolName}`;
+  }
 
   get poolName() {
     return buildPoolName(this.pool!.id);
