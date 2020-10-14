@@ -6856,6 +6856,58 @@ export class EthBancorModule
     return reserve.decimals;
   }
 
+  @action async calculateSingleWithdraw({
+    id,
+    decPercent
+  }: {
+    id: string;
+    decPercent: number;
+  }): Promise<{
+    outputs: ViewAmountDetail[];
+    expectedValue: ViewAmountDetail;
+  }> {
+    const [pool, posId] = id.split(":");
+    const ppm = new BigNumber(decPercent).times(oneMillion).toString();
+    const res = await getRemoveLiquidityReturn(
+      this.contracts.LiquidityProtection,
+      posId,
+      ppm,
+      moment().unix()
+    );
+
+    const position = findOrThrow(
+      this.protectedPositionsArr,
+      pos => compareString(pos.id, posId),
+      "failed finding protected position"
+    );
+    const { reserveToken, reserveAmount } = position;
+
+    const reserveTokenObj = findOrThrow(
+      this.relaysList.flatMap(r => r.reserves),
+      reserve => compareString(reserveToken, reserve.contract)
+    );
+
+    return {
+      outputs: [
+        {
+          amount: shrinkToken(res.baseAmount, reserveTokenObj.decimals),
+          id: reserveToken,
+          symbol: reserveTokenObj.symbol
+        },
+        {
+          amount: shrinkToken(res.networkAmount, 18),
+          id: this.liquidityProtectionSettings.networkToken,
+          symbol: "BNT"
+        }
+      ].filter(output => new BigNumber(output.amount).isGreaterThan(0)),
+      expectedValue: {
+        amount: shrinkToken(res.targetAmount, reserveTokenObj.decimals),
+        id: reserveToken,
+        symbol: reserveTokenObj.symbol
+      }
+    };
+  }
+
   @action async getReturn({
     from,
     toId
