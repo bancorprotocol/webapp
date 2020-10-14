@@ -171,7 +171,7 @@ export default class Protected extends Vue {
   }
 
   stringifyPercentage(percentage: number) {
-    return numeral(percentage).format("0.00%");
+    return numeral(percentage).format("0.0000%");
   }
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
