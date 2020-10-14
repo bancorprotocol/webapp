@@ -2073,15 +2073,6 @@ export class EthBancorModule
                   .call()
               ]);
 
-              console.log(
-                poolRoi,
-                "about no",
-                events.conversionEvents,
-                "are conversion events",
-                historicalBalance,
-                "historic balances"
-              );
-
               return {
                 ...position,
                 poolRoi,
@@ -2410,7 +2401,7 @@ export class EthBancorModule
           const minimalMonthDecPercent = minimalYearDecPercent.div(12);
           const minimalWeekDecPercent = minimalYearDecPercent.div(52);
 
-          console.log(minimalDayDecPercent.toString(), "is apr", singleEntry);
+          console.log(minimalDayDecPercent.toString(), "is day", singleEntry);
 
           return {
             id: `${singleEntry.poolToken}:${singleEntry.id}`,
