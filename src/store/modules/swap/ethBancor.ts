@@ -6807,9 +6807,20 @@ export class EthBancorModule
       tokenAddress
     });
 
-    if (new BigNumber(currentApprovedBalance).gte(amount)) return;
+    const noNullingTokenContracts = [this.liquidityProtectionSettings.govToken];
 
-    const nullingTxRequired = fromWei(currentApprovedBalance) !== "0";
+    const sufficientBalanceAlreadyApproved = new BigNumber(
+      currentApprovedBalance
+    ).isGreaterThanOrEqualTo(amount);
+
+    if (sufficientBalanceAlreadyApproved) return;
+
+    const isNoNullingTokenContract = noNullingTokenContracts.some(contract =>
+      compareString(tokenAddress, contract)
+    );
+
+    const nullingTxRequired =
+      fromWei(currentApprovedBalance) !== "0" && !isNoNullingTokenContract;
     if (nullingTxRequired) {
       await this.approveTokenWithdrawals([
         { approvedAddress: spender, amount: toWei("0"), tokenAddress }
