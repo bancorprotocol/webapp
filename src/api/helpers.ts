@@ -711,10 +711,13 @@ export const onboard = Onboard({
 export const fetchReserveBalance = async (
   converterContract: any,
   reserveTokenAddress: string,
-  versionNumber: number | string
+  versionNumber: number | string,
+  blockHeight? :number
 ): Promise<string> => {
   try {
-    const res = await converterContract.methods[
+    const res = await blockHeight !== undefined ? converterContract.methods[
+      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
+    ](reserveTokenAddress).call(null, blockHeight):  converterContract.methods[
       Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
     ](reserveTokenAddress).call();
     return res;

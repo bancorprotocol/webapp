@@ -10,14 +10,13 @@ import { ContractSendMethod } from "web3-eth-contract";
 // @ts-ignore
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
+import BigNumber from "bignumber.js";
 
 export const governanceContractAddress =
   "0x892f481bd6e9d7d26ae365211d9b45175d5d00e4";
 export const etherscanUrl = "https://etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
-// todo fix cors headers, if everything fails use this:
-// const discourseUrl = "https://cors-anywhere.herokuapp.com/https://gov.bancor.network/";
 const discourseUrl = "https://gov.bancor.network/";
 
 const VuexModule = createModule({
@@ -214,27 +213,31 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getVotes({ voter }: { voter: EthAddress }): Promise<number> {
+  async getVotes({ voter }: { voter: EthAddress }): Promise<BigNumber> {
     if (!voter) throw new Error("Cannot get votes without voter address");
 
-    console.log("getting votes");
     const [decimals, weiVotes] = await Promise.all([
       this.getDecimals(),
       this.governanceContract.methods.votesOf(voter).call()
     ]);
-    return parseFloat(shrinkToken(weiVotes, decimals));
+
+    console.log(`votes: ${weiVotes}`);
+
+    return new BigNumber(weiVotes).dividedBy(new BigNumber(10).pow(decimals));
   }
 
   @action
-  async getBalance({ account }: { account: EthAddress }): Promise<number> {
+  async getBalance({ account }: { account: EthAddress }): Promise<BigNumber> {
     if (!account) throw new Error("Cannot get balance without address");
 
-    console.log("getting balance");
     const [decimals, weiBalance] = await Promise.all([
       this.getDecimals(),
       this.tokenContract.methods.balanceOf(account).call()
     ]);
-    return parseFloat(shrinkToken(weiBalance, Number(decimals)));
+
+    console.log(`balance: ${weiBalance}`);
+
+    return new BigNumber(weiBalance).dividedBy(new BigNumber(10).pow(decimals));
   }
 
   @action
@@ -275,6 +278,7 @@ export class EthereumGovernance extends VuexModule.With({
       .allowance(account, governanceContractAddress)
       .call();
 
+    console.log("staking", amount);
     console.log("allowance", allowance);
 
     if (Number(allowance) < Number(amount)) {
@@ -368,7 +372,8 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
-  @action async getProposal({
+  @action
+  async getProposal({
     proposalId,
     voter
   }: {
@@ -524,7 +529,8 @@ export class EthereumGovernance extends VuexModule.With({
     this.metaDataCache = metaDataCache;
   }
 
-  @action async storeInIPFS({
+  @action
+  async storeInIPFS({
     proposalMetaData
   }: {
     proposalMetaData: ProposalMetaData;
@@ -537,7 +543,8 @@ export class EthereumGovernance extends VuexModule.With({
     return path;
   }
 
-  @action async getPostFromDiscourse({
+  @action
+  async getPostFromDiscourse({
     postId
   }: {
     postId: string;
@@ -558,7 +565,8 @@ export class EthereumGovernance extends VuexModule.With({
     };
   }
 
-  @action async getTopicFromDiscourse({
+  @action
+  async getTopicFromDiscourse({
     topicId
   }: {
     topicId: string;

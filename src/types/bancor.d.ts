@@ -248,6 +248,11 @@ interface TokenWithLogo extends AgnosticToken {
   logo: string[];
 }
 
+export interface WeiExtendedAsset {
+  weiAmount: string;
+  contract: string;
+}
+
 export interface ViewReserve {
   reserveId: string;
   id: string;
@@ -529,7 +534,6 @@ export interface CreatePoolModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly newPoolTokenChoices: (networkToken: string) => ModalChoice[];
   readonly newNetworkTokenChoices: ModalChoice[];
-  createPool: (param: CreatePoolParams) => Promise<TxResponse>;
 }
 
 export interface HistoryModule {
