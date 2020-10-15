@@ -17,8 +17,6 @@ export const governanceContractAddress =
 export const etherscanUrl = "https://etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
-// todo fix cors headers, if everything fails use this:
-// const discourseUrl = "https://cors-anywhere.herokuapp.com/https://gov.bancor.network/";
 const discourseUrl = "https://gov.bancor.network/";
 
 const VuexModule = createModule({
@@ -374,7 +372,8 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
-  @action async getProposal({
+  @action
+  async getProposal({
     proposalId,
     voter
   }: {
@@ -530,7 +529,8 @@ export class EthereumGovernance extends VuexModule.With({
     this.metaDataCache = metaDataCache;
   }
 
-  @action async storeInIPFS({
+  @action
+  async storeInIPFS({
     proposalMetaData
   }: {
     proposalMetaData: ProposalMetaData;
@@ -543,7 +543,8 @@ export class EthereumGovernance extends VuexModule.With({
     return path;
   }
 
-  @action async getPostFromDiscourse({
+  @action
+  async getPostFromDiscourse({
     postId
   }: {
     postId: string;
@@ -564,7 +565,8 @@ export class EthereumGovernance extends VuexModule.With({
     };
   }
 
-  @action async getTopicFromDiscourse({
+  @action
+  async getTopicFromDiscourse({
     topicId
   }: {
     topicId: string;
