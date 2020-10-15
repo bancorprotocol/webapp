@@ -534,7 +534,6 @@ export interface CreatePoolModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly newPoolTokenChoices: (networkToken: string) => ModalChoice[];
   readonly newNetworkTokenChoices: ModalChoice[];
-  createPool: (param: CreatePoolParams) => Promise<TxResponse>;
 }
 
 export interface HistoryModule {
