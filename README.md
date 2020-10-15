@@ -58,16 +58,16 @@ _All times in UTC_
 
 Daily standups
 
-- 8:00 am
-- 10:00 pm
+- 7:15 am
 
 #### Weekday work times
 
-|                 | City                                                                  | Start   | End    |
-| --------------- | --------------------------------------------------------------------- | ------- | ------ |
-| John Williamson | [Brisbane](https://www.timeanddate.com/worldclock/australia/)         | 10:00pm | 8:00am |
-| Jan Lghr        | [Stuttgart](https://www.timeanddate.com/worldclock/germany/stuttgart) | 8:00am  | 6:00pm |
-| Gury            | [Jerusalem](https://www.timeanddate.com/worldclock/israel/jerusalem)  |         |        |
+|                 | City                                                                   | Status                 |
+| --------------- | ---------------------------------------------------------------------- | ---------------------- |
+| John Williamson | [Brisbane](https://www.timeanddate.com/worldclock/australia/brisbane/) | Full Time              |
+| Jan Lghr        | [Stuttgart](https://www.timeanddate.com/worldclock/germany/stuttgart)  | Full Time              |
+| Sebastian       | [Berlin](https://www.timeanddate.com/worldclock/germany/berlin)        | Full Time              |
+| Gury            | [Jerusalem](https://www.timeanddate.com/worldclock/israel/jerusalem)   | 2 days throughout week |
 
 ### Git Strategy
 
