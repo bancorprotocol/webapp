@@ -2,6 +2,7 @@
   <content-block :px0="true" :shadow-light="true" :no-header="true">
     <div>
       <div
+        v-if="false"
         class="new-proposal-button cursor"
         @click="showNewProposal = true"
         :class="darkMode ? 'text-dark' : 'text-light'"
