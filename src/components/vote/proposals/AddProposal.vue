@@ -142,11 +142,8 @@ export default class AddProposal extends Vue {
   async onDiscourseInput(input: string) {
     const parseIdRegex = new RegExp("\\/(\\d+)\\/?");
     const match = input.match(parseIdRegex);
-    console.log(match);
     if (match) {
       const topicId = match[1];
-
-      console.log(topicId);
       if (topicId) {
         const result = await vxm.ethGovernance.getTopicFromDiscourse({
           topicId
