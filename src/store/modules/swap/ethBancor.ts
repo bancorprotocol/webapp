@@ -988,10 +988,13 @@ const duplicateWith = <T>(
   arr.filter(
     (item, index, arr) => arr.findIndex(i => comparator(item, i)) !== index
   );
+
 const compareById = (a: { id: string }, b: { id: string }) =>
   compareString(a.id, b.id);
+
 const compareReserveFeedByReserveAddress = (a: ReserveFeed, b: ReserveFeed) =>
   compareString(a.reserveAddress, b.reserveAddress);
+
 const reserveFeedToUsdPrice = (reserveFeed: ReserveFeed): UsdValue => ({
   id: reserveFeed.reserveAddress,
   usdPrice: String(reserveFeed.costByNetworkUsd)
