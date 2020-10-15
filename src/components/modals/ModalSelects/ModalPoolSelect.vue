@@ -35,8 +35,6 @@ export default class ModalPoolSelect extends Vue {
     const searchString = this.search;
     const pools = this.pools;
 
-    console.log("pooools", searchString, pools);
-
     return searchString
       ? pools.filter(pool =>
           pool.reserves

@@ -1009,7 +1009,7 @@ const buildPossibleReserveFeedsTraditional = (
     try {
       const res = buildReserveFeedsTraditional(pool, initialKnownPrices);
       return res;
-    } catch {
+    } catch (e) {
       return false;
     }
   });
@@ -1446,7 +1446,7 @@ interface RawAbiReserveBalance {
 }
 
 const hasTwoConnectors = (relay: RefinedAbiRelay) => {
-  const test = relay.connectorTokenCount == "2";
+  const test = Number(relay.connectorTokenCount) == 2;
   if (!test)
     console.warn(
       "Dropping relay",
@@ -2017,14 +2017,13 @@ export class EthBancorModule
         this.contracts.LiquidityProtection
       );
 
-      const rois = allPositions
+      const rois = allPositions;
 
       // const rois = await Promise.all(
       //   allPositions.map(async position => {
 
       //     try {
-            
-          
+
       //     const poolBalances = await this.fetchRelayBalances(
       //       position.poolToken
       //     );
@@ -2211,10 +2210,16 @@ export class EthBancorModule
     })) as string;
 
     this.fetchProtectionPositions();
-    this.fetchBulkTokenBalances([this.liquidityProtectionSettings.govToken, reserveTokenAddress])
+    this.fetchBulkTokenBalances([
+      this.liquidityProtectionSettings.govToken,
+      reserveTokenAddress
+    ]);
     wait(2000).then(() => {
       this.fetchProtectionPositions();
-      this.fetchBulkTokenBalances([this.liquidityProtectionSettings.govToken, reserveTokenAddress])
+      this.fetchBulkTokenBalances([
+        this.liquidityProtectionSettings.govToken,
+        reserveTokenAddress
+      ]);
     });
 
     return {
@@ -2292,7 +2297,10 @@ export class EthBancorModule
       onUpdate
     });
 
-    this.spamBalances([poolToken.contract, this.liquidityProtectionSettings.govToken]);
+    this.spamBalances([
+      poolToken.contract,
+      this.liquidityProtectionSettings.govToken
+    ]);
 
     (async () => {
       this.fetchProtectionPositions();
@@ -2484,164 +2492,169 @@ export class EthBancorModule
         }
       );
 
-    const reviewedDoubles = doublesArr.filter(double => 
-       this.relays.some(relay => compareString(relay.id, double[0].poolToken)
-    )).flatMap((doubles):
-      | ViewProtectedLiquidity
-      | ViewProtectedLiquidity[] => {
-      const first = doubles[0];
-      const commonPoolToken = first.poolToken;
-      const commonViewRelay = this.relay(commonPoolToken);
-      const commonRelay = findOrThrow(this.relaysList, relay =>
-        compareString(relay.id, commonPoolToken)
-      );
-      const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor =>
-        compareString(commonPoolToken, whitelistedAnchor)
-      );
+    const reviewedDoubles = doublesArr
+      .filter(double =>
+        this.relays.some(relay => compareString(relay.id, double[0].poolToken))
+      )
+      .flatMap((doubles): ViewProtectedLiquidity | ViewProtectedLiquidity[] => {
+        const first = doubles[0];
+        const commonPoolToken = first.poolToken;
+        const commonViewRelay = this.relay(commonPoolToken);
+        const commonRelay = findOrThrow(this.relaysList, relay =>
+          compareString(relay.id, commonPoolToken)
+        );
+        const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor =>
+          compareString(commonPoolToken, whitelistedAnchor)
+        );
 
-      const startTime = Number(first.timestamp);
-      if (allowSingles) {
-        return doubles.map(
-          (singleEntry): ViewProtectedLiquidity => {
-            const isWhiteListed = this.whiteListedPools.some(
-              whitelistedAnchor =>
-                compareString(singleEntry.poolToken, whitelistedAnchor)
-            );
+        const startTime = Number(first.timestamp);
+        if (allowSingles) {
+          return doubles.map(
+            (singleEntry): ViewProtectedLiquidity => {
+              const isWhiteListed = this.whiteListedPools.some(
+                whitelistedAnchor =>
+                  compareString(singleEntry.poolToken, whitelistedAnchor)
+              );
 
-            const startTime = Number(singleEntry.timestamp);
-            const relay = findOrThrow(this.relaysList, relay =>
-              compareString(relay.id, singleEntry.poolToken)
-            );
-            const smartToken = relay.anchor as SmartToken;
-            const smartTokensWei = singleEntry.reserveAmount;
-            const smartTokensDec = shrinkToken(
-              smartTokensWei,
-              smartToken.decimals
-            );
+              const startTime = Number(singleEntry.timestamp);
+              const relay = findOrThrow(this.relaysList, relay =>
+                compareString(relay.id, singleEntry.poolToken)
+              );
+              const smartToken = relay.anchor as SmartToken;
+              const smartTokensWei = singleEntry.reserveAmount;
+              const smartTokensDec = shrinkToken(
+                smartTokensWei,
+                smartToken.decimals
+              );
 
-            const reserveToken = this.token(singleEntry.reserveToken);
-            const reservePrecision = reserveToken.precision;
+              const reserveToken = this.token(singleEntry.reserveToken);
+              const reservePrecision = reserveToken.precision;
 
-            const reserveTokenDec = shrinkToken(
-              singleEntry.reserveAmount,
-              reserveToken.precision
-            );
+              const reserveTokenDec = shrinkToken(
+                singleEntry.reserveAmount,
+                reserveToken.precision
+              );
 
-            const fullyProtectedDec = shrinkToken(
-              singleEntry.liquidityReturn.targetAmount,
-              reservePrecision
-            );
-            const protectionAchieved = calculateProtectionLevel(
-              startTime,
-              minDelay,
-              maxDelay
-            );
-
-            const res = new BigNumber(singleEntry.poolRoi);
-            const minimalDayDecPercent = res.div(oneMillion).minus(1);
-
-            const minimalYearDecPercent = minimalDayDecPercent.times(365);
-            const minimalMonthDecPercent = minimalYearDecPercent.div(12);
-            const minimalWeekDecPercent = minimalYearDecPercent.div(52);
-
-            return {
-              id: `${singleEntry.poolToken}:${singleEntry.id}`,
-              whitelisted: isWhiteListed,
-              stake: {
-                amount: smartTokensDec,
-                symbol: reserveToken.symbol,
-                poolId: relay.id,
-                unixTime: startTime,
-                ...(reserveToken.price && {
-                  usdValue: new BigNumber(reserveTokenDec)
-                    .times(reserveToken.price!)
-                    .toNumber()
-                })
-              },
-              fullyProtected: {
-                amount: "1.23"
-              },
-              protectedAmount: {
-                amount: fullyProtectedDec,
-                symbol: reserveToken.symbol,
-                ...(reserveToken.price && {
-                  usdValue: new BigNumber(fullyProtectedDec)
-                    .times(reserveToken.price!)
-                    .toNumber()
-                })
-              },
-              apr: {
-                day: minimalDayDecPercent.toNumber(),
-                month: minimalMonthDecPercent.toNumber(),
-                week: minimalWeekDecPercent.toNumber()
-              },
-              single: true,
-              insuranceStart: startTime + minDelay,
-              fullCoverage: startTime + maxDelay,
-              coverageDecPercent: calculateProtectionLevel(
+              const fullyProtectedDec = shrinkToken(
+                singleEntry.liquidityReturn.targetAmount,
+                reservePrecision
+              );
+              const protectionAchieved = calculateProtectionLevel(
                 startTime,
                 minDelay,
                 maxDelay
-              ),
-              roi: Number(
-                calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-              )
-            } as ViewProtectedLiquidity;
-          }
-        );
-      } else {
-        const smartToken = commonRelay.anchor as SmartToken;
-        const smartTokensWei = doubles
-          .reduce(
-            (acc, item) => new BigNumber(item.poolAmount).plus(acc),
-            new BigNumber(0)
-          )
-          .toString();
-        const smartTokensDec = shrinkToken(smartTokensWei, smartToken.decimals);
+              );
 
-        const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
+              const res = new BigNumber(singleEntry.poolRoi);
+              const minimalDayDecPercent = res.div(oneMillion).minus(1);
 
-        const givenVBnt = shrinkToken(
-          doubles.find(position =>
-            compareString(bntAddress, position.reserveToken)
-          )!.reserveAmount,
-          18
-        );
+              const minimalYearDecPercent = minimalDayDecPercent.times(365);
+              const minimalMonthDecPercent = minimalYearDecPercent.div(12);
+              const minimalWeekDecPercent = minimalYearDecPercent.div(52);
 
-        return {
-          id: `${commonPoolToken}:${doubles.map(pos => pos.id).join(":")}`,
-          whitelisted: isWhiteListed,
-          stake: {
-            amount: smartTokensDec,
-            symbol: smartToken.symbol,
-            poolId: commonViewRelay.id,
-            unixTime: startTime
-          },
-          apr: {
-            day: 0,
-            month: 0,
-            week: 0
-          },
-          insuranceStart: startTime + minDelay,
-          single: false,
-          fullCoverage: startTime + maxDelay,
-          fullyProtected: {
-            amount: "12345.6789"
-          },
-          protectedAmount: {
-            amount: smartTokensDec,
-            symbol: smartToken.symbol
-          },
-          coverageDecPercent: calculateProtectionLevel(
-            startTime,
-            minDelay,
-            maxDelay
-          ),
-          roi: Number(calculatePercentIncrease(smartTokensDec, smartTokensDec)),
-          givenVBnt
-        } as ViewProtectedLiquidity;
-      }
-    });
+              return {
+                id: `${singleEntry.poolToken}:${singleEntry.id}`,
+                whitelisted: isWhiteListed,
+                stake: {
+                  amount: smartTokensDec,
+                  symbol: reserveToken.symbol,
+                  poolId: relay.id,
+                  unixTime: startTime,
+                  ...(reserveToken.price && {
+                    usdValue: new BigNumber(reserveTokenDec)
+                      .times(reserveToken.price!)
+                      .toNumber()
+                  })
+                },
+                fullyProtected: {
+                  amount: "1.23"
+                },
+                protectedAmount: {
+                  amount: fullyProtectedDec,
+                  symbol: reserveToken.symbol,
+                  ...(reserveToken.price && {
+                    usdValue: new BigNumber(fullyProtectedDec)
+                      .times(reserveToken.price!)
+                      .toNumber()
+                  })
+                },
+                apr: {
+                  day: minimalDayDecPercent.toNumber(),
+                  month: minimalMonthDecPercent.toNumber(),
+                  week: minimalWeekDecPercent.toNumber()
+                },
+                single: true,
+                insuranceStart: startTime + minDelay,
+                fullCoverage: startTime + maxDelay,
+                coverageDecPercent: calculateProtectionLevel(
+                  startTime,
+                  minDelay,
+                  maxDelay
+                ),
+                roi: Number(
+                  calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+                )
+              } as ViewProtectedLiquidity;
+            }
+          );
+        } else {
+          const smartToken = commonRelay.anchor as SmartToken;
+          const smartTokensWei = doubles
+            .reduce(
+              (acc, item) => new BigNumber(item.poolAmount).plus(acc),
+              new BigNumber(0)
+            )
+            .toString();
+          const smartTokensDec = shrinkToken(
+            smartTokensWei,
+            smartToken.decimals
+          );
+
+          const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
+
+          const givenVBnt = shrinkToken(
+            doubles.find(position =>
+              compareString(bntAddress, position.reserveToken)
+            )!.reserveAmount,
+            18
+          );
+
+          return {
+            id: `${commonPoolToken}:${doubles.map(pos => pos.id).join(":")}`,
+            whitelisted: isWhiteListed,
+            stake: {
+              amount: smartTokensDec,
+              symbol: smartToken.symbol,
+              poolId: commonViewRelay.id,
+              unixTime: startTime
+            },
+            apr: {
+              day: 0,
+              month: 0,
+              week: 0
+            },
+            insuranceStart: startTime + minDelay,
+            single: false,
+            fullCoverage: startTime + maxDelay,
+            fullyProtected: {
+              amount: "12345.6789"
+            },
+            protectedAmount: {
+              amount: smartTokensDec,
+              symbol: smartToken.symbol
+            },
+            coverageDecPercent: calculateProtectionLevel(
+              startTime,
+              minDelay,
+              maxDelay
+            ),
+            roi: Number(
+              calculatePercentIncrease(smartTokensDec, smartTokensDec)
+            ),
+            givenVBnt
+          } as ViewProtectedLiquidity;
+        }
+      });
 
     console.log({ reviewedDoubles, reviewedSingles });
     return [...reviewedDoubles, ...reviewedSingles];
@@ -5073,7 +5086,8 @@ export class EthBancorModule
     try {
       const tokens = this.bancorApiTokens;
       if (!tokens || tokens.length == 0) {
-        throw new Error("There are no cached Bancor API tokens.");
+        return reserveFeeds;
+        // throw new Error("There are no cached Bancor API tokens.");
       }
       const ethUsdPrice = findOrThrow(
         tokens,
@@ -5402,7 +5416,7 @@ export class EthBancorModule
     );
 
     const polished: RefinedAbiRelay[] = rawRelays
-      .filter(x => x.connectorTokenCount == "2")
+      .filter(x => Number(x.connectorTokenCount) == 2)
       .map(half => ({
         ...half,
         anchorAddress: findOrThrow(
@@ -5639,7 +5653,11 @@ export class EthBancorModule
 
       const relay: RelayWithReserveBalances = {
         id: smartTokenAddress,
-        reserves: reserveTokens.map(x => ({ ...x, reserveWeight: 0.5 })),
+        reserves: reserveTokens.map(x => ({
+          ...x,
+          reserveWeight: 0.5,
+          decimals: Number(x.decimals)
+        })),
         reserveBalances: zippedReserveBalances.map(zip => ({
           amount: zip.amount,
           id: zip.contract
@@ -5667,12 +5685,29 @@ export class EthBancorModule
       { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
       ...trustedStables(this.currentNetwork)
     ];
-    console.log(completeV1Pools, "pools in", knownPrices);
+
+    console.log(knownPrices, "are the known prices passed");
     const traditionalRelayFeeds = buildPossibleReserveFeedsTraditional(
       completeV1Pools,
       knownPrices
     );
-    console.log(traditionalRelayFeeds, "came back out");
+
+    const poolsFailedToBeCovered = completeV1Pools.filter(
+      pool =>
+        !(
+          traditionalRelayFeeds.filter(feed =>
+            compareString(feed.poolId, pool.id)
+          ).length == 2
+        )
+    );
+    console.log(
+      completeV1Pools.length,
+      "pools in",
+      traditionalRelayFeeds.length / 2,
+      "came back out",
+      poolsFailedToBeCovered.map(x => x.reserves.map(r => r.symbol).join("")),
+      "pools failed to be covered"
+    );
 
     const reserveFeeds = [...traditionalRelayFeeds, ...v2RelayFeeds];
     const pools = [...v2Pools, ...completeV1Pools];
@@ -6221,7 +6256,9 @@ export class EthBancorModule
         ).filter(notBadRelay);
 
         this.addPoolsBulk(newSet).then(() => {
-          this.addPoolsBulk(droppedAnchors);
+          this.addPoolsBulk(droppedAnchors).finally(() => {
+            this.setLoadingPools(false);
+          });
         });
       }
 
@@ -6229,13 +6266,12 @@ export class EthBancorModule
         ...initialLoad,
         {
           anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
+          converterAddress: "0xa6cc5967be74a2b959d18469ebfb54ed317bc4b3"
         }
       ];
 
       const res = await this.addPoolsBulk(initialPull.filter(notBadRelay));
       console.log(res, "was res with initial pull of", initialPull);
-      this.setLoadingPools(false);
       console.timeEnd("initialPools");
 
       this.moduleInitiated();
@@ -6255,16 +6291,6 @@ export class EthBancorModule
       console.error(`Threw inside ethBancor ${e.message}`);
       throw new Error(`Threw inside ethBancor ${e.message}`);
     }
-  }
-
-  @action async addPoolsV1(convertersAndAnchors: ConverterAndAnchor[]) {
-    // do it the way it happened before, adding dynamically and not waiting for the bulk to finish
-  }
-
-  @action async addPools(convertersAndAnchors: ConverterAndAnchor[]) {
-    this.setLoadingPools(true);
-    await this.addPoolsV1(convertersAndAnchors);
-    this.setLoadingPools(false);
   }
 
   @action async getPoolsViaSubgraph(): Promise<V2Response> {
@@ -6450,30 +6476,8 @@ export class EthBancorModule
     console.timeEnd("addPoolsBulk");
 
     const endTime = new Date();
-    // console.log('it took', endTime - startTime, 'ms', 'to load', pools.length, 'pools')
-    if (convertersAndAnchors.length > 40) {
-      this.createReport();
-    }
+
     return { pools: allPools, reserveFeeds: allReserveFeeds };
-  }
-
-  @action async createReport() {
-    console.log("create report triggered");
-
-    const allAnchors = this.relaysList.map(relay => relay.id.toLowerCase());
-
-    const poolResults = await Promise.all(
-      allAnchors.map(async anchor => {
-        try {
-          const poolRes = await getPool(anchor);
-          return { anchor, poolRes: poolRes.converters };
-        } catch (e) {
-          return { anchor, poolRes: false };
-        }
-      })
-    );
-
-    console.log(poolResults, "is the finished report");
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {
