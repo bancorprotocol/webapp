@@ -103,10 +103,6 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { EthAddress } from "@/types/bancor";
-import {
-  etherscanUrl,
-  governanceContractAddress
-} from "@/store/modules/governance/ethGovernance";
 import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
@@ -132,6 +128,7 @@ export default class Stake extends Vue {
   votes: BigNumber = new BigNumber(0);
   balance: BigNumber = new BigNumber(0);
   symbol: string = "";
+  etherscanUrl: string = "";
 
   lock: {
     till: number;
@@ -141,12 +138,8 @@ export default class Stake extends Vue {
     for: 0
   };
 
-  governanceContractAddress: EthAddress = governanceContractAddress;
+  governanceContractAddress: EthAddress = "";
   tokenAddress: EthAddress = "";
-
-  get isEth() {
-    return this.$route.params.service === "eth";
-  }
 
   get darkMode() {
     return vxm.general.darkMode;
@@ -161,7 +154,7 @@ export default class Stake extends Vue {
   }
 
   getEtherscanUrl(token: string) {
-    return `${etherscanUrl}address/${token}`;
+    return `${this.etherscanUrl}address/${token}`;
   }
 
   shortAddress(address: EthAddress) {
@@ -195,6 +188,8 @@ export default class Stake extends Vue {
     this.lock = lock;
     this.tokenAddress = tokenAddress;
     this.symbol = symbol;
+    this.governanceContractAddress = await vxm.ethGovernance.getGovernanceContractAddress();
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
   }
 
   async mounted() {
