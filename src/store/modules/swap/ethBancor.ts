@@ -6986,11 +6986,9 @@ export class EthBancorModule
         if (relaysWithNoBalances.length > 0) {
           const moreThanOne = relayBalances.length > 1;
           throw new Error(
-            `Pool${moreThanOne ? "s" : ""} ${relaysWithNoBalances
-              .map(x => x.relay.id)
-              .join(" ")} do${
-              moreThanOne ? "" : "es"
-            } not have a reserve balance on both sides`
+            moreThanOne
+              ? "Pool does not have sufficient reserve balances"
+              : "Pool does not have a sufficient reserve balance"
           );
         } else {
           throw new Error(e);
