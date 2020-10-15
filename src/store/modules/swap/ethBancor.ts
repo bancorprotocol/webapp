@@ -6097,54 +6097,25 @@ export class EthBancorModule
 
       console.timeEnd("timeToGetToInitialBulk");
 
-      if (remainingLoad.length > 0) {
-        const potentialUnfitConverters = [
-          "0xfb64059D18BbfDc5EEdCc6e65C9F09de8ccAf5b6",
-          "0xB485A5F793B1DEadA32783F99Fdccce9f28aB9a2",
-          "0x444Bd9a308Bd2137208ABBcc3efF679A90d7A553",
-          "0x5C8c7Ef16DaC7596C280E70C6905432F7470965E",
-          "0x40c7998B5d94e00Cd675eDB3eFf4888404f6385F",
-          "0x0429e43f488D2D24BB608EFbb0Ee3e646D61dE71",
-          "0x7FF01DB7ae23b97B15Bc06f49C45d6e3d84df46f",
-          "0x16ff969cC3A4AE925D9C0A2851e2386d61E75954",
-          "0x72eC2FF62Eda1D5E9AcD6c4f6a016F0998ba1cB0",
-          "0xcAf6Eb14c3A20B157439904a88F00a8bE929c887"
-        ];
-        const newSet = remainingLoad
-          .filter(
-            anchorAndConverter =>
-              ![
-                anchorAndConverter.converterAddress,
-                anchorAndConverter.anchorAddress
-              ].some(address =>
-                potentialUnfitConverters.some(x => x == address)
-              )
-          )
-          .filter(notBadRelay);
+      const linkV2Anchor = "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237";
 
-        const droppedAnchors = differenceWith(
-          remainingLoad,
-          newSet,
-          compareAnchorAndConverter
-        ).filter(notBadRelay);
-
-        this.addPoolsBulk(newSet).then(() => {
-          this.addPoolsBulk(droppedAnchors).finally(() => {
-            this.setLoadingPools(false);
-          });
-        });
+      const linkPool = anchorAndConvertersMatched.find(anchor =>
+        compareString(anchor.anchorAddress, linkV2Anchor)
+      );
+      if (linkPool) {
+        const alreadyExisting = initialLoad.find(anchor =>
+          compareString(anchor.anchorAddress, linkV2Anchor)
+        );
+        if (!alreadyExisting) {
+          initialLoad.push(linkPool);
+        }
       }
 
-      const initialPull = [
-        ...initialLoad,
-        {
-          anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-          converterAddress: "0xa6cc5967be74a2b959d18469ebfb54ed317bc4b3"
-        }
-      ];
-
-      const res = await this.addPoolsBulk(initialPull.filter(notBadRelay));
-      console.log(res, "was res with initial pull of", initialPull);
+      const res = await this.addPools({
+        sync: initialLoad,
+        async: remainingLoad
+      });
+      console.log(res, "was res with initial pull of", initialLoad);
       console.timeEnd("initialPools");
 
       this.moduleInitiated();
@@ -6164,6 +6135,65 @@ export class EthBancorModule
       console.error(`Threw inside ethBancor ${e.message}`);
       throw new Error(`Threw inside ethBancor ${e.message}`);
     }
+  }
+
+  @action async addPools({
+    sync,
+    async
+  }: {
+    sync: ConverterAndAnchor[];
+    async: ConverterAndAnchor[];
+  }) {
+    const passedAsyncPools = async.filter(notBadRelay);
+    const passedSyncPools = sync.filter(notBadRelay);
+
+    const longToLoadConverters = [
+      "0xfb64059D18BbfDc5EEdCc6e65C9F09de8ccAf5b6",
+      "0xB485A5F793B1DEadA32783F99Fdccce9f28aB9a2",
+      "0x444Bd9a308Bd2137208ABBcc3efF679A90d7A553",
+      "0x5C8c7Ef16DaC7596C280E70C6905432F7470965E",
+      "0x40c7998B5d94e00Cd675eDB3eFf4888404f6385F",
+      "0x0429e43f488D2D24BB608EFbb0Ee3e646D61dE71",
+      "0x7FF01DB7ae23b97B15Bc06f49C45d6e3d84df46f",
+      "0x16ff969cC3A4AE925D9C0A2851e2386d61E75954",
+      "0x72eC2FF62Eda1D5E9AcD6c4f6a016F0998ba1cB0",
+      "0xcAf6Eb14c3A20B157439904a88F00a8bE929c887"
+    ];
+
+    const [slowLoadAnchorSets, quickLoadAnchorSet] = partition(
+      passedAsyncPools,
+      anchorSet =>
+        longToLoadConverters.some(converter =>
+          compareString(converter, anchorSet.converterAddress)
+        )
+    );
+
+    const quickChunks = chunk(quickLoadAnchorSet, 30);
+
+    const allASyncChunks = [...quickChunks, slowLoadAnchorSets];
+
+    (async () => {
+      try {
+        const tokenAddresses = await Promise.all(
+          allASyncChunks.map(this.addPoolsBulk)
+        );
+        const uniqueTokenAddreses = uniqWith(
+          tokenAddresses
+            .filter(Boolean)
+            .filter(x => Array.isArray(x) && x.length > 0)
+            .flat(1) as string[],
+          compareString
+        );
+        this.fetchBulkTokenBalances(uniqueTokenAddreses);
+        this.setLoadingPools(false);
+      } catch (e) {
+        console.log("Failed loading pools");
+        this.setLoadingPools(false);
+      }
+    })();
+
+    const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
+    this.fetchBulkTokenBalances(uniqWith(tokenAddresses, compareString));
   }
 
   @action async getPoolsViaSubgraph(): Promise<V2Response> {
@@ -6314,13 +6344,9 @@ export class EthBancorModule
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
     if (!convertersAndAnchors || convertersAndAnchors.length == 0) return;
 
-    const startTime = new Date();
     this.setLoadingPools(true);
 
-    const tokenAddresses: string[][] = [];
-    const notCoveredBySubGraph = convertersAndAnchors;
-
-    const { pools, reserveFeeds } = await this.addPoolsV2(notCoveredBySubGraph);
+    const { pools, reserveFeeds } = await this.addPoolsV2(convertersAndAnchors);
 
     const allPools = [...pools];
     const allReserveFeeds = [...reserveFeeds];
@@ -6336,21 +6362,12 @@ export class EthBancorModule
     this.updateRelayFeeds(
       await this.addPossiblePropsFromBancorApi(allReserveFeeds)
     );
-    const tokensInChunk = pools
+
+    const tokenAddresses = pools
       .flatMap(tokensInRelay)
       .map(token => token.contract);
-    tokenAddresses.push(tokensInChunk);
-    if (this.isAuthenticated) {
-      const toFetch = uniqWith(tokenAddresses.flat(), compareString);
-      this.fetchBulkTokenBalances(toFetch);
-    }
-    this.setLoadingPools(false);
 
-    console.timeEnd("addPoolsBulk");
-
-    const endTime = new Date();
-
-    return { pools: allPools, reserveFeeds: allReserveFeeds };
+    return tokenAddresses;
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {
@@ -6367,15 +6384,6 @@ export class EthBancorModule
     uniqueAddresses.forEach(tokenContractAddress =>
       this.getUserBalance({ tokenContractAddress })
     );
-  }
-
-  @action async addPoolsContainingTokenAddresses(tokenAddresses: string[]) {
-    const anchorAddresses = await Promise.all(
-      tokenAddresses.map(this.relaysContainingToken)
-    );
-    const uniqueAnchors = uniqWith(anchorAddresses.flat(1), compareString);
-    const anchorsAndConverters = await this.add(uniqueAnchors);
-    this.addPoolsV2(anchorsAndConverters);
   }
 
   @action async fetchConverterAddressesByAnchorAddresses(
