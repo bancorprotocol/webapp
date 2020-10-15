@@ -3659,7 +3659,6 @@ export class EthBancorModule
         : "0";
 
     if (!reserveBalancesAboveZero) {
-      console.log("is fresh");
       const matchedInputs = reservesViewAmounts.map(viewAmount => ({
         decAmount: viewAmount.amount,
         decimals: findOrThrow(reserves, reserve =>
