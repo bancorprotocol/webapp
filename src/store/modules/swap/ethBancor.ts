@@ -1011,7 +1011,7 @@ const buildPossibleReserveFeedsTraditional = (
     try {
       const res = buildReserveFeedsTraditional(pool, initialKnownPrices);
       return res;
-    } catch {
+    } catch (e) {
       return false;
     }
   });
@@ -1443,7 +1443,7 @@ interface RawAbiReserveBalance {
 }
 
 const hasTwoConnectors = (relay: RefinedAbiRelay) => {
-  const test = relay.connectorTokenCount == "2";
+  const test = Number(relay.connectorTokenCount) == 2;
   if (!test)
     console.warn(
       "Dropping relay",
@@ -3054,132 +3054,6 @@ export class EthBancorModule
     };
   }
 
-  @action async createPool(poolParams: CreatePoolParams) {
-    if (poolParams.reserves.length !== 2)
-      throw new Error("Was expecting two reserves in new pool");
-
-    const suggestedReserveIds = poolParams.reserves.map(reserve => reserve.id);
-    const poolWithSameReservesAlreadyExists = this.relaysList.some(
-      relayIncludesReserves(suggestedReserveIds)
-    );
-    if (poolWithSameReservesAlreadyExists)
-      throw new Error("Pool with same reserves already exists.");
-
-    const networkTokenSymbols =
-      this.currentNetwork == 1 ? networkTokens : ["BNT"];
-
-    const [networkReserve, tokenReserve] = sortByNetworkTokens(
-      poolParams.reserves,
-      reserve => reserve.id,
-      networkTokenSymbols.map(
-        symbolName =>
-          findOrThrow(
-            this.tokenMeta,
-            meta => compareString(meta.symbol, symbolName),
-            "failed finding network tokens in meta"
-          ).id
-      )
-    );
-
-    const networkToken = findOrThrow(
-      this.tokenMeta,
-      meta => compareString(meta.id, networkReserve.id),
-      "failed to find network token"
-    );
-    const reserveToken = findOrThrow(
-      this.tokenMeta,
-      meta => compareString(meta.id, tokenReserve.id),
-      "failed to find reserve token"
-    );
-
-    const networkSymbol = networkToken.symbol;
-    const tokenSymbol = reserveToken.symbol;
-
-    const smartTokenName = `${tokenSymbol} Smart Pool Token`;
-    const smartTokenSymbol = tokenSymbol + networkSymbol;
-    const precision = 18;
-
-    const hasFee = poolParams.fee > 0;
-
-    const { reserves, txId } = (await multiSteps({
-      items: [
-        {
-          description: "Deploying new Pool..",
-          task: async () => {
-            const reserves = await Promise.all(
-              poolParams.reserves.map(async ({ id, amount: decAmount }) => {
-                const token = findOrThrow(
-                  this.tokenMeta,
-                  meta => compareString(meta.id, id),
-                  `failed finding ${id} in known token meta`
-                );
-                const decimals = await this.getDecimalsByTokenAddress(
-                  token.contract
-                );
-
-                const res: WeiExtendedAsset = {
-                  weiAmount: expandToken(decAmount, decimals),
-                  contract: token.contract
-                };
-                return res;
-              })
-            );
-
-            const converterRes = await this.deployConverter({
-              reserveTokenAddresses: reserves.map(reserve => reserve.contract),
-              smartTokenName,
-              smartTokenSymbol,
-              precision
-            });
-
-            const converterAddress = await this.fetchNewConverterAddressFromHash(
-              converterRes
-            );
-
-            return {
-              converterAddress,
-              converterRes
-            };
-          }
-        },
-        {
-          description:
-            "Transferring ownership of pool and adding reserve allowances...",
-          task: async (state?: any) => {
-            const { converterAddress, reserves } = state as {
-              converterAddress: string;
-              reserves: WeiExtendedAsset[];
-            };
-            await Promise.all<any>([
-              this.claimOwnership(converterAddress),
-              ...reserves
-                .filter(
-                  reserve => !compareString(reserve.contract, ethReserveAddress)
-                )
-                .map(reserve =>
-                  this.triggerApprovalIfRequired({
-                    owner: this.isAuthenticated,
-                    amount: reserve.weiAmount,
-                    tokenAddress: reserve.contract,
-                    spender: converterAddress
-                  })
-                )
-            ]);
-          }
-        }
-      ],
-      onUpdate: poolParams.onUpdate
-    })) as { reserves: WeiExtendedAsset[]; txId: string };
-
-    this.spamBalances(reserves.map(reserve => reserve.contract));
-    wait(5000).then(() => this.init());
-
-    return {
-      txId,
-      blockExplorerLink: await this.createExplorerLink(txId)
-    };
-  }
-
   @action async createExplorerLink(txHash: string) {
     return generateEtherscanTxLink(
       txHash,
@@ -3614,7 +3488,6 @@ export class EthBancorModule
         : "0";
 
     if (!reserveBalancesAboveZero) {
-      console.log("is fresh");
       const matchedInputs = reservesViewAmounts.map(viewAmount => ({
         decAmount: viewAmount.amount,
         decimals: findOrThrow(reserves, reserve =>
@@ -5041,7 +4914,8 @@ export class EthBancorModule
     try {
       const tokens = this.bancorApiTokens;
       if (!tokens || tokens.length == 0) {
-        throw new Error("There are no cached Bancor API tokens.");
+        return reserveFeeds;
+        // throw new Error("There are no cached Bancor API tokens.");
       }
       const ethUsdPrice = findOrThrow(
         tokens,
@@ -5370,7 +5244,7 @@ export class EthBancorModule
     );
 
     const polished: RefinedAbiRelay[] = rawRelays
-      .filter(x => x.connectorTokenCount == "2")
+      .filter(x => Number(x.connectorTokenCount) == 2)
       .map(half => ({
         ...half,
         anchorAddress: findOrThrow(
@@ -5607,7 +5481,11 @@ export class EthBancorModule
 
       const relay: RelayWithReserveBalances = {
         id: smartTokenAddress,
-        reserves: reserveTokens.map(x => ({ ...x, reserveWeight: 0.5 })),
+        reserves: reserveTokens.map(x => ({
+          ...x,
+          reserveWeight: 0.5,
+          decimals: Number(x.decimals)
+        })),
         reserveBalances: zippedReserveBalances.map(zip => ({
           amount: zip.amount,
           id: zip.contract
@@ -5635,12 +5513,29 @@ export class EthBancorModule
       { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
       ...trustedStables(this.currentNetwork)
     ];
-    console.log(completeV1Pools, "pools in", knownPrices);
+
+    console.log(knownPrices, "are the known prices passed");
     const traditionalRelayFeeds = buildPossibleReserveFeedsTraditional(
       completeV1Pools,
       knownPrices
     );
-    console.log(traditionalRelayFeeds, "came back out");
+
+    const poolsFailedToBeCovered = completeV1Pools.filter(
+      pool =>
+        !(
+          traditionalRelayFeeds.filter(feed =>
+            compareString(feed.poolId, pool.id)
+          ).length == 2
+        )
+    );
+    console.log(
+      completeV1Pools.length,
+      "pools in",
+      traditionalRelayFeeds.length / 2,
+      "came back out",
+      poolsFailedToBeCovered.map(x => x.reserves.map(r => r.symbol).join("")),
+      "pools failed to be covered"
+    );
 
     const reserveFeeds = [...traditionalRelayFeeds, ...v2RelayFeeds];
     const pools = [...v2Pools, ...completeV1Pools];
@@ -6189,7 +6084,9 @@ export class EthBancorModule
         ).filter(notBadRelay);
 
         this.addPoolsBulk(newSet).then(() => {
-          this.addPoolsBulk(droppedAnchors);
+          this.addPoolsBulk(droppedAnchors).finally(() => {
+            this.setLoadingPools(false);
+          });
         });
       }
 
@@ -6197,13 +6094,12 @@ export class EthBancorModule
         ...initialLoad,
         {
           anchorAddress: "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237",
-          converterAddress: "0xFD39faae66348aa27A9E1cE3697aa185B02580EE"
+          converterAddress: "0xa6cc5967be74a2b959d18469ebfb54ed317bc4b3"
         }
       ];
 
       const res = await this.addPoolsBulk(initialPull.filter(notBadRelay));
       console.log(res, "was res with initial pull of", initialPull);
-      this.setLoadingPools(false);
       console.timeEnd("initialPools");
 
       this.moduleInitiated();
@@ -6223,16 +6119,6 @@ export class EthBancorModule
       console.error(`Threw inside ethBancor ${e.message}`);
       throw new Error(`Threw inside ethBancor ${e.message}`);
     }
-  }
-
-  @action async addPoolsV1(convertersAndAnchors: ConverterAndAnchor[]) {
-    // do it the way it happened before, adding dynamically and not waiting for the bulk to finish
-  }
-
-  @action async addPools(convertersAndAnchors: ConverterAndAnchor[]) {
-    this.setLoadingPools(true);
-    await this.addPoolsV1(convertersAndAnchors);
-    this.setLoadingPools(false);
   }
 
   @action async getPoolsViaSubgraph(): Promise<V2Response> {
@@ -6418,30 +6304,8 @@ export class EthBancorModule
     console.timeEnd("addPoolsBulk");
 
     const endTime = new Date();
-    // console.log('it took', endTime - startTime, 'ms', 'to load', pools.length, 'pools')
-    if (convertersAndAnchors.length > 40) {
-      this.createReport();
-    }
+
     return { pools: allPools, reserveFeeds: allReserveFeeds };
-  }
-
-  @action async createReport() {
-    console.log("create report triggered");
-
-    const allAnchors = this.relaysList.map(relay => relay.id.toLowerCase());
-
-    const poolResults = await Promise.all(
-      allAnchors.map(async anchor => {
-        try {
-          const poolRes = await getPool(anchor);
-          return { anchor, poolRes: poolRes.converters };
-        } catch (e) {
-          return { anchor, poolRes: false };
-        }
-      })
-    );
-
-    console.log(poolResults, "is the finished report");
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {
@@ -7013,11 +6877,9 @@ export class EthBancorModule
         if (relaysWithNoBalances.length > 0) {
           const moreThanOne = relayBalances.length > 1;
           throw new Error(
-            `Pool${moreThanOne ? "s" : ""} ${relaysWithNoBalances
-              .map(x => x.relay.id)
-              .join(" ")} do${
-              moreThanOne ? "" : "es"
-            } not have a reserve balance on both sides`
+            moreThanOne
+              ? "Pool does not have sufficient reserve balances"
+              : "Pool does not have a sufficient reserve balance"
           );
         } else {
           throw new Error(e);
