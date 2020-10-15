@@ -1982,75 +1982,40 @@ export class EthBancorModule
         this.contracts.LiquidityProtection
       );
 
-      // const rois = allPositions
+      const blockNumber = await this.blockNumberHoursAgo(24);
 
       const rois = await Promise.all(
         allPositions.map(async position => {
           try {
-            const poolBalances = await this.fetchRelayBalances(
-              position.poolToken
-            );
+            const historicalBalances = await this.fetchRelayBalances({
+              poolId: position.poolToken,
+              blockHeight: blockNumber.blockHoursAgo
+            });
 
             try {
-              const events = await this.focusPool(position.poolToken);
-
-              const historicalBalance = calculateHistoricPoolBalanceByConversions(
-                poolBalances.reserves.map(
-                  (reserve): WeiExtendedAsset => ({
-                    weiAmount: reserve.weiAmount,
-                    contract: reserve.contract
-                  })
-                ),
-                events.conversionEvents.map(event => ({
-                  from: {
-                    contract: event.data.from.id,
-                    weiAmount: expandToken(
-                      event.data.from.amount,
-                      event.data.from.decimals
-                    )
-                  },
-                  to: {
-                    contract: event.data.to.id,
-                    weiAmount: expandToken(
-                      event.data.to.amount,
-                      event.data.to.decimals
-                    )
-                  }
-                }))
+              const historicalReserveBalances = historicalBalances.reserves.map(
+                (reserve): WeiExtendedAsset => ({
+                  weiAmount: reserve.weiAmount,
+                  contract: reserve.contract
+                })
               );
 
-              console.log(
-                {
-                  historicalBalance,
-                  currentReserveBalances: poolBalances.reserves.map(
-                    (reserve): WeiExtendedAsset => ({
-                      weiAmount: reserve.weiAmount,
-                      contract: reserve.contract
-                    })
-                  ),
-                  reserveAmount: position.reserveAmount,
-                  reserveToken: position.reserveToken,
-                  id: position.id
-                },
-                "asaf"
-              );
+              const poolTokenSupply = historicalBalances.smartTokenSupplyWei;
 
-              const [
-                historicReserveBalance,
-                historicOpposingReserveBalance
-              ] = sortAlongSide(
-                historicalBalance,
+              const [tknReserveBalance, opposingTknBalance] = sortAlongSide(
+                historicalReserveBalances,
                 balance => balance.contract,
                 [position.reserveToken]
               );
 
-              const poolRateN = new BigNumber(historicReserveBalance.weiAmount)
-                .times(2)
-                .toString();
-              const poolRateD = poolBalances.smartTokenSupplyWei;
+              const poolToken = position.poolToken;
+              const reserveToken = position.reserveToken;
+              const reserveAmount = tknReserveBalance.weiAmount;
+              const poolRateN = poolTokenSupply;
+              const poolRateD = tknReserveBalance.weiAmount;
 
-              const reserveRateN = historicOpposingReserveBalance.weiAmount;
-              const reserveRateD = historicReserveBalance.weiAmount;
+              const reserveRateN = opposingTknBalance.weiAmount;
+              const reserveRateD = tknReserveBalance.weiAmount;
 
               const fullWaitTime =
                 Number(position.timestamp) +
@@ -2065,9 +2030,9 @@ export class EthBancorModule
                 ),
                 lpContract.methods
                   .poolROI(
-                    position.poolToken,
-                    position.reserveToken,
-                    position.reserveAmount,
+                    poolToken,
+                    reserveToken,
+                    reserveAmount,
                     poolRateN,
                     poolRateD,
                     reserveRateN,
@@ -2075,6 +2040,21 @@ export class EthBancorModule
                   )
                   .call()
               ]);
+
+              console.log(
+                {
+                  position,
+                  poolToken,
+                  reserveToken,
+                  reserveAmount,
+                  poolRateN,
+                  poolRateD,
+                  reserveRateN,
+                  reserveRateD,
+                  poolRoi
+                },
+                "asaf"
+              );
 
               return {
                 ...position,
@@ -2397,8 +2377,8 @@ export class EthBancorModule
             maxDelay
           );
 
-          const res = new BigNumber(singleEntry.poolRoi);
-          const minimalDayDecPercent = res.div(oneMillion).minus(1);
+          const poolRoiBig = new BigNumber(singleEntry.poolRoi);
+          const minimalDayDecPercent = poolRoiBig.div(oneMillion).minus(1);
 
           const minimalYearDecPercent = minimalDayDecPercent.times(365);
           const minimalMonthDecPercent = minimalYearDecPercent.div(12);
@@ -3420,19 +3400,34 @@ export class EthBancorModule
     return this.$store.dispatch("ethWallet/tx", actions, { root: true });
   }
 
-  @action async fetchRelayBalances(poolId: string) {
+  @action async fetchRelayBalances({
+    poolId,
+    blockHeight
+  }: {
+    poolId: string;
+    blockHeight?: number;
+  }) {
     const { reserves, version, contract } = await this.relayById(poolId);
 
     const converterContract = buildConverterContract(contract);
     const smartTokenContract = buildTokenContract(poolId);
 
+    const requestAtParticularBlock = typeof blockHeight !== undefined;
+
     const [reserveBalances, smartTokenSupplyWei] = await Promise.all([
       Promise.all(
         reserves.map(reserve =>
-          fetchReserveBalance(converterContract, reserve.contract, version)
+          fetchReserveBalance(
+            converterContract,
+            reserve.contract,
+            version,
+            blockHeight
+          )
         )
       ),
-      smartTokenContract.methods.totalSupply().call()
+      requestAtParticularBlock
+        ? smartTokenContract.methods.totalSupply().call(null, blockHeight)
+        : smartTokenContract.methods.totalSupply().call()
     ]);
 
     return {
@@ -3465,9 +3460,9 @@ export class EthBancorModule
     const smartTokenDecimals = relay.anchor.decimals;
 
     this.getUserBalance({ tokenContractAddress: smartTokenAddress });
-    const { reserves, smartTokenSupplyWei } = await this.fetchRelayBalances(
-      smartTokenAddress
-    );
+    const { reserves, smartTokenSupplyWei } = await this.fetchRelayBalances({
+      poolId: smartTokenAddress
+    });
 
     const [sameReserve, opposingReserve] = sortByNetworkTokens(
       reserves,
@@ -3737,7 +3732,7 @@ export class EthBancorModule
     const reserveToken = this.token(reserveAmount.id);
 
     const [balances, poolTokenBalance] = await Promise.all([
-      this.fetchRelayBalances(poolId),
+      this.fetchRelayBalances({ poolId }),
       this.fetchSystemBalance(reserveToken.contract)
     ]);
 
@@ -3770,7 +3765,7 @@ export class EthBancorModule
   }): Promise<ProtectionRes> {
     const reserveToken = this.token(reserveAmount.id);
     const [balances, poolTokenBalance] = await Promise.all([
-      this.fetchRelayBalances(poolId),
+      this.fetchRelayBalances({ poolId }),
       this.fetchSystemBalance(reserveToken.contract)
     ]);
 
@@ -3864,7 +3859,9 @@ export class EthBancorModule
     );
     const smartToken = relay.anchor as SmartToken;
 
-    const balances = await this.fetchRelayBalances(smartToken.contract);
+    const balances = await this.fetchRelayBalances({
+      poolId: smartToken.contract
+    });
 
     const outputs = balances.reserves.map(reserve => {
       console.log(reserve, balances, "dishes");
@@ -3959,9 +3956,9 @@ export class EthBancorModule
         tokenContractAddress: relay.anchor.contract
       }));
 
-    const { smartTokenSupplyWei, reserves } = await this.fetchRelayBalances(
-      relay.anchor.contract
-    );
+    const { smartTokenSupplyWei, reserves } = await this.fetchRelayBalances({
+      poolId: relay.anchor.contract
+    });
 
     const smartTokenDecimals = relay.anchor.decimals;
 
@@ -4283,9 +4280,9 @@ export class EthBancorModule
     const relay = await this.traditionalRelayById(id);
     const smartTokenAddress = relay.anchor.contract;
 
-    const { reserves, smartTokenSupplyWei } = await this.fetchRelayBalances(
-      smartTokenAddress
-    );
+    const { reserves, smartTokenSupplyWei } = await this.fetchRelayBalances({
+      poolId: smartTokenAddress
+    });
 
     const reserveBalancesAboveZero = reserves.every(reserve =>
       new BigNumber(reserve.weiAmount).gt(0)
@@ -5829,9 +5826,12 @@ export class EthBancorModule
 
   @action async blockNumberHoursAgo(hours: number) {
     const currentBlock = await web3.eth.getBlockNumber();
-    const secondsPerBlock = 15;
-    const secondsToRewind = 60 * 60 * hours;
-    const blocksToRewind = secondsToRewind / secondsPerBlock;
+    const secondsPerBlock = 13.3;
+    const secondsToRewind = moment.duration(hours, "hours").asSeconds();
+    const blocksToRewind = parseInt(
+      new BigNumber(secondsToRewind).div(secondsPerBlock).toString()
+    );
+    console.log(secondsToRewind, "are seconds to rewind", blocksToRewind);
     return {
       blockHoursAgo: currentBlock - blocksToRewind,
       currentBlock: currentBlock
@@ -6878,7 +6878,7 @@ export class EthBancorModule
         const relayBalances = await Promise.all(
           relays.map(async relay => ({
             relay,
-            balances: await this.fetchRelayBalances(relay.id)
+            balances: await this.fetchRelayBalances({ poolId: relay.id })
           }))
         );
         const relaysWithNoBalances = relayBalances.filter(
