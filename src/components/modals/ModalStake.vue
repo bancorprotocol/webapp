@@ -152,7 +152,6 @@ import { vxm } from "@/store/";
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
-import { etherscanUrl } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 
 @Component({
@@ -168,6 +167,7 @@ export default class ModalStake extends Vue {
   stakeValue: BigNumber = new BigNumber(0);
   step: "stake" | "staking" | "staked" = "stake";
   symbol: string = "";
+  etherscanUrl: string = "";
   maxLock: number = 0;
 
   get state() {
@@ -203,7 +203,7 @@ export default class ModalStake extends Vue {
   }
 
   getEtherscanUrl() {
-    return `${etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
+    return `${this.etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
   }
 
   stake() {
@@ -247,6 +247,9 @@ export default class ModalStake extends Vue {
 
     this.setStakeInput();
 
+    this.symbol = await vxm.ethGovernance.getSymbol();
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
+
     await this.updateMaxLock();
   }
 
@@ -260,7 +263,6 @@ export default class ModalStake extends Vue {
   }
 
   async mounted() {
-    this.symbol = await vxm.ethGovernance.getSymbol();
     await this.update();
   }
 }

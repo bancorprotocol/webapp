@@ -271,10 +271,7 @@ import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import MainButton from "@/components/common/Button.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
-import {
-  etherscanUrl,
-  Proposal
-} from "@/store/modules/governance/ethGovernance";
+import { Proposal } from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -290,7 +287,9 @@ import {
 export default class OpenProposals extends Vue {
   @Prop() proposals?: Proposal[];
   @Prop() update?: any;
+
   symbol: string = "";
+  etherscanUrl: string = "";
 
   get fields(): ViewTableFields[] {
     console.log("proposals", this.proposals);
@@ -352,7 +351,7 @@ export default class OpenProposals extends Vue {
   }
 
   getEtherscanUrl(address: string) {
-    return `${etherscanUrl}address/${address}`;
+    return `${this.etherscanUrl}address/${address}`;
   }
 
   shortAddress(address: string) {
@@ -378,6 +377,7 @@ export default class OpenProposals extends Vue {
   }
 
   async mounted() {
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }
