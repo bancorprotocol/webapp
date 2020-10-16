@@ -171,10 +171,10 @@
               :class="'votes-bar--' + proposal.votes.voted"
             >
               <div class="row">
-                <span class="col-8">
+                <span class="col-3">
                   <span class="text-uppercase">{{ proposal.votes.voted }}</span>
                 </span>
-                <span class="col-4 text-right">
+                <span class="col-9 text-right">
                   {{ proposal.votes.for || proposal.votes.against }}
                   {{ symbol }}
                 </span>
