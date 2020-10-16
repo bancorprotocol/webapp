@@ -219,19 +219,28 @@ export const router = new Router({
         {
           path: "",
           name: "DataSummary",
-          component: DataSummary
+          component: DataSummary,
+          meta: {
+            feature: "Data"
+          },
         },
         {
           path: "token/:id",
           name: "DetailsToken",
           redirect: "/404",
-          component: DataDetailsToken
+          component: DataDetailsToken,
+          meta: {
+            feature: "Data"
+          },
         },
         {
           path: "pool/:id",
           name: "DetailsPool",
           redirect: "/404",
-          component: DataDetailsPool
+          component: DataDetailsPool,
+          meta: {
+            feature: "Data"
+          },
         }
       ]
     },
@@ -247,7 +256,10 @@ export const router = new Router({
         {
           path: "",
           name: "VotePage",
-          component: VotePage
+          component: VotePage,
+          meta: {
+            feature: "Vote"
+          }
         }
       ]
     },
