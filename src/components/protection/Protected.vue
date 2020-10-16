@@ -58,14 +58,14 @@
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{ stringifyPercentage(data.value.day) }}
         </div>
-        <div class="d-flex align-items-center my-1">
-          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
-          {{ stringifyPercentage(data.value.week) }}
-        </div>
-        <div class="d-flex align-items-center">
-          <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge>
-          {{ stringifyPercentage(data.value.month) }}
-        </div>
+        <!-- <div class="d-flex align-items-center my-1"> -->
+        <!-- <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge> -->
+        <!-- {{ stringifyPercentage(data.value.week) }} -->
+        <!-- </div> -->
+        <!-- <div class="d-flex align-items-center"> -->
+        <!-- <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge> -->
+        <!-- {{ stringifyPercentage(data.value.month) }} -->
+        <!-- </div> -->
       </template>
 
       <template v-slot:cell(insuranceStart)="data">
