@@ -1852,7 +1852,6 @@ export class EthBancorModule
     } as LiquidityProtectionSettings;
     this.setLiquidityProtectionSettings(newSettings);
     this.fetchBulkTokenBalances([newSettings.govToken]);
-    console.log(newSettings, "are the new settings");
     return newSettings;
   }
 
@@ -1959,10 +1958,14 @@ export class EthBancorModule
   }
 
   @action async fetchProtectionPositions(storeAddress?: string) {
+    console.log("fetchProtectionPositions");
+    console.count("fetchProtectionPositions");
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
     console.log(storeAddress, "is the new address", liquidityStore);
-    if (!this.isAuthenticated) return;
+    if (!this.isAuthenticated) {
+      return;
+    }
     try {
       const contract = buildLiquidityProtectionStoreContract(liquidityStore);
       const owner = this.isAuthenticated;
@@ -6159,7 +6162,9 @@ export class EthBancorModule
             .flat(1) as string[],
           compareString
         );
-        this.fetchBulkTokenBalances(uniqueTokenAddreses);
+        if (this.isAuthenticated) {
+          this.fetchBulkTokenBalances(uniqueTokenAddreses);
+        }
         this.setLoadingPools(false);
       } catch (e) {
         console.log("Failed loading pools");
@@ -6168,7 +6173,9 @@ export class EthBancorModule
     })();
 
     const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
-    this.fetchBulkTokenBalances(uniqWith(tokenAddresses, compareString));
+    if (this.isAuthenticated) {
+      this.fetchBulkTokenBalances(uniqWith(tokenAddresses, compareString));
+    }
   }
 
   @action async getPoolsViaSubgraph(): Promise<V2Response> {
