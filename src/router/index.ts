@@ -222,7 +222,7 @@ export const router = new Router({
           component: DataSummary,
           meta: {
             feature: "Data"
-          },
+          }
         },
         {
           path: "token/:id",
@@ -231,7 +231,7 @@ export const router = new Router({
           component: DataDetailsToken,
           meta: {
             feature: "Data"
-          },
+          }
         },
         {
           path: "pool/:id",
@@ -240,7 +240,7 @@ export const router = new Router({
           component: DataDetailsPool,
           meta: {
             feature: "Data"
-          },
+          }
         }
       ]
     },

@@ -180,11 +180,17 @@
                 </span>
               </div>
               <div class="row">
-                <div class="col-4 tiny-text">
+                <div
+                  class="col-4 tiny-text"
+                  :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+                >
                   <span>your vote</span>
                 </div>
                 <div class="col-8 font-size-12 text-right voted-box__text">
-                  <span class="tiny-text">
+                  <span
+                    class="tiny-text"
+                    :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+                  >
                     {{
                       (
                         ((proposal.votes.for || proposal.votes.against) /
@@ -229,7 +235,10 @@
             </div>
           </div>
 
-          <div class="tiny-text font-w500">
+          <div
+            class="tiny-text font-w500"
+            :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+          >
             <div class="row pt-2">
               <div class="col-6">
                 {{ prettifyNumber(proposal.totalVotesFor) }} {{ symbol }}
