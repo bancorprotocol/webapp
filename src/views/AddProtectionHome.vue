@@ -58,7 +58,7 @@ export default class AddProtectionHome extends Vue {
         title: `Protect Single Token ${this.phase2 ? "" : "(Coming Soon)"}`,
         desc:
           "Add liquidity with one reserve, be exposed to it only and protect it from impermanent loss.",
-        buttonTxt: "Stake & protect token",
+        buttonTxt: "Stake and Protect",
         buttonActive: true,
         buttonEnabled: this.phase2
       },
@@ -67,7 +67,7 @@ export default class AddProtectionHome extends Vue {
         title: "Protect Pool Token",
         desc:
           "Stake pool tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
-        buttonTxt: "Stake pool token",
+        buttonTxt: "Stake and Protect",
         buttonActive: false,
         buttonEnabled: true
       }
@@ -75,9 +75,7 @@ export default class AddProtectionHome extends Vue {
   }
 
   get pools() {
-    return vxm.bancor.relays.filter(
-      pool => pool.liquidityProtection
-    );
+    return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
   }
 
   openModal(optionId: number) {
