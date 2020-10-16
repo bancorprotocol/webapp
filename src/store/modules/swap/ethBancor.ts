@@ -2010,9 +2010,11 @@ export class EthBancorModule
 
               const poolToken = position.poolToken;
               const reserveToken = position.reserveToken;
-              const reserveAmount = tknReserveBalance.weiAmount;
-              const poolRateN = poolTokenSupply;
-              const poolRateD = tknReserveBalance.weiAmount;
+              const reserveAmount = position.reserveAmount;
+              const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+                .times(2)
+                .toString();
+              const poolRateD = poolTokenSupply;
 
               const reserveRateN = opposingTknBalance.weiAmount;
               const reserveRateD = tknReserveBalance.weiAmount;
