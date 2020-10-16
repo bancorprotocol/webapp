@@ -73,7 +73,7 @@
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         <div>
-          Government contract
+          Governance contract
           <a
             :href="getEtherscanUrl(governanceContractAddress)"
             class="font-w500"
@@ -84,7 +84,7 @@
         </div>
 
         <div>
-          Government token
+          Governance token
           <a
             :href="getEtherscanUrl(tokenAddress)"
             class="font-w500"
