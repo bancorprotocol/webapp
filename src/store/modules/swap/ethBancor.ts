@@ -3428,6 +3428,7 @@ export class EthBancorModule
         )
       ),
       requestAtParticularBlock
+      // @ts-ignore
         ? smartTokenContract.methods.totalSupply().call(null, blockHeight)
         : smartTokenContract.methods.totalSupply().call()
     ]);
