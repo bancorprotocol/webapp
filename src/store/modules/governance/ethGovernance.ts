@@ -11,10 +11,9 @@ import { ContractSendMethod } from "web3-eth-contract";
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
 import BigNumber from "bignumber.js";
+import { EthNetworks, web3 } from "@/api/helpers";
+import { getNetworkVariables } from "@/store/config";
 
-export const governanceContractAddress =
-  "0x892f481bd6e9d7d26ae365211d9b45175d5d00e4";
-export const etherscanUrl = "https://etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
 const discourseUrl = "https://gov.bancor.network/";
@@ -146,9 +145,29 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
+  async getNetwork(): Promise<EthNetworks> {
+    const web3NetworkVersion = await web3.eth.getChainId();
+    const currentNetwork: EthNetworks = web3NetworkVersion;
+    console.log(`current network is: ${EthNetworks[currentNetwork]}`);
+    return currentNetwork;
+  }
+
+  @action
+  async getGovernanceContractAddress() {
+    const networkVariables = getNetworkVariables(await this.getNetwork());
+    return networkVariables.governanceContractAddress;
+  }
+
+  @action
+  async getEtherscanUrl() {
+    const networkVariables = getNetworkVariables(await this.getNetwork());
+    return networkVariables.etherscanUrl;
+  }
+
+  @action
   async init() {
     const governanceContract: Governance = buildGovernanceContract(
-      governanceContractAddress
+      await this.getGovernanceContractAddress()
     );
 
     const tokenAddress = await governanceContract.methods.govToken().call();
@@ -275,7 +294,7 @@ export class EthereumGovernance extends VuexModule.With({
       throw new Error("Cannot stake without address or amount");
 
     const allowance = await this.tokenContract.methods
-      .allowance(account, governanceContractAddress)
+      .allowance(account, await this.getGovernanceContractAddress())
       .call();
 
     console.log("staking", amount);
@@ -283,7 +302,7 @@ export class EthereumGovernance extends VuexModule.With({
 
     if (Number(allowance) < Number(amount)) {
       await this.tokenContract.methods
-        .approve(governanceContractAddress, amount.toString())
+        .approve(await this.getGovernanceContractAddress(), amount.toString())
         .send({
           from: account
         });
