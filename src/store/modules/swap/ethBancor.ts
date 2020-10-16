@@ -149,6 +149,25 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 
+const slimBalanceShape = (contractAddress: string, owner: string) => {
+  const contract = buildTokenContract(contractAddress);
+  const template = {
+    contract: ORIGIN_ADDRESS,
+    balance: contract.methods.balanceOf(owner)
+  };
+  return template;
+};
+
+const balanceShape = (contractAddress: string, owner: string) => {
+  const contract = buildTokenContract(contractAddress);
+  const template = {
+    contract: ORIGIN_ADDRESS,
+    balance: contract.methods.balanceOf(owner),
+    decimals: contract.methods.decimals()
+  };
+  return template;
+};
+
 const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
   const liq1 = new BigNumber(liq1Balance);
   const liq2 = new BigNumber(liq2Balance);
@@ -3926,6 +3945,63 @@ export class EthBancorModule
     }
   }
 
+  @action async fetchBulkBalancesTwo(tokenAddresses: string[]) {
+    if (!this.isAuthenticated) return;
+    const uniqueAddresses = uniqWith(tokenAddresses, compareString);
+
+    const meta = this.tokenMeta;
+    const [knownDecimals, unknownDecimals] = partition(
+      uniqueAddresses,
+      address =>
+        meta.some(
+          meta =>
+            compareString(meta.contract, address) &&
+            typeof meta.precision !== undefined
+        )
+    );
+
+    const owner = this.isAuthenticated;
+
+    const knownDecimalShapes = knownDecimals.map(address =>
+      slimBalanceShape(address, owner)
+    );
+
+    const unknownDecimalShapes = unknownDecimals.map(address =>
+      balanceShape(address, owner)
+    );
+
+    const [knownRes, unknownRes] = (await this.multi([
+      knownDecimalShapes,
+      unknownDecimalShapes
+    ])) as [
+      { contract: string; balance: string }[],
+      { contract: string; balance: string; decimals: string }[]
+    ];
+
+    const knownResDec = knownRes.map(res => {
+      const tokenMeta = meta.find(meta =>
+        compareString(meta.contract, res.contract)
+      )!;
+      return res.balance !== "0"
+        ? { ...res, balance: shrinkToken(res.balance, tokenMeta.precision!) }
+        : res;
+    });
+
+    const unknownResDec = unknownRes
+      .filter(res => typeof res.decimals !== "undefined")
+      .map(res => ({
+        ...res,
+        balance:
+          res.balance !== "0"
+            ? shrinkToken(res.balance, Number(res.decimals))
+            : res.balance
+      }));
+
+    const decBalances = [...knownResDec, ...unknownResDec];
+
+    console.log(decBalances, "care free");
+  }
+
   @action async getUserBalance({
     tokenContractAddress,
     userAddress,
@@ -6353,6 +6429,7 @@ export class EthBancorModule
   }
 
   @action async fetchBulkTokenBalances(tokenContractAddresses: string[]) {
+    this.fetchBulkBalancesTwo(tokenContractAddresses);
     const governanceToken =
       web3.utils.isAddress(this.liquidityProtectionSettings.govToken) &&
       this.liquidityProtectionSettings.govToken;
@@ -6511,6 +6588,38 @@ export class EthBancorModule
       newBalances.push({ id, balance });
     }
     this.tokenBalances = newBalances;
+  }
+
+  tokenBalanceDictionary: {
+    [contract: string]: string;
+  } = {};
+
+  @mutation setTokenBalanceDictionaries(balances: [string, string][]) {
+    const [actualBalances, zeroBalances] = partition(
+      balances,
+      ([contract, balance]) => balance !== "0"
+    );
+
+    const currentBalances = toPairs(this.tokenBalanceDictionary);
+    const balancesToDelete = currentBalances.filter(([contract]) =>
+      zeroBalances.some(([c]) => compareString(contract, c))
+    );
+    balancesToDelete.forEach(([contract]) =>
+      Vue.delete(this.tokenBalanceDictionary, contract.toLowerCase())
+    );
+
+    const balancesToUpdate = actualBalances.filter(([contract, amount]) =>
+      currentBalances.some(
+        ([c, a]) => compareString(contract, c) && amount !== a
+      )
+    );
+
+    const newObject = fromPairs(balances);
+
+    this.tokenBalanceDictionary = {
+      ...this.tokenBalanceDictionary,
+      ...newObject
+    };
   }
 
   @action async refreshBalances(symbols?: BaseToken[]) {
