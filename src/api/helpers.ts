@@ -52,6 +52,16 @@ const chainlinkSubgraphInstance = axios.create({
   method: "post"
 });
 
+
+export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPerBlock = 13.3) => {
+  if (!Number.isInteger(currentBlock)) throw new Error("Current block should be an integer")
+  const secondsToRewind = moment.duration(days, "days").asSeconds();
+  const blocksToRewind = parseInt(
+    String(secondsToRewind / secondsPerBlock)
+  );
+  return currentBlock - blocksToRewind;
+};
+
 export interface LockedBalance {
   index: number;
   amountWei: string;

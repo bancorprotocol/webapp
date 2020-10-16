@@ -37,8 +37,8 @@ export interface ProtectedLiquidityCalculated {
   reserveRateD: string;
   timestamp: string;
   oneDayDec: string;
-  oneWeekDec: string;
-  oneMonthDec: string;
+  // oneWeekDec: string;
+  // oneMonthDec: string;
   liquidityReturn: {
     baseAmount: string;
     networkAmount: string;
@@ -700,8 +700,8 @@ export interface ViewProtectedLiquidity {
   roi: number;
   apr: {
     day: number;
-    week: number;
-    month: number;
+    // week: number;
+    // month: number;
   };
   single: boolean;
   whitelisted: boolean;

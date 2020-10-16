@@ -80,7 +80,8 @@ import {
   chainlinkSubgraph,
   traverseLockedBalances,
   calculateProtectionLevel,
-  LockedBalance
+  LockedBalance,
+  rewindBlocksByDays
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -1983,47 +1984,37 @@ export class EthBancorModule
         this.contracts.LiquidityProtection
       );
 
-      const rewindBlocksByDays = (currentBlock: number, days: number) => {
-        const secondsPerBlock = 13.3;
-        const secondsToRewind = moment.duration(days, "days").asSeconds();
-        const blocksToRewind = parseInt(
-          String(secondsToRewind / secondsPerBlock)
-        );
-        return currentBlock - blocksToRewind;
-      };
+      const currentBlockNumber = await web3.eth.getBlockNumber();
 
-      const currentBlockNumber = (await this.blockNumberHoursAgo(0))
-        .currentBlock;
+      const blockHeightOneDayAgo = rewindBlocksByDays(currentBlockNumber, 1);
+      // const blockHeightOneWeekAgo = rewindBlocksByDays(currentBlockNumber, 7);
+      // const blockHeightOneMonthAgo = rewindBlocksByDays(currentBlockNumber, 30);
 
-      const blockHeightOneDayAgo = rewindBlocksByDays(
-        currentBlockNumber,
-        rewindBlocksByDays(currentBlockNumber, 1)
-      );
-      const blockHeightOneWeekAgo = rewindBlocksByDays(
-        currentBlockNumber,
-        rewindBlocksByDays(currentBlockNumber, 7)
-      );
-      const blockHeightOneMonthAgo = rewindBlocksByDays(
-        currentBlockNumber,
-        rewindBlocksByDays(currentBlockNumber, 30)
-      );
       const timeScales = [
-        blockHeightOneDayAgo,
-        blockHeightOneWeekAgo,
-        blockHeightOneMonthAgo
+        blockHeightOneDayAgo
+        // blockHeightOneWeekAgo
+        // blockHeightOneMonthAgo
       ];
+
+      console.log(timeScales, "are the time scales");
 
       const rois = await Promise.all(
         allPositions.map(
-          async (position): Promise<ProtectedLiquidityCalculated> => {
+          async (position, posIndex): Promise<ProtectedLiquidityCalculated> => {
             try {
-              const [oneDayRoi, oneWeekRoi, oneMonthRoi] = await Promise.all(
-                timeScales.map(async blockHeight => {
+              const [oneDayRoi] = await Promise.all(
+                timeScales.map(async (blockHeight, timeIndex) => {
                   const historicalBalances = await this.fetchRelayBalances({
                     poolId: position.poolToken,
                     blockHeight
                   });
 
+                  console.log(
+                    "historical balance ",
+                    historicalBalances,
+                    timeIndex,
+                    posIndex
+                  );
                   const historicalReserveBalances = historicalBalances.reserves.map(
                     (reserve): WeiExtendedAsset => ({
                       weiAmount: reserve.weiAmount,
@@ -2074,12 +2065,12 @@ export class EthBancorModule
               const finalOneDayRoi = rawRoiToDecPercentIncrease(oneDayRoi)
                 .times(365)
                 .toString();
-              const finalOneWeekRoi = rawRoiToDecPercentIncrease(oneWeekRoi)
-                .times(52)
-                .toString();
-              const finalOneMonthRoi = rawRoiToDecPercentIncrease(oneMonthRoi)
-                .times(12)
-                .toString();
+              // const finalOneWeekRoi = rawRoiToDecPercentIncrease(oneWeekRoi)
+              //   .times(52)
+              //   .toString();
+              // const finalOneMonthRoi = rawRoiToDecPercentIncrease(oneMonthRoi)
+              //   .times(12)
+              //   .toString();
 
               const fullWaitTime =
                 Number(position.timestamp) +
@@ -2096,16 +2087,18 @@ export class EthBancorModule
                 return {
                   ...position,
                   liquidityReturn,
-                  oneDayDec: finalOneDayRoi,
-                  oneWeekDec: finalOneWeekRoi,
-                  oneMonthDec: finalOneMonthRoi
+                  oneDayDec: finalOneDayRoi
+                  // oneWeekDec: finalOneWeekRoi
+                  // oneMonthDec: finalOneMonthRoi
                 };
               } catch (e) {
                 console.error("failed again", e);
+                console.log(posIndex, "one");
                 throw new Error("Failed getting remove liquidity return");
               }
             } catch (e) {
               console.log(e, "error fetching pool balances");
+              console.log(posIndex, "two");
               throw new Error("");
             }
           }
@@ -2414,7 +2407,6 @@ export class EthBancorModule
             maxDelay
           );
 
-
           return {
             id: `${singleEntry.poolToken}:${singleEntry.id}`,
             whitelisted: isWhiteListed,
@@ -2431,9 +2423,9 @@ export class EthBancorModule
             },
             single: true,
             apr: {
-              day: Number(singleEntry.oneDayDec),
-              month: Number(singleEntry.oneMonthDec),
-              week: Number(singleEntry.oneWeekDec)
+              day: Number(singleEntry.oneDayDec)
+              // month: Number(singleEntry.oneMonthDec),
+              // week: Number(singleEntry.oneWeekDec)
             },
             insuranceStart: startTime + minDelay,
             fullCoverage: startTime + maxDelay,
@@ -2512,6 +2504,8 @@ export class EthBancorModule
                 maxDelay
               );
 
+              console.log("oneDayDec", singleEntry.oneDayDec);
+
               return {
                 id: `${singleEntry.poolToken}:${singleEntry.id}`,
                 whitelisted: isWhiteListed,
@@ -2539,9 +2533,9 @@ export class EthBancorModule
                   })
                 },
                 apr: {
-                  day: Number(singleEntry.oneDayDec),
-                  month: Number(singleEntry.oneMonthDec),
-                  week: Number(singleEntry.oneWeekDec)
+                  day: Number(singleEntry.oneDayDec)
+                  // month: Number(singleEntry.oneMonthDec),
+                  // week: Number(singleEntry.oneWeekDec)
                 },
                 single: true,
                 insuranceStart: startTime + minDelay,
@@ -5857,7 +5851,7 @@ export class EthBancorModule
     console.log(secondsToRewind, "are seconds to rewind", blocksToRewind);
     return {
       blockHoursAgo: currentBlock - blocksToRewind,
-      currentBlock: currentBlock
+      currentBlock
     };
   }
 
