@@ -34,6 +34,7 @@ import {
   ViewAmountWithMeta,
   FocusPoolRes,
   ProtectedLiquidity,
+  ProtectedLiquidityCalculated,
   ProtectLiquidityParams,
   OnUpdate,
   ViewProtectedLiquidity,
@@ -1949,9 +1950,9 @@ export class EthBancorModule
     };
   }
 
-  protectedPositionsArr: ProtectedLiquidity[] = [];
+  protectedPositionsArr: ProtectedLiquidityCalculated[] = [];
 
-  @mutation setProtectedPositions(positions: ProtectedLiquidity[]) {
+  @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
     console.log(positions, "are the positions getting set!");
     this.protectedPositionsArr = positions;
   }
@@ -1982,99 +1983,133 @@ export class EthBancorModule
         this.contracts.LiquidityProtection
       );
 
-      const blockNumber = await this.blockNumberHoursAgo(24);
+      const rewindBlocksByDays = (currentBlock: number, days: number) => {
+        const secondsPerBlock = 13.3;
+        const secondsToRewind = moment.duration(days, "days").asSeconds();
+        const blocksToRewind = parseInt(
+          String(secondsToRewind / secondsPerBlock)
+        );
+        return currentBlock - blocksToRewind;
+      };
+
+      const currentBlockNumber = (await this.blockNumberHoursAgo(0))
+        .currentBlock;
+
+      const blockHeightOneDayAgo = rewindBlocksByDays(
+        currentBlockNumber,
+        rewindBlocksByDays(currentBlockNumber, 1)
+      );
+      const blockHeightOneWeekAgo = rewindBlocksByDays(
+        currentBlockNumber,
+        rewindBlocksByDays(currentBlockNumber, 7)
+      );
+      const blockHeightOneMonthAgo = rewindBlocksByDays(
+        currentBlockNumber,
+        rewindBlocksByDays(currentBlockNumber, 30)
+      );
+      const timeScales = [
+        blockHeightOneDayAgo,
+        blockHeightOneWeekAgo,
+        blockHeightOneMonthAgo
+      ];
 
       const rois = await Promise.all(
-        allPositions.map(async position => {
-          try {
-            const historicalBalances = await this.fetchRelayBalances({
-              poolId: position.poolToken,
-              blockHeight: blockNumber.blockHoursAgo
-            });
-
+        allPositions.map(
+          async (position): Promise<ProtectedLiquidityCalculated> => {
             try {
-              const historicalReserveBalances = historicalBalances.reserves.map(
-                (reserve): WeiExtendedAsset => ({
-                  weiAmount: reserve.weiAmount,
-                  contract: reserve.contract
+              const [oneDayRoi, oneWeekRoi, oneMonthRoi] = await Promise.all(
+                timeScales.map(async blockHeight => {
+                  const historicalBalances = await this.fetchRelayBalances({
+                    poolId: position.poolToken,
+                    blockHeight
+                  });
+
+                  const historicalReserveBalances = historicalBalances.reserves.map(
+                    (reserve): WeiExtendedAsset => ({
+                      weiAmount: reserve.weiAmount,
+                      contract: reserve.contract
+                    })
+                  );
+
+                  const poolTokenSupply =
+                    historicalBalances.smartTokenSupplyWei;
+
+                  const [tknReserveBalance, opposingTknBalance] = sortAlongSide(
+                    historicalReserveBalances,
+                    balance => balance.contract,
+                    [position.reserveToken]
+                  );
+
+                  const poolToken = position.poolToken;
+                  const reserveToken = position.reserveToken;
+                  const reserveAmount = position.reserveAmount;
+                  const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+                    .times(2)
+                    .toString();
+                  const poolRateD = poolTokenSupply;
+
+                  const reserveRateN = opposingTknBalance.weiAmount;
+                  const reserveRateD = tknReserveBalance.weiAmount;
+
+                  const poolRoi = await lpContract.methods
+                    .poolROI(
+                      poolToken,
+                      reserveToken,
+                      reserveAmount,
+                      poolRateN,
+                      poolRateD,
+                      reserveRateN,
+                      reserveRateD
+                    )
+                    .call();
+
+                  console.log(poolRoi, "is raw pool ROI number");
+                  return poolRoi;
                 })
               );
 
-              const poolTokenSupply = historicalBalances.smartTokenSupplyWei;
+              const rawRoiToDecPercentIncrease = (wei: string): BigNumber =>
+                new BigNumber(wei).div(oneMillion).minus(1);
 
-              const [tknReserveBalance, opposingTknBalance] = sortAlongSide(
-                historicalReserveBalances,
-                balance => balance.contract,
-                [position.reserveToken]
-              );
-
-              const poolToken = position.poolToken;
-              const reserveToken = position.reserveToken;
-              const reserveAmount = position.reserveAmount;
-              const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
-                .times(2)
+              const finalOneDayRoi = rawRoiToDecPercentIncrease(oneDayRoi)
+                .times(365)
                 .toString();
-              const poolRateD = poolTokenSupply;
-
-              const reserveRateN = opposingTknBalance.weiAmount;
-              const reserveRateD = tknReserveBalance.weiAmount;
+              const finalOneWeekRoi = rawRoiToDecPercentIncrease(oneWeekRoi)
+                .times(52)
+                .toString();
+              const finalOneMonthRoi = rawRoiToDecPercentIncrease(oneMonthRoi)
+                .times(12)
+                .toString();
 
               const fullWaitTime =
                 Number(position.timestamp) +
                 Number(this.liquidityProtectionSettings.maxDelay);
 
-              const [liquidityReturn, poolRoi] = await Promise.all([
-                getRemoveLiquidityReturn(
+              try {
+                const liquidityReturn = await getRemoveLiquidityReturn(
                   this.contracts.LiquidityProtection,
                   position.id,
                   oneMillion.toString(),
                   fullWaitTime
-                ),
-                lpContract.methods
-                  .poolROI(
-                    poolToken,
-                    reserveToken,
-                    reserveAmount,
-                    poolRateN,
-                    poolRateD,
-                    reserveRateN,
-                    reserveRateD
-                  )
-                  .call()
-              ]);
+                );
 
-              console.log(
-                {
-                  position,
-                  poolToken,
-                  reserveToken,
-                  reserveAmount,
-                  poolRateN,
-                  poolRateD,
-                  reserveRateN,
-                  reserveRateD,
-                  poolRoi
-                },
-                "asaf"
-              );
-
-              return {
-                ...position,
-                poolRoi,
-                liquidityReturn
-              };
+                return {
+                  ...position,
+                  liquidityReturn,
+                  oneDayDec: finalOneDayRoi,
+                  oneWeekDec: finalOneWeekRoi,
+                  oneMonthDec: finalOneMonthRoi
+                };
+              } catch (e) {
+                console.error("failed again", e);
+                throw new Error("Failed getting remove liquidity return");
+              }
             } catch (e) {
-              console.error("failed again", e);
-              return {
-                ...position,
-                poolRoi: ""
-              };
+              console.log(e, "error fetching pool balances");
+              throw new Error("");
             }
-          } catch (e) {
-            console.log(e, "error fetching pool balances");
-            throw new Error("");
           }
-        })
+        )
       );
 
       console.log("success!", rois);
@@ -2379,14 +2414,6 @@ export class EthBancorModule
             maxDelay
           );
 
-          const poolRoiBig = new BigNumber(singleEntry.poolRoi);
-          const minimalDayDecPercent = poolRoiBig.div(oneMillion).minus(1);
-
-          const minimalYearDecPercent = minimalDayDecPercent.times(365);
-          const minimalMonthDecPercent = minimalYearDecPercent.div(12);
-          const minimalWeekDecPercent = minimalYearDecPercent.div(52);
-
-          console.log(minimalDayDecPercent.toString(), "is day", singleEntry);
 
           return {
             id: `${singleEntry.poolToken}:${singleEntry.id}`,
@@ -2404,9 +2431,9 @@ export class EthBancorModule
             },
             single: true,
             apr: {
-              day: minimalDayDecPercent.toNumber(),
-              month: minimalMonthDecPercent.toNumber(),
-              week: minimalWeekDecPercent.toNumber()
+              day: Number(singleEntry.oneDayDec),
+              month: Number(singleEntry.oneMonthDec),
+              week: Number(singleEntry.oneWeekDec)
             },
             insuranceStart: startTime + minDelay,
             fullCoverage: startTime + maxDelay,
@@ -2485,13 +2512,6 @@ export class EthBancorModule
                 maxDelay
               );
 
-              const res = new BigNumber(singleEntry.poolRoi);
-              const minimalDayDecPercent = res.div(oneMillion).minus(1);
-
-              const minimalYearDecPercent = minimalDayDecPercent.times(365);
-              const minimalMonthDecPercent = minimalYearDecPercent.div(12);
-              const minimalWeekDecPercent = minimalYearDecPercent.div(52);
-
               return {
                 id: `${singleEntry.poolToken}:${singleEntry.id}`,
                 whitelisted: isWhiteListed,
@@ -2519,9 +2539,9 @@ export class EthBancorModule
                   })
                 },
                 apr: {
-                  day: minimalDayDecPercent.toNumber(),
-                  month: minimalMonthDecPercent.toNumber(),
-                  week: minimalWeekDecPercent.toNumber()
+                  day: Number(singleEntry.oneDayDec),
+                  month: Number(singleEntry.oneMonthDec),
+                  week: Number(singleEntry.oneWeekDec)
                 },
                 single: true,
                 insuranceStart: startTime + minDelay,
@@ -3428,8 +3448,8 @@ export class EthBancorModule
         )
       ),
       requestAtParticularBlock
-      // @ts-ignore
-        ? smartTokenContract.methods.totalSupply().call(null, blockHeight)
+        ? // @ts-ignore
+          smartTokenContract.methods.totalSupply().call(null, blockHeight)
         : smartTokenContract.methods.totalSupply().call()
     ]);
 

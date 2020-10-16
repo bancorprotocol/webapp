@@ -26,7 +26,7 @@ export interface ProtectLiquidityParams {
   onUpdate?: OnUpdate;
 }
 
-export interface ProtectedLiquidity {
+export interface ProtectedLiquidityCalculated {
   id: string;
   owner: string;
   poolToken: string;
@@ -36,7 +36,9 @@ export interface ProtectedLiquidity {
   reserveRateN: string;
   reserveRateD: string;
   timestamp: string;
-  poolRoi: string;
+  oneDayDec: string;
+  oneWeekDec: string;
+  oneMonthDec: string;
   liquidityReturn: {
     baseAmount: string;
     networkAmount: string;
