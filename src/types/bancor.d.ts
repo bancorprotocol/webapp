@@ -26,7 +26,7 @@ export interface ProtectLiquidityParams {
   onUpdate?: OnUpdate;
 }
 
-export interface ProtectedLiquidity {
+export interface ProtectedLiquidityCalculated {
   id: string;
   owner: string;
   poolToken: string;
@@ -36,7 +36,9 @@ export interface ProtectedLiquidity {
   reserveRateN: string;
   reserveRateD: string;
   timestamp: string;
-  poolRoi: string;
+  oneDayDec: string;
+  // oneWeekDec: string;
+  // oneMonthDec: string;
   liquidityReturn: {
     baseAmount: string;
     networkAmount: string;
@@ -246,6 +248,11 @@ export interface ViewToken {
 
 interface TokenWithLogo extends AgnosticToken {
   logo: string[];
+}
+
+export interface WeiExtendedAsset {
+  weiAmount: string;
+  contract: string;
 }
 
 export interface ViewReserve {
@@ -693,8 +700,8 @@ export interface ViewProtectedLiquidity {
   roi: number;
   apr: {
     day: number;
-    week: number;
-    month: number;
+    // week: number;
+    // month: number;
   };
   single: boolean;
   whitelisted: boolean;

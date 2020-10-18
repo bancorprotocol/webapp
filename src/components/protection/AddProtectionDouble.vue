@@ -143,7 +143,7 @@ export default class AddProtectionDouble extends Vue {
   outputs: ViewAmountDetail[] = [];
 
   get pools() {
-    return vxm.bancor.relays.filter(x => !x.v2);
+    return vxm.bancor.relays.filter(x => x.liquidityProtection);
   }
 
   get poolName() {

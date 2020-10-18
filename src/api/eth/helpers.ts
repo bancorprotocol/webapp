@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
-import { web3 } from "@/api/helpers";
+import { compareString, findOrThrow, web3 } from "@/api/helpers";
 import { isAddress } from "web3-utils";
+import { WeiExtendedAsset } from "@/types/bancor";
 
 export const expandToken = (amount: string | number, precision: number) =>
   new BigNumber(amount).times(new BigNumber(10).pow(precision)).toFixed(0);
@@ -11,6 +12,42 @@ const addZeros = (numberOfZeros: number, noLeadingZeros: string) => {
     ""
   );
   return res;
+};
+
+export const calculateHistoricPoolBalanceByConversions = (
+  currentReserveBalances: WeiExtendedAsset[],
+  conversionEvents: { from: WeiExtendedAsset; to: WeiExtendedAsset }[]
+) => {
+  return conversionEvents.reduce((acc, item) => {
+    const fromBalance = findOrThrow(
+      acc,
+      balance => compareString(balance.contract, item.from.contract),
+      "failed to find from token in reserve balances"
+    );
+    const toBalance = findOrThrow(
+      acc,
+      balance => compareString(balance.contract, item.to.contract),
+      "failed to find to token in reserve balances"
+    );
+
+    const newFromBalanceWei = new BigNumber(fromBalance.weiAmount)
+      .minus(item.from.weiAmount)
+      .toString();
+    const newToBalanceWei = new BigNumber(toBalance.weiAmount)
+      .plus(item.to.weiAmount)
+      .toString();
+
+    return [
+      {
+        contract: fromBalance.contract,
+        weiAmount: newFromBalanceWei
+      },
+      {
+        contract: toBalance.contract,
+        weiAmount: newToBalanceWei
+      }
+    ] as WeiExtendedAsset[];
+  }, currentReserveBalances);
 };
 
 export const removeLeadingZeros = (hexString: string) => {

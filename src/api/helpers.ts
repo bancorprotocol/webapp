@@ -52,6 +52,16 @@ const chainlinkSubgraphInstance = axios.create({
   method: "post"
 });
 
+
+export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPerBlock = 13.3) => {
+  if (!Number.isInteger(currentBlock)) throw new Error("Current block should be an integer")
+  const secondsToRewind = moment.duration(days, "days").asSeconds();
+  const blocksToRewind = parseInt(
+    String(secondsToRewind / secondsPerBlock)
+  );
+  return currentBlock - blocksToRewind;
+};
+
 export interface LockedBalance {
   index: number;
   amountWei: string;
@@ -711,10 +721,13 @@ export const onboard = Onboard({
 export const fetchReserveBalance = async (
   converterContract: any,
   reserveTokenAddress: string,
-  versionNumber: number | string
+  versionNumber: number | string,
+  blockHeight? :number
 ): Promise<string> => {
   try {
-    const res = await converterContract.methods[
+    const res = await blockHeight !== undefined ? converterContract.methods[
+      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
+    ](reserveTokenAddress).call(null, blockHeight):  converterContract.methods[
       Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
     ](reserveTokenAddress).call();
     return res;

@@ -1,0 +1,33 @@
+name: Deploy Staging to Firebase
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          ref: staging
+      - name: Install Dependencies
+        run: yarn
+      - name: Build
+        env:
+          VUE_APP_I18N_LOCALE: "en"
+          VUE_APP_I18N_FALLBACK_LOCALE: "en"
+          VUE_APP_MULTICONTRACT: "bancorcnvrtr"
+          VUE_APP_SMARTTOKENCONTRACT: "smarttokens1"
+          VUE_APP_NETWORKCONTRACT: "thisisbancor"
+          VUE_APP_AFFILIATE: ${{ secrets.VUE_APP_AFFILIATE }}
+          VUE_APP_BLOCKNATIVE: ${{ secrets.VUE_APP_BLOCKNATIVE }}
+        run: yarn build
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --project bancor-v2 --only hosting:staging
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

@@ -11,7 +11,7 @@
     <label-content-split
       label="Fully Protected Value"
       :value="
-        `${prettifyNumber(position.fullyProtected.amount)} ${
+        `${prettifyNumber(position.protectedAmount.amount)} ${
           position.stake.symbol
         }`
       "
@@ -29,6 +29,7 @@
     <percentage-slider
       label="Input"
       v-model="percentage"
+      @input="onPercentUpdate"
       :show-buttons="true"
     />
 
@@ -38,32 +39,19 @@
 
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
+        v-if="expectedValue"
         label="Output value of"
         :value="
-          `${prettifyNumber(position.protectedAmount.amount)} ${
-            position.protectedAmount.symbol
-          }`
+          `${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
         "
       />
 
-      <label-content-split label="Output breakdown">
-        <span class="font-size-14 font-w500">
-          {{ prettifyNumber(removeProtectionRes.outputValue.amount) }}
-        </span>
-        <span class="font-size-14 font-w500 text-primary">
-          {{ prettifyNumber(removeProtectionRes.outputValue.usdValue, true) }}
-        </span>
-      </label-content-split>
       <label-content-split
-        v-for="output in removeProtectionRes.outputs"
+        v-for="(output, index) in outputs"
+        :label="index == 0 ? 'Output breakdown' : ''"
         :key="output.id"
+        :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       >
-        <span class="font-size-14 font-w500">
-          {{ prettifyNumber(output.amount) }}
-        </span>
-        <span class="font-size-14 font-w500 text-primary">
-          {{ prettifyNumber(output.usdValue, true) }}
-        </span>
       </label-content-split>
     </gray-border-block>
 
@@ -93,7 +81,12 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { TxResponse, ViewAmount, ViewRelay } from "@/types/bancor";
+import {
+  TxResponse,
+  ViewAmount,
+  ViewAmountDetail,
+  ViewRelay
+} from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -112,11 +105,6 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 
 interface ViewAmountUsd extends ViewAmount {
   usdValue: number;
-}
-
-interface RemoveProtectionRes {
-  outputValue: ViewAmountUsd;
-  outputs: ViewAmountUsd[];
 }
 
 @Component({
@@ -140,28 +128,8 @@ export default class WithdrawProtectionSingle extends Vue {
   txBusy = false;
   success: TxResponse | string | null = null;
   error = "";
-
-  get removeProtectionRes() {
-    return {
-      outputValue: {
-        usdValue: 123.12,
-        id: "1",
-        amount: "5555.55555"
-      },
-      outputs: [
-        {
-          usdValue: 123.12,
-          id: "1",
-          amount: "5555.55555"
-        },
-        {
-          usdValue: 123.12,
-          id: "2",
-          amount: "5555.55555"
-        }
-      ]
-    };
-  }
+  outputs: ViewAmountDetail[] = [];
+  expectedValue: ViewAmountDetail | null = null;
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
@@ -227,6 +195,23 @@ export default class WithdrawProtectionSingle extends Vue {
     this.error = "";
     this.success = null;
     this.txBusy = false;
+  }
+
+  async onPercentUpdate(newPercent: string) {
+    console.log(newPercent, "is the new percent");
+    const res = await vxm.ethBancor.calculateSingleWithdraw({
+      id: this.position.id,
+      decPercent: Number(this.percentage) / 100
+    });
+
+    this.expectedValue = res.expectedValue;
+    this.outputs = res.outputs;
+
+    console.log(res, "was the res");
+  }
+
+  created() {
+    this.onPercentUpdate(this.percentage);
   }
 
   get modalConfirmButton() {
