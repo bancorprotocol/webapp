@@ -11,7 +11,7 @@
     <label-content-split
       label="Fully Protected Value"
       :value="
-        `${prettifyNumber(position.fullyProtected.amount)} ${
+        `${prettifyNumber(position.protectedAmount.amount)} ${
           position.stake.symbol
         }`
       "
@@ -50,13 +50,8 @@
         v-for="(output, index) in outputs"
         :label="index == 0 ? 'Output breakdown' : ''"
         :key="output.id"
+        :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       >
-        <span class="font-size-14 font-w500">
-          {{ prettifyNumber(output.amount) }} {{ output.symbol }}
-        </span>
-        <span class="font-size-14 font-w500 text-primary">
-          {{ prettifyNumber(output.usdValue, true) }}
-        </span>
       </label-content-split>
     </gray-border-block>
 

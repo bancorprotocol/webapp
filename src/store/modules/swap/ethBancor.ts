@@ -148,7 +148,7 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
-import {getNetworkVariables} from "../../config"
+import { getNetworkVariables } from "../../config";
 
 const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
   const liq1 = new BigNumber(liq1Balance);
@@ -6416,6 +6416,7 @@ export class EthBancorModule
           this.liquidityProtectionSettings.govToken
         ]);
       }
+      console.log(userAddress, "fetching protected positions for");
       this.fetchProtectionPositions();
       this.fetchLockedBalances();
       const allTokens = this.relaysList.flatMap(tokensInRelay);

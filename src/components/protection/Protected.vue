@@ -171,7 +171,7 @@ export default class Protected extends Vue {
   }
 
   stringifyPercentage(percentage: number) {
-    return numeral(percentage).format("0.0000%");
+    return numeral(percentage).format("0.00%");
   }
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
@@ -199,21 +199,6 @@ export default class Protected extends Vue {
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
-      {
-        key: "roi",
-        sortable: true,
-        thStyle: { "min-width": "60px" },
-        formatter: (value: number) => this.stringifyPercentage(value)
-      },
-      ...(this.phase2
-        ? [
-            {
-              key: "apr",
-              sortable: false,
-              thStyle: { "min-width": "100px" }
-            }
-          ]
-        : []),
       {
         key: "insuranceStart",
         label: "Protection Start",
