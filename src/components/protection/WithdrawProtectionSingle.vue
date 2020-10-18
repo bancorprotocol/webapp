@@ -107,11 +107,6 @@ interface ViewAmountUsd extends ViewAmount {
   usdValue: number;
 }
 
-interface RemoveProtectionRes {
-  outputValue: ViewAmountUsd;
-  outputs: ViewAmountUsd[];
-}
-
 @Component({
   components: {
     LogoAmountSymbol,
@@ -135,28 +130,6 @@ export default class WithdrawProtectionSingle extends Vue {
   error = "";
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
-
-  get removeProtectionRes() {
-    return {
-      outputValue: {
-        usdValue: 123.12,
-        id: "1",
-        amount: "5555.55555"
-      },
-      outputs: [
-        {
-          usdValue: 123.12,
-          id: "1",
-          amount: "5555.55555"
-        },
-        {
-          usdValue: 123.12,
-          id: "2",
-          amount: "5555.55555"
-        }
-      ]
-    };
-  }
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
