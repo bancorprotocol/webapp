@@ -34,7 +34,7 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
     "ZWE"
   ];
 
-  phase2: boolean = false;
+  phase2: boolean = true;
 
   @mutation setPhase(phaseStatus: boolean) {
     this.phase2 = phaseStatus;
