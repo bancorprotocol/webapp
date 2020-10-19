@@ -298,9 +298,9 @@ export default class AddProtectionSingle extends Vue {
       if (res.error) {
         this.preTxError =
           res.error == "Insufficient store balance"
-            ? `Insufficient store balance, please add pool tokens instead or wait for other Liquidity Providers to supply more ${
+            ? `BNT cap reached. Additional ${
                 this.opposingToken!.symbol
-              } tokens`
+              } should be staked in order to allow BNT single side staking`
             : res.error;
       } else {
         this.preTxError = "";
