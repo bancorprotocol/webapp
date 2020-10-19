@@ -322,32 +322,108 @@ const buildAdjacencyList = (edges: Edge[], nodes: Node[]): AdjacencyList => {
 const compareEdge = (edge1: Edge, edge2: Edge) =>
   edge1.every(edge => edge2.some(e => compareString(edge, e)));
 
-const dfs = (
+// const dfs = (
+//   fromId: string,
+//   toId: string,
+//   adjacencyList: AdjacencyList
+// ): Promise<string[]> =>
+//   new Promise(resolve => callbackDfs(fromId, toId, adjacencyList, resolve));
+
+// const callbackDfs = (
+//   start: string,
+//   goal: string,
+//   adjacencyList: AdjacencyList,
+//   callBack: (stuff: any) => void,
+//   visited = new Set(),
+//   path: string[] = [start]
+// ) => {
+//   visited.add(start);
+//   const destinations = adjacencyList.get(start)!;
+//   if (destinations.includes(goal)) {
+//     callBack([...path, goal]);
+//   }
+//   for (const destination of destinations) {
+//     if (!visited.has(destination)) {
+//       callbackDfs(destination, goal, adjacencyList, callBack, visited, [
+//         ...path,
+//         destination
+//       ]);
+//     }
+//   }
+// };
+
+// export async function findNewPath<T>(
+//   fromId: string,
+//   toId: string,
+//   pools: T[],
+//   identifier: (pool: T) => Edge
+// ) {
+//   const edges = _.uniqWith(pools.map(identifier), compareEdge);
+//   const nodes: Node[] = _.uniqWith(edges.flat(1), compareString);
+
+//   const adjacencyList = buildAdjacencyList(edges, nodes);
+//   const startExists = adjacencyList.get(fromId);
+//   const goalExists = adjacencyList.get(toId);
+
+//   if (!(startExists && goalExists))
+//     throw new Error(
+//       `Start ${fromId} or goal ${toId} does not exist in adjacency list`
+//     );
+
+//   const dfsResult = await dfs(fromId, toId, adjacencyList)!;
+//   if (!dfsResult || dfsResult.length == 0)
+//     throw new Error("Failed to find path");
+
+//   const hops = _.chunk(dfsResult, 2).map((tokenIds, index, arr) => {
+//     let searchAbleIds: string[];
+
+//     if (tokenIds.length < 2) {
+//       searchAbleIds = [arr[index - 1][1], tokenIds[0]];
+//     } else searchAbleIds = tokenIds;
+
+//     const accomodatingRelays = pools.filter(pool => {
+//       const ids = identifier(pool);
+//       return ids.every(id => searchAbleIds.some(i => id == i));
+//     });
+
+//     return accomodatingRelays;
+//   });
+
+//   return {
+//     path: dfsResult,
+//     hops
+//   };
+// }
+
+const bfs = (
   fromId: string,
   toId: string,
   adjacencyList: AdjacencyList
 ): Promise<string[]> =>
-  new Promise(resolve => callbackDfs(fromId, toId, adjacencyList, resolve));
+  new Promise(resolve => callbackBfs(fromId, toId, adjacencyList, resolve));
 
-const callbackDfs = (
+const callbackBfs = (
   start: string,
   goal: string,
-  adjacencyList: AdjacencyList,
+  adjacencyList: AdjacencyList, 
   callBack: (stuff: any) => void,
   visited = new Set(),
   path: string[] = [start]
 ) => {
   visited.add(start);
-  const destinations = adjacencyList.get(start)!;
-  if (destinations.includes(goal)) {
-    callBack([...path, goal]);
-  }
-  for (const destination of destinations) {
-    if (!visited.has(destination)) {
-      callbackDfs(destination, goal, adjacencyList, callBack, visited, [
-        ...path,
-        destination
-      ]);
+  const queue = [start];
+
+  while(queue.length > 0){
+    const destinations = adjacencyList.get(queue.shift())!;
+    if (destinations.includes(goal)) {
+      callBack([...path, goal]);
+    }
+    for (const destination of destinations) {
+      if (!visited.has(destination)) {
+        queue.push(destination);
+        visited.add(destination);
+        path.push(destination);
+      }
     }
   }
 };
@@ -370,11 +446,11 @@ export async function findNewPath<T>(
       `Start ${fromId} or goal ${toId} does not exist in adjacency list`
     );
 
-  const dfsResult = await dfs(fromId, toId, adjacencyList)!;
-  if (!dfsResult || dfsResult.length == 0)
+  const bfsResult = await bfs(fromId, toId, adjacencyList)!;
+  if (!bfsResult || bfsResult.length == 0)
     throw new Error("Failed to find path");
 
-  const hops = _.chunk(dfsResult, 2).map((tokenIds, index, arr) => {
+  const hops = _.chunk(bfsResult, 2).map((tokenIds, index, arr) => {
     let searchAbleIds: string[];
 
     if (tokenIds.length < 2) {
@@ -390,7 +466,7 @@ export async function findNewPath<T>(
   });
 
   return {
-    path: dfsResult,
+    path: bfsResult,
     hops
   };
 }
