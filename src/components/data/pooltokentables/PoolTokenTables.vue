@@ -49,7 +49,7 @@ export default class PoolTokenTables extends Vue {
   }
 
   get poolItems() {
-    return vxm.bancor.relays;
+    return vxm.bancor.relays.filter(x => !x.v2);
   }
 
   get darkMode() {

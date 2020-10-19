@@ -119,7 +119,6 @@ export const router = new Router({
     },
     {
       path: "/:service/pool/:id",
-      redirect: "/404",
       name: "PoolAdd",
       components: {
         Nav: Navigation,
