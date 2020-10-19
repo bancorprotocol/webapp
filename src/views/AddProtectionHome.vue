@@ -24,7 +24,12 @@
       />
     </gray-border-block>
 
-    <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
+    <modal-pool-select
+      @select="selectPool"
+      v-model="modal"
+      :pools="pools"
+      :show-token-balance="showTokenBalance"
+    />
   </div>
 </template>
 
@@ -46,6 +51,7 @@ export default class AddProtectionHome extends Vue {
   modal = false;
 
   singleMode: boolean | null = null;
+  showTokenBalance = false;
 
   get phase2() {
     return vxm.general.phase2;
@@ -80,6 +86,7 @@ export default class AddProtectionHome extends Vue {
 
   openModal(optionId: number) {
     this.singleMode = optionId === 0;
+    this.showTokenBalance = this.singleMode;
     this.modal = true;
   }
 
