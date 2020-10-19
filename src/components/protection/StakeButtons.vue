@@ -64,7 +64,7 @@ export default class StakeButtons extends Vue {
       {
         id: 2,
         title: "Dual-Sided Liquidity",
-        desc: "Stake both reserves and receive pool tokens.",
+        desc: "Stake with two tokens and receive pool tokens in return.",
         buttonTxt: "Add Dual Sided Liquidity",
         buttonActive: true,
         buttonEnabled: true,
