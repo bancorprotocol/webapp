@@ -298,9 +298,11 @@ export default class AddProtectionSingle extends Vue {
       if (res.error) {
         this.preTxError =
           res.error == "Insufficient store balance"
-            ? `BNT cap reached. Additional ${
+            ? `BNT limit reached. Additional ${
                 this.opposingToken!.symbol
-              } should be staked in order to allow BNT single side staking`
+              } liquidity should be staked to allow for BNT single-sided staking. Alternatively, provide dual-sided liquidity (BNT+${
+                this.opposingToken!.symbol
+              })`
             : res.error;
       } else {
         this.preTxError = "";
