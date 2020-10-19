@@ -11,7 +11,7 @@
         class="my-3"
       />
 
-      <stake-buttons @click="click" />
+      <stake-buttons @click="click" :show-add-liquidity="true" />
     </div>
   </content-block>
 </template>
@@ -48,7 +48,7 @@ export default class PoolActionsAddHome extends Vue {
     if (optionId === 0) {
       this.goToSingle();
     } else {
-      this.goToDouble();
+      this.goToAddLiquidity();
     }
   }
 
@@ -59,10 +59,10 @@ export default class PoolActionsAddHome extends Vue {
     });
   }
 
-  goToDouble() {
+  goToAddLiquidity() {
     this.$router.push({
-      name: "AddProtectionDouble",
-      params: { id: this.pool.id }
+      name: "PoolAction",
+      params: { poolAction: "add", account: this.pool.id }
     });
   }
 
