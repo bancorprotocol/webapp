@@ -1932,14 +1932,20 @@ export class EthBancorModule
     try {
       const contract = buildLiquidityProtectionStoreContract(liquidityStore);
       const owner = this.isAuthenticated;
+      console.time("time to get ID count");
       const idCount = Number(
         await contract.methods.protectedLiquidityCount(owner).call()
       );
+      console.timeEnd("time to get ID count");
       if (idCount == 0) return;
+      console.time("time to get ids");
       const ids = await contract.methods.protectedLiquidityIds(owner).call();
+      console.timeEnd("time to get ids");
+      console.time("time to get all positions");
       const allPositions = await Promise.all(
         ids.map(id => protectionById(liquidityStore, id))
       );
+      console.timeEnd("time to get all positions");
       console.log(allPositions, "are all positions");
       if (allPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
@@ -1950,7 +1956,9 @@ export class EthBancorModule
         this.contracts.LiquidityProtection
       );
 
+      console.time("secondsToGetCurrentBlock");
       const currentBlockNumber = await web3.eth.getBlockNumber();
+      console.timeEnd("secondsToGetCurrentBlock");
 
       const blockHeightOneDayAgo = rewindBlocksByDays(currentBlockNumber, 1);
       // const blockHeightOneWeekAgo = rewindBlocksByDays(currentBlockNumber, 7);
@@ -1964,32 +1972,46 @@ export class EthBancorModule
 
       console.log(timeScales, "are the time scales");
 
+      const uniqueAnchors = uniqWith(
+        allPositions.map(pos => pos.poolToken),
+        compareString
+      );
+      const historicalBalances = await Promise.all(
+        uniqueAnchors.map(async anchor => {
+          const balances = await this.fetchRelayBalances({
+            poolId: anchor,
+            blockHeight: blockHeightOneDayAgo
+          });
+          return {
+            poolId: anchor,
+            ...balances
+          };
+        })
+      );
+
       const rois = await Promise.all(
         allPositions.map(
           async (position, posIndex): Promise<ProtectedLiquidityCalculated> => {
             try {
               const [oneDayRoi] = await Promise.all(
-                timeScales.map(async (blockHeight, timeIndex) => {
-                  const historicalBalances = await this.fetchRelayBalances({
-                    poolId: position.poolToken,
-                    blockHeight
-                  });
-
+                timeScales.map(async blockHeight => {
                   console.log(
                     "historical balance ",
                     historicalBalances,
-                    timeIndex,
                     posIndex
                   );
-                  const historicalReserveBalances = historicalBalances.reserves.map(
+                  const poolBalance = findOrThrow(historicalBalances, pool =>
+                    compareString(pool.poolId, position.poolToken)
+                  );
+
+                  const historicalReserveBalances = poolBalance.reserves.map(
                     (reserve): WeiExtendedAsset => ({
                       weiAmount: reserve.weiAmount,
                       contract: reserve.contract
                     })
                   );
 
-                  const poolTokenSupply =
-                    historicalBalances.smartTokenSupplyWei;
+                  const poolTokenSupply = poolBalance.smartTokenSupplyWei;
 
                   const [tknReserveBalance, opposingTknBalance] = sortAlongSide(
                     historicalReserveBalances,
