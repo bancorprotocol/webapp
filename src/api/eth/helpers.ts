@@ -68,10 +68,17 @@ export const removeLeadingZeros = (hexString: string) => {
   } else throw new Error(`Failed parsing hex ${hexString}`);
 };
 
-export const shrinkToken = (amount: string | number, precision: number) =>
-  new BigNumber(amount)
+export const shrinkToken = (
+  amount: string | number,
+  precision: number,
+  chopZeros = false
+) => {
+  const res = new BigNumber(amount)
     .div(new BigNumber(10).pow(precision))
     .toFixed(precision);
+
+  return chopZeros ? new BigNumber(res).toString() : res;
+};
 
 export const makeBatchRequest = (calls: any[], from: string) => {
   let batch = new web3.BatchRequest();

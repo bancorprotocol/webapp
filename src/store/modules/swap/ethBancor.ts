@@ -4363,7 +4363,11 @@ export class EthBancorModule
     );
 
     return {
-      opposingAmount: shrinkToken(opposingValue, opposingReserve.decimals),
+      opposingAmount: shrinkToken(
+        opposingValue,
+        opposingReserve.decimals,
+        true
+      ),
       shareOfPool,
       smartTokenAmountWei: {
         id: smartTokenAddress,
