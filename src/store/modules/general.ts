@@ -11,7 +11,6 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   darkMode: boolean = false;
   countryCode: string = "";
   bannedCountries: string[] = [
-    "USA",
     "BLR",
     "BDI",
     "CAF",
