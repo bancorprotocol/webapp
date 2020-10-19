@@ -58,19 +58,21 @@ export default class PoolHome extends Vue {
   }
 
   selectPool(id: string) {
-    this.$router.push({
-      name: "PoolAction",
-      params: { poolAction: "add", account: id }
-    });
+    const whitelisted = vxm.bancor.relay(id).whitelisted;
+    if (whitelisted) {
+      this.$router.push({
+        name: "PoolAdd",
+        params: { id }
+      });
+    } else {
+      this.$router.push({
+        name: "PoolAction",
+        params: { poolAction: "add", account: id }
+      });
+    }
+
     this.modal = false;
   }
-  // selectPool(id: string) {
-  //   this.$router.push({
-  //     name: "PoolAdd",
-  //     params: { id }
-  //   });
-  //   this.modal = false;
-  // }
 
   get darkMode() {
     return vxm.general.darkMode;
