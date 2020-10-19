@@ -3716,23 +3716,40 @@ export class EthBancorModule
 
     const [balances, poolTokenBalance] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
-      this.fetchSystemBalance(reserveToken.contract)
+      this.fetchSystemBalance(poolId)
     ]);
 
-    const reserveBalance = findOrThrow(balances.reserves, balance =>
-      compareString(balance.contract, reserveToken.id)
+    if (new BigNumber(poolTokenBalance).eq(0)) {
+      return {
+        outputs: [],
+        error: "Insufficient store balance"
+      };
+    }
+
+    const liquidityProtectionNetworkBalance = findOrThrow(
+      balances.reserves,
+      reserve =>
+        compareString(
+          reserve.contract,
+          this.liquidityProtectionSettings.networkToken
+        ),
+      "failed finding liquidity protection network token in reserve balances"
+    );
+    const bntValueOfPoolTokens = new BigNumber(poolTokenBalance).times(
+      new BigNumber(liquidityProtectionNetworkBalance.weiAmount).div(
+        balances.smartTokenSupplyWei
+      )
     );
 
-    const reserveAmountWei = expandToken(
+    const inputAmountWei = expandToken(
       reserveAmount.amount,
       reserveToken.precision
     );
-    const poolTokenRate = calculatePoolTokenRate(
-      balances.smartTokenSupplyWei,
-      reserveBalance.weiAmount
-    );
-    const poolTokenAmount = poolTokenRate.times(reserveAmountWei);
-    const notEnoughInStore = poolTokenAmount.isGreaterThan(poolTokenBalance);
+
+    const notEnoughInStore =
+      new BigNumber(inputAmountWei).isGreaterThan(bntValueOfPoolTokens) ||
+      bntValueOfPoolTokens.isLessThan(10000000000000000);
+
     return {
       outputs: [],
       ...(notEnoughInStore && { error: "Insufficient store balance" })
