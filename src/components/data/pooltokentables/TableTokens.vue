@@ -18,6 +18,17 @@
       <coloured-percentage :percentage="data.value" />
     </template>
 
+    <template v-slot:head(liquidityProtection)="data">
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
+    </template>
+
+    <template v-slot:cell(liquidityProtection)="data">
+      <img
+        v-if="data.value"
+        :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+      />
+    </template>
+
     <template v-slot:cell(actionButtons)="data">
       <action-buttons :token="data.item" />
     </template>
@@ -48,6 +59,10 @@ export default class TableTokens extends Vue {
       key: "symbol",
       label: "Name",
       thStyle: { "min-width": "160px" },
+      sortable: true
+    },
+    {
+      key: "liquidityProtection",
       sortable: true
     },
     {
