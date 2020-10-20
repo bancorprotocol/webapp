@@ -1814,7 +1814,7 @@ export class EthBancorModule
       maxSystemNetworkTokenAmount: settings.maxSystemNetworkTokenAmount
     } as LiquidityProtectionSettings;
     this.setLiquidityProtectionSettings(newSettings);
-    this.fetchBulkTokenBalances([newSettings.govToken]);
+    await this.fetchBulkTokenBalances([newSettings.govToken]);
     return newSettings;
   }
 
@@ -1898,14 +1898,12 @@ export class EthBancorModule
   }): Promise<TxResponse> {
     const res = await this.unProtectLiquidityTx({ id1, id2 });
 
-    (async () => {
-      await wait(700);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions();
-      await wait(4000);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions();
-    })();
+    await wait(700);
+    await this.fetchLockedBalances();
+    await this.fetchProtectionPositions();
+    await wait(4000);
+    await this.fetchLockedBalances();
+    await this.fetchProtectionPositions();
 
     return {
       blockExplorerLink: await this.createExplorerLink(res),
@@ -2165,8 +2163,8 @@ export class EthBancorModule
       onUpdate
     })) as string;
 
-    this.fetchProtectionPositions();
-    this.fetchBulkTokenBalances([
+    await this.fetchProtectionPositions();
+    await this.fetchBulkTokenBalances([
       this.liquidityProtectionSettings.govToken,
       reserveTokenAddress
     ]);
@@ -2199,14 +2197,12 @@ export class EthBancorModule
       tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent))
     });
 
-    (async () => {
-      await wait(600);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions();
-      await wait(2000);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions();
-    })();
+    await wait(600);
+    await this.fetchLockedBalances();
+    await this.fetchProtectionPositions();
+    await wait(2000);
+    await this.fetchLockedBalances();
+    await this.fetchProtectionPositions();
 
     return {
       blockExplorerLink: await this.createExplorerLink(txHash),
@@ -2253,18 +2249,16 @@ export class EthBancorModule
       onUpdate
     });
 
-    this.spamBalances([
+    await this.spamBalances([
       poolToken.contract,
       this.liquidityProtectionSettings.govToken
     ]);
 
-    (async () => {
-      this.fetchProtectionPositions();
-      await wait(2000);
-      this.fetchProtectionPositions();
-      await wait(5000);
-      this.fetchProtectionPositions();
-    })();
+    await this.fetchProtectionPositions();
+    await wait(2000);
+    await this.fetchProtectionPositions();
+    await wait(5000);
+    await this.fetchProtectionPositions();
 
     return {
       blockExplorerLink: await this.createExplorerLink(txHash),
@@ -2855,7 +2849,7 @@ export class EthBancorModule
   @action async onNetworkChange(updatedNetwork: EthNetworks) {
     if (this.currentNetwork !== updatedNetwork) {
       this.resetData();
-      this.init();
+      await this.init();
     }
   }
 
@@ -3093,13 +3087,11 @@ export class EthBancorModule
     const hash = last(txRes) as string;
 
     const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
-    this.spamBalances([bntAddress]);
+    await this.spamBalances([bntAddress]);
 
-    (async () => {
-      await wait(2000);
-      this.fetchLockedBalances();
-    })();
-    this.fetchLockedBalances();
+    await wait(2000);
+    await this.fetchLockedBalances();
+    await this.fetchLockedBalances();
 
     return {
       blockExplorerLink: await this.createExplorerLink(hash),
@@ -3464,7 +3456,7 @@ export class EthBancorModule
     const smartTokenAddress = relay.anchor.contract;
     const smartTokenDecimals = relay.anchor.decimals;
 
-    this.getUserBalance({ tokenContractAddress: smartTokenAddress });
+    await this.getUserBalance({ tokenContractAddress: smartTokenAddress });
     const { reserves, smartTokenSupplyWei } = await this.fetchRelayBalances({
       poolId: smartTokenAddress
     });
@@ -4510,7 +4502,7 @@ export class EthBancorModule
       ...relay.reserves.map(reserve => reserve.contract),
       ...anchorTokens
     ];
-    this.spamBalances(tokenAddressesChanged);
+    await this.spamBalances(tokenAddressesChanged);
 
     return {
       txId: hash,
@@ -4850,7 +4842,7 @@ export class EthBancorModule
       ...matchedBalances.map(x => x.contract),
       ...anchorTokens
     ];
-    this.spamBalances(tokenAddressesChanged);
+    await this.spamBalances(tokenAddressesChanged);
     return {
       txId: txHash,
       blockExplorerLink: await this.createExplorerLink(txHash)
@@ -4858,7 +4850,7 @@ export class EthBancorModule
   }
 
   @action async spamBalances(tokenAddresses: string[]) {
-    for (var i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
       tokenAddresses.forEach(tokenContractAddress =>
         this.getUserBalance({ tokenContractAddress })
       );
@@ -5578,7 +5570,7 @@ export class EthBancorModule
 
   @action async reloadPools(anchorAndConverters: ConverterAndAnchor[]) {
     this.deletePools(anchorAndConverters.map(x => x.anchorAddress));
-    this.addPoolsBulk(anchorAndConverters);
+    await this.addPoolsBulk(anchorAndConverters);
   }
 
   @action async add(anchorAddresses: string[]) {
@@ -5960,7 +5952,7 @@ export class EthBancorModule
         .catch(_ => {});
 
       getTokenMeta(currentNetwork).then(this.setTokenMeta);
-      this.fetchUsdPriceOfBnt();
+      await this.fetchUsdPriceOfBnt();
 
       console.time("FirstPromise");
       const [
@@ -5973,16 +5965,16 @@ export class EthBancorModule
 
       console.log(contractAddresses, "are contract addresses");
 
-      this.pullBntInformation({ latestBlock: String(currentBlock) });
-      this.fetchLiquidityProtectionSettings(
+      await this.pullBntInformation({ latestBlock: String(currentBlock) });
+      await this.fetchLiquidityProtectionSettings(
         contractAddresses.LiquidityProtection
       );
-      this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
+      await this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.isAuthenticated) {
-        this.fetchProtectionPositions(
+        await this.fetchProtectionPositions(
           contractAddresses.LiquidityProtectionStore
         );
-        this.fetchLockedBalances(contractAddresses.LiquidityProtectionStore);
+        await this.fetchLockedBalances(contractAddresses.LiquidityProtectionStore);
       }
 
       console.log(contractAddresses, "are contract addresses");
@@ -5994,22 +5986,20 @@ export class EthBancorModule
         web3.eth.getBlock(currentBlock)
       ]);
 
-      (async () => {
-        const events = await this.pullEvents({
-          network: currentNetwork,
-          networkContract: contractAddresses.BancorNetwork,
-          fromBlock: blockHoursAgo
-        });
-        const withDates = events.map(event =>
-          decodedToTimedDecoded(
-            event,
-            currentBlock,
-            Number(currentBlockInfo.timestamp)
-          )
-        );
+      const events = await this.pullEvents({
+        network: currentNetwork,
+        networkContract: contractAddresses.BancorNetwork,
+        fromBlock: blockHoursAgo
+      });
+      const withDates = events.map(event =>
+        decodedToTimedDecoded(
+          event,
+          currentBlock,
+          Number(currentBlockInfo.timestamp)
+        )
+      );
 
-        this.setLiquidityHistory(withDates);
-      })();
+      this.setLiquidityHistory(withDates);
 
       console.timeEnd("SecondPromise");
 
@@ -6144,7 +6134,6 @@ export class EthBancorModule
 
     const allASyncChunks = [...quickChunks, slowLoadAnchorSets];
 
-    (async () => {
       try {
         const tokenAddresses = await Promise.all(
           allASyncChunks.map(this.addPoolsBulk)
@@ -6157,18 +6146,17 @@ export class EthBancorModule
           compareString
         );
         if (this.isAuthenticated) {
-          this.fetchBulkTokenBalances(uniqueTokenAddreses);
+          await this.fetchBulkTokenBalances(uniqueTokenAddreses);
         }
         this.setLoadingPools(false);
       } catch (e) {
         console.log("Failed loading pools");
         this.setLoadingPools(false);
       }
-    })();
 
     const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
     if (this.isAuthenticated) {
-      this.fetchBulkTokenBalances(uniqWith(tokenAddresses, compareString));
+      await this.fetchBulkTokenBalances(uniqWith(tokenAddresses, compareString));
     }
   }
 
@@ -6335,7 +6323,7 @@ export class EthBancorModule
     );
 
     this.updateRelays(allPools);
-    this.updateRelayFeeds(
+    await this.updateRelayFeeds(
       await this.addPossiblePropsFromBancorApi(allReserveFeeds)
     );
 
@@ -6443,13 +6431,13 @@ export class EthBancorModule
         this.liquidityProtectionSettings.govToken
       );
       if (govAddress) {
-        this.fetchBulkTokenBalances([
+        await this.fetchBulkTokenBalances([
           this.liquidityProtectionSettings.govToken
         ]);
       }
       console.log(userAddress, "fetching protected positions for");
-      this.fetchProtectionPositions();
-      this.fetchLockedBalances();
+      await this.fetchProtectionPositions();
+      await this.fetchLockedBalances();
       const allTokens = this.relaysList.flatMap(tokensInRelay);
       const uniqueTokenAddresses = uniqWith(
         allTokens.map(token => token.contract),
@@ -6494,7 +6482,7 @@ export class EthBancorModule
 
     const tokenTracked = this.tokens.find(token => compareString(token.id, id));
     if (!tokenTracked) {
-      this.loadMoreTokens([id]);
+      await this.loadMoreTokens([id]);
     }
   }
 
@@ -6667,7 +6655,7 @@ export class EthBancorModule
     });
     onUpdate!(4, steps);
 
-    this.spamBalances([fromTokenContract, toTokenContract]);
+    await this.spamBalances([fromTokenContract, toTokenContract]);
 
     return {
       txId: confirmedHash,
