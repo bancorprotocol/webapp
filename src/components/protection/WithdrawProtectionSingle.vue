@@ -99,13 +99,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import {
-  compareString,
-  compareToken,
-  findOrThrow,
-  formatNumber,
-  prettifyNumber
-} from "@/api/helpers";
+import { compareString, findOrThrow, prettifyNumber } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
