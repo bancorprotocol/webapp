@@ -3195,7 +3195,9 @@ export class EthBancorModule
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
       .flatMap(relay => {
-        const liquidityProtection = this.whiteListedPools.find((e) => e.toLowerCase() === relay.id.toLowerCase()) ? this.relay(relay.id).liquidityProtection : false
+        const liquidityProtection = this.whiteListedPools.some(anchor =>
+          compareString(anchor, relay.id)
+        );
 
         return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
@@ -3220,7 +3222,7 @@ export class EthBancorModule
             ...(reserveFeed.volume24H && { volume24h: reserveFeed.volume24H }),
             ...(balance && { balance: balanceString })
           };
-        })
+        });
       })
       .sort(sortByLiqDepth)
       .reduce<ViewToken[]>((acc, item) => {
@@ -3876,7 +3878,6 @@ export class EthBancorModule
   }: {
     poolTokenAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-
     const relay = findOrThrow(this.relaysList, relay =>
       compareString(relay.id, poolTokenAmount.id)
     );
