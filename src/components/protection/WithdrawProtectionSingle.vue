@@ -55,6 +55,13 @@
       </label-content-split>
     </gray-border-block>
 
+    <alert-block
+      v-if="vBntWarning"
+      variant="error"
+      :msg="vBntWarning"
+      class="my-3"
+    />
+
     <main-button
       label="Continue"
       @click="initAction"
@@ -102,6 +109,7 @@ import {
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
+import BigNumber from "bignumber.js";
 
 interface ViewAmountUsd extends ViewAmount {
   usdValue: number;
@@ -155,6 +163,27 @@ export default class WithdrawProtectionSingle extends Vue {
     );
     console.log(pos, "is the selected pos");
     return pos;
+  }
+
+  get vBntWarning() {
+    return !this.sufficientVBnt
+      ? `Insufficient vBNT balance, you must hold ${prettifyNumber(
+          this.position.givenVBnt
+        )} vBNT before withdrawing position.`
+      : "";
+  }
+
+  get sufficientVBnt() {
+    return new BigNumber(this.position.givenVBnt!).isLessThanOrEqualTo(
+      this.vBntBalance
+    );
+  }
+
+  get vBntBalance() {
+    const balance = vxm.ethBancor.tokenBalance(
+      vxm.ethBancor.liquidityProtectionSettings.govToken
+    );
+    return balance ? balance.balance : "0";
   }
 
   async initAction() {
