@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between">
       <pool-logos :pool="pool" />
       <div>
-        <span>{{ smartTokenAmount }}</span>
+        <span>{{ balance }}</span>
       </div>
     </div>
   </div>
@@ -25,15 +25,25 @@ import { prettifyNumber } from "@/api/helpers";
 })
 export default class SelectPoolRow extends Vue {
   @Prop() pool!: ViewRelay;
+  @Prop({ default: false }) showTokenBalance!: boolean;
 
   @Emit()
   click() {}
 
-  get smartTokenAmount() {
+  get balance() {
+    const balance = this.showTokenBalance ? this.tokenBalance : this.smartTokenBalance;
+    return balance ? prettifyNumber(balance) : '';
+  }
+
+  get smartTokenBalance() {
     const position = this.positions.find(x => x.relay.id === this.pool.id);
     if (position && position.smartTokenAmount)
-      return prettifyNumber(position.smartTokenAmount);
+      return position.smartTokenAmount;
     else return "";
+  }
+
+  get tokenBalance() {
+    return vxm.bancor.token(this.pool.reserves[1].id).balance ?? ''
   }
 
   get positions(): PoolTokenPosition[] {
