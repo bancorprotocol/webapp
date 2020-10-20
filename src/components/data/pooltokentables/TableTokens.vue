@@ -19,11 +19,14 @@
     </template>
 
     <template v-slot:head(liquidityProtection)="data">
-      <img :src="require(`@/assets/media/icons/liquidity.svg`)"/>
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
     </template>
 
     <template v-slot:cell(liquidityProtection)="data">
-      <img v-if="data.value" :src="require(`@/assets/media/icons/liquidity_active.svg`)"/>
+      <img
+        v-if="data.value"
+        :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+      />
     </template>
 
     <template v-slot:cell(actionButtons)="data">
@@ -53,13 +56,13 @@ export default class TableTokens extends Vue {
 
   fields = [
     {
-      key: "liquidityProtection",
-      sortable: true
-    },
-    {
       key: "symbol",
       label: "Name",
       thStyle: { "min-width": "160px" },
+      sortable: true
+    },
+    {
+      key: "liquidityProtection",
       sortable: true
     },
     {

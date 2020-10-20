@@ -239,7 +239,7 @@ export interface ViewToken {
   name: string;
   price?: number;
   liqDepth?: number;
-  liquidityProtection?: boolean,
+  liquidityProtection?: boolean;
   logo: string;
   change24h?: number;
   volume24h?: number;
