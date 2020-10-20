@@ -55,6 +55,13 @@
       </label-content-split>
     </gray-border-block>
 
+    <alert-block
+      v-if="vBntWarning"
+      variant="error"
+      :msg="vBntWarning"
+      class="my-3"
+    />
+
     <main-button
       label="Continue"
       @click="initAction"
@@ -92,16 +99,11 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import {
-  compareString,
-  compareToken,
-  findOrThrow,
-  formatNumber,
-  prettifyNumber
-} from "@/api/helpers";
+import { compareString, findOrThrow, prettifyNumber } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
+import BigNumber from "bignumber.js";
 
 interface ViewAmountUsd extends ViewAmount {
   usdValue: number;
@@ -138,7 +140,8 @@ export default class WithdrawProtectionSingle extends Vue {
   }
 
   get disableActionButton() {
-    if (parseFloat(this.percentage) === 0) return true;
+    if (this.vBntWarning) return true;
+    else if (parseFloat(this.percentage) === 0) return true;
     else return this.inputError ? true : false;
   }
 
@@ -155,6 +158,27 @@ export default class WithdrawProtectionSingle extends Vue {
     );
     console.log(pos, "is the selected pos");
     return pos;
+  }
+
+  get vBntWarning() {
+    return this.position.givenVBnt && !this.sufficientVBnt
+      ? `Insufficient vBNT balance, you must hold ${prettifyNumber(
+          Number(this.position.givenVBnt!) * (Number(this.percentage) / 100)
+        )} vBNT before withdrawing position.`
+      : "";
+  }
+
+  get sufficientVBnt() {
+    const amount =
+      Number(this.position.givenVBnt!) * (Number(this.percentage) / 100);
+    return new BigNumber(amount).isLessThanOrEqualTo(this.vBntBalance);
+  }
+
+  get vBntBalance() {
+    const balance = vxm.ethBancor.tokenBalance(
+      vxm.ethBancor.liquidityProtectionSettings.govToken
+    );
+    return balance ? balance.balance : "0";
   }
 
   async initAction() {
