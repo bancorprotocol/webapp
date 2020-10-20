@@ -2397,9 +2397,16 @@ export class EthBancorModule
             maxDelay
           );
 
+          const givenVBnt =
+            compareString(
+              reserveToken.id,
+              this.liquidityProtectionSettings.networkToken
+            ) && reserveTokenDec;
+
           return {
             id: `${singleEntry.poolToken}:${singleEntry.id}`,
             whitelisted: isWhiteListed,
+            ...(givenVBnt && { givenVBnt }),
             stake: {
               amount: reserveTokenDec,
               symbol: reserveToken.symbol,
@@ -2419,6 +2426,7 @@ export class EthBancorModule
             },
             insuranceStart: startTime + minDelay,
             fullCoverage: startTime + maxDelay,
+            // @ts-ignore
             fullyProtected: {
               amount: fullyProtectedDec
             },
@@ -2455,147 +2463,97 @@ export class EthBancorModule
         );
 
         const startTime = Number(first.timestamp);
-        if (allowSingles) {
-          return doubles.map(
-            (singleEntry): ViewProtectedLiquidity => {
-              const isWhiteListed = this.whiteListedPools.some(
-                whitelistedAnchor =>
-                  compareString(singleEntry.poolToken, whitelistedAnchor)
-              );
+        return doubles.map(
+          (singleEntry): ViewProtectedLiquidity => {
+            const isWhiteListed = this.whiteListedPools.some(
+              whitelistedAnchor =>
+                compareString(singleEntry.poolToken, whitelistedAnchor)
+            );
 
-              const startTime = Number(singleEntry.timestamp);
-              const relay = findOrThrow(this.relaysList, relay =>
-                compareString(relay.id, singleEntry.poolToken)
-              );
-              const smartToken = relay.anchor as SmartToken;
-              const smartTokensWei = singleEntry.reserveAmount;
-              const smartTokensDec = shrinkToken(
-                smartTokensWei,
-                smartToken.decimals
-              );
+            const startTime = Number(singleEntry.timestamp);
+            const relay = findOrThrow(this.relaysList, relay =>
+              compareString(relay.id, singleEntry.poolToken)
+            );
+            const smartToken = relay.anchor as SmartToken;
+            const smartTokensWei = singleEntry.reserveAmount;
+            const smartTokensDec = shrinkToken(
+              smartTokensWei,
+              smartToken.decimals
+            );
 
-              const reserveToken = this.token(singleEntry.reserveToken);
-              const reservePrecision = reserveToken.precision;
+            const reserveToken = this.token(singleEntry.reserveToken);
+            const reservePrecision = reserveToken.precision;
 
-              const reserveTokenDec = shrinkToken(
-                singleEntry.reserveAmount,
-                reserveToken.precision
-              );
+            const reserveTokenDec = shrinkToken(
+              singleEntry.reserveAmount,
+              reserveToken.precision
+            );
 
-              const fullyProtectedDec = shrinkToken(
-                singleEntry.liquidityReturn.targetAmount,
-                reservePrecision
-              );
-              const protectionAchieved = calculateProtectionLevel(
-                startTime,
-                minDelay,
-                maxDelay
-              );
-
-              console.log("oneDayDec", singleEntry.oneDayDec);
-
-              return {
-                id: `${singleEntry.poolToken}:${singleEntry.id}`,
-                whitelisted: isWhiteListed,
-                stake: {
-                  amount: smartTokensDec,
-                  symbol: reserveToken.symbol,
-                  poolId: relay.id,
-                  unixTime: startTime,
-                  ...(reserveToken.price && {
-                    usdValue: new BigNumber(reserveTokenDec)
-                      .times(reserveToken.price!)
-                      .toNumber()
-                  })
-                },
-                fullyProtected: {
-                  amount: "1.23"
-                },
-                protectedAmount: {
-                  amount: fullyProtectedDec,
-                  symbol: reserveToken.symbol,
-                  ...(reserveToken.price && {
-                    usdValue: new BigNumber(fullyProtectedDec)
-                      .times(reserveToken.price!)
-                      .toNumber()
-                  })
-                },
-                apr: {
-                  day: Number(singleEntry.oneDayDec)
-                  // month: Number(singleEntry.oneMonthDec),
-                  // week: Number(singleEntry.oneWeekDec)
-                },
-                single: true,
-                insuranceStart: startTime + minDelay,
-                fullCoverage: startTime + maxDelay,
-                coverageDecPercent: calculateProtectionLevel(
-                  startTime,
-                  minDelay,
-                  maxDelay
-                ),
-                roi: Number(
-                  calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-                )
-              } as ViewProtectedLiquidity;
-            }
-          );
-        } else {
-          const smartToken = commonRelay.anchor as SmartToken;
-          const smartTokensWei = doubles
-            .reduce(
-              (acc, item) => new BigNumber(item.poolAmount).plus(acc),
-              new BigNumber(0)
-            )
-            .toString();
-          const smartTokensDec = shrinkToken(
-            smartTokensWei,
-            smartToken.decimals
-          );
-
-          const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
-
-          const givenVBnt = shrinkToken(
-            doubles.find(position =>
-              compareString(bntAddress, position.reserveToken)
-            )!.reserveAmount,
-            18
-          );
-
-          return {
-            id: `${commonPoolToken}:${doubles.map(pos => pos.id).join(":")}`,
-            whitelisted: isWhiteListed,
-            stake: {
-              amount: smartTokensDec,
-              symbol: smartToken.symbol,
-              poolId: commonViewRelay.id,
-              unixTime: startTime
-            },
-            apr: {
-              day: 0,
-              month: 0,
-              week: 0
-            },
-            insuranceStart: startTime + minDelay,
-            single: false,
-            fullCoverage: startTime + maxDelay,
-            fullyProtected: {
-              amount: "12345.6789"
-            },
-            protectedAmount: {
-              amount: smartTokensDec,
-              symbol: smartToken.symbol
-            },
-            coverageDecPercent: calculateProtectionLevel(
+            const fullyProtectedDec = shrinkToken(
+              singleEntry.liquidityReturn.targetAmount,
+              reservePrecision
+            );
+            const protectionAchieved = calculateProtectionLevel(
               startTime,
               minDelay,
               maxDelay
-            ),
-            roi: Number(
-              calculatePercentIncrease(smartTokensDec, smartTokensDec)
-            ),
-            givenVBnt
-          } as ViewProtectedLiquidity;
-        }
+            );
+
+            const givenVBnt =
+              compareString(
+                reserveToken.id,
+                this.liquidityProtectionSettings.networkToken
+              ) && reserveTokenDec;
+
+            console.log("oneDayDec", singleEntry.oneDayDec);
+
+            return {
+              id: `${singleEntry.poolToken}:${singleEntry.id}`,
+              ...(givenVBnt && { givenVBnt }),
+              whitelisted: isWhiteListed,
+              stake: {
+                amount: smartTokensDec,
+                symbol: reserveToken.symbol,
+                poolId: relay.id,
+                unixTime: startTime,
+                ...(reserveToken.price && {
+                  usdValue: new BigNumber(reserveTokenDec)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
+              },
+              // @ts-ignore
+              fullyProtected: {
+                amount: "1.23"
+              },
+              protectedAmount: {
+                amount: fullyProtectedDec,
+                symbol: reserveToken.symbol,
+                ...(reserveToken.price && {
+                  usdValue: new BigNumber(fullyProtectedDec)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
+              },
+              apr: {
+                day: Number(singleEntry.oneDayDec)
+                // month: Number(singleEntry.oneMonthDec),
+                // week: Number(singleEntry.oneWeekDec)
+              },
+              single: true,
+              insuranceStart: startTime + minDelay,
+              fullCoverage: startTime + maxDelay,
+              coverageDecPercent: calculateProtectionLevel(
+                startTime,
+                minDelay,
+                maxDelay
+              ),
+              roi: Number(
+                calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+              )
+            } as ViewProtectedLiquidity;
+          }
+        );
       });
 
     console.log({ reviewedDoubles, reviewedSingles });
@@ -3743,7 +3701,6 @@ export class EthBancorModule
     poolId: string;
     reserveAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-
     const depositingNetworkToken = compareString(
       this.liquidityProtectionSettings.networkToken,
       reserveAmount.id
@@ -3760,9 +3717,11 @@ export class EthBancorModule
       balances.reserves,
       reserve => reserve.contract,
       [this.liquidityProtectionSettings.networkToken]
-    )
+    );
 
-    const [bntReserveBalance, tknReserveBalance] = [bntReserve, tknReserve].map(reserve => reserve.weiAmount);
+    const [bntReserveBalance, tknReserveBalance] = [bntReserve, tknReserve].map(
+      reserve => reserve.weiAmount
+    );
 
     const maxStakes = calculateMaxStakes(
       tknReserveBalance,
@@ -3773,10 +3732,19 @@ export class EthBancorModule
       this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
-    console.log({
-      maxAllowedBnt: shrinkToken(maxStakes.maxAllowedBntWei, bntReserve.decimals),
-      [`maxAllowedTkn${tknReserve.symbol}`]: shrinkToken(maxStakes.maxAllowedTknWei, tknReserve.decimals)
-    }, 'asaf')
+    console.log(
+      {
+        maxAllowedBnt: shrinkToken(
+          maxStakes.maxAllowedBntWei,
+          bntReserve.decimals
+        ),
+        [`maxAllowedTkn${tknReserve.symbol}`]: shrinkToken(
+          maxStakes.maxAllowedTknWei,
+          tknReserve.decimals
+        )
+      },
+      "asaf"
+    );
 
     const inputAmountWei = expandToken(
       reserveAmount.amount,
