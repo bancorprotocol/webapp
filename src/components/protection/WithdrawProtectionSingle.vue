@@ -166,7 +166,7 @@ export default class WithdrawProtectionSingle extends Vue {
   }
 
   get vBntWarning() {
-    return !this.sufficientVBnt
+    return this.position.givenVBnt && !this.sufficientVBnt
       ? `Insufficient vBNT balance, you must hold ${prettifyNumber(
           this.position.givenVBnt
         )} vBNT before withdrawing position.`
