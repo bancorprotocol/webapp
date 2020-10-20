@@ -81,7 +81,8 @@ import {
   traverseLockedBalances,
   calculateProtectionLevel,
   LockedBalance,
-  rewindBlocksByDays
+  rewindBlocksByDays,
+  calculateMaxStakes
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -3730,147 +3731,56 @@ export class EthBancorModule
     return contract.methods.systemBalance(tokenAddress).call();
   }
 
-  @action async calculateProtectionNetworkToken({
+  @action async calculateProtectionSingle({
     poolId,
     reserveAmount
   }: {
     poolId: string;
     reserveAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-    console.log("network token called");
-    const reserveToken = this.token(reserveAmount.id);
+    
+    const depositingNetworkToken = compareString(
+      this.liquidityProtectionSettings.networkToken,
+      reserveAmount.id
+    );
+
+    const inputToken = this.token(reserveAmount.id);
 
     const [balances, poolTokenBalance] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
       this.fetchSystemBalance(poolId)
     ]);
 
-    if (new BigNumber(poolTokenBalance).eq(0)) {
-      return {
-        outputs: [],
-        error: "Insufficient store balance"
-      };
-    }
-
-    const liquidityProtectionNetworkBalance = findOrThrow(
+    const [bntReserveBalance, tknReserveBalance] = sortAlongSide(
       balances.reserves,
-      reserve =>
-        compareString(
-          reserve.contract,
-          this.liquidityProtectionSettings.networkToken
-        ),
-      "failed finding liquidity protection network token in reserve balances"
-    );
-    const bntValueOfPoolTokens = new BigNumber(poolTokenBalance).times(
-      new BigNumber(liquidityProtectionNetworkBalance.weiAmount).div(
-        balances.smartTokenSupplyWei
-      )
+      reserve => reserve.contract,
+      [this.liquidityProtectionSettings.networkToken]
+    ).map(reserve => reserve.weiAmount);
+
+    const maxStakes = calculateMaxStakes(
+      tknReserveBalance,
+      bntReserveBalance,
+      balances.smartTokenSupplyWei,
+      poolTokenBalance,
+      this.liquidityProtectionSettings.maxSystemNetworkTokenAmount,
+      this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
     const inputAmountWei = expandToken(
       reserveAmount.amount,
-      reserveToken.precision
+      inputToken.precision
     );
 
-    const notEnoughInStore =
-      new BigNumber(inputAmountWei).isGreaterThan(bntValueOfPoolTokens) ||
-      bntValueOfPoolTokens.isLessThan("10000000000000000");
+    const overMaxLimit = new BigNumber(inputAmountWei).isGreaterThan(
+      depositingNetworkToken
+        ? maxStakes.maxAllowedBntWei
+        : maxStakes.maxAllowedTknWei
+    );
 
     return {
       outputs: [],
-      ...(notEnoughInStore && { error: "Insufficient store balance" })
+      ...(overMaxLimit && { error: "Insufficient store balance" })
     };
-  }
-
-  @action async calculateProtectionBaseToken({
-    poolId,
-    reserveAmount
-  }: {
-    poolId: string;
-    reserveAmount: ViewAmount;
-  }): Promise<ProtectionRes> {
-    const reserveToken = this.token(reserveAmount.id);
-    const [balances, poolTokenBalance] = await Promise.all([
-      this.fetchRelayBalances({ poolId }),
-      this.fetchSystemBalance(reserveToken.contract)
-    ]);
-
-    const networkTokenAddress = this.liquidityProtectionSettings.networkToken;
-    const networkAmountWei = expandToken(reserveAmount.amount, 18);
-
-    const networkReserve = findOrThrow(
-      balances.reserves,
-      reserve => compareString(reserve.contract, networkTokenAddress),
-      "failed finding network token in pool balances"
-    );
-    const networkBalanceWei = networkReserve.weiAmount;
-    const baseReserve = findOrThrow(
-      balances.reserves,
-      reserve => !compareString(reserve.contract, networkTokenAddress),
-      "failed finding base token in pool balances"
-    );
-    const baseBalanceWei = baseReserve.weiAmount;
-
-    const networkTokensToBeMinted = new BigNumber(networkAmountWei)
-      .times(networkBalanceWei)
-      .div(baseBalanceWei);
-    const poolTokenRate = calculatePoolTokenRate(
-      balances.smartTokenSupplyWei,
-      networkBalanceWei
-    );
-
-    const currentPoolTokenSystemBalance = new BigNumber(poolTokenBalance);
-    const newPoolTokenSystemBalance = currentPoolTokenSystemBalance
-      .times(poolTokenRate)
-      .div(2)
-      .plus(networkTokensToBeMinted);
-
-    const breachesMaxSystemBalance = newPoolTokenSystemBalance.isGreaterThan(
-      this.liquidityProtectionSettings.maxSystemNetworkTokenAmount
-    );
-    const breachesRatio = newPoolTokenSystemBalance
-      .times(oneMillion)
-      .isGreaterThan(
-        newPoolTokenSystemBalance
-          .plus(networkBalanceWei)
-          .times(this.liquidityProtectionSettings.maxSystemNetworkTokenRatio)
-      );
-    console.log(
-      {
-        currentPoolTokenSystemBalance: currentPoolTokenSystemBalance.toString(),
-        proposedPoolTokenSystemBalance: newPoolTokenSystemBalance.toString()
-      },
-      "awkies"
-    );
-
-    let errorMessage = "";
-
-    if (breachesMaxSystemBalance) {
-      errorMessage = "Deposit breaches maximum liquidity";
-    } else if (breachesRatio) {
-      errorMessage = `Deposit breaches maximum ratio between ${networkReserve.symbol} and ${baseReserve.symbol}`;
-    }
-
-    return {
-      outputs: [],
-      ...(errorMessage && { error: errorMessage })
-    };
-  }
-
-  @action async calculateProtectionSingle(params: {
-    poolId: string;
-    reserveAmount: ViewAmount;
-  }): Promise<ProtectionRes> {
-    const depositingNetworkToken = compareString(
-      this.liquidityProtectionSettings.networkToken,
-      params.reserveAmount.id
-    );
-
-    if (depositingNetworkToken) {
-      return this.calculateProtectionNetworkToken(params);
-    } else {
-      return this.calculateProtectionBaseToken(params);
-    }
   }
 
   @action async calculateProtectionDouble({
