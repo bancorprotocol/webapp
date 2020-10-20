@@ -3768,7 +3768,7 @@ export class EthBancorModule
 
     const notEnoughInStore =
       new BigNumber(inputAmountWei).isGreaterThan(bntValueOfPoolTokens) ||
-      bntValueOfPoolTokens.isLessThan(10000000000000000);
+      bntValueOfPoolTokens.isLessThan("10000000000000000");
 
     return {
       outputs: [],
