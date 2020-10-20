@@ -49,12 +49,6 @@
             </div>
           </div>
         </b-col>
-        <b-col cols="12">
-          <bancor-checkbox
-            v-model="notUsState"
-            label="I am not a US citizen or domiciliary"
-          />
-        </b-col>
       </div>
 
       <action-modal-status
@@ -80,26 +74,18 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import {
-  Step,
-  TxResponse,
-  ViewRelay,
-  ViewReserve,
-  ViewToken
-} from "@/types/bancor";
+import { Step, TxResponse, ViewToken } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
-import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import numeral from "numeral";
 import { VModel } from "@/api/helpers";
 
 @Component({
   components: {
-    BancorCheckbox,
     AdvancedBlockItem,
     ActionModalStatus,
     MainButton,
@@ -120,7 +106,6 @@ export default class ModalSwapAction extends Vue {
   sections: Step[] = [];
   stepIndex = 0;
   numeral = numeral;
-  notUsState: boolean = false;
 
   get confirmButton() {
     return this.error
@@ -144,7 +129,6 @@ export default class ModalSwapAction extends Vue {
     this.sections = [];
     this.error = "";
     this.success = null;
-    this.notUsState = false;
   }
 
   async initAction() {
@@ -159,7 +143,7 @@ export default class ModalSwapAction extends Vue {
       return;
     }
 
-    if (!this.notUsState || this.isCountryBanned) {
+    if (this.isCountryBanned) {
       this.error =
         "This action through swap.bancor.network is not available in your country.";
       return;
