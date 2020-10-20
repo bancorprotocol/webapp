@@ -3197,7 +3197,7 @@ export class EthBancorModule
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
       .flatMap(relay => {
-        const liquidityProtection = this.whiteListedPools.indexOf(relay.id) > 0 ? this.relay(relay.id).liquidityProtection : false
+        const liquidityProtection = this.whiteListedPools.find((e) => e.toLowerCase() === relay.id.toLowerCase()) ? this.relay(relay.id).liquidityProtection : false
 
         return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
