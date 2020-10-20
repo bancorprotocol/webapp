@@ -211,14 +211,6 @@ export default class App extends Vue {
     );
   }
 
-  get status() {
-    return vxm.general.phase2;
-  }
-
-  set status(value: boolean) {
-    vxm.general.setPhase(!!value);
-  }
-
   get selectedNetwork() {
     return vxm.bancor.currentNetwork;
   }

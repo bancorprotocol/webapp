@@ -21,7 +21,6 @@
     />
 
     <percentage-slider
-      v-if="phase2"
       label="Input"
       v-model="percentage"
       :show-buttons="true"
@@ -108,17 +107,7 @@ export default class WithdrawProtectionDouble extends Vue {
     return vxm.ethBancor.relay(this.poolIds.poolId);
   }
 
-  get poolWhitelisted() {
-    return this.position.whitelisted;
-  }
-
-  get phase2() {
-    return vxm.general.phase2;
-  }
-
   get warning() {
-    if (!this.phase2)
-      return `Pending protection vote. Until then, you are entitled to receive the same amount of pool tokens originally provided.`;
     return this.position.coverageDecPercent !== 1
       ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
       : "";
@@ -177,19 +166,11 @@ export default class WithdrawProtectionDouble extends Vue {
     const { poolId, first, second } = this.poolIds;
     console.log({ poolId, first, second });
     try {
-      if (this.phase2) {
-        const txRes = await vxm.ethBancor.removeProtection({
-          decPercent: Number(this.percentage) / 100,
-          id: this.position.id
-        });
-        this.success = txRes;
-      } else {
-        const txRes = await vxm.ethBancor.unprotectLiquidity({
-          id1: first,
-          id2: second
-        });
-        this.success = txRes;
-      }
+      const txRes = await vxm.ethBancor.removeProtection({
+        decPercent: Number(this.percentage) / 100,
+        id: this.position.id
+      });
+      this.success = txRes;
     } catch (err) {
       this.error = err.message;
     } finally {
