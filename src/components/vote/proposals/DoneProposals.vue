@@ -213,7 +213,7 @@ export default class DoneProposals extends Vue {
   symbol: string = "";
   etherscanUrl: string = "";
 
-  opened?: number = undefined;
+  opened: number = -1;
 
   get fields(): ViewTableFields[] {
     return [
