@@ -3191,14 +3191,29 @@ export class EthBancorModule
 
   get tokens(): ViewToken[] {
     console.time("tokens");
+
+    const whitelistedPools = this.whiteListedPools;
+
     const ret = this.relaysList
       .filter(relay =>
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
       .flatMap(relay => {
-        const liquidityProtection = this.whiteListedPools.some(anchor =>
+        const whitelisted = whitelistedPools.some(anchor =>
           compareString(anchor, relay.id)
         );
+
+        const liquidityProtection =
+          whitelisted &&
+          relay.reserves.some(reserve =>
+            compareString(
+              reserve.contract,
+              this.liquidityProtectionSettings.networkToken
+            )
+          ) &&
+          relay.reserves.length == 2 &&
+          relay.reserves.every(reserve => reserve.reserveWeight == 0.5) &&
+          Number(relay.version) >= 41;
 
         return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
@@ -3212,7 +3227,7 @@ export class EthBancorModule
             contract: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
-            liquidityProtection: liquidityProtection,
+            liquidityProtection,
             name: name || reserve.symbol,
             ...(reserveFeed.costByNetworkUsd && {
               price: reserveFeed.costByNetworkUsd
@@ -3743,7 +3758,6 @@ export class EthBancorModule
     poolId: string;
     reserveAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-
     const depositingNetworkToken = compareString(
       this.liquidityProtectionSettings.networkToken,
       reserveAmount.id
@@ -3760,9 +3774,11 @@ export class EthBancorModule
       balances.reserves,
       reserve => reserve.contract,
       [this.liquidityProtectionSettings.networkToken]
-    )
+    );
 
-    const [bntReserveBalance, tknReserveBalance] = [bntReserve, tknReserve].map(reserve => reserve.weiAmount);
+    const [bntReserveBalance, tknReserveBalance] = [bntReserve, tknReserve].map(
+      reserve => reserve.weiAmount
+    );
 
     const maxStakes = calculateMaxStakes(
       tknReserveBalance,
@@ -3773,10 +3789,19 @@ export class EthBancorModule
       this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
-    console.log({
-      maxAllowedBnt: shrinkToken(maxStakes.maxAllowedBntWei, bntReserve.decimals),
-      [`maxAllowedTkn${tknReserve.symbol}`]: shrinkToken(maxStakes.maxAllowedTknWei, tknReserve.decimals)
-    }, 'asaf')
+    console.log(
+      {
+        maxAllowedBnt: shrinkToken(
+          maxStakes.maxAllowedBntWei,
+          bntReserve.decimals
+        ),
+        [`maxAllowedTkn${tknReserve.symbol}`]: shrinkToken(
+          maxStakes.maxAllowedTknWei,
+          tknReserve.decimals
+        )
+      },
+      "asaf"
+    );
 
     const inputAmountWei = expandToken(
       reserveAmount.amount,
