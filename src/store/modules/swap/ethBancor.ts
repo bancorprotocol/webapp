@@ -3197,6 +3197,8 @@ export class EthBancorModule
       )
       .flatMap(relay =>
         relay.reserves.map(reserve => {
+          const viewRelay = this.relay(relay.id);
+
           const { logo, name } = reserve.meta!;
           const balance = this.tokenBalance(reserve.contract);
           const balanceString =
@@ -3208,6 +3210,7 @@ export class EthBancorModule
             contract: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
+            liquidityProtection: viewRelay.liquidityProtection,
             name: name || reserve.symbol,
             ...(reserveFeed.costByNetworkUsd && {
               price: reserveFeed.costByNetworkUsd
