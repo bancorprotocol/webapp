@@ -146,7 +146,8 @@ export default class WithdrawProtectionSingle extends Vue {
   }
 
   get disableActionButton() {
-    if (parseFloat(this.percentage) === 0) return true;
+    if (this.vBntWarning) return true;
+    else if (parseFloat(this.percentage) === 0) return true;
     else return this.inputError ? true : false;
   }
 
