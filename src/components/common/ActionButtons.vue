@@ -34,19 +34,17 @@ export default class ActionButtons extends Vue {
   }
 
   goToPool() {
-    this.$router.push({
-      name: "PoolAction",
-      params: { poolAction: "add", account: this.pool!.id }
-    });
-
-    // let routeData = this.$router.resolve({
-    //   name: "PoolAction",
-    //   params: {
-    //     poolAction: "add",
-    //     account: this.pool!.id
-    //   }
-    // });
-    // window.open(routeData.href, "_blank");
+    if (this.pool!.whitelisted) {
+      this.$router.push({
+        name: "PoolAdd",
+        params: { id: this.pool!.id }
+      });
+    } else {
+      this.$router.push({
+        name: "PoolAction",
+        params: { poolAction: "add", account: this.pool!.id }
+      });
+    }
   }
 
   goToSwap() {
@@ -56,14 +54,6 @@ export default class ActionButtons extends Vue {
         from: this.getId
       }
     });
-    //
-    // let routeData = this.$router.resolve({
-    //   name: "Swap",
-    //   query: {
-    //     from: this.getId
-    //   }
-    // });
-    // window.open(routeData.href, "_blank");
   }
 
   get getId() {
