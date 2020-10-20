@@ -11,14 +11,7 @@
       @select="selectPool"
     />
 
-    <alert-block
-      v-if="warning"
-      variant="warning"
-      :msg="warning"
-      class="mt-3 mb-3"
-    />
-
-    <gray-border-block v-else :gray-bg="true" class="my-3">
+    <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
         v-for="(output, index) in outputs"
         :key="output.id"
@@ -92,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -101,7 +94,6 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import {
   compareString,
-  compareToken,
   formatUnixTime,
   formatNumber,
   buildPoolName
@@ -110,7 +102,6 @@ import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import moment from "moment";
-import { format } from "numeral";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 
@@ -150,17 +141,6 @@ export default class AddProtectionDouble extends Vue {
     return buildPoolName(this.pool.id);
   }
 
-  get isWhitelisted() {
-    return this.pool.whitelisted;
-  }
-
-  get warning() {
-    return vxm.general.phase2
-      ? ""
-      : `Pool protection is pending first community vote. Your stake will provide you with vBNT voting power which can be used to participate in governmance.
-Once proposal is approved, your original stake time will be used for vesting.`;
-  }
-
   get balance() {
     console.log(vxm.ethBancor.poolTokenPositions, "are pool token positions");
     const poolBalance = vxm.ethBancor.poolTokenPositions.find(position =>
@@ -197,14 +177,6 @@ Once proposal is approved, your original stake time will be used for vesting.`;
 
     if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
     else return "";
-  }
-
-  get whitelistWarning() {
-    const msg =
-      "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
-    const show = true;
-
-    return { show, msg };
   }
 
   get modalConfirmButton() {

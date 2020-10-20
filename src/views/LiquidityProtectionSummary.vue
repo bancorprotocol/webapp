@@ -58,7 +58,7 @@
               <b-tab title="Protected">
                 <protected :search="searchProtected" />
               </b-tab>
-              <b-tab v-if="phase2" title="Claim">
+              <b-tab title="Claim">
                 <claim :search="searchProtected" />
               </b-tab>
             </b-tabs>
@@ -97,10 +97,6 @@ export default class LiquidityProtectionSummary extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
-  }
-
-  get phase2() {
-    return vxm.general.phase2;
   }
 }
 </script>

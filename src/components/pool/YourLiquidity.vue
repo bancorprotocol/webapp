@@ -137,13 +137,21 @@ export default class YourLiquidity extends Vue {
   }
 
   goToAdd(id: string) {
-    this.$router.push({
-      name: "PoolAction",
-      params: {
-        poolAction: "add",
-        account: id
-      }
-    });
+    const { whitelisted, v2 } = vxm.bancor.relay(id);
+    if (whitelisted && !v2) {
+      this.$router.push({
+        name: "PoolAdd",
+        params: { id }
+      });
+    } else {
+      this.$router.push({
+        name: "PoolAction",
+        params: {
+          poolAction: "add",
+          account: id
+        }
+      });
+    }
   }
 
   goToProtect(id: string) {

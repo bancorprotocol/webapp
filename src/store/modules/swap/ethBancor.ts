@@ -2332,7 +2332,7 @@ export class EthBancorModule
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
-    const allowSingles = vxm.general.phase2;
+    const allowSingles = true;
 
     console.log(this.protectedPositionsArr, "was thing");
     const allPositions = this.protectedPositionsArr
@@ -3874,7 +3874,6 @@ export class EthBancorModule
   }: {
     poolTokenAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-    const phase2 = vxm.general.phase2;
 
     const relay = findOrThrow(this.relaysList, relay =>
       compareString(relay.id, poolTokenAmount.id)
@@ -3900,20 +3899,9 @@ export class EthBancorModule
       };
     });
 
-    if (phase2) {
-      return {
-        outputs
-      };
-    } else {
-      return {
-        outputs: [
-          {
-            ...poolTokenAmount,
-            symbol: smartToken.symbol
-          }
-        ]
-      };
-    }
+    return {
+      outputs
+    };
   }
 
   @action async calculateOpposingDeposit(
