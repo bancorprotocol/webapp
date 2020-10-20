@@ -1,6 +1,6 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Stake">
+    <label-content-split label="Initial Stake">
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
         :amount="prettifyNumber(position.stake.amount)"

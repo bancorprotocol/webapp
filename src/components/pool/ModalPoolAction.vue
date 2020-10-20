@@ -72,12 +72,6 @@
             </div>
           </div>
         </b-col>
-        <b-col cols="12">
-          <bancor-checkbox
-            v-model="notUsState"
-            label="I am not a US citizen or domiciliary"
-          />
-        </b-col>
       </div>
 
       <action-modal-status
@@ -118,13 +112,11 @@ import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
-import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
 import numeral from "numeral";
 import { VModel } from "@/api/helpers";
 
 @Component({
   components: {
-    BancorCheckbox,
     ActionModalStatus,
     AdvancedBlockItem,
     PoolLogos,
@@ -146,7 +138,6 @@ export default class ModalPoolAction extends Vue {
   sections: Step[] = [];
   stepIndex = 0;
 
-  notUsState: boolean = false;
   get slippageTolerance() {
     return vxm.bancor.slippageTolerance;
   }
@@ -176,7 +167,6 @@ export default class ModalPoolAction extends Vue {
     this.sections = [];
     this.error = "";
     this.success = null;
-    this.notUsState = false;
   }
 
   get isCountryBanned() {
@@ -196,7 +186,7 @@ export default class ModalPoolAction extends Vue {
       return;
     }
 
-    if (!this.notUsState || this.isCountryBanned) {
+    if (this.isCountryBanned) {
       this.error =
         "This action through swap.bancor.network is not available in your country.";
       return;
