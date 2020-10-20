@@ -67,6 +67,7 @@ export default class TableTokens extends Vue {
           currency: "USD"
         }).format(value)
     },
+    /*
     {
       key: "volume24h",
       label: "24h Volume",
@@ -78,6 +79,7 @@ export default class TableTokens extends Vue {
           currency: "USD"
         }).format(value)
     },
+    */
     {
       key: "liqDepth",
       label: "Liquidity Depth",
