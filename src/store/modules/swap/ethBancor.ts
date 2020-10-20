@@ -3235,7 +3235,12 @@ export class EthBancorModule
               acc,
               token =>
                 compareString(token.id!, item.id) && !isNaN(item.liqDepth),
-              token => ({ ...token, liqDepth: token.liqDepth! + item.liqDepth })
+              token => ({
+                ...token,
+                liqDepth: token.liqDepth! + item.liqDepth,
+                liquidityProtection:
+                  token.liquidityProtection || item.liquidityProtection
+              })
             )
           : [...acc, item as ViewToken];
       }, []);
