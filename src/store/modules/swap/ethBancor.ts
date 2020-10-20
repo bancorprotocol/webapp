@@ -1567,6 +1567,7 @@ const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
     reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
   };
 };
+
 interface RegisteredContracts {
   BancorNetwork: string;
   BancorConverterRegistry: string;
@@ -3195,10 +3196,10 @@ export class EthBancorModule
       .filter(relay =>
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
-      .flatMap(relay =>
-        relay.reserves.map(reserve => {
-          const viewRelay = this.relay(relay.id);
+      .flatMap(relay => {
+        const liquidityProtection = this.whiteListedPools.indexOf(relay.id) > 0 ? this.relay(relay.id).liquidityProtection : false
 
+        return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
           const balance = this.tokenBalance(reserve.contract);
           const balanceString =
@@ -3210,7 +3211,7 @@ export class EthBancorModule
             contract: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
-            liquidityProtection: viewRelay.liquidityProtection,
+            liquidityProtection: liquidityProtection,
             name: name || reserve.symbol,
             ...(reserveFeed.costByNetworkUsd && {
               price: reserveFeed.costByNetworkUsd
@@ -3222,7 +3223,7 @@ export class EthBancorModule
             ...(balance && { balance: balanceString })
           };
         })
-      )
+      })
       .sort(sortByLiqDepth)
       .reduce<ViewToken[]>((acc, item) => {
         const existingToken = acc.find(token =>
