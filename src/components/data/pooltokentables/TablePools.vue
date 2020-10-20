@@ -48,14 +48,14 @@ export default class TablePools extends Vue {
 
   fields = [
     {
+      key: "liquidityProtection",
+      sortable: true
+    },
+    {
       key: "symbol",
       label: "Name",
       sortable: true,
       thStyle: { "min-width": "250px" }
-    },
-    {
-      key: "liquidityProtection",
-      sortable: true
     },
     {
       key: "liqDepth",

@@ -56,13 +56,13 @@ export default class TableTokens extends Vue {
 
   fields = [
     {
-      key: "symbol",
-      label: "Name",
-      thStyle: { "min-width": "160px" },
+      key: "liquidityProtection",
       sortable: true
     },
     {
-      key: "liquidityProtection",
+      key: "symbol",
+      label: "Name",
+      thStyle: { "min-width": "160px" },
       sortable: true
     },
     {
