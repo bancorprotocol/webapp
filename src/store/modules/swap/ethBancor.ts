@@ -1567,6 +1567,7 @@ const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
     reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
   };
 };
+
 interface RegisteredContracts {
   BancorNetwork: string;
   BancorConverterRegistry: string;
@@ -2332,7 +2333,7 @@ export class EthBancorModule
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
-    const allowSingles = vxm.general.phase2;
+    const allowSingles = true;
 
     console.log(this.protectedPositionsArr, "was thing");
     const allPositions = this.protectedPositionsArr
@@ -3193,8 +3194,10 @@ export class EthBancorModule
       .filter(relay =>
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
-      .flatMap(relay =>
-        relay.reserves.map(reserve => {
+      .flatMap(relay => {
+        const liquidityProtection = this.whiteListedPools.find((e) => e.toLowerCase() === relay.id.toLowerCase()) ? this.relay(relay.id).liquidityProtection : false
+
+        return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
           const balance = this.tokenBalance(reserve.contract);
           const balanceString =
@@ -3206,6 +3209,7 @@ export class EthBancorModule
             contract: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
+            liquidityProtection: liquidityProtection,
             name: name || reserve.symbol,
             ...(reserveFeed.costByNetworkUsd && {
               price: reserveFeed.costByNetworkUsd
@@ -3217,7 +3221,7 @@ export class EthBancorModule
             ...(balance && { balance: balanceString })
           };
         })
-      )
+      })
       .sort(sortByLiqDepth)
       .reduce<ViewToken[]>((acc, item) => {
         const existingToken = acc.find(token =>
@@ -3872,7 +3876,6 @@ export class EthBancorModule
   }: {
     poolTokenAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-    const phase2 = vxm.general.phase2;
 
     const relay = findOrThrow(this.relaysList, relay =>
       compareString(relay.id, poolTokenAmount.id)
@@ -3898,20 +3901,9 @@ export class EthBancorModule
       };
     });
 
-    if (phase2) {
-      return {
-        outputs
-      };
-    } else {
-      return {
-        outputs: [
-          {
-            ...poolTokenAmount,
-            symbol: smartToken.symbol
-          }
-        ]
-      };
-    }
+    return {
+      outputs
+    };
   }
 
   @action async calculateOpposingDeposit(

@@ -346,6 +346,8 @@ export let web3 = new Web3(
   Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
 );
 
+web3.eth.transactionBlockTimeout = 100;
+
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
 export interface InfuraEventResponse {
