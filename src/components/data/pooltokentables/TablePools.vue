@@ -40,7 +40,7 @@ export default class TablePools extends Vue {
       key: "symbol",
       label: "Name",
       sortable: true,
-      thStyle: { "min-width": "250px" }
+      thStyle: { "min-width": "150px" }
     },
     {
       key: "liqDepth",
