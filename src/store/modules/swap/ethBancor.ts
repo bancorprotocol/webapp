@@ -1979,13 +1979,14 @@ export class EthBancorModule
         blockHeight: number;
         days: number;
         label: string;
-      }[] = ([[1, "day"], [7, "week"]] as [number, string][]).map(
-        ([days, label]) => ({
-          blockHeight: rewindBlocksByDays(currentBlockNumber, days),
-          days,
-          label
-        })
-      );
+      }[] = ([
+        [1, "day"],
+        [7, "week"]
+      ] as [number, string][]).map(([days, label]) => ({
+        blockHeight: rewindBlocksByDays(currentBlockNumber, days),
+        days,
+        label
+      }));
 
       const poolHistoricalBalances = await Promise.all(
         uniqueAnchors.map(async anchor => {
@@ -2534,7 +2535,6 @@ export class EthBancorModule
   }
 
   @mutation setLoadingPools(status: boolean) {
-    console.log(`loading pools ${status}`)
     this.loadingPools = status;
   }
 
