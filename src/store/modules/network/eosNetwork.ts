@@ -128,7 +128,7 @@ export class EosNetworkModule
       tokens: [{ contract, symbol }]
     });
     await vxm.eosWallet.tx(actions);
-    this.pingTillChange({ originalBalances });
+    await this.pingTillChange({ originalBalances });
   }
 
   @action async fetchBulkBalances(

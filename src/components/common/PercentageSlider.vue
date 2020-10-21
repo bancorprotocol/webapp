@@ -18,8 +18,8 @@
       class="my-2"
     ></b-form-input>
     <b-row v-if="showButtons">
-      <b-col cols="3" v-for="p in percentages" :key="p">
-        <b-btn @click="percentage = p" :variant="getVariant(p)" size="xs" block>
+      <b-col v-for="p in percentages" :key="p" cols="3">
+        <b-btn :variant="getVariant(p)" size="xs" block @click="percentage = p">
           {{ p }}%
         </b-btn>
       </b-col>

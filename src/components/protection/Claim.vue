@@ -24,16 +24,16 @@
       </b-col>
     </b-row>
 
-    <modal-base title="Claim BNT" v-model="modal" @input="setDefault">
+    <modal-base v-model="modal" title="Claim BNT" @input="setDefault">
       <action-modal-status :error="error" :success="success" />
 
       <main-button
-        @click="onModalClick"
         class="mt-3"
         :label="modalConfirmButton"
         :active="true"
         :large="true"
         :disabled="txBusy"
+        @click="onModalClick"
       />
     </modal-base>
   </div>
@@ -96,7 +96,7 @@ export default class Claim extends Vue {
       this.setDefault();
       this.modal = false;
     } else if (this.error) {
-      this.onClick();
+      void this.onClick();
     }
   }
 

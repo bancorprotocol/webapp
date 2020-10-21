@@ -171,8 +171,8 @@ export default class App extends Vue {
       );
       // if (provider) vxm.eosWallet.initLogin(provider);
     }
-    vxm.general.setLanguage();
-    vxm.general.getUserCountry();
+    await vxm.general.setLanguage();
+    await vxm.general.getUserCountry();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;

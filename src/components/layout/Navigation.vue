@@ -26,12 +26,12 @@
           <b-navbar-nav class="mr-2">
             <b-btn
               v-if="showLogin"
-              @click="loginAction"
+              v-b-tooltip.hover
               variant="white"
               class="block-rounded"
               size="sm"
-              v-b-tooltip.hover
               :title="loginTooltip"
+              @click="loginAction"
             >
               <span class="d-none d-sm-inline mr-2">{{
                 loginButtonLabel
@@ -83,13 +83,13 @@ export default class Navigation extends Vue {
   }
 
   created() {
-    vxm.ethWallet.checkAlreadySignedIn();
+    void vxm.ethWallet.checkAlreadySignedIn();
   }
 
   @Watch("isAuthenticated")
   onAuthentication(account: string) {
     if (account) {
-      vxm.bancor.refreshBalances();
+      void vxm.bancor.refreshBalances();
       // @ts-ignore
       // this.$analytics.setUserId(account);
       // @ts-ignore
@@ -108,7 +108,7 @@ export default class Navigation extends Vue {
   }
 
   set language(lang: string) {
-    vxm.general.setLanguage(lang);
+    void vxm.general.setLanguage(lang);
   }
 
   get loginStatus() {
@@ -158,7 +158,7 @@ export default class Navigation extends Vue {
       status !== "Connecting" &&
       status !== "Fetching"
     ) {
-      vxm.eosWallet.logout();
+      void vxm.eosWallet.logout();
     }
   }
 

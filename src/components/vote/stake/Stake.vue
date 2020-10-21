@@ -38,23 +38,23 @@
 
     <div class="p-3 pb-0">
       <main-button
-        @click="stakeModal = true"
         label="Stake Tokens"
         :active="true"
         :large="true"
         :block="true"
         class="font-size-14 mb-3"
+        @click="stakeModal = true"
       />
       <modal-stake v-model="stakeModal" />
 
       <div v-if="lock.for === 0 && votes > 0">
         <main-button
-          @click="unstakeModal = true"
           label="Unstake Tokens"
           :active="false"
           :large="true"
           :block="true"
           class="font-size-14 mb-3"
+          @click="unstakeModal = true"
         />
         <modal-unstake v-model="unstakeModal" />
       </div>

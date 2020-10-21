@@ -4,8 +4,8 @@
       <table-header
         :fields="fields"
         :sort-by.sync="sortBy"
-        @update:sortBy="modifyItems"
         :desc-order.sync="descOrder"
+        @update:sortBy="modifyItems"
         @update:descOrder="modifyItems"
       />
       <tbody>
@@ -16,10 +16,10 @@
     <table-pagination
       v-if="!hidePagination"
       :current-page.sync="currentPage"
-      @update:currentPage="modifyItems"
-      :rowCount.sync="modifiedItems.length"
-      @update:rowCount="modifyItems"
+      :row-count.sync="modifiedItems.length"
       :per-page="perPage"
+      @update:currentPage="modifyItems"
+      @update:rowCount="modifyItems"
     />
   </div>
 </template>

@@ -29,9 +29,9 @@
             >
               <b-form-radio
                 v-for="reserve in pool.reserves"
+                :key="reserve.id"
                 :name="reserve.symbol"
                 :value="reserve"
-                :key="reserve.id"
               >
                 <div class="d-flex align-items-center">
                   <img
@@ -49,9 +49,9 @@
         </label-content-split>
 
         <token-input-field
+          v-model="amount"
           label="Input"
           :token="selectedToken"
-          v-model="amount"
           :balance="balance"
           class="my-3"
           :error-msg="balanceError"
@@ -60,12 +60,12 @@
         <label-content-split label="Full Coverage Date" value="??/??/??" />
 
         <main-button
-          @click="modal = true"
           label="Add Protection"
           :active="amount"
           class="mt-3"
           :large="true"
           :disabled="!amount"
+          @click="modal = true"
         />
       </div>
     </content-block>
@@ -73,8 +73,8 @@
     <protectable-liquidity />
 
     <modal-base
-      title="You are adding liquidity protection"
       v-model="modal"
+      title="You are adding liquidity protection"
       @input="setDefault"
     >
       <b-row v-if="!(txBusy || success || error)">
@@ -202,7 +202,7 @@ export default class AddLiqProtection extends Vue {
   }
 
   back() {
-    this.$router.push({ name: "LiqProtection" });
+    void this.$router.push({ name: "LiqProtection" });
   }
 
   get isAuthenticated() {

@@ -20,8 +20,8 @@
       </b-col>
       <b-col cols="12">
         <multi-input-field
-          placeholder="Search"
           v-model="search"
+          placeholder="Search"
           prepend="search"
           class="my-2"
         />
@@ -60,22 +60,22 @@
           <b-row>
             <b-col cols="6" class="pr-1">
               <main-button
-                @click="goToAdd(pool.relay.id)"
                 label="Add Liquidity"
                 :active="true"
+                @click="goToAdd(pool.relay.id)"
               />
             </b-col>
             <b-col cols="6" class="pl-1">
               <main-button
-                @click="goToRemove(pool.relay.id)"
                 label="Remove Liquidity"
+                @click="goToRemove(pool.relay.id)"
               />
             </b-col>
-            <b-col cols="12" v-if="pool.relay.liquidityProtection">
+            <b-col v-if="pool.relay.liquidityProtection" cols="12">
               <main-button
-                @click="goToProtect(pool.relay.id)"
                 label="Protect My Pool Token"
                 class="mt-2"
+                @click="goToProtect(pool.relay.id)"
               />
             </b-col>
           </b-row>
@@ -139,12 +139,12 @@ export default class YourLiquidity extends Vue {
   goToAdd(id: string) {
     const { whitelisted, v2 } = vxm.bancor.relay(id);
     if (whitelisted && !v2) {
-      this.$router.push({
+      void this.$router.push({
         name: "PoolAdd",
         params: { id }
       });
     } else {
-      this.$router.push({
+      void this.$router.push({
         name: "PoolAction",
         params: {
           poolAction: "add",
@@ -155,7 +155,7 @@ export default class YourLiquidity extends Vue {
   }
 
   goToProtect(id: string) {
-    this.$router.push({
+    void this.$router.push({
       name: "AddProtectionDouble",
       params: {
         id: id
@@ -164,7 +164,7 @@ export default class YourLiquidity extends Vue {
   }
 
   goToRemove(id: string) {
-    this.$router.push({
+    void this.$router.push({
       name: "PoolAction",
       params: {
         poolAction: "remove",

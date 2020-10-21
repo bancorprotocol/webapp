@@ -1,13 +1,13 @@
 <template>
   <div class="mt-3">
     <token-input-field
+      v-model="amount"
       label="Stake Amount"
       :pool="pool"
-      v-model="amount"
-      @input="amountChanged"
       :balance="balance"
       :error-msg="inputError"
       :pools="pools"
+      @input="amountChanged"
       @select="selectPool"
     />
 
@@ -36,15 +36,15 @@
 
     <main-button
       :label="actionButtonLabel"
-      @click="openModal"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
+      @click="openModal"
     />
 
     <modal-base
-      title="You are adding liquidity protection"
       v-model="modal"
+      title="You are adding liquidity protection"
       @input="setDefault"
     >
       <b-row v-if="!(txBusy || success || error)">
@@ -73,12 +73,12 @@
       />
 
       <main-button
-        @click="initAction"
         class="mt-3"
         :label="modalConfirmButton"
         :active="true"
         :large="true"
         :disabled="txBusy"
+        @click="initAction"
       />
     </modal-base>
   </div>
@@ -193,7 +193,7 @@ export default class AddProtectionDouble extends Vue {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      await this.$router.push({ name: "LiqProtection" });
       return;
     } else if (this.error) {
       this.modal = false;

@@ -1,18 +1,18 @@
 <template>
   <div class="d-flex justify-content-between mt-2">
     <div v-for="x in options" :key="x" class="w-100 mr-2">
-      <b-btn @click="setSlippage(x)" :variant="getVariant(x)" size="xs" block>
+      <b-btn :variant="getVariant(x)" size="xs" block @click="setSlippage(x)">
         {{ x }}%
       </b-btn>
     </div>
     <div class="w-100">
       <b-input-group>
         <b-form-input
+          v-model="custom"
           class="text-right custom-input-field pr-1"
           :class="formInputStyles"
-          v-model="custom"
-          @input="setCustomSlippage"
           placeholder="Custom"
+          @input="setCustomSlippage"
         />
         <b-input-group-append>
           <div
@@ -51,12 +51,12 @@ export default class SettingsMenu extends Vue {
   }
 
   setSlippage(percentage: number) {
-    vxm.bancor.setSlippageTolerance(percentage / 100);
+    void vxm.bancor.setSlippageTolerance(percentage / 100);
     this.custom = "";
   }
 
   setCustomSlippage(percentage: string) {
-    vxm.bancor.setSlippageTolerance(Number(percentage) / 100);
+    void vxm.bancor.setSlippageTolerance(Number(percentage) / 100);
   }
 
   getVariant(percentage: number) {

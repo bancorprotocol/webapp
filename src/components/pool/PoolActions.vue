@@ -45,7 +45,7 @@ export default class PoolActions extends Vue {
   }
 
   back() {
-    this.$router.push({ name: "Pool" });
+    void this.$router.push({ name: "Pool" });
   }
 
   get pool(): ViewRelay {

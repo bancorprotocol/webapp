@@ -141,7 +141,7 @@ export class EosTransitModule extends VuexModule.With({
 
   @action async initLogin(provider: WalletProvider) {
     this.setProvider(provider);
-    this.checkDevice();
+    await this.checkDevice();
 
     const wallet = this.accessContext.initWallet(provider);
 
@@ -155,7 +155,7 @@ export class EosTransitModule extends VuexModule.With({
         await wallet.login();
         this.setWallet(wallet);
         localStorage.setItem("autoLogin", provider.id);
-        vxm.eosBancor.onAuthChange(
+        await vxm.eosBancor.onAuthChange(
           wallet && wallet.auth! && wallet.auth!.accountName!
         );
       } catch (e) {
@@ -170,11 +170,11 @@ export class EosTransitModule extends VuexModule.With({
 
   @action async logout() {
     if (this.wallet) {
-      this.wallet.logout();
+      await this.wallet.logout();
       this.setWallet(false);
       this.setWalletState(false);
       localStorage.removeItem("autoLogin");
-      vxm.network.resetBalances();
+      await vxm.network.resetBalances();
     }
   }
 

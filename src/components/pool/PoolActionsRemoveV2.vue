@@ -1,7 +1,7 @@
 <template>
   <div v-if="selectedToken && !loadingTokens">
     <label-content-split label="Pool" class="my-4">
-      <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
+      <pool-logos :pool="pool" :dropdown="true" @click="poolLogosClick" />
       <modal-pool-select
         v-model="poolSelectModal"
         :pools="pools"
@@ -18,9 +18,9 @@
         >
           <b-form-radio
             v-for="reserve in poolTokens"
+            :key="reserve.id"
             :name="reserve.symbol"
             :value="reserve.id"
-            :key="reserve.id"
             :disabled="reserve.disabled"
           >
             <div class="d-flex align-items-center">
@@ -37,22 +37,22 @@
     </label-content-split>
 
     <percentage-slider
-      label="Amount"
       v-model="percentage"
-      @input="percentageUpdate"
+      label="Amount"
       :show-buttons="true"
       :buttons-dirty="percentageDirty"
+      @input="percentageUpdate"
     />
 
     <div>
       <token-input-field
+        v-model="amountSmartToken"
         label="Input"
         :token="selectedPoolToken"
-        v-model="amountSmartToken"
-        @input="poolTokenUpdate"
         :balance="selectedPoolToken.balance"
         class="mt-4"
         :error-msg="balanceError"
+        @input="poolTokenUpdate"
       />
 
       <div class="text-center my-3">
@@ -94,11 +94,11 @@
 
     <main-button
       label="Remove"
-      @click="initAction"
       :active="true"
       :large="true"
       class="mt-1"
       :disabled="!amountSmartToken || balanceError !== ''"
+      @click="initAction"
     />
 
     <modal-pool-action
@@ -210,7 +210,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   }
 
   select(id: string) {
-    this.$router.push({
+    void this.$router.push({
       name: "PoolAction",
       params: {
         poolAction: "remove",
@@ -236,7 +236,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   @Watch("isAuthenticated")
   authChange(isAuthenticated: string | boolean) {
     if (isAuthenticated) {
-      this.getPoolBalances();
+      void this.getPoolBalances();
     }
   }
 

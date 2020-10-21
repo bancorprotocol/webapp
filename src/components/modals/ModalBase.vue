@@ -1,9 +1,9 @@
 <template>
   <b-modal
+    v-model="show"
     scrollable
     :size="size"
     centered
-    v-model="show"
     hide-footer
     :content-class="contentClass"
     @close="onHide"
@@ -22,8 +22,8 @@
             <font-awesome-icon
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="onHide"
               icon="times"
+              @click="onHide"
             />
           </b-col>
         </b-row>

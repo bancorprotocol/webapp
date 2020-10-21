@@ -1,10 +1,10 @@
 <template>
   <b-btn
     :variant="variant"
-    @click="click"
     class="block-rounded"
     :class="{ 'btn-large': large, 'btn-sm': small, 'btn-block': block }"
     :disabled="disabled || loading"
+    @click="click"
   >
     <font-awesome-icon v-if="loading" icon="circle-notch" spin />
     <span v-else-if="label" class="font-size-14 font-w500">{{ label }}</span>

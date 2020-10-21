@@ -1,34 +1,34 @@
 <template>
   <div class="mt-3">
     <token-input-field
+      v-model="amount1"
       label="Input"
       :token="reserveOne"
-      v-model="amount1"
-      @input="tokenOneChanged"
       :balance="balance1"
       :error-msg="token1Error"
+      @input="tokenOneChanged"
     />
     <div class="text-center my-3">
       <font-awesome-icon icon="plus" class="text-primary font-size-16" />
     </div>
     <token-input-field
+      v-model="amount2"
       label="Input"
       :token="reserveTwo"
-      v-model="amount2"
-      @input="tokenTwoChanged"
       class="mb-3"
       :balance="balance2"
       :error-msg="token2Error"
+      @input="tokenTwoChanged"
     />
     <rate-share-block :items="shareBlockItems" label="Prices and Pool Share" />
     <main-button
-      @click="initAction"
       label="Supply"
       :active="true"
       :large="true"
       class="mt-3"
       :loading="rateLoading"
       :disabled="disableMainButton"
+      @click="initAction"
     />
     <modal-pool-action
       v-model="modal"
@@ -284,7 +284,7 @@ export default class PoolActionsAddV1 extends Vue {
   }
 
   created() {
-    this.initialLoadPrices();
+    void this.initialLoadPrices();
   }
 }
 </script>

@@ -29,14 +29,14 @@
       class="d-flex justify-content-center align-items-center mt-3"
     >
       <main-button
-        @click="
-          $router.push({ name: 'Swap', params: { service: selectedNetwork } })
-        "
         class="px-5 mt-2"
         label="Go to homepage"
         :active="true"
         :large="true"
         :block="false"
+        @click="
+          $router.push({ name: 'Swap', params: { service: selectedNetwork } })
+        "
       />
     </b-col>
   </b-row>

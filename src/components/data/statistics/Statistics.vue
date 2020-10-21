@@ -17,10 +17,10 @@
       />
     </b-col>
     <b-col
+      v-if="false && twentyFourHourTradeCount > 0"
       md="6"
       lg="3"
       class="mb-4 mb-md-0 mb-lg-0"
-      v-if="false && twentyFourHourTradeCount > 0"
     >
       <statistics-data-block
         title="Recent Conversions (24hrs)"

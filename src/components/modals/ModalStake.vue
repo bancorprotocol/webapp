@@ -1,10 +1,10 @@
 <template>
   <b-modal
+    v-model="show"
     :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
     scrollable
     size="sm"
     centered
-    v-model="show"
     hide-footer
     @close="onHide"
     @cancel="onHide"
@@ -24,8 +24,8 @@
             <font-awesome-icon
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="onHide"
               icon="times"
+              @click="onHide"
             />
           </b-col>
         </b-row>
@@ -50,13 +50,13 @@
         <b-form-input
           v-model="stakeInput"
           :state="state"
-          @keypress="setStakeInput"
-          @input="setStakeInput"
           :max="currentBalance.toNumber()"
           type="number"
           placeholder="0"
           size="lg"
           class="input-currency__input"
+          @keypress="setStakeInput"
+          @input="setStakeInput"
         />
         <div class="input-currency__append pr-3">
           <img
@@ -74,7 +74,6 @@
       </b-alert>
 
       <main-button
-        @click="stake"
         :label="stakeLabel"
         :active="true"
         :block="true"
@@ -92,6 +91,7 @@
             currentBalance.isGreaterThanOrEqualTo(stakeValue)
           )
         }"
+        @click="stake"
       />
     </div>
 
@@ -136,12 +136,12 @@
         >View on Etherscan</a
       >
       <main-button
-        @click="onHide"
         label="Close"
         :large="true"
         :active="true"
         :block="true"
         class="font-size-14 font-w400 mt-3"
+        @click="onHide"
       />
     </div>
   </b-modal>

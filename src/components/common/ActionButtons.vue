@@ -2,17 +2,17 @@
   <div>
     <b-btn
       v-if="pool"
-      @click="goToPool"
       variant="primary"
       class="mr-3 table-button"
+      @click="goToPool"
     >
       Add Liquidity
     </b-btn>
 
     <b-btn
-      @click="goToSwap"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       class="table-button"
+      @click="goToSwap"
     >
       Trade
     </b-btn>
@@ -35,12 +35,12 @@ export default class ActionButtons extends Vue {
 
   goToPool() {
     if (this.pool!.whitelisted) {
-      this.$router.push({
+      void this.$router.push({
         name: "PoolAdd",
         params: { id: this.pool!.id }
       });
     } else {
-      this.$router.push({
+      void this.$router.push({
         name: "PoolAction",
         params: { poolAction: "add", account: this.pool!.id }
       });
@@ -48,7 +48,7 @@ export default class ActionButtons extends Vue {
   }
 
   goToSwap() {
-    this.$router.push({
+    void this.$router.push({
       name: "Swap",
       query: {
         from: this.getId

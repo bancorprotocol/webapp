@@ -81,11 +81,11 @@ export const shrinkToken = (
 };
 
 export const makeBatchRequest = (calls: any[], from: string) => {
-  let batch = new web3.BatchRequest();
-  let promises = calls.map(
+  const batch = new web3.BatchRequest();
+  const promises = calls.map(
     call =>
       new Promise((resolve, reject) => {
-        let request = call.request({ from }, (error: any, data: any) => {
+        const request = call.request({ from }, (error: any, data: any) => {
           if (error) {
             reject(error);
           } else {

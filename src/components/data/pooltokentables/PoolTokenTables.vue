@@ -2,13 +2,13 @@
   <div class="pt-2">
     <div class="float-right mr-2">
       <multi-input-field
-        class="max-search-width-xs"
         v-model="search"
+        class="max-search-width-xs"
         placeholder="Search"
         prepend="search"
       />
     </div>
-    <div class="float-right mr-2" v-if="loading">
+    <div v-if="loading" class="float-right mr-2">
       <b-spinner
         style="display: block; width: 1.5rem; height: 1.5rem;"
         class="align-self-center align-middle"

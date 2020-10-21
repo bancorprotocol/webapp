@@ -2,12 +2,12 @@
   <thead>
     <tr :class="darkMode ? 'table-header-dark' : 'table-header-light'">
       <th
-        @click="setSortBy(column)"
         v-for="column in fields"
         :key="column.key"
         scope="col"
         :class="column.key ? 'cursor' : ''"
         :style="getWidthStyle(column)"
+        @click="setSortBy(column)"
       >
         {{ column.label }}
         <font-awesome-icon

@@ -31,7 +31,7 @@
     :items="proposals"
     :fields="fields"
     default-sort="to"
-    :hidePagination="true"
+    :hide-pagination="true"
   >
     <template
       v-for="proposal in proposals"
@@ -98,9 +98,9 @@
         </td>
       </tr>
       <tr
+        v-if="!isNaN(opened) && proposal.id === opened"
         :key="'r2-' + proposal.id"
         class="align-rows-cells"
-        v-if="!isNaN(opened) && proposal.id === opened"
       >
         <td></td>
         <td>
@@ -305,7 +305,7 @@ export default class DoneProposals extends Vue {
   }
 
   async mounted() {
-    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl()
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }

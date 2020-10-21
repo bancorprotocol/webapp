@@ -2,9 +2,9 @@
   <div>
     <label-content-split :label="label" class="mb-1">
       <span
-        @click="tokenAmount = balance"
         v-if="isAuthenticated"
         class="font-size-12 font-w500 cursor"
+        @click="tokenAmount = balance"
       >
         {{ formattedBalance }}
         {{ usdValue ? usdValue : "" }}
@@ -13,8 +13,8 @@
 
     <b-input-group>
       <b-form-input
-        type="text"
         v-model="tokenAmount"
+        type="text"
         style="border-right: 0 !important;"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
@@ -30,8 +30,8 @@
         >
           <div
             v-if="token"
-            @click="openModal"
             class="d-flex align-items-center"
+            @click="openModal"
           >
             <img
               class="img-avatar img-avatar32 border-colouring bg-white mr-1"
@@ -48,7 +48,7 @@
           </div>
 
           <div v-else>
-            <pool-logos @click="openModal" :pool="pool" :dropdown="true" />
+            <pool-logos :pool="pool" :dropdown="true" @click="openModal" />
           </div>
         </div>
       </b-input-group-append>
@@ -60,7 +60,7 @@
       <modal-token-select
         v-if="tokens && tokens.length > 0"
         v-model="modal"
-        :allowTokenAdd="allowTokenAdd"
+        :allow-token-add="allowTokenAdd"
         :tokens="tokens"
         @select="select"
       />

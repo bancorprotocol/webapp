@@ -31,7 +31,7 @@
     :items="proposals"
     :fields="fields"
     default-sort="to"
-    :hidePagination="true"
+    :hide-pagination="true"
   >
     <tr
       v-for="proposal in proposals"
@@ -147,21 +147,21 @@
             class="d-flex align-items-center mb-2"
           >
             <main-button
-              @click="() => voteFor(proposal.id.toString())"
               label="Vote for"
               :large="true"
               :active="true"
               :block="true"
               class="font-size-14 font-w400 mr-3 text-uppercase button-vote button-vote--for"
+              @click="() => voteFor(proposal.id.toString())"
             />
 
             <main-button
-              @click="voteAgainst(proposal.id.toString())"
               label="Vote against"
               :large="true"
               :active="true"
               :block="true"
               class="font-size-14 font-w400 mt-0 text-uppercase button-vote button-vote--against"
+              @click="voteAgainst(proposal.id.toString())"
             />
           </div>
 

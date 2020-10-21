@@ -20,7 +20,7 @@
         <pool-token-tables />
       </content-block>
     </b-col>
-    <b-col cols="12" v-if="isEth">
+    <b-col v-if="isEth" cols="12">
       <content-block :px0="true" :shadow-light="true" :no-header="true">
         <transaction-tables />
       </content-block>

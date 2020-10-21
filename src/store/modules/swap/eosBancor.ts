@@ -687,7 +687,7 @@ export class EosBancorModule
         this.relaysList.flatMap(relay => relay.reserves),
         (a, b) => compareString(a.id, b.id)
       );
-      this.fetchTokenBalancesIfPossible(reserves);
+      await this.fetchTokenBalancesIfPossible(reserves);
     }
   }
 
@@ -885,7 +885,7 @@ export class EosBancorModule
       reserves
     );
     const txRes = await this.triggerTx(nukeRelayActions);
-    this.waitAndUpdate();
+    await this.waitAndUpdate();
 
     const txId = txRes.transaction_id as string;
 
@@ -1255,15 +1255,15 @@ export class EosBancorModule
       this.hydrateOldRelays(firstChunk)
     ]);
 
-    this.buildManuallyIfNotIncludedInExistingFeeds({
+    await this.buildManuallyIfNotIncludedInExistingFeeds({
       relays: firstBatch,
       existingFeeds: bancorApiFeeds
     });
 
     for (const chunk in remainingChunks) {
       await wait(waitTime);
-      let relays = await this.hydrateOldRelays(remainingChunks[chunk]);
-      this.buildManuallyIfNotIncludedInExistingFeeds({
+      const relays = await this.hydrateOldRelays(remainingChunks[chunk]);
+      await this.buildManuallyIfNotIncludedInExistingFeeds({
         relays,
         existingFeeds: bancorApiFeeds
       });
@@ -1369,7 +1369,7 @@ export class EosBancorModule
         )
     );
 
-    this.addPools({
+    await this.addPools({
       multiRelays: [],
       tokenMeta,
       dryDelays: remainingV1Relays
@@ -1539,7 +1539,7 @@ export class EosBancorModule
     console.time("eosResolved");
     console.log("eosInit received", param);
 
-    this.pullEvents();
+    await this.pullEvents();
 
     if (this.initialised) {
       console.log("eos refreshing instead");
@@ -1561,7 +1561,7 @@ export class EosBancorModule
         noBlackListedReservesDry(blackListedTokens)
       );
 
-      this.fetchTokenBalancesIfPossible(
+      await this.fetchTokenBalancesIfPossible(
         _.uniqWith(
           allDry.flatMap(x =>
             x.reserves.map(x => ({ ...x, symbol: x.symbol.code().to_string() }))
@@ -1646,9 +1646,11 @@ export class EosBancorModule
       ).price;
 
       const relayFeeds: RelayFeed[] = relays.flatMap(relay => {
-        const [secondaryReserve, primaryReserve] = sortByNetworkTokens(
-          relay.reserves,
-          reserve => reserve.symbol.code().to_string()
+        const [
+          secondaryReserve,
+          primaryReserve
+        ] = sortByNetworkTokens(relay.reserves, reserve =>
+          reserve.symbol.code().to_string()
         );
 
         const token = tokenPrices.find(price =>
@@ -1923,7 +1925,7 @@ export class EosBancorModule
       onUpdate
     });
 
-    vxm.eosNetwork.pingTillChange({ originalBalances });
+    await vxm.eosNetwork.pingTillChange({ originalBalances });
 
     const txId = finalState.txRes.transaction_id as string;
 
@@ -2048,9 +2050,9 @@ export class EosBancorModule
       }));
 
     let lastTxId: string = "";
-    for (var i = 0; i < suggestTxs; i++) {
+    for (let i = 0; i < suggestTxs; i++) {
       onUpdate!(i, steps);
-      let txRes = await this.triggerTx(
+      const txRes = await this.triggerTx(
         await this.doubleLiquidateActions({
           relay,
           reserveAssets: reserveAssets.map(asset => asset.amount),
@@ -2107,8 +2109,8 @@ export class EosBancorModule
         tokens: tokenContractsAndSymbols
       })
     ]);
-    vxm.eosNetwork.pingTillChange({ originalBalances });
-    this.waitAndUpdate(6000);
+    await vxm.eosNetwork.pingTillChange({ originalBalances });
+    await this.waitAndUpdate(6000);
 
     const txId = txRes.transaction_id as string;
     return {
@@ -2133,7 +2135,7 @@ export class EosBancorModule
       );
       if (includesRelay) {
         this.setMultiRelays(relays);
-        this.refreshBalances(
+        await this.refreshBalances(
           includesRelay.reserves.map(reserve => ({
             contract: reserve.contract,
             symbol: reserve.symbol
@@ -2535,7 +2537,7 @@ export class EosBancorModule
         tokens
       })
     ]);
-    vxm.eosNetwork.pingTillChange({ originalBalances });
+    await vxm.eosNetwork.pingTillChange({ originalBalances });
     return txRes;
   }
 

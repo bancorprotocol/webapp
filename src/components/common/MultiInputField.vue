@@ -18,11 +18,11 @@
         </div>
       </b-input-group-prepend>
       <b-form-input
+        v-model="text"
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
           fontSizeClass
         ]"
-        v-model="text"
         :placeholder="placeholder"
         :type="type"
         :style="styleInput"

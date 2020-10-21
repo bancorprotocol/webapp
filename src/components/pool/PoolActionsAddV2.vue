@@ -1,7 +1,7 @@
 <template>
   <div>
     <label-content-split label="Selected Pool" class="my-3">
-      <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
+      <pool-logos :pool="pool" :dropdown="true" @click="poolLogosClick" />
       <modal-pool-select
         v-model="poolSelectModal"
         :pools="pools"
@@ -11,10 +11,10 @@
 
     <alert-block
       variant="warning"
-      @click="clickAlert"
       :msg="
         `This pools runs on an older version of Bancor. We recommend you stake liquidity in the new v2.1 ${poolLabel} pool.`
       "
+      @click="clickAlert"
     />
 
     <label-content-split label="Select a Token" class="my-3">
@@ -26,9 +26,9 @@
         >
           <b-form-radio
             v-for="reserve in pool.reserves"
+            :key="reserve.id"
             :name="reserve.symbol"
             :value="reserve"
-            :key="reserve.id"
           >
             <div class="d-flex align-items-center">
               <img
@@ -44,25 +44,25 @@
     </label-content-split>
 
     <token-input-field
+      v-model="amount"
       label="Input"
       :token="selectedToken"
-      v-model="amount"
-      @input="loadPrices(amount)"
       :balance="balance"
       class="mb-3"
       :error-msg="balanceError"
+      @input="loadPrices(amount)"
     />
 
     <rate-share-block :items="shareBlockItems" label="Prices and Pool Share" />
 
     <main-button
       :label="supplyButtonLabel"
-      @click="initAction"
       :active="true"
       :large="true"
       class="mt-3"
       :disabled="!amount || balanceError !== ''"
       :loading="rateLoading"
+      @click="initAction"
     />
     <modal-pool-action
       v-model="modal"
@@ -120,7 +120,7 @@ export default class PoolActionsAddV2 extends Vue {
   errorMsg = "";
 
   select(id: string) {
-    this.$router.push({
+    void this.$router.push({
       name: "PoolAction",
       params: {
         poolAction: "add",
@@ -211,19 +211,25 @@ export default class PoolActionsAddV2 extends Vue {
     this.singleUnitCosts = items;
   }
 
-
   get isLinkPool() {
     const selectedPool = this.pool;
-    return selectedPool.reserves.some(reserve => compareString(reserve.symbol, 'LINK'));
+    return selectedPool.reserves.some(reserve =>
+      compareString(reserve.symbol, "LINK")
+    );
   }
 
   get poolLabel() {
-    return this.isLinkPool ? 'LINK' : "REN"
+    return this.isLinkPool ? "LINK" : "REN";
   }
 
   clickAlert() {
-    const poolDestinationId = this.isLinkPool ? '0x04D0231162b4784b706908c787CE32bD075db9b7' : '0x6b181C478b315bE3f9E99c57CE926436c32e17a7'
-    this.$router.push({ name: 'AddProtectionSingle', params: { id: poolDestinationId } });
+    const poolDestinationId = this.isLinkPool
+      ? "0x04D0231162b4784b706908c787CE32bD075db9b7"
+      : "0x6b181C478b315bE3f9E99c57CE926436c32e17a7";
+    void this.$router.push({
+      name: "AddProtectionSingle",
+      params: { id: poolDestinationId }
+    });
   }
 
   async loadPrices(amount: string) {

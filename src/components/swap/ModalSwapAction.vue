@@ -1,5 +1,5 @@
 <template>
-  <modal-base v-model="show" @input="setDefault" title="Confirm Token Swap">
+  <modal-base v-model="show" title="Confirm Token Swap" @input="setDefault">
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)">
         <b-col cols="12">
@@ -62,11 +62,11 @@
 
       <b-col cols="12">
         <main-button
-          @click="initAction"
           :active="true"
           :label="confirmButton"
           :disabled="txBusy"
           :large="true"
+          @click="initAction"
         />
       </b-col>
     </b-row>

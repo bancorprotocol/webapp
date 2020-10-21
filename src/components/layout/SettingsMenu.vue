@@ -8,11 +8,11 @@
     toggle-class="block-rounded"
     no-caret
   >
-    <template v-slot:button-content>
+    <template #button-content>
       <font-awesome-icon icon="cog" fixed-width />
     </template>
 
-    <b-dropdown-group id="dropdown-group-1" v-if="showTx">
+    <b-dropdown-group v-if="showTx" id="dropdown-group-1">
       <b-dropdown-header class="text-uppercase"
         >Transaction Settings</b-dropdown-header
       >
@@ -55,17 +55,17 @@
         <div class="d-flex justify-content-between align-items-end">
           <b-btn
             size="sm"
-            @click="changeModule('eth')"
             :variant="currentNetwork === 'eth' ? 'primary' : 'light'"
             class="border-0 px-4 block-rounded btn-block mr-1"
+            @click="changeModule('eth')"
           >
             ETH
           </b-btn>
           <b-btn
             size="sm"
-            @click="changeModule('eos')"
             :variant="currentNetwork === 'eos' ? 'primary' : 'light'"
             class="border-0 px-4 block-rounded btn-block ml-1"
+            @click="changeModule('eos')"
           >
             EOS
           </b-btn>

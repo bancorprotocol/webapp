@@ -1,11 +1,11 @@
 <template>
   <modal-base
-    size="sm"
     v-model="show"
+    size="sm"
     :search.sync="searchQuery"
-    @update:search="currentStep = 1"
     :title="title"
     :fixed-height="true"
+    @update:search="currentStep = 1"
   >
     <div>
       <b-row>
@@ -18,9 +18,9 @@
           </span>
         </b-col>
         <b-col
-          cols="12"
           v-for="item in paginatedItems"
           :key="item.id"
+          cols="12"
           class="my-3 cursor"
           @click="selectItem"
         >
@@ -37,9 +37,9 @@
         <b-col cols="12" class="mb-3 text-center">
           <main-button
             v-if="canDisplayMoreItems"
-            @click="currentStep++"
             label="more"
             :small="true"
+            @click="currentStep++"
           />
         </b-col>
         <b-col cols="12" class="mb-3 text-center">

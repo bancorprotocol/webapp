@@ -4,8 +4,8 @@
       :shadow="true"
       title="Create a Pool"
       :back-button="true"
-      @back="back"
       class="mb-3"
+      @back="back"
     >
       <div class="mt-3">
         <div v-if="version === 1">
@@ -21,19 +21,19 @@
         <alert-block variant="error" :msg="errorStep1" class="mt-3" />
 
         <main-button
-          @click="nextStep"
           :label="stepsConfirmButton"
           :active="stepsConfirmError"
           class="mt-3"
           :large="true"
           :disabled="!stepsConfirmError"
+          @click="nextStep"
         />
       </div>
     </content-block>
 
     <modal-base
-      title="You are creating a pool"
       v-model="modal"
+      title="You are creating a pool"
       @input="setDefault"
     >
       <b-row v-if="!(txBusy || success || error)">
@@ -80,12 +80,12 @@
       />
 
       <main-button
-        @click="createPool"
         class="mt-3"
         :label="modalConfirmButton"
         :active="true"
         :large="true"
         :disabled="txBusy"
+        @click="createPool"
       />
     </modal-base>
   </div>
@@ -282,7 +282,7 @@ export default class CreateHomeNew extends Vue {
     if (this.success) {
       this.modal = false;
       const poolId = this.newPoolId;
-      this.$router.push({
+      await this.$router.push({
         name: "PoolAction",
         params: {
           poolAction: "add",
@@ -333,7 +333,7 @@ export default class CreateHomeNew extends Vue {
   back() {
     const atStart = this.step == 1;
     if (atStart) {
-      this.$router.push({ name: "Pool" });
+      void this.$router.push({ name: "Pool" });
     } else {
       this.prevStep();
     }

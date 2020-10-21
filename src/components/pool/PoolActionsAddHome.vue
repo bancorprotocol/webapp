@@ -11,7 +11,7 @@
         class="my-3"
       />
 
-      <stake-buttons @click="click" :show-add-liquidity="true" />
+      <stake-buttons :show-add-liquidity="true" @click="click" />
     </div>
   </content-block>
 </template>
@@ -53,21 +53,21 @@ export default class PoolActionsAddHome extends Vue {
   }
 
   goToSingle() {
-    this.$router.push({
+    void this.$router.push({
       name: "AddProtectionSingle",
       params: { id: this.pool.id }
     });
   }
 
   goToAddLiquidity() {
-    this.$router.push({
+    void this.$router.push({
       name: "PoolAction",
       params: { poolAction: "add", account: this.pool.id }
     });
   }
 
   back() {
-    this.$router.push({ name: "Pool" });
+    void this.$router.push({ name: "Pool" });
   }
 }
 </script>

@@ -19,9 +19,9 @@
         class="my-3"
       />
       <div
-        @click="addToken"
         v-else-if="stepOneProps[stepOneProps.length - 1].token"
         class="font-size-12 font-w500 text-primary text-right mt-3"
+        @click="addToken"
       >
         <span class="cursor">+ Add another token</span>
       </div>

@@ -42,7 +42,7 @@ Vue.use(BootstrapVue);
 
 library.add(fas, fab);
 
-Vue.component("font-awesome-icon", FontAwesomeIcon);
+Vue.component("FontAwesomeIcon", FontAwesomeIcon);
 
 Vue.config.productionTip = false;
 
@@ -55,7 +55,7 @@ Vue.mixin({
       if (isAuthenticated) return;
       const currentNetwork = this.$store.getters["bancor/currentNetwork"];
       if (currentNetwork == "eth") {
-        vxm.ethWallet.connect();
+        await vxm.ethWallet.connect();
       } else if (currentNetwork == "eos") {
         this.$bvModal.show("modal-login");
       }

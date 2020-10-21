@@ -2,13 +2,13 @@
   <div class="bar-container">
     <side-bar-left
       class="d-none d-md-flex"
-      :darkMode="darkMode"
+      :dark-mode="darkMode"
       :data="dataObject"
       @sideLinkClicked="sideLinkClicked"
     />
     <side-bar-bottom
       class="d-md-none"
-      :darkMode="darkMode"
+      :dark-mode="darkMode"
       :data="dataObject"
       @sideLinkClicked="sideLinkClicked"
     />
@@ -91,7 +91,7 @@ export default class SideBar extends Vue {
     };
   }
   async created() {
-    this.onRouteChange();
+    await this.onRouteChange();
   }
   detectSubdomain() {
     const hostname = window.location.hostname;
@@ -118,7 +118,7 @@ export default class SideBar extends Vue {
     if (this.selectedLink == newSelected) return;
     const link = this.links.find(x => x.key === newSelected);
     if (link && !link.newTab) {
-      this.$router.push({ name: link.route });
+      void this.$router.push({ name: link.route });
       this.selectedLink = newSelected;
     } else if (link) {
       this.openUrl(link.route);

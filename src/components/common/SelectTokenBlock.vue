@@ -1,6 +1,6 @@
 <template>
   <div>
-    <gray-border-block @click.native="clickAction" class="cursor">
+    <gray-border-block class="cursor" @click.native="clickAction">
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <pool-logos v-if="token" :token="token" />
@@ -21,8 +21,8 @@
     <modal-token-select
       v-model="modal"
       :tokens="tokens"
+      :allow-token-add="type == 'primary'"
       @select="select"
-      :allowTokenAdd="type == 'primary'"
     />
   </div>
 </template>

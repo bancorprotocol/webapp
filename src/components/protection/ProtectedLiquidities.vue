@@ -11,7 +11,7 @@
       :filter="search"
       sort-by="insuranceStart"
     >
-      <template v-slot:cell(stake)="data">
+      <template #cell(stake)="data">
         <div class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
           <div class="d-flex flex-column ml-2">
@@ -19,24 +19,24 @@
               v-text="`${data.value.amount} ${poolName(data.value.poolId)}`"
             />
             <span
-              v-text="formatDate(data.item.stake.unixTime).dateTime"
               class="font-size-12 font-w400"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+              v-text="formatDate(data.item.stake.unixTime).dateTime"
             />
           </div>
           <span
-            v-text="`(~$${data.value.usdValue})`"
             class="font-size-12 font-w400 text-primary ml-2"
+            v-text="`(~$${data.value.usdValue})`"
           />
         </div>
       </template>
 
-      <template v-slot:cell(protectedAmount)="data">
+      <template #cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span v-text="`${data.value.amount} ${data.value.symbol}`" />
           <span
-            v-text="`(~$${data.value.usdValue})`"
             class="font-size-12 font-w400 text-primary ml-2"
+            v-text="`(~$${data.value.usdValue})`"
           />
         </div>
         <b-badge
@@ -48,7 +48,7 @@
         </b-badge>
       </template>
 
-      <template v-slot:cell(apr)="data">
+      <template #cell(apr)="data">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{ stringifyPercentage(data.value.day) }}
@@ -63,18 +63,18 @@
         </div>
       </template>
 
-      <template v-slot:cell(insuranceStart)="data">
+      <template #cell(insuranceStart)="data">
         <div class="d-flex flex-column">
           <span v-text="formatDate(data.item.insuranceStart).date" />
           <span
-            v-text="formatDate(data.item.insuranceStart).time"
             class="font-size-12 font-w400"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            v-text="formatDate(data.item.insuranceStart).time"
           />
         </div>
       </template>
 
-      <template v-slot:cell(currentCoverage)="data">
+      <template #cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
           <span
             v-text="
@@ -106,11 +106,11 @@
         </div>
       </template>
 
-      <template v-slot:cell(actionButtons)="data">
+      <template #cell(actionButtons)="data">
         <b-btn
-          @click="goToWithdraw(data.item.stake.poolId)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           class="table-button"
+          @click="goToWithdraw(data.item.stake.poolId)"
         >
           Withdraw
         </b-btn>
@@ -159,7 +159,7 @@ export default class ProtectedLiquidities extends Vue {
   }
 
   goToWithdraw(id: string) {
-    this.$router.push({
+    void this.$router.push({
       name: "ProtectionAction",
       params: { action: "withdraw", id }
     });

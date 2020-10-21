@@ -19,7 +19,7 @@ import {
   LiquidityModule
 } from "@/types/bancor";
 import { vxm } from "@/store";
-import { store } from "../../../store";
+import { store } from "@/store";
 import {
   compareString,
   fetchUsdPriceOfBntViaRelay,
@@ -246,7 +246,7 @@ export class BancorModule extends VuexModule.With({
     params?: ModuleParam;
     resolveWhenFinished: boolean;
   }) {
-    this.moduleInitalising(moduleId);
+    await this.moduleInitalising(moduleId);
     const tolerance = localStorage.getItem(slippageTolerance);
     if (tolerance) {
       this.setTolerance(Number(tolerance));
@@ -256,19 +256,19 @@ export class BancorModule extends VuexModule.With({
         await this.$store.dispatch(`${moduleId}Bancor/init`, params || null, {
           root: true
         });
-        this.moduleInitialised(moduleId);
+        await this.moduleInitialised(moduleId);
       } catch (e) {
-        this.moduleThrown(moduleId);
+        await this.moduleThrown(moduleId);
       }
     } else {
       try {
-        this.$store
+        await this.$store
           .dispatch(`${moduleId}Bancor/init`, params || null, {
             root: true
           })
           .then(() => this.moduleInitialised(moduleId));
       } catch (e) {
-        this.moduleThrown(moduleId);
+        await this.moduleThrown(moduleId);
       }
     }
   }
@@ -306,7 +306,7 @@ export class BancorModule extends VuexModule.With({
       const res = await any([
         fetchBinanceUsdPriceOfBnt(),
         new Promise(resolve => {
-          wait(500).then(() => resolve(fetchUsdPriceOfBntViaRelay()));
+          void wait(500).then(() => resolve(fetchUsdPriceOfBntViaRelay()));
         })
       ]);
       const usdPrice = res as number;

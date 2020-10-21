@@ -1,5 +1,5 @@
 <template>
-  <modal-base v-model="modal" @input="setDefault" title="You will receive">
+  <modal-base v-model="modal" title="You will receive" @input="setDefault">
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)" class="w-100">
         <b-col
@@ -46,7 +46,7 @@
           </div>
         </b-col>
 
-        <b-col cols="12" v-if="pool.v2">
+        <b-col v-if="pool.v2" cols="12">
           <p
             class="font-size-sm font-w400 text-center mt-2"
             :class="!darkMode ? 'text-muted-light' : 'text-muted-dark'"
@@ -62,7 +62,7 @@
             class="block block-rounded font-size-sm block-shadow my-3"
             :class="darkMode ? 'bg-body-dark' : 'bg-body-light'"
           >
-            <div class="block-content py-2" v-if="advancedBlockItems.length">
+            <div v-if="advancedBlockItems.length" class="block-content py-2">
               <advanced-block-item
                 v-for="item in advancedBlockItems"
                 :key="item.label"
@@ -85,11 +85,11 @@
 
       <b-col cols="12">
         <main-button
-          @click="initAction"
           :active="true"
           :label="confirmButton"
           :disabled="txBusy"
           :large="true"
+          @click="initAction"
         />
       </b-col>
     </b-row>

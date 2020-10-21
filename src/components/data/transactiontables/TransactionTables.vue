@@ -2,8 +2,8 @@
   <div class="pt-2">
     <div class="float-right mr-2">
       <multi-input-field
-        class="max-search-width-xs"
         v-model="search"
+        class="max-search-width-xs"
         placeholder="Search"
         prepend="search"
       />

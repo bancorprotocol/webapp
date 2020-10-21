@@ -22,8 +22,8 @@
     <div v-if="!locked">
       <b-btn
         variant="primary"
-        @click="click"
         class="font-size-14 font-w500 px-4"
+        @click="click"
         >Claim BNT</b-btn
       >
     </div>

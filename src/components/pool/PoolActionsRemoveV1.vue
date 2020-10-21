@@ -48,8 +48,8 @@
     <div v-else>
       <token-input-field
         v-if="!detailMode"
-        label="Input"
         v-model="amountSmartToken"
+        label="Input"
         :pool="pool"
         class="mt-4"
       />
@@ -61,26 +61,26 @@
         />
       </div>
       <token-input-field
-        label="Output"
         v-model="amountToken1"
-        @input="tokenOneChanged"
+        label="Output"
         :token="pool.reserves[0]"
         class="my-3"
         :balance="balance1"
         :error-msg="token1Error"
+        @input="tokenOneChanged"
       />
 
       <div class="text-center my-3">
         <font-awesome-icon icon="plus" class="text-primary font-size-16" />
       </div>
       <token-input-field
-        label="Output"
         v-model="amountToken2"
-        @input="tokenTwoChanged"
+        label="Output"
         :token="pool.reserves[1]"
         :balance="balance2"
         :error-msg="token2Error"
         class="mb-4"
+        @input="tokenTwoChanged"
       />
     </div>
 
@@ -95,7 +95,6 @@
     />
 
     <main-button
-      @click="initAction"
       label="Remove"
       :active="true"
       :large="true"
@@ -105,6 +104,7 @@
           token2Error !== '' ||
           !(amountToken1 && amountToken2)
       "
+      @click="initAction"
     />
 
     <modal-pool-action
@@ -281,7 +281,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   }
 
   created() {
-    this.fetchBalances();
+    void this.fetchBalances();
   }
   // @Watch("pool")
   // async updateSelection(pool: ViewRelay) {

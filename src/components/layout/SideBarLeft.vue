@@ -20,7 +20,6 @@
       <div
         v-for="link in data.links"
         :key="link.key"
-        @click="sideLinkClicked(link.key)"
         class="side-bar-link"
         :class="[
           $route.name === link.route
@@ -32,6 +31,7 @@
             : 'side-bar-link',
           link.hideMobile ? 'hide-on-mobile' : ''
         ]"
+        @click="sideLinkClicked(link.key)"
       >
         <img
           class="side-bar-link-icon"

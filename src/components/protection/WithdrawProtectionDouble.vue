@@ -21,8 +21,8 @@
     />
 
     <percentage-slider
-      label="Input"
       v-model="percentage"
+      label="Input"
       :show-buttons="true"
     />
 
@@ -30,7 +30,7 @@
       <font-awesome-icon icon="arrow-down" class="mt-3" />
     </div>
 
-    <gray-border-block :gray-bg="true" class="my-3" v-if="false">
+    <gray-border-block v-if="false" :gray-bg="true" class="my-3">
       <label-content-split label="Output value of" value="????" />
       <label-content-split value="????" class="mb-2" />
 
@@ -40,22 +40,22 @@
 
     <main-button
       label="Continue"
-      @click="initAction"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
+      @click="initAction"
     />
 
-    <modal-base title="You will receive" v-model="modal" @input="setDefault">
+    <modal-base v-model="modal" title="You will receive" @input="setDefault">
       <action-modal-status :error="error" :success="success" />
 
       <main-button
-        @click="onModalClick"
         class="mt-3"
         :label="modalConfirmButton"
         :active="true"
         :large="true"
         :disabled="txBusy"
+        @click="onModalClick"
       />
     </modal-base>
   </div>
@@ -182,7 +182,7 @@ export default class WithdrawProtectionDouble extends Vue {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      void this.$router.push({ name: "LiqProtection" });
     } else if (this.error) {
       this.setDefault();
       this.modal = false;

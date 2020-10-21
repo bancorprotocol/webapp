@@ -6,11 +6,11 @@
     title="Select a token"
     subtitle="Tokens"
   >
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <div
-        @click="selectToken(item.id)"
         class="d-flex align-items-center justify-content-between"
         :class="darkMode ? 'text-dark' : 'text-light'"
+        @click="selectToken(item.id)"
       >
         <div>
           <img
@@ -30,13 +30,13 @@
         Can't find the token you're looking for?
         <span style="color: blue" @click="promptTokenAddModal">Add token</span>
       </p>
-      <modal-base title="Add Token" v-model="addTokenModal">
+      <modal-base v-model="addTokenModal" title="Add Token">
         <multi-input-field
           v-model="addTokenText"
-          @input="onTokenInput"
           label="Token Address"
           placeholder="eg. 0x90feoiw..."
           height="48"
+          @input="onTokenInput"
         />
         {{ error }}
       </modal-base>
@@ -81,7 +81,7 @@ export default class ModalSelectToken extends Vue {
   onTokenInput(input: string) {
     if (isAddress(input)) {
       this.error = "";
-      this.triggerAdd();
+      void this.triggerAdd();
     } else {
       if (this.error !== INVALID_ADDRESS) {
         this.error = INVALID_ADDRESS;

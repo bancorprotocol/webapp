@@ -1,43 +1,43 @@
 <template>
   <div>
     <token-input-field
-      label="From"
       v-model="amount1"
-      @input="updatePriceReturn"
-      @select="selectFromToken"
+      label="From"
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
+      @input="updatePriceReturn"
+      @select="selectFromToken"
     />
 
     <div class="text-center my-3">
       <font-awesome-icon
         icon="exchange-alt"
         rotation="90"
-        @click="invertSelection"
         class="text-primary font-size-16 cursor"
+        @click="invertSelection"
       />
     </div>
 
     <token-input-field
-      label="To (Estimated)"
       v-model="amount2"
-      @input="sanitizeAmount"
-      @select="selectToToken"
+      label="To (Estimated)"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
       :disabled="false"
       :tokens="tokens"
+      @input="sanitizeAmount"
+      @select="selectToToken"
     />
 
     <div class="my-3">
       <div class="mb-3">
         <label-content-split :label="advancedOpen ? 'Slippage Tolerance' : ''">
           <span
-            @click="advancedOpen = !advancedOpen"
             class="text-primary font-size-12 font-w500 cursor"
+            @click="advancedOpen = !advancedOpen"
           >
             Advanced settings
             <font-awesome-icon
@@ -60,7 +60,7 @@
         label="Price Impact"
         :value="
           slippage !== null && slippage !== undefined
-            ? numeral(this.slippage).format('0.0000%')
+            ? numeral(slippage).format('0.0000%')
             : '0.0000%'
         "
       />
@@ -69,11 +69,11 @@
 
     <main-button
       :label="swapButtonLabel"
-      @click="initConvert"
       :active="true"
       :large="true"
       :loading="rateLoading"
       :disabled="disableButton"
+      @click="initConvert"
     />
 
     <modal-swap-action
@@ -202,7 +202,7 @@ export default class SwapAction extends Vue {
       return;
     }
 
-    this.$router.push({
+    void this.$router.push({
       name: "Swap",
       query: {
         from: id,
@@ -219,7 +219,7 @@ export default class SwapAction extends Vue {
       return;
     }
 
-    this.$router.push({
+    void this.$router.push({
       name: "Swap",
       query: {
         from: from,
@@ -233,7 +233,7 @@ export default class SwapAction extends Vue {
   }
 
   invertSelection() {
-    this.$router.push({
+    void this.$router.push({
       name: "Swap",
       query: {
         from: this.token2.id,
@@ -269,7 +269,7 @@ export default class SwapAction extends Vue {
       if (reward.slippage) {
         this.slippage = reward.slippage;
       } else {
-        this.slippage = 0
+        this.slippage = 0;
       }
       if (reward.fee) {
         this.fee = reward.fee;

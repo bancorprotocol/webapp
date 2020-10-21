@@ -3,10 +3,10 @@
     <stake-buttons @click="openModal" />
 
     <modal-pool-select
-      @select="selectPool"
       v-model="modal"
       :pools="pools"
       :show-token-balance="showTokenBalance"
+      @select="selectPool"
     />
   </div>
 </template>
@@ -47,12 +47,12 @@ export default class AddProtectionHome extends Vue {
     this.modal = false;
     setTimeout(() => {
       if (this.singleMode) {
-        this.$router.push({
+        void this.$router.push({
           name: "AddProtectionSingle",
           params: { id }
         });
       } else {
-        this.$router.push({
+        void this.$router.push({
           name: "AddProtectionDouble",
           params: { id }
         });

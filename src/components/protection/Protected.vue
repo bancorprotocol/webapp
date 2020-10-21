@@ -5,10 +5,10 @@
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"
-      :filterFunction="doFilter"
+      :filter-function="doFilter"
       sort-by="insuranceStart"
     >
-      <template v-slot:cell(stake)="data">
+      <template #cell(stake)="data">
         <div class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
           <div class="d-flex flex-column ml-2">
@@ -20,19 +20,19 @@
             />
             <span
               v-if="data.value.usdValue !== undefined"
-              v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
               class="font-size-12 font-w400 text-primary"
+              v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
             />
             <span
-              v-text="formatDate(data.item.stake.unixTime).dateTime"
               class="font-size-12 font-w400"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+              v-text="formatDate(data.item.stake.unixTime).dateTime"
             />
           </div>
         </div>
       </template>
 
-      <template v-slot:cell(protectedAmount)="data">
+      <template #cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
@@ -40,16 +40,16 @@
         </div>
         <span
           v-if="data.value.usdValue !== undefined"
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
         />
       </template>
 
-      <template v-slot:cell(roi)="data">
+      <template #cell(roi)="data">
         <span>{{ data.value }}</span>
       </template>
 
-      <template v-slot:cell(apr)="data">
+      <template #cell(apr)="data">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{ stringifyPercentage(data.value.day) }}
@@ -64,18 +64,18 @@
         <!-- </div> -->
       </template>
 
-      <template v-slot:cell(insuranceStart)="data">
+      <template #cell(insuranceStart)="data">
         <div class="d-flex flex-column">
           <span v-text="formatDate(data.item.insuranceStart).date" />
           <span
-            v-text="formatDate(data.item.insuranceStart).time"
             class="font-size-12 font-w400"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            v-text="formatDate(data.item.insuranceStart).time"
           />
         </div>
       </template>
 
-      <template v-slot:cell(currentCoverage)="data">
+      <template #cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
           <span v-text="stringifyPercentage(data.item.coverageDecPercent)" />
           <b-progress
@@ -90,11 +90,11 @@
         </div>
       </template>
 
-      <template v-slot:cell(actionButtons)="data">
+      <template #cell(actionButtons)="data">
         <b-btn
-          @click="goToWithdraw(data.item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           class="table-button"
+          @click="goToWithdraw(data.item.id)"
         >
           Withdraw
         </b-btn>
@@ -156,7 +156,7 @@ export default class Protected extends Vue {
     const routeName = position.single
       ? "WithdrawProtectionSingle"
       : "WithdrawProtectionDouble";
-    this.$router.push({
+    void this.$router.push({
       name: routeName,
       params: { id }
     });

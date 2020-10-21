@@ -2,15 +2,15 @@
   <div>
     <gray-border-block v-if="token">
       <select-token-block
-        :type="type"
         v-model="token"
-        @remove="removeToken"
+        :type="type"
         class="mt-2"
+        @remove="removeToken"
       />
       <percentage-slider
+        v-model="percent"
         class="mt-3"
         label="Token Reserve Ratio"
-        v-model="percent"
       />
     </gray-border-block>
     <select-token-block v-else v-model="token" :type="type" />

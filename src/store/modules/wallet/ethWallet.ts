@@ -15,7 +15,7 @@ import { vxm } from "@/store";
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
     console.log("pumping into web3.eth.sendTransaction is...", data);
-    web3.eth
+    void web3.eth
       .sendTransaction(data)
       .on("transactionHash", hash => {
         console.log("returning a tx hash!", hash);
@@ -69,7 +69,7 @@ export class EthereumModule extends VuexModule.With({
   @action async onNetworkChange(network: EthNetworks) {
     if (network !== this.currentNetwork) {
       this.setNetwork(network);
-      vxm.ethBancor.onNetworkChange(network);
+      await vxm.ethBancor.onNetworkChange(network);
     }
   }
 
@@ -90,12 +90,15 @@ export class EthereumModule extends VuexModule.With({
   @action async accountChange(loggedInAccount: string) {
     if (loggedInAccount !== this.isAuthenticated) {
       this.setLoggedInAccount(loggedInAccount);
-      vxm.ethBancor.onAuthChange(loggedInAccount);
+      await vxm.ethBancor.onAuthChange(loggedInAccount);
     }
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    vxm.ethBancor.updateBalance([ethReserveAddress, fromWei(nativeBalance)]);
+    await vxm.ethBancor.updateBalance([
+      ethReserveAddress,
+      fromWei(nativeBalance)
+    ]);
   }
 
   @action async checkAlreadySignedIn() {

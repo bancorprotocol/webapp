@@ -2,10 +2,10 @@
   <div
     v-if="msg !== ''"
     class="w-100 mt-1 font-size-14"
-    @click="click"
     :class="
       darkMode ? 'alert-' + variant + '-dark' : 'alert-' + variant + '-light'
     "
+    @click="click"
   >
     <div v-if="title" class="font-w700 mb-2">{{ title }}</div>
     <span class="font-w500">{{ msg }}</span>

@@ -19,7 +19,7 @@
       ]"
     >
       <div v-if="backButton" class="fix-width">
-        <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
+        <font-awesome-icon icon="chevron-left" class="cursor" @click="back" />
       </div>
 
       <h3
@@ -32,8 +32,8 @@
       <div class="fix-width d-flex justify-content-end">
         <span
           v-if="detailModeProp !== null"
-          @click="detailModeProp = !detailModeProp"
           class="text-primary cursor font-size-12 font-w500"
+          @click="detailModeProp = !detailModeProp"
         >
           {{ detailModeProp ? "Simple" : "Detailed" }}
         </span>

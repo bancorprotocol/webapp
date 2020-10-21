@@ -1,8 +1,8 @@
 <template>
   <b-modal
+    v-model="show"
     scrollable
     centered
-    v-model="show"
     hide-footer
     :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
     @close="onHide"
@@ -22,8 +22,8 @@
             <font-awesome-icon
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="onHide"
               icon="times"
+              @click="onHide"
             />
           </b-col>
         </b-row>
@@ -36,13 +36,13 @@
     </b-alert>
 
     <multi-input-field
-      class="mb-3"
       v-model="discourseUrl"
-      @input="onDiscourseInput"
+      class="mb-3"
       type="url"
       placeholder="https://gov.bancor.network/t/..."
       height="48"
       label="Discourse Url"
+      @input="onDiscourseInput"
     />
 
     <template v-if="name || description">
@@ -60,8 +60,8 @@
         ]"
       />
       <b-form-textarea
-        class="mb-3 combo combo--desc"
         v-model="description"
+        class="mb-3 combo combo--desc"
         placeholder="I would like to propose to ..."
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
@@ -71,17 +71,17 @@
     </template>
 
     <multi-input-field
-      class="mb-3"
       v-model="contractAddress"
-      @input="onAddressInput"
+      class="mb-3"
       type="text"
       placeholder="0x0000000000000000000000000000000000000000"
       height="48"
       label="Contract address"
+      @input="onAddressInput"
     />
     <multi-input-field
-      class="mb-3"
       v-model="githubUrl"
+      class="mb-3"
       type="url"
       placeholder="https://github.com/..."
       height="48"
@@ -90,11 +90,11 @@
     <div class="pt-3" />
 
     <main-button
-      @click="propose"
       label="Propose"
       :large="true"
       :active="true"
-      :disabled="this.hasError"
+      :disabled="hasError"
+      @click="propose"
     />
   </b-modal>
 </template>

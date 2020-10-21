@@ -4,27 +4,27 @@
     header-icon="exclamation-triangle"
   >
     <div
-      class="pb-3 mt-3 d-flex justify-content-between align-items-center px-3"
       v-for="item in protectableLiquidity"
       :key="item.poolId"
+      class="pb-3 mt-3 d-flex justify-content-between align-items-center px-3"
     >
       <div class="d-flex align-items-start">
         <pool-logos-overlapped :pool-id="item.poolId" size="20" />
         <div class="d-flex flex-column mx-2">
           <span
-            v-text="`${item.amount} ${poolName(item.poolId)}`"
             class="font-size-14 font-w500"
             :class="darkMode ? 'text-dark' : 'text-light'"
+            v-text="`${item.amount} ${poolName(item.poolId)}`"
           />
           <span
-            v-text="formatDate(item.unixTime).dateTime"
             class="font-size-12 font-w400"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            v-text="formatDate(item.unixTime).dateTime"
           />
         </div>
         <span
-          v-text="`(~$${item.usdValue})`"
           class="font-size-12 font-w400 text-primary mr-2"
+          v-text="`(~$${item.usdValue})`"
         />
         <b-badge variant="secondary" class="px-3 py-1">
           <font-awesome-icon icon="exclamation-triangle" />
@@ -33,9 +33,9 @@
       </div>
       <div>
         <b-btn
-          @click="goTo(item.poolId)"
           variant="primary"
           class="table-button"
+          @click="goTo(item.poolId)"
         >
           Add Liquidity
         </b-btn>
@@ -89,7 +89,7 @@ export default class ProtectableLiquidity extends Vue {
   }
 
   goTo(id: string) {
-    this.$router.push({
+    void this.$router.push({
       name: "ProtectionAction",
       params: { action: "add", id }
     });

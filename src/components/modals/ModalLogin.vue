@@ -14,23 +14,23 @@
       </h5>
       <font-awesome-icon
         icon="times"
-        @click="$bvModal.hide('modal-login')"
         class="cursor"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+        @click="$bvModal.hide('modal-login')"
       />
     </template>
     <transition name="slide-fade" mode="out-in">
       <b-row v-if="!loading && !error" key="select">
         <b-col
-          sm="6"
           v-for="(provider, index) in walletProviders"
           :key="provider.id"
+          sm="6"
           class="my-3"
         >
           <div
-            @click="initLogin(provider)"
             class="cursor d-flex align-items-center"
             :class="index % 2 ? '' : 'flex-sm-row-reverse'"
+            @click="initLogin(provider)"
           >
             <img
               class="img-avatar img-avatar48 mr-3 mr-sm-0"
@@ -75,10 +75,10 @@
             {{ error.message ? error.message : error }}
           </p>
           <b-btn
-            @click="error = false"
             size="lg"
             variant="primary"
             class="btn-block block-rounded"
+            @click="error = false"
             >Try Again</b-btn
           >
         </b-col>

@@ -3,8 +3,8 @@
     <div>
       <div
         class="new-proposal-button cursor"
-        @click="showNewProposal = true"
         :class="darkMode ? 'text-dark' : 'text-light'"
+        @click="showNewProposal = true"
       >
         + New Proposal
       </div>

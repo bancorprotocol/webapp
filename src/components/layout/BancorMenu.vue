@@ -8,7 +8,7 @@
     menu-class="dropdown-dark"
     no-caret
   >
-    <template v-slot:button-content>
+    <template #button-content>
       <font-awesome-icon icon="bars" fixed-width />
     </template>
 
@@ -105,34 +105,34 @@
       <b-dropdown-text>
         <div class="d-flex justify-content-between cursor">
           <font-awesome-icon
-            @click="openUrl('https://twitter.com/Bancor')"
             :icon="['fab', 'twitter']"
             class="mr-2 menu-icon"
             fixed-width
+            @click="openUrl('https://twitter.com/Bancor')"
           />
           <font-awesome-icon
-            @click="openUrl('https://www.reddit.com/r/Bancor/')"
             :icon="['fab', 'reddit-alien']"
             class="mr-2 menu-icon"
             fixed-width
+            @click="openUrl('https://www.reddit.com/r/Bancor/')"
           />
           <font-awesome-icon
-            @click="openUrl('https://t.me/bancor')"
             :icon="['fab', 'telegram-plane']"
             class="mr-2 menu-icon"
             fixed-width
+            @click="openUrl('https://t.me/bancor')"
           />
           <font-awesome-icon
-            @click="openUrl('https://discord.gg/3wJxvP')"
             :icon="['fab', 'discord']"
             class="mr-2 menu-icon"
             fixed-width
+            @click="openUrl('https://discord.gg/3wJxvP')"
           />
           <font-awesome-icon
-            @click="openUrl('https://gov.bancor.network')"
             :icon="['fab', 'discourse']"
             class="mr-2 menu-icon"
             fixed-width
+            @click="openUrl('https://gov.bancor.network')"
           />
         </div>
       </b-dropdown-text>
@@ -185,11 +185,11 @@ export default class BancorMenu extends Vue {
   }
 
   navPrivacy() {
-    this.$router.push({ name: "PrivacyPolicy" });
+    void this.$router.push({ name: "PrivacyPolicy" });
   }
 
   navTermsOfUse() {
-    this.$router.push({ name: "TermsOfUse" });
+    void this.$router.push({ name: "TermsOfUse" });
   }
 
   openUrl(url: string) {

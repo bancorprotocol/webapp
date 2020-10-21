@@ -7,15 +7,15 @@
 
       <div>
         <main-button
-          @click="modal = true"
           label="Join a Pool"
           :active="true"
           :large="true"
+          @click="modal = true"
         />
         <modal-pool-select
-          @select="selectPool"
           v-model="modal"
           :pools="pools"
+          @select="selectPool"
         />
         <your-liquidity />
       </div>
@@ -60,12 +60,12 @@ export default class PoolHome extends Vue {
   selectPool(id: string) {
     const whitelisted = vxm.bancor.relay(id).whitelisted;
     if (whitelisted) {
-      this.$router.push({
+      void this.$router.push({
         name: "PoolAdd",
         params: { id }
       });
     } else {
-      this.$router.push({
+      void this.$router.push({
         name: "PoolAction",
         params: { poolAction: "add", account: id }
       });

@@ -2,9 +2,9 @@
   <div>
     <template v-for="option in stakeOptions">
       <gray-border-block
+        v-if="!option.hide"
         :key="option.id"
         :class="option.id <= stakeOptions.length ? 'mb-3' : ''"
-        v-if="!option.hide"
       >
         <h5
           class="font-size-14 font-w600 text-uppercase my-2"
@@ -16,12 +16,12 @@
           {{ option.desc }}
         </p>
         <main-button
-          @click="click(option.id)"
           :label="option.buttonTxt"
           :active="option.buttonActive"
           :large="true"
           :disabled="!option.buttonEnabled"
           class="mb-2 font-size-14"
+          @click="click(option.id)"
         />
       </gray-border-block>
     </template>

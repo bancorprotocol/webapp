@@ -129,12 +129,12 @@ export const traverseLockedBalances = async (
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
 
     console.log(startIndex, endIndex, 'is start and end index')
-    let lockedBalanceRes = await storeContract.methods
+    const lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
       console.log('traverseHit 33')
@@ -206,7 +206,7 @@ export const multiSteps = async ({
 }) => {
   let state: any = {};
   for (const todo in items) {
-    let steps = items.map(
+    const steps = items.map(
       (todo, index): Step => ({
         name: String(index),
         description: todo.description
@@ -218,7 +218,7 @@ export const multiSteps = async ({
       throw new Error("onUpdate should be either a function or undefined");
     }
 
-    let newState = await items[todo].task(state);
+    const newState = await items[todo].task(state);
     if (typeof newState !== "undefined") {
       state = newState;
     }
@@ -393,7 +393,7 @@ const getInfuraAddress = (network: EthNetworks) => {
   throw new Error("Infura address for network not supported ");
 };
 
-export let web3 = new Web3(
+export const web3 = new Web3(
   Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
 );
 
@@ -750,13 +750,13 @@ export const onboard = Onboard({
   hideBranding: true,
   subscriptions: {
     address: address => {
-      vxm.ethWallet.accountChange(address);
+      void vxm.ethWallet.accountChange(address);
     },
     balance: balance => vxm.ethWallet.nativeBalanceChange(balance),
     network: (network: EthNetworks) => {
       if (network == EthNetworks.Mainnet || network == EthNetworks.Ropsten) {
         onboard.config({ networkId: network });
-        vxm.ethWallet.onNetworkChange(network);
+        void vxm.ethWallet.onNetworkChange(network);
       }
     },
     wallet: wallet => {

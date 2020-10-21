@@ -27,10 +27,10 @@
     />
 
     <percentage-slider
-      label="Input"
       v-model="percentage"
-      @input="onPercentUpdate"
+      label="Input"
       :show-buttons="true"
+      @input="onPercentUpdate"
     />
 
     <div class="d-flex justify-content-center mb-3">
@@ -48,8 +48,8 @@
 
       <label-content-split
         v-for="(output, index) in outputs"
-        :label="index == 0 ? 'Output breakdown' : ''"
         :key="output.id"
+        :label="index == 0 ? 'Output breakdown' : ''"
         :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       >
       </label-content-split>
@@ -64,22 +64,22 @@
 
     <main-button
       label="Continue"
-      @click="initAction"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
+      @click="initAction"
     />
 
-    <modal-base title="You will receive" v-model="modal" @input="setDefault">
+    <modal-base v-model="modal" title="You will receive" @input="setDefault">
       <action-modal-status :error="error" :success="success" />
 
       <main-button
-        @click="onModalClick"
         class="mt-3"
         :label="modalConfirmButton"
         :active="true"
         :large="true"
         :disabled="txBusy"
+        @click="onModalClick"
       />
     </modal-base>
   </div>
@@ -204,7 +204,7 @@ export default class WithdrawProtectionSingle extends Vue {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      void this.$router.push({ name: "LiqProtection" });
     } else if (this.error) {
       this.setDefault();
       this.modal = false;
@@ -235,7 +235,7 @@ export default class WithdrawProtectionSingle extends Vue {
   }
 
   created() {
-    this.onPercentUpdate(this.percentage);
+    void this.onPercentUpdate(this.percentage);
   }
 
   get modalConfirmButton() {
