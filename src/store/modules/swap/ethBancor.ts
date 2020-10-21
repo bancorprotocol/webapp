@@ -2332,7 +2332,7 @@ export class EthBancorModule
 
   loadingProtectedPositions = true;
 
-  get protectedLiquidity(): ViewProtectedLiquidity[] {
+  get protectedPositions(): ViewProtectedLiquidity[] {
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
 
     console.log(this.protectedPositionsArr, "was thing");

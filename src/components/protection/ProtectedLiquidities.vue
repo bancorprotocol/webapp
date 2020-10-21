@@ -174,7 +174,7 @@ export default class ProtectedLiquidities extends Vue {
   }
 
   get protectedLiquidity() {
-    return vxm.ethBancor.protectedLiquidity;
+    return vxm.ethBancor.protectedPositions;
   }
 
   get protectedTxTable() {

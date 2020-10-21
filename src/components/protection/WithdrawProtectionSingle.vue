@@ -153,7 +153,7 @@ export default class WithdrawProtectionSingle extends Vue {
   get position() {
     const [poolId, first, second] = this.$route.params.id.split(":");
 
-    const pos = findOrThrow(vxm.ethBancor.protectedLiquidity, position =>
+    const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
       compareString(position.id, this.$route.params.id)
     );
     console.log(pos, "is the selected pos");
