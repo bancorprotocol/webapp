@@ -162,6 +162,16 @@ const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
   return passed;
 };
 
+const calculateReturnOnInvestment = (
+  investment: string,
+  newReturn: string
+): string => {
+  return new BigNumber(newReturn)
+    .div(investment)
+    .minus(1)
+    .toString();
+};
+
 const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) =>
   compareString(a.poolToken, b.poolToken) &&
   a.timestamp == b.timestamp &&
@@ -1960,49 +1970,58 @@ export class EthBancorModule
       const currentBlockNumber = await web3.eth.getBlockNumber();
       console.timeEnd("secondsToGetCurrentBlock");
 
-      const blockHeightOneDayAgo = rewindBlocksByDays(currentBlockNumber, 1);
-      // const blockHeightOneWeekAgo = rewindBlocksByDays(currentBlockNumber, 7);
-      // const blockHeightOneMonthAgo = rewindBlocksByDays(currentBlockNumber, 30);
-
-      const timeScales = [
-        blockHeightOneDayAgo
-        // blockHeightOneWeekAgo
-        // blockHeightOneMonthAgo
-      ];
-
-      console.log(timeScales, "are the time scales");
-
       const uniqueAnchors = uniqWith(
         allPositions.map(pos => pos.poolToken),
         compareString
+      ) as string[];
+
+      const timeScales: {
+        blockHeight: number;
+        days: number;
+        label: string;
+      }[] = ([[1, "day"], [7, "week"]] as [number, string][]).map(
+        ([days, label]) => ({
+          blockHeight: rewindBlocksByDays(currentBlockNumber, days),
+          days,
+          label
+        })
       );
-      const historicalBalances = await Promise.all(
+
+      const poolHistoricalBalances = await Promise.all(
         uniqueAnchors.map(async anchor => {
-          const balances = await this.fetchRelayBalances({
-            poolId: anchor,
-            blockHeight: blockHeightOneDayAgo
-          });
+          const historicalBalances = await Promise.all(
+            timeScales.map(async scale => {
+              const balance = await this.fetchRelayBalances({
+                poolId: anchor,
+                blockHeight: scale.blockHeight
+              });
+              return {
+                balance,
+                scale: scale.label
+              };
+            })
+          );
+
           return {
             poolId: anchor,
-            ...balances
+            historicalBalances
           };
         })
       );
 
       const rois = await Promise.all(
         allPositions.map(
-          async (position, posIndex): Promise<ProtectedLiquidityCalculated> => {
+          async (position): Promise<ProtectedLiquidityCalculated> => {
             try {
-              const [oneDayRoi] = await Promise.all(
-                timeScales.map(async blockHeight => {
-                  console.log(
-                    "historical balance ",
-                    historicalBalances,
-                    posIndex
-                  );
-                  const poolBalance = findOrThrow(historicalBalances, pool =>
-                    compareString(pool.poolId, position.poolToken)
-                  );
+              const pool = findOrThrow(poolHistoricalBalances, pool =>
+                compareString(pool.poolId, position.poolToken)
+              );
+              const aprs = await Promise.all(
+                timeScales.map(async scale => {
+                  const poolBalance = findOrThrow(
+                    pool.historicalBalances,
+                    balance => compareString(balance.scale, scale.label)
+                  ).balance;
 
                   const historicalReserveBalances = poolBalance.reserves.map(
                     (reserve): WeiExtendedAsset => ({
@@ -2045,51 +2064,52 @@ export class EthBancorModule
                     )
                     .call();
 
-                  console.log(poolRoi, "is raw pool ROI number");
-                  return poolRoi;
+                  const magnitude =
+                    scale.label == "day"
+                      ? 365
+                      : scale.label == "week"
+                      ? 52
+                      : 365 / scale.days;
+
+                  const calculatedAprDec = new BigNumber(poolRoi)
+                    .div(1000000)
+                    .minus(1)
+                    .times(magnitude);
+
+                  return {
+                    calculatedAprDec: calculatedAprDec.isNegative()
+                      ? "0"
+                      : calculatedAprDec.toString(),
+                    scaleId: scale.label
+                  };
                 })
               );
-
-              const rawRoiToDecPercentIncrease = (wei: string): BigNumber =>
-                new BigNumber(wei).div(oneMillion).minus(1);
-
-              const finalOneDayRoi = rawRoiToDecPercentIncrease(oneDayRoi)
-                .times(365)
-                .toString();
-              // const finalOneWeekRoi = rawRoiToDecPercentIncrease(oneWeekRoi)
-              //   .times(52)
-              //   .toString();
-              // const finalOneMonthRoi = rawRoiToDecPercentIncrease(oneMonthRoi)
-              //   .times(12)
-              //   .toString();
 
               const fullWaitTime =
                 Number(position.timestamp) +
                 Number(this.liquidityProtectionSettings.maxDelay);
 
-              try {
-                const liquidityReturn = await getRemoveLiquidityReturn(
-                  this.contracts.LiquidityProtection,
-                  position.id,
-                  oneMillion.toString(),
-                  fullWaitTime
-                );
+              const liquidityReturn = await getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                fullWaitTime
+              );
 
-                return {
-                  ...position,
-                  liquidityReturn,
-                  oneDayDec: finalOneDayRoi
-                  // oneWeekDec: finalOneWeekRoi
-                  // oneMonthDec: finalOneMonthRoi
-                };
-              } catch (e) {
-                console.error("failed again", e);
-                console.log(posIndex, "one");
-                throw new Error("Failed getting remove liquidity return");
-              }
+              return {
+                ...position,
+                liquidityReturn,
+                oneDayDec: aprs.find(apr => apr.scaleId == "day")!
+                  .calculatedAprDec,
+                oneWeekDec: aprs.find(apr => apr.scaleId == "week")!
+                  .calculatedAprDec,
+                roiDec: calculateReturnOnInvestment(
+                  position.reserveAmount,
+                  liquidityReturn.targetAmount
+                )
+              };
             } catch (e) {
               console.log(e, "error fetching pool balances");
-              console.log(posIndex, "two");
               throw new Error("");
             }
           }
@@ -2409,9 +2429,9 @@ export class EthBancorModule
           },
           single: true,
           apr: {
-            day: Number(singleEntry.oneDayDec)
-            // month: Number(singleEntry.oneMonthDec),
-            // week: Number(singleEntry.oneWeekDec)
+            day: Number(singleEntry.oneDayDec),
+            // month: Number(singleEntry.on)
+            week: Number(singleEntry.oneWeekDec)
           },
           insuranceStart: startTime + minDelay,
           fullCoverage: startTime + maxDelay,
