@@ -128,7 +128,7 @@ export default class WithdrawProtectionDouble extends Vue {
   }
 
   get position() {
-    const positions = vxm.ethBancor.protectedLiquidity;
+    const positions = vxm.ethBancor.protectedPositions;
     console.log(positions, "x");
     const pos = findOrThrow(positions, position =>
       compareString(position.id, this.$route.params.id)

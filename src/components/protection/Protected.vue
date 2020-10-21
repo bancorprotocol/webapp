@@ -171,7 +171,7 @@ export default class Protected extends Vue {
   }
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
-    return vxm.ethBancor.protectedLiquidity;
+    return vxm.ethBancor.protectedPositions;
   }
 
   prettifyNumber(number: string | number, usd = false): string {
