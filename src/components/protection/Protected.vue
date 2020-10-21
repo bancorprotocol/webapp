@@ -178,6 +178,10 @@ export default class Protected extends Vue {
     return prettifyNumber(number, usd);
   }
 
+  get phase2() {
+    return true;
+  }
+
   get protectedTxTable() {
     const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
     const fields: any[] = [
