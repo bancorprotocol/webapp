@@ -118,6 +118,18 @@ export const router = new Router({
       }
     },
     {
+      path: "/:service/pool/create",
+      name: "PoolCreate",
+      components: {
+        Nav: Navigation,
+        Hero: CreateHome
+      },
+      props: true,
+      meta: {
+        feature: "Liquidity"
+      }
+    },
+    {
       path: "/:service/pool/:id",
       name: "PoolAdd",
       components: {
@@ -184,15 +196,6 @@ export const router = new Router({
           component: WithdrawProtectionDouble
         }
       ]
-    },
-    {
-      path: "/:service/pool/create/",
-      name: "PoolCreate",
-      components: {
-        Nav: Navigation,
-        Hero: CreateHome
-      },
-      props: true
     },
     {
       path: "/:service/swap",
