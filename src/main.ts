@@ -25,7 +25,10 @@ Sentry.init({
   integrations: [
     new VueIntegration({
       Vue,
-      tracing: true
+      tracing: true,
+      tracingOptions: {
+        trackComponents: true
+      }
     }),
     new Integrations.BrowserTracing()
   ],
