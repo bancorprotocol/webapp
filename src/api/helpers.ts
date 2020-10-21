@@ -62,6 +62,57 @@ export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPe
   return currentBlock - blocksToRewind;
 };
 
+
+const zeroIfNegative = (big: BigNumber) =>
+  big.isNegative() ? new BigNumber(0) : big;
+
+
+export const calculateMaxStakes = (
+  tknReserveBalanceWei: string,
+  bntReserveBalanceWei: string,
+  poolTokenSupplyWei: string,
+  poolTokenSystemBalanceWei: string,
+  maxSystemNetworkTokenAmount: string,
+  maxSystemNetworkTokenRatioPpm: string
+) => {
+  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
+  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
+  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
+  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
+  const maxSystemNetworkTokenRatioDec = new BigNumber(
+    maxSystemNetworkTokenRatioPpm
+  ).div(1000000);
+
+  // calculating the systemBNT  from system pool tokens
+  const rate = bntReserveBalance.div(poolTokenSupply);
+  const systemBNT = poolTokenSystemBalance.times(rate);
+
+  // allowed BNT based on limit cap
+  const maxLimitBnt = zeroIfNegative(
+    new BigNumber(maxSystemNetworkTokenAmount).minus(systemBNT)
+  );
+
+  // allowed BNT based on ratio cap
+  const maxRatioBnt = zeroIfNegative(
+    new BigNumber(maxSystemNetworkTokenRatioDec)
+      .times(bntReserveBalance)
+      .minus(systemBNT)
+  );
+
+  const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
+  
+  const maxAllowedBntInTkn = lowestAmount.times(
+    tknReserveBalance.div(bntReserveBalance)
+  );
+
+  const maxAllowedBnt = systemBNT;
+
+  return {
+    maxAllowedBntWei: maxAllowedBnt.toString(),
+    maxAllowedTknWei: maxAllowedBntInTkn.toString()
+  }
+};
+
 export interface LockedBalance {
   index: number;
   amountWei: string;
@@ -345,6 +396,8 @@ const getInfuraAddress = (network: EthNetworks) => {
 export let web3 = new Web3(
   Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
 );
+
+web3.eth.transactionBlockTimeout = 100;
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 

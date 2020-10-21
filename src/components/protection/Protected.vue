@@ -33,7 +33,7 @@
       </template>
 
       <template v-slot:cell(protectedAmount)="data">
-        <div v-if="phase2" class="d-flex align-items-start">
+        <div class="d-flex align-items-start">
           <span
             v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
           />
@@ -43,14 +43,10 @@
           v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
-        <b-badge v-if="!phase2" variant="danger" class="px-2 pt-1">
-          Pending community vote
-        </b-badge>
       </template>
 
       <template v-slot:cell(roi)="data">
-        <span v-if="phase2">{{ data.value }}</span>
-        <span v-else>N/A</span>
+        <span>{{ data.value }}</span>
       </template>
 
       <template v-slot:cell(apr)="data">

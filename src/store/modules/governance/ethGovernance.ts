@@ -1,4 +1,4 @@
-import { createModule, action, mutation } from "vuex-class-component";
+import { action, createModule, mutation } from "vuex-class-component";
 import { ContractMethods, EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
 import {
@@ -146,8 +146,7 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async getNetwork(): Promise<EthNetworks> {
-    const web3NetworkVersion = await web3.eth.getChainId();
-    const currentNetwork: EthNetworks = web3NetworkVersion;
+    const currentNetwork: EthNetworks = await web3.eth.getChainId();
     console.log(`current network is: ${EthNetworks[currentNetwork]}`);
     return currentNetwork;
   }

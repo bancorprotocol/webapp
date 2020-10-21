@@ -7,7 +7,11 @@
     subtitle="Pools"
   >
     <template v-slot:item="{ item }">
-      <select-pool-row @click="selectPool(item.id)" :pool="item" />
+      <select-pool-row
+        @click="selectPool(item.id)"
+        :pool="item"
+        :show-token-balance="showTokenBalance"
+      />
     </template>
   </modal-select>
 </template>
@@ -26,6 +30,7 @@ import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 export default class ModalPoolSelect extends Vue {
   @VModel({ type: Boolean }) modal!: boolean;
   @Prop() pools!: ViewRelay[];
+  @Prop({ default: false }) showTokenBalance!: boolean;
 
   search: string = "";
   perStep = 30;
