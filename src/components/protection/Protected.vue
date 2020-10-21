@@ -54,10 +54,10 @@
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{ stringifyPercentage(data.value.day) }}
         </div>
-        <!-- <div class="d-flex align-items-center my-1"> -->
-        <!-- <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge> -->
-        <!-- {{ stringifyPercentage(data.value.week) }} -->
-        <!-- </div> -->
+        <div class="d-flex align-items-center my-1">
+          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+          {{ stringifyPercentage(data.value.week) }}
+        </div>
         <!-- <div class="d-flex align-items-center"> -->
         <!-- <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge> -->
         <!-- {{ stringifyPercentage(data.value.month) }} -->
@@ -180,7 +180,7 @@ export default class Protected extends Vue {
 
   get protectedTxTable() {
     const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
-    const fields: any[] = [
+    const fields = [
       {
         key: "stake",
         thStyle: { "min-width": "250px" }
@@ -190,6 +190,17 @@ export default class Protected extends Vue {
         label: "Fully Protected Value",
         sortable: true,
         thStyle: { "min-width": "210px" }
+      },
+      {
+        key: "roi",
+        sortable: true,
+        thStyle: { "min-width": "60px" },
+        formatter: (value: string) => this.stringifyPercentage(Number(value))
+      },
+      {
+        key: "apr",
+        sortable: false,
+        thStyle: { "min-width": "100px" }
       },
       {
         key: "insuranceStart",
