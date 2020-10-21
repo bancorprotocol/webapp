@@ -1,4 +1,7 @@
 import Vue from "vue";
+import * as Sentry from "@sentry/browser";
+import { Vue as VueIntegration } from "@sentry/integrations";
+import { Integrations } from "@sentry/tracing";
 import App from "./App.vue";
 import { router } from "./router";
 import { store, vxm } from "./store/";
@@ -12,10 +15,25 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
-
 import { firebase } from "@firebase/app";
 import "@firebase/analytics";
 import VueGtag from "vue-gtag";
+
+Sentry.init({
+  dsn:
+    "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
+  integrations: [
+    new VueIntegration({
+      Vue,
+      tracing: true
+    }),
+    new Integrations.BrowserTracing()
+  ],
+
+  // We recommend adjusting this value in production, or using tracesSampler
+  // for finer control
+  tracesSampleRate: 1.0
+});
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4yWnTGa6qj6dR1RLW6Clod0iMn4niflU",
