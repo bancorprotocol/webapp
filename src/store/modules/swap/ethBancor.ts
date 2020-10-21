@@ -2334,230 +2334,113 @@ export class EthBancorModule
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
-    const allowSingles = true;
 
     console.log(this.protectedPositionsArr, "was thing");
+    const owner = this.isAuthenticated;
+    const whiteListedPools = this.whiteListedPools;
+
     const allPositions = this.protectedPositionsArr
-      .filter(position => compareString(position.owner, this.isAuthenticated))
+      .filter(position => compareString(position.owner, owner))
       .filter(position =>
-        this.whiteListedPools.some(anchor =>
+        whiteListedPools.some(anchor =>
           compareString(position.poolToken, anchor)
         )
       );
+
     // this filter of removing white listed pools shouldn't stick around forever as it just kills any positions that might exist on non-whitelisted pools
     // in the event a white listed pool runs, LP creates a position then gov kills it
     // filter currently in place to clean up existing positions on ropsten essentially.
+    // issue: https://github.com/bancorprotocol/webapp/issues/375
 
-    const seperatedEntries = uniqWith(allPositions, samePointOfEntry);
-
-    const joined = seperatedEntries.map(entry =>
-      allPositions.filter(position => samePointOfEntry(position, entry))
+    const allRelays = this.relaysList;
+    const uniqueAnchors = uniqWith(
+      allPositions.map(pos => pos.poolToken),
+      compareString
     );
-    const allFoundAtLeastOne = joined.every(
-      entries => entries.length > 0 && entries.length < 3
-    );
-    console.log({ seperatedEntries, joined, allFoundAtLeastOne }, "xp");
-    if (!allFoundAtLeastOne)
-      throw new Error("Failed finding at least one entry or found above 2");
-
-    const [singlesArr, doublesArr] = partition(
-      joined,
-      entries => entries.length == 1
+    const relays = uniqueAnchors.map(anchor =>
+      findOrThrow(allRelays, relay => compareString(relay.id, anchor))
     );
 
-    const reviewedSingles = singlesArr
-      .filter(() => allowSingles)
-      .map(x => x[0])
-      .map(
-        (singleEntry): ViewProtectedLiquidity => {
-          const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor =>
-            compareString(singleEntry.poolToken, whitelistedAnchor)
-          );
+    const viewPositions = allPositions.map(
+      (singleEntry): ViewProtectedLiquidity => {
+        const isWhiteListed = true;
 
-          const startTime = Number(singleEntry.timestamp);
-          const relay = findOrThrow(this.relaysList, relay =>
-            compareString(relay.id, singleEntry.poolToken)
-          );
+        const startTime = Number(singleEntry.timestamp);
 
-          const reserveToken = this.token(singleEntry.reserveToken);
-          const reservePrecision = reserveToken.precision;
-
-          const reserveTokenDec = shrinkToken(
-            singleEntry.reserveAmount,
-            reservePrecision
-          );
-
-          const fullyProtectedDec = shrinkToken(
-            singleEntry.liquidityReturn.targetAmount,
-            reservePrecision
-          );
-          const protectionAchieved = calculateProtectionLevel(
-            startTime,
-            minDelay,
-            maxDelay
-          );
-
-          const givenVBnt =
-            compareString(
-              reserveToken.id,
-              this.liquidityProtectionSettings.networkToken
-            ) && reserveTokenDec;
-
-          return {
-            id: `${singleEntry.poolToken}:${singleEntry.id}`,
-            whitelisted: isWhiteListed,
-            ...(givenVBnt && { givenVBnt }),
-            stake: {
-              amount: reserveTokenDec,
-              symbol: reserveToken.symbol,
-              poolId: relay.id,
-              unixTime: startTime,
-              ...(reserveToken.price && {
-                usdValue: new BigNumber(reserveTokenDec)
-                  .times(reserveToken.price)
-                  .toNumber()
-              })
-            },
-            single: true,
-            apr: {
-              day: Number(singleEntry.oneDayDec)
-              // month: Number(singleEntry.oneMonthDec),
-              // week: Number(singleEntry.oneWeekDec)
-            },
-            insuranceStart: startTime + minDelay,
-            fullCoverage: startTime + maxDelay,
-            // @ts-ignore
-            fullyProtected: {
-              amount: fullyProtectedDec
-            },
-            protectedAmount: {
-              amount: fullyProtectedDec,
-              symbol: reserveToken.symbol,
-              ...(reserveToken.price && {
-                usdValue: new BigNumber(fullyProtectedDec)
-                  .times(reserveToken.price!)
-                  .toNumber()
-              })
-            },
-            coverageDecPercent: protectionAchieved,
-            roi: Number(
-              calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-            )
-          } as ViewProtectedLiquidity;
-        }
-      );
-
-    const reviewedDoubles = doublesArr
-      .filter(double =>
-        this.relays.some(relay => compareString(relay.id, double[0].poolToken))
-      )
-      .flatMap((doubles): ViewProtectedLiquidity | ViewProtectedLiquidity[] => {
-        const first = doubles[0];
-        const commonPoolToken = first.poolToken;
-        const commonViewRelay = this.relay(commonPoolToken);
-        const commonRelay = findOrThrow(this.relaysList, relay =>
-          compareString(relay.id, commonPoolToken)
-        );
-        const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor =>
-          compareString(commonPoolToken, whitelistedAnchor)
+        const relay = findOrThrow(relays, relay =>
+          compareString(relay.id, singleEntry.poolToken)
         );
 
-        const startTime = Number(first.timestamp);
-        return doubles.map(
-          (singleEntry): ViewProtectedLiquidity => {
-            const isWhiteListed = this.whiteListedPools.some(
-              whitelistedAnchor =>
-                compareString(singleEntry.poolToken, whitelistedAnchor)
-            );
+        const reserveToken = this.token(singleEntry.reserveToken);
+        const reservePrecision = reserveToken.precision;
 
-            const startTime = Number(singleEntry.timestamp);
-            const relay = findOrThrow(this.relaysList, relay =>
-              compareString(relay.id, singleEntry.poolToken)
-            );
-            const smartToken = relay.anchor as SmartToken;
-            const smartTokensWei = singleEntry.reserveAmount;
-            const smartTokensDec = shrinkToken(
-              smartTokensWei,
-              smartToken.decimals
-            );
-
-            const reserveToken = this.token(singleEntry.reserveToken);
-            const reservePrecision = reserveToken.precision;
-
-            const reserveTokenDec = shrinkToken(
-              singleEntry.reserveAmount,
-              reserveToken.precision
-            );
-
-            const fullyProtectedDec = shrinkToken(
-              singleEntry.liquidityReturn.targetAmount,
-              reservePrecision
-            );
-            const protectionAchieved = calculateProtectionLevel(
-              startTime,
-              minDelay,
-              maxDelay
-            );
-
-            const givenVBnt =
-              compareString(
-                reserveToken.id,
-                this.liquidityProtectionSettings.networkToken
-              ) && reserveTokenDec;
-
-            console.log("oneDayDec", singleEntry.oneDayDec);
-
-            return {
-              id: `${singleEntry.poolToken}:${singleEntry.id}`,
-              ...(givenVBnt && { givenVBnt }),
-              whitelisted: isWhiteListed,
-              stake: {
-                amount: smartTokensDec,
-                symbol: reserveToken.symbol,
-                poolId: relay.id,
-                unixTime: startTime,
-                ...(reserveToken.price && {
-                  usdValue: new BigNumber(reserveTokenDec)
-                    .times(reserveToken.price!)
-                    .toNumber()
-                })
-              },
-              // @ts-ignore
-              fullyProtected: {
-                amount: "1.23"
-              },
-              protectedAmount: {
-                amount: fullyProtectedDec,
-                symbol: reserveToken.symbol,
-                ...(reserveToken.price && {
-                  usdValue: new BigNumber(fullyProtectedDec)
-                    .times(reserveToken.price!)
-                    .toNumber()
-                })
-              },
-              apr: {
-                day: Number(singleEntry.oneDayDec)
-                // month: Number(singleEntry.oneMonthDec),
-                // week: Number(singleEntry.oneWeekDec)
-              },
-              single: true,
-              insuranceStart: startTime + minDelay,
-              fullCoverage: startTime + maxDelay,
-              coverageDecPercent: calculateProtectionLevel(
-                startTime,
-                minDelay,
-                maxDelay
-              ),
-              roi: Number(
-                calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-              )
-            } as ViewProtectedLiquidity;
-          }
+        const reserveTokenDec = shrinkToken(
+          singleEntry.reserveAmount,
+          reservePrecision
         );
-      });
 
-    console.log({ reviewedDoubles, reviewedSingles });
-    return [...reviewedDoubles, ...reviewedSingles];
+        const fullyProtectedDec = shrinkToken(
+          singleEntry.liquidityReturn.targetAmount,
+          reservePrecision
+        );
+        const protectionAchieved = calculateProtectionLevel(
+          startTime,
+          minDelay,
+          maxDelay
+        );
+
+        const givenVBnt =
+          compareString(
+            reserveToken.id,
+            this.liquidityProtectionSettings.networkToken
+          ) && reserveTokenDec;
+
+        return {
+          id: `${singleEntry.poolToken}:${singleEntry.id}`,
+          whitelisted: isWhiteListed,
+          ...(givenVBnt && { givenVBnt }),
+          stake: {
+            amount: reserveTokenDec,
+            symbol: reserveToken.symbol,
+            poolId: relay.id,
+            unixTime: startTime,
+            ...(reserveToken.price && {
+              usdValue: new BigNumber(reserveTokenDec)
+                .times(reserveToken.price)
+                .toNumber()
+            })
+          },
+          single: true,
+          apr: {
+            day: Number(singleEntry.oneDayDec)
+            // month: Number(singleEntry.oneMonthDec),
+            // week: Number(singleEntry.oneWeekDec)
+          },
+          insuranceStart: startTime + minDelay,
+          fullCoverage: startTime + maxDelay,
+          // @ts-ignore
+          fullyProtected: {
+            amount: fullyProtectedDec
+          },
+          protectedAmount: {
+            amount: fullyProtectedDec,
+            symbol: reserveToken.symbol,
+            ...(reserveToken.price && {
+              usdValue: new BigNumber(fullyProtectedDec)
+                .times(reserveToken.price!)
+                .toNumber()
+            })
+          },
+          coverageDecPercent: protectionAchieved,
+          roi: Number(
+            calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+          )
+        } as ViewProtectedLiquidity;
+      }
+    );
+
+    console.log({ reviewedSingles: viewPositions });
+    return viewPositions;
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
