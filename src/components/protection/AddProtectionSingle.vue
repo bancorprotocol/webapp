@@ -33,12 +33,14 @@
     />
 
     <gray-border-block v-else :gray-bg="true" class="my-3">
-      <label-content-split
-        v-for="(output, index) in outputs"
-        :key="output.id"
-        :label="index == 0 ? `Value you receive` : ``"
-        :value="`${formatNumber(output.amount)} ${output.symbol}`"
-      />
+      <div v-if="amount">
+        <label-content-split
+          v-for="(output, index) in outputs"
+          :key="output.id"
+          :label="index == 0 ? `Value you receive` : ``"
+          :value="`${formatNumber(output.amount)} ${output.symbol}`"
+        />
+      </div>
 
       <span
         class="font-size-14 font-w400"
@@ -164,6 +166,7 @@ export default class AddProtectionSingle extends Vue {
   selectedTokenIndex = 0;
 
   toggleReserveIndex(x: string) {
+    this.preTxError = "";
     this.selectedTokenIndex = this.pool.reserves.findIndex(
       reserve => reserve.id == x
     );
@@ -295,15 +298,17 @@ export default class AddProtectionSingle extends Vue {
 
       console.log(res, "was res");
 
+      const errorMsg = `${this.token.symbol} limit reached. Additional ${
+        this.opposingToken!.symbol
+      } liquidity should be staked to allow for ${
+        this.token.symbol
+      } single-sided staking. Alternatively, provide dual-sided liquidity (${
+        this.opposingToken!.symbol
+      }+${this.token.symbol})`;
+
       if (res.error) {
         this.preTxError =
-          res.error == "Insufficient store balance"
-            ? `BNT limit reached. Additional ${
-                this.opposingToken!.symbol
-              } liquidity should be staked to allow for BNT single-sided staking. Alternatively, provide dual-sided liquidity (BNT+${
-                this.opposingToken!.symbol
-              })`
-            : res.error;
+          res.error == "Insufficient store balance" ? errorMsg : res.error;
       } else {
         this.preTxError = "";
       }
@@ -329,7 +334,7 @@ export default class AddProtectionSingle extends Vue {
   }
 
   formatNumber(amount: string) {
-    return parseFloat(formatNumber(amount, 6));
+    return formatNumber(amount, 6);
   }
 
   get currentStatus() {
