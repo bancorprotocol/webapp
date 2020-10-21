@@ -14,6 +14,17 @@
       </router-link>-->
     </template>
 
+    <template v-slot:head(liquidityProtection)="data">
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
+    </template>
+
+    <template v-slot:cell(liquidityProtection)="data">
+      <img
+        v-if="data.value"
+        :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+      />
+    </template>
+
     <template v-slot:cell(actionButtons)="data">
       <action-buttons :pool="data.item" />
     </template>
@@ -37,10 +48,14 @@ export default class TablePools extends Vue {
 
   fields = [
     {
+      key: "liquidityProtection",
+      sortable: true
+    },
+    {
       key: "symbol",
       label: "Name",
       sortable: true,
-      thStyle: { "min-width": "250px" }
+      thStyle: { "min-width": "150px" }
     },
     {
       key: "liqDepth",
