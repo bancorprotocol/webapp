@@ -183,7 +183,7 @@ export default class Protected extends Vue {
   }
 
   get phase2() {
-    return vxm.general.phase2;
+    return true;
   }
 
   get protectedTxTable() {

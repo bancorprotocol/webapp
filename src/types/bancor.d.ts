@@ -36,7 +36,7 @@ export interface ProtectedLiquidityCalculated {
   reserveRateN: string;
   reserveRateD: string;
   timestamp: string;
-  oneDayDec: string;
+  oneDayDec?: string;
   // oneWeekDec: string;
   // oneMonthDec: string;
   liquidityReturn: {
