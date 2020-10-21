@@ -33,12 +33,14 @@
     />
 
     <gray-border-block v-else :gray-bg="true" class="my-3">
-      <label-content-split
-        v-for="(output, index) in outputs"
-        :key="output.id"
-        :label="index == 0 ? `Value you receive` : ``"
-        :value="`${formatNumber(output.amount)} ${output.symbol}`"
-      />
+      <div v-if="amount">
+        <label-content-split
+          v-for="(output, index) in outputs"
+          :key="output.id"
+          :label="index == 0 ? `Value you receive` : ``"
+          :value="`${formatNumber(output.amount)} ${output.symbol}`"
+        />
+      </div>
 
       <span
         class="font-size-14 font-w400"
@@ -332,7 +334,7 @@ export default class AddProtectionSingle extends Vue {
   }
 
   formatNumber(amount: string) {
-    return parseFloat(formatNumber(amount, 6));
+    return formatNumber(amount, 6);
   }
 
   get currentStatus() {
