@@ -2084,9 +2084,9 @@ export class EthBancorModule
                 })
               );
 
-              const fullWaitTime =
-                Number(position.timestamp) +
-                Number(this.liquidityProtectionSettings.maxDelay);
+              const fullWaitTime = moment()
+                .add(1, "year")
+                .unix();
 
               const liquidityReturn = await getRemoveLiquidityReturn(
                 this.contracts.LiquidityProtection,
