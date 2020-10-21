@@ -164,6 +164,7 @@ export default class AddProtectionSingle extends Vue {
   selectedTokenIndex = 0;
 
   toggleReserveIndex(x: string) {
+    this.preTxError = "";
     this.selectedTokenIndex = this.pool.reserves.findIndex(
       reserve => reserve.id == x
     );
@@ -295,15 +296,17 @@ export default class AddProtectionSingle extends Vue {
 
       console.log(res, "was res");
 
+      const errorMsg = `${this.token.symbol} limit reached. Additional ${
+        this.opposingToken!.symbol
+      } liquidity should be staked to allow for ${
+        this.token.symbol
+      } single-sided staking. Alternatively, provide dual-sided liquidity (${
+        this.opposingToken!.symbol
+      }+${this.token.symbol})`;
+
       if (res.error) {
         this.preTxError =
-          res.error == "Insufficient store balance"
-            ? `BNT limit reached. Additional ${
-                this.opposingToken!.symbol
-              } liquidity should be staked to allow for BNT single-sided staking. Alternatively, provide dual-sided liquidity (BNT+${
-                this.opposingToken!.symbol
-              })`
-            : res.error;
+          res.error == "Insufficient store balance" ? errorMsg : res.error;
       } else {
         this.preTxError = "";
       }
