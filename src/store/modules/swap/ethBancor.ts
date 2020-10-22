@@ -1937,7 +1937,6 @@ export class EthBancorModule
     console.count("fetchProtectionPositions");
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
-    console.log(storeAddress, "is the new address", liquidityStore);
     if (!this.isAuthenticated) {
       return;
     }
@@ -1989,140 +1988,168 @@ export class EthBancorModule
         })
       );
 
-      const poolHistoricalBalances = await Promise.all(
-        uniqueAnchors.map(async anchor => {
-          const historicalBalances = await Promise.all(
-            timeScales.map(async scale => {
-              const balance = await this.fetchRelayBalances({
-                poolId: anchor,
-                blockHeight: scale.blockHeight
-              });
-              return {
-                balance,
-                scale: scale.label
-              };
-            })
-          );
+      const [withRois, withLiquidityReturn] = await Promise.all([
+        (async () => {
+          try {
+            const poolHistoricalBalances = await Promise.all(
+              uniqueAnchors.map(async anchor => {
+                const historicalBalances = await Promise.all(
+                  timeScales.map(async scale => {
+                    const balance = await this.fetchRelayBalances({
+                      poolId: anchor,
+                      blockHeight: scale.blockHeight
+                    });
+                    return {
+                      balance,
+                      scale: scale.label
+                    };
+                  })
+                );
 
-          return {
-            poolId: anchor,
-            historicalBalances
-          };
-        })
-      );
+                return {
+                  poolId: anchor,
+                  historicalBalances
+                };
+              })
+            );
 
-      const rois = await Promise.all(
-        allPositions.map(
-          async (position): Promise<ProtectedLiquidityCalculated> => {
-            try {
-              const pool = findOrThrow(poolHistoricalBalances, pool =>
-                compareString(pool.poolId, position.poolToken)
-              );
-              const aprs = await Promise.all(
-                timeScales.map(async scale => {
-                  const poolBalance = findOrThrow(
-                    pool.historicalBalances,
-                    balance => compareString(balance.scale, scale.label)
-                  ).balance;
+            return await Promise.all(
+              allPositions.map(async position => {
+                const pool = findOrThrow(poolHistoricalBalances, pool =>
+                  compareString(pool.poolId, position.poolToken)
+                );
+                const aprs = await Promise.all(
+                  timeScales.map(async scale => {
+                    const poolBalance = findOrThrow(
+                      pool.historicalBalances,
+                      balance => compareString(balance.scale, scale.label)
+                    ).balance;
 
-                  const historicalReserveBalances = poolBalance.reserves.map(
-                    (reserve): WeiExtendedAsset => ({
-                      weiAmount: reserve.weiAmount,
-                      contract: reserve.contract
-                    })
-                  );
+                    const historicalReserveBalances = poolBalance.reserves.map(
+                      (reserve): WeiExtendedAsset => ({
+                        weiAmount: reserve.weiAmount,
+                        contract: reserve.contract
+                      })
+                    );
 
-                  const poolTokenSupply = poolBalance.smartTokenSupplyWei;
+                    const poolTokenSupply = poolBalance.smartTokenSupplyWei;
 
-                  const [tknReserveBalance, opposingTknBalance] = sortAlongSide(
-                    historicalReserveBalances,
-                    balance => balance.contract,
-                    [position.reserveToken]
-                  );
+                    const [
+                      tknReserveBalance,
+                      opposingTknBalance
+                    ] = sortAlongSide(
+                      historicalReserveBalances,
+                      balance => balance.contract,
+                      [position.reserveToken]
+                    );
 
-                  const poolToken = position.poolToken;
-                  const reserveToken = position.reserveToken;
-                  const reserveAmount = position.reserveAmount;
-                  const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
-                    .times(2)
-                    .toString();
-                  const poolRateD = poolTokenSupply;
+                    const poolToken = position.poolToken;
+                    const reserveToken = position.reserveToken;
+                    const reserveAmount = position.reserveAmount;
+                    const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+                      .times(2)
+                      .toString();
+                    const poolRateD = poolTokenSupply;
 
-                  const reserveRateN = opposingTknBalance.weiAmount;
-                  const reserveRateD = tknReserveBalance.weiAmount;
+                    const reserveRateN = opposingTknBalance.weiAmount;
+                    const reserveRateD = tknReserveBalance.weiAmount;
 
-                  const poolRoi = await lpContract.methods
-                    .poolROI(
-                      poolToken,
-                      reserveToken,
-                      reserveAmount,
-                      poolRateN,
-                      poolRateD,
-                      reserveRateN,
-                      reserveRateD
-                    )
-                    .call();
+                    const poolRoi = await lpContract.methods
+                      .poolROI(
+                        poolToken,
+                        reserveToken,
+                        reserveAmount,
+                        poolRateN,
+                        poolRateD,
+                        reserveRateN,
+                        reserveRateD
+                      )
+                      .call();
 
-                  const magnitude =
-                    scale.label == "day"
-                      ? 365
-                      : scale.label == "week"
-                      ? 52
-                      : 365 / scale.days;
+                    const magnitude =
+                      scale.label == "day"
+                        ? 365
+                        : scale.label == "week"
+                        ? 52
+                        : 365 / scale.days;
 
-                  const calculatedAprDec = new BigNumber(poolRoi)
-                    .div(1000000)
-                    .minus(1)
-                    .times(magnitude);
+                    const calculatedAprDec = new BigNumber(poolRoi)
+                      .div(1000000)
+                      .minus(1)
+                      .times(magnitude);
 
-                  return {
-                    calculatedAprDec: calculatedAprDec.isNegative()
-                      ? "0"
-                      : calculatedAprDec.toString(),
-                    scaleId: scale.label
-                  };
-                })
-              );
+                    return {
+                      calculatedAprDec: calculatedAprDec.isNegative()
+                        ? "0"
+                        : calculatedAprDec.toString(),
+                      scaleId: scale.label
+                    };
+                  })
+                );
 
-              const fullWaitTime = moment()
-                .add(1, "year")
-                .unix();
-
-              const liquidityReturn = await getRemoveLiquidityReturn(
-                this.contracts.LiquidityProtection,
-                position.id,
-                oneMillion.toString(),
-                fullWaitTime
-              );
-
-              return {
-                ...position,
-                liquidityReturn,
-                oneDayDec: aprs.find(apr => apr.scaleId == "day")!
-                  .calculatedAprDec,
-                oneWeekDec: aprs.find(apr => apr.scaleId == "week")!
-                  .calculatedAprDec,
-                roiDec: calculateReturnOnInvestment(
-                  position.reserveAmount,
-                  liquidityReturn.targetAmount
-                )
-              };
-            } catch (e) {
-              console.log(e, "error fetching pool balances");
-              throw new Error("");
-            }
+                return {
+                  positionId: position.id,
+                  oneDayDec: aprs.find(apr => apr.scaleId == "day")!
+                    .calculatedAprDec,
+                  oneWeekDec: aprs.find(apr => apr.scaleId == "week")!
+                    .calculatedAprDec
+                };
+              })
+            );
+          } catch (e) {
+            console.log(e, "error doing rois");
           }
-        )
+        })(),
+        Promise.all(
+          allPositions.map(async position => {
+            const fullWaitTime = moment()
+              .add(1, "year")
+              .unix();
+
+            const liquidityReturn = await getRemoveLiquidityReturn(
+              this.contracts.LiquidityProtection,
+              position.id,
+              oneMillion.toString(),
+              fullWaitTime
+            );
+
+            return {
+              positionId: position.id,
+              liquidityReturn,
+              roiDec: calculateReturnOnInvestment(
+                position.reserveAmount,
+                liquidityReturn.targetAmount
+              )
+            };
+          })
+        ).catch(e => {
+          console.warn("Error fetching ROIs", e);
+        })
+      ]);
+
+      const positions = allPositions.map(
+        (position): ProtectedLiquidityCalculated => {
+          const liqReturn =
+            withLiquidityReturn &&
+            withLiquidityReturn.find(p => position.id == p.positionId);
+          const roiReturn =
+            withRois && withRois.find(p => position.id == p.positionId);
+          return {
+            ...position,
+            ...(liqReturn && omit(liqReturn, ["positionId"])),
+            ...(roiReturn && omit(roiReturn, ["positionId"]))
+          };
+        }
       );
 
-      console.log("success!", rois);
+      console.log("success!", positions, "are positions");
 
-      this.setProtectedPositions(rois);
+      this.setProtectedPositions(positions);
       if (this.loadingProtectedPositions) {
         await wait(2);
         this.setLoadingPositions(false);
       }
-      return rois;
+      return positions;
     } catch (e) {
       console.error("Failed fetching protection positions", e.message);
     }
@@ -2353,10 +2380,11 @@ export class EthBancorModule
   loadingProtectedPositions = true;
 
   get protectedPositions(): ViewProtectedLiquidity[] {
+    const owner = this.isAuthenticated;
+    if (!owner) return [];
+
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
 
-    console.log(this.protectedPositionsArr, "was thing");
-    const owner = this.isAuthenticated;
     const whiteListedPools = this.whiteListedPools;
 
     const allPositions = this.protectedPositionsArr
@@ -2366,11 +2394,6 @@ export class EthBancorModule
           compareString(position.poolToken, anchor)
         )
       );
-
-    // this filter of removing white listed pools shouldn't stick around forever as it just kills any positions that might exist on non-whitelisted pools
-    // in the event a white listed pool runs, LP creates a position then gov kills it
-    // filter currently in place to clean up existing positions on ropsten essentially.
-    // issue: https://github.com/bancorprotocol/webapp/issues/375
 
     const allRelays = this.relaysList;
     const uniqueAnchors = uniqWith(
@@ -2399,10 +2422,12 @@ export class EthBancorModule
           reservePrecision
         );
 
-        const fullyProtectedDec = shrinkToken(
-          singleEntry.liquidityReturn.targetAmount,
-          reservePrecision
-        );
+        const fullyProtectedDec =
+          singleEntry.liquidityReturn &&
+          shrinkToken(
+            singleEntry.liquidityReturn.targetAmount,
+            reservePrecision
+          );
         const protectionAchieved = calculateProtectionLevel(
           startTime,
           minDelay,
@@ -2445,16 +2470,17 @@ export class EthBancorModule
           protectedAmount: {
             amount: fullyProtectedDec,
             symbol: reserveToken.symbol,
-            ...(reserveToken.price && {
-              usdValue: new BigNumber(fullyProtectedDec)
-                .times(reserveToken.price!)
-                .toNumber()
-            })
+            ...(reserveToken.price &&
+              fullyProtectedDec && {
+                usdValue: new BigNumber(fullyProtectedDec)
+                  .times(reserveToken.price!)
+                  .toNumber()
+              })
           },
           coverageDecPercent: protectionAchieved,
-          roi: Number(
-            calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-          )
+          roi:
+            fullyProtectedDec &&
+            Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
         } as ViewProtectedLiquidity;
       }
     );
