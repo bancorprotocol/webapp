@@ -35,11 +35,15 @@
       <template v-slot:cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span
-            v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
+            v-text="
+              data.value && data.value.amount
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
           />
         </div>
         <span
-          v-if="data.value.usdValue !== undefined"
+          v-if="data.value.usdValue !== undefined && data.value.amount"
           v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
@@ -52,11 +56,19 @@
       <template v-slot:cell(apr)="data">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
-          {{ stringifyPercentage(data.value.day) }}
+          {{
+            data.value.day
+              ? stringifyPercentage(data.value.day)
+              : "Error calculating"
+          }}
         </div>
         <div class="d-flex align-items-center my-1">
           <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
-          {{ stringifyPercentage(data.value.week) }}
+          {{
+            data.value.day
+              ? stringifyPercentage(data.value.week)
+              : "Error calculating"
+          }}
         </div>
         <!-- <div class="d-flex align-items-center"> -->
         <!-- <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge> -->
@@ -195,7 +207,8 @@ export default class Protected extends Vue {
         key: "roi",
         sortable: true,
         thStyle: { "min-width": "60px" },
-        formatter: (value: string) => this.stringifyPercentage(Number(value))
+        formatter: (value: string) =>
+          value ? this.stringifyPercentage(Number(value)) : "Error calculating"
       },
       {
         key: "apr",
