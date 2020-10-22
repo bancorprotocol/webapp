@@ -100,7 +100,7 @@ export const calculateMaxStakes = (
   );
 
   const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
-  
+
   const maxAllowedBntInTkn = lowestAmount.times(
     tknReserveBalance.div(bntReserveBalance)
   );
@@ -381,21 +381,25 @@ export enum EthNetworks {
 
 const projectId = "da059c364a2f4e6eb89bfd89600bce07";
 
-const buildInfuraAddress = (subdomain: string, projectId: string) =>
-  `https://${subdomain}.infura.io/v3/${projectId}`;
+const buildInfuraAddress = (subdomain: string, projectId: string, wss: boolean = false) =>
+  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${wss ? "ws/" : ""}v3/${projectId}`;
 
-const getInfuraAddress = (network: EthNetworks) => {
+const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
   if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId);
+    return buildInfuraAddress("mainnet", projectId, wss);
   } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId);
+    return buildInfuraAddress("ropsten", projectId, wss);
   }
   throw new Error("Infura address for network not supported ");
 };
 
 export let web3 = new Web3(
-  Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
+  Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet, true)
 );
+
+export let web3View = new Web3(
+  "wss://eth-mainnet.ws.alchemyapi.io/v2/zzz"
+)
 
 web3.eth.transactionBlockTimeout = 100;
 

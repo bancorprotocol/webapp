@@ -82,7 +82,7 @@ import {
   calculateProtectionLevel,
   LockedBalance,
   rewindBlocksByDays,
-  calculateMaxStakes
+  calculateMaxStakes, web3View
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -5021,7 +5021,7 @@ export class EthBancorModule
 
   @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
     const networkVars = getNetworkVariables(this.currentNetwork);
-    const multi = new MultiCall(web3, networkVars.multiCall, [
+    const multi = new MultiCall(web3View, networkVars.multiCall, [
       500,
       100,
       50,
