@@ -1988,7 +1988,7 @@ export class EthBancorModule
         })
       );
 
-      const [withRois, withLiquidityReturn] = await Promise.all([
+      const [withAprs, withLiquidityReturn] = await Promise.all([
         (async () => {
           try {
             const poolHistoricalBalances = await Promise.all(
@@ -2133,7 +2133,7 @@ export class EthBancorModule
             withLiquidityReturn &&
             withLiquidityReturn.find(p => position.id == p.positionId);
           const roiReturn =
-            withRois && withRois.find(p => position.id == p.positionId);
+            withAprs && withAprs.find(p => position.id == p.positionId);
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
