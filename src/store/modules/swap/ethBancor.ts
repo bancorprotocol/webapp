@@ -82,7 +82,7 @@ import {
   calculateProtectionLevel,
   LockedBalance,
   rewindBlocksByDays,
-  calculateMaxStakes, web3View
+  calculateMaxStakes
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -150,6 +150,7 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 import { getNetworkVariables } from "../../config";
+import { getWeb3, Provider } from "@/api/web3"
 
 const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
   const liq1 = new BigNumber(liq1Balance);
@@ -4714,7 +4715,8 @@ export class EthBancorModule
       LiquidityProtection: asciiToHex("LiquidityProtection")
     };
 
-    const registryContract = new web3.eth.Contract(
+    const web3View = getWeb3(this.currentNetwork, Provider.Alchemy)
+    const registryContract = new web3View.eth.Contract(
       ABIContractRegistry,
       contractRegistry
     );
@@ -5021,7 +5023,7 @@ export class EthBancorModule
 
   @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
     const networkVars = getNetworkVariables(this.currentNetwork);
-    const multi = new MultiCall(web3View, networkVars.multiCall, [
+    const multi = new MultiCall(getWeb3(this.currentNetwork, Provider.Alchemy), networkVars.multiCall, [
       500,
       100,
       50,

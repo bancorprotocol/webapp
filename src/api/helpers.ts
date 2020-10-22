@@ -36,6 +36,7 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
+import { getAlchemyUrl, getInfuraAddress } from "@/api/web3"
 
 export enum PositionType {
   single,
@@ -379,27 +380,9 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-const projectId = "da059c364a2f4e6eb89bfd89600bce07";
-
-const buildInfuraAddress = (subdomain: string, projectId: string, wss: boolean = false) =>
-  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${wss ? "ws/" : ""}v3/${projectId}`;
-
-const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
-  if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId, wss);
-  } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId, wss);
-  }
-  throw new Error("Infura address for network not supported ");
-};
-
 export let web3 = new Web3(
-  Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet, true)
+  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
-
-export let web3View = new Web3(
-  "wss://eth-mainnet.ws.alchemyapi.io/v2/zzz"
-)
 
 web3.eth.transactionBlockTimeout = 100;
 
