@@ -2013,7 +2013,7 @@ export class EthBancorModule
               })
             );
 
-            return await Promise.all(
+            return Promise.all(
               allPositions.map(async position => {
                 const pool = findOrThrow(poolHistoricalBalances, pool =>
                   compareString(pool.poolId, position.poolToken)
@@ -2033,26 +2033,30 @@ export class EthBancorModule
                     );
 
                     const poolTokenSupply = poolBalance.smartTokenSupplyWei;
+                    const networkTokenAddress = this.liquidityProtectionSettings
+                      .networkToken;
 
                     const [
-                      tknReserveBalance,
+                      networkReserveBalance,
                       opposingTknBalance
                     ] = sortAlongSide(
                       historicalReserveBalances,
                       balance => balance.contract,
-                      [position.reserveToken]
+                      [networkTokenAddress]
                     );
 
                     const poolToken = position.poolToken;
-                    const reserveToken = position.reserveToken;
+                    const reserveToken = networkTokenAddress;
                     const reserveAmount = position.reserveAmount;
-                    const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+                    const poolRateN = new BigNumber(
+                      networkReserveBalance.weiAmount
+                    )
                       .times(2)
                       .toString();
                     const poolRateD = poolTokenSupply;
 
                     const reserveRateN = opposingTknBalance.weiAmount;
-                    const reserveRateD = tknReserveBalance.weiAmount;
+                    const reserveRateD = networkReserveBalance.weiAmount;
 
                     const poolRoi = await lpContract.methods
                       .poolROI(
