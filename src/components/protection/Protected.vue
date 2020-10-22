@@ -36,14 +36,17 @@
         <div class="d-flex align-items-start">
           <span
             v-text="
-              data.value && data.value.amount
+              data.value && typeof data.value.amount !== 'undefined'
                 ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
                 : 'Error calculating'
             "
           />
         </div>
         <span
-          v-if="data.value.usdValue !== undefined && data.value.amount"
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
           v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
@@ -57,7 +60,7 @@
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{
-            data.value.day
+            typeof data.value.day !== "undefined"
               ? stringifyPercentage(data.value.day)
               : "Error calculating"
           }}
@@ -65,7 +68,7 @@
         <div class="d-flex align-items-center my-1">
           <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
           {{
-            data.value.day
+            typeof data.value.week !== "undefined"
               ? stringifyPercentage(data.value.week)
               : "Error calculating"
           }}
