@@ -35,11 +35,18 @@
       <template v-slot:cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span
-            v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
           />
         </div>
         <span
-          v-if="data.value.usdValue !== undefined"
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
           v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
@@ -52,12 +59,20 @@
       <template v-slot:cell(apr)="data">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
-          {{ stringifyPercentage(data.value.day) }}
+          {{
+            typeof data.value.day !== "undefined"
+              ? stringifyPercentage(data.value.day)
+              : "Error calculating"
+          }}
         </div>
-        <!-- <div class="d-flex align-items-center my-1"> -->
-        <!-- <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge> -->
-        <!-- {{ stringifyPercentage(data.value.week) }} -->
-        <!-- </div> -->
+        <div class="d-flex align-items-center my-1">
+          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+          {{
+            typeof data.value.week !== "undefined"
+              ? stringifyPercentage(data.value.week)
+              : "Error calculating"
+          }}
+        </div>
         <!-- <div class="d-flex align-items-center"> -->
         <!-- <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge> -->
         <!-- {{ stringifyPercentage(data.value.month) }} -->
@@ -171,7 +186,7 @@ export default class Protected extends Vue {
   }
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
-    return vxm.ethBancor.protectedLiquidity;
+    return vxm.ethBancor.protectedPositions;
   }
 
   prettifyNumber(number: string | number, usd = false): string {
@@ -184,7 +199,7 @@ export default class Protected extends Vue {
 
   get protectedTxTable() {
     const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
-    const fields: any[] = [
+    const fields = [
       {
         key: "stake",
         thStyle: { "min-width": "250px" }
@@ -195,6 +210,18 @@ export default class Protected extends Vue {
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
+      // {
+      //   key: "roi",
+      //   sortable: true,
+      //   thStyle: { "min-width": "60px" },
+      //   formatter: (value: string) =>
+      //     value ? this.stringifyPercentage(Number(value)) : "Error calculating"
+      // },
+      // {
+      //   key: "apr",
+      //   sortable: false,
+      //   thStyle: { "min-width": "100px" }
+      // },
       {
         key: "insuranceStart",
         label: "Protection Start",

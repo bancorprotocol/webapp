@@ -37,9 +37,10 @@ export interface ProtectedLiquidityCalculated {
   reserveRateD: string;
   timestamp: string;
   oneDayDec?: string;
-  // oneWeekDec: string;
+  oneWeekDec?: string;
   // oneMonthDec: string;
-  liquidityReturn: {
+  roiDec?: string;
+  liquidityReturn?: {
     baseAmount: string;
     networkAmount: string;
     targetAmount: string;
@@ -280,6 +281,7 @@ export interface ViewRelay {
   whitelisted: boolean;
   v2: boolean;
   version: number;
+  apr?: string;
 }
 
 export interface ContractMethods<T> extends Contract {
