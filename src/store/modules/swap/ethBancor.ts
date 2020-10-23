@@ -148,6 +148,66 @@ import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 import { getNetworkVariables } from "../../config";
 
+const tokenSupplyShape = (tokenAddress: string) => {
+  const contract = buildTokenContract(tokenAddress);
+  return {
+    tokenContract: ORIGIN_ADDRESS,
+    supply: contract.methods.totalSupply()
+  };
+};
+
+const buildPoolRoiParams = (
+  poolToken: string,
+  poolTokenSupply: string,
+  primaryReserveToken: string,
+  primaryReserveBalance: string,
+  secondaryReserveBalance: string
+) =>
+  [
+    poolToken,
+    primaryReserveToken,
+    primaryReserveBalance,
+    new BigNumber(primaryReserveBalance).times(2).toString(),
+    poolTokenSupply,
+    secondaryReserveBalance,
+    primaryReserveBalance
+  ] as [string, string, string, string, string, string, string];
+
+const dualPoolRoiShape = (
+  protectionContractAddress: string,
+  anchor: string,
+  reserves: TokenWei[],
+  poolTokenSupply: string
+) => {
+  const contract = buildLiquidityProtectionContract(protectionContractAddress);
+
+  const [oneReserve, twoReserve] = reserves;
+
+  const oneParams = buildPoolRoiParams(
+    anchor,
+    poolTokenSupply,
+    oneReserve.tokenContract,
+    oneReserve.weiAmount,
+    twoReserve.weiAmount
+  );
+  const twoParams = buildPoolRoiParams(
+    anchor,
+    poolTokenSupply,
+    twoReserve.tokenContract,
+    twoReserve.weiAmount,
+    oneReserve.weiAmount
+  );
+
+  return {
+    anchor,
+    protectionAddress: ORIGIN_ADDRESS,
+    onePrimary: oneReserve.tokenContract,
+    twoPrimary: twoReserve.tokenContract,
+    oneRoi: contract.methods.poolROI(...oneParams),
+    twoRoi: contract.methods.poolROI(...twoParams)
+  };
+};
+
 const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
   const liq1 = new BigNumber(liq1Balance);
   const liq2 = new BigNumber(liq2Balance);
@@ -158,6 +218,11 @@ const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
   const passed = first && second;
   return passed;
 };
+
+interface PoolApr {
+  poolId: string;
+  oneDayApr: string;
+}
 
 const calculateReturnOnInvestment = (
   investment: string,
@@ -807,6 +872,12 @@ interface RawV2Pool {
   anchorAddress: string;
 }
 
+const calculateMean = (a: string, b: string) =>
+  new BigNumber(a)
+    .plus(b)
+    .div(2)
+    .toString();
+
 interface V2Response {
   reserveFeeds: ReserveFeed[];
   pools: (RelayWithReserveBalances | ChainLinkRelay)[];
@@ -1021,6 +1092,8 @@ interface RawAbiV2PoolBalances {
 interface RawAbiReserveBalance {
   converterAddress: string;
   reserveOne: string;
+  reserveOneAddress: string;
+  reserveTwoAddress: string;
   reserveTwo: string;
 }
 
@@ -1177,6 +1250,8 @@ const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
   const [reserveOne, reserveTwo] = reserves;
   return {
     converterAddress: ORIGIN_ADDRESS,
+    reserveOneAddress: reserveOne,
+    reserveTwoAddress: reserveTwo,
     reserveOne: contract.methods.getConnectorBalance(reserveOne),
     reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
   };
@@ -1415,9 +1490,9 @@ export class EthBancorModule
   }
 
   @action async fetchLiquidityProtectionSettings(contractAddress: string) {
-    const [[settings]] = ((await this.multi([
-      [liquidityProtectionShape(contractAddress)]
-    ])) as unknown) as [RawLiquidityProtectionSettings][];
+    const [[settings]] = ((await this.multi({
+      groupsOfShapes: [[liquidityProtectionShape(contractAddress)]]
+    })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const newSettings = {
       minDelay: Number(settings.minProtectionDelay),
@@ -2838,6 +2913,7 @@ export class EthBancorModule
   get traditionalRelays(): ViewRelay[] {
     const availableHistories = this.availableHistories;
 
+    const aprs = this.poolAprs;
     const whiteListedPools = this.whiteListedPools;
 
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
@@ -2877,6 +2953,10 @@ export class EthBancorModule
           Number(relay.version) >= 41 &&
           whitelisted;
 
+        const apr = aprs.find(apr =>
+          compareString(apr.poolId, relay.anchor.contract)
+        );
+
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -2898,7 +2978,8 @@ export class EthBancorModule
           liquidityProtection,
           whitelisted,
           focusAvailable: hasHistory,
-          v2: false
+          v2: false,
+          ...(apr && { apr: apr.oneDayApr })
         } as ViewRelay;
       });
   }
@@ -3100,15 +3181,17 @@ export class EthBancorModule
     relay: ChainLinkRelay
   ): Promise<StakedAndReserve> {
     const [reserveOne, reserveTwo] = relay.reserves;
-    const [[poolBalace]] = ((await this.multi([
-      [
-        v2PoolBalanceShape(
-          relay.contract,
-          reserveOne.contract,
-          reserveTwo.contract
-        )
+    const [[poolBalace]] = ((await this.multi({
+      groupsOfShapes: [
+        [
+          v2PoolBalanceShape(
+            relay.contract,
+            reserveOne.contract,
+            reserveTwo.contract
+          )
+        ]
       ]
-    ])) as unknown) as [RawAbiV2PoolBalances][];
+    })) as unknown) as [RawAbiV2PoolBalances][];
 
     return rawAbiV2ToStacked(poolBalace);
   }
@@ -4086,7 +4169,7 @@ export class EthBancorModule
     if (!isAddress) throw new Error(`${tokenAddress} is not a valid address`);
 
     const shape = tokenShape(tokenAddress);
-    const [[token]] = (await this.multi([[shape]])) as [
+    const [[token]] = (await this.multi({ groupsOfShapes: [[shape]] })) as [
       [{ symbol: string; decimals: string; contract: string }]
     ];
 
@@ -4622,7 +4705,13 @@ export class EthBancorModule
     }
   }
 
-  @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
+  @action async multi({
+    groupsOfShapes,
+    blockHeight
+  }: {
+    groupsOfShapes: ShapeWithLabel[][];
+    blockHeight?: number;
+  }) {
     const networkVars = getNetworkVariables(this.currentNetwork);
     const multi = new MultiCall(web3, networkVars.multiCall, [
       500,
@@ -4633,7 +4722,8 @@ export class EthBancorModule
     ]);
 
     const res = await multi.all(groupsOfShapes, {
-      traditional: false
+      traditional: false,
+      blockHeight
     });
     return res;
   }
@@ -4657,10 +4747,9 @@ export class EthBancorModule
       )
     );
 
-    const [v1RelayBalances, v2RelayBalances] = await this.multi([
-      v1RelayShapes,
-      v2RelayPoolBalanceShapes
-    ]);
+    const [v1RelayBalances, v2RelayBalances] = await this.multi({
+      groupsOfShapes: [v1RelayShapes, v2RelayPoolBalanceShapes]
+    });
   }
 
   @action async addPoolsV2(
@@ -4671,10 +4760,12 @@ export class EthBancorModule
       item => item.converterAddress
     );
 
-    const [rawRelays, poolAndSmartTokens] = ((await this.multi([
-      allConverters.map(relayShape),
-      allAnchors.map(poolTokenShape)
-    ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
+    const [rawRelays, poolAndSmartTokens] = ((await this.multi({
+      groupsOfShapes: [
+        allConverters.map(relayShape),
+        allAnchors.map(poolTokenShape)
+      ]
+    })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
     const badRelays = rawRelays.filter(
       rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2)
@@ -4784,19 +4875,21 @@ export class EthBancorModule
       reserveAndPoolTokensAbi,
       v1ReserveBalances,
       v2PoolReserveBalances
-    ] = ((await this.multi([
-      tokenAddressesMissing.map(tokenShape),
-      verifiedV1Pools.map(v1Pool =>
-        reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
-      ),
-      verifiedV2Pools.map(pool =>
-        v2PoolBalanceShape(
-          pool.converterAddress,
-          pool.reserves[0],
-          pool.reserves[1]
+    ] = ((await this.multi({
+      groupsOfShapes: [
+        tokenAddressesMissing.map(tokenShape),
+        verifiedV1Pools.map(v1Pool =>
+          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
+        ),
+        verifiedV2Pools.map(pool =>
+          v2PoolBalanceShape(
+            pool.converterAddress,
+            pool.reserves[0],
+            pool.reserves[1]
+          )
         )
-      )
-    ])) as [unknown, unknown, unknown]) as [
+      ]
+    })) as [unknown, unknown, unknown]) as [
       RawAbiToken[],
       RawAbiReserveBalance[],
       RawAbiV2PoolBalances[]
@@ -5549,6 +5642,7 @@ export class EthBancorModule
         if (this.isAuthenticated) {
           this.fetchBulkTokenBalances(uniqueTokenAddreses);
         }
+        this.addAprsToPools();
         this.setLoadingPools(false);
       } catch (e) {
         console.log("Failed loading pools");
@@ -5559,6 +5653,152 @@ export class EthBancorModule
     const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
     if (this.isAuthenticated) {
       this.fetchBulkTokenBalances(uniqWith(tokenAddresses, compareString));
+    }
+    this.addAprsToPools();
+  }
+
+  poolAprs: PoolApr[] = [];
+
+  @mutation updatePoolAprs(newPoolAprs: PoolApr[]) {
+    const existing = this.poolAprs;
+    const withoutOld = existing.filter(
+      apr => !newPoolAprs.some(a => compareString(apr.poolId, a.poolId))
+    );
+    this.poolAprs = [...withoutOld, ...newPoolAprs];
+  }
+
+  @action async addAprsToPools() {
+    const whitelistedPools = this.whiteListedPools
+      .map(anchor =>
+        this.relaysList.find(relay => compareString(relay.id, anchor))
+      )
+      .filter(Boolean) as Relay[];
+
+    const poolsToCalculate = whitelistedPools.filter(
+      pool => !this.poolAprs.some(apr => compareString(pool.id, apr.poolId))
+    );
+
+    const currentBlock = await web3.eth.getBlockNumber();
+    const yesterday = rewindBlocksByDays(currentBlock, 1);
+
+    const reservesShapes = poolsToCalculate.map(pool =>
+      reserveBalanceShape(
+        pool.contract,
+        pool.reserves.map(reserve => reserve.contract)
+      )
+    );
+
+    const [tokenSupplys, reserveBalances] = ((await this.multi({
+      groupsOfShapes: [
+        poolsToCalculate.map(pool => tokenSupplyShape(pool.id)),
+        reservesShapes
+      ],
+      blockHeight: yesterday
+    })) as [unknown, unknown]) as [
+      {
+        tokenContract: string;
+        supply: string;
+      }[],
+      RawAbiReserveBalance[]
+    ];
+
+    console.log(poolsToCalculate, "are pools to calculate");
+    const [passedReserveBalances, failedReserveBalances] = partition(
+      reserveBalances,
+      balance => balance.reserveOne && balance.reserveTwo
+    );
+
+    console.log({ failedReserveBalances });
+
+    const poolRoiShapes = tokenSupplys
+      .filter(supply => {
+        const pool = findOrThrow(poolsToCalculate, pool =>
+          compareString(pool.id, supply.tokenContract)
+        );
+        const found = passedReserveBalances.some(reserve =>
+          compareString(pool.contract, reserve.converterAddress)
+        );
+        return found;
+      })
+      .map(supply => {
+        const anchor = supply.tokenContract;
+
+        const pool = findOrThrow(
+          poolsToCalculate as RelayWithReserveBalances[],
+          pool => compareString(pool.id, anchor),
+          "failed finding pool for pool shape"
+        );
+
+        const converterAddress = pool.contract;
+        const poolTokenSupply = supply.supply;
+        const reserves = findOrThrow(reserveBalances, balance =>
+          compareString(balance.converterAddress, converterAddress)
+        );
+
+        return dualPoolRoiShape(
+          this.contracts.LiquidityProtection,
+          supply.tokenContract,
+          [
+            {
+              tokenContract: reserves.reserveOneAddress,
+              weiAmount: reserves.reserveOne
+            },
+            {
+              tokenContract: reserves.reserveTwoAddress,
+              weiAmount: reserves.reserveTwo
+            }
+          ],
+          poolTokenSupply
+        );
+      });
+
+    try {
+      const [poolRois] = ((await this.multi({
+        groupsOfShapes: [poolRoiShapes]
+      })) as [unknown]) as [
+        {
+          anchor: string;
+          onePrimary: string;
+          oneRoi: string;
+          twoPrimary: string;
+          twoRoi: string;
+        }[]
+      ];
+      console.log("PoolROI Success:", poolRois);
+
+      const successfulPoolRois = poolRois
+        .filter(roi => roi.oneRoi && roi.twoRoi)
+        .map(roi => ({
+          ...roi,
+          oneRoiCalculated: new BigNumber(roi.oneRoi)
+            .div(1000000)
+            .minus(1)
+            .times(365)
+            .toString(),
+          twoRoiCalculated: new BigNumber(roi.twoRoi)
+            .div(1000000)
+            .minus(1)
+            .times(365)
+            .toString()
+        }))
+        .map(roi => ({
+          ...roi,
+          mean: calculateMean(roi.oneRoiCalculated, roi.twoRoiCalculated)
+        }));
+
+      console.log(
+        successfulPoolRois,
+        "allROIS",
+        successfulPoolRois.map(x => x.anchor),
+        "anchors"
+      );
+      this.updatePoolAprs(
+        successfulPoolRois.map(
+          (x): PoolApr => ({ poolId: x.anchor, oneDayApr: x.mean })
+        )
+      );
+    } catch (e) {
+      console.error("PoolROI Failure:", e.message, poolRoiShapes);
     }
   }
 

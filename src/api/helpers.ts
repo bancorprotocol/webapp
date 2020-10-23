@@ -288,7 +288,7 @@ export interface StringPool {
   destSymbol: string;
 }
 
-export const formatPercent = (decNumber: number) =>
+export const formatPercent = (decNumber: number | string) =>
   numeral(decNumber).format("0.00%");
 
 export const calculateProtectionLevel = (

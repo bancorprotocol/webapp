@@ -39,6 +39,8 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { ViewRelay } from "@/types/bancor";
+import { prettifyNumber, formatPercent } from "@/api/helpers";
+
 @Component({
   components: { PoolLogos, ActionButtons, TableWrapper }
 })
@@ -46,41 +48,59 @@ export default class TablePools extends Vue {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
 
-  fields = [
-    {
-      key: "liquidityProtection",
-      sortable: true
-    },
-    {
-      key: "symbol",
-      label: "Name",
-      sortable: true,
-      thStyle: { "min-width": "150px" }
-    },
-    {
-      key: "liqDepth",
-      label: "Liquidity Depth",
-      thStyle: { "min-width": "160px" },
-      sortable: true,
-      formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD"
-        }).format(value)
-    },
-    {
-      key: "fee",
-      label: "Fee",
-      thStyle: { "min-width": "80px" },
-      sortable: true,
-      formatter: (value: any) => numeral(value).format("0.00%")
-    },
-    {
-      key: "actionButtons",
-      label: "Action",
-      thStyle: { width: "310px", "min-width": "310px" }
-    }
-  ];
+  get aprsExist() {
+    return this.items.some(pool => pool.apr);
+  }
+
+  get fields() {
+    return [
+      {
+        key: "liquidityProtection",
+        sortable: true
+      },
+      {
+        key: "symbol",
+        label: "Name",
+        sortable: true,
+        thStyle: { "min-width": "150px" }
+      },
+      {
+        key: "liqDepth",
+        label: "Liquidity Depth",
+        thStyle: { "min-width": "160px" },
+        sortable: true,
+        formatter: (value: number) =>
+          new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD"
+          }).format(value)
+      },
+      {
+        key: "fee",
+        label: "Fee",
+        thStyle: { "min-width": "80px" },
+        sortable: true,
+        formatter: formatPercent
+      },
+      ...(this.aprsExist
+        ? [
+            {
+              key: "apr",
+              label: "APR",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: formatPercent
+            }
+          ]
+        : []),
+      {
+        key: "actionButtons",
+        label: "Action",
+        thStyle: { width: "310px", "min-width": "310px" }
+      }
+    ];
+  }
+
   doFilter(row: any, filter: string) {
     const symbols = row.reserves.map((reserve: any) => reserve.symbol);
     let r = false;
