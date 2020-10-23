@@ -5,16 +5,6 @@
         <statistics class="mt-3" />
       </content-block>
     </b-col>
-    <b-col v-if="false" md="6">
-      <content-block title="Liquidity">
-        <liquidity-chart :data="liquidityChartData" class="mt-3" />
-      </content-block>
-    </b-col>
-    <b-col v-if="false" md="6">
-      <content-block title="Volume">
-        <volume-chart :data="volumeChartData" class="mt-3" />
-      </content-block>
-    </b-col>
     <b-col cols="12">
       <content-block :px0="true" :shadow-light="true" :no-header="true">
         <pool-token-tables />
@@ -50,57 +40,6 @@ import { Chart } from "chart.js";
   }
 })
 export default class DataSummary extends Vue {
-  get liquidityChartData(): Chart.ChartData {
-    const volumeStats = vxm.ethBancor.volumeInfo;
-    const labels = volumeStats.map(
-      ([blockNumber, totalVolume, totalLiquidity, unixTime]) => unixTime * 1000
-    );
-    const data = volumeStats.map(
-      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
-        parseFloat(totalLiquidity)
-    );
-
-    return {
-      labels,
-      datasets: [
-        {
-          label: "Liquidity",
-          backgroundColor: "#0f59d1",
-          borderColor: "#0f59d1",
-          borderWidth: 0,
-          pointRadius: 0,
-          data
-        }
-      ]
-    };
-  }
-
-  get volumeChartData(): Chart.ChartData {
-    const volumeStats = vxm.ethBancor.volumeInfo;
-    const labels = volumeStats.map(
-      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
-        new Date(unixTime * 1000)
-    );
-    const data = volumeStats.map(
-      ([blockNumber, totalVolume, totalLiquidity, unixTime]) =>
-        parseFloat(totalVolume)
-    );
-
-    return {
-      labels,
-      datasets: [
-        {
-          label: "Volume",
-          backgroundColor: "#0f59d1",
-          borderColor: "#0f59d1",
-          borderWidth: 0,
-          pointRadius: 0,
-          data
-        }
-      ]
-    };
-  }
-
   get isEth() {
     return this.$route.params.service === "eth";
   }

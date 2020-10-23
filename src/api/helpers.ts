@@ -42,17 +42,6 @@ export enum PositionType {
   double
 }
 
-const bancorSubgraphInstance = axios.create({
-  baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
-  method: "post"
-});
-
-const chainlinkSubgraphInstance = axios.create({
-  baseURL: "https://api.thegraph.com/subgraphs/name/melonproject/chainlink",
-  method: "post"
-});
-
-
 export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPerBlock = 13.3) => {
   if (!Number.isInteger(currentBlock)) throw new Error("Current block should be an integer")
   const secondsToRewind = moment.duration(days, "days").asSeconds();
@@ -154,20 +143,6 @@ export const traverseLockedBalances = async (
 
   console.log(lockedBalances, "should be inspected");
   return lockedBalances;
-};
-
-export const chainlinkSubgraph = async (query: string) => {
-  const res = await chainlinkSubgraphInstance.post("", { query });
-  if (res.data.errors && res.data.errors.length > 0)
-    throw new Error(res.data.errors[0].message);
-  return res.data.data;
-};
-
-export const bancorSubgraph = async (query: string) => {
-  const res = await bancorSubgraphInstance.post("", { query });
-  if (res.data.errors && res.data.errors.length > 0)
-    throw new Error(res.data.errors[0].message);
-  return res.data.data;
 };
 
 export function VModel(propsArgs: PropOptions = {}) {
