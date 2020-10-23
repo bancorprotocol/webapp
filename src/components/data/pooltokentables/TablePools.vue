@@ -86,7 +86,7 @@ export default class TablePools extends Vue {
         ? [
             {
               key: "apr",
-              label: "APR",
+              label: "APY",
               sortable: true,
               thStyle: { "min-width": "80px" },
               formatter: formatPercent
