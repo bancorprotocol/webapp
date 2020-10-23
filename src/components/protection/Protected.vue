@@ -206,18 +206,18 @@ export default class Protected extends Vue {
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
-      {
-        key: "roi",
-        sortable: true,
-        thStyle: { "min-width": "60px" },
-        formatter: (value: string) =>
-          value ? this.stringifyPercentage(Number(value)) : "Error calculating"
-      },
-      {
-        key: "apr",
-        sortable: false,
-        thStyle: { "min-width": "100px" }
-      },
+      // {
+      //   key: "roi",
+      //   sortable: true,
+      //   thStyle: { "min-width": "60px" },
+      //   formatter: (value: string) =>
+      //     value ? this.stringifyPercentage(Number(value)) : "Error calculating"
+      // },
+      // {
+      //   key: "apr",
+      //   sortable: false,
+      //   thStyle: { "min-width": "100px" }
+      // },
       {
         key: "insuranceStart",
         label: "Protection Start",
