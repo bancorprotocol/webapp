@@ -1415,9 +1415,9 @@ export class EthBancorModule
   }
 
   @action async fetchLiquidityProtectionSettings(contractAddress: string) {
-    const [[settings]] = ((await this.multi([
-      [liquidityProtectionShape(contractAddress)]
-    ])) as unknown) as [RawLiquidityProtectionSettings][];
+    const [[settings]] = ((await this.multi({
+      groupsOfShapes: [[liquidityProtectionShape(contractAddress)]]
+    })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const newSettings = {
       minDelay: Number(settings.minProtectionDelay),
@@ -3100,15 +3100,17 @@ export class EthBancorModule
     relay: ChainLinkRelay
   ): Promise<StakedAndReserve> {
     const [reserveOne, reserveTwo] = relay.reserves;
-    const [[poolBalace]] = ((await this.multi([
-      [
-        v2PoolBalanceShape(
-          relay.contract,
-          reserveOne.contract,
-          reserveTwo.contract
-        )
+    const [[poolBalace]] = ((await this.multi({
+      groupsOfShapes: [
+        [
+          v2PoolBalanceShape(
+            relay.contract,
+            reserveOne.contract,
+            reserveTwo.contract
+          )
+        ]
       ]
-    ])) as unknown) as [RawAbiV2PoolBalances][];
+    })) as unknown) as [RawAbiV2PoolBalances][];
 
     return rawAbiV2ToStacked(poolBalace);
   }
@@ -4086,7 +4088,7 @@ export class EthBancorModule
     if (!isAddress) throw new Error(`${tokenAddress} is not a valid address`);
 
     const shape = tokenShape(tokenAddress);
-    const [[token]] = (await this.multi([[shape]])) as [
+    const [[token]] = (await this.multi({ groupsOfShapes: [[shape]] })) as [
       [{ symbol: string; decimals: string; contract: string }]
     ];
 
@@ -4622,7 +4624,13 @@ export class EthBancorModule
     }
   }
 
-  @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
+  @action async multi({
+    groupsOfShapes,
+    blockHeight
+  }: {
+    groupsOfShapes: ShapeWithLabel[][];
+    blockHeight?: number;
+  }) {
     const networkVars = getNetworkVariables(this.currentNetwork);
     const multi = new MultiCall(web3, networkVars.multiCall, [
       500,
@@ -4633,7 +4641,8 @@ export class EthBancorModule
     ]);
 
     const res = await multi.all(groupsOfShapes, {
-      traditional: false
+      traditional: false,
+      blockHeight
     });
     return res;
   }
@@ -4657,10 +4666,9 @@ export class EthBancorModule
       )
     );
 
-    const [v1RelayBalances, v2RelayBalances] = await this.multi([
-      v1RelayShapes,
-      v2RelayPoolBalanceShapes
-    ]);
+    const [v1RelayBalances, v2RelayBalances] = await this.multi({
+      groupsOfShapes: [v1RelayShapes, v2RelayPoolBalanceShapes]
+    });
   }
 
   @action async addPoolsV2(
@@ -4671,10 +4679,12 @@ export class EthBancorModule
       item => item.converterAddress
     );
 
-    const [rawRelays, poolAndSmartTokens] = ((await this.multi([
-      allConverters.map(relayShape),
-      allAnchors.map(poolTokenShape)
-    ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
+    const [rawRelays, poolAndSmartTokens] = ((await this.multi({
+      groupsOfShapes: [
+        allConverters.map(relayShape),
+        allAnchors.map(poolTokenShape)
+      ]
+    })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
     const badRelays = rawRelays.filter(
       rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2)
@@ -4784,19 +4794,21 @@ export class EthBancorModule
       reserveAndPoolTokensAbi,
       v1ReserveBalances,
       v2PoolReserveBalances
-    ] = ((await this.multi([
-      tokenAddressesMissing.map(tokenShape),
-      verifiedV1Pools.map(v1Pool =>
-        reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
-      ),
-      verifiedV2Pools.map(pool =>
-        v2PoolBalanceShape(
-          pool.converterAddress,
-          pool.reserves[0],
-          pool.reserves[1]
+    ] = ((await this.multi({
+      groupsOfShapes: [
+        tokenAddressesMissing.map(tokenShape),
+        verifiedV1Pools.map(v1Pool =>
+          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
+        ),
+        verifiedV2Pools.map(pool =>
+          v2PoolBalanceShape(
+            pool.converterAddress,
+            pool.reserves[0],
+            pool.reserves[1]
+          )
         )
-      )
-    ])) as [unknown, unknown, unknown]) as [
+      ]
+    })) as [unknown, unknown, unknown]) as [
       RawAbiToken[],
       RawAbiReserveBalance[],
       RawAbiV2PoolBalances[]
