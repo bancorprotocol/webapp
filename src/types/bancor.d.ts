@@ -281,6 +281,7 @@ export interface ViewRelay {
   whitelisted: boolean;
   v2: boolean;
   version: number;
+  apr?: string;
 }
 
 export interface ContractMethods<T> extends Contract {
