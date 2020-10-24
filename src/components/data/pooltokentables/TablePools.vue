@@ -89,7 +89,7 @@ export default class TablePools extends Vue {
               label: "APY",
               sortable: true,
               thStyle: { "min-width": "80px" },
-              formatter: formatPercent
+              formatter: (value: number) => value && value > 0 ? formatPercent(value) : "N/A"
             }
           ]
         : []),
