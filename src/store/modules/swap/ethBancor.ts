@@ -221,7 +221,7 @@ const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
 
 interface PoolApr {
   poolId: string;
-  oneDayApr: string;
+  oneWeekApr: string;
 }
 
 const calculateReturnOnInvestment = (
@@ -2979,7 +2979,7 @@ export class EthBancorModule
           whitelisted,
           focusAvailable: hasHistory,
           v2: false,
-          ...(apr && { apr: apr.oneDayApr })
+          ...(apr && { apr: apr.oneWeekApr })
         } as ViewRelay;
       });
   }
@@ -5794,7 +5794,7 @@ export class EthBancorModule
       );
       this.updatePoolAprs(
         successfulPoolRois.map(
-          (x): PoolApr => ({ poolId: x.anchor, oneDayApr: x.mean })
+          (x): PoolApr => ({ poolId: x.anchor, oneWeekApr: x.mean })
         )
       );
     } catch (e) {
