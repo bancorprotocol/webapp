@@ -5679,7 +5679,7 @@ export class EthBancorModule
     );
 
     const currentBlock = await web3.eth.getBlockNumber();
-    const weekAgo = rewindBlocksByDays(currentBlock, 1);
+    const weekAgo = rewindBlocksByDays(currentBlock, 7);
 
     const reservesShapes = poolsToCalculate.map(pool =>
       reserveBalanceShape(
