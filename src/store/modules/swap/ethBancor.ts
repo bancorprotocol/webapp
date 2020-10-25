@@ -221,7 +221,7 @@ const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
 
 interface PoolApr {
   poolId: string;
-  oneWeekApr: string;
+  oneDayApr: string;
 }
 
 const calculateReturnOnInvestment = (
@@ -2979,7 +2979,7 @@ export class EthBancorModule
           whitelisted,
           focusAvailable: hasHistory,
           v2: false,
-          ...(apr && { apr: apr.oneWeekApr })
+          ...(apr && { apr: apr.oneDayApr })
         } as ViewRelay;
       });
   }
@@ -5679,7 +5679,7 @@ export class EthBancorModule
     );
 
     const currentBlock = await web3.eth.getBlockNumber();
-    const weekAgo = rewindBlocksByDays(currentBlock, 1);
+    const yesterday = rewindBlocksByDays(currentBlock, 1);
 
     const reservesShapes = poolsToCalculate.map(pool =>
       reserveBalanceShape(
@@ -5693,7 +5693,7 @@ export class EthBancorModule
         poolsToCalculate.map(pool => tokenSupplyShape(pool.id)),
         reservesShapes
       ],
-      blockHeight: weekAgo
+      blockHeight: yesterday
     })) as [unknown, unknown]) as [
       {
         tokenContract: string;
@@ -5773,12 +5773,12 @@ export class EthBancorModule
           oneRoiCalculated: new BigNumber(roi.oneRoi)
             .div(1000000)
             .minus(1)
-            .times(52)
+            .times(365)
             .toString(),
           twoRoiCalculated: new BigNumber(roi.twoRoi)
             .div(1000000)
             .minus(1)
-            .times(52)
+            .times(365)
             .toString()
         }))
         .map(roi => ({
@@ -5794,7 +5794,7 @@ export class EthBancorModule
       );
       this.updatePoolAprs(
         successfulPoolRois.map(
-          (x): PoolApr => ({ poolId: x.anchor, oneWeekApr: x.mean })
+          (x): PoolApr => ({ poolId: x.anchor, oneDayApr: x.mean })
         )
       );
     } catch (e) {

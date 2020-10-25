@@ -86,10 +86,10 @@ export default class TablePools extends Vue {
         ? [
             {
               key: "apr",
-              label: "APY",
+              label: "1y Fees / Liquidity",
               sortable: true,
               thStyle: { "min-width": "80px" },
-              formatter: (value: number) => value && value > 0 ? formatPercent(value) : "N/A"
+              formatter: (value: number) => value && value > 0 ? formatPercent(value) : "-"
             }
           ]
         : []),
