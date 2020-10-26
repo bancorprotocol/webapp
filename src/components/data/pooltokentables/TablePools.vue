@@ -83,7 +83,7 @@ export default class TablePools extends Vue {
         sortable: true,
         formatter: formatPercent
       },
-      ...(this.aprsExist
+      ...(this.isEth
         ? [
             {
               key: "apr",
@@ -103,6 +103,10 @@ export default class TablePools extends Vue {
         thStyle: { width: "310px", "min-width": "310px" }
       }
     ];
+  }
+
+  get isEth() {
+    return this.$route.params.service == "eth";
   }
 
   doFilter(row: any, filter: string) {
