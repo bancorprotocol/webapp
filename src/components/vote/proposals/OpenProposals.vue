@@ -291,7 +291,6 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 })
 export default class OpenProposals extends Vue {
   @Prop() proposals?: Proposal[];
-  @Prop() update?: any;
 
   symbol: string = "";
   etherscanUrl: string = "";
@@ -373,8 +372,6 @@ export default class OpenProposals extends Vue {
       account: vxm.ethWallet.isAuthenticated,
       proposalId
     });
-
-    await this.update();
   }
 
   async voteAgainst(proposalId: string) {
@@ -382,8 +379,6 @@ export default class OpenProposals extends Vue {
       account: vxm.ethWallet.isAuthenticated,
       proposalId
     });
-
-    await this.update();
   }
 
   async mounted() {
