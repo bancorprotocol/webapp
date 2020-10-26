@@ -104,6 +104,7 @@ export class EthereumGovernance extends VuexModule.With({
   tokenContract: Token = {} as Token;
 
   isLoaded: boolean = false;
+  lastTransaction: number = 0;
 
   symbol?: string;
   decimals?: number;
@@ -127,6 +128,11 @@ export class EthereumGovernance extends VuexModule.With({
       this.tokenContract,
       this.governanceContract
     );
+  }
+
+  @mutation
+  setLastTransaction(time: number) {
+    this.lastTransaction = time;
   }
 
   @mutation
@@ -305,11 +311,15 @@ export class EthereumGovernance extends VuexModule.With({
         .send({
           from: account
         });
+
+      this.setLastTransaction(Date.now());
     }
 
     await this.governanceContract.methods.stake(amount.toString()).send({
       from: account
     });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
@@ -328,6 +338,8 @@ export class EthereumGovernance extends VuexModule.With({
     await this.governanceContract.methods.unstake(amount.toString()).send({
       from: account
     });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
@@ -349,6 +361,8 @@ export class EthereumGovernance extends VuexModule.With({
       from: account
     });
 
+    this.setLastTransaction(Date.now());
+
     return true;
   }
 
@@ -366,6 +380,8 @@ export class EthereumGovernance extends VuexModule.With({
     await this.governanceContract.methods.voteFor(proposalId.toString()).send({
       from: account
     });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
@@ -386,6 +402,8 @@ export class EthereumGovernance extends VuexModule.With({
       .send({
         from: account
       });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
