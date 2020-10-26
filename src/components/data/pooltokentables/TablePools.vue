@@ -40,6 +40,7 @@ import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { ViewRelay } from "@/types/bancor";
 import { prettifyNumber, formatPercent } from "@/api/helpers";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: { PoolLogos, ActionButtons, TableWrapper }
@@ -89,7 +90,10 @@ export default class TablePools extends Vue {
               label: "APY",
               sortable: true,
               thStyle: { "min-width": "80px" },
-              formatter: (value: number) => value && value > 0 ? formatPercent(value) : "N/A"
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? formatPercent(value)
+                  : "N/A"
             }
           ]
         : []),
