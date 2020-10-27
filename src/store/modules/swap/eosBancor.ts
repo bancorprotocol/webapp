@@ -66,7 +66,7 @@ import {
 import { multiContract } from "@/api/eos/multiContractTx";
 import { multiContractAction } from "@/contracts/multi";
 import { vxm } from "@/store";
-import { rpc } from "@/api/eos/rpc";
+import { rpc, dfuseClient } from "@/api/eos/rpc";
 import {
   findCost,
   relaysToConvertPaths,
@@ -86,7 +86,6 @@ import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
-import { createDfuseClient } from "@dfuse/client";
 import moment from "moment";
 
 const networkContract = "thisisbancor";
@@ -111,22 +110,20 @@ const searchTransactionsWithHigherBlock = `query ($limit: Int64!, $highBlockNum:
   }
 }`;
 
-const client = createDfuseClient({
-  apiKey: "web_af8f1c42eca1bec0d8b6d6248625b62d",
-  network: "mainnet.eos.dfuse.io"
-});
-
 const past24HourTrades = async (
   lastBlockTarget?: number,
   highBlockNum = -1,
   tradesFetched: DFuseTrade[] = []
 ): Promise<DFuseTrade[]> => {
-  const response = await client.graphql(searchTransactionsWithHigherBlock, {
-    variables: {
-      limit: 1000,
-      highBlockNum
+  const response = await dfuseClient.graphql(
+    searchTransactionsWithHigherBlock,
+    {
+      variables: {
+        limit: 1000,
+        highBlockNum
+      }
     }
-  });
+  );
 
   if (response.errors && response.errors.length > 0) {
     throw new Error(response.errors[0].message);

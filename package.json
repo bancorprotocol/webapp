@@ -15,7 +15,7 @@
     "go": "yarn run bump && yarn build && yarn deploy"
   },
   "dependencies": {
-    "@dfuse/client": "^0.3.14",
+    "@dfuse/client": "^0.3.17",
     "@firebase/analytics": "^0.4.1",
     "@firebase/app": "^0.6.9",
     "@fortawesome/fontawesome-svg-core": "^1.2.25",
