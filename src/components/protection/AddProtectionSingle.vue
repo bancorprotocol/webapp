@@ -54,6 +54,7 @@
     <label-content-split
       label="Full Coverage Date"
       :value="fullCoverageDate"
+      tooltip="Date is based on current voted protection length"
       class="my-3"
     />
 
