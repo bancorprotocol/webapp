@@ -169,9 +169,13 @@ export default class WithdrawProtectionSingle extends Vue {
   }
 
   get sufficientVBnt() {
-    const amount =
-      Number(this.position.givenVBnt!) * (Number(this.percentage) / 100);
-    return new BigNumber(amount).isLessThanOrEqualTo(this.vBntBalance);
+    if (this.position.givenVBnt) {
+      const decPercent = new BigNumber(this.percentage).div(100);
+      const proposedWithdraw = new BigNumber(this.position.givenVBnt).times(
+        decPercent
+      );
+      return proposedWithdraw.isLessThanOrEqualTo(this.vBntBalance);
+    } else return true;
   }
 
   get vBntBalance() {
