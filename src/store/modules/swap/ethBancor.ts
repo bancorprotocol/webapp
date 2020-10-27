@@ -5326,7 +5326,7 @@ export class EthBancorModule
       const trades = singleTrades.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
-      const decFee = relay.fee;
+      const decFee = relay.fee / 100;
       const accumulatedFees = trades.reduce((acc, item) => {
         const currentTally = findOrThrow(acc, balance =>
           compareString(balance.id, item.data.to.address)
@@ -5342,9 +5342,8 @@ export class EthBancorModule
             "0x2bb4fe26c5630e7855f4ecf4f66ef1b913f77053c62253d8d30557bff0b81746"
           );
 
-        const feeLessAmount = exitingAmount.times(
-          new BigNumber(1).minus(decFee)
-        );
+        const feeLessMag = 1 - decFee;
+        const feeLessAmount = exitingAmount.times(feeLessMag);
         const feePaid = exitingAmount.minus(feeLessAmount);
 
         const newTotalAmount = new BigNumber(
@@ -5356,13 +5355,7 @@ export class EthBancorModule
           const feeLessAmountt = feeLessAmount.toString();
           const exitingAmountt = exitingAmount.toString();
           console.log(
-            {
-              txHash,
-              exitingAmountt,
-              feePaidd,
-              feeLessAmountt
-            },
-            "all the way"
+            `Whole amount is ${exitingAmountt}, without the fee is ${feeLessAmountt} resulting in a fee cost of ${feePaidd} ${txHash}`
           );
         }
         return updateArray(
