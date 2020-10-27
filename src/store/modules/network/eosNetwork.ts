@@ -190,7 +190,7 @@ export class EosNetworkModule
     console.log(tokens.length, 'tokens were asked for', bulkBalances, 'came out initially', missingTokens, 'are considered missing and need to be requested')
 
 
-
+    if (missingTokens.length == 0) return bulkBalances;
     const bulkRequested = await dfuseClient.stateTablesForAccounts<{ balance: string }>(missingTokens.map(x => x.contract), this.isAuthenticated, 'accounts');
     const dfuseParsed = bulkRequested.tables.filter(table => table.rows.length > 0).flatMap(table => ({ contract: table.account, balance: table.rows[0].json!.balance }));
     const extraBalances = dfuseParsed.map((json): TokenBalanceReturn => {
