@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -115,8 +115,6 @@ import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import {
-  compareString,
-  compareToken,
   formatUnixTime,
   formatNumber,
   buildPoolName, prettifyNumber
@@ -125,7 +123,6 @@ import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import moment from "moment";
-import { format } from "numeral";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
@@ -170,7 +167,6 @@ export default class AddProtectionSingle extends Vue {
 
   @Watch("token")
   async onTokenChange(val) {
-    console.log("oneTwo");
     await this.loadMaxStakes();
   }
 
@@ -374,7 +370,6 @@ export default class AddProtectionSingle extends Vue {
   }
 
   async loadMaxStakes() {
-    console.log("oneTwo" + this.token.symbol);
     this.loadingMaxStakes = true;
     try {
       const result = await vxm.ethBancor.getMaxStakes({
