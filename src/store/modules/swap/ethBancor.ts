@@ -2864,6 +2864,7 @@ export class EthBancorModule
 
   get relays(): ViewRelay[] {
     console.time("relays");
+    console.log(this.previousRelayBalances);
     const toReturn = [...this.chainkLinkRelays, ...this.traditionalRelays]
       .sort(sortByLiqDepth)
       .sort(prioritiseV2Pools);
@@ -2916,6 +2917,7 @@ export class EthBancorModule
 
     const aprs = this.poolAprs;
     const whiteListedPools = this.whiteListedPools;
+    const previousRelayBalances = this.previousRelayBalances;
 
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
       .filter(relay =>
@@ -2958,6 +2960,10 @@ export class EthBancorModule
           compareString(apr.poolId, relay.anchor.contract)
         );
 
+        const feesGenerated = previousRelayBalances.find(r =>
+          compareString(r.relay.id, relay.id)
+        );
+
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -2980,7 +2986,8 @@ export class EthBancorModule
           whitelisted,
           focusAvailable: hasHistory,
           v2: false,
-          ...(apr && { apr: apr.oneWeekApr })
+          ...(apr && { apr: apr.oneWeekApr }),
+          ...(feesGenerated && { feesGenerated: feesGenerated.totalFees })
         } as ViewRelay;
       });
   }
@@ -5292,6 +5299,7 @@ export class EthBancorModule
     joinedTradeEvents: DecodedTimedEvent<ConversionEventDecoded>[];
     singleTrades: DecodedEvent<ConversionEventDecoded>[];
   }) {
+    console.log(singleTrades, "are single trades");
     this.singleTradeHistoryArr = singleTrades;
     this.liquidityHistoryArr = joinedTradeEvents
       .slice()
@@ -5324,13 +5332,43 @@ export class EthBancorModule
           compareString(balance.id, item.data.to.address)
         );
         const exitingAmount = new BigNumber(item.data.to.weiAmount);
-        const noFeeOnTrade = exitingAmount.div(1 + decFee);
-        const feePaid = noFeeOnTrade.minus(exitingAmount);
-        const newAmount = currentTally.wei.plus(feePaid);
+        const isEthBnt =
+          compareString(
+            relay.id,
+            "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533"
+          ) &&
+          compareString(
+            item.txHash,
+            "0x2bb4fe26c5630e7855f4ecf4f66ef1b913f77053c62253d8d30557bff0b81746"
+          );
+
+        const feeLessAmount = exitingAmount.times(
+          new BigNumber(1).minus(decFee)
+        );
+        const feePaid = exitingAmount.minus(feeLessAmount);
+
+        const newTotalAmount = new BigNumber(
+          currentTally.wei.plus(feePaid).toFixed(0)
+        );
+        if (isEthBnt) {
+          const txHash = item.txHash;
+          const feePaidd = feePaid.toString();
+          const feeLessAmountt = feeLessAmount.toString();
+          const exitingAmountt = exitingAmount.toString();
+          console.log(
+            {
+              txHash,
+              exitingAmountt,
+              feePaidd,
+              feeLessAmountt
+            },
+            "all the way"
+          );
+        }
         return updateArray(
           acc,
           reserve => compareString(reserve.id, currentTally.id),
-          reserve => ({ ...reserve, wei: newAmount })
+          reserve => ({ ...reserve, wei: newTotalAmount })
         );
       }, relay.reserves.map(reserve => ({ id: reserve.contract, wei: new BigNumber(0) })));
 
@@ -5343,9 +5381,42 @@ export class EthBancorModule
       };
     });
 
-    console.log(tradesCollected, "are the trades collected");
+    const uniqueTokens = tradesCollected.flatMap(trade =>
+      trade.accumulatedFees.map(x => x.id)
+    );
+    const allTokens = this.tokens;
+    const tokens = uniqueTokens.map(
+      id => allTokens.find(t => compareString(t.id, id))!
+    );
 
-    return false;
+    console.log(tradesCollected, "are the trades collected");
+    const withUsdValues = tradesCollected.map(trade => ({
+      ...trade,
+      accumulatedFees: trade.accumulatedFees.map(fee => {
+        const viewToken = tokens.find(x => compareString(x.id, fee.id))!;
+        const decAmount = shrinkToken(fee.wei, viewToken.precision);
+        const usdValue = new BigNumber(decAmount)
+          .times(viewToken.price!)
+          .toString();
+
+        return {
+          ...fee,
+          usdValue
+        };
+      })
+    }));
+
+    const accumulatedFee = withUsdValues.map(trade => {
+      const totalFees = trade.accumulatedFees.reduce(
+        (acc, item) => new BigNumber(acc).plus(item.usdValue).toString(),
+        "0"
+      );
+      return {
+        ...trade,
+        totalFees
+      };
+    });
+    return accumulatedFee;
   }
 
   get liquidityHistory() {

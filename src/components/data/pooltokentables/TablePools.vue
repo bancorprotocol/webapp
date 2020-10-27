@@ -39,7 +39,7 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { ViewRelay } from "@/types/bancor";
-import { prettifyNumber, formatPercent } from "@/api/helpers";
+import { prettifyNumber, formatPercent, formatNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 
 @Component({
@@ -93,6 +93,19 @@ export default class TablePools extends Vue {
               formatter: (value: string) =>
                 value && new BigNumber(value).isGreaterThan(0)
                   ? formatPercent(value)
+                  : "N/A"
+            },
+            {
+              key: "feesGenerated",
+              label: "Fees (24hr)",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD"
+                    }).format(Number(value))
                   : "N/A"
             }
           ]
