@@ -147,7 +147,7 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 import { getNetworkVariables } from "../../config";
-import { getWeb3, Provider } from "@/api/web3"
+import { getWeb3, Provider } from "@/api/web3";
 
 const tokenSupplyShape = (tokenAddress: string) => {
   const contract = buildTokenContract(tokenAddress);
@@ -4401,7 +4401,7 @@ export class EthBancorModule
       LiquidityProtection: asciiToHex("LiquidityProtection")
     };
 
-    const web3View = getWeb3(this.currentNetwork, Provider.Alchemy)
+    const web3View = getWeb3(this.currentNetwork, Provider.Alchemy);
     const registryContract = new web3View.eth.Contract(
       ABIContractRegistry,
       contractRegistry
@@ -4715,13 +4715,11 @@ export class EthBancorModule
     blockHeight?: number;
   }) {
     const networkVars = getNetworkVariables(this.currentNetwork);
-    const multi = new MultiCall(getWeb3(this.currentNetwork, Provider.Alchemy), networkVars.multiCall, [
-      500,
-      100,
-      50,
-      10,
-      1
-    ]);
+    const multi = new MultiCall(
+      getWeb3(this.currentNetwork, Provider.Alchemy),
+      networkVars.multiCall,
+      [500, 100, 50, 10, 1]
+    );
 
     const res = await multi.all(groupsOfShapes, {
       traditional: false,
@@ -5278,17 +5276,76 @@ export class EthBancorModule
         };
       }
     );
-    return joinStartingAndTerminating;
+    return {
+      joinedTradeEvents: joinStartingAndTerminating,
+      singleTraades: res
+    };
   }
 
   liquidityHistoryArr: DecodedTimedEvent<ConversionEventDecoded>[] = [];
+  singleTradeHistoryArr: DecodedEvent<ConversionEventDecoded>[] = [];
 
-  @mutation setLiquidityHistory(
-    events: DecodedTimedEvent<ConversionEventDecoded>[]
-  ) {
-    this.liquidityHistoryArr = events
+  @mutation setLiquidityHistory({
+    joinedTradeEvents,
+    singleTrades
+  }: {
+    joinedTradeEvents: DecodedTimedEvent<ConversionEventDecoded>[];
+    singleTrades: DecodedEvent<ConversionEventDecoded>[];
+  }) {
+    this.singleTradeHistoryArr = singleTrades;
+    this.liquidityHistoryArr = joinedTradeEvents
       .slice()
       .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
+  }
+
+  get previousRelayBalances() {
+    const singleTrades = this.singleTradeHistoryArr;
+
+    const anchorsRecentlyTradedAgainst = uniqWith(
+      this.singleTradeHistoryArr
+        .map(trade => trade.data.poolToken)
+        .filter(Boolean) as string[],
+      compareString
+    );
+
+    const relays = this.relaysList.filter(relay =>
+      anchorsRecentlyTradedAgainst.some(anchor =>
+        compareString(anchor, relay.id)
+      )
+    );
+
+    const tradesCollected = relays.map(relay => {
+      const trades = singleTrades.filter(trade =>
+        compareString(trade.data.poolToken!, relay.id)
+      );
+      const decFee = relay.fee;
+      const accumulatedFees = trades.reduce((acc, item) => {
+        const currentTally = findOrThrow(acc, balance =>
+          compareString(balance.id, item.data.to.address)
+        );
+        const exitingAmount = new BigNumber(item.data.to.weiAmount);
+        const noFeeOnTrade = exitingAmount.div(1 + decFee);
+        const feePaid = noFeeOnTrade.minus(exitingAmount);
+        const newAmount = currentTally.wei.plus(feePaid);
+        return updateArray(
+          acc,
+          reserve => compareString(reserve.id, currentTally.id),
+          reserve => ({ ...reserve, wei: newAmount })
+        );
+      }, relay.reserves.map(reserve => ({ id: reserve.contract, wei: new BigNumber(0) })));
+
+      return {
+        relay,
+        accumulatedFees: accumulatedFees.map(fee => ({
+          ...fee,
+          wei: fee.wei.toString()
+        }))
+      };
+    });
+
+    console.log(tradesCollected, "are the trades collected");
+
+    return false;
   }
 
   get liquidityHistory() {
@@ -5485,7 +5542,7 @@ export class EthBancorModule
           networkContract: contractAddresses.BancorNetwork,
           fromBlock: blockHoursAgo
         });
-        const withDates = events.map(event =>
+        const withDates = events.joinedTradeEvents.map(event =>
           decodedToTimedDecoded(
             event,
             currentBlock,
@@ -5493,7 +5550,10 @@ export class EthBancorModule
           )
         );
 
-        this.setLiquidityHistory(withDates);
+        this.setLiquidityHistory({
+          joinedTradeEvents: withDates,
+          singleTrades: events.singleTraades
+        });
       })();
 
       console.timeEnd("SecondPromise");
