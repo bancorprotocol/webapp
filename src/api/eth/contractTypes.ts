@@ -18,11 +18,16 @@ import {
 import { web3 } from "@/api/helpers";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
+import Web3 from "web3";
 
-const buildContract = (abi: AbiItem[], contractAddress?: string) =>
+const buildContract = (
+  abi: AbiItem[],
+  contractAddress?: string,
+  injectedWeb3?: Web3
+) =>
   contractAddress
-    ? new web3.eth.Contract(abi, contractAddress)
-    : new web3.eth.Contract(abi);
+    ? new (injectedWeb3 || web3).eth.Contract(abi, contractAddress)
+    : new (injectedWeb3 || web3).eth.Contract(abi);
 
 export const buildTokenContract = (
   contractAddress?: string
@@ -93,7 +98,8 @@ export const buildMultiCallContract = (
 }> => buildContract(ABIMultiCallContract, contractAddress);
 
 export const buildConverterContract = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   acceptTokenOwnership: () => ContractSendMethod;
   reserves: (reserveAddress: string) => CallReturn<any[]>;
@@ -123,7 +129,7 @@ export const buildConverterContract = (
   connectorTokens: (index: number) => CallReturn<string>;
   conversionFee: () => CallReturn<string>;
   geometricMean: (weis: string[]) => CallReturn<string>;
-}> => buildContract(ABIConverter, contractAddress);
+}> => buildContract(ABIConverter, contractAddress, web3);
 
 export const buildV2Converter = (
   contractAddress?: string

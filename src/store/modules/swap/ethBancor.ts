@@ -2987,7 +2987,8 @@ export class EthBancorModule
 
   @action async getGeometricMean(amounts: string[]) {
     const converter = buildConverterContract(
-      getNetworkVariables(this.currentNetwork).converterContractForMaths
+      getNetworkVariables(this.currentNetwork).converterContractForMaths,
+      getWeb3(this.currentEthNetwork, Provider.Alchemy)
     );
     return converter.methods.geometricMean(amounts).call();
   }
@@ -3010,7 +3011,7 @@ export class EthBancorModule
   }) {
     const { reserves, version, contract } = await this.relayById(poolId);
 
-    const converterContract = buildConverterContract(contract);
+    const converterContract = buildConverterContract(contract, getWeb3(this.currentEthNetwork, Provider.Alchemy));
     const smartTokenContract = buildTokenContract(poolId);
 
     const requestAtParticularBlock = typeof blockHeight !== undefined;
