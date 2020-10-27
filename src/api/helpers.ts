@@ -36,6 +36,7 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
+import { getAlchemyUrl, getInfuraAddress } from "@/api/web3"
 
 export enum PositionType {
   single,
@@ -89,7 +90,7 @@ export const calculateMaxStakes = (
   );
 
   const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
-  
+
   const maxAllowedBntInTkn = lowestAmount.times(
     tknReserveBalance.div(bntReserveBalance)
   );
@@ -362,22 +363,8 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-const projectId = "da059c364a2f4e6eb89bfd89600bce07";
-
-const buildInfuraAddress = (subdomain: string, projectId: string) =>
-  `https://${subdomain}.infura.io/v3/${projectId}`;
-
-const getInfuraAddress = (network: EthNetworks) => {
-  if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId);
-  } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId);
-  }
-  throw new Error("Infura address for network not supported ");
-};
-
 export let web3 = new Web3(
-  Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
+  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
 
 web3.eth.transactionBlockTimeout = 100;
@@ -431,6 +418,7 @@ interface TokenAmount {
   weiAmount: string;
 }
 export interface ConversionEventDecoded {
+  poolToken?: string;
   from: TokenAmount;
   to: TokenAmount;
   trader: string;
@@ -591,6 +579,7 @@ const decodeNetworkConversionEvent = (
     blockNumber,
     txHash,
     data: {
+      poolToken: removeLeadingZeros(poolToken),
       from: {
         address: removeLeadingZeros(fromAddress),
         weiAmount: picked.fromAmount
@@ -696,6 +685,8 @@ export const getLogs = async (
     ],
     id: 1
   });
+
+  console.log(res, 'is the raw return')
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
