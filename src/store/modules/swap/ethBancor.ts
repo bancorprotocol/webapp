@@ -3369,8 +3369,7 @@ export class EthBancorModule
       this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
-    console.log(
-      {
+    return { maxStakes, maxStakesConverted: {
         maxAllowedBnt: shrinkToken(
           maxStakes.maxAllowedBntWei,
           bntReserve.decimals
@@ -3379,11 +3378,8 @@ export class EthBancorModule
           maxStakes.maxAllowedTknWei,
           tknReserve.decimals
         )
-      },
-      "asaf"
-    );
-
-    return maxStakes
+      }
+    }
   }
 
   @action async calculateProtectionSingle({
@@ -3400,7 +3396,7 @@ export class EthBancorModule
 
     const inputToken = this.token(reserveAmount.id);
     
-    const maxStakes = await this.getMaxStakes({poolId})
+    const { maxStakes } = await this.getMaxStakes({poolId})
 
     const inputAmountWei = expandToken(
       reserveAmount.amount,
