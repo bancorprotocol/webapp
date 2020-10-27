@@ -281,6 +281,7 @@ export interface ViewRelay {
   whitelisted: boolean;
   v2: boolean;
   version: number;
+  feesGenerated?: string;
   apr?: string;
 }
 
