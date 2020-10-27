@@ -32,8 +32,9 @@
       class="mt-3 mb-3"
     />
 
-    <gray-border-block v-else-if="amount" :gray-bg="true" class="my-3">
+    <gray-border-block v-else-if="outputs.length" :gray-bg="true" class="my-3">
       <div>
+        {{ outputs }}
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
@@ -370,6 +371,7 @@ export default class AddProtectionSingle extends Vue {
   }
 
   async loadMaxStakes() {
+    if (this.loadingMaxStakes) return
     this.loadingMaxStakes = true;
     try {
       const result = await vxm.ethBancor.getMaxStakes({
