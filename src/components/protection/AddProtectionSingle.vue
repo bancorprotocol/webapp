@@ -166,7 +166,7 @@ export default class AddProtectionSingle extends Vue {
   selectedTokenIndex = 0;
 
   @Watch("token")
-  async onTokenChange(val) {
+  async onTokenChange() {
     await this.loadMaxStakes();
   }
 
