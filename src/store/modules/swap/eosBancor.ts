@@ -704,17 +704,22 @@ export class EosBancorModule
         )
       )
     );
-    return smartTokenBalances.map(balance => {
+
+    const viewRelays = this.relays;
+    const data = smartTokenBalances.map(balance => {
       const smartTokenId = buildTokenId(balance);
-      const relay = this.relaysList.find(relay =>
-        compareString(buildTokenId(relay.smartToken), smartTokenId)
+      const viewRelay = viewRelays.find(relay =>
+        compareString(relay.id, smartTokenId)
       )!;
-      const viewRelay = this.relay(relay.id);
+      if (!viewRelay)
+        console.warn("Pool token position does not have a relay", smartTokenId);
       return {
         relay: viewRelay,
         smartTokenAmount: balance.balance
       };
     });
+
+    return data.filter(row => row.relay);
   }
 
   get balance() {
