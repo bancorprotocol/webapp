@@ -1549,14 +1549,13 @@ export class EosBancorModule
     }
     try {
       console.time("eos1");
-      const [usdPriceOfBnt, v2Relays, tokenMeta] = await Promise.all([
-        vxm.bancor.fetchUsdPriceOfBnt(),
+      vxm.bancor.getPrices();
+      const [v2Relays, tokenMeta] = await Promise.all([
         fetchMultiRelays(),
         getTokenMeta()
       ]);
       console.timeEnd("eos1");
       this.setTokenMeta(tokenMeta);
-      this.setBntPrice(usdPriceOfBnt);
 
       const v1Relays = getHardCodedRelays();
       const allDry = [...v1Relays, ...v2Relays.map(multiToDry)].filter(

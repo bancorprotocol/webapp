@@ -22,10 +22,10 @@ import { vxm } from "@/store";
 import { store } from "../../../store";
 import {
   compareString,
-  fetchUsdPriceOfBntViaRelay,
-  updateArray
+  cryptoComparePrices,
+  updateArray,
+  UsdPrices
 } from "@/api/helpers";
-import { fetchBinanceUsdPriceOfBnt } from "@/api/helpers";
 import wait from "waait";
 import { defaultModule } from "@/router";
 
@@ -62,14 +62,20 @@ interface Module {
   error: boolean;
 }
 
+interface PriceData {
+  lastChecked: number;
+  usdPrices: UsdPrices | null;
+}
+
 const slippageTolerance = "SLIPPAGE_TOLERANCE";
 export class BancorModule extends VuexModule.With({
   namespaced: "bancor/"
 }) {
-  usdPriceOfBnt: BntPrice = {
-    price: null,
+  priceData: PriceData = {
+    usdPrices: null,
     lastChecked: 0
   };
+
   modules: Module[] = moduleIds.map(({ id, label }) => ({
     id,
     label,
@@ -296,25 +302,14 @@ export class BancorModule extends VuexModule.With({
     }
   }
 
-  @action async getUsdPrice() {
+  @action async fetchAndSetPrices() {
     try {
-      const reverse = (promise: any) =>
-        new Promise((resolve, reject) =>
-          Promise.resolve(promise).then(reject, resolve)
-        );
-      const any = (arr: any[]) => reverse(Promise.all(arr.map(reverse)));
-      const res = await any([
-        fetchBinanceUsdPriceOfBnt(),
-        new Promise(resolve => {
-          wait(500).then(() => resolve(fetchUsdPriceOfBntViaRelay()));
-        })
-      ]);
-      const usdPrice = res as number;
-      this.setUsdPriceOfBnt({
-        price: usdPrice,
-        lastChecked: new Date().getTime()
+      const res = await cryptoComparePrices();
+      this.setUsdPrices({
+        usdPrices: res,
+        lastChecked: Date.now()
       });
-      return usdPrice;
+      return res;
     } catch (e) {
       throw new Error(
         `Failed to find USD Price of BNT from External API & Relay ${e.message}`
@@ -322,19 +317,20 @@ export class BancorModule extends VuexModule.With({
     }
   }
 
-  @action async fetchUsdPriceOfBnt() {
-    const timeNow = new Date().getTime();
+  @action async getPrices() {
+    const timeNow = Date.now();
     const millisecondGap = 5000;
     const makeNetworkRequest =
-      !this.usdPriceOfBnt.lastChecked ||
-      this.usdPriceOfBnt.lastChecked + millisecondGap < timeNow;
+      !this.priceData.lastChecked ||
+      this.priceData.lastChecked + millisecondGap < timeNow;
+
     return makeNetworkRequest
-      ? this.getUsdPrice()
-      : (this.usdPriceOfBnt.price as number);
+      ? this.fetchAndSetPrices()
+      : (this.priceData.usdPrices! as UsdPrices);
   }
 
-  @mutation setUsdPriceOfBnt(usdPriceOfBnt: BntPrice) {
-    this.usdPriceOfBnt = usdPriceOfBnt;
+  @mutation setUsdPrices(data: PriceData) {
+    this.priceData = data;
   }
 
   @action async loadMoreTokens(tokenIds?: string[]) {

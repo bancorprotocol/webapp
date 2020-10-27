@@ -1454,7 +1454,6 @@ export class EthBancorModule
   bancorApiTokens: TokenPrice[] = [];
   relaysList: readonly Relay[] = [];
   tokenBalances: { id: string; balance: string }[] = [];
-  bntUsdPrice: number = 0;
   tokenMeta: TokenMeta[] = [];
   availableHistories: string[] = [];
   contracts: RegisteredContracts = {
@@ -1516,9 +1515,7 @@ export class EthBancorModule
       ),
       nativeTokenPrice: {
         symbol: "ETH",
-        price:
-          this.tokens.find(token => compareString("ETH", token.symbol))!
-            .price || 0
+        price: vxm.bancor.priceData.usdPrices!.ETH.USD
       },
       twentyFourHourTradeCount: this.liquidityHistory.data.length
     };
@@ -2302,7 +2299,7 @@ export class EthBancorModule
 
   get newNetworkTokenChoices(): ModalChoice[] {
     const toOffer = [
-      { symbolName: "BNT", value: this.bntUsdPrice },
+      { symbolName: "BNT", value: vxm.bancor.priceData.usdPrices!.BNT.USD },
       { symbolName: "USDB", value: 1 }
     ];
 
@@ -4533,13 +4530,7 @@ export class EthBancorModule
   }
 
   @action async fetchUsdPriceOfBnt() {
-    const price = await vxm.bancor.fetchUsdPriceOfBnt();
-    this.setBntUsdPrice(price);
-    return price;
-  }
-
-  @mutation setBntUsdPrice(usdPrice: number) {
-    this.bntUsdPrice = usdPrice;
+    vxm.bancor.getPrices();
   }
 
   @action async fetchStakedReserveBalance({
@@ -4938,7 +4929,7 @@ export class EthBancorModule
 
     const v2RelayFeeds = buildRelayFeedChainkLink({
       relays: confirmedTokenMatch,
-      usdPriceOfBnt: this.bntUsdPrice
+      usdPriceOfBnt: vxm.bancor.priceData.usdPrices!.BNT.USD
     });
 
     console.timeEnd("secondWaterfall");
@@ -5056,8 +5047,21 @@ export class EthBancorModule
 
     const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
 
+    const apiSourcedPrices = vxm.bancor.priceData.usdPrices
+      ? ([
+          {
+            id: bntTokenAddress,
+            usdPrice: String(vxm.bancor.priceData.usdPrices!.BNT.USD)
+          },
+          {
+            id: ethReserveAddress,
+            usdPrice: String(vxm.bancor.priceData.usdPrices!.ETH.USD)
+          }
+        ] as UsdValue[])
+      : ([] as UsdValue[]);
+
     const knownPrices = [
-      { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
+      ...apiSourcedPrices,
       ...trustedStables(this.currentNetwork)
     ];
 
@@ -5338,7 +5342,7 @@ export class EthBancorModule
 
   get availableBalances(): ViewLockedBalance[] {
     const now = moment();
-    const bntPrice = this.bntUsdPrice;
+    const bntPrice = vxm.bancor.priceData.usdPrices!.BNT.USD;
     const balances = this.lockedBalancesArr.filter(lockedBalance =>
       moment.unix(lockedBalance.expirationTime).isSameOrBefore(now)
     );
@@ -5380,7 +5384,7 @@ export class EthBancorModule
 
   get lockedBalances(): ViewLockedBalance[] {
     const now = moment();
-    const bntPrice = this.bntUsdPrice;
+    const bntPrice = vxm.bancor.priceData.usdPrices!.BNT.USD;
     const balances = this.lockedBalancesArr.filter(lockedBalance =>
       moment.unix(lockedBalance.expirationTime).isAfter(now)
     );

@@ -1,5 +1,5 @@
 <template>
-  <b-row>
+  <b-row v-if="loading">
     <!-- <b-col md="6" lg="3" class="mb-4 mb-lg-0">
       <statistics-data-block
         title="Bancor Eth Price"
@@ -9,6 +9,9 @@
     </b-col> -->
     <b-col md="6" lg="3" class="mb-0">
       <statistics-data-block title="Total Liquidity" :value="liquidityDepth" />
+    </b-col>
+    <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+      <statistics-data-block :title="bntTokenLabel" :value="bntTokenPrice" />
     </b-col>
     <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
       <statistics-data-block
@@ -49,6 +52,22 @@ import numeral from "numeral";
 export default class Statistics extends Vue {
   get liquidityDepth() {
     return numeral(this.stats.totalLiquidityDepth).format("$0,0.00");
+  }
+
+  get loading() {
+    return !!vxm.bancor.priceData.usdPrices;
+  }
+
+  get usdPrices() {
+    return vxm.bancor.priceData.usdPrices;
+  }
+
+  get bntTokenPrice() {
+    return numeral(this.usdPrices!.BNT.USD).format("$0,0.00");
+  }
+
+  get bntTokenLabel() {
+    return `BNT Price`;
   }
 
   get nativeTokenLabel() {
