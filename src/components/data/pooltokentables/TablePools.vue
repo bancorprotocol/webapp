@@ -107,6 +107,16 @@ export default class TablePools extends Vue {
                       currency: "USD"
                     }).format(Number(value))
                   : "N/A"
+            },
+            {
+              key: "feesVsLiquidity",
+              label: "1y Fees / Liquidity",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? formatPercent(value)
+                  : "N/A"
             }
           ]
         : []),

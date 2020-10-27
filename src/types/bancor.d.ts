@@ -282,6 +282,7 @@ export interface ViewRelay {
   v2: boolean;
   version: number;
   feesGenerated?: string;
+  feesVsLiquidity?: string;
   apr?: string;
 }
 

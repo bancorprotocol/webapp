@@ -2964,6 +2964,13 @@ export class EthBancorModule
           compareString(r.relay.id, relay.id)
         );
 
+        const feesVsLiquidity =
+          feesGenerated &&
+          new BigNumber(feesGenerated.totalFees)
+            .times(365)
+            .div(liqDepth)
+            .toString();
+
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -2987,7 +2994,8 @@ export class EthBancorModule
           focusAvailable: hasHistory,
           v2: false,
           ...(apr && { apr: apr.oneWeekApr }),
-          ...(feesGenerated && { feesGenerated: feesGenerated.totalFees })
+          ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
+          ...(feesVsLiquidity && { feesVsLiquidity })
         } as ViewRelay;
       });
   }
@@ -5332,15 +5340,6 @@ export class EthBancorModule
           compareString(balance.id, item.data.to.address)
         );
         const exitingAmount = new BigNumber(item.data.to.weiAmount);
-        const isEthBnt =
-          compareString(
-            relay.id,
-            "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533"
-          ) &&
-          compareString(
-            item.txHash,
-            "0x2bb4fe26c5630e7855f4ecf4f66ef1b913f77053c62253d8d30557bff0b81746"
-          );
 
         const feeLessMag = 1 - decFee;
         const feeLessAmount = exitingAmount.times(feeLessMag);
@@ -5349,15 +5348,6 @@ export class EthBancorModule
         const newTotalAmount = new BigNumber(
           currentTally.wei.plus(feePaid).toFixed(0)
         );
-        if (isEthBnt) {
-          const txHash = item.txHash;
-          const feePaidd = feePaid.toString();
-          const feeLessAmountt = feeLessAmount.toString();
-          const exitingAmountt = exitingAmount.toString();
-          console.log(
-            `Whole amount is ${exitingAmountt}, without the fee is ${feeLessAmountt} resulting in a fee cost of ${feePaidd} ${txHash}`
-          );
-        }
         return updateArray(
           acc,
           reserve => compareString(reserve.id, currentTally.id),
