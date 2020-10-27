@@ -22,6 +22,7 @@ import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue
 import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
+import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
 import VotePage from "@/components/vote/VotePage.vue";
 
 Vue.use(Router);
@@ -159,6 +160,14 @@ export const router = new Router({
       components: {
         Nav: Navigation,
         default: LiquidityProtectionSummary
+      }
+    },
+    {
+      path: "/:service/protection/whitelistedpools",
+      name: "WhitelistedPools",
+      components: {
+        Nav: Navigation,
+        default: WhitelistedPools
       }
     },
     {
