@@ -15,6 +15,7 @@
     "go": "yarn run bump && yarn build && yarn deploy"
   },
   "dependencies": {
+    "@bandprotocol/bandchain.js": "^1.1.5",
     "@dfuse/client": "^0.3.14",
     "@firebase/analytics": "^0.4.1",
     "@firebase/app": "^0.6.9",
@@ -28,6 +29,7 @@
     "@types/lodash.debounce": "^4.0.6",
     "@types/numeral": "0.0.26",
     "axios": "^0.19.0",
+    "babel-loader": "^8.1.0",
     "bancorx": "^0.3.0",
     "bignumber.js": "^9.0.0",
     "bnc-onboard": "^1.13.2",

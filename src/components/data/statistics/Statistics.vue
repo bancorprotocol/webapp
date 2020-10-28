@@ -47,8 +47,21 @@ import numeral from "numeral";
   components: { StatisticsDataBlock }
 })
 export default class Statistics extends Vue {
+  get displayCurrency() {
+    return vxm.general.currency;
+  }
+  get conversionRate() {
+    const conversionRates = vxm.general.conversionRates;
+    const currency = vxm.general.currency;
+    return conversionRates[currency].rate;
+  }
   get liquidityDepth() {
-    return numeral(this.stats.totalLiquidityDepth).format("$0,0.00");
+    return (
+      this.stats.totalLiquidityDepth * this.conversionRate
+    ).toLocaleString("en", {
+      style: "currency",
+      currency: this.displayCurrency
+    });
   }
 
   get nativeTokenLabel() {
@@ -56,7 +69,12 @@ export default class Statistics extends Vue {
   }
 
   get nativeTokenPrice() {
-    return numeral(this.stats.nativeTokenPrice.price).format("$0,0.00");
+    return (
+      this.stats.nativeTokenPrice.price * this.conversionRate
+    ).toLocaleString("en", {
+      style: "currency",
+      currency: this.displayCurrency
+    });
   }
 
   get twentyFourHourTradeCount() {

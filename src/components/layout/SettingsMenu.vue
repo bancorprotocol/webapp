@@ -48,6 +48,14 @@
         </div>
       </b-dropdown-item>
     </b-dropdown-group>
+    <div style="display: flex; justify-content:space-between; margin:12px">
+      <span
+        class="font-size-sm font-w400"
+        style="display:flex; align-items:center;"
+        >Display Currency</span
+      >
+      <conversion-currency />
+    </div>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header class="text-uppercase">Blockchains</b-dropdown-header>
@@ -82,8 +90,10 @@
 import { Prop, Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import ConversionCurrency from "@/components/common/ConversionCurrency.vue";
+import { BvModalEvent } from "bootstrap-vue";
 @Component({
-  components: { SlippageTolerance }
+  components: { SlippageTolerance, ConversionCurrency }
 })
 export default class SettingsMenu extends Vue {
   @Prop({ default: true }) showTx!: boolean;

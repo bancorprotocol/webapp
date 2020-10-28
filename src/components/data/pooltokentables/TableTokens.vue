@@ -54,6 +54,16 @@ import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
 export default class TableTokens extends Vue {
   @Prop() filter!: string;
 
+  get displayCurrency() {
+    return vxm.general.currency;
+  }
+
+  get conversionRate() {
+    const conversionRates = vxm.general.conversionRates;
+    const currency = vxm.general.currency;
+    return conversionRates[currency].rate;
+  }
+
   fields = [
     {
       key: "liquidityProtection",
@@ -73,14 +83,14 @@ export default class TableTokens extends Vue {
     },
     {
       key: "price",
-      label: "Price USD",
+      label: "Price",
       thStyle: { "min-width": "120px" },
       sortable: true,
       formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
+        (value * this.conversionRate).toLocaleString("en", {
           style: "currency",
-          currency: "USD"
-        }).format(value)
+          currency: this.displayCurrency
+        })
     },
     /*
     {
@@ -101,10 +111,10 @@ export default class TableTokens extends Vue {
       thStyle: { "min-width": "160px" },
       sortable: true,
       formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
+        (value * this.conversionRate).toLocaleString("en", {
           style: "currency",
-          currency: "USD"
-        }).format(value)
+          currency: this.displayCurrency
+        })
     },
     {
       key: "actionButtons",
