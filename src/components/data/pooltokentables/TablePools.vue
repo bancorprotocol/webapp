@@ -39,7 +39,8 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { ViewRelay } from "@/types/bancor";
-import { prettifyNumber, formatPercent } from "@/api/helpers";
+import { prettifyNumber, formatPercent, formatNumber } from "@/api/helpers";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: { PoolLogos, ActionButtons, TableWrapper }
@@ -50,6 +51,10 @@ export default class TablePools extends Vue {
 
   get aprsExist() {
     return this.items.some(pool => pool.apr);
+  }
+
+  get isEth() {
+    return this.$route.params.service == "eth";
   }
 
   get fields() {
@@ -82,17 +87,33 @@ export default class TablePools extends Vue {
         sortable: true,
         formatter: formatPercent
       },
-      // ...(this.aprsExist
-      //   ? [
-      //       {
-      //         key: "apr",
-      //         label: "1y Fees / Liquidity",
-      //         sortable: true,
-      //         thStyle: { "min-width": "80px" },
-      //         formatter: (value: number) => value && value > 0 ? formatPercent(value) : "-"
-      //       }
-      //     ]
-      //   : []),
+      ...(this.isEth
+        ? [
+            {
+              key: "feesGenerated",
+              label: "Fees (24hr)",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD"
+                    }).format(Number(value))
+                  : "N/A"
+            },
+            {
+              key: "feesVsLiquidity",
+              label: "1y Fees / Liquidity",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? formatPercent(value)
+                  : "N/A"
+            }
+          ]
+        : []),
       {
         key: "actionButtons",
         label: "Action",
