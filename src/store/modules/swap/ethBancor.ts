@@ -1667,7 +1667,7 @@ export class EthBancorModule
         })
       );
 
-      const [withAprs, withLiquidityReturn] = await Promise.all([
+      const [withAprs, withLiquidityReturn, withFees] = await Promise.all([
         (async () => {
           try {
             const poolHistoricalBalances = await Promise.all(
@@ -1818,7 +1818,72 @@ export class EthBancorModule
           })
         ).catch(e => {
           console.warn("Error fetching ROIs", e);
-        })
+        }),
+        Promise.all(
+          allPositions.map(async position => {
+            const calculateFees = (
+              depositedToken: string,
+              depositedAmount: string,
+              depositedReserveCurrentBalance: string,
+              opposingDepositedReserveBalance: string,
+              reserveRate: string
+            ) => {};
+
+            const currentPoolBalances = await this.fetchRelayBalances({
+              poolId: position.poolToken
+            });
+
+            const [depositedReserve, opposingReserve] = sortAlongSide(
+              currentPoolBalances.reserves,
+              reserve => reserve.contract,
+              [position.reserveToken]
+            );
+            const rate0 = new BigNumber(position.reserveRateN).div(
+              position.reserveRateD
+            );
+
+            const rate1 = new BigNumber(opposingReserve.weiAmount).div(
+              depositedReserve.weiAmount
+            );
+
+            const depositedAmount = position.reserveAmount;
+
+            const rate = new BigNumber(depositedReserve.weiAmount).times(
+              currentPoolBalances.smartTokenSupplyWei
+            );
+            const amount1 = new BigNumber(position.poolAmount).times(rate);
+            const amount0 = new BigNumber(depositedAmount);
+
+            const magicRate = rate1.div(rate0);
+            console.log(magicRate.toString(), "is the magic rate");
+
+            const feePercent = amount1
+              .div(amount0)
+              .times(magicRate)
+              .sqrt()
+              .minus(1);
+
+            const feeAmount = new BigNumber(depositedAmount).times(feePercent);
+
+            const shrunk = shrinkToken(feeAmount.toString(), 18);
+
+            console.log(
+              feePercent.toString(),
+              "fee percent",
+              feeAmount.toString(),
+              "is the fee amount",
+              "rate 0 is",
+              rate0.toString(),
+              "decimal form",
+              shrunk
+            );
+
+            return {
+              positionId: position.id,
+              feePercent: feePercent.toString()
+            };
+          })
+        )
       ]);
 
       const positions = allPositions.map(
