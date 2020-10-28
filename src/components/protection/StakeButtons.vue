@@ -23,6 +23,7 @@
         >
           <label-content-split
             v-for="(amount, index) in maxStakes"
+            :key="index"
             :label="!index ? 'Space Available' : ''"
             :value="amount"
             :loading="loadingMaxStakes"
