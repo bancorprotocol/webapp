@@ -22,7 +22,7 @@
           class="my-3"
         >
           <label-content-split
-            label="Currently Available"
+            label="Space Available"
             :loading="loadingMaxStakes"
             :value="maxStakesTkn + ' ' + tknSymbol"
           />
