@@ -19,24 +19,24 @@ import { firebase } from "@firebase/app";
 import "@firebase/analytics";
 import VueGtag from "vue-gtag";
 
-Sentry.init({
-  dsn:
-    "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
-  integrations: [
-    new VueIntegration({
-      Vue,
-      tracing: true,
-      tracingOptions: {
-        trackComponents: true
-      }
-    }),
-    new Integrations.BrowserTracing()
-  ],
+// Sentry.init({
+//   dsn:
+//     "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
+//   integrations: [
+//     new VueIntegration({
+//       Vue,
+//       tracing: true,
+//       tracingOptions: {
+//         trackComponents: true
+//       }
+//     }),
+//     new Integrations.BrowserTracing()
+//   ],
 
-  // We recommend adjusting this value in production, or using tracesSampler
-  // for finer control
-  tracesSampleRate: 1.0
-});
+//   // We recommend adjusting this value in production, or using tracesSampler
+//   // for finer control
+//   tracesSampleRate: 1.0
+// });
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4yWnTGa6qj6dR1RLW6Clod0iMn4niflU",
