@@ -82,17 +82,17 @@ export default class TablePools extends Vue {
         sortable: true,
         formatter: formatPercent
       },
-      ...(this.aprsExist
-        ? [
-            {
-              key: "apr",
-              label: "1y Fees / Liquidity",
-              sortable: true,
-              thStyle: { "min-width": "80px" },
-              formatter: (value: number) => value && value > 0 ? formatPercent(value) : "-"
-            }
-          ]
-        : []),
+      // ...(this.aprsExist
+      //   ? [
+      //       {
+      //         key: "apr",
+      //         label: "1y Fees / Liquidity",
+      //         sortable: true,
+      //         thStyle: { "min-width": "80px" },
+      //         formatter: (value: number) => value && value > 0 ? formatPercent(value) : "-"
+      //       }
+      //     ]
+      //   : []),
       {
         key: "actionButtons",
         label: "Action",
