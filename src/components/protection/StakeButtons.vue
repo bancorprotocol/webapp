@@ -15,6 +15,23 @@
         <p class="font-size-14 font-w400 mb-3">
           {{ option.desc }}
         </p>
+
+        <gray-border-block
+          v-if="option.maxAllowed"
+          :gray-bg="true"
+          class="my-3"
+        >
+          <label-content-split
+            label="Currently Available"
+            :loading="loadingMaxStakes"
+            :value="maxStakesTkn + ' ' + tknSymbol"
+          />
+          <label-content-split
+            label=""
+            :value="loadingMaxStakes ? '' : maxStakesBnt + ' BNT'"
+          />
+        </gray-border-block>
+
         <main-button
           @click="click(option.id)"
           :label="option.buttonTxt"
@@ -32,12 +49,33 @@
 import { Component, Prop, Vue, Emit } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
+import {vxm} from "@/store";
+import {prettifyNumber} from "@/api/helpers";
+import {ViewRelay} from "@/types/bancor";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 
 @Component({
-  components: { GrayBorderBlock, MainButton }
+  components: {LabelContentSplit, GrayBorderBlock, MainButton }
 })
 export default class StakeButtons extends Vue {
   @Prop({ default: false }) showAddLiquidity!: boolean;
+
+  maxStakesBnt: any = 0;
+  maxStakesTkn: any = 0;
+
+  loadingMaxStakes = false;
+
+  get poolId(): string | null {
+    return this.$route.params.id ?? null
+  }
+
+  get pool(): ViewRelay {
+    return vxm.bancor.relay(this.poolId)
+  }
+
+  get tknSymbol() {
+    return this.pool.reserves[1].symbol
+  }
 
   get stakeOptions() {
     return [
@@ -49,7 +87,8 @@ export default class StakeButtons extends Vue {
         buttonTxt: "Stake and Protect",
         buttonActive: true,
         buttonEnabled: true,
-        hide: false
+        hide: false,
+        maxAllowed: this.poolId ? true : false
       },
       {
         id: 1,
@@ -59,7 +98,8 @@ export default class StakeButtons extends Vue {
         buttonTxt: "Stake and Protect",
         buttonActive: true,
         buttonEnabled: true,
-        hide: this.showAddLiquidity
+        hide: this.showAddLiquidity,
+        maxAllowed: false
       },
       {
         id: 2,
@@ -68,9 +108,35 @@ export default class StakeButtons extends Vue {
         buttonTxt: "Add Dual Sided Liquidity",
         buttonActive: true,
         buttonEnabled: true,
-        hide: !this.showAddLiquidity
+        hide: !this.showAddLiquidity,
+        maxAllowed: false
       }
     ];
+  }
+
+  async loadMaxStakes() {
+    if (this.loadingMaxStakes || !this.poolId) return
+    this.loadingMaxStakes = true;
+    try {
+      const result = await vxm.ethBancor.getMaxStakes({
+        poolId: this.poolId
+      });
+      const maxStakes = result.maxStakesConverted
+      this.maxStakesBnt = prettifyNumber(maxStakes[Object.keys(maxStakes)[0]]);
+      this.maxStakesTkn = prettifyNumber(maxStakes[Object.keys(maxStakes)[1]]);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      this.loadingMaxStakes = false;
+    }
+  }
+
+  async created() {
+    await this.loadMaxStakes()
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode
   }
 
   @Emit("click")

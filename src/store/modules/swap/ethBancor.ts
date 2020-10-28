@@ -3324,20 +3324,11 @@ export class EthBancorModule
     return contract.methods.systemBalance(tokenAddress).call();
   }
 
-  @action async calculateProtectionSingle({
+  @action async getMaxStakes({
     poolId,
-    reserveAmount
   }: {
     poolId: string;
-    reserveAmount: ViewAmount;
-  }): Promise<ProtectionRes> {
-    const depositingNetworkToken = compareString(
-      this.liquidityProtectionSettings.networkToken,
-      reserveAmount.id
-    );
-
-    const inputToken = this.token(reserveAmount.id);
-
+  }) {
     const [balances, poolTokenBalance] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
       this.fetchSystemBalance(poolId)
@@ -3362,8 +3353,7 @@ export class EthBancorModule
       this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
-    console.log(
-      {
+    return { maxStakes, maxStakesConverted: {
         maxAllowedBnt: shrinkToken(
           maxStakes.maxAllowedBntWei,
           bntReserve.decimals
@@ -3372,9 +3362,25 @@ export class EthBancorModule
           maxStakes.maxAllowedTknWei,
           tknReserve.decimals
         )
-      },
-      "asaf"
+      }
+    }
+  }
+
+  @action async calculateProtectionSingle({
+    poolId,
+    reserveAmount
+  }: {
+    poolId: string;
+    reserveAmount: ViewAmount;
+  }): Promise<ProtectionRes> {
+    const depositingNetworkToken = compareString(
+      this.liquidityProtectionSettings.networkToken,
+      reserveAmount.id
     );
+
+    const inputToken = this.token(reserveAmount.id);
+    
+    const { maxStakes } = await this.getMaxStakes({poolId})
 
     const inputAmountWei = expandToken(
       reserveAmount.amount,
