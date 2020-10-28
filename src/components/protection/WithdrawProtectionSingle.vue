@@ -1,6 +1,6 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Stake">
+    <label-content-split label="Initial Stake">
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
         :amount="prettifyNumber(position.stake.amount)"
@@ -11,7 +11,7 @@
     <label-content-split
       label="Fully Protected Value"
       :value="
-        `${prettifyNumber(position.fullyProtected.amount)} ${
+        `${prettifyNumber(position.protectedAmount.amount)} ${
           position.stake.symbol
         }`
       "
@@ -50,15 +50,17 @@
         v-for="(output, index) in outputs"
         :label="index == 0 ? 'Output breakdown' : ''"
         :key="output.id"
+        :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       >
-        <span class="font-size-14 font-w500">
-          {{ prettifyNumber(output.amount) }} {{ output.symbol }}
-        </span>
-        <span class="font-size-14 font-w500 text-primary">
-          {{ prettifyNumber(output.usdValue, true) }}
-        </span>
       </label-content-split>
     </gray-border-block>
+
+    <alert-block
+      v-if="vBntWarning"
+      variant="error"
+      :msg="vBntWarning"
+      class="my-3"
+    />
 
     <main-button
       label="Continue"
@@ -97,24 +99,14 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import {
-  compareString,
-  compareToken,
-  findOrThrow,
-  formatNumber,
-  prettifyNumber
-} from "@/api/helpers";
+import { compareString, findOrThrow, prettifyNumber } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
+import BigNumber from "bignumber.js";
 
 interface ViewAmountUsd extends ViewAmount {
   usdValue: number;
-}
-
-interface RemoveProtectionRes {
-  outputValue: ViewAmountUsd;
-  outputs: ViewAmountUsd[];
 }
 
 @Component({
@@ -141,28 +133,6 @@ export default class WithdrawProtectionSingle extends Vue {
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
 
-  get removeProtectionRes() {
-    return {
-      outputValue: {
-        usdValue: 123.12,
-        id: "1",
-        amount: "5555.55555"
-      },
-      outputs: [
-        {
-          usdValue: 123.12,
-          id: "1",
-          amount: "5555.55555"
-        },
-        {
-          usdValue: 123.12,
-          id: "2",
-          amount: "5555.55555"
-        }
-      ]
-    };
-  }
-
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
       ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
@@ -170,7 +140,8 @@ export default class WithdrawProtectionSingle extends Vue {
   }
 
   get disableActionButton() {
-    if (parseFloat(this.percentage) === 0) return true;
+    if (this.vBntWarning) return true;
+    else if (parseFloat(this.percentage) === 0) return true;
     else return this.inputError ? true : false;
   }
 
@@ -182,11 +153,36 @@ export default class WithdrawProtectionSingle extends Vue {
   get position() {
     const [poolId, first, second] = this.$route.params.id.split(":");
 
-    const pos = findOrThrow(vxm.ethBancor.protectedLiquidity, position =>
+    const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
       compareString(position.id, this.$route.params.id)
     );
     console.log(pos, "is the selected pos");
     return pos;
+  }
+
+  get vBntWarning() {
+    return this.position.givenVBnt && !this.sufficientVBnt
+      ? `Insufficient vBNT balance, you must hold ${prettifyNumber(
+          Number(this.position.givenVBnt!) * (Number(this.percentage) / 100)
+        )} vBNT before withdrawing position.`
+      : "";
+  }
+
+  get sufficientVBnt() {
+    if (this.position.givenVBnt) {
+      const decPercent = new BigNumber(this.percentage).div(100);
+      const proposedWithdraw = new BigNumber(this.position.givenVBnt).times(
+        decPercent
+      );
+      return proposedWithdraw.isLessThanOrEqualTo(this.vBntBalance);
+    } else return true;
+  }
+
+  get vBntBalance() {
+    const balance = vxm.ethBancor.tokenBalance(
+      vxm.ethBancor.liquidityProtectionSettings.govToken
+    );
+    return balance ? balance.balance : "0";
   }
 
   async initAction() {

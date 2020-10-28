@@ -8,6 +8,15 @@
       :filterFunction="doFilter"
       sort-by="insuranceStart"
     >
+      <template #head(apr)="data">
+        APR <font-awesome-icon id="popover-target-apr" icon="info-circle" />
+        <b-popover target="popover-target-apr" triggers="hover" placement="top">
+          Estimated annual rate of interest calculated based on activity. Each
+          reserve might have different APR based on the accumulated fees and
+          market trend.
+        </b-popover>
+      </template>
+
       <template v-slot:cell(stake)="data">
         <div class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
@@ -33,35 +42,46 @@
       </template>
 
       <template v-slot:cell(protectedAmount)="data">
-        <div v-if="phase2" class="d-flex align-items-start">
+        <div class="d-flex align-items-start">
           <span
-            v-text="`${prettifyNumber(data.value.amount)} ${data.value.symbol}`"
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
           />
         </div>
         <span
-          v-if="data.value.usdValue !== undefined"
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
           v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
-        <b-badge v-if="!phase2" variant="danger" class="px-2 pt-1">
-          Pending community vote
-        </b-badge>
       </template>
 
       <template v-slot:cell(roi)="data">
-        <span v-if="phase2">{{ data.value }}</span>
-        <span v-else>N/A</span>
+        <span>{{ data.value }}</span>
       </template>
 
       <template v-slot:cell(apr)="data">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
-          {{ stringifyPercentage(data.value.day) }}
+          {{
+            typeof data.value.day !== "undefined"
+              ? stringifyPercentage(data.value.day)
+              : "Error calculating"
+          }}
         </div>
-        <!-- <div class="d-flex align-items-center my-1"> -->
-        <!-- <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge> -->
-        <!-- {{ stringifyPercentage(data.value.week) }} -->
-        <!-- </div> -->
+        <div class="d-flex align-items-center my-1">
+          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+          {{
+            typeof data.value.week !== "undefined"
+              ? stringifyPercentage(data.value.week)
+              : "Error calculating"
+          }}
+        </div>
         <!-- <div class="d-flex align-items-center"> -->
         <!-- <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge> -->
         <!-- {{ stringifyPercentage(data.value.month) }} -->
@@ -171,24 +191,20 @@ export default class Protected extends Vue {
   }
 
   stringifyPercentage(percentage: number) {
-    return numeral(percentage).format("0.0000%");
+    return numeral(percentage).format("0.00%");
   }
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
-    return vxm.ethBancor.protectedLiquidity;
+    return vxm.ethBancor.protectedPositions;
   }
 
   prettifyNumber(number: string | number, usd = false): string {
     return prettifyNumber(number, usd);
   }
 
-  get phase2() {
-    return vxm.general.phase2;
-  }
-
   get protectedTxTable() {
     const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
-    const fields: any[] = [
+    const fields = [
       {
         key: "stake",
         thStyle: { "min-width": "250px" }
@@ -199,21 +215,18 @@ export default class Protected extends Vue {
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
-      {
-        key: "roi",
-        sortable: true,
-        thStyle: { "min-width": "60px" },
-        formatter: (value: number) => this.stringifyPercentage(value)
-      },
-      ...(this.phase2
-        ? [
-            {
-              key: "apr",
-              sortable: false,
-              thStyle: { "min-width": "100px" }
-            }
-          ]
-        : []),
+      // {
+      //   key: "roi",
+      //   sortable: true,
+      //   thStyle: { "min-width": "60px" },
+      //   formatter: (value: string) =>
+      //     value ? this.stringifyPercentage(Number(value)) : "Error calculating"
+      // },
+      // {
+      //   key: "apr",
+      //   sortable: false,
+      //   thStyle: { "min-width": "100px" }
+      // },
       {
         key: "insuranceStart",
         label: "Protection Start",

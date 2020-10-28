@@ -1,17 +1,6 @@
 <template>
   <div class="mt-3">
-    <token-input-field
-      label="Stake Amount"
-      :token="token"
-      v-model="amount"
-      @input="amountChanged"
-      :balance="balance"
-      :error-msg="inputError"
-      :tokens="tokens"
-      @select="toggleReserveIndex"
-    />
-
-    <label-content-split label="Stake in Pool" class="mt-3">
+    <label-content-split label="Stake in Pool" class="my-3">
       <pool-logos
         :pool="pool"
         :dropdown="true"
@@ -25,6 +14,17 @@
       />
     </label-content-split>
 
+    <token-input-field
+      label="Stake Amount"
+      :token="token"
+      v-model="amount"
+      @input="amountChanged"
+      :balance="balance"
+      :error-msg="inputError"
+      :tokens="tokens"
+      @select="toggleReserveIndex"
+    />
+
     <alert-block
       v-if="!isWhitelisted"
       variant="warning"
@@ -32,27 +32,30 @@
       class="mt-3 mb-3"
     />
 
-    <gray-border-block v-else :gray-bg="true" class="my-3">
-      <label-content-split
-        v-for="(output, index) in outputs"
-        :key="output.id"
-        :label="index == 0 ? `Value you receive` : ``"
-        :value="`${formatNumber(output.amount)} ${output.symbol}`"
-      />
+    <gray-border-block v-else-if="outputs.length" :gray-bg="true" class="my-3">
+      <div>
+        {{ outputs }}
+        <label-content-split
+          v-for="(output, index) in outputs"
+          :key="output.id"
+          :label="index == 0 ? `Value you receive` : ``"
+          :value="`${formatNumber(output.amount)} ${output.symbol}`"
+        />
+      </div>
+    </gray-border-block>
 
-      <span
-        class="font-size-14 font-w400"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        If pool ratio is changed during the protection period - you’ll receive
-        change value in BNT.
-      </span>
+    <gray-border-block :gray-bg="true" class="mt-3">
+      <label-content-split
+        label="Space Available"
+        :value="loadingMaxStakes ? '' : currentlyAvailable"
+      />
     </gray-border-block>
 
     <label-content-split
       label="Full Coverage Date"
       :value="fullCoverageDate"
-      class="mb-3"
+      tooltip="Date is based on current voted protection length"
+      class="my-3"
     />
 
     <main-button
@@ -106,7 +109,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -114,17 +117,14 @@ import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import {
-  compareString,
-  compareToken,
   formatUnixTime,
   formatNumber,
-  buildPoolName
+  buildPoolName, prettifyNumber
 } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import moment from "moment";
-import { format } from "numeral";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
@@ -148,6 +148,10 @@ export default class AddProtectionSingle extends Vue {
     return vxm.bancor.relay(poolId);
   }
 
+  maxStakes: any = null;
+
+  loadingMaxStakes = false;
+
   amount: string = "";
 
   modal = false;
@@ -163,7 +167,13 @@ export default class AddProtectionSingle extends Vue {
 
   selectedTokenIndex = 0;
 
+  @Watch("token")
+  async onTokenChange() {
+    await this.loadMaxStakes();
+  }
+
   toggleReserveIndex(x: string) {
+    this.preTxError = "";
     this.selectedTokenIndex = this.pool.reserves.findIndex(
       reserve => reserve.id == x
     );
@@ -181,6 +191,10 @@ export default class AddProtectionSingle extends Vue {
 
   get tokens() {
     return this.pool.reserves;
+  }
+
+  get currentlyAvailable() {
+    return `${prettifyNumber(this.maxStakes ?? "0")} ${this.token.symbol}`
   }
 
   get pools() {
@@ -295,13 +309,17 @@ export default class AddProtectionSingle extends Vue {
 
       console.log(res, "was res");
 
+      const errorMsg = `${this.token.symbol} limit reached. Additional ${
+        this.opposingToken!.symbol
+      } liquidity should be staked to allow for ${
+        this.token.symbol
+      } single-sided staking. Alternatively, provide dual-sided liquidity (${
+        this.opposingToken!.symbol
+      }+${this.token.symbol})`;
+
       if (res.error) {
         this.preTxError =
-          res.error == "Insufficient store balance"
-            ? `Insufficient store balance, please add pool tokens instead or wait for other Liquidity Providers to supply more ${
-                this.opposingToken!.symbol
-              } tokens`
-            : res.error;
+          res.error == "Insufficient store balance" ? errorMsg : res.error;
       } else {
         this.preTxError = "";
       }
@@ -327,7 +345,7 @@ export default class AddProtectionSingle extends Vue {
   }
 
   formatNumber(amount: string) {
-    return parseFloat(formatNumber(amount, 6));
+    return formatNumber(amount, 6);
   }
 
   get currentStatus() {
@@ -351,6 +369,29 @@ export default class AddProtectionSingle extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  async loadMaxStakes() {
+    if (this.loadingMaxStakes) return
+    this.loadingMaxStakes = true;
+    try {
+      const result = await vxm.ethBancor.getMaxStakes({
+        poolId: this.pool.id
+      });
+      if (this.token.symbol === "BNT")
+        this.maxStakes = result.maxStakesConverted.maxAllowedBnt;
+      else
+        this.maxStakes =
+          result.maxStakesConverted[`maxAllowedTkn${this.token.symbol}`];
+    } catch (e) {
+      console.log(e);
+    } finally {
+      this.loadingMaxStakes = false;
+    }
+  }
+
+  async created() {
+    await this.loadMaxStakes();
   }
 }
 </script>

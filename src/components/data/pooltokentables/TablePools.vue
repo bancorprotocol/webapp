@@ -14,6 +14,17 @@
       </router-link>-->
     </template>
 
+    <template v-slot:head(liquidityProtection)="data">
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
+    </template>
+
+    <template v-slot:cell(liquidityProtection)="data">
+      <img
+        v-if="data.value"
+        :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+      />
+    </template>
+
     <template v-slot:cell(actionButtons)="data">
       <action-buttons :pool="data.item" />
     </template>
@@ -28,6 +39,9 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { ViewRelay } from "@/types/bancor";
+import { prettifyNumber, formatPercent, formatNumber } from "@/api/helpers";
+import BigNumber from "bignumber.js";
+
 @Component({
   components: { PoolLogos, ActionButtons, TableWrapper }
 })
@@ -35,37 +49,89 @@ export default class TablePools extends Vue {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
 
-  fields = [
-    {
-      key: "symbol",
-      label: "Name",
-      sortable: true,
-      thStyle: { "min-width": "250px" }
-    },
-    {
-      key: "liqDepth",
-      label: "Liquidity Depth",
-      thStyle: { "min-width": "160px" },
-      sortable: true,
-      formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD"
-        }).format(value)
-    },
-    {
-      key: "fee",
-      label: "Fee",
-      thStyle: { "min-width": "80px" },
-      sortable: true,
-      formatter: (value: any) => numeral(value).format("0.00%")
-    },
-    {
-      key: "actionButtons",
-      label: "Action",
-      thStyle: { width: "310px", "min-width": "310px" }
-    }
-  ];
+  get aprsExist() {
+    return this.items.some(pool => pool.apr);
+  }
+
+  get fields() {
+    return [
+      {
+        key: "liquidityProtection",
+        sortable: true
+      },
+      {
+        key: "symbol",
+        label: "Name",
+        sortable: true,
+        thStyle: { "min-width": "150px" }
+      },
+      {
+        key: "liqDepth",
+        label: "Liquidity Depth",
+        thStyle: { "min-width": "160px" },
+        sortable: true,
+        formatter: (value: number) =>
+          new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD"
+          }).format(value)
+      },
+      {
+        key: "fee",
+        label: "Fee",
+        thStyle: { "min-width": "80px" },
+        sortable: true,
+        formatter: formatPercent
+      },
+      ...(this.isEth
+        ? [
+            {
+              key: "apr",
+              label: "APY",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? formatPercent(value)
+                  : "N/A"
+            },
+            {
+              key: "feesGenerated",
+              label: "Fees (24hr)",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD"
+                    }).format(Number(value))
+                  : "N/A"
+            },
+            {
+              key: "feesVsLiquidity",
+              label: "1y Fees / Liquidity",
+              sortable: true,
+              thStyle: { "min-width": "80px" },
+              formatter: (value: string) =>
+                value && new BigNumber(value).isGreaterThan(0)
+                  ? formatPercent(value)
+                  : "N/A"
+            }
+          ]
+        : []),
+      {
+        key: "actionButtons",
+        label: "Action",
+        thStyle: { width: "310px", "min-width": "310px" }
+      }
+    ];
+  }
+
+  get isEth() {
+    return this.$route.params.service == "eth";
+  }
+
   doFilter(row: any, filter: string) {
     const symbols = row.reserves.map((reserve: any) => reserve.symbol);
     let r = false;

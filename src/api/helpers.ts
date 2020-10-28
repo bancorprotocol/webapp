@@ -36,22 +36,12 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
+import { getAlchemyUrl, getInfuraAddress } from "@/api/web3"
 
 export enum PositionType {
   single,
   double
 }
-
-const bancorSubgraphInstance = axios.create({
-  baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
-  method: "post"
-});
-
-const chainlinkSubgraphInstance = axios.create({
-  baseURL: "https://api.thegraph.com/subgraphs/name/melonproject/chainlink",
-  method: "post"
-});
-
 
 export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPerBlock = 13.3) => {
   if (!Number.isInteger(currentBlock)) throw new Error("Current block should be an integer")
@@ -60,6 +50,57 @@ export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPe
     String(secondsToRewind / secondsPerBlock)
   );
   return currentBlock - blocksToRewind;
+};
+
+
+const zeroIfNegative = (big: BigNumber) =>
+  big.isNegative() ? new BigNumber(0) : big;
+
+
+export const calculateMaxStakes = (
+  tknReserveBalanceWei: string,
+  bntReserveBalanceWei: string,
+  poolTokenSupplyWei: string,
+  poolTokenSystemBalanceWei: string,
+  maxSystemNetworkTokenAmount: string,
+  maxSystemNetworkTokenRatioPpm: string
+) => {
+  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
+  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
+  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
+  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
+  const maxSystemNetworkTokenRatioDec = new BigNumber(
+    maxSystemNetworkTokenRatioPpm
+  ).div(1000000);
+
+  // calculating the systemBNT  from system pool tokens
+  const rate = bntReserveBalance.div(poolTokenSupply);
+  const systemBNT = poolTokenSystemBalance.times(rate);
+
+  // allowed BNT based on limit cap
+  const maxLimitBnt = zeroIfNegative(
+    new BigNumber(maxSystemNetworkTokenAmount).minus(systemBNT)
+  );
+
+  // allowed BNT based on ratio cap
+  const maxRatioBnt = zeroIfNegative(
+    new BigNumber(maxSystemNetworkTokenRatioDec)
+      .times(bntReserveBalance)
+      .minus(systemBNT)
+  );
+
+  const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
+
+  const maxAllowedBntInTkn = lowestAmount.times(
+    tknReserveBalance.div(bntReserveBalance)
+  );
+
+  const maxAllowedBnt = systemBNT;
+
+  return {
+    maxAllowedBntWei: maxAllowedBnt.toString(),
+    maxAllowedTknWei: maxAllowedBntInTkn.toString()
+  }
 };
 
 export interface LockedBalance {
@@ -103,20 +144,6 @@ export const traverseLockedBalances = async (
 
   console.log(lockedBalances, "should be inspected");
   return lockedBalances;
-};
-
-export const chainlinkSubgraph = async (query: string) => {
-  const res = await chainlinkSubgraphInstance.post("", { query });
-  if (res.data.errors && res.data.errors.length > 0)
-    throw new Error(res.data.errors[0].message);
-  return res.data.data;
-};
-
-export const bancorSubgraph = async (query: string) => {
-  const res = await bancorSubgraphInstance.post("", { query });
-  if (res.data.errors && res.data.errors.length > 0)
-    throw new Error(res.data.errors[0].message);
-  return res.data.data;
 };
 
 export function VModel(propsArgs: PropOptions = {}) {
@@ -262,7 +289,7 @@ export interface StringPool {
   destSymbol: string;
 }
 
-export const formatPercent = (decNumber: number) =>
+export const formatPercent = (decNumber: number | string) =>
   numeral(decNumber).format("0.00%");
 
 export const calculateProtectionLevel = (
@@ -328,23 +355,11 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-const projectId = "da059c364a2f4e6eb89bfd89600bce07";
-
-const buildInfuraAddress = (subdomain: string, projectId: string) =>
-  `https://${subdomain}.infura.io/v3/${projectId}`;
-
-const getInfuraAddress = (network: EthNetworks) => {
-  if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId);
-  } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId);
-  }
-  throw new Error("Infura address for network not supported ");
-};
-
 export let web3 = new Web3(
-  Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
+  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
+
+web3.eth.transactionBlockTimeout = 100;
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
@@ -395,6 +410,7 @@ interface TokenAmount {
   weiAmount: string;
 }
 export interface ConversionEventDecoded {
+  poolToken?: string;
   from: TokenAmount;
   to: TokenAmount;
   trader: string;
@@ -555,6 +571,7 @@ const decodeNetworkConversionEvent = (
     blockNumber,
     txHash,
     data: {
+      poolToken: removeLeadingZeros(poolToken),
       from: {
         address: removeLeadingZeros(fromAddress),
         weiAmount: picked.fromAmount
@@ -660,6 +677,8 @@ export const getLogs = async (
     ],
     id: 1
   });
+
+  console.log(res, 'is the raw return')
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
@@ -1258,8 +1277,8 @@ export const buildPoolName = (
 export const formatUnixTime = (
   unixTime: number
 ): { date: string; time: string; dateTime: string } => {
-  const date = moment(unixTime * 1000).format("DD/MM/YY");
-  const time = moment(unixTime * 1000).format("HH:mm");
+  const date = moment.unix(unixTime).format("MMM D yyyy")
+  const time = moment.unix(unixTime).format("HH:mm");
   const dateTime = `${date} ${time}`;
 
   return { date, time, dateTime };

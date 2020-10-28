@@ -76,12 +76,11 @@ import {
   DecodedTimedEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
-  bancorSubgraph,
-  chainlinkSubgraph,
   traverseLockedBalances,
   calculateProtectionLevel,
   LockedBalance,
-  rewindBlocksByDays
+  rewindBlocksByDays,
+  calculateMaxStakes
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -136,8 +135,7 @@ import {
   generateEthPath,
   shrinkToken,
   TokenSymbol,
-  removeLeadingZeros,
-  calculateHistoricPoolBalanceByConversions
+  removeLeadingZeros
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
@@ -148,6 +146,68 @@ import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
+import { getNetworkVariables } from "../../config";
+import { getWeb3, Provider } from "@/api/web3";
+
+const tokenSupplyShape = (tokenAddress: string) => {
+  const contract = buildTokenContract(tokenAddress);
+  return {
+    tokenContract: ORIGIN_ADDRESS,
+    supply: contract.methods.totalSupply()
+  };
+};
+
+const buildPoolRoiParams = (
+  poolToken: string,
+  poolTokenSupply: string,
+  primaryReserveToken: string,
+  primaryReserveBalance: string,
+  secondaryReserveBalance: string
+) =>
+  [
+    poolToken,
+    primaryReserveToken,
+    primaryReserveBalance,
+    new BigNumber(primaryReserveBalance).times(2).toString(),
+    poolTokenSupply,
+    secondaryReserveBalance,
+    primaryReserveBalance
+  ] as [string, string, string, string, string, string, string];
+
+const dualPoolRoiShape = (
+  protectionContractAddress: string,
+  anchor: string,
+  reserves: TokenWei[],
+  poolTokenSupply: string
+) => {
+  const contract = buildLiquidityProtectionContract(protectionContractAddress);
+
+  const [oneReserve, twoReserve] = reserves;
+
+  const oneParams = buildPoolRoiParams(
+    anchor,
+    poolTokenSupply,
+    oneReserve.tokenContract,
+    oneReserve.weiAmount,
+    twoReserve.weiAmount
+  );
+  const twoParams = buildPoolRoiParams(
+    anchor,
+    poolTokenSupply,
+    twoReserve.tokenContract,
+    twoReserve.weiAmount,
+    oneReserve.weiAmount
+  );
+
+  return {
+    anchor,
+    protectionAddress: ORIGIN_ADDRESS,
+    onePrimary: oneReserve.tokenContract,
+    twoPrimary: twoReserve.tokenContract,
+    oneRoi: contract.methods.poolROI(...oneParams),
+    twoRoi: contract.methods.poolROI(...twoParams)
+  };
+};
 
 const slimBalanceShape = (contractAddress: string, owner: string) => {
   const contract = buildTokenContract(contractAddress);
@@ -179,6 +239,21 @@ const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
   return passed;
 };
 
+interface PoolApr {
+  poolId: string;
+  oneWeekApr: string;
+}
+
+const calculateReturnOnInvestment = (
+  investment: string,
+  newReturn: string
+): string => {
+  return new BigNumber(newReturn)
+    .div(investment)
+    .minus(1)
+    .toString();
+};
+
 const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) =>
   compareString(a.poolToken, b.poolToken) &&
   a.timestamp == b.timestamp &&
@@ -190,400 +265,6 @@ const calculatePoolTokenRate = (
   poolTokenSupply: string,
   reserveTokenBalance: string
 ) => new BigNumber(reserveTokenBalance).times(2).div(poolTokenSupply);
-
-const daysAsSeconds = (days: number): number =>
-  moment.duration(days, "days").asSeconds();
-const thirtyDaysInSeconds = daysAsSeconds(30);
-const oneHundredDaysInSeconds = daysAsSeconds(100);
-
-const get_volumes = async (converter: string) =>
-  bancorSubgraph(`
-{
-  converter(id:"${converter}") {
-    id
-    activated
-    volumes {
-      token { 
-        symbol
-        id
-      }
-      sellVolume
-      buyVolume
-      totalVolume
-    }
-    createdAtTimestamp
-  }
-}
-`);
-
-const secondsInADay = 60 * 60 * 24;
-const timestamp_days_ago = (days: number) =>
-  moment().unix() - days * secondsInADay;
-
-const get_exchange_snapshots = async (
-  exchange: string,
-  blockNumbers: [string, string][]
-) => {
-  const requests = blockNumbers.map(
-    ([label, number]) => `
-    
-    ${label}:converter(
-      id:"${exchange}"
-      block:{
-        number: ${number}
-      }
-    ) {
-      id
-      volumes {
-        token { id }
-        totalVolume
-      }
-    }
-  
-  `
-  );
-
-  const around = ["{", ...requests, "}"];
-
-  const requestString = around.join("");
-  console.log(requests, requestString, "goop");
-
-  try {
-    const res = await bancorSubgraph(requestString);
-
-    console.log(res, "came back in sub graph");
-    return res;
-  } catch (e) {
-    console.log("failed", e);
-  }
-};
-
-const get_exchange_snapshot_volume = async (
-  exchange: string,
-  blockNumber: string
-) =>
-  bancorSubgraph(`
-{
-  before:converter(
-    id:"${exchange}"
-    block:{
-      number: ${blockNumber}
-    }
-  ) {
-    id
-    volumes {
-      token { symbol }
-      totalVolume
-    }
-  }
-  afterr:converter(
-    id:"${exchange}"
-  ) {
-    id
-    volumes {
-      token { symbol }
-      totalVolume
-    }
-  }
-}
-`);
-
-const getVolumeStats = async (blockNumbers: string[]) => {
-  const labelAndBlocks = blockNumbers.map(
-    number => [`a${number}`, number] as [string, string]
-  );
-
-  interface VolumeRes {
-    converters: Converter[];
-  }
-
-  interface Converter {
-    anchor: string;
-    id: string;
-    volumes: Volume[];
-    balances: Balance[];
-  }
-
-  interface Balance {
-    token: Token;
-    stakedAmount: string;
-    balance: string;
-    weight: string;
-  }
-
-  interface Volume {
-    token: Token;
-    totalVolume: string;
-  }
-
-  interface Token {
-    id: string;
-  }
-
-  const requests = labelAndBlocks.map(
-    ([label, block]) => `
-  
-    ${label}:converters(block: { number: ${block} }, orderBy: createdAtBlockNumber, orderDirection: desc) {
-      id
-      anchor
-      volumes {
-        token {
-          id
-        }
-        totalVolume
-      }
-      balances {
-        token {
-          id
-        }
-        stakedAmount
-        balance
-        weight
-      }
-    }
-  `
-  );
-  const finalRequest = ["{", ...requests, "}"].join("");
-
-  const res = await bancorSubgraph(finalRequest);
-
-  return toPairs(res).map(
-    ([block, converters]) =>
-      [block.slice(1), converters] as [string, Converter[]]
-  );
-};
-
-const bntToken = "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c";
-
-const usdPriceOfEth = async (blockNumbers: string[]) => {
-  interface ChainkLinkRes {
-    assetPair: AssetPair;
-    latestHourlyCandle: LatestHourlyCandle;
-  }
-
-  enum AssetPair {
-    EthUsd = "ETH/USD"
-  }
-
-  interface LatestHourlyCandle {
-    medianPrice: string;
-  }
-
-  const labelAndBlocks = blockNumbers.map(
-    number => [`a${number}`, number] as [string, string]
-  );
-
-  const requests = labelAndBlocks.map(
-    ([label, block]) => `
-
-    ${label}:priceFeed(block:{number:${block}} id: "0xf79d6afbb6da890132f9d7c355e3015f15f3406f") {
-      assetPair
-      latestHourlyCandle {
-        medianPrice
-      }
-    }
-
-  `
-  );
-
-  const finalRequest = ["{", ...requests, "}"].join("");
-  const res = await chainlinkSubgraph(finalRequest);
-  const arrRes = toPairs(res).filter(([_, data]) => data) as [
-    string,
-    ChainkLinkRes
-  ][];
-
-  const medianPriceToDec = (medianPrice: string) =>
-    new BigNumber(medianPrice).dividedBy(100000000).toNumber();
-  const data = arrRes.map(
-    ([blockLabel, data]) =>
-      [blockLabel.slice(1), data] as [string, ChainkLinkRes]
-  );
-
-  const prices = data.map(
-    ([blockNumber, data]) =>
-      [blockNumber, medianPriceToDec(data.latestHourlyCandle.medianPrice)] as [
-        string,
-        number
-      ]
-  );
-  return prices as [string, number][];
-};
-
-const converterBalances = async (skip: number = 0) => {
-  console.log("converterBalances", "skipping", skip);
-
-  interface Data {
-    converterBalances: ConverterBalance[];
-  }
-
-  interface ConverterBalance {
-    balance: string;
-    converter: Converter;
-    id: string;
-    poolToken: PoolToken | null;
-    stakedAmount: string;
-    token: Token;
-    weight: string;
-  }
-
-  interface Converter {
-    activated: boolean;
-    anchor: string;
-    createdAtBlockNumber: string;
-    id: string;
-    type: string;
-  }
-
-  interface PoolToken {
-    id: string;
-    supply: string;
-    symbol: string;
-  }
-
-  interface Token {
-    symbol: string;
-  }
-
-  const res = (await bancorSubgraph(`
-{
-  converterBalances(skip: ${skip}) {
-    id
-    converter {
-      id
-      anchor
-      activated
-      createdAtBlockNumber
-      type
-    }
-    poolToken {
-      id
-      symbol
-      supply
-    }
-    token {
-      symbol
-    }
-    stakedAmount
-    balance
-    weight
-  }
-}
-
-
-`)) as Data;
-
-  return res;
-};
-
-const getPool = async (anchorId: string) => {
-  const res = await bancorSubgraph(`
-    
-    {
-      converters(
-        where: {anchor: "${anchorId}"}, 
-      ) {
-        id
-        anchor
-      }
-    }
-    
-  `);
-
-  return res;
-};
-const totalBntVolumeAtBlocks = async (blocks: string[]) => {
-  const [usdPrices, res] = await Promise.all([
-    usdPriceOfEth(blocks),
-    getVolumeStats(blocks)
-  ]);
-
-  console.log(res, "duprew");
-  // For every block
-  // Get the BNT/ETH anchor
-  // Work out the price of BNT in ETH tokens
-  // Times that by the price of ETH to work out the USD price of BNT
-  // Return an array of [block, usdPriceOfBnt]
-
-  const xx = res.map(([blockNumber, converters]) => [
-    blockNumber,
-    converters.filter(converter =>
-      converter.balances.some(balance =>
-        compareString(
-          balance.token.id,
-          "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"
-        )
-      )
-    )
-  ]);
-
-  const totalVolumeAtBlock = res.map(([block, converters]) => {
-    const uniqueAnchors = uniqWith(
-      converters.map(converter => converter.anchor),
-      compareString
-    );
-    const groupedByAnchors = uniqueAnchors.map(anchor => ({
-      anchor,
-      converters: converters
-        .filter(converter => compareString(converter.anchor, anchor))
-        .map(obj => omit(obj, "anchor"))
-    }));
-
-    const volumes = groupedByAnchors.map(group =>
-      group.converters.flatMap(converter =>
-        converter.volumes.find(volume =>
-          compareString(volume.token.id, bntToken)
-        )
-      )
-    );
-
-    const liquidity = groupedByAnchors.map(group =>
-      group.converters.flatMap(converter =>
-        converter.balances.find(volume =>
-          compareString(volume.token.id, bntToken)
-        )
-      )
-    );
-
-    const filteredLiquidity = liquidity
-      .filter(vol => vol && vol.length > 0)
-      .map(vol => vol.filter(Boolean))
-      .filter(vol => vol && vol.length > 0)
-      .map(vol => vol!.map(con => con!.balance))
-      .map(vol =>
-        vol.reduce((acc, item) => new BigNumber(item).plus(acc).toString())
-      );
-
-    const totalLiquidity =
-      filteredLiquidity.length > 0
-        ? filteredLiquidity.reduce((acc, item) =>
-            new BigNumber(item).plus(acc).toString()
-          )
-        : "0";
-
-    const filteredVolumes = volumes
-      .filter(vol => vol && vol.length > 0)
-      .map(vol => vol.filter(Boolean))
-      .filter(vol => vol && vol.length > 0)
-      .map(vol => vol!.map(con => con!.totalVolume))
-      .map(vol =>
-        vol.reduce((acc, item) => new BigNumber(item).plus(acc).toString())
-      );
-
-    const totalVolume =
-      filteredVolumes.length > 0
-        ? filteredVolumes.reduce((acc, item) =>
-            new BigNumber(item).plus(acc).toString()
-          )
-        : "0";
-    return [block, totalVolume, totalLiquidity] as VolumeAndLiq;
-  });
-
-  const blockSummaries = totalVolumeAtBlock.sort((a, b) =>
-    new BigNumber(b[1]).minus(a[1]).toNumber()
-  );
-  return blockSummaries;
-};
 
 const notBadRelay = (converterAndAnchor: ConverterAndAnchor) =>
   !compareString(
@@ -1211,6 +892,12 @@ interface RawV2Pool {
   anchorAddress: string;
 }
 
+const calculateMean = (a: string, b: string) =>
+  new BigNumber(a)
+    .plus(b)
+    .div(2)
+    .toString();
+
 interface V2Response {
   reserveFeeds: ReserveFeed[];
   pools: (RelayWithReserveBalances | ChainLinkRelay)[];
@@ -1357,44 +1044,6 @@ const tokensInRelay = (relay: Relay): Token[] => [
   ...iouTokensInRelay(relay)
 ];
 
-interface EthNetworkVariables {
-  contractRegistry: string;
-  bntToken: string;
-  ethToken: string;
-  gBntToken: string;
-  multiCall: string;
-  liquidityProtectionToken: string;
-  converterContractForMaths: string;
-}
-
-const getNetworkVariables = (ethNetwork: EthNetworks): EthNetworkVariables => {
-  const ethToken = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
-  switch (ethNetwork) {
-    case EthNetworks.Mainnet:
-      return {
-        contractRegistry: "0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4",
-        bntToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        ethToken,
-        gBntToken: "0x48Fb253446873234F2fEBbF9BdeAA72d9d387f94",
-        liquidityProtectionToken: ethToken,
-        multiCall: "0x5Eb3fa2DFECdDe21C950813C665E9364fa609bD2",
-        converterContractForMaths: "0xe870d00176b2c71afd4c43cea550228e22be4abd"
-      };
-    case EthNetworks.Ropsten:
-      return {
-        contractRegistry: "0xA6DB4B0963C37Bc959CbC0a874B5bDDf2250f26F",
-        bntToken: "0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5",
-        ethToken,
-        gBntToken: "0x83ec8129b1f54ba5b0f47bd902a79c803e20a249",
-        liquidityProtectionToken: ethToken,
-        multiCall: "0xf3ad7e31b052ff96566eedd218a823430e74b406",
-        converterContractForMaths: "0x9a36b31ca768a860dab246cf080e7f042d1b7c0f"
-      };
-    default:
-      throw new Error("Information not stored");
-  }
-};
-
 const relayToMinimal = (relay: Relay): MinimalRelay => ({
   contract: relay.contract,
   reserves: relay.reserves.map(
@@ -1463,6 +1112,8 @@ interface RawAbiV2PoolBalances {
 interface RawAbiReserveBalance {
   converterAddress: string;
   reserveOne: string;
+  reserveOneAddress: string;
+  reserveTwoAddress: string;
   reserveTwo: string;
 }
 
@@ -1619,10 +1270,13 @@ const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
   const [reserveOne, reserveTwo] = reserves;
   return {
     converterAddress: ORIGIN_ADDRESS,
+    reserveOneAddress: reserveOne,
+    reserveTwoAddress: reserveTwo,
     reserveOne: contract.methods.getConnectorBalance(reserveOne),
     reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
   };
 };
+
 interface RegisteredContracts {
   BancorNetwork: string;
   BancorConverterRegistry: string;
@@ -1856,9 +1510,9 @@ export class EthBancorModule
   }
 
   @action async fetchLiquidityProtectionSettings(contractAddress: string) {
-    const [[settings]] = ((await this.multi([
-      [liquidityProtectionShape(contractAddress)]
-    ])) as unknown) as [RawLiquidityProtectionSettings][];
+    const [[settings]] = ((await this.multi({
+      groupsOfShapes: [[liquidityProtectionShape(contractAddress)]]
+    })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const newSettings = {
       minDelay: Number(settings.minProtectionDelay),
@@ -1981,21 +1635,26 @@ export class EthBancorModule
     console.count("fetchProtectionPositions");
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
-    console.log(storeAddress, "is the new address", liquidityStore);
     if (!this.isAuthenticated) {
       return;
     }
     try {
       const contract = buildLiquidityProtectionStoreContract(liquidityStore);
       const owner = this.isAuthenticated;
+      console.time("time to get ID count");
       const idCount = Number(
         await contract.methods.protectedLiquidityCount(owner).call()
       );
+      console.timeEnd("time to get ID count");
       if (idCount == 0) return;
+      console.time("time to get ids");
       const ids = await contract.methods.protectedLiquidityIds(owner).call();
+      console.timeEnd("time to get ids");
+      console.time("time to get all positions");
       const allPositions = await Promise.all(
         ids.map(id => protectionById(liquidityStore, id))
       );
+      console.timeEnd("time to get all positions");
       console.log(allPositions, "are all positions");
       if (allPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
@@ -2006,135 +1665,189 @@ export class EthBancorModule
         this.contracts.LiquidityProtection
       );
 
+      console.time("secondsToGetCurrentBlock");
       const currentBlockNumber = await web3.eth.getBlockNumber();
+      console.timeEnd("secondsToGetCurrentBlock");
 
-      const blockHeightOneDayAgo = rewindBlocksByDays(currentBlockNumber, 1);
-      // const blockHeightOneWeekAgo = rewindBlocksByDays(currentBlockNumber, 7);
-      // const blockHeightOneMonthAgo = rewindBlocksByDays(currentBlockNumber, 30);
+      const uniqueAnchors = uniqWith(
+        allPositions.map(pos => pos.poolToken),
+        compareString
+      ) as string[];
 
-      const timeScales = [
-        blockHeightOneDayAgo
-        // blockHeightOneWeekAgo
-        // blockHeightOneMonthAgo
-      ];
+      const timeScales: {
+        blockHeight: number;
+        days: number;
+        label: string;
+      }[] = ([[1, "day"], [7, "week"]] as [number, string][]).map(
+        ([days, label]) => ({
+          blockHeight: rewindBlocksByDays(currentBlockNumber, days),
+          days,
+          label
+        })
+      );
 
-      console.log(timeScales, "are the time scales");
-
-      const rois = await Promise.all(
-        allPositions.map(
-          async (position, posIndex): Promise<ProtectedLiquidityCalculated> => {
-            try {
-              const [oneDayRoi] = await Promise.all(
-                timeScales.map(async (blockHeight, timeIndex) => {
-                  const historicalBalances = await this.fetchRelayBalances({
-                    poolId: position.poolToken,
-                    blockHeight
-                  });
-
-                  console.log(
-                    "historical balance ",
-                    historicalBalances,
-                    timeIndex,
-                    posIndex
-                  );
-                  const historicalReserveBalances = historicalBalances.reserves.map(
-                    (reserve): WeiExtendedAsset => ({
-                      weiAmount: reserve.weiAmount,
-                      contract: reserve.contract
-                    })
-                  );
-
-                  const poolTokenSupply =
-                    historicalBalances.smartTokenSupplyWei;
-
-                  const [tknReserveBalance, opposingTknBalance] = sortAlongSide(
-                    historicalReserveBalances,
-                    balance => balance.contract,
-                    [position.reserveToken]
-                  );
-
-                  const poolToken = position.poolToken;
-                  const reserveToken = position.reserveToken;
-                  const reserveAmount = position.reserveAmount;
-                  const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
-                    .times(2)
-                    .toString();
-                  const poolRateD = poolTokenSupply;
-
-                  const reserveRateN = opposingTknBalance.weiAmount;
-                  const reserveRateD = tknReserveBalance.weiAmount;
-
-                  const poolRoi = await lpContract.methods
-                    .poolROI(
-                      poolToken,
-                      reserveToken,
-                      reserveAmount,
-                      poolRateN,
-                      poolRateD,
-                      reserveRateN,
-                      reserveRateD
-                    )
-                    .call();
-
-                  console.log(poolRoi, "is raw pool ROI number");
-                  return poolRoi;
-                })
-              );
-
-              const rawRoiToDecPercentIncrease = (wei: string): BigNumber =>
-                new BigNumber(wei).div(oneMillion).minus(1);
-
-              const finalOneDayRoi = rawRoiToDecPercentIncrease(oneDayRoi)
-                .times(365)
-                .toString();
-              // const finalOneWeekRoi = rawRoiToDecPercentIncrease(oneWeekRoi)
-              //   .times(52)
-              //   .toString();
-              // const finalOneMonthRoi = rawRoiToDecPercentIncrease(oneMonthRoi)
-              //   .times(12)
-              //   .toString();
-
-              const fullWaitTime =
-                Number(position.timestamp) +
-                Number(this.liquidityProtectionSettings.maxDelay);
-
-              try {
-                const liquidityReturn = await getRemoveLiquidityReturn(
-                  this.contracts.LiquidityProtection,
-                  position.id,
-                  oneMillion.toString(),
-                  fullWaitTime
+      const [withAprs, withLiquidityReturn] = await Promise.all([
+        (async () => {
+          try {
+            const poolHistoricalBalances = await Promise.all(
+              uniqueAnchors.map(async anchor => {
+                const historicalBalances = await Promise.all(
+                  timeScales.map(async scale => {
+                    const balance = await this.fetchRelayBalances({
+                      poolId: anchor,
+                      blockHeight: scale.blockHeight
+                    });
+                    return {
+                      balance,
+                      scale: scale.label
+                    };
+                  })
                 );
 
                 return {
-                  ...position,
-                  liquidityReturn,
-                  oneDayDec: finalOneDayRoi
-                  // oneWeekDec: finalOneWeekRoi
-                  // oneMonthDec: finalOneMonthRoi
+                  poolId: anchor,
+                  historicalBalances
                 };
-              } catch (e) {
-                console.error("failed again", e);
-                console.log(posIndex, "one");
-                throw new Error("Failed getting remove liquidity return");
-              }
-            } catch (e) {
-              console.log(e, "error fetching pool balances");
-              console.log(posIndex, "two");
-              throw new Error("");
-            }
+              })
+            );
+
+            return await Promise.all(
+              allPositions.map(async position => {
+                const pool = findOrThrow(poolHistoricalBalances, pool =>
+                  compareString(pool.poolId, position.poolToken)
+                );
+                const aprs = await Promise.all(
+                  timeScales.map(async scale => {
+                    const poolBalance = findOrThrow(
+                      pool.historicalBalances,
+                      balance => compareString(balance.scale, scale.label)
+                    ).balance;
+
+                    const historicalReserveBalances = poolBalance.reserves.map(
+                      (reserve): WeiExtendedAsset => ({
+                        weiAmount: reserve.weiAmount,
+                        contract: reserve.contract
+                      })
+                    );
+
+                    const poolTokenSupply = poolBalance.smartTokenSupplyWei;
+
+                    const [
+                      tknReserveBalance,
+                      opposingTknBalance
+                    ] = sortAlongSide(
+                      historicalReserveBalances,
+                      balance => balance.contract,
+                      [position.reserveToken]
+                    );
+
+                    const poolToken = position.poolToken;
+                    const reserveToken = position.reserveToken;
+                    const reserveAmount = position.reserveAmount;
+                    const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+                      .times(2)
+                      .toString();
+                    const poolRateD = poolTokenSupply;
+
+                    const reserveRateN = opposingTknBalance.weiAmount;
+                    const reserveRateD = tknReserveBalance.weiAmount;
+
+                    const poolRoi = await lpContract.methods
+                      .poolROI(
+                        poolToken,
+                        reserveToken,
+                        reserveAmount,
+                        poolRateN,
+                        poolRateD,
+                        reserveRateN,
+                        reserveRateD
+                      )
+                      .call();
+
+                    const magnitude =
+                      scale.label == "day"
+                        ? 365
+                        : scale.label == "week"
+                        ? 52
+                        : 365 / scale.days;
+
+                    const calculatedAprDec = new BigNumber(poolRoi)
+                      .div(1000000)
+                      .minus(1)
+                      .times(magnitude);
+
+                    return {
+                      calculatedAprDec: calculatedAprDec.isNegative()
+                        ? "0"
+                        : calculatedAprDec.toString(),
+                      scaleId: scale.label
+                    };
+                  })
+                );
+
+                return {
+                  positionId: position.id,
+                  oneDayDec: aprs.find(apr => apr.scaleId == "day")!
+                    .calculatedAprDec,
+                  oneWeekDec: aprs.find(apr => apr.scaleId == "week")!
+                    .calculatedAprDec
+                };
+              })
+            );
+          } catch (e) {
+            console.log(e, "error doing rois");
           }
-        )
+        })(),
+        Promise.all(
+          allPositions.map(async position => {
+            const fullWaitTime = moment()
+              .add(1, "year")
+              .unix();
+
+            const liquidityReturn = await getRemoveLiquidityReturn(
+              this.contracts.LiquidityProtection,
+              position.id,
+              oneMillion.toString(),
+              fullWaitTime
+            );
+
+            return {
+              positionId: position.id,
+              liquidityReturn,
+              roiDec: calculateReturnOnInvestment(
+                position.reserveAmount,
+                liquidityReturn.targetAmount
+              )
+            };
+          })
+        ).catch(e => {
+          console.warn("Error fetching ROIs", e);
+        })
+      ]);
+
+      const positions = allPositions.map(
+        (position): ProtectedLiquidityCalculated => {
+          const liqReturn =
+            withLiquidityReturn &&
+            withLiquidityReturn.find(p => position.id == p.positionId);
+          const roiReturn =
+            withAprs && withAprs.find(p => position.id == p.positionId);
+          return {
+            ...position,
+            ...(liqReturn && omit(liqReturn, ["positionId"])),
+            ...(roiReturn && omit(roiReturn, ["positionId"]))
+          };
+        }
       );
 
-      console.log("success!", rois);
+      console.log("success!", positions, "are positions");
 
-      this.setProtectedPositions(rois);
+      this.setProtectedPositions(positions);
       if (this.loadingProtectedPositions) {
         await wait(2);
         this.setLoadingPositions(false);
       }
-      return rois;
+      return positions;
     } catch (e) {
       console.error("Failed fetching protection positions", e.message);
     }
@@ -2364,276 +2077,114 @@ export class EthBancorModule
 
   loadingProtectedPositions = true;
 
-  get protectedLiquidity(): ViewProtectedLiquidity[] {
-    const { minDelay, maxDelay } = this.liquidityProtectionSettings;
-    const allowSingles = vxm.general.phase2;
+  get protectedPositions(): ViewProtectedLiquidity[] {
+    const owner = this.isAuthenticated;
+    if (!owner) return [];
 
-    console.log(this.protectedPositionsArr, "was thing");
+    const { minDelay, maxDelay } = this.liquidityProtectionSettings;
+
+    const whiteListedPools = this.whiteListedPools;
+
     const allPositions = this.protectedPositionsArr
-      .filter(position => compareString(position.owner, this.isAuthenticated))
+      .filter(position => compareString(position.owner, owner))
       .filter(position =>
-        this.whiteListedPools.some(anchor =>
+        whiteListedPools.some(anchor =>
           compareString(position.poolToken, anchor)
         )
       );
-    // this filter of removing white listed pools shouldn't stick around forever as it just kills any positions that might exist on non-whitelisted pools
-    // in the event a white listed pool runs, LP creates a position then gov kills it
-    // filter currently in place to clean up existing positions on ropsten essentially.
 
-    const seperatedEntries = uniqWith(allPositions, samePointOfEntry);
-
-    const joined = seperatedEntries.map(entry =>
-      allPositions.filter(position => samePointOfEntry(position, entry))
+    const allRelays = this.relaysList;
+    const uniqueAnchors = uniqWith(
+      allPositions.map(pos => pos.poolToken),
+      compareString
     );
-    const allFoundAtLeastOne = joined.every(
-      entries => entries.length > 0 && entries.length < 3
-    );
-    console.log({ seperatedEntries, joined, allFoundAtLeastOne }, "xp");
-    if (!allFoundAtLeastOne)
-      throw new Error("Failed finding at least one entry or found above 2");
-
-    const [singlesArr, doublesArr] = partition(
-      joined,
-      entries => entries.length == 1
+    const relays = uniqueAnchors.map(anchor =>
+      findOrThrow(allRelays, relay => compareString(relay.id, anchor))
     );
 
-    const reviewedSingles = singlesArr
-      .filter(() => allowSingles)
-      .map(x => x[0])
-      .map(
-        (singleEntry): ViewProtectedLiquidity => {
-          const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor =>
-            compareString(singleEntry.poolToken, whitelistedAnchor)
-          );
+    const viewPositions = allPositions.map(
+      (singleEntry): ViewProtectedLiquidity => {
+        const isWhiteListed = true;
 
-          const startTime = Number(singleEntry.timestamp);
-          const relay = findOrThrow(this.relaysList, relay =>
-            compareString(relay.id, singleEntry.poolToken)
-          );
+        const startTime = Number(singleEntry.timestamp);
 
-          const reserveToken = this.token(singleEntry.reserveToken);
-          const reservePrecision = reserveToken.precision;
+        const relay = findOrThrow(relays, relay =>
+          compareString(relay.id, singleEntry.poolToken)
+        );
 
-          const reserveTokenDec = shrinkToken(
-            singleEntry.reserveAmount,
-            reservePrecision
-          );
+        const reserveToken = this.token(singleEntry.reserveToken);
+        const reservePrecision = reserveToken.precision;
 
-          const fullyProtectedDec = shrinkToken(
+        const reserveTokenDec = shrinkToken(
+          singleEntry.reserveAmount,
+          reservePrecision
+        );
+
+        const fullyProtectedDec =
+          singleEntry.liquidityReturn &&
+          shrinkToken(
             singleEntry.liquidityReturn.targetAmount,
             reservePrecision
           );
-          const protectionAchieved = calculateProtectionLevel(
-            startTime,
-            minDelay,
-            maxDelay
-          );
+        const protectionAchieved = calculateProtectionLevel(
+          startTime,
+          minDelay,
+          maxDelay
+        );
 
-          return {
-            id: `${singleEntry.poolToken}:${singleEntry.id}`,
-            whitelisted: isWhiteListed,
-            stake: {
-              amount: reserveTokenDec,
-              symbol: reserveToken.symbol,
-              poolId: relay.id,
-              unixTime: startTime,
-              ...(reserveToken.price && {
-                usdValue: new BigNumber(reserveTokenDec)
-                  .times(reserveToken.price)
-                  .toNumber()
-              })
-            },
-            single: true,
-            apr: {
-              day: Number(singleEntry.oneDayDec)
-              // month: Number(singleEntry.oneMonthDec),
-              // week: Number(singleEntry.oneWeekDec)
-            },
-            insuranceStart: startTime + minDelay,
-            fullCoverage: startTime + maxDelay,
-            fullyProtected: {
-              amount: fullyProtectedDec
-            },
-            protectedAmount: {
-              amount: new BigNumber(fullyProtectedDec)
-                .times(protectionAchieved)
-                .toString(),
-              symbol: reserveToken.symbol,
-              ...(reserveToken.price && {
+        const givenVBnt =
+          compareString(
+            reserveToken.id,
+            this.liquidityProtectionSettings.networkToken
+          ) && reserveTokenDec;
+
+        return {
+          id: `${singleEntry.poolToken}:${singleEntry.id}`,
+          whitelisted: isWhiteListed,
+          ...(givenVBnt && { givenVBnt }),
+          stake: {
+            amount: reserveTokenDec,
+            symbol: reserveToken.symbol,
+            poolId: relay.id,
+            unixTime: startTime,
+            ...(reserveToken.price && {
+              usdValue: new BigNumber(reserveTokenDec)
+                .times(reserveToken.price)
+                .toNumber()
+            })
+          },
+          single: true,
+          apr: {
+            day: Number(singleEntry.oneDayDec),
+            // month: Number(singleEntry.on)
+            week: Number(singleEntry.oneWeekDec)
+          },
+          insuranceStart: startTime + minDelay,
+          fullCoverage: startTime + maxDelay,
+          // @ts-ignore
+          fullyProtected: {
+            amount: fullyProtectedDec
+          },
+          protectedAmount: {
+            amount: fullyProtectedDec,
+            symbol: reserveToken.symbol,
+            ...(reserveToken.price &&
+              fullyProtectedDec && {
                 usdValue: new BigNumber(fullyProtectedDec)
                   .times(reserveToken.price!)
                   .toNumber()
               })
-            },
-            coverageDecPercent: protectionAchieved,
-            roi: Number(
-              calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-            )
-          } as ViewProtectedLiquidity;
-        }
-      );
+          },
+          coverageDecPercent: protectionAchieved,
+          roi:
+            fullyProtectedDec &&
+            Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
+        } as ViewProtectedLiquidity;
+      }
+    );
 
-    const reviewedDoubles = doublesArr
-      .filter(double =>
-        this.relays.some(relay => compareString(relay.id, double[0].poolToken))
-      )
-      .flatMap((doubles): ViewProtectedLiquidity | ViewProtectedLiquidity[] => {
-        const first = doubles[0];
-        const commonPoolToken = first.poolToken;
-        const commonViewRelay = this.relay(commonPoolToken);
-        const commonRelay = findOrThrow(this.relaysList, relay =>
-          compareString(relay.id, commonPoolToken)
-        );
-        const isWhiteListed = this.whiteListedPools.some(whitelistedAnchor =>
-          compareString(commonPoolToken, whitelistedAnchor)
-        );
-
-        const startTime = Number(first.timestamp);
-        if (allowSingles) {
-          return doubles.map(
-            (singleEntry): ViewProtectedLiquidity => {
-              const isWhiteListed = this.whiteListedPools.some(
-                whitelistedAnchor =>
-                  compareString(singleEntry.poolToken, whitelistedAnchor)
-              );
-
-              const startTime = Number(singleEntry.timestamp);
-              const relay = findOrThrow(this.relaysList, relay =>
-                compareString(relay.id, singleEntry.poolToken)
-              );
-              const smartToken = relay.anchor as SmartToken;
-              const smartTokensWei = singleEntry.reserveAmount;
-              const smartTokensDec = shrinkToken(
-                smartTokensWei,
-                smartToken.decimals
-              );
-
-              const reserveToken = this.token(singleEntry.reserveToken);
-              const reservePrecision = reserveToken.precision;
-
-              const reserveTokenDec = shrinkToken(
-                singleEntry.reserveAmount,
-                reserveToken.precision
-              );
-
-              const fullyProtectedDec = shrinkToken(
-                singleEntry.liquidityReturn.targetAmount,
-                reservePrecision
-              );
-              const protectionAchieved = calculateProtectionLevel(
-                startTime,
-                minDelay,
-                maxDelay
-              );
-
-              console.log("oneDayDec", singleEntry.oneDayDec);
-
-              return {
-                id: `${singleEntry.poolToken}:${singleEntry.id}`,
-                whitelisted: isWhiteListed,
-                stake: {
-                  amount: smartTokensDec,
-                  symbol: reserveToken.symbol,
-                  poolId: relay.id,
-                  unixTime: startTime,
-                  ...(reserveToken.price && {
-                    usdValue: new BigNumber(reserveTokenDec)
-                      .times(reserveToken.price!)
-                      .toNumber()
-                  })
-                },
-                fullyProtected: {
-                  amount: "1.23"
-                },
-                protectedAmount: {
-                  amount: fullyProtectedDec,
-                  symbol: reserveToken.symbol,
-                  ...(reserveToken.price && {
-                    usdValue: new BigNumber(fullyProtectedDec)
-                      .times(reserveToken.price!)
-                      .toNumber()
-                  })
-                },
-                apr: {
-                  day: Number(singleEntry.oneDayDec)
-                  // month: Number(singleEntry.oneMonthDec),
-                  // week: Number(singleEntry.oneWeekDec)
-                },
-                single: true,
-                insuranceStart: startTime + minDelay,
-                fullCoverage: startTime + maxDelay,
-                coverageDecPercent: calculateProtectionLevel(
-                  startTime,
-                  minDelay,
-                  maxDelay
-                ),
-                roi: Number(
-                  calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-                )
-              } as ViewProtectedLiquidity;
-            }
-          );
-        } else {
-          const smartToken = commonRelay.anchor as SmartToken;
-          const smartTokensWei = doubles
-            .reduce(
-              (acc, item) => new BigNumber(item.poolAmount).plus(acc),
-              new BigNumber(0)
-            )
-            .toString();
-          const smartTokensDec = shrinkToken(
-            smartTokensWei,
-            smartToken.decimals
-          );
-
-          const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
-
-          const givenVBnt = shrinkToken(
-            doubles.find(position =>
-              compareString(bntAddress, position.reserveToken)
-            )!.reserveAmount,
-            18
-          );
-
-          return {
-            id: `${commonPoolToken}:${doubles.map(pos => pos.id).join(":")}`,
-            whitelisted: isWhiteListed,
-            stake: {
-              amount: smartTokensDec,
-              symbol: smartToken.symbol,
-              poolId: commonViewRelay.id,
-              unixTime: startTime
-            },
-            apr: {
-              day: 0,
-              month: 0,
-              week: 0
-            },
-            insuranceStart: startTime + minDelay,
-            single: false,
-            fullCoverage: startTime + maxDelay,
-            fullyProtected: {
-              amount: "12345.6789"
-            },
-            protectedAmount: {
-              amount: smartTokensDec,
-              symbol: smartToken.symbol
-            },
-            coverageDecPercent: calculateProtectionLevel(
-              startTime,
-              minDelay,
-              maxDelay
-            ),
-            roi: Number(
-              calculatePercentIncrease(smartTokensDec, smartTokensDec)
-            ),
-            givenVBnt
-          } as ViewProtectedLiquidity;
-        }
-      });
-
-    console.log({ reviewedDoubles, reviewedSingles });
-    return [...reviewedDoubles, ...reviewedSingles];
+    console.log({ reviewedSingles: viewPositions });
+    return viewPositions;
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
@@ -3225,12 +2776,31 @@ export class EthBancorModule
 
   get tokens(): ViewToken[] {
     console.time("tokens");
+
+    const whitelistedPools = this.whiteListedPools;
+
     const ret = this.relaysList
       .filter(relay =>
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
-      .flatMap(relay =>
-        relay.reserves.map(reserve => {
+      .flatMap(relay => {
+        const whitelisted = whitelistedPools.some(anchor =>
+          compareString(anchor, relay.id)
+        );
+
+        const liquidityProtection =
+          whitelisted &&
+          relay.reserves.some(reserve =>
+            compareString(
+              reserve.contract,
+              this.liquidityProtectionSettings.networkToken
+            )
+          ) &&
+          relay.reserves.length == 2 &&
+          relay.reserves.every(reserve => reserve.reserveWeight == 0.5) &&
+          Number(relay.version) >= 41;
+
+        return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
           const balance = this.tokenBalance(reserve.contract);
           const balanceString =
@@ -3242,6 +2812,7 @@ export class EthBancorModule
             contract: reserve.contract,
             precision: reserve.decimals,
             symbol: reserve.symbol,
+            liquidityProtection,
             name: name || reserve.symbol,
             ...(reserveFeed.costByNetworkUsd && {
               price: reserveFeed.costByNetworkUsd
@@ -3252,8 +2823,8 @@ export class EthBancorModule
             ...(reserveFeed.volume24H && { volume24h: reserveFeed.volume24H }),
             ...(balance && { balance: balanceString })
           };
-        })
-      )
+        });
+      })
       .sort(sortByLiqDepth)
       .reduce<ViewToken[]>((acc, item) => {
         const existingToken = acc.find(token =>
@@ -3264,7 +2835,12 @@ export class EthBancorModule
               acc,
               token =>
                 compareString(token.id!, item.id) && !isNaN(item.liqDepth),
-              token => ({ ...token, liqDepth: token.liqDepth! + item.liqDepth })
+              token => ({
+                ...token,
+                liqDepth: token.liqDepth! + item.liqDepth,
+                liquidityProtection:
+                  token.liquidityProtection || item.liquidityProtection
+              })
             )
           : [...acc, item as ViewToken];
       }, []);
@@ -3307,6 +2883,7 @@ export class EthBancorModule
 
   get relays(): ViewRelay[] {
     console.time("relays");
+    console.log(this.previousRelayBalances);
     const toReturn = [...this.chainkLinkRelays, ...this.traditionalRelays]
       .sort(sortByLiqDepth)
       .sort(prioritiseV2Pools);
@@ -3357,7 +2934,9 @@ export class EthBancorModule
   get traditionalRelays(): ViewRelay[] {
     const availableHistories = this.availableHistories;
 
+    const aprs = this.poolAprs;
     const whiteListedPools = this.whiteListedPools;
+    const previousRelayBalances = this.previousRelayBalances;
 
     return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
       .filter(relay =>
@@ -3396,6 +2975,21 @@ export class EthBancorModule
           Number(relay.version) >= 41 &&
           whitelisted;
 
+        const apr = aprs.find(apr =>
+          compareString(apr.poolId, relay.anchor.contract)
+        );
+
+        const feesGenerated = previousRelayBalances.find(r =>
+          compareString(r.relay.id, relay.id)
+        );
+
+        const feesVsLiquidity =
+          feesGenerated &&
+          new BigNumber(feesGenerated.totalFees)
+            .times(365)
+            .div(liqDepth)
+            .toString();
+
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -3417,7 +3011,10 @@ export class EthBancorModule
           liquidityProtection,
           whitelisted,
           focusAvailable: hasHistory,
-          v2: false
+          v2: false,
+          ...(apr && { apr: apr.oneWeekApr }),
+          ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
+          ...(feesVsLiquidity && { feesVsLiquidity })
         } as ViewRelay;
       });
   }
@@ -3619,15 +3216,17 @@ export class EthBancorModule
     relay: ChainLinkRelay
   ): Promise<StakedAndReserve> {
     const [reserveOne, reserveTwo] = relay.reserves;
-    const [[poolBalace]] = ((await this.multi([
-      [
-        v2PoolBalanceShape(
-          relay.contract,
-          reserveOne.contract,
-          reserveTwo.contract
-        )
+    const [[poolBalace]] = ((await this.multi({
+      groupsOfShapes: [
+        [
+          v2PoolBalanceShape(
+            relay.contract,
+            reserveOne.contract,
+            reserveTwo.contract
+          )
+        ]
       ]
-    ])) as unknown) as [RawAbiV2PoolBalances][];
+    })) as unknown) as [RawAbiV2PoolBalances][];
 
     return rawAbiV2ToStacked(poolBalace);
   }
@@ -3760,130 +3359,79 @@ export class EthBancorModule
     return contract.methods.systemBalance(tokenAddress).call();
   }
 
-  @action async calculateProtectionNetworkToken({
+  @action async getMaxStakes({
     poolId,
-    reserveAmount
   }: {
     poolId: string;
-    reserveAmount: ViewAmount;
-  }): Promise<ProtectionRes> {
-    console.log("network token called");
-    const reserveToken = this.token(reserveAmount.id);
-
+  }) {
     const [balances, poolTokenBalance] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
-      this.fetchSystemBalance(reserveToken.contract)
+      this.fetchSystemBalance(poolId)
     ]);
 
-    const reserveBalance = findOrThrow(balances.reserves, balance =>
-      compareString(balance.contract, reserveToken.id)
-    );
-
-    const reserveAmountWei = expandToken(
-      reserveAmount.amount,
-      reserveToken.precision
-    );
-    const poolTokenRate = calculatePoolTokenRate(
-      balances.smartTokenSupplyWei,
-      reserveBalance.weiAmount
-    );
-    const poolTokenAmount = poolTokenRate.times(reserveAmountWei);
-    const notEnoughInStore = poolTokenAmount.isGreaterThan(poolTokenBalance);
-    return {
-      outputs: [],
-      ...(notEnoughInStore && { error: "Insufficient store balance" })
-    };
-  }
-
-  @action async calculateProtectionBaseToken({
-    poolId,
-    reserveAmount
-  }: {
-    poolId: string;
-    reserveAmount: ViewAmount;
-  }): Promise<ProtectionRes> {
-    const reserveToken = this.token(reserveAmount.id);
-    const [balances, poolTokenBalance] = await Promise.all([
-      this.fetchRelayBalances({ poolId }),
-      this.fetchSystemBalance(reserveToken.contract)
-    ]);
-
-    const networkTokenAddress = this.liquidityProtectionSettings.networkToken;
-    const networkAmountWei = expandToken(reserveAmount.amount, 18);
-
-    const networkReserve = findOrThrow(
+    const [bntReserve, tknReserve] = sortAlongSide(
       balances.reserves,
-      reserve => compareString(reserve.contract, networkTokenAddress),
-      "failed finding network token in pool balances"
+      reserve => reserve.contract,
+      [this.liquidityProtectionSettings.networkToken]
     );
-    const networkBalanceWei = networkReserve.weiAmount;
-    const baseReserve = findOrThrow(
-      balances.reserves,
-      reserve => !compareString(reserve.contract, networkTokenAddress),
-      "failed finding base token in pool balances"
-    );
-    const baseBalanceWei = baseReserve.weiAmount;
 
-    const networkTokensToBeMinted = new BigNumber(networkAmountWei)
-      .times(networkBalanceWei)
-      .div(baseBalanceWei);
-    const poolTokenRate = calculatePoolTokenRate(
+    const [bntReserveBalance, tknReserveBalance] = [bntReserve, tknReserve].map(
+      reserve => reserve.weiAmount
+    );
+
+    const maxStakes = calculateMaxStakes(
+      tknReserveBalance,
+      bntReserveBalance,
       balances.smartTokenSupplyWei,
-      networkBalanceWei
+      poolTokenBalance,
+      this.liquidityProtectionSettings.maxSystemNetworkTokenAmount,
+      this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
-    const currentPoolTokenSystemBalance = new BigNumber(poolTokenBalance);
-    const newPoolTokenSystemBalance = currentPoolTokenSystemBalance
-      .times(poolTokenRate)
-      .div(2)
-      .plus(networkTokensToBeMinted);
-
-    const breachesMaxSystemBalance = newPoolTokenSystemBalance.isGreaterThan(
-      this.liquidityProtectionSettings.maxSystemNetworkTokenAmount
-    );
-    const breachesRatio = newPoolTokenSystemBalance
-      .times(oneMillion)
-      .isGreaterThan(
-        newPoolTokenSystemBalance
-          .plus(networkBalanceWei)
-          .times(this.liquidityProtectionSettings.maxSystemNetworkTokenRatio)
-      );
-    console.log(
-      {
-        currentPoolTokenSystemBalance: currentPoolTokenSystemBalance.toString(),
-        proposedPoolTokenSystemBalance: newPoolTokenSystemBalance.toString()
-      },
-      "awkies"
-    );
-
-    let errorMessage = "";
-
-    if (breachesMaxSystemBalance) {
-      errorMessage = "Deposit breaches maximum liquidity";
-    } else if (breachesRatio) {
-      errorMessage = `Deposit breaches maximum ratio between ${networkReserve.symbol} and ${baseReserve.symbol}`;
+    return { maxStakes, maxStakesConverted: {
+        maxAllowedBnt: shrinkToken(
+          maxStakes.maxAllowedBntWei,
+          bntReserve.decimals
+        ),
+        [`maxAllowedTkn${tknReserve.symbol}`]: shrinkToken(
+          maxStakes.maxAllowedTknWei,
+          tknReserve.decimals
+        )
+      }
     }
-
-    return {
-      outputs: [],
-      ...(errorMessage && { error: errorMessage })
-    };
   }
 
-  @action async calculateProtectionSingle(params: {
+  @action async calculateProtectionSingle({
+    poolId,
+    reserveAmount
+  }: {
     poolId: string;
     reserveAmount: ViewAmount;
   }): Promise<ProtectionRes> {
     const depositingNetworkToken = compareString(
       this.liquidityProtectionSettings.networkToken,
-      params.reserveAmount.id
+      reserveAmount.id
     );
 
-    if (depositingNetworkToken) {
-      return this.calculateProtectionNetworkToken(params);
-    } else {
-      return this.calculateProtectionBaseToken(params);
-    }
+    const inputToken = this.token(reserveAmount.id);
+    
+    const { maxStakes } = await this.getMaxStakes({poolId})
+
+    const inputAmountWei = expandToken(
+      reserveAmount.amount,
+      inputToken.precision
+    );
+
+    const overMaxLimit = new BigNumber(inputAmountWei).isGreaterThan(
+      depositingNetworkToken
+        ? maxStakes.maxAllowedBntWei
+        : maxStakes.maxAllowedTknWei
+    );
+
+    return {
+      outputs: [],
+      ...(overMaxLimit && { error: "Insufficient store balance" })
+    };
   }
 
   @action async calculateProtectionDouble({
@@ -3891,8 +3439,6 @@ export class EthBancorModule
   }: {
     poolTokenAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-    const phase2 = vxm.general.phase2;
-
     const relay = findOrThrow(this.relaysList, relay =>
       compareString(relay.id, poolTokenAmount.id)
     );
@@ -3917,20 +3463,9 @@ export class EthBancorModule
       };
     });
 
-    if (phase2) {
-      return {
-        outputs
-      };
-    } else {
-      return {
-        outputs: [
-          {
-            ...poolTokenAmount,
-            symbol: smartToken.symbol
-          }
-        ]
-      };
-    }
+    return {
+      outputs
+    };
   }
 
   @action async calculateOpposingDeposit(
@@ -4437,7 +3972,11 @@ export class EthBancorModule
     );
 
     return {
-      opposingAmount: shrinkToken(opposingValue, opposingReserve.decimals),
+      opposingAmount: shrinkToken(
+        opposingValue,
+        opposingReserve.decimals,
+        true
+      ),
       shareOfPool,
       smartTokenAmountWei: {
         id: smartTokenAddress,
@@ -4728,7 +4267,7 @@ export class EthBancorModule
     if (!isAddress) throw new Error(`${tokenAddress} is not a valid address`);
 
     const shape = tokenShape(tokenAddress);
-    const [[token]] = (await this.multi([[shape]])) as [
+    const [[token]] = (await this.multi({ groupsOfShapes: [[shape]] })) as [
       [{ symbol: string; decimals: string; contract: string }]
     ];
 
@@ -4959,7 +4498,8 @@ export class EthBancorModule
       LiquidityProtection: asciiToHex("LiquidityProtection")
     };
 
-    const registryContract = new web3.eth.Contract(
+    const web3View = getWeb3(this.currentNetwork, Provider.Alchemy);
+    const registryContract = new web3View.eth.Contract(
       ABIContractRegistry,
       contractRegistry
     );
@@ -5264,18 +4804,23 @@ export class EthBancorModule
     }
   }
 
-  @action async multi(groupsOfShapes: ShapeWithLabel[][]) {
+  @action async multi({
+    groupsOfShapes,
+    blockHeight
+  }: {
+    groupsOfShapes: ShapeWithLabel[][];
+    blockHeight?: number;
+  }) {
     const networkVars = getNetworkVariables(this.currentNetwork);
-    const multi = new MultiCall(web3, networkVars.multiCall, [
-      500,
-      100,
-      50,
-      10,
-      1
-    ]);
+    const multi = new MultiCall(
+      getWeb3(this.currentNetwork, Provider.Alchemy),
+      networkVars.multiCall,
+      [500, 100, 50, 10, 1]
+    );
 
     const res = await multi.all(groupsOfShapes, {
-      traditional: false
+      traditional: false,
+      blockHeight
     });
     return res;
   }
@@ -5299,10 +4844,9 @@ export class EthBancorModule
       )
     );
 
-    const [v1RelayBalances, v2RelayBalances] = await this.multi([
-      v1RelayShapes,
-      v2RelayPoolBalanceShapes
-    ]);
+    const [v1RelayBalances, v2RelayBalances] = await this.multi({
+      groupsOfShapes: [v1RelayShapes, v2RelayPoolBalanceShapes]
+    });
   }
 
   @action async addPoolsV2(
@@ -5313,10 +4857,12 @@ export class EthBancorModule
       item => item.converterAddress
     );
 
-    const [rawRelays, poolAndSmartTokens] = ((await this.multi([
-      allConverters.map(relayShape),
-      allAnchors.map(poolTokenShape)
-    ])) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
+    const [rawRelays, poolAndSmartTokens] = ((await this.multi({
+      groupsOfShapes: [
+        allConverters.map(relayShape),
+        allAnchors.map(poolTokenShape)
+      ]
+    })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
     const badRelays = rawRelays.filter(
       rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2)
@@ -5426,19 +4972,21 @@ export class EthBancorModule
       reserveAndPoolTokensAbi,
       v1ReserveBalances,
       v2PoolReserveBalances
-    ] = ((await this.multi([
-      tokenAddressesMissing.map(tokenShape),
-      verifiedV1Pools.map(v1Pool =>
-        reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
-      ),
-      verifiedV2Pools.map(pool =>
-        v2PoolBalanceShape(
-          pool.converterAddress,
-          pool.reserves[0],
-          pool.reserves[1]
+    ] = ((await this.multi({
+      groupsOfShapes: [
+        tokenAddressesMissing.map(tokenShape),
+        verifiedV1Pools.map(v1Pool =>
+          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
+        ),
+        verifiedV2Pools.map(pool =>
+          v2PoolBalanceShape(
+            pool.converterAddress,
+            pool.reserves[0],
+            pool.reserves[1]
+          )
         )
-      )
-    ])) as [unknown, unknown, unknown]) as [
+      ]
+    })) as [unknown, unknown, unknown]) as [
       RawAbiToken[],
       RawAbiReserveBalance[],
       RawAbiV2PoolBalances[]
@@ -5787,55 +5335,6 @@ export class EthBancorModule
     };
   }
 
-  get volumeInfo() {
-    return this.volumeArr;
-  }
-
-  // blockNumber, totalBntVolumeInBntTokens, unixTime
-  volumeArr: TotalVolumeAndLiquidity[] = [];
-
-  @mutation setVolume(volumeData: TotalVolumeAndLiquidity[]) {
-    this.volumeArr = volumeData;
-  }
-
-  @action async pullBntInformation({ latestBlock }: { latestBlock: string }) {
-    const rootBlocks = latestBlock;
-    const timeNow = moment().unix();
-
-    const averageBlockTimeSeconds = 13;
-    const blocksPerMinute = 60 / averageBlockTimeSeconds;
-    const blocksPerDay = blocksPerMinute * 60 * 24;
-    const blocksPerWeek = blocksPerDay * 7;
-
-    const backBlocks = parseInt(String(blocksPerWeek));
-    const blocksToRequest = [...Array(26)]
-      .map((_, index) => index + 1)
-      .map(backNumber =>
-        new BigNumber(rootBlocks)
-          .minus(new BigNumber(backBlocks).times(backNumber))
-          .toString()
-      );
-    const data = await totalBntVolumeAtBlocks(blocksToRequest);
-
-    const withTimestamp = data.map(
-      ([blockNumber, totalVolume, totalLiquidity]) => {
-        const unixTime = estimateBlockTimeUnix(
-          Number(blockNumber),
-          Number(latestBlock),
-          timeNow
-        );
-        return [
-          blockNumber,
-          totalVolume,
-          totalLiquidity,
-          unixTime
-        ] as TotalVolumeAndLiquidity;
-      }
-    );
-
-    this.setVolume(withTimestamp);
-  }
-
   @action async pullEvents({
     networkContract,
     network,
@@ -5874,17 +5373,115 @@ export class EthBancorModule
         };
       }
     );
-    return joinStartingAndTerminating;
+    return {
+      joinedTradeEvents: joinStartingAndTerminating,
+      singleTraades: res
+    };
   }
 
   liquidityHistoryArr: DecodedTimedEvent<ConversionEventDecoded>[] = [];
+  singleTradeHistoryArr: DecodedEvent<ConversionEventDecoded>[] = [];
 
-  @mutation setLiquidityHistory(
-    events: DecodedTimedEvent<ConversionEventDecoded>[]
-  ) {
-    this.liquidityHistoryArr = events
+  @mutation setLiquidityHistory({
+    joinedTradeEvents,
+    singleTrades
+  }: {
+    joinedTradeEvents: DecodedTimedEvent<ConversionEventDecoded>[];
+    singleTrades: DecodedEvent<ConversionEventDecoded>[];
+  }) {
+    console.log(singleTrades, "are single trades");
+    this.singleTradeHistoryArr = singleTrades;
+    this.liquidityHistoryArr = joinedTradeEvents
       .slice()
       .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
+  }
+
+  get previousRelayBalances() {
+    const singleTrades = this.singleTradeHistoryArr;
+
+    const anchorsRecentlyTradedAgainst = uniqWith(
+      this.singleTradeHistoryArr
+        .map(trade => trade.data.poolToken)
+        .filter(Boolean) as string[],
+      compareString
+    );
+
+    const relays = this.relaysList.filter(relay =>
+      anchorsRecentlyTradedAgainst.some(anchor =>
+        compareString(anchor, relay.id)
+      )
+    );
+
+    const tradesCollected = relays.map(relay => {
+      const trades = singleTrades.filter(trade =>
+        compareString(trade.data.poolToken!, relay.id)
+      );
+      const decFee = relay.fee / 100;
+      const accumulatedFees = trades.reduce((acc, item) => {
+        const currentTally = findOrThrow(acc, balance =>
+          compareString(balance.id, item.data.to.address)
+        );
+        const exitingAmount = new BigNumber(item.data.to.weiAmount);
+
+        const feeLessMag = 1 - decFee;
+        const feeLessAmount = exitingAmount.times(feeLessMag);
+        const feePaid = exitingAmount.minus(feeLessAmount);
+
+        const newTotalAmount = new BigNumber(
+          currentTally.wei.plus(feePaid).toFixed(0)
+        );
+        return updateArray(
+          acc,
+          reserve => compareString(reserve.id, currentTally.id),
+          reserve => ({ ...reserve, wei: newTotalAmount })
+        );
+      }, relay.reserves.map(reserve => ({ id: reserve.contract, wei: new BigNumber(0) })));
+
+      return {
+        relay,
+        accumulatedFees: accumulatedFees.map(fee => ({
+          ...fee,
+          wei: fee.wei.toString()
+        }))
+      };
+    });
+
+    const uniqueTokens = tradesCollected.flatMap(trade =>
+      trade.accumulatedFees.map(x => x.id)
+    );
+    const allTokens = this.tokens;
+    const tokens = uniqueTokens.map(
+      id => allTokens.find(t => compareString(t.id, id))!
+    );
+
+    console.log(tradesCollected, "are the trades collected");
+    const withUsdValues = tradesCollected.map(trade => ({
+      ...trade,
+      accumulatedFees: trade.accumulatedFees.map(fee => {
+        const viewToken = tokens.find(x => compareString(x.id, fee.id))!;
+        const decAmount = shrinkToken(fee.wei, viewToken.precision);
+        const usdValue = new BigNumber(decAmount)
+          .times(viewToken.price!)
+          .toString();
+
+        return {
+          ...fee,
+          usdValue
+        };
+      })
+    }));
+
+    const accumulatedFee = withUsdValues.map(trade => {
+      const totalFees = trade.accumulatedFees.reduce(
+        (acc, item) => new BigNumber(acc).plus(item.usdValue).toString(),
+        "0"
+      );
+      return {
+        ...trade,
+        totalFees
+      };
+    });
+    return accumulatedFee;
   }
 
   get liquidityHistory() {
@@ -6055,7 +5652,6 @@ export class EthBancorModule
 
       console.log(contractAddresses, "are contract addresses");
 
-      this.pullBntInformation({ latestBlock: String(currentBlock) });
       this.fetchLiquidityProtectionSettings(
         contractAddresses.LiquidityProtection
       );
@@ -6082,7 +5678,7 @@ export class EthBancorModule
           networkContract: contractAddresses.BancorNetwork,
           fromBlock: blockHoursAgo
         });
-        const withDates = events.map(event =>
+        const withDates = events.joinedTradeEvents.map(event =>
           decodedToTimedDecoded(
             event,
             currentBlock,
@@ -6090,7 +5686,10 @@ export class EthBancorModule
           )
         );
 
-        this.setLiquidityHistory(withDates);
+        this.setLiquidityHistory({
+          joinedTradeEvents: withDates,
+          singleTrades: events.singleTraades
+        });
       })();
 
       console.timeEnd("SecondPromise");
@@ -6241,6 +5840,7 @@ export class EthBancorModule
         if (this.isAuthenticated) {
           this.fetchBulkTokenBalances(uniqueTokenAddreses);
         }
+        this.addAprsToPools();
         this.setLoadingPools(false);
       } catch (e) {
         console.log("Failed loading pools");
@@ -6252,151 +5852,152 @@ export class EthBancorModule
     if (this.isAuthenticated) {
       this.fetchBulkTokenBalances(uniqWith(tokenAddresses, compareString));
     }
+    this.addAprsToPools();
   }
 
-  @action async getPoolsViaSubgraph(): Promise<V2Response> {
-    interface ConverterRes {
-      activated: boolean;
-      anchor: string;
-      balances: Balance[];
-      conversionFee: string;
-      factory: string;
-      id: string;
-      type: string;
-      version: string;
-    }
+  poolAprs: PoolApr[] = [];
 
-    interface Balance {
-      balance: string;
-      poolToken: null | PoolToken;
-      stakedAmount: string;
-      token: Token;
-      weight: string;
-    }
+  @mutation updatePoolAprs(newPoolAprs: PoolApr[]) {
+    const existing = this.poolAprs;
+    const withoutOld = existing.filter(
+      apr => !newPoolAprs.some(a => compareString(apr.poolId, a.poolId))
+    );
+    this.poolAprs = [...withoutOld, ...newPoolAprs];
+  }
 
-    interface Token {
-      id: string;
-      symbol: string;
-      decimals: string;
-    }
+  @action async addAprsToPools() {
+    const whitelistedPools = this.whiteListedPools
+      .map(anchor =>
+        this.relaysList.find(relay => compareString(relay.id, anchor))
+      )
+      .filter(Boolean) as Relay[];
 
-    interface PoolToken {
-      id: string;
-      supply: string;
-      symbol: string;
-    }
-
-    const res = (await bancorSubgraph(`
-    {
-      converters(where: {activated: true}, orderBy: createdAtBlockNumber, orderDirection: desc) {
-        id
-        activated
-        anchor
-        factory
-        conversionFee
-        type
-        version
-        balances {
-          poolToken {
-            id
-            symbol
-            supply
-          }
-          token {
-            id
-            symbol
-            decimals
-          }
-          stakedAmount
-          balance
-          weight
-        }
-      }
-    }
-    `)) as { converters: ConverterRes[] };
-
-    const v1Relays = res.converters.filter(converter => converter.type == "1");
-
-    const tokenMeta = this.tokenMeta;
-    const anchorAddresses = v1Relays.map(relay => relay.anchor);
-    const localKnownAnchors = anchorAddresses.filter(address => {
-      const meta = tokenMeta.find(meta =>
-        compareString(meta.contract, address)
-      );
-      return (
-        meta &&
-        (typeof meta.precision == "number" || typeof meta.precision == "string")
-      );
-    });
-    const remainingTokens = differenceWith(
-      anchorAddresses,
-      localKnownAnchors,
-      compareString
+    const poolsToCalculate = whitelistedPools.filter(
+      pool => !this.poolAprs.some(apr => compareString(pool.id, apr.poolId))
     );
 
-    const shapes = remainingTokens.map(tokenShape);
-    const [tokens] = (await this.multi([shapes])) as [
-      [{ symbol: string; decimals: string; contract: string }]
-    ];
+    const currentBlock = await web3.eth.getBlockNumber();
+    const weekAgo = rewindBlocksByDays(currentBlock, 7);
 
-    const localTokens = localKnownAnchors.map(anchor =>
-      findOrThrow(tokenMeta, meta => compareString(meta.contract, anchor))
+    const reservesShapes = poolsToCalculate.map(pool =>
+      reserveBalanceShape(
+        pool.contract,
+        pool.reserves.map(reserve => reserve.contract)
+      )
     );
-    const allTokens = [
-      ...localTokens.map(meta => ({ ...meta, decimals: meta.precision! })),
-      ...tokens
+
+    const [tokenSupplys, reserveBalances] = ((await this.multi({
+      groupsOfShapes: [
+        poolsToCalculate.map(pool => tokenSupplyShape(pool.id)),
+        reservesShapes
+      ],
+      blockHeight: weekAgo
+    })) as [unknown, unknown]) as [
+      {
+        tokenContract: string;
+        supply: string;
+      }[],
+      RawAbiReserveBalance[]
     ];
 
-    const v1RelaysWithBalances = v1Relays.map(
-      (relay): RelayWithReserveBalances => {
-        const foundAnchor = findOrThrow(allTokens, token =>
-          compareString(token.contract, relay.anchor)
+    console.log(poolsToCalculate, "are pools to calculate");
+    const [passedReserveBalances, failedReserveBalances] = partition(
+      reserveBalances,
+      balance => balance.reserveOne && balance.reserveTwo
+    );
+
+    console.log({ failedReserveBalances });
+
+    const poolRoiShapes = tokenSupplys
+      .filter(supply => {
+        const pool = findOrThrow(poolsToCalculate, pool =>
+          compareString(pool.id, supply.tokenContract)
+        );
+        const found = passedReserveBalances.some(reserve =>
+          compareString(pool.contract, reserve.converterAddress)
+        );
+        return found;
+      })
+      .map(supply => {
+        const anchor = supply.tokenContract;
+
+        const pool = findOrThrow(
+          poolsToCalculate as RelayWithReserveBalances[],
+          pool => compareString(pool.id, anchor),
+          "failed finding pool for pool shape"
         );
 
-        const anchor = {
-          ...foundAnchor,
-          decimals: Number(foundAnchor.decimals),
-          network: "ETH"
-        } as SmartToken;
-        return {
-          anchor,
-          contract: relay.id,
-          fee: Number(relay.conversionFee),
-          converterType: PoolType.Traditional,
-          id: relay.anchor,
-          isMultiContract: false,
-          network: "ETH",
-          owner: ethReserveAddress,
-          reserveBalances: relay.balances.map(balance => ({
-            id: balance.token.id,
-            amount: balance.balance
-          })),
-          reserves: relay.balances.map(balance => ({
-            network: "ETH",
-            contract: balance.token.id,
-            decimals: Number(balance.token.decimals),
-            reserveWeight: Number(balance.weight),
-            symbol: balance.token.symbol
-          })),
-          version: relay.version
-        };
-      }
-    );
+        const converterAddress = pool.contract;
+        const poolTokenSupply = supply.supply;
+        const reserves = findOrThrow(reserveBalances, balance =>
+          compareString(balance.converterAddress, converterAddress)
+        );
 
-    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
+        return dualPoolRoiShape(
+          this.contracts.LiquidityProtection,
+          supply.tokenContract,
+          [
+            {
+              tokenContract: reserves.reserveOneAddress,
+              weiAmount: reserves.reserveOne
+            },
+            {
+              tokenContract: reserves.reserveTwoAddress,
+              weiAmount: reserves.reserveTwo
+            }
+          ],
+          poolTokenSupply
+        );
+      });
 
-    const reserveFeeds = buildPossibleReserveFeedsTraditional(
-      v1RelaysWithBalances,
-      [
-        { id: bntTokenAddress, usdPrice: String(this.bntUsdPrice) },
-        ...trustedStables(this.currentNetwork)
-      ]
-    );
+    try {
+      const [poolRois] = ((await this.multi({
+        groupsOfShapes: [poolRoiShapes]
+      })) as [unknown]) as [
+        {
+          anchor: string;
+          onePrimary: string;
+          oneRoi: string;
+          twoPrimary: string;
+          twoRoi: string;
+        }[]
+      ];
+      console.log("PoolROI Success:", poolRois);
 
-    return {
-      pools: v1RelaysWithBalances,
-      reserveFeeds
-    };
+      const successfulPoolRois = poolRois
+        .filter(roi => roi.oneRoi && roi.twoRoi)
+        .map(roi => ({
+          ...roi,
+          oneRoiCalculated: new BigNumber(roi.oneRoi)
+            .div(1000000)
+            .minus(1)
+            .times(52)
+            .toString(),
+          twoRoiCalculated: new BigNumber(roi.twoRoi)
+            .div(1000000)
+            .minus(1)
+            .times(52)
+            .toString()
+        }))
+        .map(roi => ({
+          ...roi,
+          mean: calculateMean(roi.oneRoiCalculated, roi.twoRoiCalculated)
+        }));
+
+      console.log(
+        successfulPoolRois,
+        "allROIS",
+        successfulPoolRois.map(x => x.anchor),
+        "anchors"
+      );
+      this.updatePoolAprs(
+        successfulPoolRois.map(
+          (x): PoolApr => ({ poolId: x.anchor, oneWeekApr: x.mean })
+        )
+      );
+    } catch (e) {
+      console.error("PoolROI Failure:", e.message, poolRoiShapes);
+    }
   }
 
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
@@ -6530,6 +6131,7 @@ export class EthBancorModule
           this.liquidityProtectionSettings.govToken
         ]);
       }
+      console.log(userAddress, "fetching protected positions for");
       this.fetchProtectionPositions();
       this.fetchLockedBalances();
       const allTokens = this.relaysList.flatMap(tokensInRelay);

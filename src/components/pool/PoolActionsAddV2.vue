@@ -10,9 +10,11 @@
     </label-content-split>
 
     <alert-block
-      variant="info"
-      title="This is a new V2 beta version of Bancor."
-      msg="You can add liquidity with only one token at a time."
+      variant="warning"
+      @click="clickAlert"
+      :msg="
+        `This pools runs on an older version of Bancor. We recommend you stake liquidity in the new v2.1 ${poolLabel} pool.`
+      "
     />
 
     <label-content-split label="Select a Token" class="my-3">
@@ -207,6 +209,21 @@ export default class PoolActionsAddV2 extends Vue {
       };
     });
     this.singleUnitCosts = items;
+  }
+
+
+  get isLinkPool() {
+    const selectedPool = this.pool;
+    return selectedPool.reserves.some(reserve => compareString(reserve.symbol, 'LINK'));
+  }
+
+  get poolLabel() {
+    return this.isLinkPool ? 'LINK' : "REN"
+  }
+
+  clickAlert() {
+    const poolDestinationId = this.isLinkPool ? '0x04D0231162b4784b706908c787CE32bD075db9b7' : '0x6b181C478b315bE3f9E99c57CE926436c32e17a7'
+    this.$router.push({ name: 'AddProtectionSingle', params: { id: poolDestinationId } });
   }
 
   async loadPrices(amount: string) {

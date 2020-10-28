@@ -20,7 +20,6 @@
             :proposals="
               proposalsLoaded ? proposals.filter(p => p.open) : undefined
             "
-            :update="updateProposals.bind(this)"
           />
         </b-tab>
         <b-tab title="History">
@@ -74,8 +73,13 @@ export default class Proposals extends Vue {
     return vxm.wallet.isAuthenticated;
   }
 
+  get lastTransaction() {
+    return vxm.ethGovernance.lastTransaction;
+  }
+
   @Watch("isAuthenticated")
   @Watch("showNewProposal")
+  @Watch("lastTransaction")
   async updateProposals() {
     this.proposals = await vxm.ethGovernance.getProposals({
       voter: this.isAuthenticated
