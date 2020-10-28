@@ -46,7 +46,7 @@
 
     <gray-border-block :gray-bg="true" class="mt-3">
       <label-content-split
-        label="Currently Available"
+        label="Space Available"
         :value="loadingMaxStakes ? '' : currentlyAvailable"
       />
     </gray-border-block>
