@@ -26,6 +26,12 @@ export interface ProtectLiquidityParams {
   onUpdate?: OnUpdate;
 }
 
+interface PositionReturn {
+  baseAmount: string;
+  networkAmount: string;
+  targetAmount: string;
+}
+
 export interface ProtectedLiquidityCalculated {
   id: string;
   owner: string;
@@ -40,11 +46,8 @@ export interface ProtectedLiquidityCalculated {
   oneWeekDec?: string;
   // oneMonthDec: string;
   roiDec?: string;
-  liquidityReturn?: {
-    baseAmount: string;
-    networkAmount: string;
-    targetAmount: string;
-  };
+  fullCoverageLiquidityReturn?: PositionReturn;
+  currentLiquidityReturn?: PositionReturn;
 }
 export interface TokenPrice {
   id: string;

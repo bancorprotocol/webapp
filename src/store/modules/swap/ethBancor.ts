@@ -1781,23 +1781,38 @@ export class EthBancorModule
         })(),
         Promise.all(
           allPositions.map(async position => {
-            const fullWaitTime = moment()
+            const now = moment();
+            const nowUnix = now.unix();
+            const fullWaitTime = now
+              .clone()
               .add(1, "year")
               .unix();
 
-            const liquidityReturn = await getRemoveLiquidityReturn(
-              this.contracts.LiquidityProtection,
-              position.id,
-              oneMillion.toString(),
-              fullWaitTime
-            );
+            const [
+              fullCoverageLiquidityReturn,
+              currentLiquidityReturn
+            ] = await Promise.all([
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                fullWaitTime
+              ),
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                nowUnix
+              )
+            ]);
 
             return {
               positionId: position.id,
-              liquidityReturn,
+              fullCoverageLiquidityReturn,
+              currentLiquidityReturn,
               roiDec: calculateReturnOnInvestment(
                 position.reserveAmount,
-                liquidityReturn.targetAmount
+                fullCoverageLiquidityReturn.targetAmount
               )
             };
           })
@@ -2102,9 +2117,9 @@ export class EthBancorModule
         );
 
         const fullyProtectedDec =
-          singleEntry.liquidityReturn &&
+          singleEntry.fullCoverageLiquidityReturn &&
           shrinkToken(
-            singleEntry.liquidityReturn.targetAmount,
+            singleEntry.fullCoverageLiquidityReturn.targetAmount,
             reservePrecision
           );
         const protectionAchieved = calculateProtectionLevel(
@@ -2112,6 +2127,13 @@ export class EthBancorModule
           minDelay,
           maxDelay
         );
+
+        const currentReturn =
+          singleEntry.currentLiquidityReturn &&
+          shrinkToken(
+            singleEntry.currentLiquidityReturn.targetAmount,
+            reservePrecision
+          );
 
         const givenVBnt =
           compareString(
@@ -2144,7 +2166,12 @@ export class EthBancorModule
           fullCoverage: startTime + maxDelay,
           // @ts-ignore
           fullyProtected: {
-            amount: fullyProtectedDec
+            amount: fullyProtectedDec,
+            symbol: reserveToken.symbol
+          },
+          currentReturn: {
+            amount: currentReturn,
+            symbol: reserveToken.symbol
           },
           protectedAmount: {
             amount: fullyProtectedDec,
@@ -3340,11 +3367,7 @@ export class EthBancorModule
     return contract.methods.systemBalance(tokenAddress).call();
   }
 
-  @action async getMaxStakes({
-    poolId,
-  }: {
-    poolId: string;
-  }) {
+  @action async getMaxStakes({ poolId }: { poolId: string }) {
     const [balances, poolTokenBalance] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
       this.fetchSystemBalance(poolId)
@@ -3369,7 +3392,9 @@ export class EthBancorModule
       this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
-    return { maxStakes, maxStakesConverted: {
+    return {
+      maxStakes,
+      maxStakesConverted: {
         maxAllowedBnt: shrinkToken(
           maxStakes.maxAllowedBntWei,
           bntReserve.decimals
@@ -3379,7 +3404,7 @@ export class EthBancorModule
           tknReserve.decimals
         )
       }
-    }
+    };
   }
 
   @action async calculateProtectionSingle({
@@ -3395,8 +3420,8 @@ export class EthBancorModule
     );
 
     const inputToken = this.token(reserveAmount.id);
-    
-    const { maxStakes } = await this.getMaxStakes({poolId})
+
+    const { maxStakes } = await this.getMaxStakes({ poolId });
 
     const inputAmountWei = expandToken(
       reserveAmount.amount,

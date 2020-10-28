@@ -41,7 +41,26 @@
         </div>
       </template>
 
-      <template v-slot:cell(protectedAmount)="data">
+      <template v-slot:cell(fullyProtected)="data">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+      <template v-slot:cell(currentReturn)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -210,8 +229,14 @@ export default class Protected extends Vue {
         thStyle: { "min-width": "250px" }
       },
       {
-        key: "protectedAmount",
+        key: "fullyProtected",
         label: "Fully Protected Value",
+        sortable: true,
+        thStyle: { "min-width": "210px" }
+      },
+      {
+        key: "currentReturn",
+        label: "Claimable value",
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
