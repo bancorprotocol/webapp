@@ -52,6 +52,16 @@ export default class TablePools extends Vue {
     return this.items.some(pool => pool.apr);
   }
 
+  get displayCurrency() {
+    return vxm.general.currency;
+  }
+
+  get conversionRate() {
+    const conversionRates = vxm.general.conversionRates;
+    const currency = vxm.general.currency;
+    return conversionRates[currency].rate;
+  }
+
   get fields() {
     return [
       {
@@ -70,10 +80,10 @@ export default class TablePools extends Vue {
         thStyle: { "min-width": "160px" },
         sortable: true,
         formatter: (value: number) =>
-          new Intl.NumberFormat("en-US", {
+          (value * this.conversionRate).toLocaleString("en", {
             style: "currency",
-            currency: "USD"
-          }).format(value)
+            currency: this.displayCurrency
+          })
       },
       {
         key: "fee",
@@ -89,7 +99,8 @@ export default class TablePools extends Vue {
               label: "1y Fees / Liquidity",
               sortable: true,
               thStyle: { "min-width": "80px" },
-              formatter: (value: number) => value && value > 0 ? formatPercent(value) : "-"
+              formatter: (value: number) =>
+                value && value > 0 ? formatPercent(value) : "-"
             }
           ]
         : []),
