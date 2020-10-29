@@ -66,13 +66,11 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
-import numeral from "numeral";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { ViewRelay } from "@/types/bancor";
-import { prettifyNumber, formatPercent, formatNumber } from "@/api/helpers";
+import { formatPercent } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 
 @Component({
