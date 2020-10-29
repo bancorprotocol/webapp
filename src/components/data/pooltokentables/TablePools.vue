@@ -112,7 +112,7 @@ export default class TablePools extends Vue {
       {
         key: "liqDepth",
         label: "Liquidity",
-        thStyle: { "min-width": "180px" },
+        thStyle: { "min-width": "150px" },
         sortable: true,
         formatter: (value: number) =>
           new Intl.NumberFormat("en-US", {
@@ -146,7 +146,7 @@ export default class TablePools extends Vue {
               key: "feesGenerated",
               label: "Fees (24hr)",
               sortable: true,
-              thStyle: { "min-width": "110px" },
+              thStyle: { "min-width": "100px" },
               formatter: (value: string) =>
                 value && new BigNumber(value).isGreaterThan(0)
                   ? new Intl.NumberFormat("en-US", {
