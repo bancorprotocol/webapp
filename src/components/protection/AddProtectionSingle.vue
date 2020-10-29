@@ -44,20 +44,13 @@
       </div>
     </gray-border-block>
 
-    <gray-border-block :gray-bg="true" class="mt-3">
+    <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
         label="Space Available"
         :value="maxStake"
         :loading="loadingMaxStakes"
       />
     </gray-border-block>
-
-    <label-content-split
-      label="Full Coverage Date"
-      :value="fullCoverageDate"
-      tooltip="Date is based on current voted protection length"
-      class="my-3"
-    />
 
     <main-button
       :label="actionButtonLabel"
