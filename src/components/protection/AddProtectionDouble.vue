@@ -30,12 +30,6 @@
       </span>
     </gray-border-block>
 
-    <label-content-split
-      label="Full Coverage Date"
-      :value="fullCoverageDate"
-      class="mb-3"
-    />
-
     <main-button
       :label="actionButtonLabel"
       @click="openModal"
