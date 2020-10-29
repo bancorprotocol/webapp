@@ -19,8 +19,6 @@ import { firebase } from "@firebase/app";
 import "@firebase/analytics";
 import VueGtag from "vue-gtag";
 
-console.log(process.env, "is env");
-
 const appVersion = JSON.parse(
   unescape(escape(JSON.stringify(require("../package.json"))))
 ).version;
