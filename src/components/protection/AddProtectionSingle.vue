@@ -81,13 +81,6 @@
             {{ `${formatNumber(amount)} ${token.symbol}` }}
           </span>
         </b-col>
-        <b-col v-if="false" cols="12">
-          <gray-border-block>
-            <label-content-split label="???" value="????" />
-            <label-content-split label="???" value="????" />
-            <label-content-split label="???" value="????" />
-          </gray-border-block>
-        </b-col>
       </b-row>
 
       <action-modal-status
