@@ -7,6 +7,38 @@
     :filterFunction="doFilter"
     sort-by="liqDepth"
   >
+    <template v-slot:head(liqDepth)="data">
+      {{ data.label }}
+      <font-awesome-icon
+        v-b-popover.hover.top="toolTips.liqDepth"
+        icon="info-circle"
+      />
+    </template>
+
+    <template v-slot:head(fee)="data">
+      {{ data.label }}
+      <font-awesome-icon
+        v-b-popover.hover.top="toolTips.fee"
+        icon="info-circle"
+      />
+    </template>
+
+    <template v-slot:head(feesGenerated)="data">
+      {{ data.label }}
+      <font-awesome-icon
+        v-b-popover.hover.top="toolTips.feesGenerated"
+        icon="info-circle"
+      />
+    </template>
+
+    <template v-slot:head(feesVsLiquidity)="data">
+      {{ data.label }}
+      <font-awesome-icon
+        v-b-popover.hover.top="toolTips.feesVsLiquidity"
+        icon="info-circle"
+      />
+    </template>
+
     <template v-slot:cell(symbol)="data">
       <pool-logos :pool="data.item" :cursor="false" />
 
@@ -54,6 +86,17 @@ export default class TablePools extends Vue {
     return this.items.some(pool => pool.apr);
   }
 
+  get toolTips() {
+    const tooltips = {
+      liqDepth: "The value of tokens in the pool.",
+      fee: "The % deducted from each swap and re-deposited into the pool.",
+      feesGenerated:
+        "The value of swap fees collected in the pool in the past 24h.",
+      feesVsLiquidity: "24h fees annualized divided by liquidity in the pool."
+    };
+    return tooltips;
+  }
+
   get fields() {
     return [
       {
@@ -68,8 +111,8 @@ export default class TablePools extends Vue {
       },
       {
         key: "liqDepth",
-        label: "Liquidity Depth",
-        thStyle: { "min-width": "160px" },
+        label: "Liquidity",
+        thStyle: { "min-width": "180px" },
         sortable: true,
         formatter: (value: number) =>
           new Intl.NumberFormat("en-US", {
@@ -90,7 +133,7 @@ export default class TablePools extends Vue {
               key: "volume",
               label: "Volume (24hr)",
               sortable: true,
-              thStyle: { "min-width": "80px" },
+              thStyle: { "min-width": "140px" },
               formatter: (value: string) =>
                 value && new BigNumber(value).isGreaterThan(0)
                   ? new Intl.NumberFormat("en-US", {
@@ -103,7 +146,7 @@ export default class TablePools extends Vue {
               key: "feesGenerated",
               label: "Fees (24hr)",
               sortable: true,
-              thStyle: { "min-width": "80px" },
+              thStyle: { "min-width": "110px" },
               formatter: (value: string) =>
                 value && new BigNumber(value).isGreaterThan(0)
                   ? new Intl.NumberFormat("en-US", {
@@ -116,7 +159,7 @@ export default class TablePools extends Vue {
               key: "feesVsLiquidity",
               label: "1y Fees / Liquidity",
               sortable: true,
-              thStyle: { "min-width": "60px" },
+              thStyle: { "min-width": "120px" },
               formatter: (value: string) =>
                 value && new BigNumber(value).isGreaterThan(0)
                   ? formatPercent(value)
