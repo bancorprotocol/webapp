@@ -858,10 +858,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@dfuse/client@^0.3.14":
-  version "0.3.14"
-  resolved "https://registry.yarnpkg.com/@dfuse/client/-/client-0.3.14.tgz#dccd0bab9bdc06a982d5f335ea20be362689fcf6"
-  integrity sha512-64hBulFtB3sHt9lepK4Hmc6s2VG65J46PR0H+5WTIcmGJyu+yt3y0mDk70bCrbp57nSQfWYC3nrFbyHCDh/SnA==
+"@dfuse/client@^0.3.17":
+  version "0.3.17"
+  resolved "https://registry.yarnpkg.com/@dfuse/client/-/client-0.3.17.tgz#6d225394880f6e975783be7a8f7a6ebf2eae6842"
+  integrity sha512-GPF7SkqBXByF0sntScXZG0bo4j9iNGNl2UW1V9zwbx1oN8TFce+ewcp+u01QZGTxY0AVEXCVs94qWo3tjERkSA==
   dependencies:
     "@types/debug" "^0.0.31"
     debug "^4.1.0"
