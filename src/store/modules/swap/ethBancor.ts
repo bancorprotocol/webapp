@@ -3369,18 +3369,30 @@ export class EthBancorModule
       this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
     );
 
-    return { maxStakes, maxStakesConverted: {
-        maxAllowedBnt: shrinkToken(
-          maxStakes.maxAllowedBntWei,
-          bntReserve.decimals
-        ),
-        [`maxAllowedTkn${tknReserve.symbol}`]: shrinkToken(
-          maxStakes.maxAllowedTknWei,
-          tknReserve.decimals
-        )
-      }
-    }
+    return { maxStakes, bntReserve, tknReserve }
   }
+
+  @action async getMaxStakesView({
+                                   poolId,
+                                 }: {
+    poolId: string;
+  }) {
+    const maxStakes = await this.getMaxStakes({poolId})
+
+    return [{
+      amount: shrinkToken(
+          maxStakes.maxStakes.maxAllowedBntWei,
+          maxStakes.bntReserve.decimals
+      ),
+      token: maxStakes.bntReserve.symbol,
+    }, {
+      amount: shrinkToken(
+          maxStakes.maxStakes.maxAllowedTknWei,
+          maxStakes.tknReserve.decimals
+      ),
+      token: maxStakes.tknReserve.symbol,
+    }]
+}
 
   @action async calculateProtectionSingle({
     poolId,
@@ -3395,7 +3407,7 @@ export class EthBancorModule
     );
 
     const inputToken = this.token(reserveAmount.id);
-    
+
     const { maxStakes } = await this.getMaxStakes({poolId})
 
     const inputAmountWei = expandToken(

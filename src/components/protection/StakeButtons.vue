@@ -22,13 +22,11 @@
           class="my-3"
         >
           <label-content-split
-            label="Space Available"
+            v-for="(amount, index) in maxStakes"
+            :key="index"
+            :label="!index ? 'Space Available' : ''"
+            :value="amount"
             :loading="loadingMaxStakes"
-            :value="maxStakesTkn + ' ' + tknSymbol"
-          />
-          <label-content-split
-            label=""
-            :value="loadingMaxStakes ? '' : maxStakesBnt + ' BNT'"
           />
         </gray-border-block>
 
@@ -60,21 +58,12 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 export default class StakeButtons extends Vue {
   @Prop({ default: false }) showAddLiquidity!: boolean;
 
-  maxStakesBnt: any = 0;
-  maxStakesTkn: any = 0;
+  maxStakes: string[] = [];
 
   loadingMaxStakes = false;
 
   get poolId(): string | null {
     return this.$route.params.id ?? null
-  }
-
-  get pool(): ViewRelay {
-    return vxm.bancor.relay(this.poolId)
-  }
-
-  get tknSymbol() {
-    return this.pool.reserves[1].symbol
   }
 
   get stakeOptions() {
@@ -118,12 +107,10 @@ export default class StakeButtons extends Vue {
     if (this.loadingMaxStakes || !this.poolId) return
     this.loadingMaxStakes = true;
     try {
-      const result = await vxm.ethBancor.getMaxStakes({
+      const result = await vxm.ethBancor.getMaxStakesView({
         poolId: this.poolId
       });
-      const maxStakes = result.maxStakesConverted
-      this.maxStakesBnt = prettifyNumber(maxStakes[Object.keys(maxStakes)[0]]);
-      this.maxStakesTkn = prettifyNumber(maxStakes[Object.keys(maxStakes)[1]]);
+      this.maxStakes = result.map(x => { return `${prettifyNumber(x.amount)} ${x.token}` })
     } catch (e) {
       console.log(e);
     } finally {
