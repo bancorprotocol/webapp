@@ -1,5 +1,6 @@
 <template>
   <table-wrapper
+    primarykey="id"
     :items="items"
     :fields="fields"
     :filter="filter"

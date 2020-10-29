@@ -6,6 +6,7 @@
     :search.sync="search"
   >
     <table-wrapper
+      primarykey="id"
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"
