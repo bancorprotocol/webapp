@@ -9,13 +9,28 @@
       :filterFunction="doFilter"
       sort-by="insuranceStart"
     >
+      <template #head(stake)="data">
+        {{ data.label }}
+        <font-awesome-icon
+          v-b-popover.hover.top="toolTips.stake"
+          icon="info-circle"
+        />
+      </template>
+
+      <template #head(protectedAmount)="data">
+        {{ data.label }}
+        <font-awesome-icon
+          v-b-popover.hover.top="toolTips.protectedAmount"
+          icon="info-circle"
+        />
+      </template>
+
       <template #head(apr)="data">
-        APR <font-awesome-icon id="popover-target-apr" icon="info-circle" />
-        <b-popover target="popover-target-apr" triggers="hover" placement="top">
-          Estimated annual rate of interest calculated based on activity. Each
-          reserve might have different APR based on the accumulated fees and
-          market trend.
-        </b-popover>
+        {{ data.label }}
+        <font-awesome-icon
+          v-b-popover.hover.top="toolTips.apr"
+          icon="info-circle"
+        />
       </template>
 
       <template v-slot:cell(stake)="data">
@@ -203,16 +218,31 @@ export default class Protected extends Vue {
     return prettifyNumber(number, usd);
   }
 
+  get toolTips() {
+    const tooltips = {
+      stake: "Amount of tokens you originally staked in the pool.",
+      protectedAmount:
+        "Amount of tokens you can withdraw with 100% protection + fees.",
+      claimableValue:
+        "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value).",
+      fees: "Fees your stake has earned since you entered the pool.",
+      roi: "The ROI of your fully protected value vs. your initial stake.",
+      apr: "How much the pool has earned within different time frames."
+    };
+    return tooltips;
+  }
+
   get protectedTxTable() {
     const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
     const fields = [
       {
         key: "stake",
+        label: "Initial Stake",
         thStyle: { "min-width": "250px" }
       },
       {
         key: "protectedAmount",
-        label: "Fully Protected Value",
+        label: "Protected Value",
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
@@ -223,11 +253,11 @@ export default class Protected extends Vue {
       //   formatter: (value: string) =>
       //     value ? this.stringifyPercentage(Number(value)) : "Error calculating"
       // },
-      // {
-      //   key: "apr",
-      //   sortable: false,
-      //   thStyle: { "min-width": "100px" }
-      // },
+      {
+        key: "apr",
+        sortable: false,
+        thStyle: { "min-width": "100px" }
+      },
       {
         key: "insuranceStart",
         label: "Protection Start",
