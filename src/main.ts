@@ -35,7 +35,7 @@ Sentry.init({
   integrations: [
     new VueIntegration({
       Vue,
-      tracing: false,
+      tracing: true,
       tracingOptions: {
         trackComponents: false
       }
