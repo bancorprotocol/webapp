@@ -148,6 +148,7 @@ import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
+import * as Sentry from "@sentry/browser";
 
 const tokenSupplyShape = (tokenAddress: string) => {
   const contract = buildTokenContract(tokenAddress);
@@ -6058,6 +6059,7 @@ export class EthBancorModule
   @action async onAuthChange(userAddress: string) {
     this.wipeTokenBalances();
     if (userAddress) {
+      Sentry.setUser({ id: userAddress.toLowerCase() });
       const govAddress = web3.utils.isAddress(
         this.liquidityProtectionSettings.govToken
       );
@@ -6080,6 +6082,8 @@ export class EthBancorModule
           userAddress
         })
       );
+    } else {
+      Sentry.configureScope(scope => scope.setUser(null));
     }
   }
 
