@@ -4,6 +4,7 @@
       responsive
       :dark="darkMode"
       :fields="fields"
+      :primary-key="primarykey"
       :items="items"
       :per-page="perPage"
       :current-page="currentPage"
@@ -48,6 +49,7 @@ import { vxm } from "@/store/";
 
 @Component
 export default class TableWrapper extends Vue {
+  @Prop() primarykey?: string;
   @Prop() items!: any[];
   @Prop() fields!: any[];
   @Prop() sortBy!: string;
