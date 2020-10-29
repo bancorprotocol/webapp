@@ -96,7 +96,9 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    vxm.ethBancor.updateBalance([ethReserveAddress, fromWei(nativeBalance)]);
+    vxm.ethBancor.updateUserBalances([
+      { balance: fromWei(nativeBalance), id: ethReserveAddress }
+    ]);
   }
 
   @action async checkAlreadySignedIn() {
