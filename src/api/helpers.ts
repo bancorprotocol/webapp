@@ -410,6 +410,7 @@ interface TokenAmount {
   weiAmount: string;
 }
 export interface ConversionEventDecoded {
+  poolToken?: string;
   from: TokenAmount;
   to: TokenAmount;
   trader: string;
@@ -570,6 +571,7 @@ const decodeNetworkConversionEvent = (
     blockNumber,
     txHash,
     data: {
+      poolToken: removeLeadingZeros(poolToken),
       from: {
         address: removeLeadingZeros(fromAddress),
         weiAmount: picked.fromAmount
@@ -675,6 +677,8 @@ export const getLogs = async (
     ],
     id: 1
   });
+
+  console.log(res, 'is the raw return')
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;

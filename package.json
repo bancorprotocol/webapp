@@ -15,7 +15,7 @@
     "go": "yarn run bump && yarn build && yarn deploy"
   },
   "dependencies": {
-    "@dfuse/client": "^0.3.14",
+    "@dfuse/client": "^0.3.17",
     "@firebase/analytics": "^0.4.1",
     "@firebase/app": "^0.6.9",
     "@fortawesome/fontawesome-svg-core": "^1.2.25",
@@ -50,7 +50,7 @@
     "eos-transit-tokenpocket-provider": "^4.0.1",
     "eos-transit-whalevault-provider": "^4.0.1",
     "eosjs": "^20.0.0",
-    "eth-multicall": "^1.3.5",
+    "eth-multicall": "^1.3.6",
     "fast-sort": "^2.2.0",
     "highcharts": "^8.1.0",
     "highcharts-vue": "^1.3.5",

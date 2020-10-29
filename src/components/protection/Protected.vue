@@ -2,12 +2,22 @@
   <div>
     <table-wrapper
       v-if="protectedTxTable.items.length"
+      primarykey="id"
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"
       :filterFunction="doFilter"
       sort-by="insuranceStart"
     >
+      <template #head(apr)="data">
+        APR <font-awesome-icon id="popover-target-apr" icon="info-circle" />
+        <b-popover target="popover-target-apr" triggers="hover" placement="top">
+          Estimated annual rate of interest calculated based on activity. Each
+          reserve might have different APR based on the accumulated fees and
+          market trend.
+        </b-popover>
+      </template>
+
       <template v-slot:cell(stake)="data">
         <div class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />

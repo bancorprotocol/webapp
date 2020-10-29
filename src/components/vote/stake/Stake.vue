@@ -149,6 +149,10 @@ export default class Stake extends Vue {
     return vxm.wallet.isAuthenticated;
   }
 
+  get lastTransaction() {
+    return vxm.ethGovernance.lastTransaction;
+  }
+
   get loaded() {
     return vxm.ethGovernance.isLoaded;
   }
@@ -168,6 +172,7 @@ export default class Stake extends Vue {
   @Watch("isAuthenticated")
   @Watch("stakeModal")
   @Watch("unstakeModal")
+  @Watch("lastTransaction")
   async update() {
     const [balance, votes, lock, tokenAddress, symbol] = await Promise.all([
       vxm.ethGovernance.getBalance({

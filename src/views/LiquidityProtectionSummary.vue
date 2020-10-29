@@ -10,14 +10,6 @@
         </span>
 
         <div>
-          <b-spinner
-            v-if="loading"
-            style="width: 1.5rem; height: 1.5rem;"
-            class="mr-2 align-self-center center"
-            :class="darkMode ? 'text-primary' : 'text-primary'"
-            label="Loading..."
-          ></b-spinner>
-
           <b-btn
             variant="primary"
             class="float-right"
@@ -56,7 +48,14 @@
               :class="darkMode ? 'tabs-dark' : 'tabs-light'"
             >
               <b-tab title="Protected">
-                <protected :search="searchProtected" />
+                <div v-if="loading" class="d-flex justify-content-center my-3">
+                  <b-spinner
+                    style="width: 3rem; height: 3rem;"
+                    class="text-primary"
+                    label="Loading..."
+                  />
+                </div>
+                <protected v-else :search="searchProtected" />
               </b-tab>
               <b-tab title="Claim">
                 <claim :search="searchProtected" />
