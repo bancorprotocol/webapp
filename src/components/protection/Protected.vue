@@ -117,7 +117,14 @@
 
       <template v-slot:cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
-          <span v-text="stringifyPercentage(data.item.coverageDecPercent)" />
+          <span
+            v-if="insuranceStarted(data.item.insuranceStart)"
+            v-text="stringifyPercentage(data.item.coverageDecPercent)"
+          />
+          <span v-else class="font-size-12 font-w600 text-danger">
+            Cliff:
+            <countdown-timer :date-unix="data.item.insuranceStart" />
+          </span>
           <b-progress
             :value="data.item.coverageDecPercent * 100"
             :max="100"
@@ -161,9 +168,11 @@ import numeral from "numeral";
 import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
+import CountdownTimer from "@/components/common/CountdownTimer.vue";
 
 @Component({
   components: {
+    CountdownTimer,
     ProtectedEmpty,
     PoolLogosOverlapped,
     TableWrapper,
@@ -175,6 +184,10 @@ export default class Protected extends Vue {
 
   poolName(id: string): string {
     return buildPoolName(id);
+  }
+
+  insuranceStarted(unixTime: number) {
+    return unixTime < Date.now() / 1000;
   }
 
   formatEndTime(fullCoverageSeconds: number) {
