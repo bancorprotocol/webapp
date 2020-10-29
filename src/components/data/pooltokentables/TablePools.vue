@@ -87,13 +87,16 @@ export default class TablePools extends Vue {
       ...(this.isEth
         ? [
             {
-              key: "apr",
-              label: "APY",
+              key: "volume",
+              label: "Volume (24hr)",
               sortable: true,
               thStyle: { "min-width": "80px" },
               formatter: (value: string) =>
                 value && new BigNumber(value).isGreaterThan(0)
-                  ? formatPercent(value)
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD"
+                    }).format(Number(value))
                   : "N/A"
             },
             {
@@ -113,7 +116,7 @@ export default class TablePools extends Vue {
               key: "feesVsLiquidity",
               label: "1y Fees / Liquidity",
               sortable: true,
-              thStyle: { "min-width": "80px" },
+              thStyle: { "min-width": "60px" },
               formatter: (value: string) =>
                 value && new BigNumber(value).isGreaterThan(0)
                   ? formatPercent(value)

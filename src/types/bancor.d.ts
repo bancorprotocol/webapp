@@ -284,6 +284,7 @@ export interface ViewRelay {
   feesGenerated?: string;
   feesVsLiquidity?: string;
   apr?: string;
+  volume?: string;
 }
 
 export interface ContractMethods<T> extends Contract {
