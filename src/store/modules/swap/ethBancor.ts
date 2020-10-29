@@ -2995,6 +2995,8 @@ export class EthBancorModule
             .div(liqDepth)
             .toString();
 
+        const volume = feesGenerated && feesGenerated.totalVolume;
+
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -3019,7 +3021,8 @@ export class EthBancorModule
           v2: false,
           ...(apr && { apr: apr.oneWeekApr }),
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
-          ...(feesVsLiquidity && { feesVsLiquidity })
+          ...(feesVsLiquidity && { feesVsLiquidity }),
+          ...(volume && { volume })
         } as ViewRelay;
       });
   }
@@ -5478,20 +5481,28 @@ export class EthBancorModule
         const feePaid = exitingAmount.minus(feeLessAmount);
 
         const newTotalAmount = new BigNumber(
-          currentTally.wei.plus(feePaid).toFixed(0)
+          currentTally.collectedFees.plus(feePaid).toFixed(0)
+        );
+        const newTotalVolume = new BigNumber(exitingAmount).plus(
+          currentTally.totalVolume
         );
         return updateArray(
           acc,
           reserve => compareString(reserve.id, currentTally.id),
-          reserve => ({ ...reserve, wei: newTotalAmount })
+          reserve => ({
+            ...reserve,
+            collectedFees: newTotalAmount,
+            totalVolume: newTotalVolume
+          })
         );
-      }, relay.reserves.map(reserve => ({ id: reserve.contract, wei: new BigNumber(0) })));
+      }, relay.reserves.map(reserve => ({ id: reserve.contract, collectedFees: new BigNumber(0), totalVolume: new BigNumber(0) })));
 
       return {
         relay,
         accumulatedFees: accumulatedFees.map(fee => ({
           ...fee,
-          wei: fee.wei.toString()
+          collectedFees: fee.collectedFees.toString(),
+          totalVolume: fee.totalVolume.toString()
         }))
       };
     });
@@ -5509,26 +5520,45 @@ export class EthBancorModule
       ...trade,
       accumulatedFees: trade.accumulatedFees.map(fee => {
         const viewToken = tokens.find(x => compareString(x.id, fee.id))!;
-        const decAmount = shrinkToken(fee.wei, viewToken.precision);
-        const usdValue = new BigNumber(decAmount)
+        const decAmountFees = shrinkToken(
+          fee.collectedFees,
+          viewToken.precision
+        );
+        const decAmountVolume = shrinkToken(
+          fee.totalVolume,
+          viewToken.precision
+        );
+        const usdFees = new BigNumber(decAmountFees)
+          .times(viewToken.price!)
+          .toString();
+
+        const usdVolume = new BigNumber(decAmountVolume)
           .times(viewToken.price!)
           .toString();
 
         return {
           ...fee,
-          usdValue
+          usdFees,
+          usdVolume
         };
       })
     }));
 
     const accumulatedFee = withUsdValues.map(trade => {
       const totalFees = trade.accumulatedFees.reduce(
-        (acc, item) => new BigNumber(acc).plus(item.usdValue).toString(),
+        (acc, item) => new BigNumber(acc).plus(item.usdFees).toString(),
         "0"
       );
+
+      const totalVolume = trade.accumulatedFees.reduce(
+        (acc, item) => new BigNumber(acc).plus(item.usdVolume).toString(),
+        "0"
+      );
+
       return {
         ...trade,
-        totalFees
+        totalFees,
+        totalVolume
       };
     });
     return accumulatedFee;
