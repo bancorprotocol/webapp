@@ -2,6 +2,7 @@
   <div>
     <table-wrapper
       v-if="protectedTxTable.items.length"
+      primarykey="id"
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"

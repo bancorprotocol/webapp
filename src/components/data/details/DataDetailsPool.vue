@@ -72,6 +72,7 @@
           :search.sync="searchTokens"
         >
           <table-wrapper
+            primarykey="reserveId"
             :items="poolTokensTable.items"
             :fields="poolTokensTable.fields"
             :filter="searchTokens"
