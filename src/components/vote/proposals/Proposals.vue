@@ -101,6 +101,7 @@ export default class Proposals extends Vue {
   border-bottom: 1px solid $gray-border !important;
   position: relative;
 }
+
 .new-proposal-button {
   height: 24px;
   line-height: 21px;
@@ -110,8 +111,15 @@ export default class Proposals extends Vue {
   color: $text-color-light !important;
   font-size: 13px !important;
   position: absolute;
+  display: inline-block;
   top: 9px;
   right: 26px;
   z-index: 2;
+}
+
+@media (max-width: 450px) {
+  .new-proposal-button {
+    top: -25px;
+  }
 }
 </style>
