@@ -41,10 +41,10 @@ Sentry.init({
     new Integrations.BrowserTracing()
   ],
 
-//   // We recommend adjusting this value in production, or using tracesSampler
-//   // for finer control
-//   tracesSampleRate: 1.0
-// });
+  //   // We recommend adjusting this value in production, or using tracesSampler
+  //   // for finer control
+  tracesSampleRate: 1.0
+});
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4yWnTGa6qj6dR1RLW6Clod0iMn4niflU",
