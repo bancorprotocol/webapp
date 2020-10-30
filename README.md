@@ -17,12 +17,11 @@ Daily standups
 
 #### Weekday work times
 
-|                 | City                                                                 | Start   | End     |
-| --------------- | -------------------------------------------------------------------- | ------- | ------- |
-| John Williamson | [Brisbane](https://www.timeanddate.com/worldclock/australia/)        | 10:00pm | 8:00am  |
-| Jan Langheimer  | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg)  | 7:00am  | 4:00pm  |
-| Dmitry          | [Dnipro](https://www.timeanddate.com/worldclock/ukraine/dnipro)      | 12:00pm | 10:00pm |
-| Gury            | [Jerusalem](https://www.timeanddate.com/worldclock/israel/jerusalem) |         |         |
+|                 | City                                                                |
+| --------------- | ------------------------------------------------------------------- |
+| John Williamson | [Brisbane](https://www.timeanddate.com/worldclock/australia/)       |
+| Jan Langheimer  | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg) |
+| Sebastian       | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg) |
 
 ### Git Strategy
 

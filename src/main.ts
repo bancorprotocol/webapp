@@ -19,19 +19,27 @@ import { firebase } from "@firebase/app";
 import "@firebase/analytics";
 import VueGtag from "vue-gtag";
 
-// Sentry.init({
-//   dsn:
-//     "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
-//   integrations: [
-//     new VueIntegration({
-//       Vue,
-//       tracing: true,
-//       tracingOptions: {
-//         trackComponents: true
-//       }
-//     }),
-//     new Integrations.BrowserTracing()
-//   ],
+const appVersion = JSON.parse(
+  unescape(escape(JSON.stringify(require("../package.json"))))
+).version;
+
+const isDev = process.env.NODE_ENV == "development";
+Sentry.init({
+  dsn:
+    "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
+  debug: isDev,
+  environment: isDev ? "development" : "prod/staging",
+  release: `swap-${appVersion}`,
+  integrations: [
+    new VueIntegration({
+      Vue,
+      tracing: true,
+      tracingOptions: {
+        trackComponents: false
+      }
+    }),
+    new Integrations.BrowserTracing()
+  ],
 
 //   // We recommend adjusting this value in production, or using tracesSampler
 //   // for finer control

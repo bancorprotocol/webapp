@@ -87,6 +87,7 @@ import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
 import moment from "moment";
+import * as Sentry from "@sentry/browser";
 
 const networkContract = "thisisbancor";
 
@@ -680,11 +681,14 @@ export class EosBancorModule
 
   @action async onAuthChange(isAuthenticated: string | false) {
     if (isAuthenticated) {
+      Sentry.setUser({ id: isAuthenticated });
       const reserves = uniqWith(
         this.relaysList.flatMap(relay => relay.reserves),
         (a, b) => compareString(a.id, b.id)
       );
       this.fetchTokenBalancesIfPossible(reserves);
+    } else {
+      Sentry.configureScope(scope => scope.setUser(null));
     }
   }
 

@@ -44,19 +44,13 @@
       </div>
     </gray-border-block>
 
-    <gray-border-block :gray-bg="true" class="mt-3">
+    <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
-        label="Available Space"
-        :value="loadingMaxStakes ? '' : currentlyAvailable"
+        label="Space Available"
+        :value="maxStake"
+        :loading="loadingMaxStakes"
       />
     </gray-border-block>
-
-    <label-content-split
-      label="Full Coverage Date"
-      :value="fullCoverageDate"
-      tooltip="Date is based on current voted protection length"
-      class="my-3"
-    />
 
     <main-button
       :label="actionButtonLabel"
@@ -79,13 +73,6 @@
           >
             {{ `${formatNumber(amount)} ${token.symbol}` }}
           </span>
-        </b-col>
-        <b-col v-if="false" cols="12">
-          <gray-border-block>
-            <label-content-split label="???" value="????" />
-            <label-content-split label="???" value="????" />
-            <label-content-split label="???" value="????" />
-          </gray-border-block>
         </b-col>
       </b-row>
 
@@ -119,7 +106,8 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import {
   formatUnixTime,
   formatNumber,
-  buildPoolName, prettifyNumber
+  buildPoolName,
+  prettifyNumber
 } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
@@ -148,7 +136,7 @@ export default class AddProtectionSingle extends Vue {
     return vxm.bancor.relay(poolId);
   }
 
-  maxStakes: any = null;
+  maxStake: string = "";
 
   loadingMaxStakes = false;
 
@@ -372,17 +360,18 @@ export default class AddProtectionSingle extends Vue {
   }
 
   async loadMaxStakes() {
-    if (this.loadingMaxStakes) return
+    if (this.loadingMaxStakes) return;
     this.loadingMaxStakes = true;
     try {
-      const result = await vxm.ethBancor.getMaxStakes({
+      const result = await vxm.ethBancor.getMaxStakesView({
         poolId: this.pool.id
       });
-      if (this.token.symbol === "BNT")
-        this.maxStakes = result.maxStakesConverted.maxAllowedBnt;
-      else
-        this.maxStakes =
-          result.maxStakesConverted[`maxAllowedTkn${this.token.symbol}`];
+      let stake = result.filter(x => x.token === this.token.symbol);
+      if (stake.length === 1) {
+        const amount = prettifyNumber(stake[0].amount);
+        const symbol = stake[0].token;
+        this.maxStake = `${amount} ${symbol}`;
+      }
     } catch (e) {
       console.log(e);
     } finally {

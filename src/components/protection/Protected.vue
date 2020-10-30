@@ -9,6 +9,30 @@
       :filterFunction="doFilter"
       sort-by="insuranceStart"
     >
+      <template #head(stake)="data">
+        {{ data.label }}
+        <font-awesome-icon
+          v-b-popover.hover.top="toolTips.stake"
+          icon="info-circle"
+        />
+      </template>
+
+      <template #head(protectedAmount)="data">
+        {{ data.label }}
+        <font-awesome-icon
+          v-b-popover.hover.top="toolTips.protectedAmount"
+          icon="info-circle"
+        />
+      </template>
+
+      <template #head(apr)="data">
+        {{ data.label }}
+        <font-awesome-icon
+          v-b-popover.hover.top="toolTips.apr"
+          icon="info-circle"
+        />
+      </template>
+
       <template v-slot:cell(stake)="data">
         <div class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
@@ -93,7 +117,14 @@
 
       <template v-slot:cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
-          <span v-text="stringifyPercentage(data.item.coverageDecPercent)" />
+          <span
+            v-if="insuranceStarted(data.item.insuranceStart)"
+            v-text="stringifyPercentage(data.item.coverageDecPercent)"
+          />
+          <span v-else class="font-size-12 font-w600 text-danger">
+            Cliff:
+            <countdown-timer :date-unix="data.item.insuranceStart" />
+          </span>
           <b-progress
             :value="data.item.coverageDecPercent * 100"
             :max="100"
@@ -137,9 +168,11 @@ import numeral from "numeral";
 import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
+import CountdownTimer from "@/components/common/CountdownTimer.vue";
 
 @Component({
   components: {
+    CountdownTimer,
     ProtectedEmpty,
     PoolLogosOverlapped,
     TableWrapper,
@@ -151,6 +184,10 @@ export default class Protected extends Vue {
 
   poolName(id: string): string {
     return buildPoolName(id);
+  }
+
+  insuranceStarted(unixTime: number) {
+    return unixTime < Date.now() / 1000;
   }
 
   formatEndTime(fullCoverageSeconds: number) {
@@ -194,8 +231,18 @@ export default class Protected extends Vue {
     return prettifyNumber(number, usd);
   }
 
-  get phase2() {
-    return true;
+  get toolTips() {
+    const tooltips = {
+      stake: "Amount of tokens you originally staked in the pool.",
+      protectedAmount:
+        "Amount of tokens you can withdraw with 100% protection + fees.",
+      claimableValue:
+        "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value).",
+      fees: "Fees your stake has earned since you entered the pool.",
+      roi: "The ROI of your fully protected value vs. your initial stake.",
+      apr: "How much the pool has earned within different time frames."
+    };
+    return tooltips;
   }
 
   get protectedTxTable() {
@@ -203,11 +250,12 @@ export default class Protected extends Vue {
     const fields = [
       {
         key: "stake",
+        label: "Initial Stake",
         thStyle: { "min-width": "250px" }
       },
       {
         key: "protectedAmount",
-        label: "Fully Protected Value",
+        label: "Protected Value",
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
@@ -218,11 +266,11 @@ export default class Protected extends Vue {
       //   formatter: (value: string) =>
       //     value ? this.stringifyPercentage(Number(value)) : "Error calculating"
       // },
-      // {
-      //   key: "apr",
-      //   sortable: false,
-      //   thStyle: { "min-width": "100px" }
-      // },
+      {
+        key: "apr",
+        sortable: false,
+        thStyle: { "min-width": "100px" }
+      },
       {
         key: "insuranceStart",
         label: "Protection Start",
