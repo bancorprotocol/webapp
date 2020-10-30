@@ -181,10 +181,6 @@ export default class AddProtectionSingle extends Vue {
     return this.pool.reserves;
   }
 
-  get currentlyAvailable() {
-    return `${prettifyNumber(this.maxStakes ?? "0")} ${this.token.symbol}`
-  }
-
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
   }
