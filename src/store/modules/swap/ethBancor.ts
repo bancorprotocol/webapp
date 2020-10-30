@@ -2997,7 +2997,6 @@ export class EthBancorModule
             .toString();
 
         const volume = feesGenerated && feesGenerated.totalVolume;
-
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
