@@ -122,5 +122,4 @@ export default class Proposals extends Vue {
     top: -25px;
   }
 }
-
 </style>
