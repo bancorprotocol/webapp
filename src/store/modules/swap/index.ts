@@ -111,7 +111,7 @@ export class BancorModule extends VuexModule.With({
     return vxm[`${this.currentNetwork}Bancor`]["liquidityHistory"];
   }
 
-  get tokens() {
+  get tokens(): ViewToken[] {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["tokens"];
   }
