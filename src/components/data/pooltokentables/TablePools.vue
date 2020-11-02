@@ -181,7 +181,7 @@ export default class TablePools extends Vue {
     const symbols = row.reserves.map((reserve: any) => reserve.symbol);
     let r = false;
     symbols.forEach((s: string) => {
-      r = r || s.toLowerCase().indexOf(filter) >= 0;
+      r = r || s.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
     });
     return r;
   }

@@ -120,8 +120,8 @@ export default class TableTokens extends Vue {
 
   doFilter(row: any, filter: string) {
     return (
-      (row.name && row.name.toLowerCase().indexOf(filter) >= 0) ||
-      (row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0)
+      (row.name && row.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0) ||
+      (row.symbol && row.symbol.toLowerCase().indexOf(filter.toLowerCase()) >= 0)
     );
   }
 }
