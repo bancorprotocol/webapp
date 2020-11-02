@@ -1372,27 +1372,27 @@ const getTokenMeta = async (currentNetwork: EthNetworks) => {
       {
         symbol: "BNT",
         contract: networkVars.bntToken,
-        decimals: 18
+        precision: 18
       },
       {
         symbol: "DAI",
         contract: "0xc2118d4d90b274016cb7a54c03ef52e6c537d957",
-        decimals: 18
+        precision: 18
       },
       {
         symbol: "WBTC",
         contract: "0xbde8bb00a7ef67007a96945b3a3621177b615c44",
-        decimals: 8
+        precision: 8
       },
       {
         symbol: "BAT",
         contract: "0x443fd8d5766169416ae42b8e050fe9422f628419",
-        decimals: 18
+        precision: 18
       },
       {
         symbol: "LINK",
         contract: "0x20fe562d797a42dcb3399062ae9546cd06f63280",
-        decimals: 18
+        precision: 18
       },
       {
         contract: "0x4F5e60A76530ac44e0A318cbc9760A2587c34Da6",
@@ -3541,9 +3541,8 @@ export class EthBancorModule
 
       const knownResDec = knownDecimalsRes.map(res => {
         const tokenMeta = meta.find(meta => decimalIsKnown(meta.contract))!;
-        return res.balance !== "0"
-          ? { ...res, balance: shrinkToken(res.balance, tokenMeta.precision!) }
-          : res;
+        const shrunkBalance = shrinkToken(res.balance, tokenMeta.precision!);
+        return res.balance !== "0" ? { ...res, balance: shrunkBalance } : res;
       });
 
       const [passedUnknown, failedUnknown] = partition(
