@@ -135,6 +135,7 @@
           <div class="pt-2">
             <remaining-time
               type="warn"
+              :showSeconds="true"
               :from="proposal.start"
               :to="proposal.end"
             />
