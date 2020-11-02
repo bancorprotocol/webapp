@@ -50,7 +50,7 @@
     "eos-transit-tokenpocket-provider": "^4.0.1",
     "eos-transit-whalevault-provider": "^4.0.1",
     "eosjs": "^20.0.0",
-    "eth-multicall": "^1.3.6",
+    "eth-multicall": "^1.3.10",
     "fast-sort": "^2.2.0",
     "highcharts": "^8.1.0",
     "highcharts-vue": "^1.3.5",
