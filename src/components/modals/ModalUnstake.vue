@@ -165,7 +165,7 @@ export default class ModalUnstake extends Vue {
       (this.unstakeInput.length === 0 ||
         (this.unstakeValue &&
           this.unstakeValue.isGreaterThan(0) &&
-          this.unstakeValue.isGreaterThanOrEqualTo(this.currentStake))) &&
+          this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue))) &&
       undefined
     );
   }
