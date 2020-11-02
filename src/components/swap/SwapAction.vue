@@ -356,7 +356,9 @@ export default class SwapAction extends Vue {
         from: vxm.bancor.tokens[1].id,
         to: vxm.bancor.tokens[0].id
       };
+      // @ts-ignore
       if (this.$route.query.from) defaultQuery.from = this.$route.query.from;
+      // @ts-ignore
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.push({ name: "Swap", query: defaultQuery });
     }
