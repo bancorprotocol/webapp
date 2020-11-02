@@ -98,6 +98,7 @@ import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import BigNumber from 'bignumber.js';
 
 @Component({
   components: {
@@ -275,11 +276,7 @@ export default class SwapAction extends Vue {
         this.fee = reward.fee;
       }
       this.amount2 = reward.amount;
-      console.log(
-        `Balance is currently known as balance1: ${this.balance1} ${amount} was just pushed`
-      );
-      const raiseError = Number(this.balance1) < Number(amount);
-      console.log(raiseError, "is the status of raise error");
+      const raiseError = new BigNumber(this.balance1).isLessThan(amount);
       this.errorToken1 = raiseError
         ? "Token balance is currently insufficient"
         : "";
@@ -337,13 +334,7 @@ export default class SwapAction extends Vue {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
-    const raiseError = Number(this.balance1) < Number(this.amount1);
-    console.log(
-      "route query watcher is passing updatePriceReturn",
-      this.amount1,
-      raiseError,
-      "is raise error status"
-    );
+    const raiseError = new BigNumber(this.balance1).isLessThan(this.amount1);
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
   }
