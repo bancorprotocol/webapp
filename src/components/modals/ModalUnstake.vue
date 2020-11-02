@@ -175,7 +175,7 @@ export default class ModalUnstake extends Vue {
       ? "Enter Amount"
       : this.unstakeValue &&
         this.unstakeValue.isGreaterThan(0) &&
-        this.unstakeValue.isGreaterThanOrEqualTo(this.currentStake)
+        this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
       ? "Unstake Tokens"
       : "Insufficient Amount";
   }
