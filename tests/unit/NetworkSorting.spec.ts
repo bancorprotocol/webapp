@@ -1,16 +1,16 @@
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 
-const buildMockRelay = reserveSymbols =>
+const buildMockRelay = (reserveSymbols : string[]) =>
   reserveSymbols.map(symbol => ({ symbol, amount: 5 }));
 
 const networkTokens = ["BNT", "USDB"];
 
-const toSymbol = reserve => reserve.symbol;
+const toSymbol = (reserve : any) => reserve.symbol;
 
-const sorter = reserveSymbols =>
+const sorter = (reserveSymbols : string[]) =>
   sortByNetworkTokens(buildMockRelay(reserveSymbols), toSymbol, networkTokens);
 
-const testSort = (originalOrder, newOrder) => {
+const testSort = (originalOrder : string[], newOrder : string[]) => {
   const sorted = sorter(["BNT", "ANT"]);
 
   expect(sorted).toStrictEqual(buildMockRelay(["BNT", "ANT"]));
