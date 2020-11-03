@@ -3540,7 +3540,11 @@ export class EthBancorModule
       ];
 
       const knownResDec = knownDecimalsRes.map(res => {
-        const tokenMeta = meta.find(meta => decimalIsKnown(meta.contract))!;
+        const tokenMeta = meta.find(
+          meta =>
+            compareString(meta.contract, res.contract) &&
+            decimalIsKnown(meta.contract)
+        )!;
         const shrunkBalance = shrinkToken(res.balance, tokenMeta.precision!);
         return res.balance !== "0" ? { ...res, balance: shrunkBalance } : res;
       });
