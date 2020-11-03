@@ -54,6 +54,9 @@
                 (proposal.metadata &&
                   proposal.metadata.payload &&
                   proposal.metadata.payload.metadata &&
+                  proposal.metadata.payload.metadata.discourse.startsWith(
+                    'https://gov.bancor.network/'
+                  ) &&
                   proposal.metadata.payload.metadata.discourse) ||
                   '#'
               "
@@ -68,6 +71,10 @@
                 (proposal.metadata &&
                   proposal.metadata.payload &&
                   proposal.metadata.payload.metadata &&
+                  proposal.metadata.payload.metadata.github &&
+                  proposal.metadata.payload.metadata.github.startsWith(
+                    'https://github.com/'
+                  ) &&
                   proposal.metadata.payload.metadata.github) ||
                   '#'
               "
