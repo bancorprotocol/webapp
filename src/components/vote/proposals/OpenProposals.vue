@@ -1,6 +1,6 @@
 <template>
   <div>
-    <modal-not-enough-tokens v-model="notE" />
+    <modal-not-enough-tokens v-model="notEnoughTokensModal" />
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
