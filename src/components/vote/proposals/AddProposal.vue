@@ -51,17 +51,20 @@
       <b-form-input
         v-model="name"
         type="text"
+        readonly
         height="48"
         placeholder="Add Liquidity pool xyz"
         class="combo combo--title"
         :class="[
-          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
-          fontSizeClass
+          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
         ]"
       />
       <b-form-textarea
         class="mb-3 combo combo--desc"
         v-model="description"
+        max-rows="4"
+        readonly
+        no-resize="true"
         placeholder="I would like to propose to ..."
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
@@ -230,7 +233,6 @@ export default class AddProposal extends Vue {
 .combo {
   @at-root body &#{&} {
     color: $text-muted-light;
-    pointer-events: none;
   }
 
   &#{&}--title {
@@ -244,7 +246,6 @@ export default class AddProposal extends Vue {
     border-top-right-radius: 0 !important;
     border-top-left-radius: 0 !important;
     border-top: 0 !important;
-    height: auto !important;
     min-height: 0 !important;
     max-height: 999999px !important;
     padding-bottom: 16px;
