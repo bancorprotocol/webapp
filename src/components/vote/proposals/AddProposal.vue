@@ -48,11 +48,12 @@
     <template v-if="name || description">
       <label-content-split label="Title and description" class="mb-2" />
 
-      <b-form-input
+      <b-form-textarea
         v-model="name"
-        type="text"
         readonly
-        height="48"
+        no-resize
+        size="sm"
+        max-rows="2"
         placeholder="Add Liquidity pool xyz"
         class="combo combo--title"
         :class="[
@@ -240,7 +241,6 @@ export default class AddProposal extends Vue {
     border-bottom-left-radius: 0 !important;
     border-bottom: 0 !important;
     font-weight: 500 !important;
-    height: 48px;
   }
   &#{&}--desc {
     border-top-right-radius: 0 !important;
