@@ -88,28 +88,40 @@
 
             <b-row>
               <b-col cols="6">
-                <div class="pb-1">
-                  <span class="font-size-12 text-muted-light">
+                <b-row class="pb-1">
+                  <b-col
+                    class="font-size-12 text-muted-light text-nowrap"
+                    cols="4"
+                  >
                     Vote Start
-                  </span>
-                  <span class="font-size-12 font-w500 pl-1 pr-1">
+                  </b-col>
+                  <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
                     {{ formatDate(proposal.start) }}
-                  </span>
-                  <span class="font-size-12 font-w500 text-muted-light">
+                  </b-col>
+                  <b-col
+                    class="font-size-12 font-w500 text-muted-light"
+                    cols="2"
+                  >
                     {{ formatTime(proposal.start) }}
-                  </span>
-                </div>
-                <div>
-                  <span class="font-size-12 text-muted-light">
+                  </b-col>
+                </b-row>
+                <b-row>
+                  <b-col
+                    class="font-size-12 text-muted-light text-nowrap"
+                    cols="4"
+                  >
                     Vote End
-                  </span>
-                  <span class="font-size-12 font-w500 pl-1 pr-1">
+                  </b-col>
+                  <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
                     {{ formatDate(proposal.end) }}
-                  </span>
-                  <span class="font-size-12 font-w500 text-muted-light">
+                  </b-col>
+                  <b-col
+                    class="font-size-12 font-w500 text-muted-light"
+                    cols="2"
+                  >
                     {{ formatTime(proposal.end) }}
-                  </span>
-                </div>
+                  </b-col>
+                </b-row>
               </b-col>
               <b-col cols="6">
                 <div
