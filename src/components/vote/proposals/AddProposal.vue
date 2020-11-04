@@ -1,29 +1,29 @@
 <template>
   <b-modal
-      scrollable
-      centered
-      v-model="show"
-      hide-footer
-      :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
-      @close="onHide"
-      @cancel="onHide"
-      @hide="onHide"
+    scrollable
+    centered
+    v-model="show"
+    hide-footer
+    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
+    @close="onHide"
+    @cancel="onHide"
+    @hide="onHide"
   >
     <template slot="modal-header">
       <div class="w-100">
         <b-row>
           <b-col cols="12" class="d-flex justify-content-between mb-2">
             <span
-                class="font-size-14 font-w600"
-                :class="darkMode ? 'text-dark' : 'text-light'"
+              class="font-size-14 font-w600"
+              :class="darkMode ? 'text-dark' : 'text-light'"
             >
               Create Proposal
             </span>
             <font-awesome-icon
-                class="cursor font-size-lg"
-                :class="darkMode ? 'text-dark' : 'text-light'"
-                @click="onHide"
-                icon="times"
+              class="cursor font-size-lg"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+              @click="onHide"
+              icon="times"
             />
           </b-col>
         </b-row>
@@ -36,38 +36,38 @@
     </b-alert>
 
     <multi-input-field
-        class="mb-3"
-        v-model="discourseUrl"
-        @input="onDiscourseInput"
-        type="url"
-        placeholder="https://gov.bancor.network/t/..."
-        height="48"
-        label="Discourse Url"
+      class="mb-3"
+      v-model="discourseUrl"
+      @input="onDiscourseInput"
+      type="url"
+      placeholder="https://gov.bancor.network/t/..."
+      height="48"
+      label="Discourse Url"
     />
 
     <template v-if="name || description">
-      <label-content-split label="Title and description" class="mb-2"/>
+      <label-content-split label="Title and description" class="mb-2" />
 
       <b-form-textarea
-          v-model="name"
-          readonly
-          no-resize
-          size="sm"
-          max-rows="2"
-          placeholder="Add Liquidity pool xyz"
-          class="combo combo--title"
-          :class="[
+        v-model="name"
+        readonly
+        no-resize
+        size="sm"
+        max-rows="2"
+        placeholder="Add Liquidity pool xyz"
+        class="combo combo--title"
+        :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
         ]"
       />
       <b-form-textarea
-          class="mb-3 combo combo--desc"
-          v-model="description"
-          max-rows="4"
-          readonly
-          no-resize="true"
-          placeholder="I would like to propose to ..."
-          :class="[
+        class="mb-3 combo combo--desc"
+        v-model="description"
+        max-rows="4"
+        readonly
+        no-resize="true"
+        placeholder="I would like to propose to ..."
+        :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
           'font-size-14'
         ]"
@@ -75,30 +75,30 @@
     </template>
 
     <multi-input-field
-        class="mb-3"
-        v-model="contractAddress"
-        @input="onAddressInput"
-        type="text"
-        placeholder="0x0000000000000000000000000000000000000000"
-        height="48"
-        label="Contract address"
+      class="mb-3"
+      v-model="contractAddress"
+      @input="onAddressInput"
+      type="text"
+      placeholder="0x0000000000000000000000000000000000000000"
+      height="48"
+      label="Contract address"
     />
     <multi-input-field
-        class="mb-3"
-        v-model="githubUrl"
-        type="url"
-        placeholder="https://github.com/..."
-        height="48"
-        label="Github URL"
+      class="mb-3"
+      v-model="githubUrl"
+      type="url"
+      placeholder="https://github.com/..."
+      height="48"
+      label="Github URL"
     />
-    <div class="pt-3"/>
+    <div class="pt-3" />
 
     <main-button
-        @click="propose"
-        label="Propose"
-        :large="true"
-        :active="true"
-        :disabled="this.hasError"
+      @click="propose"
+      label="Propose"
+      :large="true"
+      :active="true"
+      :disabled="this.hasError"
     />
   </b-modal>
 </template>
@@ -165,12 +165,12 @@ export default class AddProposal extends Vue {
 
   get hasError() {
     return (
-        this.error ||
-        this.discourseUrl.length === 0 ||
-        this.githubUrl.length === 0 ||
-        this.description.length === 0 ||
-        this.contractAddress.length === 0 ||
-        this.name.length === 0
+      this.error ||
+      this.discourseUrl.length === 0 ||
+      this.githubUrl.length === 0 ||
+      this.description.length === 0 ||
+      this.contractAddress.length === 0 ||
+      this.name.length === 0
     );
   }
 
@@ -232,7 +232,6 @@ export default class AddProposal extends Vue {
 @import "@/assets/_scss/custom/_variables";
 
 .combo {
-
   &#{&}--title {
     border-bottom-right-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
@@ -241,7 +240,7 @@ export default class AddProposal extends Vue {
   }
 
   &#{&}.form-control-alt-light {
-    background-color: $block-bg-blue!important;
+    background-color: $block-bg-blue !important;
   }
 
   &#{&}--desc {
