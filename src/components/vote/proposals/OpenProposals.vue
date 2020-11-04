@@ -54,8 +54,11 @@
                 (proposal.metadata &&
                   proposal.metadata.payload &&
                   proposal.metadata.payload.metadata &&
+                  proposal.metadata.payload.metadata.discourse.startsWith(
+                    'https://gov.bancor.network/'
+                  ) &&
                   proposal.metadata.payload.metadata.discourse) ||
-                  '#'
+                  undefined
               "
             >
               <font-awesome-icon icon="external-link-alt" />
@@ -68,8 +71,12 @@
                 (proposal.metadata &&
                   proposal.metadata.payload &&
                   proposal.metadata.payload.metadata &&
+                  proposal.metadata.payload.metadata.github &&
+                  proposal.metadata.payload.metadata.github.startsWith(
+                    'https://github.com/'
+                  ) &&
                   proposal.metadata.payload.metadata.github) ||
-                  '#'
+                  undefined
               "
             >
               <font-awesome-icon :icon="['fab', 'github']" />
@@ -401,6 +408,11 @@ export default class OpenProposals extends Vue {
   vertical-align: middle;
   cursor: pointer;
   color: $primary !important;
+}
+
+a:not([href]).fix-a {
+  color: $text-muted-light !important;
+  cursor: default;
 }
 
 .align-rows-cells {
