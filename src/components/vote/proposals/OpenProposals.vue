@@ -336,8 +336,8 @@ export default class OpenProposals extends Vue {
       {
         label: "ID",
         key: "id",
-        minWidth: "60px",
-        maxWidth: "60px"
+        minWidth: "16px",
+        maxWidth: "16px"
       },
       {
         label: "Details",
