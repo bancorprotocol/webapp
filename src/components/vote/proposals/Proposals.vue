@@ -102,6 +102,12 @@ export default class Proposals extends Vue {
   position: relative;
 }
 
+.nav-tabs li {
+  line-height: 28px;
+  padding-bottom: 0 !important;
+  padding-top: 6px !important;
+}
+
 .new-proposal-button {
   height: 24px;
   line-height: 21px;
@@ -112,7 +118,7 @@ export default class Proposals extends Vue {
   font-size: 13px !important;
   position: absolute;
   display: inline-block;
-  top: 9px;
+  top: 15px;
   right: 26px;
   z-index: 2;
 }
