@@ -53,17 +53,6 @@ export default class TablePools extends Vue {
     return this.items.some(pool => pool.apr);
   }
 
-  get toolTips() {
-    const tooltips = {
-      liqDepth: "The value of tokens in the pool.",
-      fee: "The % deducted from each swap and re-deposited into the pool.",
-      feesGenerated:
-        "The value of swap fees collected in the pool in the past 24h.",
-      feesVsLiquidity: "24h fees annualized divided by liquidity in the pool."
-    };
-    return tooltips;
-  }
-
   get fields(): ViewTableFields[] {
     return [
       ...(this.isEth
@@ -84,11 +73,14 @@ export default class TablePools extends Vue {
       {
         label: "Liquidity",
         key: "liqDepth",
+        tooltip: "The value of tokens in the pool.",
         minWidth: "150px"
       },
       {
         label: "Fee",
         key: "fee",
+        tooltip:
+          "The % deducted from each swap and re-deposited into the pool.",
         minWidth: "80px"
       },
       ...(this.isEth
@@ -98,10 +90,17 @@ export default class TablePools extends Vue {
               key: "volume",
               minWidth: "140px"
             },
-            { label: "Fees (24hr)", key: "feesGenerated", minWidth: "100px" },
+            {
+              label: "Fees (24hr)",
+              key: "feesGenerated",
+              tooltip:
+                "The value of swap fees collected in the pool in the past 24h.",
+              minWidth: "100px"
+            },
             {
               label: "1y Fees / Liquidity",
               key: "feesVsLiquidity",
+              tooltip: "24h fees annualized divided by liquidity in the pool.",
               minWidth: "120px"
             }
           ]
