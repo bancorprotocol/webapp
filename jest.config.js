@@ -18,9 +18,9 @@ module.exports = {
   //     babelConfig: true
   //   }
   // },
-  transformIgnorePatterns: ['node_modules']
+  // transformIgnorePatterns: ['node_modules']
 
-  // transformIgnorePatterns: [
-  //   '/node_modules/(?!eos-transit-lynx-provider)'    
-  // ]
+  transformIgnorePatterns: [
+    '/node_modules/(?!(eos-transit-lynx-provider|eos-transit-ledger-provider))'
+  ]
 };
