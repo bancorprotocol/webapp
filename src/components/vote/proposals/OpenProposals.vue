@@ -35,12 +35,12 @@
       default-sort="to"
       :hidePagination="true"
     >
-      <template
-        v-for="proposal in proposals"
-        class="font-w500 font-size-14 align-rows-cells"
-        :class="darkMode ? 'text-dark' : 'text-light'"
-      >
-        <tr :key="proposal.id">
+      <template v-for="proposal in proposals">
+        <tr
+          :key="proposal.id"
+          class="font-w500 font-size-14 align-rows-cells"
+          :class="darkMode ? 'text-dark' : 'text-light'"
+        >
           <td>{{ proposal.id }}</td>
           <td>
             <div class="font-size-14 font-w500">
@@ -163,7 +163,7 @@
             </div>
           </td>
           <td>
-            <div class="pl-3 container-border">
+            <div class="pl-3 container-border h-100">
               <div
                 v-if="!proposal.votes.voted && proposal.end > Date.now()"
                 class="d-flex align-items-center mb-2"
@@ -437,7 +437,10 @@ export default class OpenProposals extends Vue {
 }
 
 .align-rows-cells {
-  @at-root .table & > td {
+  @at-root td {
+    height: 1px;
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
     vertical-align: top !important;
   }
 }
