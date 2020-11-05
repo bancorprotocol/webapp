@@ -445,6 +445,11 @@ export default class OpenProposals extends Vue {
   }
 }
 
+tr:last-child,
+tr:last-child > td {
+  border-bottom: none !important;
+}
+
 .container-border {
   border-left: 1px solid $gray-border;
 }
