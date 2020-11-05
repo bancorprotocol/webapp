@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="open-proposals">
     <modal-not-enough-tokens v-model="notEnoughTokensModal" />
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
@@ -445,9 +445,11 @@ export default class OpenProposals extends Vue {
   }
 }
 
-tr:last-child,
-tr:last-child > td {
-  border-bottom: none !important;
+#open-proposals {
+  tr:last-child,
+  tr:last-child > td {
+    border-bottom: none !important;
+  }
 }
 
 .container-border {
