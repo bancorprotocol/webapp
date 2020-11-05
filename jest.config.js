@@ -1,6 +1,10 @@
 module.exports = {
   preset: '@vue/cli-plugin-unit-jest/presets/typescript-and-babel',
-  
+  automock: false,
+  setupFiles: [
+    "./setupJest.js"
+  ],
+
   // preset: "@vue/cli-plugin-unit-jest",
   // moduleFileExtensions: ["js", "ts", "json", "vue", "node"],
   // transform: { 
@@ -9,15 +13,7 @@ module.exports = {
   //     'jest-transform-stub',
   //   "^.+\\.(ts|tsx)$": "ts-jest",
   //   "^.+\\.js$": "babel-jest"
-  // },
-  // moduleNameMapper: {
-  //   '^@/(.*)$': '<rootDir>/src/$1'
-  // }, 
-  // globals: {
-  //   'ts-jest': {
-  //     babelConfig: true
-  //   }
-  // },
+  // },    
   // transformIgnorePatterns: ['node_modules']
 
   transformIgnorePatterns: [
