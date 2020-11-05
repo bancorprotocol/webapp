@@ -9,7 +9,14 @@
         :class="column.key ? 'cursor' : ''"
         :style="getWidthStyle(column)"
       >
-        {{ column.label }}
+        <span v-if="column.key !== 'liquidityProtection'" class="mr-1">{{
+          column.label
+        }}</span>
+        <img
+          v-else
+          :src="require(`@/assets/media/icons/liquidity.svg`)"
+          class="mr-1"
+        />
         <font-awesome-icon
           v-if="column.key && column.key === sortByKey"
           :icon="desc ? 'caret-down' : 'caret-up'"
