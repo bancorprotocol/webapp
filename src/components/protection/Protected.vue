@@ -117,14 +117,29 @@
 
       <template v-slot:cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
-          <span
-            v-if="insuranceStarted(data.item.insuranceStart)"
-            v-text="stringifyPercentage(data.item.coverageDecPercent)"
-          />
-          <span v-else class="font-size-12 font-w600 text-danger">
-            Cliff:
-            <countdown-timer :date-unix="data.item.insuranceStart" />
-          </span>
+          {{ stringifyPercentage(data.item.coverageDecPercent) }}
+          <div
+            class="d-flex justify-content-between align-items-center text-danger"
+          >
+            <div>
+              Cliff:
+              <countdown-timer :date-unix="data.item.insuranceStart" />
+            </div>
+            <font-awesome-icon
+              icon="info-circle"
+              :id="'popover-cliff-' + data.item.id"
+            />
+            <b-popover
+              :target="'popover-cliff-' + data.item.id"
+              triggers="hover"
+              placement="bottom"
+            >
+              Until the "cliff" is reached, you are entitled to exercise 0% of
+              your impermanent loss protection. When the cliff is reached, you
+              are entitled to 30% coverage. Coverage increases by 1% per day
+              until 100% coverage is reached (full protection).
+            </b-popover>
+          </div>
           <b-progress
             :value="data.item.coverageDecPercent * 100"
             :max="100"
