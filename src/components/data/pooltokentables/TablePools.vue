@@ -1,5 +1,6 @@
 <template>
   <table-wrapper
+    v-if="false"
     primarykey="id"
     :items="items"
     :fields="fields"
@@ -62,6 +63,32 @@
       <action-buttons :pool="data.item" />
     </template>
   </table-wrapper>
+
+  <data-table
+    v-else
+    :fields="fields2"
+    :items="items"
+    v-model="paginatedItems"
+    :filter="filter"
+    filter-by="symbol"
+    default-sort="liqDepth"
+  >
+    <tr v-for="pool in paginatedItems" :key="pool.id">
+      <td>
+        <img
+          v-if="pool.liquidityProtection"
+          :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+        />
+      </td>
+      <td><pool-logos :pool="pool" :cursor="false" /></td>
+      <td>{{ prettifyNumber(pool.liqDepth, true) }}</td>
+      <td>{{ formatPercent(pool.fee) }}</td>
+      <td>{{ prettifyNumber(pool.volume, true) }}</td>
+      <td>{{ prettifyNumber(pool.feesGenerated, true) }}</td>
+      <td>{{ formatPercent(pool.feesVsLiquidity) }}</td>
+      <td><action-buttons :pool="pool" /></td>
+    </tr>
+  </data-table>
 </template>
 
 <script lang="ts">
@@ -70,15 +97,24 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { ViewRelay } from "@/types/bancor";
-import { formatPercent } from "@/api/helpers";
+import { formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
+import DataTable from "@/components/common/DataTable.vue";
+import { ViewTableFields } from "@/components/common/TableHeader.vue";
 
 @Component({
-  components: { PoolLogos, ActionButtons, TableWrapper }
+  components: { DataTable, PoolLogos, ActionButtons, TableWrapper }
 })
 export default class TablePools extends Vue {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
+
+  paginatedItems: ViewRelay[] = [];
+
+  formatPercent(percentage: string | number) {
+    return new BigNumber(percentage).gte(0) ? formatPercent(percentage) : "N/A";
+  }
+  prettifyNumber = prettifyNumber;
 
   get aprsExist() {
     return this.items.some(pool => pool.apr);
@@ -93,6 +129,48 @@ export default class TablePools extends Vue {
       feesVsLiquidity: "24h fees annualized divided by liquidity in the pool."
     };
     return tooltips;
+  }
+
+  get fields2(): ViewTableFields[] {
+    return [
+      {
+        label: "",
+        key: "liquidityProtection",
+        minWidth: "60px",
+        maxWidth: "60px"
+      },
+      {
+        label: "Name",
+        key: "symbol",
+        minWidth: "150px"
+      },
+      {
+        label: "Liquidity",
+        key: "liqDepth",
+        minWidth: "150px"
+      },
+      {
+        label: "Fee",
+        key: "fee",
+        minWidth: "80px"
+      },
+      {
+        label: "Volume (24h)",
+        key: "volume",
+        minWidth: "140px"
+      },
+      { label: "Fees (24hr)", key: "feesGenerated", minWidth: "100px" },
+      {
+        label: "1y Fees / Liquidity",
+        key: "feesVsLiquidity",
+        minWidth: "120px"
+      },
+      {
+        label: "Actions",
+        minWidth: "310px",
+        maxWidth: "310px"
+      }
+    ];
   }
 
   get fields() {
