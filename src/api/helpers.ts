@@ -301,10 +301,11 @@ export const calculateProtectionLevel = (
 
   const timeElaspedSeconds = nowSeconds - startTimeSeconds;
 
-  if (timeElaspedSeconds < minimumDelaySeconds) return 0;
+  // if (timeElaspedSeconds < minimumDelaySeconds) return 0;
   if (timeElaspedSeconds >= maximumDelaySeconds) return 1;
 
-  const timeProgressedPastMinimum = timeElaspedSeconds - minimumDelaySeconds;
+  // const timeProgressedPastMinimum = timeElaspedSeconds - minimumDelaySeconds;
+  const timeProgressedPastMinimum = timeElaspedSeconds;
   const waitingPeriod = maximumDelaySeconds - minimumDelaySeconds;
 
   return new BigNumber(timeProgressedPastMinimum).div(waitingPeriod).toNumber();
