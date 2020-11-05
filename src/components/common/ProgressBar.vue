@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
+// import { vxm } from "@/store";
 import numeral from "numeral";
 
 @Component
@@ -22,7 +22,7 @@ export default class ProgressBar extends Vue {
   }
 
   get darkMode() {
-    return vxm.general.darkMode;
+    // return vxm.general.darkMode;
   }
 }
 </script>
