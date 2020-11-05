@@ -86,7 +86,7 @@
       <td v-if="isEth">{{ prettifyNumber(pool.volume, true) }}</td>
       <td v-if="isEth">{{ prettifyNumber(pool.feesGenerated, true) }}</td>
       <td v-if="isEth">{{ formatPercent(pool.feesVsLiquidity) }}</td>
-      <td><action-buttons :pool="pool" /></td>
+      <td><action-buttons :pool="pool" :small="true" /></td>
     </tr>
   </data-table>
 </template>
@@ -175,8 +175,8 @@ export default class TablePools extends Vue {
         : []),
       {
         label: "Actions",
-        minWidth: "310px",
-        maxWidth: "310px"
+        minWidth: "150px",
+        maxWidth: "150px"
       }
     ];
   }
