@@ -250,14 +250,12 @@ export default class Stake extends Vue {
 </script>
 
 <style lang="scss">
-#vote-stake {
-  .open-icon {
-    position: absolute;
-    right: 30px;
-  }
+#vote-stake .open-icon {
+  position: absolute;
+  right: 30px;
+}
 
-  .block-content {
-    padding-bottom: 0 !important;
-  }
+#vote-stake .block-content {
+  padding-bottom: 0 !important;
 }
 </style>
