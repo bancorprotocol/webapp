@@ -48,10 +48,10 @@
             </div>
 
             <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
-              More about proposal:
+              <span>More about proposal:</span>
               <a
                 target="_blank"
-                class="font-size-14 font-w500 fix-a pl-2"
+                class="font-size-14 font-w500 pl-2"
                 :href="
                   (proposal.metadata &&
                     proposal.metadata.payload &&
@@ -68,7 +68,7 @@
               </a>
               <a
                 target="_blank"
-                class="font-size-14 font-w500 fix-a pl-2"
+                class="font-size-14 font-w500 pl-2"
                 :href="
                   (proposal.metadata &&
                     proposal.metadata.payload &&
@@ -434,11 +434,6 @@ export default class OpenProposals extends Vue {
   vertical-align: middle;
   cursor: pointer;
   color: $primary !important;
-}
-
-a:not([href]).fix-a {
-  color: $text-muted-light !important;
-  cursor: default;
 }
 
 .align-rows-cells {
