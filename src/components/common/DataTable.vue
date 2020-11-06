@@ -60,7 +60,7 @@ export default class DataTable extends Vue {
     const items = this.items;
     const filtered = items.filter(
       (t: any) =>
-        t[this.filterBy] && t[this.filterBy].includes(this.filter.toUpperCase())
+        t[this.filterBy] && t[this.filterBy].toUpperCase().includes(this.filter.toUpperCase())
     );
     this.modifiedItems = sort(filtered)[this.descOrder ? "desc" : "asc"](
       (t: any) => t[this.sortBy]
