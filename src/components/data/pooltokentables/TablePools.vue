@@ -6,7 +6,7 @@
     filter-by="symbol"
     default-sort="liqDepth"
   >
-    <template #liquidityProtection="{ value }">
+    <template #cell(liquidityProtection)="{ value }">
       <img
         v-if="value"
         :src="require(`@/assets/media/icons/liquidity_active.svg`)"
@@ -14,31 +14,31 @@
       <span v-else />
     </template>
 
-    <template #symbol="{ item }">
+    <template #cell(symbol)="{ item }">
       <pool-logos :pool="item" :cursor="false" />
     </template>
 
-    <template #liqDepth="{ value }">
+    <template #cell(liqDepth)="{ value }">
       {{ prettifyNumber(value, true) }}
     </template>
 
-    <template #fee="{ value }">
+    <template #cell(fee)="{ value }">
       {{ formatPercent(value) }}
     </template>
 
-    <template #volume="{ value }">
+    <template #cell(volume)="{ value }">
       {{ prettifyNumber(value, true) }}
     </template>
 
-    <template #feesGenerated="{ value }">
+    <template #cell(feesGenerated)="{ value }">
       {{ prettifyNumber(value, true) }}
     </template>
 
-    <template #feesVsLiquidity="{ value }">
+    <template #cell(feesVsLiquidity)="{ value }">
       {{ formatPercent(value) }}
     </template>
 
-    <template #actions="{ item }">
+    <template #cell(actions)="{ item }">
       <action-buttons :pool="item" :small="true" />
     </template>
   </data-table>
