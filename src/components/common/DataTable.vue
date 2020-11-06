@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TableHeader, {
   ViewTableFields
@@ -72,6 +72,12 @@ export default class DataTable extends Vue {
       this.currentPage * this.perPage - this.perPage,
       this.currentPage * this.perPage
     );
+  }
+
+  @Watch("filter")
+  @Watch("sortBy")
+  onFilterChange() {
+    this.currentPage = 1;
   }
 
   get darkMode() {
