@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 pt-4 border-top">
+  <div class="px-4 pt-4">
     <b-row>
       <b-col xl="6">
         <sub-content-block title="Available to claim">
