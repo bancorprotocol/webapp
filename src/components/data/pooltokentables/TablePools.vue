@@ -2,26 +2,44 @@
   <data-table
     :fields="fields"
     :items="items"
-    v-model="paginatedItems"
     :filter="filter"
     filter-by="symbol"
     default-sort="liqDepth"
   >
-    <tr v-for="pool in paginatedItems" :key="pool.id">
-      <td v-if="isEth">
-        <img
-          v-if="pool.liquidityProtection"
-          :src="require(`@/assets/media/icons/liquidity_active.svg`)"
-        />
-      </td>
-      <td><pool-logos :pool="pool" :cursor="false" /></td>
-      <td>{{ prettifyNumber(pool.liqDepth, true) }}</td>
-      <td>{{ formatPercent(pool.fee) }}</td>
-      <td v-if="isEth">{{ prettifyNumber(pool.volume, true) }}</td>
-      <td v-if="isEth">{{ prettifyNumber(pool.feesGenerated, true) }}</td>
-      <td v-if="isEth">{{ formatPercent(pool.feesVsLiquidity) }}</td>
-      <td><action-buttons :pool="pool" :small="true" /></td>
-    </tr>
+    <template #liquidityProtection="{ value }">
+      <img
+        v-if="value"
+        :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+      />
+    </template>
+
+    <template #symbol="{ item }">
+      <pool-logos :pool="item" :cursor="false" />
+    </template>
+
+    <template #liqDepth="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #fee="{ value }">
+      {{ formatPercent(value) }}
+    </template>
+
+    <template #volume="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #feesGenerated="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #feesVsLiquidity="{ value }">
+      {{ formatPercent(value) }}
+    </template>
+
+    <template #actions="{ item }">
+      <action-buttons :pool="item" :small="true" />
+    </template>
   </data-table>
 </template>
 
@@ -41,8 +59,6 @@ import { ViewTableFields } from "@/components/common/TableHeader.vue";
 export default class TablePools extends Vue {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
-
-  paginatedItems: ViewRelay[] = [];
 
   formatPercent(percentage: string | number) {
     return new BigNumber(percentage).gte(0) ? formatPercent(percentage) : "N/A";
@@ -107,6 +123,7 @@ export default class TablePools extends Vue {
         : []),
       {
         label: "Actions",
+        key: "actions",
         minWidth: "150px",
         maxWidth: "150px"
       }
