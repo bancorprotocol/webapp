@@ -9,7 +9,11 @@
       <tbody>
         <tr v-for="pool in paginatedItems" :key="pool.id">
           <td v-for="column in fields" :key="column.key">
-            <slot :name="column.key" :item="pool" :value="pool[column.key]">
+            <slot
+              :name="`cell(${column.key})`"
+              :item="pool"
+              :value="pool[column.key]"
+            >
               {{ pool[column.key] }}
             </slot>
           </td>
