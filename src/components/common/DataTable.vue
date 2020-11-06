@@ -20,7 +20,7 @@
     <table-pagination
       v-if="!hidePagination"
       :current-page.sync="currentPage"
-      :rowCount.sync="modifiedItems.length"
+      :rowCount="modifiedItems.length"
       :per-page="perPage"
     />
   </div>
@@ -76,6 +76,7 @@ export default class DataTable extends Vue {
 
   @Watch("filter")
   @Watch("sortBy")
+  @Watch("descOrder")
   onFilterChange() {
     this.currentPage = 1;
   }
