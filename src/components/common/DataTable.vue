@@ -4,34 +4,35 @@
       <table-header
         :fields="fields"
         :sort-by.sync="sortBy"
-        @update:sortBy="modifyItems"
         :desc-order.sync="descOrder"
-        @update:descOrder="modifyItems"
       />
       <tbody>
-        <slot />
+        <tr v-for="pool in paginatedItems" :key="pool.id">
+          <td v-for="column in fields" :key="column.key">
+            <slot :name="column.key" :item="pool" :value="pool[column.key]">
+              {{ pool[column.key] }}
+            </slot>
+          </td>
+        </tr>
       </tbody>
     </table>
 
     <table-pagination
       v-if="!hidePagination"
       :current-page.sync="currentPage"
-      @update:currentPage="modifyItems"
       :rowCount.sync="modifiedItems.length"
-      @update:rowCount="modifyItems"
       :per-page="perPage"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TableHeader, {
   ViewTableFields
 } from "@/components/common/TableHeader.vue";
 import TablePagination from "@/components/common/TablePagination.vue";
-import { VModel } from "@/api/helpers";
 import sort from "fast-sort";
 
 @Component({
@@ -43,7 +44,6 @@ import sort from "fast-sort";
 export default class DataTable extends Vue {
   @Prop() fields!: ViewTableFields[];
   @Prop() items!: any[];
-  @VModel() paginatedItems!: any[];
   @Prop() filter!: string;
   @Prop() filterBy!: string;
   @Prop() defaultSort!: string;
@@ -54,39 +54,28 @@ export default class DataTable extends Vue {
   sortBy: string = this.defaultSort;
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
-  modifiedItems: any[] = [];
 
-  modifyItems() {
-    const items = this.items;
-    const filtered = items.filter(
+  get modifiedItems() {
+    const filtered = this.items.filter(
       (t: any) =>
-        t[this.filterBy] && t[this.filterBy].toUpperCase().includes(this.filter.toUpperCase())
+        t[this.filterBy] &&
+        t[this.filterBy].toUpperCase().includes(this.filter.toUpperCase())
     );
-    this.modifiedItems = sort(filtered)[this.descOrder ? "desc" : "asc"](
+
+    return sort(filtered)[this.descOrder ? "desc" : "asc"](
       (t: any) => t[this.sortBy]
     );
-    this.paginateItems();
   }
 
-  paginateItems() {
-    this.paginatedItems = this.modifiedItems.slice(
+  get paginatedItems() {
+    return this.modifiedItems.slice(
       this.currentPage * this.perPage - this.perPage,
       this.currentPage * this.perPage
     );
   }
 
-  @Watch("filter")
-  @Watch("items")
-  updateItems() {
-    this.modifyItems();
-  }
-
   get darkMode() {
     return vxm.general.darkMode;
-  }
-
-  mounted() {
-    this.modifyItems();
   }
 }
 </script>
