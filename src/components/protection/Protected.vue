@@ -171,6 +171,11 @@
             {{ formatEndTime(data.item.fullCoverage) }}
           </span>
         </div>
+
+        <remaining-time2
+          :from="data.item.stake.unixTime * 1000"
+          :to="data.item.fullCoverage * 1000"
+        />
       </template>
 
       <template v-slot:cell(actionButtons)="data">
@@ -205,9 +210,11 @@ import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
+import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 
 @Component({
   components: {
+    RemainingTime2,
     CountdownTimer,
     ProtectedEmpty,
     PoolLogosOverlapped,
