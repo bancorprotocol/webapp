@@ -48,20 +48,24 @@
     <template v-if="name || description">
       <label-content-split label="Title and description" class="mb-2" />
 
-      <b-form-input
+      <b-form-textarea
         v-model="name"
-        type="text"
-        height="48"
+        readonly
+        no-resize
+        size="sm"
+        max-rows="2"
         placeholder="Add Liquidity pool xyz"
         class="combo combo--title"
         :class="[
-          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
-          fontSizeClass
+          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
         ]"
       />
       <b-form-textarea
         class="mb-3 combo combo--desc"
         v-model="description"
+        max-rows="4"
+        readonly
+        no-resize="true"
         placeholder="I would like to propose to ..."
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
@@ -228,23 +232,21 @@ export default class AddProposal extends Vue {
 @import "@/assets/_scss/custom/_variables";
 
 .combo {
-  @at-root body &#{&} {
-    color: $text-muted-light;
-    pointer-events: none;
-  }
-
   &#{&}--title {
     border-bottom-right-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
     border-bottom: 0 !important;
     font-weight: 500 !important;
-    height: 48px;
   }
+
+  &#{&}.form-control-alt-light {
+    background-color: $block-bg-blue !important;
+  }
+
   &#{&}--desc {
     border-top-right-radius: 0 !important;
     border-top-left-radius: 0 !important;
     border-top: 0 !important;
-    height: auto !important;
     min-height: 0 !important;
     max-height: 999999px !important;
     padding-bottom: 16px;

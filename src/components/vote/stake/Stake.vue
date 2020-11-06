@@ -81,6 +81,13 @@
           >
             {{ shortAddress(governanceContractAddress) }}
           </a>
+
+          <font-awesome-icon
+            class="ml-1 cursor"
+            v-if="governanceContractAddress"
+            icon="copy"
+            @click="() => copy(governanceContractAddress)"
+          />
         </div>
 
         <div>
@@ -92,6 +99,13 @@
           >
             {{ shortAddress(tokenAddress) }}
           </a>
+
+          <font-awesome-icon
+            class="ml-1 cursor"
+            v-if="tokenAddress"
+            icon="copy"
+            @click="() => copy(tokenAddress)"
+          />
         </div>
       </div>
     </div>
@@ -155,6 +169,10 @@ export default class Stake extends Vue {
 
   get loaded() {
     return vxm.ethGovernance.isLoaded;
+  }
+
+  copy(address: string) {
+    navigator.clipboard.writeText(address);
   }
 
   getEtherscanUrl(token: string) {
