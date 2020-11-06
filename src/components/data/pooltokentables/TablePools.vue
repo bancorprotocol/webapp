@@ -11,6 +11,7 @@
         v-if="value"
         :src="require(`@/assets/media/icons/liquidity_active.svg`)"
       />
+      <span v-else />
     </template>
 
     <template #symbol="{ item }">
