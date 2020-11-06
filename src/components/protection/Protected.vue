@@ -34,7 +34,28 @@
       </template>
 
       <template v-slot:cell(stake)="data">
-        <div class="d-flex align-items-start">
+        <div>
+          {{ `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}` }}
+        </div>
+        <div
+          v-if="data.value.usdValue !== undefined"
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+        <div
+          v-text="formatDate(data.item.stake.unixTime).dateTime"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        />
+        <div class="d-flex align-items-center">
+          <pool-logos-overlapped
+            :pool-id="data.value.poolId"
+            size="20"
+            class="mr-1"
+          />
+          {{ poolName(data.value.poolId) }}
+        </div>
+        <div v-if="false" class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
           <div class="d-flex flex-column ml-2">
             <span>{{ poolName(data.value.poolId) }}</span>
