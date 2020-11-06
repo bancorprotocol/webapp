@@ -44,6 +44,8 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
+import { ViewToken } from "@/types/bancor";
+
 @Component({
   components: {
     ColouredPercentage,
@@ -118,10 +120,11 @@ export default class TableTokens extends Vue {
     return vxm.bancor.tokens;
   }
 
-  doFilter(row: any, filter: string) {
+  doFilter(row: ViewToken, filter: string) {
+    const searchTerm = filter.toLowerCase();
     return (
-      (row.name && row.name.toLowerCase().indexOf(filter) >= 0) ||
-      (row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0)
+      (row.name && row.name.toLowerCase().includes(searchTerm)) ||
+      (row.symbol && row.symbol.toLowerCase().includes(searchTerm))
     );
   }
 }

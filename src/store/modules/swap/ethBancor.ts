@@ -1401,27 +1401,27 @@ const getTokenMeta = async (currentNetwork: EthNetworks) => {
       {
         symbol: "BNT",
         contract: networkVars.bntToken,
-        decimals: 18
+        precision: 18
       },
       {
         symbol: "DAI",
         contract: "0xc2118d4d90b274016cb7a54c03ef52e6c537d957",
-        decimals: 18
+        precision: 18
       },
       {
         symbol: "WBTC",
         contract: "0xbde8bb00a7ef67007a96945b3a3621177b615c44",
-        decimals: 8
+        precision: 8
       },
       {
         symbol: "BAT",
         contract: "0x443fd8d5766169416ae42b8e050fe9422f628419",
-        decimals: 18
+        precision: 18
       },
       {
         symbol: "LINK",
         contract: "0x20fe562d797a42dcb3399062ae9546cd06f63280",
-        decimals: 18
+        precision: 18
       },
       {
         contract: "0x4F5e60A76530ac44e0A318cbc9760A2587c34Da6",
@@ -3026,7 +3026,6 @@ export class EthBancorModule
             .toString();
 
         const volume = feesGenerated && feesGenerated.totalVolume;
-
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -3065,7 +3064,12 @@ export class EthBancorModule
   }
 
   @mutation setTokenMeta(tokenMeta: TokenMeta[]) {
-    this.tokenMeta = tokenMeta;
+    this.tokenMeta = tokenMeta.map(meta => {
+      const hasDecimals = typeof meta.precision !== "undefined";
+      return hasDecimals
+        ? { ...meta, precision: Number(meta.precision!) }
+        : meta;
+    });
   }
 
   @action async triggerTx(actions: any[]) {
@@ -3532,16 +3536,18 @@ export class EthBancorModule
       throw new Error("Cannot fetch balances when not logged in");
     const uniqueAddresses = uniqWith(tokenAddresses, compareString);
 
-    console.log("asked to fetch", uniqueAddresses.length, "in bulk");
     const meta = this.tokenMeta;
+
+    const decimalIsKnown = (address: string) =>
+      meta.some(
+        meta =>
+          compareString(meta.contract, address) &&
+          !typeof meta.precision !== undefined
+      );
+
     const [knownDecimals, unknownDecimals] = partition(
       uniqueAddresses,
-      address =>
-        meta.some(
-          meta =>
-            compareString(meta.contract, address) &&
-            typeof meta.precision !== undefined
-        )
+      decimalIsKnown
     );
 
     const owner = this.isAuthenticated;
@@ -3554,25 +3560,35 @@ export class EthBancorModule
       balanceShape(address, owner)
     );
 
-    const [knownDecimalsRes, unknownDecimalsRes] = (await this.multi({
-      groupsOfShapes: [knownDecimalShapes, unknownDecimalShapes]
-    })) as [
-      { contract: string; balance: string }[],
-      { contract: string; balance: string; decimals: string }[]
-    ];
+    try {
+      const [knownDecimalsRes, unknownDecimalsRes] = (await this.multi({
+        groupsOfShapes: [knownDecimalShapes, unknownDecimalShapes]
+      })) as [
+        { contract: string; balance: string }[],
+        { contract: string; balance: string; decimals: string }[]
+      ];
 
-    const knownResDec = knownDecimalsRes.map(res => {
-      const tokenMeta = meta.find(meta =>
-        compareString(meta.contract, res.contract)
-      )!;
-      return res.balance !== "0"
-        ? { ...res, balance: shrinkToken(res.balance, tokenMeta.precision!) }
-        : res;
-    });
+      const knownResDec = knownDecimalsRes.map(res => {
+        const tokenMeta = meta.find(
+          meta =>
+            compareString(meta.contract, res.contract) &&
+            decimalIsKnown(meta.contract)
+        )!;
+        const shrunkBalance = shrinkToken(res.balance, tokenMeta.precision!);
+        return res.balance !== "0" ? { ...res, balance: shrunkBalance } : res;
+      });
 
-    const unknownResDec = unknownDecimalsRes
-      .filter(res => typeof res.decimals !== "undefined")
-      .map(res => ({
+      const [passedUnknown, failedUnknown] = partition(
+        unknownDecimalsRes,
+        res => typeof res.decimals !== "undefined"
+      );
+
+      if (failedUnknown.length > 0) {
+        // sentry warning
+        console.warn("failed to find decimals for", failedUnknown);
+      }
+
+      const unknownResDec = passedUnknown.map(res => ({
         ...res,
         balance:
           res.balance !== "0"
@@ -3580,11 +3596,17 @@ export class EthBancorModule
             : res.balance
       }));
 
-    const decBalances = [...knownResDec, ...unknownResDec];
+      const decBalances = [...knownResDec, ...unknownResDec];
 
-    return decBalances.map(
-      (balance): Balance => ({ balance: balance.balance, id: balance.contract })
-    );
+      return decBalances.map(
+        (balance): Balance => ({
+          balance: balance.balance,
+          id: balance.contract
+        })
+      );
+    } catch (e) {
+      throw new Error("Failed to fetch balances");
+    }
   }
 
   @action async getUserBalance({
