@@ -115,7 +115,11 @@ import {
   toPairs,
   fromPairs,
   chunk,
-  last
+  last,
+  startsWith,
+  isEqual,
+  take,
+  mapKeys
 } from "lodash";
 import {
   buildNetworkContract,
@@ -140,7 +144,7 @@ import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
-import { priorityEthPools } from "./staticRelays";
+import { knownPools, knownV2Anchors, priorityEthPools } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
@@ -148,36 +152,21 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { combineLatest, from, Subject, of, Observable } from "rxjs";
-import { distinctUntilChanged, map, filter } from "rxjs/operators";
-
-const contracts = {
-  BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
-  BancorConverterRegistry: "0xeB53781A5a0819375d04251A615e3a039f296Ca9",
-  LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-  LiquidityProtection: "0x53F36c56eCD4FB145989710Fa3E3Cc28AE4aCE88"
-};
-
-const selectedNetwork = new Subject();
-selectedNetwork.next(EthNetworks.Mainnet);
-
-selectedNetwork.pipe(distinctUntilChanged());
-
-const currentNetwork = new Subject();
-const bancorContracts = new Subject();
-const registeredAnchors = new Subject();
-
-currentNetwork.pipe(distinctUntilChanged());
-
-const x = new Observable();
-currentNetwork.next(EthNetworks.Mainnet);
-bancorContracts.next(contracts);
-
-currentNetwork.pipe(distinctUntilChanged());
-bancorContracts.pipe(distinctUntilChanged());
-
-const liquidity = new Observable();
-bancorContracts.subscribe(value => value);
+import { combineLatest, from, Subject, of, Observable, merge } from "rxjs";
+import {
+  distinctUntilChanged,
+  map,
+  filter,
+  startWith,
+  mergeMap,
+  tap,
+  switchMap,
+  share,
+  shareReplay,
+  pluck,
+  scan,
+  first as firstItem
+} from "rxjs/operators";
 
 interface Balance {
   balance: string;
@@ -305,6 +294,10 @@ const notBadRelay = (converterAndAnchor: ConverterAndAnchor) =>
   !compareString(
     converterAndAnchor.anchorAddress,
     "0x368B3D50E51e8bf62E6C73fc389e4102B9aEB8e2"
+  ) &&
+  !compareString(
+    converterAndAnchor.anchorAddress,
+    "0x7Ef1fEDb73BD089eC1010bABA26Ca162DFa08144"
   );
 
 const decodedToTimedDecoded = <T>(
@@ -350,8 +343,11 @@ const estimateBlockTimeUnix = (
   knownBlockNumberTime: number,
   averageBlockTimeSeconds = 13
 ): number => {
-  if (knownBlockNumber < blockNumber)
-    throw new Error("Write more maths to support this");
+  if (knownBlockNumber < blockNumber) {
+    const blockGap = blockNumber - blockNumber;
+    const timeGap = blockGap * averageBlockTimeSeconds;
+    return knownBlockNumberTime + timeGap;
+  }
   const blockGap = knownBlockNumber - blockNumber;
   const timeGap = blockGap * averageBlockTimeSeconds;
   return knownBlockNumberTime - timeGap;
@@ -834,10 +830,6 @@ const buildReserveFeedsChainlink = (
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
-type TotalVolumeAndLiquidity = [string, string, string, number];
-
-type VolumeAndLiq = [string, string, string];
-
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
   return {
@@ -854,10 +846,13 @@ const relayShape = (converterAddress: string) => {
 
 const poolTokenShape = (address: string) => {
   const contract = buildContainerContract(address);
+  const isV2Pool = knownV2Anchors.some(anchor =>
+    compareString(address, anchor)
+  );
   return {
     symbol: contract.methods.symbol(),
     decimals: contract.methods.decimals(),
-    poolTokens: contract.methods.poolTokens(),
+    ...(isV2Pool && { poolTokens: contract.methods.poolTokens() }),
     contract: ORIGIN_ADDRESS
   };
 };
@@ -1558,8 +1553,9 @@ export class EthBancorModule
       maxSystemNetworkTokenRatio: settings.maxSystemNetworkTokenRatio,
       maxSystemNetworkTokenAmount: settings.maxSystemNetworkTokenAmount
     } as LiquidityProtectionSettings;
-    this.setLiquidityProtectionSettings(newSettings);
-    this.fetchAndSetTokenBalances([newSettings.govToken]);
+    if (this.isAuthenticated) {
+      this.fetchAndSetTokenBalances([newSettings.govToken]);
+    }
     return newSettings;
   }
 
@@ -1597,8 +1593,6 @@ export class EthBancorModule
     const whiteListedPools = await liquidityProtection.methods
       .whitelistedPools()
       .call();
-    this.setWhiteListedPools(whiteListedPools);
-    console.log(whiteListedPools, "are white listed pools");
     return whiteListedPools;
   }
 
@@ -1922,7 +1916,7 @@ export class EthBancorModule
           task: async () => {
             if (!depositIsEth) {
               await this.triggerApprovalIfRequired({
-                owner: this.isAuthenticated,
+                owner: this.isAuthenticated as string,
                 spender: liqudityProtectionContractAddress,
                 amount: reserveAmountWei,
                 tokenAddress: reserveTokenAddress
@@ -2016,7 +2010,7 @@ export class EthBancorModule
           task: async () => {
             await this.triggerApprovalIfRequired({
               amount: poolTokenWei,
-              owner: this.isAuthenticated,
+              owner: this.isAuthenticated as string,
               spender: liquidityProtectionContractAddress,
               tokenAddress: poolToken.contract
             });
@@ -2426,7 +2420,7 @@ export class EthBancorModule
   }
 
   get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+    return vxm.wallet.isAuthenticated as string | false;
   }
 
   @mutation moduleInitiated() {
@@ -2767,7 +2761,7 @@ export class EthBancorModule
     return new Promise((resolve, reject) => {
       let txHash: string;
       tx.send({
-        from: this.isAuthenticated,
+        from: this.isAuthenticated as string,
         ...(gas && { gas }),
         ...(value && { value: toHex(value) })
       })
@@ -2917,13 +2911,10 @@ export class EthBancorModule
   }
 
   get relays(): ViewRelay[] {
-    console.time("relays");
-    console.log(this.previousRelayBalances);
     const toReturn = [...this.chainkLinkRelays, ...this.traditionalRelays]
       .sort(sortByLiqDepth)
       .sort(prioritiseV2Pools);
 
-    console.timeEnd("relays");
     return toReturn;
   }
 
@@ -4251,7 +4242,7 @@ export class EthBancorModule
       let txHash: string;
       web3.eth
         .sendTransaction({
-          from: this.isAuthenticated,
+          from: this.isAuthenticated as string,
           to: ethErc20WrapperContract,
           value: toHex(toWei(ethDec))
         })
@@ -4478,7 +4469,7 @@ export class EthBancorModule
         }
         if (compareString(balance.contract, ethReserveAddress)) return;
         return this.triggerApprovalIfRequired({
-          owner: this.isAuthenticated,
+          owner: this.isAuthenticated as string,
           amount: expandToken(balance.amount!, balance.decimals),
           spender: converterAddress,
           tokenAddress: balance.contract
@@ -4593,6 +4584,7 @@ export class EthBancorModule
   }
 
   @action async fetchContractAddresses(contractRegistry: string) {
+    console.log("fetchWasCalled");
     if (!contractRegistry || !web3.utils.isAddress(contractRegistry))
       throw new Error("Must pass valid address");
 
@@ -4888,19 +4880,15 @@ export class EthBancorModule
     const poolIncluded = params && params.poolQuery;
 
     if (tradeIncluded) {
-      console.log("trade included...");
       const res = await this.relaysRequiredForTrade({
         from: fromToken,
         to: toToken,
         networkContractAddress
       });
-      console.log(res, `was for ${fromToken} and ${toToken}`);
       return res;
     } else if (poolIncluded) {
-      console.log("pool included...");
       return [poolIncluded];
     } else {
-      console.log("should be loading first 5");
       const allPools = await this.poolsByPriority({
         anchorAddressess,
         tokenPrices
@@ -4911,10 +4899,12 @@ export class EthBancorModule
 
   @action async multi({
     groupsOfShapes,
-    blockHeight
+    blockHeight,
+    traditional = false
   }: {
     groupsOfShapes: ShapeWithLabel[][];
     blockHeight?: number;
+    traditional?: boolean;
   }) {
     const networkVars = getNetworkVariables(this.currentNetwork);
     const multi = new MultiCall(
@@ -4924,7 +4914,7 @@ export class EthBancorModule
     );
 
     const res = await multi.all(groupsOfShapes, {
-      traditional: false,
+      traditional,
       blockHeight
     });
     return res;
@@ -4957,34 +4947,31 @@ export class EthBancorModule
   @action async addPoolsV2(
     convertersAndAnchors: ConverterAndAnchor[]
   ): Promise<V2Response> {
+    const smallLoad = convertersAndAnchors.length < 5;
+
+    const timeStart = Date.now();
+    console.log(
+      "started at",
+      parseInt(String(timeStart / 1000)),
+      "for",
+      convertersAndAnchors.length,
+      timeStart
+    );
+
     const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
     const allConverters = convertersAndAnchors.map(
       item => item.converterAddress
     );
 
-    const [rawRelays, poolAndSmartTokens] = ((await this.multi({
-      groupsOfShapes: [
-        allConverters.map(relayShape),
-        allAnchors.map(poolTokenShape)
-      ]
-    })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
+    const groupsOfShapes = [
+      allConverters.map(relayShape),
+      allAnchors.map(poolTokenShape)
+    ];
 
-    const badRelays = rawRelays.filter(
-      rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2)
-    );
-    const badRelay = rawRelays
-      .filter(x => x.connectorTokenCount == "2")
-      .find(
-        rawRelay =>
-          compareString(
-            rawRelay.connectorToken1,
-            "0x57Ab1E02fEE23774580C119740129eAC7081e9D3"
-          ) ||
-          compareString(
-            rawRelay.connectorToken2,
-            "0x57Ab1E02fEE23774580C119740129eAC7081e9D3"
-          )
-      );
+    const [rawRelays, poolAndSmartTokens] = ((await this.multi({
+      groupsOfShapes,
+      traditional: smallLoad
+    })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
@@ -5090,7 +5077,8 @@ export class EthBancorModule
             pool.reserves[1]
           )
         )
-      ]
+      ],
+      traditional: smallLoad
     })) as [unknown, unknown, unknown]) as [
       RawAbiToken[],
       RawAbiReserveBalance[],
@@ -5135,8 +5123,6 @@ export class EthBancorModule
     const confirmedTokenMatch = matched.filter(match =>
       match.reserves.every(reserve => reserve.token)
     ) as RawV2Pool[];
-
-    console.log(confirmedTokenMatch, "touchy");
 
     const v2RelayFeeds = buildRelayFeedChainkLink({
       relays: confirmedTokenMatch,
@@ -5263,27 +5249,9 @@ export class EthBancorModule
       ...trustedStables(this.currentNetwork)
     ];
 
-    console.log(knownPrices, "are the known prices passed");
     const traditionalRelayFeeds = buildPossibleReserveFeedsTraditional(
       completeV1Pools,
       knownPrices
-    );
-
-    const poolsFailedToBeCovered = completeV1Pools.filter(
-      pool =>
-        !(
-          traditionalRelayFeeds.filter(feed =>
-            compareString(feed.poolId, pool.id)
-          ).length == 2
-        )
-    );
-    console.log(
-      completeV1Pools.length,
-      "pools in",
-      traditionalRelayFeeds.length / 2,
-      "came back out",
-      poolsFailedToBeCovered.map(x => x.reserves.map(r => r.symbol).join("")),
-      "pools failed to be covered"
     );
 
     const reserveFeeds = [...traditionalRelayFeeds, ...v2RelayFeeds];
@@ -5298,6 +5266,15 @@ export class EthBancorModule
     }
 
     // end debug
+
+    const timeEnd = Date.now();
+    const timeTaken = timeEnd - timeStart;
+    console.log(
+      timeTaken,
+      `was time to load ${convertersAndAnchors.length} finishing with ${
+        pools.length
+      } in mode ${smallLoad ? "small" : "normal"}`
+    );
 
     return {
       reserveFeeds,
@@ -5726,183 +5703,237 @@ export class EthBancorModule
   }
 
   @action async init(params?: ModuleParam) {
-    console.log(params, "was init param on eth");
-    console.time("ethResolved");
-    console.time("timeToGetToInitialBulk");
     if (this.initiated) {
-      console.log("returning already");
       return this.refresh();
     }
 
+    const timeStart = Date.now();
+
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
-    const web3NetworkVersion = await web3.eth.getChainId();
-    const currentNetwork: EthNetworks = web3NetworkVersion;
-    console.log(currentNetwork, "is the current network");
-    this.setNetwork(currentNetwork);
-    const networkVariables = getNetworkVariables(currentNetwork);
+    const networkVersion$ = from(web3.eth.getChainId()).pipe(
+      startWith(EthNetworks.Mainnet),
+      distinctUntilChanged(),
+      tap(this.setNetwork),
+      shareReplay(1)
+    );
 
-    const testnetActive = currentNetwork == EthNetworks.Ropsten;
+    networkVersion$.pipe(switchMap(getTokenMeta)).subscribe(this.setTokenMeta);
 
-    if (
-      params &&
-      params.tradeQuery &&
-      params.tradeQuery.quote &&
-      testnetActive
-    ) {
-      params.tradeQuery.quote = networkVariables.bntToken;
+    networkVersion$
+      .pipe(
+        filter(version => version == EthNetworks.Mainnet),
+        switchMap(fetchSmartTokens)
+      )
+      .subscribe(availableSmartTokenHistories =>
+        this.setAvailableHistories(
+          availableSmartTokenHistories.map(history => history.id)
+        )
+      );
+
+    this.fetchUsdPriceOfBnt();
+
+    const currentBlock$ = from(web3.eth.getBlockNumber()).pipe(
+      map(block => [moment().unix(), block]),
+      shareReplay(1)
+    );
+
+    const networkVars$ = networkVersion$.pipe(
+      map(getNetworkVariables),
+      shareReplay(1)
+    );
+
+    this.warmEthApi()
+      .then(tokens => {
+        bancorApiTokens = tokens;
+      })
+      .catch(_ => {});
+
+    interface DataCache<T> {
+      allEmissions: T[];
+      newData: T[];
     }
 
-    try {
-      let bancorApiTokens: TokenPrice[] = [];
-
-      this.warmEthApi()
-        .then(tokens => {
-          bancorApiTokens = tokens;
-        })
-        .catch(_ => {});
-
-      fetchSmartTokens()
-        .then(availableSmartTokenHistories =>
-          this.setAvailableHistories(
-            availableSmartTokenHistories.map(history => history.id)
-          )
-        )
-        .catch(_ => {});
-
-      getTokenMeta(currentNetwork).then(this.setTokenMeta);
-      this.fetchUsdPriceOfBnt();
-
-      console.time("FirstPromise");
-      const [
-        contractAddresses,
-        { currentBlock, blockHoursAgo }
-      ] = await Promise.all([
-        this.fetchContractAddresses(networkVariables.contractRegistry),
-        this.blockNumberHoursAgo(24)
-      ]);
-
-      console.log(contractAddresses, "are contract addresses");
-
-      this.fetchLiquidityProtectionSettings(
-        contractAddresses.LiquidityProtection
+    const distinctArrayItem = <T>(
+      initialValue: T[],
+      comparator?: (a: T, b: T) => boolean
+    ) => (source: Observable<T[]>) =>
+      source.pipe(
+        startWith(initialValue),
+        scan(
+          (acc, item) => {
+            const difference = differenceWith(
+              item,
+              acc.allEmissions,
+              comparator || isEqual
+            );
+            return {
+              allEmissions: [...acc.allEmissions, ...item],
+              newData: difference
+            };
+          },
+          { allEmissions: [], newData: [] } as DataCache<T>
+        ),
+        filter(dataCache => dataCache.newData.length > 0),
+        pluck("newData")
       );
-      this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
-      if (this.isAuthenticated) {
-        this.fetchProtectionPositions(
-          contractAddresses.LiquidityProtectionStore
-        );
-        this.fetchLockedBalances(contractAddresses.LiquidityProtectionStore);
-      }
 
-      console.log(contractAddresses, "are contract addresses");
-      console.timeEnd("FirstPromise");
+    const contractAddresses$ = networkVars$.pipe(
+      switchMap(networkVariables =>
+        this.fetchContractAddresses(networkVariables.contractRegistry)
+      ),
+      startWith({
+        BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
+        BancorConverterRegistry: "0xeB53781A5a0819375d04251A615e3a039f296Ca9",
+        LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
+        LiquidityProtection: "0x53F36c56eCD4FB145989710Fa3E3Cc28AE4aCE88"
+      } as RegisteredContracts),
+      distinctUntilChanged<RegisteredContracts>(isEqual),
+      shareReplay(1)
+    );
 
-      console.time("SecondPromise");
-      const [registeredAnchorAddresses, currentBlockInfo] = await Promise.all([
-        this.fetchAnchorAddresses(contractAddresses.BancorConverterRegistry),
-        web3.eth.getBlock(currentBlock)
-      ]);
+    const liquidityProtection$ = contractAddresses$.pipe(
+      pluck("LiquidityProtection"),
+      distinctUntilChanged(compareString),
+      shareReplay(1)
+    );
 
-      (async () => {
-        const events = await this.pullEvents({
-          network: currentNetwork,
-          networkContract: contractAddresses.BancorNetwork,
-          fromBlock: blockHoursAgo
-        });
-        const withDates = events.joinedTradeEvents.map(event =>
-          decodedToTimedDecoded(
-            event,
-            currentBlock,
-            Number(currentBlockInfo.timestamp)
-          )
-        );
+    const liquidityProtectionStore$ = contractAddresses$.pipe(
+      pluck("LiquidityProtectionStore"),
+      distinctUntilChanged(compareString),
+      shareReplay(1)
+    );
 
-        this.setLiquidityHistory({
-          joinedTradeEvents: withDates,
-          singleTrades: events.singleTraades
-        });
-      })();
+    const bancorConverterRegistry$ = contractAddresses$.pipe(
+      pluck("BancorConverterRegistry"),
+      distinctUntilChanged(compareString),
+      shareReplay(1)
+    );
 
-      console.timeEnd("SecondPromise");
+    const bancorNetwork$ = contractAddresses$.pipe(
+      pluck("BancorNetwork"),
+      distinctUntilChanged(compareString)
+    );
 
-      this.setRegisteredAnchorAddresses(registeredAnchorAddresses);
+    combineLatest([
+      bancorNetwork$,
+      currentBlock$.pipe(
+        map(([unixTime, currentBlock]) => [
+          unixTime,
+          currentBlock,
+          rewindBlocksByDays(currentBlock, 1)
+        ])
+      ),
+      networkVersion$
+    ])
+      .pipe(
+        switchMap(
+          ([
+            networkContract,
+            [unixTime, currentBlock, blockYesterday],
+            network
+          ]) =>
+            (async () => {
+              const events = await this.pullEvents({
+                network,
+                networkContract,
+                fromBlock: blockYesterday
+              });
 
-      console.time("ThirdPromise");
-      const [
-        anchorAndConvertersMatched,
-        bareMinimumAnchorAddresses
-      ] = await Promise.all([
-        this.add(registeredAnchorAddresses),
+              const withDates = events.joinedTradeEvents.map(event =>
+                decodedToTimedDecoded(event, currentBlock, Number(unixTime))
+              );
+
+              return {
+                joinedTradeEvents: withDates,
+                singleTrades: events.singleTraades
+              };
+            })()
+        )
+      )
+      .subscribe(this.setLiquidityHistory);
+
+    liquidityProtection$
+      .pipe(switchMap(this.fetchLiquidityProtectionSettings))
+      .subscribe(this.setLiquidityProtectionSettings);
+
+    liquidityProtectionStore$
+      .pipe(switchMap(this.fetchWhiteListedV1Pools))
+      .subscribe(this.setWhiteListedPools);
+
+    const anchors$ = bancorConverterRegistry$.pipe(
+      switchMap(this.fetchAnchorAddresses),
+      shareReplay(1)
+    );
+
+    let bancorApiTokens: TokenPrice[] = [];
+
+    const bareMinimumAnchors$ = combineLatest([anchors$, bancorNetwork$]).pipe(
+      mergeMap(([anchorAddressess, networkContractAddress]) =>
         this.bareMinimumPools({
           params,
-          networkContractAddress: contractAddresses.BancorNetwork,
-          anchorAddressess: registeredAnchorAddresses,
+          networkContractAddress,
+          anchorAddressess,
           ...(bancorApiTokens &&
             bancorApiTokens.length > 0 && { tokenPrices: bancorApiTokens })
         })
-      ]);
-      console.timeEnd("ThirdPromise");
+      ),
+      firstItem()
+    );
 
-      const blackListedAnchors = ["0x7Ef1fEDb73BD089eC1010bABA26Ca162DFa08144"];
+    const anchorAndConverters$ = combineLatest([
+      anchors$,
+      bancorConverterRegistry$
+    ]).pipe(
+      mergeMap(([anchorAddresses, converterRegistryAddress]) =>
+        (async () => {
+          const converters = await getConvertersByAnchors({
+            anchorAddresses,
+            converterRegistryAddress
+          });
+          return zipAnchorAndConverters(anchorAddresses, converters);
+        })()
+      ),
+      distinctArrayItem(knownPools, compareAnchorAndConverter),
+      tap(x => console.log(x, "was all")),
+      shareReplay(1)
+    );
 
-      const passedAnchorAndConvertersMatched = anchorAndConvertersMatched.filter(
-        notBlackListed(blackListedAnchors)
-      );
-
-      const requiredAnchors = bareMinimumAnchorAddresses.map(anchor =>
-        findOrThrow(
-          passedAnchorAndConvertersMatched,
-          item => compareString(item.anchorAddress, anchor),
-          "failed to find required anchors"
-        )
-      );
-
-      const priorityAnchors = await this.poolsByPriority({
-        anchorAddressess: passedAnchorAndConvertersMatched.map(
-          x => x.anchorAddress
-        ),
-        tokenPrices: bancorApiTokens
-      });
-
-      const initialLoad = uniqWith(
-        [...requiredAnchors],
-        compareAnchorAndConverter
-      );
-
-      const remainingLoad = sortAlongSide(
-        differenceWith(
-          passedAnchorAndConvertersMatched,
-          initialLoad,
-          compareAnchorAndConverter
-        ),
-        anchor => anchor.anchorAddress,
-        priorityAnchors
-      );
-
-      console.timeEnd("timeToGetToInitialBulk");
-
-      const linkV2Anchor = "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237";
-
-      const linkPool = anchorAndConvertersMatched.find(anchor =>
-        compareString(anchor.anchorAddress, linkV2Anchor)
-      );
-      if (linkPool) {
-        const alreadyExisting = initialLoad.find(anchor =>
-          compareString(anchor.anchorAddress, linkV2Anchor)
-        );
-        if (!alreadyExisting) {
-          initialLoad.push(linkPool);
-        }
+    combineLatest([anchorAndConverters$, bancorConverterRegistry$]).subscribe(
+      () => {
+        const newTime = Date.now();
+        const timeTaken = newTime - timeStart;
+        console.log(timeTaken, "was time taken");
       }
+    );
 
-      const res = await this.addPools({
-        sync: initialLoad,
-        async: remainingLoad
-      });
-      console.log(res, "was res with initial pull of", initialLoad);
-      console.timeEnd("initialPools");
+    await combineLatest([bareMinimumAnchors$, anchorAndConverters$])
+      .pipe(
+        mergeMap(([minimumAnchors, anchorsAndConverters]) => {
+          const sync = anchorsAndConverters.filter(({ anchorAddress }) =>
+            minimumAnchors.some(a => compareString(a, anchorAddress))
+          );
+          const async = differenceWith(
+            anchorsAndConverters,
+            sync,
+            compareAnchorAndConverter
+          );
 
+          return this.addPools({ sync, async });
+        })
+      )
+      .toPromise();
+
+    const authenticated$ = of(this.isAuthenticated).pipe(
+      filter(Boolean),
+      shareReplay(1)
+    );
+
+    combineLatest([authenticated$, liquidityProtectionStore$]).subscribe(
+      ([_, storeAddress]) => this.fetchProtectionPositions(storeAddress)
+    );
+
+    try {
       this.moduleInitiated();
 
       if (this.relaysList.length < 1) {
@@ -5912,9 +5943,7 @@ export class EthBancorModule
       if (this.tokens.length == 0 || this.relays.length == 0) {
         throw new Error("Failed to load tokens or relays");
       }
-      console.log("resolved with", this.tokens, this.relays);
-      // @ts-ignore
-      console.log("Eth resolving at", new Date() / 1);
+      console.log("Eth resolving at", Date.now());
       console.timeEnd("ethResolved");
     } catch (e) {
       console.error(`Threw inside ethBancor ${e.message}`);
@@ -5929,6 +5958,7 @@ export class EthBancorModule
     sync: ConverterAndAnchor[];
     async: ConverterAndAnchor[];
   }) {
+    console.log({ sync, async });
     const passedAsyncPools = async.filter(notBadRelay);
     const passedSyncPools = sync.filter(notBadRelay);
 
@@ -5980,11 +6010,42 @@ export class EthBancorModule
       }
     })();
 
+    console.log("are the passed synced", {
+      async,
+      sync,
+      passedSyncPools,
+      passedAsyncPools
+    });
+    const timeBefore = Date.now();
     const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
+    const timeAfter = Date.now();
+    console.log("loading time of", timeAfter - timeBefore, passedSyncPools);
     if (this.isAuthenticated) {
       this.fetchAndSetTokenBalances(uniqWith(tokenAddresses, compareString));
     }
     this.addAprsToPools();
+  }
+
+  @action async doThing(allASyncChunks: ConverterAndAnchor[][]) {
+    const tokenAddresses = await Promise.all(
+      allASyncChunks.map(this.addPoolsBulk)
+    );
+    const uniqueTokenAddreses = uniqWith(
+      tokenAddresses
+        .filter(Boolean)
+        .filter(x => Array.isArray(x) && x.length > 0)
+        .flat(1) as string[],
+      compareString
+    );
+    if (this.isAuthenticated) {
+      this.fetchAndSetTokenBalances(uniqueTokenAddreses);
+    }
+    this.addAprsToPools();
+    this.setLoadingPools(false);
+  }
+  catch(e) {
+    console.log("Failed loading pools");
+    this.setLoadingPools(false);
   }
 
   poolAprs: PoolApr[] = [];
@@ -6133,6 +6194,13 @@ export class EthBancorModule
   }
 
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
+    console.log(
+      "bulkGot",
+      convertersAndAnchors.length,
+      "at",
+      parseInt(String(Date.now() / 1000)),
+      Date.now()
+    );
     if (!convertersAndAnchors || convertersAndAnchors.length == 0) return;
 
     this.setLoadingPools(true);
@@ -6162,6 +6230,7 @@ export class EthBancorModule
   }
 
   @action async fetchAndSetTokenBalances(tokenContractAddresses: string[]) {
+    if (!this.isAuthenticated) throw new Error("Must be logged in");
     const governanceToken =
       web3.utils.isAddress(this.liquidityProtectionSettings.govToken) &&
       this.liquidityProtectionSettings.govToken;
@@ -6190,7 +6259,8 @@ export class EthBancorModule
       this.fetchTokenBalances(withoutEth),
       (async () => {
         if (!includesEth) return;
-        const weiBalance = await web3.eth.getBalance(this.isAuthenticated);
+        const weiBalance = await web3.eth.getBalance(this
+          .isAuthenticated as string);
         return fromWei(weiBalance);
       })()
     ]);
@@ -6339,7 +6409,7 @@ export class EthBancorModule
   @action async mintEthErcIfRequired(decString: string) {
     const contract = buildTokenContract(ethErc20WrapperContract);
     const currentBalance = await contract.methods
-      .balanceOf(this.isAuthenticated)
+      .balanceOf(this.isAuthenticated as string)
       .call();
 
     const currentBalanceDec = shrinkToken(currentBalance, 18);
@@ -6461,7 +6531,7 @@ export class EthBancorModule
     if (!fromIsEth) {
       onUpdate!(1, steps);
       await this.triggerApprovalIfRequired({
-        owner: this.isAuthenticated,
+        owner: this.isAuthenticated as string,
         amount: fromWei,
         spender: this.contracts.BancorNetwork,
         tokenAddress: fromTokenContract
