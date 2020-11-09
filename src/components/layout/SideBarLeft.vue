@@ -20,7 +20,6 @@
       <div
         v-for="link in data.links"
         :key="link.key"
-        @click="sideLinkClicked(link.key)"
         class="side-bar-link"
         :class="[
           $route.name === link.route
@@ -33,11 +32,13 @@
           link.hideMobile ? 'hide-on-mobile' : ''
         ]"
       >
-        <img
-          class="side-bar-link-icon"
-          :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
-        />
-        <span>{{ link.label }}</span>
+        <router-link :to="{ name: link.route }">
+          <img
+            class="side-bar-link-icon"
+            :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
+          />
+          <span>{{ link.label }}</span>
+        </router-link>
       </div>
     </div>
     <div class="middle-space" />
