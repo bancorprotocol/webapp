@@ -80,7 +80,8 @@ import {
   calculateProtectionLevel,
   LockedBalance,
   rewindBlocksByDays,
-  calculateMaxStakes
+  calculateMaxStakes,
+  calculateProgressLevel
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -2139,6 +2140,11 @@ export class EthBancorModule
           maxDelay
         );
 
+        const progressPercent = calculateProgressLevel(
+          startTime,
+          startTime + maxDelay
+        );
+
         const givenVBnt =
           compareString(
             reserveToken.id,
@@ -2182,7 +2188,7 @@ export class EthBancorModule
                   .toNumber()
               })
           },
-          coverageDecPercent: protectionAchieved,
+          coverageDecPercent: progressPercent,
           roi:
             fullyProtectedDec &&
             Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
