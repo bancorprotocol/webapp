@@ -34,7 +34,28 @@
       </template>
 
       <template v-slot:cell(stake)="data">
-        <div class="d-flex align-items-start">
+        <div>
+          {{ `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}` }}
+        </div>
+        <div
+          v-if="data.value.usdValue !== undefined"
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+        <div
+          v-text="formatDate(data.item.stake.unixTime).dateTime"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        />
+        <div class="d-flex align-items-center">
+          <pool-logos-overlapped
+            :pool-id="data.value.poolId"
+            size="20"
+            class="mr-1"
+          />
+          {{ poolName(data.value.poolId) }}
+        </div>
+        <div v-if="false" class="d-flex align-items-start">
           <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
           <div class="d-flex flex-column ml-2">
             <span>{{ poolName(data.value.poolId) }}</span>
@@ -117,14 +138,29 @@
 
       <template v-slot:cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
-          <span
-            v-if="insuranceStarted(data.item.insuranceStart)"
-            v-text="stringifyPercentage(data.item.coverageDecPercent)"
-          />
-          <span v-else class="font-size-12 font-w600 text-danger">
-            Cliff:
-            <countdown-timer :date-unix="data.item.insuranceStart" />
-          </span>
+          {{ stringifyPercentage(data.item.coverageDecPercent) }}
+          <div
+            class="d-flex justify-content-between align-items-center text-danger"
+          >
+            <div>
+              Cliff:
+              <countdown-timer :date-unix="data.item.insuranceStart" />
+            </div>
+            <font-awesome-icon
+              icon="info-circle"
+              :id="'popover-cliff-' + data.item.id"
+            />
+            <b-popover
+              :target="'popover-cliff-' + data.item.id"
+              triggers="hover"
+              placement="bottom"
+            >
+              Until the "cliff" is reached, you are entitled to exercise 0% of
+              your impermanent loss protection. When the cliff is reached, you
+              are entitled to 30% coverage. Coverage increases by 1% per day
+              until 100% coverage is reached (full protection).
+            </b-popover>
+          </div>
           <b-progress
             :value="data.item.coverageDecPercent * 100"
             :max="100"
@@ -135,6 +171,11 @@
             {{ formatEndTime(data.item.fullCoverage) }}
           </span>
         </div>
+
+        <remaining-time2
+          :from="data.item.stake.unixTime * 1000"
+          :to="data.item.fullCoverage * 1000"
+        />
       </template>
 
       <template v-slot:cell(actionButtons)="data">
@@ -169,9 +210,11 @@ import moment from "moment";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
+import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 
 @Component({
   components: {
+    RemainingTime2,
     CountdownTimer,
     ProtectedEmpty,
     PoolLogosOverlapped,
