@@ -2200,7 +2200,8 @@ export class EthBancorModule
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
-    const allIouTokens = this.relaysList.flatMap(iouTokensInRelay);
+    const relaysList = this.relaysList;
+    const allIouTokens = relaysList.flatMap(iouTokensInRelay);
     const existingBalances = this.tokenBalances.filter(
       balance =>
         balance.balance !== "0" &&
@@ -2209,7 +2210,7 @@ export class EthBancorModule
         )
     );
 
-    const relevantRelays = this.relaysList.filter(relay =>
+    const relevantRelays = relaysList.filter(relay =>
       iouTokensInRelay(relay).some(token =>
         existingBalances.some(balance =>
           compareString(balance.id, token.contract)
