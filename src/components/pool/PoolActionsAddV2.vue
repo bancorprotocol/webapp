@@ -9,13 +9,17 @@
       />
     </label-content-split>
 
-    <alert-block
-      variant="warning"
+    <div
+      class="w-100 mt-1 font-size-14"
       @click="clickAlert"
-      :msg="
-        `This pools runs on an older version of Bancor. We recommend you stake liquidity in the new v2.1 ${poolLabel} pool.`
-      "
-    />
+      :class="darkMode ? 'alert-warning-dark' : 'alert-warning-light'"
+    >
+      <span class="font-w500">
+        This pools runs on an older version of Bancor.
+        <a @click.prevent="clickAlert" href="#">Click here</a> to stake
+        liquidity in the new v2.1 {{ poolLabel }} pool.
+      </span>
+    </div>
 
     <label-content-split label="Select a Token" class="my-3">
       <b-form-group class="m-0" :class="darkMode ? 'text-dark' : 'text-light'">

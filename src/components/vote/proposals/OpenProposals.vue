@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="open-proposals">
     <modal-not-enough-tokens v-model="notEnoughTokensModal" />
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
@@ -35,12 +35,12 @@
       default-sort="to"
       :hidePagination="true"
     >
-      <template
-        v-for="proposal in proposals"
-        class="font-w500 font-size-14 align-rows-cells"
-        :class="darkMode ? 'text-dark' : 'text-light'"
-      >
-        <tr :key="proposal.id">
+      <template v-for="proposal in proposals">
+        <tr
+          :key="proposal.id"
+          class="font-w500 font-size-14 align-rows-cells"
+          :class="darkMode ? 'text-dark' : 'text-light'"
+        >
           <td>{{ proposal.id }}</td>
           <td>
             <div class="font-size-14 font-w500">
@@ -48,10 +48,10 @@
             </div>
 
             <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
-              More about proposal:
+              <span>More about proposal:</span>
               <a
                 target="_blank"
-                class="font-size-14 font-w500 fix-a pl-2"
+                class="font-size-14 font-w500 pl-2"
                 :href="
                   (proposal.metadata &&
                     proposal.metadata.payload &&
@@ -68,7 +68,7 @@
               </a>
               <a
                 target="_blank"
-                class="font-size-14 font-w500 fix-a pl-2"
+                class="font-size-14 font-w500 pl-2"
                 :href="
                   (proposal.metadata &&
                     proposal.metadata.payload &&
@@ -163,7 +163,7 @@
             </div>
           </td>
           <td>
-            <div class="pl-3 container-border">
+            <div class="pl-3 container-border h-100">
               <div
                 v-if="!proposal.votes.voted && proposal.end > Date.now()"
                 class="d-flex align-items-center mb-2"
@@ -336,16 +336,18 @@ export default class OpenProposals extends Vue {
       {
         label: "ID",
         key: "id",
-        minWidth: "60px",
-        maxWidth: "60px"
+        minWidth: "16px",
+        maxWidth: "16px"
       },
       {
         label: "Details",
+        key: "",
         minWidth: "450px",
         maxWidth: "500px"
       },
       {
         label: "Vote",
+        key: "",
         minWidth: "300px",
         maxWidth: "300px"
       }
@@ -436,15 +438,16 @@ export default class OpenProposals extends Vue {
   color: $primary !important;
 }
 
-a:not([href]).fix-a {
-  color: $text-muted-light !important;
-  cursor: default;
+#open-proposals .align-rows-cells td {
+  height: 1px;
+  padding-top: 24px !important;
+  padding-bottom: 24px !important;
+  vertical-align: top !important;
 }
 
-.align-rows-cells {
-  @at-root .table & > td {
-    vertical-align: top !important;
-  }
+#open-proposals tr:last-child,
+#open-proposals tr:last-child > td {
+  border-bottom: none !important;
 }
 
 .container-border {

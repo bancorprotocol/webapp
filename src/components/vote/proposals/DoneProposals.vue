@@ -218,16 +218,18 @@ export default class DoneProposals extends Vue {
   get fields(): ViewTableFields[] {
     return [
       {
-        label: "",
+        label: "ID",
         key: "id",
         minWidth: "16px",
         maxWidth: "16px"
       },
       {
-        label: "Proposal ID"
+        label: "Details",
+        key: '',
       },
       {
         label: "Result",
+        key: '',
         maxWidth: "120px",
         minWidth: "120px"
       },
@@ -251,6 +253,7 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "",
+        key: '',
         maxWidth: "10px"
       }
     ];

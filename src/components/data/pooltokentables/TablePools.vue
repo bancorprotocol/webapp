@@ -2,26 +2,49 @@
   <data-table
     :fields="fields"
     :items="items"
-    v-model="paginatedItems"
     :filter="filter"
     filter-by="symbol"
     default-sort="liqDepth"
   >
-    <tr v-for="pool in paginatedItems" :key="pool.id">
-      <td v-if="isEth">
-        <img
-          v-if="pool.liquidityProtection"
-          :src="require(`@/assets/media/icons/liquidity_active.svg`)"
-        />
-      </td>
-      <td><pool-logos :pool="pool" :cursor="false" /></td>
-      <td>{{ prettifyNumber(pool.liqDepth, true) }}</td>
-      <td>{{ formatPercent(pool.fee) }}</td>
-      <td v-if="isEth">{{ prettifyNumber(pool.volume, true) }}</td>
-      <td v-if="isEth">{{ prettifyNumber(pool.feesGenerated, true) }}</td>
-      <td v-if="isEth">{{ formatPercent(pool.feesVsLiquidity) }}</td>
-      <td><action-buttons :pool="pool" :small="true" /></td>
-    </tr>
+    <template #head(liquidityProtection)>
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" class="mr-1" />
+    </template>
+
+    <template #cell(liquidityProtection)="{ value }">
+      <img
+        v-if="value"
+        :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+      />
+      <span v-else />
+    </template>
+
+    <template #cell(symbol)="{ item }">
+      <pool-logos :pool="item" :cursor="false" />
+    </template>
+
+    <template #cell(liqDepth)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(fee)="{ value }">
+      {{ formatPercent(value) }}
+    </template>
+
+    <template #cell(volume)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(feesGenerated)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(feesVsLiquidity)="{ value }">
+      {{ formatPercent(value) }}
+    </template>
+
+    <template #cell(actions)="{ item }">
+      <action-buttons :pool="item" :small="true" />
+    </template>
   </data-table>
 </template>
 
@@ -33,7 +56,7 @@ import { ViewRelay } from "@/types/bancor";
 import { formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
+import { ViewTableFields } from "@/components/common/DataTable.vue";
 
 @Component({
   components: { DataTable, PoolLogos, ActionButtons }
@@ -41,8 +64,6 @@ import { ViewTableFields } from "@/components/common/TableHeader.vue";
 export default class TablePools extends Vue {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
-
-  paginatedItems: ViewRelay[] = [];
 
   formatPercent(percentage: string | number) {
     return new BigNumber(percentage).gte(0) ? formatPercent(percentage) : "N/A";
@@ -107,6 +128,8 @@ export default class TablePools extends Vue {
         : []),
       {
         label: "Actions",
+        key: "actions",
+        sort: false,
         minWidth: "150px",
         maxWidth: "150px"
       }
