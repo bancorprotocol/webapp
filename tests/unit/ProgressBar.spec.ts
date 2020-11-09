@@ -2,21 +2,46 @@ import { mount, createLocalVue } from "@vue/test-utils";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import Vuex from 'vuex'
 
-const localVue = createLocalVue()
-localVue.use(Vuex)
+// jest.mock("../../src/router/index.ts", () => jest.fn());
 
 describe("Progress Bar Component", () => {
+  let state
   let actions
+  let mutations
+  let getters
   let store: any
 
+  const localVue = createLocalVue()
+  localVue.use(Vuex)
+
   beforeEach(() => {
-    actions = {        
-    }
-    store = new Vuex.Store({})
+    state = {
+      darkMode: false,
+      countryCode: 'KOR'
+    },
+    actions = {
+      getUserCountry: jest.fn()
+    },
+    mutations = {
+      toggleDarkMode: jest.fn()
+    },
+    getters = {
+      isCountryBanned: () => false
+    },
+    store = new Vuex.Store({
+      modules: {
+        GeneralNewModule: {
+          namespaced: true,
+          state,
+          actions,
+          mutations,
+          getters
+        }
+      }
+    })
   })
     
-  it("renderes props. when passed", () => {
-    
+  it("renderes props. when passed", () => {    
     const percentage = 20
     const wrapper = mount(ProgressBar, {
       propsData: {
@@ -26,6 +51,6 @@ describe("Progress Bar Component", () => {
       localVue
     });    
     expect(wrapper.find('.progress-line-bar__progress').exists()).toBe(true)
-    // expect(wrapper.find('.progress-line-bar__progress')[0].style.width)
+    // expect(wrapper.find('.progress-line-bar__progress').style.width)
   })
 });
