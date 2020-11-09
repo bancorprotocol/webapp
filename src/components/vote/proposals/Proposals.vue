@@ -1,5 +1,10 @@
 <template>
-  <content-block id="proposals" :px0="true" :shadow-light="true" :no-header="true">
+  <content-block
+    id="proposals"
+    :px0="true"
+    :shadow-light="true"
+    :no-header="true"
+  >
     <div>
       <div
         class="new-proposal-button cursor"
