@@ -6,6 +6,10 @@
     filter-by="symbol"
     default-sort="liqDepth"
   >
+    <template #head(liquidityProtection)>
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" class="mr-1" />
+    </template>
+
     <template #cell(liquidityProtection)="{ value }">
       <img
         v-if="value"
@@ -125,6 +129,7 @@ export default class TablePools extends Vue {
       {
         label: "Actions",
         key: "actions",
+        sort: false,
         minWidth: "150px",
         maxWidth: "150px"
       }
