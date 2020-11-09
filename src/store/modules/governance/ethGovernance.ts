@@ -6,7 +6,7 @@ import {
   buildTokenContract
 } from "@/api/eth/contractTypes";
 import { CallReturn } from "eth-multicall";
-import { ContractSendMethod } from "web3-eth-contract";
+import { ContractSendMethod, EventData } from "web3-eth-contract";
 // @ts-ignore
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
@@ -35,6 +35,12 @@ export interface ProposalMetaData {
   revision: string;
 }
 
+interface Votes {
+  voted: undefined | "for" | "against";
+  for: number;
+  against: number;
+}
+
 export interface Proposal {
   id: number;
   // timestamp
@@ -52,12 +58,13 @@ export interface Proposal {
   totalVotesFor: number;
   totalVotes: number;
   totalVotesAvailable: number;
-  votes: {
-    voted: undefined | "for" | "against";
-    for: number;
-    against: number;
-  };
+  // votes of currently logged in user
+  votes: Votes;
   metadata?: ProposalMetaData;
+  voters: {
+    votes: Votes;
+    account: string;
+  }[];
 }
 
 interface Token
@@ -480,13 +487,41 @@ export class EthereumGovernance extends VuexModule.With({
             )
           : 0
       } as any,
-      metadata: metadata
+      metadata: metadata,
+      voters: await this.getVoters({ proposal })
     };
     const { for: vFor, against: vAgainst } = prop.votes;
     prop.votes.voted =
       vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
 
     return prop;
+  }
+
+  @action async getVoters({
+    proposal
+  }: {
+    proposal: Proposal;
+  }): Promise<{ votes: Votes; account: string }[]> {
+    const voteEvents = await this.governanceContract.getPastEvents("Vote", {
+      filter: { _id: "0x" + proposal.id.toString(16) },
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    return voteEvents.map(event => {
+      return {
+        account: event.returnValues["_voter"],
+        votes: {
+          voted: event.returnValues["_vote"] ? "for" : "against",
+          for: event.returnValues["_vote"]
+            ? event.returnValues["_weight"]
+            : "0",
+          against: event.returnValues["_vote"]
+            ? "0"
+            : event.returnValues["_weight"]
+        }
+      };
+    });
   }
 
   @action
