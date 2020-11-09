@@ -226,7 +226,6 @@ export default class DoneProposals extends Vue {
       {
         label: "Details",
         key: '',
-        label: "Details"
       },
       {
         label: "Result",
