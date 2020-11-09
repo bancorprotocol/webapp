@@ -17,12 +17,14 @@
       </router-link>
     </b-navbar-brand>
     <div class="side-bar-links">
-      <div
+      <router-link
+        tag="div"
         v-for="link in data.links"
         :key="link.key"
+        :to="{ name: link.route }"
         class="side-bar-link"
         :class="[
-          $route.name === link.route
+          isRouteActive(link.key)
             ? darkMode
               ? 'clicked-link-dark'
               : 'clicked-link'
@@ -32,14 +34,12 @@
           link.hideMobile ? 'hide-on-mobile' : ''
         ]"
       >
-        <router-link :to="{ name: link.route }">
-          <img
-            class="side-bar-link-icon"
-            :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
-          />
-          <span>{{ link.label }}</span>
-        </router-link>
-      </div>
+        <img
+          class="side-bar-link-icon"
+          :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
+        />
+        <span>{{ link.label }}</span>
+      </router-link>
     </div>
     <div class="middle-space" />
     <p class="tm-text">© Bancor 2020</p>
@@ -54,6 +54,19 @@ import { vxm } from "@/store";
 export default class SideBarLeft extends Vue {
   @Prop() data!: any;
   @Prop() darkMode!: boolean;
+
+  isRouteActive(key: string): boolean {
+    const fullPath = this.$route.fullPath;
+    if (fullPath.includes("swap") || fullPath.includes("pool")) {
+      return key === "swap";
+    } else if (fullPath.includes("data")) {
+      return key === "data";
+    } else if (fullPath.includes("protection")) {
+      return key === "liquidity";
+    } else if (fullPath.includes("vote")) {
+      return key === "vote";
+    } else return false;
+  }
 
   @Emit("sideLinkClicked")
   sideLinkClicked(key: string) {
