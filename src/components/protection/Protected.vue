@@ -161,20 +161,12 @@
               until 100% coverage is reached (full protection).
             </b-popover>
           </div>
-          <b-progress
-            :value="data.item.coverageDecPercent * 100"
-            :max="100"
-            height="7px"
-            class="my-1"
-          />
-          <span class="text-primary">
-            {{ formatEndTime(data.item.fullCoverage) }}
-          </span>
         </div>
 
         <remaining-time2
           :from="data.item.stake.unixTime * 1000"
           :to="data.item.fullCoverage * 1000"
+          class="mt-1"
         />
       </template>
 
