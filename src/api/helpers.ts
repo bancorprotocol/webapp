@@ -311,6 +311,19 @@ export const calculateProtectionLevel = (
   return new BigNumber(timeProgressedPastMinimum).div(waitingPeriod).toNumber();
 };
 
+
+export const calculateProgressLevel = (
+  startTimeSeconds: number, 
+  endTimeSeconds: number
+) => {
+  if (endTimeSeconds < startTimeSeconds) throw new Error("End time should be greater than start time");
+  const totalWaitingTime = endTimeSeconds - startTimeSeconds;
+  const now = moment().unix();
+  if (now >= endTimeSeconds) return 1;
+  const timeWaited = now - startTimeSeconds;
+  return timeWaited / totalWaitingTime;
+}
+
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))
