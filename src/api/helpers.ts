@@ -36,26 +36,27 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
-import { getAlchemyUrl, getInfuraAddress } from "@/api/web3"
+import { getAlchemyUrl, getInfuraAddress } from "@/api/web3";
 
 export enum PositionType {
   single,
   double
 }
 
-export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPerBlock = 13.3) => {
-  if (!Number.isInteger(currentBlock)) throw new Error("Current block should be an integer")
+export const rewindBlocksByDays = (
+  currentBlock: number,
+  days: number,
+  secondsPerBlock = 13.3
+) => {
+  if (!Number.isInteger(currentBlock))
+    throw new Error("Current block should be an integer");
   const secondsToRewind = moment.duration(days, "days").asSeconds();
-  const blocksToRewind = parseInt(
-    String(secondsToRewind / secondsPerBlock)
-  );
+  const blocksToRewind = parseInt(String(secondsToRewind / secondsPerBlock));
   return currentBlock - blocksToRewind;
 };
 
-
 const zeroIfNegative = (big: BigNumber) =>
   big.isNegative() ? new BigNumber(0) : big;
-
 
 export const calculateMaxStakes = (
   tknReserveBalanceWei: string,
@@ -100,7 +101,7 @@ export const calculateMaxStakes = (
   return {
     maxAllowedBntWei: maxAllowedBnt.toString(),
     maxAllowedTknWei: maxAllowedBntInTkn.toString()
-  }
+  };
 };
 
 export interface LockedBalance {
@@ -114,30 +115,33 @@ export const traverseLockedBalances = async (
   owner: string,
   expectedCount: number
 ): Promise<LockedBalance[]> => {
-  console.log('traverseHit')
+  console.log("traverseHit");
   const storeContract = buildLiquidityProtectionStoreContract(contract);
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
 
-    console.log(startIndex, endIndex, 'is start and end index')
-    let lockedBalanceRes = await storeContract.methods
+    console.log(startIndex, endIndex, "is start and end index");
+    const lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
-      console.log('traverseHit 33')
+    console.log("traverseHit 33");
 
     const bntWeis = lockedBalanceRes["0"];
     const expirys = lockedBalanceRes["1"];
 
-    const zipped = zip(bntWeis, expirys) as [bntWei: string, timestamp: string][]
-    const withIndex = zipped.map(([bntWei, expiry], index) => ({
-      amountWei: bntWei,
-      expirationTime: Number(expiry),
-      index: index + startIndex
-    }) as LockedBalance);
+    const zipped = zip(bntWeis, expirys);
+    const withIndex = zipped.map(
+      ([bntWei, expiry], index) =>
+        ({
+          amountWei: bntWei,
+          expirationTime: Number(expiry),
+          index: index + startIndex
+        } as LockedBalance)
+    );
     lockedBalances = lockedBalances.concat(withIndex);
     if (lockedBalances.length >= expectedCount) break;
   }
@@ -182,7 +186,7 @@ export const multiSteps = async ({
 }) => {
   let state: any = {};
   for (const todo in items) {
-    let steps = items.map(
+    const steps = items.map(
       (todo, index): Step => ({
         name: String(index),
         description: todo.description
@@ -194,7 +198,7 @@ export const multiSteps = async ({
       throw new Error("onUpdate should be either a function or undefined");
     }
 
-    let newState = await items[todo].task(state);
+    const newState = await items[todo].task(state);
     if (typeof newState !== "undefined") {
       state = newState;
     }
@@ -356,7 +360,7 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-export let web3 = new Web3(
+export const web3 = new Web3(
   Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
 
@@ -679,7 +683,7 @@ export const getLogs = async (
     id: 1
   });
 
-  console.log(res, 'is the raw return')
+  console.log(res, "is the raw return");
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
@@ -742,14 +746,21 @@ export const fetchReserveBalance = async (
   converterContract: any,
   reserveTokenAddress: string,
   versionNumber: number | string,
-  blockHeight? :number
+  blockHeight?: number
 ): Promise<string> => {
   try {
-    const res = await blockHeight !== undefined ? converterContract.methods[
-      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
-    ](reserveTokenAddress).call(null, blockHeight):  converterContract.methods[
-      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
-    ](reserveTokenAddress).call();
+    const res =
+      (await blockHeight) !== undefined
+        ? converterContract.methods[
+            Number(versionNumber) >= 17
+              ? "getConnectorBalance"
+              : "getReserveBalance"
+          ](reserveTokenAddress).call(null, blockHeight)
+        : converterContract.methods[
+            Number(versionNumber) >= 17
+              ? "getConnectorBalance"
+              : "getReserveBalance"
+          ](reserveTokenAddress).call();
     return res;
   } catch (e) {
     try {
@@ -1278,7 +1289,7 @@ export const buildPoolName = (
 export const formatUnixTime = (
   unixTime: number
 ): { date: string; time: string; dateTime: string } => {
-  const date = moment.unix(unixTime).format("MMM D yyyy")
+  const date = moment.unix(unixTime).format("MMM D yyyy");
   const time = moment.unix(unixTime).format("HH:mm");
   const dateTime = `${date} ${time}`;
 

@@ -215,19 +215,25 @@ export default class PoolActionsAddV2 extends Vue {
     this.singleUnitCosts = items;
   }
 
-
   get isLinkPool() {
     const selectedPool = this.pool;
-    return selectedPool.reserves.some(reserve => compareString(reserve.symbol, 'LINK'));
+    return selectedPool.reserves.some(reserve =>
+      compareString(reserve.symbol, "LINK")
+    );
   }
 
   get poolLabel() {
-    return this.isLinkPool ? 'LINK' : "REN"
+    return this.isLinkPool ? "LINK" : "REN";
   }
 
   clickAlert() {
-    const poolDestinationId = this.isLinkPool ? '0x04D0231162b4784b706908c787CE32bD075db9b7' : '0x6b181C478b315bE3f9E99c57CE926436c32e17a7'
-    this.$router.push({ name: 'AddProtectionSingle', params: { id: poolDestinationId } });
+    const poolDestinationId = this.isLinkPool
+      ? "0x04D0231162b4784b706908c787CE32bD075db9b7"
+      : "0x6b181C478b315bE3f9E99c57CE926436c32e17a7";
+    this.$router.push({
+      name: "AddProtectionSingle",
+      params: { id: poolDestinationId }
+    });
   }
 
   async loadPrices(amount: string) {

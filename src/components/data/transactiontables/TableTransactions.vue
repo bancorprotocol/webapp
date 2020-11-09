@@ -3,14 +3,14 @@
     :items="items"
     :fields="fields"
     :filter="filter"
-    :filterFunction="doFilter"
+    :filter-function="doFilter"
     sort-by="unixTime"
   >
-    <template v-slot:cell(description)="data">
+    <template #cell(description)="data">
       <a :href="data.item.txLink" target="_blank">{{ data.value }}</a>
     </template>
 
-    <template v-slot:cell(account)="data">
+    <template #cell(account)="data">
       <a :href="data.item.accountLink" target="_blank">{{ data.value }}</a>
     </template>
   </table-wrapper>
