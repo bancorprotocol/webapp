@@ -99,10 +99,10 @@ export default class DataTable extends Vue {
   }
 
   get paginatedItems() {
-    return this.modifiedItems.slice(
-      this.currentPage * this.perPage - this.perPage,
-      this.currentPage * this.perPage
-    );
+    const perPage = this.perPage;
+    const endIndex = this.currentPage * perPage;
+    const startIndex = endIndex - perPage;
+    return this.modifiedItems.slice(startIndex, endIndex);
   }
 
   isColumnSort(column: ViewTableFields) {
