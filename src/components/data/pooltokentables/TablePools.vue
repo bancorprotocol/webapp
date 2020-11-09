@@ -56,7 +56,7 @@ import { ViewRelay } from "@/types/bancor";
 import { formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
+import { ViewTableFields } from "@/components/common/DataTable.vue";
 
 @Component({
   components: { DataTable, PoolLogos, ActionButtons }

@@ -55,15 +55,20 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
-import TableHeader, {
-  ViewTableFields
-} from "@/components/common/TableHeader.vue";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 
+export interface ViewTableFields {
+  label: string;
+  key: string;
+  sort?: boolean;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+}
+
 @Component({
   components: {
-    TableHeader,
     TablePagination
   }
 })
