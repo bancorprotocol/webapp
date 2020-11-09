@@ -436,20 +436,16 @@ export default class OpenProposals extends Vue {
   color: $primary !important;
 }
 
-.align-rows-cells {
-  @at-root td {
-    height: 1px;
-    padding-top: 24px !important;
-    padding-bottom: 24px !important;
-    vertical-align: top !important;
-  }
+#open-proposals .align-rows-cells td {
+  height: 1px;
+  padding-top: 24px !important;
+  padding-bottom: 24px !important;
+  vertical-align: top !important;
 }
 
-#open-proposals {
-  tr:last-child,
-  tr:last-child > td {
-    border-bottom: none !important;
-  }
+#open-proposals tr:last-child,
+#open-proposals tr:last-child > td {
+  border-bottom: none !important;
 }
 
 .container-border {

@@ -221,15 +221,21 @@ export default class Stake extends Vue {
   @Watch("lastTransaction")
   async update() {
     const [balance, votes, lock, tokenAddress, symbol] = await Promise.all([
-      vxm.ethGovernance.getBalance({
-        account: this.isAuthenticated
-      }),
-      vxm.ethGovernance.getVotes({
-        voter: this.isAuthenticated
-      }),
-      vxm.ethGovernance.getLock({
-        account: this.isAuthenticated
-      }),
+      this.isAuthenticated
+        ? vxm.ethGovernance.getBalance({
+            account: this.isAuthenticated
+          })
+        : new BigNumber(0),
+      this.isAuthenticated
+        ? vxm.ethGovernance.getVotes({
+            voter: this.isAuthenticated
+          })
+        : new BigNumber(0),
+      this.isAuthenticated
+        ? vxm.ethGovernance.getLock({
+            account: this.isAuthenticated
+          })
+        : { till: 0, for: 0 },
       vxm.ethGovernance.getTokenAddress(),
       vxm.ethGovernance.getSymbol()
     ]);
@@ -250,14 +256,12 @@ export default class Stake extends Vue {
 </script>
 
 <style lang="scss">
-#vote-stake {
-  .open-icon {
-    position: absolute;
-    right: 30px;
-  }
+#vote-stake .open-icon {
+  position: absolute;
+  right: 30px;
+}
 
-  .block-content {
-    padding-bottom: 0 !important;
-  }
+#vote-stake .block-content {
+  padding-bottom: 0 !important;
 }
 </style>
