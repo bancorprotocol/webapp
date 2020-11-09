@@ -75,6 +75,7 @@
     "vuex": "^3.4.0",
     "vuex-class": "^0.3.2",
     "vuex-class-component": "^2.3.3",
+    "vuex-module-decorators": "^1.0.1",
     "vuex-router-sync": "^5.0.0",
     "waait": "^1.0.5",
     "web3": "^1.2.11"

@@ -13,6 +13,8 @@ import { EosNetworkModule } from "./modules/network/eosNetwork";
 import { createProxy, extractVuexModule } from "vuex-class-component";
 import { EthereumGovernance } from "@/store/modules/governance/ethGovernance";
 
+import GeneralNewModule from "./modules/generalNew";
+
 Vue.use(Vuex);
 
 export const store = new Vuex.Store({
@@ -26,7 +28,9 @@ export const store = new Vuex.Store({
     ...extractVuexModule(WalletModule),
     ...extractVuexModule(NetworkModule),
     ...extractVuexModule(EosNetworkModule),
-    ...extractVuexModule(EthereumGovernance)
+    ...extractVuexModule(EthereumGovernance),
+    GeneralNewModule
+
   },
   strict: process.env.NODE_ENV !== "production"
 });
