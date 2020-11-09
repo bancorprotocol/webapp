@@ -1,14 +1,36 @@
 <template>
   <div class="table-responsive">
     <table :class="darkMode ? 'dark-table' : 'table'">
-      <table-header
-        :fields="fields"
-        :sort-by.sync="sortBy"
-        :desc-order.sync="descOrder"
-      />
+      <thead>
+        <tr :class="darkMode ? 'table-header-dark' : 'table-header-light'">
+          <th
+            @click="setSortBy(column)"
+            v-for="(column, index) in fields"
+            :key="index"
+            scope="col"
+            :class="isColumnSort(column) ? 'cursor' : ''"
+            :style="getWidthStyle(column)"
+          >
+            <slot :name="`head(${column.key})`">
+              {{ column.label }}
+            </slot>
+            <font-awesome-icon
+              v-if="column.tooltip"
+              icon="info-circle"
+              class="mr-1"
+              v-b-popover.hover.top="column.tooltip"
+            />
+            <font-awesome-icon
+              v-if="column.key === sortBy"
+              :icon="descOrder ? 'caret-down' : 'caret-up'"
+              :class="darkMode ? 'text-white' : 'text-primary'"
+            />
+          </th>
+        </tr>
+      </thead>
       <tbody>
         <tr v-for="pool in paginatedItems" :key="pool.id">
-          <td v-for="column in fields" :key="column.key">
+          <td v-for="(column, index) in fields" :key="index">
             <slot
               :name="`cell(${column.key})`"
               :item="pool"
@@ -76,6 +98,25 @@ export default class DataTable extends Vue {
       this.currentPage * this.perPage - this.perPage,
       this.currentPage * this.perPage
     );
+  }
+
+  isColumnSort(column: ViewTableFields) {
+    return column.sort === undefined || column.sort;
+  }
+
+  setSortBy(column: ViewTableFields) {
+    if (this.isColumnSort(column)) {
+      if (this.sortBy === column.key) this.descOrder = !this.descOrder;
+      else this.sortBy = column.key;
+    } else return;
+  }
+
+  getWidthStyle(column: ViewTableFields) {
+    let styleString = "";
+    if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
+    if (column.minWidth)
+      styleString = styleString + "min-width: " + column.minWidth + ";";
+    return styleString;
   }
 
   @Watch("filter")
