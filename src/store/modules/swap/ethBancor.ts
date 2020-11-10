@@ -4567,7 +4567,7 @@ export class EthBancorModule
   }
 
   @action async spamBalances(tokenAddresses: string[]) {
-    for (var i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
       await this.fetchAndSetTokenBalances(tokenAddresses);
       await wait(1500);
     }
