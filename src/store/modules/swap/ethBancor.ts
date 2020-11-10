@@ -1648,33 +1648,22 @@ export class EthBancorModule
     try {
       const contract = buildLiquidityProtectionStoreContract(liquidityStore);
       const owner = this.isAuthenticated;
-      console.time("time to get ID count");
       const idCount = Number(
         await contract.methods.protectedLiquidityCount(owner).call()
       );
-      console.timeEnd("time to get ID count");
       if (idCount == 0) return;
-      console.time("time to get ids");
       const ids = await contract.methods.protectedLiquidityIds(owner).call();
-      console.timeEnd("time to get ids");
-      console.time("time to get all positions");
       const allPositions = await Promise.all(
         ids.map(id => protectionById(liquidityStore, id))
       );
-      console.timeEnd("time to get all positions");
-      console.log(allPositions, "are all positions");
       if (allPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
-
-      console.log("contracts", this.contracts.LiquidityProtection);
 
       const lpContract = buildLiquidityProtectionContract(
         this.contracts.LiquidityProtection
       );
 
-      console.time("secondsToGetCurrentBlock");
       const currentBlockNumber = await web3.eth.getBlockNumber();
-      console.timeEnd("secondsToGetCurrentBlock");
 
       const uniqueAnchors = uniqWith(
         allPositions.map(pos => pos.poolToken),
