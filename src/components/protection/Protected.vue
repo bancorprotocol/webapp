@@ -155,10 +155,9 @@
               triggers="hover"
               placement="bottom"
             >
-              Until the "cliff" is reached, you are entitled to exercise 0% of
-              your impermanent loss protection. When the cliff is reached, you
-              are entitled to 30% coverage. Coverage increases by 1% per day
-              until 100% coverage is reached (full protection).
+              Impermanent loss protection starts 30 days after your deposit, at
+              which point the "cliff" is reached and protection rises from 30%,
+              by 1% per day, until 100% protection is reached.
             </b-popover>
           </div>
         </div>
