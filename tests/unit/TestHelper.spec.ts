@@ -1,7 +1,7 @@
 import { compareString } from "@/api/helpers";
 
-describe("sorting by network symbols", () => {
-  test("traditional relays", async () => {
+describe("unit testing on helpers file", () => {
+  test("compare string", async () => {
     const tested = compareString("hello", "HELLO");
 
     expect(tested).toBe(true);
