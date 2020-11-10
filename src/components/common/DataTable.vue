@@ -5,8 +5,8 @@
         <tr :class="darkMode ? 'table-header-dark' : 'table-header-light'">
           <th
             @click="setSortBy(column)"
-            v-for="(column, index) in fields"
-            :key="index"
+            v-for="column in fields"
+            :key="column.id"
             scope="col"
             :class="isColumnSort(column) ? 'cursor' : ''"
             :style="getWidthStyle(column)"
@@ -30,7 +30,7 @@
       </thead>
       <tbody>
         <tr v-for="pool in paginatedItems" :key="pool.id">
-          <td v-for="(column, index) in fields" :key="index">
+          <td v-for="column in fields" :key="column.id">
             <slot
               :name="`cell(${column.key})`"
               :item="pool"
@@ -59,6 +59,7 @@ import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 
 export interface ViewTableFields {
+  id: number;
   label: string;
   key: string;
   sort?: boolean;
