@@ -1638,8 +1638,6 @@ export class EthBancorModule
   }
 
   @action async fetchProtectionPositions(storeAddress?: string) {
-    console.log("fetchProtectionPositions");
-    console.count("fetchProtectionPositions");
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
     if (!this.isAuthenticated) {
