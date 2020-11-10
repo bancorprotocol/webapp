@@ -46,7 +46,7 @@
     <table-pagination
       v-if="!hidePagination"
       :current-page.sync="currentPage"
-      :rowCount="modifiedItems.length"
+      :row-count="modifiedItems.length"
       :per-page="perPage"
     />
   </div>
