@@ -146,7 +146,7 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 
 @Component
@@ -200,7 +200,7 @@ export default class BancorMenu extends Vue {
     vxm.general.toggleDarkMode();
   }
 
-  set darkMode(value: boolean) {
+  set darkMode(_: boolean) {
     vxm.general.toggleDarkMode();
   }
 }

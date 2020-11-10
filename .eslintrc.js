@@ -15,6 +15,8 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'prettier/prettier': ['warn', { singleQuote: false, semi: true }],
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": 'warn'
     // '@typescript-eslint/no-floating-promises': 'warn'
   },
   parserOptions: {

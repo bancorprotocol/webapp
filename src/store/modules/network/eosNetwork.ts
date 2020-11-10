@@ -4,11 +4,9 @@ import {
   TokenBalanceReturn,
   GetBalanceParam,
   TokenBalanceParam,
-  TransferParam,
-  TokenBalance
+  TransferParam
 } from "@/types/bancor";
 import {
-  getBalance,
   compareString,
   compareToken,
   assetToDecNumberString
@@ -85,10 +83,6 @@ const pickBalanceReturn = (data: any): TokenBalanceReturn => {
   return res;
 };
 
-const tokenBalanceToTokenBalanceReturn = (
-  token: TokenBalance
-): TokenBalanceReturn => ({ ...token, balance: token.amount });
-
 const VuexModule = createModule({
   strict: false
 });
@@ -137,7 +131,7 @@ export class EosNetworkModule
     maxPings?: number;
     interval?: number;
   }) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async resolve => {
       for (let i = 0; i < maxPings; i++) {
         const newBalanceArray = await this.getBalances({
           tokens: originalBalances,

@@ -1,7 +1,6 @@
 import BigNumber from "bignumber.js";
-import { compareString, findOrThrow, web3 } from "@/api/helpers";
+import { web3 } from "@/api/helpers";
 import { isAddress } from "web3-utils";
-import { WeiExtendedAsset } from "@/types/bancor";
 
 export const expandToken = (amount: string | number, precision: number) =>
   new BigNumber(amount).times(new BigNumber(10).pow(precision)).toFixed(0);
@@ -68,15 +67,6 @@ export const makeBatchRequest = (calls: any[], from: string) => {
 export interface TokenSymbol {
   contract: string;
   symbol: string;
-}
-
-export interface BaseRelay {
-  contract: string;
-  smartToken: TokenSymbol;
-}
-
-export interface DryRelay extends BaseRelay {
-  reserves: TokenSymbol[];
 }
 
 export interface MinimalRelay {

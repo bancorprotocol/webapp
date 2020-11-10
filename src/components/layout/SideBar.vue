@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, Emit, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
@@ -92,19 +92,6 @@ export default class SideBar extends Vue {
   }
   async created() {
     this.onRouteChange();
-  }
-  detectSubdomain() {
-    const hostname = window.location.hostname;
-    const splitted = hostname.split(".");
-    const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
-    console.log(withoutStaging, "is without staging");
-    const subDomain = withoutStaging[0];
-    if (subDomain == "localhost") return;
-    if (subDomain == "data") {
-      this.selectedLink = "data";
-    } else if (subDomain == "swap") {
-      this.selectedLink = "swap";
-    }
   }
 
   openUrl(url: string) {
