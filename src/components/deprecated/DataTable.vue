@@ -17,7 +17,7 @@
       v-if="!hidePagination"
       :current-page.sync="currentPage"
       @update:currentPage="modifyItems"
-      :rowCount.sync="modifiedItems.length"
+      :row-count.sync="modifiedItems.length"
       @update:rowCount="modifyItems"
       :per-page="perPage"
     />

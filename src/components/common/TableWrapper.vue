@@ -13,7 +13,7 @@
       :filter="filter"
       :filter-function="filterFunction"
       @filtered="onFiltered"
-      emptyFilteredText="No results found"
+      empty-filtered-text="No results found"
       show-empty
     >
       <slot v-for="(_, name) in $slots" :name="name" :slot="name" />
@@ -25,7 +25,7 @@
         <slot :name="name" v-bind="slotData" />
       </template>
 
-      <template v-slot:emptyfiltered="scope">
+      <template #emptyfiltered="scope">
         <div class="font-size-14 font-w500 text-center mt-4">
           {{ scope.emptyFilteredText }}
         </div>

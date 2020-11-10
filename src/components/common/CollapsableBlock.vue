@@ -1,6 +1,6 @@
 <template>
   <b-card header-tag="header" no-body>
-    <template v-slot:header>
+    <template #header>
       <div
         @click="open = !open"
         class="block-header d-flex justify-content-between font-size-14 font-w600 cursor"

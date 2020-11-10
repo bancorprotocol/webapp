@@ -33,7 +33,7 @@
       :items="proposals"
       :fields="fields"
       default-sort="to"
-      :hidePagination="true"
+      :hide-pagination="true"
     >
       <template v-for="proposal in proposals">
         <tr
@@ -156,7 +156,7 @@
             <div class="pt-2">
               <remaining-time
                 type="warn"
-                :showSeconds="true"
+                :show-seconds="true"
                 :from="proposal.start"
                 :to="proposal.end"
               />

@@ -2,13 +2,13 @@
   <div class="bar-container">
     <side-bar-left
       class="d-none d-md-flex"
-      :darkMode="darkMode"
+      :dark-mode="darkMode"
       :data="dataObject"
       @sideLinkClicked="sideLinkClicked"
     />
     <side-bar-bottom
       class="d-md-none"
-      :darkMode="darkMode"
+      :dark-mode="darkMode"
       :data="dataObject"
       @sideLinkClicked="sideLinkClicked"
     />

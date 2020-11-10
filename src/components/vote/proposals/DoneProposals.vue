@@ -31,7 +31,7 @@
     :items="proposals"
     :fields="fields"
     default-sort="to"
-    :hidePagination="true"
+    :hide-pagination="true"
   >
     <template
       v-for="proposal in proposals"
@@ -308,7 +308,7 @@ export default class DoneProposals extends Vue {
   }
 
   async mounted() {
-    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl()
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }

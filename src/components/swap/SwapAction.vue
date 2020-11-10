@@ -98,7 +98,7 @@ import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
-import BigNumber from 'bignumber.js';
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -203,7 +203,7 @@ export default class SwapAction extends Vue {
       return;
     }
 
-    this.$router.push({
+    this.$router.replace({
       name: "Swap",
       query: {
         from: id,
@@ -220,7 +220,7 @@ export default class SwapAction extends Vue {
       return;
     }
 
-    this.$router.push({
+    this.$router.replace({
       name: "Swap",
       query: {
         from: from,
@@ -234,7 +234,7 @@ export default class SwapAction extends Vue {
   }
 
   invertSelection() {
-    this.$router.push({
+    this.$router.replace({
       name: "Swap",
       query: {
         from: this.token2.id,
@@ -270,7 +270,7 @@ export default class SwapAction extends Vue {
       if (reward.slippage) {
         this.slippage = reward.slippage;
       } else {
-        this.slippage = 0
+        this.slippage = 0;
       }
       if (reward.fee) {
         this.fee = reward.fee;
@@ -351,7 +351,7 @@ export default class SwapAction extends Vue {
       if (this.$route.query.from) defaultQuery.from = this.$route.query.from;
       // @ts-ignore
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
-      await this.$router.push({ name: "Swap", query: defaultQuery });
+      await this.$router.replace({ name: "Swap", query: defaultQuery });
     }
 
     await this.calculateRate();
