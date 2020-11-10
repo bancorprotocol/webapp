@@ -33,12 +33,26 @@
     </template>
 
     <div>
-      {{ proposal.name }}
+      <span class="text-uppercase">Proposal Title: </span> {{ proposal.name }}
     </div>
 
-    <table-wrapper :items="proposal.voters" :fields="fields" class="p-0" per-page="100000000">
+    <table-wrapper
+      :items="proposal.voters"
+      :fields="fields"
+      class="p-0"
+      per-page="100000000"
+    >
       <template #cell(index)="data">
         {{ data.index + 1 }}
+      </template>
+
+      <template #cell(account)="data">
+        <a
+          :href="getEtherscanUrl(data.item.account)"
+          target="_blank"
+          rel="noopener"
+          >{{ data.item.account }}</a
+        >
       </template>
 
       <template #cell(weight)="data">
@@ -70,6 +84,16 @@
         }}%
       </template>
     </table-wrapper>
+
+    <div class="text-center">
+      <main-button
+        @click="onHide"
+        label="Close"
+        :active="true"
+        :block="true"
+        style="max-width: 200px"
+      />
+    </div>
   </b-modal>
 </template>
 
@@ -95,6 +119,7 @@ export default class ModalVoteDetails extends Vue {
 
   symbol: string = "";
   decimals: number = 0;
+  etherscanUrl: string = "";
 
   fields: BvTableFieldArray = [
     {
@@ -130,10 +155,15 @@ export default class ModalVoteDetails extends Vue {
   }
 
   formatNumber(num: string) {
-    console.log(num)
     return prettifyNumber(
-        new BigNumber(num).dividedBy(new BigNumber(10).pow(this.decimals)).toString()
+      new BigNumber(num)
+        .dividedBy(new BigNumber(10).pow(this.decimals))
+        .toString()
     );
+  }
+
+  getEtherscanUrl(account: string) {
+    return `${this.etherscanUrl}address/${account}`;
   }
 
   get darkMode(): boolean {
@@ -149,6 +179,7 @@ export default class ModalVoteDetails extends Vue {
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
     this.decimals = await vxm.ethGovernance.getDecimals();
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
   }
 }
 </script>

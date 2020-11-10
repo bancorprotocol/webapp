@@ -302,7 +302,7 @@
                 </div>
 
                 <div class="row pt-1">
-                  <div class="col-6">
+                  <div class="col-6 pt-1">
                     <span v-if="Date.now() > proposal.end">
                       {{ (proposal.quorum / 10000).toFixed(2) }}% Quorum
                     </span>
