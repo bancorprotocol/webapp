@@ -37,22 +37,18 @@
     </div>
 
     <table-wrapper
-      :items="proposal.voters"
+      :items="getVoters()"
       :fields="fields"
       class="p-0"
       per-page="100000000"
     >
-      <template #cell(index)="data">
-        {{ data.index + 1 }}
-      </template>
-
       <template #cell(account)="data">
         <a
           :href="getEtherscanUrl(data.item.account)"
           target="_blank"
           rel="noopener"
-          >{{ data.item.account }}</a
-        >
+          >{{ data.item.account }}
+        </a>
       </template>
 
       <template #cell(weight)="data">
@@ -68,20 +64,14 @@
         </div>
       </template>
 
-      <template #cell(vote)="data">
+      <template #cell(voted)="data">
         <span class="text-uppercase">
           {{ data.item.votes.voted }}
         </span>
       </template>
 
       <template #cell(percentOfTotal)="data">
-        {{
-          calculatePercentOfTotal(
-            data.item.votes.for !== "0"
-              ? data.item.votes.for
-              : data.item.votes.against
-          )
-        }}%
+        {{ data.item.percentOfTotal }}%
       </template>
     </table-wrapper>
 
@@ -102,7 +92,7 @@ import { vxm } from "@/store/";
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { prettifyNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
-import { Proposal } from "@/store/modules/governance/ethGovernance";
+import { Proposal, Voter } from "@/store/modules/governance/ethGovernance";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import { BvTableFieldArray } from "bootstrap-vue/src/components/table";
 import BigNumber from "bignumber.js";
@@ -124,27 +114,43 @@ export default class ModalVoteDetails extends Vue {
   fields: BvTableFieldArray = [
     {
       key: "index",
-      label: "#"
+      label: "#",
+      sortable: true
     },
     {
       key: "account",
-      label: "User Wallet"
+      label: "User Wallet",
+      sortable: true
     },
     {
       key: "weight",
       label: "Amount"
     },
     {
-      key: "vote",
-      label: "Vote"
+      key: "voted",
+      label: "Vote",
+      sortable: true
     },
     {
       key: "percentOfTotal",
-      label: "% of Total"
+      label: "% of Total",
+      sortable: true
     }
   ];
 
-  calculatePercentOfTotal(vote: string) {
+  getVoters() {
+    return this.proposal.voters.map((v: Voter, index: number) => {
+      return {
+        index: index + 1,
+        ...v,
+        percentOfTotal: this.calculatePercentOfTotal(
+          v.votes.for !== 0 ? v.votes.for : v.votes.against
+        )
+      };
+    });
+  }
+
+  calculatePercentOfTotal(vote: number) {
     const pct = new BigNumber(100)
       .dividedBy(new BigNumber(this.proposal.totalVotes))
       .multipliedBy(

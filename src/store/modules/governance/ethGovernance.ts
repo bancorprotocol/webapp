@@ -41,6 +41,11 @@ interface Votes {
   against: number;
 }
 
+export interface Voter {
+  votes: Votes;
+  account: string;
+}
+
 export interface Proposal {
   id: number;
   // timestamp
@@ -61,10 +66,7 @@ export interface Proposal {
   // votes of currently logged in user
   votes: Votes;
   metadata?: ProposalMetaData;
-  voters: {
-    votes: Votes;
-    account: string;
-  }[];
+  voters: Voter[];
 }
 
 interface Token
@@ -503,7 +505,7 @@ export class EthereumGovernance extends VuexModule.With({
     proposal: Proposal;
   }): Promise<{ votes: Votes; account: string }[]> {
     const voteEvents = await this.governanceContract.getPastEvents("Vote", {
-      filter: { _id: "0x" + proposal.id.toString(16) },
+      filter: { _id: proposal.id.toString() },
       fromBlock: 0,
       toBlock: "latest"
     });
