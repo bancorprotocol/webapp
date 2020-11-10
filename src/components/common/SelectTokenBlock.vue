@@ -22,7 +22,7 @@
       v-model="modal"
       :tokens="tokens"
       @select="select"
-      :allowTokenAdd="type == 'primary'"
+      :allow-token-add="type == 'primary'"
     />
   </div>
 </template>

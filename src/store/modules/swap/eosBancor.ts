@@ -1268,7 +1268,7 @@ export class EosBancorModule
 
     for (const chunk in remainingChunks) {
       await wait(waitTime);
-      let relays = await this.hydrateOldRelays(remainingChunks[chunk]);
+      const relays = await this.hydrateOldRelays(remainingChunks[chunk]);
       this.buildManuallyIfNotIncludedInExistingFeeds({
         relays,
         existingFeeds: bancorApiFeeds
@@ -1652,9 +1652,11 @@ export class EosBancorModule
       ).price;
 
       const relayFeeds: RelayFeed[] = relays.flatMap(relay => {
-        const [secondaryReserve, primaryReserve] = sortByNetworkTokens(
-          relay.reserves,
-          reserve => reserve.symbol.code().to_string()
+        const [
+          secondaryReserve,
+          primaryReserve
+        ] = sortByNetworkTokens(relay.reserves, reserve =>
+          reserve.symbol.code().to_string()
         );
 
         const token = tokenPrices.find(price =>
@@ -2054,9 +2056,9 @@ export class EosBancorModule
       }));
 
     let lastTxId: string = "";
-    for (var i = 0; i < suggestTxs; i++) {
+    for (let i = 0; i < suggestTxs; i++) {
       onUpdate!(i, steps);
-      let txRes = await this.triggerTx(
+      const txRes = await this.triggerTx(
         await this.doubleLiquidateActions({
           relay,
           reserveAssets: reserveAssets.map(asset => asset.amount),

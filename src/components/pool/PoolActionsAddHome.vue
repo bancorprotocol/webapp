@@ -5,11 +5,7 @@
         <pool-logos :pool="pool" :cursor="false" />
       </label-content-split>
 
-      <alert-block
-        v-if="false"
-        msg="In this particular pool you are able to stake and protect from impermanent loss single token or both pool assets."
-        class="my-3"
-      />
+      <alert-block :msg="infoMsg" class="my-3" />
 
       <stake-buttons @click="click" :show-add-liquidity="true" />
     </div>
@@ -42,6 +38,10 @@ import StakeButtons from "@/components/protection/StakeButtons.vue";
 export default class PoolActionsAddHome extends Vue {
   get pool(): ViewRelay {
     return vxm.bancor.relay(this.$route.params.id);
+  }
+
+  get infoMsg() {
+    return "By joining a pool, liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.";
   }
 
   click(optionId: number) {
