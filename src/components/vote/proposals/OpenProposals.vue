@@ -1,6 +1,10 @@
 <template>
   <div id="open-proposals">
     <modal-not-enough-tokens v-model="notEnoughTokensModal" />
+    <modal-vote-details
+      v-model="voteDetailsModal"
+      :proposal="selectedProposal"
+    />
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
@@ -277,12 +281,43 @@
                 </div>
 
                 <div class="row pt-2">
-                  <div class="col-12">
+                  <div class="col-6">
                     <span>
-                      {{ (proposal.quorum / 10000).toFixed(2) }}% Quorum ({{
-                        (proposal.quorumRequired / 10000).toFixed(2)
-                      }}% to pass)
+                      {{
+                        proposal.voters.filter(v => v.votes.voted === "for")
+                          .length
+                      }}
+                      Users
                     </span>
+                  </div>
+                  <div class="col-6 text-right">
+                    <span>
+                      {{
+                        proposal.voters.filter(v => v.votes.voted === "against")
+                          .length
+                      }}
+                      Users
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row pt-1">
+                  <div class="col-6">
+                    <span v-if="Date.now() > proposal.end">
+                      {{ (proposal.quorum / 10000).toFixed(2) }}% Quorum
+                    </span>
+                  </div>
+                  <div class="col-6 text-right">
+                    <b-btn
+                      @click="() => showDetails(proposal.id)"
+                      :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+                      class="block-rounded btn-sm"
+                    >
+                      <span class="font-size-14 font-w500">
+                        <font-awesome-icon icon="poll" />
+                        Breakdown
+                      </span>
+                    </b-btn>
                   </div>
                 </div>
               </div>
@@ -309,9 +344,11 @@ import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
+import ModalVoteDetails from "@/components/modals/ModalVoteDetails.vue";
 
 @Component({
   components: {
+    ModalVoteDetails,
     ContentBlock,
     ProgressBar,
     RemainingTime,
@@ -326,6 +363,9 @@ export default class OpenProposals extends Vue {
   @Prop() proposals?: Proposal[];
 
   notEnoughTokensModal = false;
+  voteDetailsModal = false;
+  selectedProposal?: Proposal;
+
   symbol: string = "";
   etherscanUrl: string = "";
   currentVotes: BigNumber = new BigNumber(0);
@@ -386,6 +426,11 @@ export default class OpenProposals extends Vue {
 
   shortAddress(address: string) {
     return shortenEthAddress(address);
+  }
+
+  showDetails(id: number) {
+    this.selectedProposal = this.proposals?.find(p => p.id === id);
+    this.voteDetailsModal = true;
   }
 
   async voteFor(proposalId: string) {

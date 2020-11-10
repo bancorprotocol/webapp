@@ -509,6 +509,8 @@ export class EthereumGovernance extends VuexModule.With({
     });
 
     return voteEvents.map(event => {
+      console.log("weight", event.returnValues["_weight"], event)
+
       return {
         account: event.returnValues["_voter"],
         votes: {
