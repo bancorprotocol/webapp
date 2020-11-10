@@ -82,17 +82,25 @@ export default class DataTable extends Vue {
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
+  @Prop() filterFunction?: Function;
 
   sortBy: string = this.defaultSort;
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
 
   get modifiedItems() {
-    const filtered = this.items.filter(
-      (t: any) =>
-        t[this.filterBy] &&
-        t[this.filterBy].toUpperCase().includes(this.filter.toUpperCase())
-    );
+    let filtered = [];
+    if (this.filterFunction !== undefined) {
+      filtered = this.items.filter((t: any) =>
+        this.filterFunction!(t, this.filter)
+      );
+    } else {
+      filtered = this.items.filter(
+        (t: any) =>
+          t[this.filterBy] &&
+          t[this.filterBy].toUpperCase().includes(this.filter.toUpperCase())
+      );
+    }
 
     return sort(filtered)[this.descOrder ? "desc" : "asc"](
       (t: any) => t[this.sortBy]

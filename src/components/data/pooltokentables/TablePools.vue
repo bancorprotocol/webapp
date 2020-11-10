@@ -4,6 +4,7 @@
     :items="items"
     :filter="filter"
     filter-by="symbol"
+    :filter-function="doFilter"
     default-sort="liqDepth"
   >
     <template #head(liquidityProtection)>
@@ -142,6 +143,11 @@ export default class TablePools extends Vue {
         maxWidth: "150px"
       }
     ];
+  }
+
+  doFilter(row: ViewRelay, filter: string) {
+    const symbols = row.reserves.map(reserve => reserve.symbol.toLowerCase());
+    return symbols.some(symbol => symbol.includes(filter.toLowerCase()));
   }
 
   get isEth() {
