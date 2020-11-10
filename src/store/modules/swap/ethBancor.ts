@@ -1837,12 +1837,20 @@ export class EthBancorModule
         Promise.all(
           allPositions.map(async position => {
             const calculateFees = (
-              depositedToken: string,
+              originalPoolTokenAmount: string,
+              
               depositedAmount: string,
               depositedReserveCurrentBalance: string,
-              opposingDepositedReserveBalance: string,
+              opposingDepositedReserveCurrentBalance: string,
               reserveRate: string
-            ) => {};
+            ) => {
+
+              // original pool token amount * (current reserve balance, current pool token balance)
+
+              const currentReserveToPoolBalanceRate = 
+              const amount1 = new BigNumber(originalPoolTokenAmount).times()
+
+            };
 
             const currentPoolBalances = await this.fetchRelayBalances({
               poolId: position.poolToken
@@ -1863,10 +1871,10 @@ export class EthBancorModule
 
             const depositedAmount = position.reserveAmount;
 
-            const rate = new BigNumber(depositedReserve.weiAmount).times(
+            const currentReserveToPoolRate = new BigNumber(depositedReserve.weiAmount).times(
               currentPoolBalances.smartTokenSupplyWei
             );
-            const amount1 = new BigNumber(position.poolAmount).times(rate);
+            const amount1 = new BigNumber(position.poolAmount).times(currentReserveToPoolRate);
             const amount0 = new BigNumber(depositedAmount);
 
             const magicRate = rate1.div(rate0);
@@ -1882,6 +1890,8 @@ export class EthBancorModule
 
             const shrunk = shrinkToken(feeAmount.toString(), 18);
 
+            console.log(shrunk, "is the fee amount");
+
             console.log(
               feePercent.toString(),
               "fee percent",
@@ -1895,7 +1905,7 @@ export class EthBancorModule
 
             return {
               positionId: position.id,
-              feePercent: feePercent.toString()
+              amount: shrunk
             };
           })
         )
@@ -1908,10 +1918,14 @@ export class EthBancorModule
             withLiquidityReturn.find(p => position.id == p.positionId);
           const roiReturn =
             withAprs && withAprs.find(p => position.id == p.positionId);
+
+          const fee = withFees.find(p => position.id == p.positionId);
+
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
-            ...(roiReturn && omit(roiReturn, ["positionId"]))
+            ...(roiReturn && omit(roiReturn, ["positionId"])),
+            ...(fee && omit(fee, ["positionId"]))
           };
         }
       );
@@ -2211,22 +2225,11 @@ export class EthBancorModule
           startTime + maxDelay
         );
 
-        const currentReturn =
-          singleEntry.currentLiquidityReturn &&
-          shrinkToken(
-            singleEntry.currentLiquidityReturn.targetAmount,
-            reservePrecision
-          );
-
         const givenVBnt =
           compareString(
             reserveToken.id,
             this.liquidityProtectionSettings.networkToken
           ) && reserveTokenDec;
-
-        const profitAmount =
-          fullyProtectedDec &&
-          new BigNumber(fullyProtectedDec).minus(reserveTokenDec).toString();
 
         // stake - original
         // full coverage - full wait time
@@ -2279,16 +2282,16 @@ export class EthBancorModule
             }
           }),
           coverageDecPercent: progressPercent,
-          ...(profitAmount && {
+          ...(singleEntry.fee && {
             fees: {
-              amount: profitAmount,
-              symbol: reserveToken.symbol,
-              ...(reserveToken.price &&
-                fullyProtectedDec && {
-                  usdValue: new BigNumber(profitAmount)
-                    .times(reserveToken.price!)
-                    .toNumber()
-                })
+              amount: singleEntry.fee.amount,
+              symbol: reserveToken.symbol
+              // ...(reserveToken.price &&
+              //   fullyProtectedDec && {
+              //     usdValue: new BigNumber(1)
+              //       .times(reserveToken.price!)
+              //       .toNumber()
+              //   })
             }
           }),
           roi:

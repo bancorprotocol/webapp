@@ -44,6 +44,9 @@ export interface ProtectedLiquidityCalculated {
   oneDayDec?: string;
   oneWeekDec?: string;
   // oneMonthDec: string;
+  fee?: {
+    amount: string;
+  };
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;

@@ -117,7 +117,7 @@
         />
       </template>
 
-      <template v-slot:cell(fullyProtected)="data">
+      <template v-slot:cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
