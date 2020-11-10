@@ -1,5 +1,5 @@
 import { mount, createLocalVue } from "@vue/test-utils";
-import ProgressBar from "@/components/common/ProgressBar.vue";
+import TestProgressBar from "@/components/deprecated/TestProgressBar.vue";
 import Vuex from 'vuex'
 
 // jest.mock("../../src/router/index.ts", () => jest.fn());
@@ -43,7 +43,7 @@ describe("Progress Bar Component", () => {
     
   it("renderes props. when passed", () => {    
     const percentage = 20
-    const wrapper = mount(ProgressBar, {
+    const wrapper = mount(TestProgressBar, {
       propsData: {
         percentage
       },
