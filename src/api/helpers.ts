@@ -1007,11 +1007,13 @@ const isAuthenticatedViaModule = (module: EosTransitModule) => {
   return isAuthenticated;
 };
 
-export const getBankBalance = async (): Promise<{
-  id: number;
-  quantity: string;
-  symbl: string;
-}[]> => {
+export const getBankBalance = async (): Promise<
+  {
+    id: number;
+    quantity: string;
+    symbl: string;
+  }[]
+> => {
   const account = isAuthenticatedViaModule(vxm.eosWallet);
   const res: {
     rows: {

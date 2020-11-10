@@ -1487,10 +1487,7 @@ export const ABISmartToken: AbiItem[] = [
   },
   {
     constant: true,
-    inputs: [
-      { name: "", type: "address" },
-      { name: "", type: "address" }
-    ],
+    inputs: [{ name: "", type: "address" }, { name: "", type: "address" }],
     name: "allowance",
     outputs: [{ name: "", type: "uint256" }],
     payable: false,
@@ -2302,10 +2299,7 @@ export const ABIConverterV28: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "getReturn",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -2558,10 +2552,7 @@ export const ABIConverterV28: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "targetAmountAndFee",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -2590,10 +2581,7 @@ export const ABIConverterV28: AbiItem[] = [
   },
   {
     constant: true,
-    inputs: [
-      { name: "_n", type: "uint256" },
-      { name: "_d", type: "uint256" }
-    ],
+    inputs: [{ name: "_n", type: "uint256" }, { name: "_d", type: "uint256" }],
     name: "roundDiv",
     outputs: [{ name: "", type: "uint256" }],
     payable: false,
@@ -2924,10 +2912,7 @@ export const ABIConverter: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "getReturn",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -3007,10 +2992,7 @@ export const ABIConverter: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "rateAndFee",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -3212,10 +3194,7 @@ export const ABIConverter: AbiItem[] = [
   },
   {
     constant: true,
-    inputs: [
-      { name: "_n", type: "uint256" },
-      { name: "_d", type: "uint256" }
-    ],
+    inputs: [{ name: "_n", type: "uint256" }, { name: "_d", type: "uint256" }],
     name: "roundDiv",
     outputs: [{ name: "", type: "uint256" }],
     payable: false,
@@ -3684,10 +3663,7 @@ export const ABINetworkContract: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "getReturnByPath",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -4206,10 +4182,7 @@ export const ABIV2Converter: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "getReturn",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -4407,10 +4380,7 @@ export const ABIV2Converter: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "removeLiquidityReturnAndFee",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -4503,10 +4473,7 @@ export const ABIV2Converter: AbiItem[] = [
     constant: true,
     inputs: [],
     name: "referenceRate",
-    outputs: [
-      { name: "n", type: "uint256" },
-      { name: "d", type: "uint256" }
-    ],
+    outputs: [{ name: "n", type: "uint256" }, { name: "d", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -4519,10 +4486,7 @@ export const ABIV2Converter: AbiItem[] = [
       { name: "_amount", type: "uint256" }
     ],
     name: "targetAmountAndFee",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -4666,10 +4630,7 @@ export const ABIV2Converter: AbiItem[] = [
     constant: true,
     inputs: [],
     name: "effectiveTokensRate",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -4724,10 +4685,7 @@ export const ABIV2Converter: AbiItem[] = [
     constant: true,
     inputs: [],
     name: "effectiveReserveWeights",
-    outputs: [
-      { name: "", type: "uint256" },
-      { name: "", type: "uint256" }
-    ],
+    outputs: [{ name: "", type: "uint256" }, { name: "", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
@@ -4754,10 +4712,7 @@ export const ABIV2Converter: AbiItem[] = [
     constant: true,
     inputs: [],
     name: "lastConversionRate",
-    outputs: [
-      { name: "n", type: "uint256" },
-      { name: "d", type: "uint256" }
-    ],
+    outputs: [{ name: "n", type: "uint256" }, { name: "d", type: "uint256" }],
     payable: false,
     stateMutability: "view",
     type: "function"
