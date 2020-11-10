@@ -32,8 +32,16 @@
       </div>
     </template>
 
-    <div>
-      <span class="text-uppercase">Proposal Title: </span> {{ proposal.name }}
+    <div class=" pb-3">
+      <span
+        class="text-uppercase"
+        :class="this.darkMode ? 'text-dark' : 'text-light'"
+      >
+        Proposal Title:
+      </span>
+      <span :class="this.darkMode ? 'text-dark' : 'text-light'">
+        {{ proposal.name }}
+      </span>
     </div>
 
     <table-wrapper
@@ -51,6 +59,12 @@
         </a>
       </template>
 
+      <template #head(weight)="data">
+        <div class="text-right">
+          {{ data.label }}
+        </div>
+      </template>
+
       <template #cell(weight)="data">
         <div class="text-right">
           {{
@@ -65,13 +79,19 @@
       </template>
 
       <template #cell(voted)="data">
-        <span class="text-uppercase">
-          {{ data.item.votes.voted }}
-        </span>
+        <div class="text-uppercase" :class="getVoteClass(data.value)">
+          {{ data.value }}
+        </div>
+      </template>
+
+      <template #head(percentOfTotal)="data">
+        <div class="text-right">
+          {{ data.label }}
+        </div>
       </template>
 
       <template #cell(percentOfTotal)="data">
-        {{ data.item.percentOfTotal }}%
+        <div class="text-right">{{ data.item.percentOfTotal }}%</div>
       </template>
     </table-wrapper>
 
@@ -80,8 +100,8 @@
         @click="onHide"
         label="Close"
         :active="true"
-        :block="true"
-        style="max-width: 200px"
+        :block="false"
+        style="width: 175px"
       />
     </div>
   </b-modal>
@@ -124,12 +144,23 @@ export default class ModalVoteDetails extends Vue {
     },
     {
       key: "weight",
-      label: "Amount"
+      label: "Amount",
+      sortable: true,
+      formatter: (data, key, object) => {
+        return object.votes.for !== "0"
+          ? object.votes.for
+          : object.votes.against;
+      },
+      sortByFormatted: true
     },
     {
       key: "voted",
       label: "Vote",
-      sortable: true
+      sortable: true,
+      formatter: (data, key, object) => {
+        return object.votes.voted.toUpperCase();
+      },
+      sortByFormatted: true
     },
     {
       key: "percentOfTotal",
@@ -137,6 +168,10 @@ export default class ModalVoteDetails extends Vue {
       sortable: true
     }
   ];
+
+  getVoteClass(vote: string) {
+    return vote === "FOR" ? "voted-for" : "voted-against";
+  }
 
   getVoters() {
     return this.proposal.voters.map((v: Voter, index: number) => {
@@ -189,6 +224,14 @@ export default class ModalVoteDetails extends Vue {
   }
 }
 </script>
-<style lang="scss">
+<style scoped lang="scss">
 @import "@/assets/_scss/custom/_variables";
+
+.voted-for {
+  color: #3ec8c8;
+}
+
+.voted-against {
+  color: #de4a5c;
+}
 </style>
