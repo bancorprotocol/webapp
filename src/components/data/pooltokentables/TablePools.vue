@@ -56,7 +56,7 @@ import { ViewRelay } from "@/types/bancor";
 import { formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
-import { ViewTableFields } from "@/components/common/DataTable.vue";
+import { ViewTableField } from "@/components/common/DataTable.vue";
 
 @Component({
   components: { DataTable, PoolLogos, ActionButtons }
@@ -74,7 +74,7 @@ export default class TablePools extends Vue {
     return this.items.some(pool => pool.apr);
   }
 
-  get fields(): ViewTableFields[] {
+  get fields(): ViewTableField[] {
     return [
       ...(this.isEth
         ? [

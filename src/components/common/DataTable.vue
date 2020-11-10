@@ -58,7 +58,7 @@ import { vxm } from "@/store";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 
-export interface ViewTableFields {
+export interface ViewTableField {
   id: number;
   label: string;
   key: string;
@@ -74,7 +74,7 @@ export interface ViewTableFields {
   }
 })
 export default class DataTable extends Vue {
-  @Prop() fields!: ViewTableFields[];
+  @Prop() fields!: ViewTableField[];
   @Prop() items!: any[];
   @Prop() filter!: string;
   @Prop() filterBy!: string;
@@ -106,18 +106,18 @@ export default class DataTable extends Vue {
     return this.modifiedItems.slice(startIndex, endIndex);
   }
 
-  isColumnSort(column: ViewTableFields) {
+  isColumnSort(column: ViewTableField) {
     return column.sort === undefined || column.sort;
   }
 
-  setSortBy(column: ViewTableFields) {
+  setSortBy(column: ViewTableField) {
     if (this.isColumnSort(column)) {
       if (this.sortBy === column.key) this.descOrder = !this.descOrder;
       else this.sortBy = column.key;
     } else return;
   }
 
-  getWidthStyle(column: ViewTableFields) {
+  getWidthStyle(column: ViewTableField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)
