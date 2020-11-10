@@ -1,13 +1,14 @@
 <template>
   <div class="bottom-bar" :class="darkMode ? 'side-bar-dark' : ''">
     <div class="side-bar-links">
-      <div
+      <router-link
+        tag="div"
         v-for="link in data.links.filter(l => !l.hideMobile)"
         :key="link.key"
-        @click="sideLinkClicked(link.key)"
+        :to="{ name: link.route }"
         class="side-bar-link"
         :class="[
-          $route.name === link.route
+          isRouteActive(link.key)
             ? darkMode
               ? 'clicked-link-dark'
               : 'clicked-link'
@@ -21,7 +22,7 @@
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
         <span>{{ link.label }}</span>
-      </div>
+      </router-link>
     </div>
   </div>
 </template>
@@ -34,6 +35,19 @@ import { vxm } from "@/store";
 export default class SideBarBottom extends Vue {
   @Prop() data!: any;
   @Prop() darkMode!: boolean;
+
+  isRouteActive(key: string): boolean {
+    const fullPath = this.$route.fullPath;
+    if (fullPath.includes("swap") || fullPath.includes("pool")) {
+      return key === "swap";
+    } else if (fullPath.includes("data")) {
+      return key === "data";
+    } else if (fullPath.includes("protection")) {
+      return key === "liquidity";
+    } else if (fullPath.includes("vote")) {
+      return key === "vote";
+    } else return false;
+  }
 
   @Emit("sideLinkClicked")
   sideLinkClicked(key: string) {

@@ -2201,7 +2201,8 @@ export class EthBancorModule
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
-    const allIouTokens = this.relaysList.flatMap(iouTokensInRelay);
+    const relaysList = this.relaysList;
+    const allIouTokens = relaysList.flatMap(iouTokensInRelay);
     const existingBalances = this.tokenBalances.filter(
       balance =>
         balance.balance !== "0" &&
@@ -2210,7 +2211,7 @@ export class EthBancorModule
         )
     );
 
-    const relevantRelays = this.relaysList.filter(relay =>
+    const relevantRelays = relaysList.filter(relay =>
       iouTokensInRelay(relay).some(token =>
         existingBalances.some(balance =>
           compareString(balance.id, token.contract)
@@ -4567,7 +4568,7 @@ export class EthBancorModule
 
   @action async spamBalances(tokenAddresses: string[]) {
     for (let i = 0; i < 5; i++) {
-      await this.fetchTokenBalances(tokenAddresses);
+      await this.fetchAndSetTokenBalances(tokenAddresses);
       await wait(1500);
     }
   }
