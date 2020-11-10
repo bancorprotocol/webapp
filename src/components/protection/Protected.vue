@@ -98,6 +98,26 @@
         />
       </template>
 
+      <template v-slot:cell(fees)="data">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+
       <template v-slot:cell(roi)="data">
         <span>{{ data.value }}</span>
       </template>
@@ -289,28 +309,34 @@ export default class Protected extends Vue {
         thStyle: { "min-width": "250px" }
       },
       {
-        key: "protectedAmount",
+        key: "fullyProtected",
         label: "Protected Value",
         sortable: true,
         thStyle: { "min-width": "210px" }
       },
-      // {
-      //   key: "roi",
-      //   sortable: true,
-      //   thStyle: { "min-width": "60px" },
-      //   formatter: (value: string) =>
-      //     value ? this.stringifyPercentage(Number(value)) : "Error calculating"
-      // },
-      // {
-      //   key: "apr",
-      //   sortable: false,
-      //   thStyle: { "min-width": "100px" }
-      // },
       {
-        key: "insuranceStart",
-        label: "Protection Start",
+        key: "protectedAmount",
+        label: "Claimable Value",
+        sortable: true,
+        thStyle: { "min-width": "210px" }
+      },
+      {
+        key: "fees",
+        label: "Fees",
         sortable: true,
         thStyle: { "min-width": "160px" }
+      },
+      {
+        key: "roi",
+        sortable: true,
+        thStyle: { "min-width": "60px" },
+        formatter: (value: string) =>
+          value ? this.stringifyPercentage(Number(value)) : "Error calculating"
+      },
+      {
+        key: "apr",
+        sortable: false,
+        thStyle: { "min-width": "100px" }
       },
       {
         key: "currentCoverage",

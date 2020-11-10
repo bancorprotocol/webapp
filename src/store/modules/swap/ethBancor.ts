@@ -1811,19 +1811,33 @@ export class EthBancorModule
               .add(1, "year")
               .unix();
 
-            const liquidityReturn = await getRemoveLiquidityReturn(
-              this.contracts.LiquidityProtection,
-              position.id,
-              oneMillion.toString(),
-              fullWaitTime
-            );
+            const timeNow = moment().unix();
+
+            const [
+              fullLiquidityReturn,
+              currentLiquidityReturn
+            ] = await Promise.all([
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                fullWaitTime
+              ),
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                timeNow
+              )
+            ]);
 
             return {
               positionId: position.id,
-              liquidityReturn,
+              fullLiquidityReturn,
+              currentLiquidityReturn,
               roiDec: calculateReturnOnInvestment(
                 position.reserveAmount,
-                liquidityReturn.targetAmount
+                fullLiquidityReturn.targetAmount
               )
             };
           })
@@ -2124,16 +2138,18 @@ export class EthBancorModule
         );
 
         const fullyProtectedDec =
-          singleEntry.liquidityReturn &&
+          singleEntry.fullLiquidityReturn &&
           shrinkToken(
-            singleEntry.liquidityReturn.targetAmount,
+            singleEntry.fullLiquidityReturn.targetAmount,
             reservePrecision
           );
-        const protectionAchieved = calculateProtectionLevel(
-          startTime,
-          minDelay,
-          maxDelay
-        );
+
+        const currentProtectedDec =
+          singleEntry.currentLiquidityReturn &&
+          shrinkToken(
+            singleEntry.currentLiquidityReturn.targetAmount,
+            reservePrecision
+          );
 
         const progressPercent = calculateProgressLevel(
           startTime,
@@ -2146,10 +2162,26 @@ export class EthBancorModule
             this.liquidityProtectionSettings.networkToken
           ) && reserveTokenDec;
 
+        const profitAmount =
+          fullyProtectedDec &&
+          new BigNumber(fullyProtectedDec).minus(reserveTokenDec).toString();
+
+        // stake - original
+        // full coverage - full wait time
+        // protectedAmount - current wait time
+
         return {
           id: `${singleEntry.poolToken}:${singleEntry.id}`,
           whitelisted: isWhiteListed,
           ...(givenVBnt && { givenVBnt }),
+          single: true,
+          apr: {
+            day: Number(singleEntry.oneDayDec),
+            // month: Number(singleEntry.on)
+            week: Number(singleEntry.oneWeekDec)
+          },
+          insuranceStart: startTime + minDelay,
+          fullCoverage: startTime + maxDelay,
           stake: {
             amount: reserveTokenDec,
             symbol: reserveToken.symbol,
@@ -2161,29 +2193,42 @@ export class EthBancorModule
                 .toNumber()
             })
           },
-          single: true,
-          apr: {
-            day: Number(singleEntry.oneDayDec),
-            // month: Number(singleEntry.on)
-            week: Number(singleEntry.oneWeekDec)
-          },
-          insuranceStart: startTime + minDelay,
-          fullCoverage: startTime + maxDelay,
-          // @ts-ignore
-          fullyProtected: {
-            amount: fullyProtectedDec
-          },
-          protectedAmount: {
-            amount: fullyProtectedDec,
-            symbol: reserveToken.symbol,
-            ...(reserveToken.price &&
-              fullyProtectedDec && {
-                usdValue: new BigNumber(fullyProtectedDec)
-                  .times(reserveToken.price!)
+          ...(fullyProtectedDec && {
+            fullyProtected: {
+              amount: fullyProtectedDec,
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price && {
+                usdValue: new BigNumber(reserveTokenDec)
+                  .times(reserveToken.price)
                   .toNumber()
               })
-          },
+            }
+          }),
+          ...(currentProtectedDec && {
+            protectedAmount: {
+              amount: currentProtectedDec,
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price &&
+                fullyProtectedDec && {
+                  usdValue: new BigNumber(currentProtectedDec)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
+            }
+          }),
           coverageDecPercent: progressPercent,
+          ...(profitAmount && {
+            fees: {
+              amount: profitAmount,
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price &&
+                fullyProtectedDec && {
+                  usdValue: new BigNumber(profitAmount)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
+            }
+          }),
           roi:
             fullyProtectedDec &&
             Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
