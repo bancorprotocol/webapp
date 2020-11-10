@@ -6,7 +6,7 @@ import {
   buildTokenContract
 } from "@/api/eth/contractTypes";
 import { CallReturn } from "eth-multicall";
-import { ContractSendMethod, EventData } from "web3-eth-contract";
+import { ContractSendMethod } from "web3-eth-contract";
 // @ts-ignore
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
@@ -362,7 +362,7 @@ export class EthereumGovernance extends VuexModule.With({
     hash: string;
   }): Promise<boolean> {
     if (!executor || !hash || !account)
-      throw new Error("Cannot propose without execturo and hash");
+      throw new Error("Cannot propose without executor and hash");
 
     await this.governanceContract.methods.propose(executor, hash).send({
       from: account
