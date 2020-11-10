@@ -90,15 +90,18 @@ export default class DataTable extends Vue {
 
   get modifiedItems() {
     let filtered = [];
-    if (this.filterFunction !== undefined) {
-      filtered = this.items.filter((t: any) =>
-        this.filterFunction!(t, this.filter)
-      );
+    const items = this.items;
+    const filter = this.filter;
+    const filterBy = this.filterBy;
+    const filterFunction = this.filterFunction;
+
+    if (filterFunction !== undefined) {
+      filtered = items.filter((t: any) => filterFunction!(t, filter));
     } else {
-      filtered = this.items.filter(
+      filtered = items.filter(
         (t: any) =>
-          t[this.filterBy] &&
-          t[this.filterBy].toUpperCase().includes(this.filter.toUpperCase())
+          t[filterBy] &&
+          t[filterBy].toUpperCase().includes(filter.toUpperCase())
       );
     }
 
