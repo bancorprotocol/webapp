@@ -45,11 +45,11 @@
     </gray-border-block>
 
     <gray-border-block :gray-bg="true" class="my-3">
-      <label-content-split
-        label="Space Available"
-        :value="maxStake"
-        :loading="loadingMaxStakes"
-      />
+      <label-content-split label="Space Available" :loading="loadingMaxStakes">
+        <span @click="amount = maxStakeAmount" class="cursor">{{
+          `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
+        }}</span>
+      </label-content-split>
     </gray-border-block>
 
     <main-button
@@ -136,7 +136,8 @@ export default class AddProtectionSingle extends Vue {
     return vxm.bancor.relay(poolId);
   }
 
-  maxStake: string = "";
+  maxStakeAmount: string = "";
+  maxStakeSymbol: string = "";
 
   loadingMaxStakes = false;
 
@@ -154,6 +155,8 @@ export default class AddProtectionSingle extends Vue {
   outputs: ViewAmountDetail[] = [];
 
   selectedTokenIndex = 0;
+
+  prettifyNumber = prettifyNumber;
 
   @Watch("token")
   async onTokenChange() {
@@ -364,9 +367,8 @@ export default class AddProtectionSingle extends Vue {
       });
       let stake = result.filter(x => x.token === this.token.symbol);
       if (stake.length === 1) {
-        const amount = prettifyNumber(stake[0].amount);
-        const symbol = stake[0].token;
-        this.maxStake = `${amount} ${symbol}`;
+        this.maxStakeAmount = stake[0].amount;
+        this.maxStakeSymbol = stake[0].token;
       }
     } catch (e) {
       console.log(e);

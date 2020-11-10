@@ -26,10 +26,12 @@
       </div>
     </template>
     <template v-if="allowTokenAdd" #footer>
-      <p>
+      <p class="mb-0">
         Can't find the token you're looking for?
-        <span style="color: blue" @click="promptTokenAddModal">Add token</span>
       </p>
+      <span @click="promptTokenAddModal" class="text-primary cursor font-w600">
+        Add token
+      </span>
       <modal-base title="Add Token" v-model="addTokenModal">
         <multi-input-field
           v-model="addTokenText"
@@ -72,6 +74,10 @@ export default class ModalSelectToken extends Vue {
   addTokenText: string = "";
   error: string = "";
 
+  get isEos() {
+    return vxm.bancor.currentNetwork === "eos";
+  }
+
   @Emit("select")
   selectToken(id: string) {
     this.show = false;
@@ -90,7 +96,9 @@ export default class ModalSelectToken extends Vue {
   }
 
   promptTokenAddModal() {
-    this.addTokenModal = true;
+    if (this.isEos)
+      window.open("https://github.com/eoscafe/eos-airdrops/", "_blank");
+    else this.addTokenModal = true;
   }
 
   async triggerAdd() {
