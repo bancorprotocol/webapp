@@ -6,7 +6,7 @@
     title="Select a token"
     subtitle="Tokens"
   >
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <div
         @click="selectToken(item.id)"
         class="d-flex align-items-center justify-content-between"

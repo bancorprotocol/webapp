@@ -8,7 +8,7 @@
     menu-class="dropdown-dark"
     no-caret
   >
-    <template v-slot:button-content>
+    <template #button-content>
       <font-awesome-icon icon="bars" fixed-width />
     </template>
 

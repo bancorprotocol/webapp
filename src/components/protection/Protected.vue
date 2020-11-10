@@ -6,7 +6,7 @@
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"
-      :filterFunction="doFilter"
+      :filter-function="doFilter"
       sort-by="insuranceStart"
     >
       <template #head(stake)="data">
@@ -33,7 +33,7 @@
         />
       </template>
 
-      <template v-slot:cell(stake)="data">
+      <template #cell(stake)="data">
         <div>
           {{ `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}` }}
         </div>
@@ -78,7 +78,7 @@
         </div>
       </template>
 
-      <template v-slot:cell(protectedAmount)="data">
+      <template #cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -98,11 +98,11 @@
         />
       </template>
 
-      <template v-slot:cell(roi)="data">
+      <template #cell(roi)="data">
         <span>{{ data.value }}</span>
       </template>
 
-      <template v-slot:cell(apr)="data">
+      <template #cell(apr)="data">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{
@@ -125,7 +125,7 @@
         <!-- </div> -->
       </template>
 
-      <template v-slot:cell(insuranceStart)="data">
+      <template #cell(insuranceStart)="data">
         <div class="d-flex flex-column">
           <span v-text="formatDate(data.item.insuranceStart).date" />
           <span
@@ -136,7 +136,7 @@
         </div>
       </template>
 
-      <template v-slot:cell(currentCoverage)="data">
+      <template #cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(data.item.coverageDecPercent) }}
           <div
@@ -170,7 +170,7 @@
         />
       </template>
 
-      <template v-slot:cell(actionButtons)="data">
+      <template #cell(actionButtons)="data">
         <b-btn
           @click="goToWithdraw(data.item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
