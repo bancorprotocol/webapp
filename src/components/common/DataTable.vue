@@ -29,14 +29,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="pool in paginatedItems" :key="pool.id">
+        <tr v-for="item in paginatedItems" :key="item.id">
           <td v-for="column in fields" :key="column.id">
             <slot
               :name="`cell(${column.key})`"
-              :item="pool"
-              :value="pool[column.key]"
+              :item="item"
+              :value="item[column.key]"
             >
-              {{ pool[column.key] }}
+              {{ item[column.key] }}
             </slot>
           </td>
         </tr>
