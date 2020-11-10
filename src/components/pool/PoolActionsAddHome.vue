@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";

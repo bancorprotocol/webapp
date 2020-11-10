@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
 

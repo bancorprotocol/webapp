@@ -161,7 +161,7 @@ export const getRemoveLiquidityReturn = async (
     .call();
 
   const keys = ["targetAmount", "baseAmount", "networkAmount"];
-  const pairs = toPairs(res).map(([key, value], index) => [keys[index], value]);
+  const pairs = toPairs(res).map(([, value], index) => [keys[index], value]);
 
   return fromPairs(pairs) as {
     targetAmount: string;

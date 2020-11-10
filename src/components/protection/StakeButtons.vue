@@ -49,7 +49,6 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import { vxm } from "@/store";
 import { prettifyNumber } from "@/api/helpers";
-import { ViewRelay } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 
 @Component({

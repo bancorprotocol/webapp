@@ -85,7 +85,6 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
 import SideBar from "@/components/layout/SideBar.vue";
 import { vxm } from "@/store/";
-import { WalletProvider } from "eos-transit";
 import wait from "waait";
 
 @Component({
@@ -164,13 +163,6 @@ export default class App extends Vue {
     const darkMode = localStorage.getItem("darkMode") === "true";
     if (darkMode) vxm.general.toggleDarkMode();
 
-    const autoLogin = localStorage.getItem("autoLogin");
-    if (autoLogin) {
-      const provider = vxm.eosWallet.walletProviders.find(
-        (p: WalletProvider) => p.id === autoLogin
-      );
-      // if (provider) vxm.eosWallet.initLogin(provider);
-    }
     vxm.general.setLanguage();
     vxm.general.getUserCountry();
     await this.loadBancor();

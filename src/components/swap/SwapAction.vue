@@ -229,7 +229,7 @@ export default class SwapAction extends Vue {
     });
   }
 
-  sanitizeAmount(amount: string) {
+  sanitizeAmount() {
     this.setDefault();
   }
 
@@ -334,7 +334,6 @@ export default class SwapAction extends Vue {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
-    const raiseError = new BigNumber(this.balance1).isLessThan(this.amount1);
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
   }

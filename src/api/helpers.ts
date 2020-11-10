@@ -1,7 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
-import { AbiItem } from "web3-utils";
 import Onboard from "bnc-onboard";
 import { Asset, Sym, number_to_asset } from "eos-common";
 import { rpc } from "./eos/rpc";
@@ -480,7 +479,7 @@ const decodeRemoveLiquidity = (
     newSupply: string;
   };
 
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
@@ -511,7 +510,7 @@ const decodeAddLiquidityEvent = (
     newBalance: string;
     newSupply: string;
   };
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
     blockNumber,
@@ -536,7 +535,7 @@ const decodeConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, fromAddress, toAddress, trader] = rawEvent.topics;
+  const [, fromAddress, toAddress, trader] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
@@ -578,7 +577,7 @@ const decodeNetworkConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, poolToken, fromAddress, toAddress] = rawEvent.topics;
+  const [, poolToken, fromAddress, toAddress] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)

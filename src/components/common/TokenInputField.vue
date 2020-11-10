@@ -75,14 +75,7 @@
 </template>
 
 <script lang="ts">
-import {
-  Component,
-  Vue,
-  Prop,
-  Watch,
-  PropSync,
-  Emit
-} from "vue-property-decorator";
+import { Component, Vue, Prop, Emit } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";

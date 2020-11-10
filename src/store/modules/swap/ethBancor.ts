@@ -10,7 +10,6 @@ import {
   LiquidityModule,
   BaseToken,
   CreatePoolModule,
-  CreatePoolParams,
   ModalChoice,
   ViewToken,
   ViewRelay,
@@ -33,7 +32,6 @@ import {
   ViewAddEvent,
   ViewAmountWithMeta,
   FocusPoolRes,
-  ProtectedLiquidity,
   ProtectedLiquidityCalculated,
   ProtectLiquidityParams,
   OnUpdate,
@@ -52,12 +50,10 @@ import {
   compareString,
   findOrThrow,
   updateArray,
-  networkTokens,
   isOdd,
   multiSteps,
   EthNetworks,
   PoolType,
-  Anchor,
   TraditionalRelay,
   ChainLinkRelay,
   SmartToken,
@@ -77,7 +73,6 @@ import {
   AddLiquidityEvent,
   RemoveLiquidityEvent,
   traverseLockedBalances,
-  calculateProtectionLevel,
   LockedBalance,
   rewindBlocksByDays,
   calculateMaxStakes,
@@ -235,17 +230,6 @@ const balanceShape = (contractAddress: string, owner: string) => {
   return template;
 };
 
-const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
-  const liq1 = new BigNumber(liq1Balance);
-  const liq2 = new BigNumber(liq2Balance);
-
-  const first = liq1.isLessThanOrEqualTo(liq2.plus(1));
-  const second = liq2.isLessThanOrEqualTo(liq1.plus(1));
-
-  const passed = first && second;
-  return passed;
-};
-
 interface PoolApr {
   poolId: string;
   oneWeekApr: string;
@@ -260,12 +244,6 @@ const calculateReturnOnInvestment = (
     .minus(1)
     .toString();
 };
-
-const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) =>
-  compareString(a.poolToken, b.poolToken) &&
-  a.timestamp == b.timestamp &&
-  compareString(a.owner, b.owner) &&
-  samePoolAmount(a.poolAmount, b.poolAmount);
 
 // returns the rate of 1 pool token in reserve token units
 const calculatePoolTokenRate = (
@@ -475,11 +453,6 @@ const calculateShareOfPool = (
 
   return shareOfPool;
 };
-
-const relayIncludesReserves = (reserves: string[]) => (relay: Relay) =>
-  relay.reserves.every(reserve =>
-    reserves.some(r => compareString(reserve.contract, r))
-  );
 
 const compareRelayByReserves = (a: Relay, b: Relay) =>
   a.reserves.every(reserve =>
@@ -806,10 +779,6 @@ const buildReserveFeedsChainlink = (
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
-type TotalVolumeAndLiquidity = [string, string, string, number];
-
-type VolumeAndLiq = [string, string, string];
-
 const relayShape = (converterAddress: string) => {
   const contract = buildV28ConverterContract(converterAddress);
   return {
@@ -910,12 +879,6 @@ interface V2Response {
   pools: (RelayWithReserveBalances | ChainLinkRelay)[];
 }
 
-const sortFeedByExtraProps = (a: ReserveFeed, b: ReserveFeed) => {
-  if (a.change24H || a.volume24H) return -1;
-  if (b.change24H || a.volume24H) return 1;
-  return 0;
-};
-
 const compareAnchorAndConverter = (
   a: ConverterAndAnchor,
   b: ConverterAndAnchor
@@ -985,11 +948,6 @@ interface ConverterAndAnchor {
   anchorAddress: string;
 }
 
-const networkTokenAddresses = [
-  "0x309627af60F0926daa6041B8279484312f2bf060",
-  "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C"
-];
-
 const metaToModalChoice = (meta: TokenMeta): ModalChoice => ({
   id: meta.contract,
   contract: meta.contract,
@@ -1026,11 +984,6 @@ const generateEtherscanAccountLink = (
   account: string,
   ropsten: boolean = false
 ) => `https://${ropsten ? "ropsten." : ""}etherscan.io/address/${account}`;
-
-interface AnchorProps {
-  anchor: Anchor;
-  converterType: PoolType;
-}
 
 const iouTokensInRelay = (relay: Relay): Token[] => {
   if (relay.converterType == PoolType.ChainLink) {
@@ -1135,23 +1088,6 @@ const hasTwoConnectors = (relay: RefinedAbiRelay) => {
   return test;
 };
 
-const networkTokenIncludedInReserves = (networkTokenAddresses: string[]) => (
-  relay: RefinedAbiRelay
-) => {
-  const test = relay.reserves.some(reserve =>
-    networkTokenAddresses.some(networkAddress =>
-      compareString(networkAddress, reserve)
-    )
-  );
-  if (!test)
-    console.warn(
-      "Dropping",
-      relay.anchorAddress,
-      "because it does not feature a network token"
-    );
-  return test;
-};
-
 interface StakedAndReserve {
   converterAddress: string;
   reserves: {
@@ -1173,7 +1109,7 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethHardCode = updateArray(
     tokens,
     token => compareString(token.contract, ethReserveAddress),
-    _ => ethReserveToken
+    () => ethReserveToken
   );
 
   const decimalIsWrong = (decimals: number | undefined) =>
@@ -2134,11 +2070,6 @@ export class EthBancorModule
             singleEntry.liquidityReturn.targetAmount,
             reservePrecision
           );
-        const protectionAchieved = calculateProtectionLevel(
-          startTime,
-          minDelay,
-          maxDelay
-        );
 
         const progressPercent = calculateProgressLevel(
           startTime,
@@ -2268,10 +2199,6 @@ export class EthBancorModule
           )
       );
     return remainingPools.length > 0;
-  }
-
-  get currentEthNetwork() {
-    return vxm.ethWallet.currentNetwork as EthNetworks;
   }
 
   @mutation setLoadingPools(status: boolean) {
@@ -2536,7 +2463,7 @@ export class EthBancorModule
     const pool = await this.relayById(poolId);
     const reserveSymbols = pool.reserves.map(reserve => reserve.symbol);
     const sortedSymbols = sortByNetworkTokens(reserveSymbols, x => x);
-    const [networkToken, primaryReserveToken] = sortedSymbols;
+    const [, primaryReserveToken] = sortedSymbols;
     return getSmartTokenHistory(primaryReserveToken.toLowerCase());
   }
 
@@ -2683,7 +2610,6 @@ export class EthBancorModule
     const txRes = await Promise.all(
       chunked.map(arr => {
         const first = arr[0].index;
-        const last = arr[arr.length - 1].index;
         return this.resolveTxOnConfirmation({
           tx: contract.methods.claimBalance(String(first), String(50))
         });
@@ -2757,7 +2683,7 @@ export class EthBancorModule
             resolve(txHash);
           }
         })
-        .on("confirmation", (confirmationNumber: number) => {
+        .on("confirmation", () => {
           resolve(txHash);
         })
         .on("error", (error: any) => reject(error));
@@ -2779,7 +2705,7 @@ export class EthBancorModule
   }
 
   get supportedFeatures() {
-    return (symbolName: string) => {
+    return () => {
       return ["addLiquidity", "removeLiquidity"];
     };
   }
@@ -2912,7 +2838,7 @@ export class EthBancorModule
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
       .map(relay => {
-        const [networkReserve, tokenReserve] = relay.reserves;
+        const [, tokenReserve] = relay.reserves;
 
         const { poolContainerAddress } = relay.anchor;
 
@@ -2957,7 +2883,7 @@ export class EthBancorModule
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
       .map(relay => {
-        const [networkReserve, tokenReserve] = relay.reserves;
+        const [, tokenReserve] = relay.reserves;
 
         const smartTokenSymbol = relay.anchor.symbol;
         const hasHistory = availableHistories.some(history =>
@@ -4239,7 +4165,7 @@ export class EthBancorModule
         .on("transactionHash", (hash: string) => {
           txHash = hash;
         })
-        .on("confirmation", (confirmationNumber: number) => {
+        .on("confirmation", () => {
           resolve(txHash);
         })
         .on("error", (error: any) => reject(error));
@@ -4933,7 +4859,7 @@ export class EthBancorModule
       )
     );
 
-    const [v1RelayBalances, v2RelayBalances] = await this.multi({
+    await this.multi({
       groupsOfShapes: [v1RelayShapes, v2RelayPoolBalanceShapes]
     });
   }
@@ -4952,23 +4878,6 @@ export class EthBancorModule
         allAnchors.map(poolTokenShape)
       ]
     })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
-
-    const badRelays = rawRelays.filter(
-      rawRelay => !(rawRelay.connectorToken1 && rawRelay.connectorToken2)
-    );
-    const badRelay = rawRelays
-      .filter(x => x.connectorTokenCount == "2")
-      .find(
-        rawRelay =>
-          compareString(
-            rawRelay.connectorToken1,
-            "0x57Ab1E02fEE23774580C119740129eAC7081e9D3"
-          ) ||
-          compareString(
-            rawRelay.connectorToken2,
-            "0x57Ab1E02fEE23774580C119740129eAC7081e9D3"
-          )
-      );
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
       poolAndSmartTokens
@@ -5395,7 +5304,7 @@ export class EthBancorModule
       );
 
     const conversionEvents = res.conversions
-      .filter((event, index) => {
+      .filter(event => {
         const res = tokenAddressesInEvent(event).every(address =>
           tokens.some(token => compareString(token.id, address))
         );
@@ -5754,7 +5663,7 @@ export class EthBancorModule
         .then(tokens => {
           bancorApiTokens = tokens;
         })
-        .catch(_ => {});
+        .catch(() => {});
 
       fetchSmartTokens()
         .then(availableSmartTokenHistories =>
@@ -5762,7 +5671,7 @@ export class EthBancorModule
             availableSmartTokenHistories.map(history => history.id)
           )
         )
-        .catch(_ => {});
+        .catch(() => {});
 
       getTokenMeta(currentNetwork).then(this.setTokenMeta);
       this.fetchUsdPriceOfBnt();
@@ -6576,7 +6485,7 @@ export class EthBancorModule
     outputs: ViewAmountDetail[];
     expectedValue: ViewAmountDetail;
   }> {
-    const [pool, posId] = id.split(":");
+    const [, posId] = id.split(":");
     const ppm = new BigNumber(decPercent).times(oneMillion).toString();
     const res = await getRemoveLiquidityReturn(
       this.contracts.LiquidityProtection,
@@ -6590,7 +6499,7 @@ export class EthBancorModule
       pos => compareString(pos.id, posId),
       "failed finding protected position"
     );
-    const { reserveToken, reserveAmount } = position;
+    const { reserveToken } = position;
 
     const reserveTokenObj = findOrThrow(
       this.relaysList.flatMap(r => r.reserves),

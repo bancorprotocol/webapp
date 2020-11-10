@@ -43,7 +43,6 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
-import moment from "moment";
 import { vxm } from "@/store";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";

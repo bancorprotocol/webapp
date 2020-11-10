@@ -80,12 +80,7 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import {
-  LiquidityModule,
-  ViewAmount,
-  ViewRelay,
-  ViewReserve
-} from "@/types/bancor";
+import { ViewAmount, ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
