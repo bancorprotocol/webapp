@@ -129,7 +129,6 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
-import { ViewProtectedLiquidity } from "@/types/bancor";
 
 @Component({
   components: {

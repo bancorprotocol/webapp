@@ -263,7 +263,7 @@ export default class PoolActionsRemoveV1 extends Vue {
   }
 
   @Watch("isAuthenticated")
-  async onAuthChange(auth: boolean) {
+  async onAuthChange() {
     await this.fetchBalances();
   }
 

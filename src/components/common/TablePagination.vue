@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Prop, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
 import { vxm } from "@/store";
 
 @Component

@@ -62,20 +62,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { TxResponse, ViewRelay } from "@/types/bancor";
+import { TxResponse } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import {
-  compareString,
-  compareToken,
-  findOrThrow,
-  formatNumber
-} from "@/api/helpers";
+import { compareString, findOrThrow, formatNumber } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";

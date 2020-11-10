@@ -48,7 +48,6 @@
 
 <script lang="ts">
 import { Prop, Component, Vue, Emit } from "vue-property-decorator";
-import { vxm } from "@/store";
 
 @Component
 export default class SideBarLeft extends Vue {

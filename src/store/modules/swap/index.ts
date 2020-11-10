@@ -18,8 +18,7 @@ import {
   ViewToken,
   LiquidityModule
 } from "@/types/bancor";
-import { vxm } from "@/store";
-import { store } from "../../../store";
+import { vxm, store } from "@/store";
 import {
   compareString,
   fetchUsdPriceOfBntViaRelay,
