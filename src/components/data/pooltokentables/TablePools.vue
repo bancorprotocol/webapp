@@ -79,6 +79,7 @@ export default class TablePools extends Vue {
       ...(this.isEth
         ? [
             {
+              id: 1,
               label: "",
               key: "liquidityProtection",
               minWidth: "60px",
@@ -87,17 +88,20 @@ export default class TablePools extends Vue {
           ]
         : []),
       {
+        id: 2,
         label: "Name",
         key: "symbol",
         minWidth: "150px"
       },
       {
+        id: 3,
         label: "Liquidity",
         key: "liqDepth",
         tooltip: "The value of tokens in the pool.",
         minWidth: "150px"
       },
       {
+        id: 4,
         label: "Fee",
         key: "fee",
         tooltip:
@@ -107,11 +111,13 @@ export default class TablePools extends Vue {
       ...(this.isEth
         ? [
             {
+              id: 5,
               label: "Volume (24h)",
               key: "volume",
               minWidth: "140px"
             },
             {
+              id: 6,
               label: "Fees (24hr)",
               key: "feesGenerated",
               tooltip:
@@ -119,6 +125,7 @@ export default class TablePools extends Vue {
               minWidth: "100px"
             },
             {
+              id: 7,
               label: "1y Fees / Liquidity",
               key: "feesVsLiquidity",
               tooltip: "24h fees annualized divided by liquidity in the pool.",
@@ -127,6 +134,7 @@ export default class TablePools extends Vue {
           ]
         : []),
       {
+        id: 8,
         label: "Actions",
         key: "actions",
         sort: false,
