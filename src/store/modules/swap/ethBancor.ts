@@ -145,7 +145,7 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { calculatePositionFees } from '@/api/pureHelpers';
+import { calculatePositionFees } from "@/api/pureHelpers";
 
 interface Balance {
   balance: string;
@@ -1736,7 +1736,6 @@ export class EthBancorModule
         Promise.all(
           allPositions.map(async position => {
             const now = moment();
-            const nowUnix = now.unix();
             const fullWaitTime = now
               .clone()
               .add(1, "year")
@@ -1781,29 +1780,30 @@ export class EthBancorModule
               poolId: position.poolToken
             });
 
-            const [depositedReserve, opposingReserve] = sortAlongSide(
+            const [
+              depositedReserve,
+              opposingReserve
+            ] = sortAlongSide(
               currentPoolBalances.reserves,
               reserve => reserve.contract,
               [position.reserveToken]
             );
-            const rate0 = new BigNumber(position.reserveRateN).div(
-              position.reserveRateD
-            ).toString()
+            const rate0 = new BigNumber(position.reserveRateN)
+              .div(position.reserveRateD)
+              .toString();
 
-
-           const feeAmountWei = calculatePositionFees(
-               position.poolAmount,
-               currentPoolBalances.smartTokenSupplyWei,
-               position.reserveAmount,
-               depositedReserve.weiAmount,
-               opposingReserve.weiAmount,
-               rate0
+            const feeAmountWei = calculatePositionFees(
+              position.poolAmount,
+              currentPoolBalances.smartTokenSupplyWei,
+              position.reserveAmount,
+              depositedReserve.weiAmount,
+              opposingReserve.weiAmount,
+              rate0
             );
 
             const shrunk = shrinkToken(feeAmountWei, 18);
 
             console.log(shrunk, "is the fee amount");
-
 
             return {
               positionId: position.id,

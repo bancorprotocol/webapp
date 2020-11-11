@@ -225,11 +225,11 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "Details",
-        key: '',
+        key: ""
       },
       {
         label: "Result",
-        key: '',
+        key: "",
         maxWidth: "120px",
         minWidth: "120px"
       },
@@ -253,7 +253,7 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "",
-        key: '',
+        key: "",
         maxWidth: "10px"
       }
     ];

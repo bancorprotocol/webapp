@@ -531,7 +531,7 @@ export class EthereumGovernance extends VuexModule.With({
       return this.metaDataCache[hash];
     }
 
-    const ipfs = IpfsHttpClient({url: ipfsUrl});
+    const ipfs = IpfsHttpClient({ url: ipfsUrl });
 
     let metadata;
 
@@ -570,7 +570,7 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     proposalMetaData: ProposalMetaData;
   }): Promise<string> {
-    const ipfs = IpfsHttpClient({url: ipfsUrl});
+    const ipfs = IpfsHttpClient({ url: ipfsUrl });
 
     const { path } = await ipfs.add(
       Buffer.from(JSON.stringify(proposalMetaData, null, 2))
