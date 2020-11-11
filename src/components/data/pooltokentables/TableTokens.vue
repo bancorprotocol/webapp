@@ -9,10 +9,6 @@
   >
     <template #cell(symbol)="data">
       <pool-logos :token="data.item" :cursor="false" />
-
-      <!--      <router-link :to="{ name: 'DetailsToken', params: { id: data.item.id } }">-->
-      <!--        <pool-logos :token="data.item" :cursor="false" />-->
-      <!--      </router-link>-->
     </template>
 
     <template #cell(change24h)="data">
