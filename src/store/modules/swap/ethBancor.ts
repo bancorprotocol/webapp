@@ -1857,16 +1857,12 @@ export class EthBancorModule
     })) as string;
 
     this.fetchProtectionPositions();
-    this.fetchAndSetTokenBalances([
+    this.spamBalances([
       this.liquidityProtectionSettings.govToken,
       reserveTokenAddress
     ]);
-    wait(2000).then(() => {
+    wait(3000).then(() => {
       this.fetchProtectionPositions();
-      this.fetchAndSetTokenBalances([
-        this.liquidityProtectionSettings.govToken,
-        reserveTokenAddress
-      ]);
     });
 
     return {
