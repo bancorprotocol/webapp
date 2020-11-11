@@ -369,7 +369,7 @@ export enum EthNetworks {
 }
 
 export let web3 = new Web3(
-  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
+  getAlchemyUrl(EthNetworks.Mainnet)
 );
 
 web3.eth.transactionBlockTimeout = 100;
