@@ -35,15 +35,6 @@ const VuexModule = createModule({
   strict: false
 });
 
-interface AccountParams {
-  isUnlocked: boolean;
-  isEnabled: boolean;
-  selectedAddress: string;
-  networkVersion: string;
-  onboardingcomplete: boolean;
-  chainId: string;
-}
-
 export class EthereumModule extends VuexModule.With({
   namespaced: "ethWallet/"
 }) {
@@ -96,7 +87,9 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    vxm.ethBancor.updateBalance([ethReserveAddress, fromWei(nativeBalance)]);
+    vxm.ethBancor.updateUserBalances([
+      { balance: fromWei(nativeBalance), id: ethReserveAddress }
+    ]);
   }
 
   @action async checkAlreadySignedIn() {

@@ -1,6 +1,5 @@
-import { createModule, mutation, action } from "vuex-class-component";
-import { vxm } from "@/store/index";
-import { store } from "../../../store";
+import { createModule, action } from "vuex-class-component";
+import { vxm, store } from "@/store";
 
 const VuexModule = createModule({
   strict: false

@@ -18,13 +18,13 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import numeral from "numeral";
 
 @Component
 export default class RemainingTime extends Vue {
   @Prop() from?: number;
   @Prop() to?: number;
   @Prop() variant?: string;
+  @Prop() showSeconds?: boolean;
 
   private remainingPercentage: number = 0;
   private remainingTime: number = 0;
@@ -68,13 +68,18 @@ export default class RemainingTime extends Vue {
       return remaining + new Date(diff).toISOString().substr(11, 8);
     }
 
-    const m = this.remainingTime / 60 / 1000;
+    const s = this.remainingTime / 1000;
+    const m = s / 60;
     const h = m / 60;
     const d = h / 24;
 
-    return `${Math.floor(d)}d ${Math.floor(h % 24)}h ${Math.floor(
-      m % 60
-    )}m left`;
+    return `
+      ${Math.floor(d)}d
+      ${Math.floor(h % 24)}h
+      ${Math.floor(m % 60)}m
+      ${this.showSeconds ? `${Math.floor(s % 60) + 1}s` : ""}
+      left
+    `;
   }
 
   get darkMode() {

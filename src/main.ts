@@ -5,7 +5,7 @@ import { Integrations } from "@sentry/tracing";
 import App from "./App.vue";
 import { router } from "./router";
 import { store, vxm } from "./store/";
-import i18n from "./i18n";
+// import i18n from "./i18n";
 import BootstrapVue from "bootstrap-vue";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
@@ -19,23 +19,29 @@ import { firebase } from "@firebase/app";
 import "@firebase/analytics";
 import VueGtag from "vue-gtag";
 
+const appVersion = JSON.parse(
+  unescape(escape(JSON.stringify(require("../package.json"))))
+).version;
+
+const isDev = process.env.NODE_ENV == "development";
 Sentry.init({
   dsn:
     "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
+  debug: isDev,
+  environment: isDev ? "development" : "prod/staging",
+  release: `swap-${appVersion}`,
   integrations: [
     new VueIntegration({
       Vue,
       tracing: true,
       tracingOptions: {
-        trackComponents: true
+        trackComponents: false
       }
     }),
     new Integrations.BrowserTracing()
   ],
-
-  // We recommend adjusting this value in production, or using tracesSampler
-  // for finer control
-  tracesSampleRate: 1.0
+  sampleRate: 0.1,
+  tracesSampleRate: 0.1
 });
 
 const firebaseConfig = {
@@ -63,7 +69,7 @@ Vue.use(BootstrapVue);
 
 library.add(fas, fab);
 
-Vue.component("font-awesome-icon", FontAwesomeIcon);
+Vue.component("FontAwesomeIcon", FontAwesomeIcon);
 
 Vue.config.productionTip = false;
 
@@ -87,6 +93,6 @@ Vue.mixin({
 new Vue({
   router,
   store,
-  i18n,
+  // i18n,
   render: h => h(App)
 }).$mount("#app");

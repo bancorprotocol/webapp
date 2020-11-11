@@ -1,35 +1,32 @@
 <template>
   <table-wrapper
+    primarykey="id"
     :items="items"
     :fields="fields"
     :filter="filter"
-    :filterFunction="doFilter"
+    :filter-function="doFilter"
     sort-by="liqDepth"
   >
-    <template v-slot:cell(symbol)="data">
+    <template #cell(symbol)="data">
       <pool-logos :token="data.item" :cursor="false" />
-
-      <!--      <router-link :to="{ name: 'DetailsToken', params: { id: data.item.id } }">-->
-      <!--        <pool-logos :token="data.item" :cursor="false" />-->
-      <!--      </router-link>-->
     </template>
 
-    <template v-slot:cell(change24h)="data">
+    <template #cell(change24h)="data">
       <coloured-percentage :percentage="data.value" />
     </template>
 
-    <template v-slot:head(liquidityProtection)="data">
+    <template #head(liquidityProtection)>
       <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
     </template>
 
-    <template v-slot:cell(liquidityProtection)="data">
+    <template #cell(liquidityProtection)="data">
       <img
         v-if="data.value"
         :src="require(`@/assets/media/icons/liquidity_active.svg`)"
       />
     </template>
 
-    <template v-slot:cell(actionButtons)="data">
+    <template #cell(actionButtons)="data">
       <action-buttons :token="data.item" />
     </template>
   </table-wrapper>
@@ -38,11 +35,12 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import numeral from "numeral";
 import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
+import { ViewToken } from "@/types/bancor";
+
 @Component({
   components: {
     ColouredPercentage,
@@ -117,10 +115,11 @@ export default class TableTokens extends Vue {
     return vxm.bancor.tokens;
   }
 
-  doFilter(row: any, filter: string) {
+  doFilter(row: ViewToken, filter: string) {
+    const searchTerm = filter.toLowerCase();
     return (
-      (row.name && row.name.toLowerCase().indexOf(filter) >= 0) ||
-      (row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0)
+      (row.name && row.name.toLowerCase().includes(searchTerm)) ||
+      (row.symbol && row.symbol.toLowerCase().includes(searchTerm))
     );
   }
 }

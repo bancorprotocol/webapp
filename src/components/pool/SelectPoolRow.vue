@@ -31,19 +31,20 @@ export default class SelectPoolRow extends Vue {
   click() {}
 
   get balance() {
-    const balance = this.showTokenBalance ? this.tokenBalance : this.smartTokenBalance;
-    return balance ? prettifyNumber(balance) : '';
+    const balance = this.showTokenBalance
+      ? this.tokenBalance
+      : this.smartTokenBalance;
+    return balance ? prettifyNumber(balance) : "";
   }
 
   get smartTokenBalance() {
     const position = this.positions.find(x => x.relay.id === this.pool.id);
-    if (position && position.smartTokenAmount)
-      return position.smartTokenAmount;
+    if (position && position.smartTokenAmount) return position.smartTokenAmount;
     else return "";
   }
 
   get tokenBalance() {
-    return vxm.bancor.token(this.pool.reserves[1].id).balance ?? ''
+    return vxm.bancor.token(this.pool.reserves[1].id).balance ?? "";
   }
 
   get positions(): PoolTokenPosition[] {

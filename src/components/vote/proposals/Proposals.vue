@@ -1,5 +1,10 @@
 <template>
-  <content-block :px0="true" :shadow-light="true" :no-header="true">
+  <content-block
+    id="proposals"
+    :px0="true"
+    :shadow-light="true"
+    :no-header="true"
+  >
     <div>
       <div
         class="new-proposal-button cursor"
@@ -101,6 +106,13 @@ export default class Proposals extends Vue {
   border-bottom: 1px solid $gray-border !important;
   position: relative;
 }
+
+#proposals .nav-tabs li {
+  line-height: 28px;
+  padding-bottom: 0 !important;
+  padding-top: 6px !important;
+}
+
 .new-proposal-button {
   height: 24px;
   line-height: 21px;
@@ -110,8 +122,15 @@ export default class Proposals extends Vue {
   color: $text-color-light !important;
   font-size: 13px !important;
   position: absolute;
-  top: 9px;
+  display: inline-block;
+  top: 15px;
   right: 26px;
   z-index: 2;
+}
+
+@media (max-width: 450px) {
+  .new-proposal-button {
+    top: -25px;
+  }
 }
 </style>

@@ -9,13 +9,17 @@
       />
     </label-content-split>
 
-    <alert-block
-      variant="warning"
+    <div
+      class="w-100 mt-1 font-size-14"
       @click="clickAlert"
-      :msg="
-        `This pools runs on an older version of Bancor. We recommend you stake liquidity in the new v2.1 ${poolLabel} pool.`
-      "
-    />
+      :class="darkMode ? 'alert-warning-dark' : 'alert-warning-light'"
+    >
+      <span class="font-w500">
+        This pools runs on an older version of Bancor.
+        <a @click.prevent="clickAlert" href="#">Click here</a> to stake
+        liquidity in the new v2.1 {{ poolLabel }} pool.
+      </span>
+    </div>
 
     <label-content-split label="Select a Token" class="my-3">
       <b-form-group class="m-0" :class="darkMode ? 'text-dark' : 'text-light'">
@@ -76,12 +80,7 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import {
-  LiquidityModule,
-  ViewAmount,
-  ViewRelay,
-  ViewReserve
-} from "@/types/bancor";
+import { ViewAmount, ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -211,19 +210,25 @@ export default class PoolActionsAddV2 extends Vue {
     this.singleUnitCosts = items;
   }
 
-
   get isLinkPool() {
     const selectedPool = this.pool;
-    return selectedPool.reserves.some(reserve => compareString(reserve.symbol, 'LINK'));
+    return selectedPool.reserves.some(reserve =>
+      compareString(reserve.symbol, "LINK")
+    );
   }
 
   get poolLabel() {
-    return this.isLinkPool ? 'LINK' : "REN"
+    return this.isLinkPool ? "LINK" : "REN";
   }
 
   clickAlert() {
-    const poolDestinationId = this.isLinkPool ? '0x04D0231162b4784b706908c787CE32bD075db9b7' : '0x6b181C478b315bE3f9E99c57CE926436c32e17a7'
-    this.$router.push({ name: 'AddProtectionSingle', params: { id: poolDestinationId } });
+    const poolDestinationId = this.isLinkPool
+      ? "0x04D0231162b4784b706908c787CE32bD075db9b7"
+      : "0x6b181C478b315bE3f9E99c57CE926436c32e17a7";
+    this.$router.push({
+      name: "AddProtectionSingle",
+      params: { id: poolDestinationId }
+    });
   }
 
   async loadPrices(amount: string) {

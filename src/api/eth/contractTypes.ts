@@ -2,18 +2,18 @@ import { ContractSendMethod } from "web3-eth-contract";
 import { ContractMethods } from "@/types/bancor.d.ts";
 import { CallReturn } from "eth-multicall";
 import {
+  ABIBancorGovernance,
+  ABIContainerContract,
   ABIConverter,
-  ABISmartToken,
   ABIConverterRegistry,
   ABIConverterV28,
-  ABINetworkContract,
-  ABIV2Converter,
-  V2PoolsTokenContainer,
-  ABIMultiCallContract,
-  ABIContainerContract,
-  ABIBancorGovernance,
   ABILiquidityProtection,
-  ABILiquidityProtectionStore
+  ABILiquidityProtectionStore,
+  ABIMultiCallContract,
+  ABINetworkContract,
+  ABISmartToken,
+  ABIV2Converter,
+  V2PoolsTokenContainer
 } from "@/api/eth/ethAbis";
 import { web3 } from "@/api/helpers";
 import { AbiItem } from "web3-utils";
@@ -30,7 +30,8 @@ const buildContract = (
     : new (injectedWeb3 || web3).eth.Contract(abi);
 
 export const buildTokenContract = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   symbol: () => CallReturn<string>;
   decimals: () => CallReturn<string>;
@@ -44,10 +45,11 @@ export const buildTokenContract = (
     approvedAddress: string,
     approvedAmount: string
   ) => ContractSendMethod;
-}> => buildContract(ABISmartToken, contractAddress);
+}> => buildContract(ABISmartToken, contractAddress, web3);
 
 export const buildGovernanceContract = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   voteDuration: () => CallReturn<string>;
   voteLockDuration: () => CallReturn<string>;
@@ -66,7 +68,7 @@ export const buildGovernanceContract = (
   votesAgainstOf: (voter: string, proposalId: number) => CallReturn<string>;
   voteLocks: (voter: string) => CallReturn<string>;
   govToken: () => CallReturn<string>;
-}> => buildContract(ABIBancorGovernance, contractAddress);
+}> => buildContract(ABIBancorGovernance, contractAddress, web3);
 
 export const buildContainerContract = (
   contractAddress?: string
@@ -132,7 +134,8 @@ export const buildConverterContract = (
 }> => buildContract(ABIConverter, contractAddress, web3);
 
 export const buildV2Converter = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   activate: (
     primaryReserveToken: string,
@@ -161,7 +164,7 @@ export const buildV2Converter = (
     amount: string,
     minReturn: string
   ) => ContractSendMethod;
-}> => buildContract(ABIV2Converter, contractAddress);
+}> => buildContract(ABIV2Converter, contractAddress, web3);
 
 export const buildV28ConverterContract = (
   contractAddress?: string
@@ -203,7 +206,8 @@ export const buildV28ConverterContract = (
 }> => buildContract(ABIConverterV28, contractAddress);
 
 export const buildNetworkContract = (
-  contractAddress: string
+  contractAddress: string,
+  web3?: Web3
 ): ContractMethods<{
   rateByPath: (path: string[], amount: string) => CallReturn<string>;
   convertByPath: (
@@ -218,10 +222,11 @@ export const buildNetworkContract = (
     sourceToken: string,
     destinationToken: string
   ) => CallReturn<string[]>;
-}> => buildContract(ABINetworkContract, contractAddress);
+}> => buildContract(ABINetworkContract, contractAddress, web3);
 
 export const buildRegistryContract = (
-  contractAddress: string
+  contractAddress: string,
+  web3?: Web3
 ): ContractMethods<{
   getConvertibleTokens: () => CallReturn<string[]>;
   getConvertibleTokenAnchors: (
@@ -243,10 +248,11 @@ export const buildRegistryContract = (
     reserveTokens: string[],
     reserveWeight: string[]
   ) => CallReturn<string>;
-}> => buildContract(ABIConverterRegistry, contractAddress);
+}> => buildContract(ABIConverterRegistry, contractAddress, web3);
 
 export const buildLiquidityProtectionStoreContract = (
-  contractAddress: string
+  contractAddress: string,
+  web3?: Web3
 ): ContractMethods<{
   whitelistedPools(): CallReturn<string[]>;
   lockedBalanceCount(owner: string): CallReturn<string>;
@@ -270,10 +276,11 @@ export const buildLiquidityProtectionStoreContract = (
   protectedLiquidityId(owner: string): CallReturn<string>;
   protectedLiquidity(id: string): CallReturn<{ [key: string]: string }>;
   isPoolWhitelisted(anchorAddress: string): CallReturn<"0" | "1">;
-}> => buildContract(ABILiquidityProtectionStore, contractAddress);
+}> => buildContract(ABILiquidityProtectionStore, contractAddress, web3);
 
 export const buildLiquidityProtectionContract = (
-  contractAddress: string
+  contractAddress: string,
+  web3?: Web3
 ): ContractMethods<{
   store: () => CallReturn<string>;
   networkToken: () => CallReturn<string>;
@@ -311,4 +318,4 @@ export const buildLiquidityProtectionContract = (
     reserveRateN: string,
     reserveRateD: string
   ) => CallReturn<string>;
-}> => buildContract(ABILiquidityProtection, contractAddress);
+}> => buildContract(ABILiquidityProtection, contractAddress, web3);

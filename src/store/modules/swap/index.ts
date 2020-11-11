@@ -18,8 +18,7 @@ import {
   ViewToken,
   LiquidityModule
 } from "@/types/bancor";
-import { vxm } from "@/store";
-import { store } from "../../../store";
+import { vxm, store } from "@/store";
 import {
   compareString,
   fetchUsdPriceOfBntViaRelay,
@@ -111,7 +110,7 @@ export class BancorModule extends VuexModule.With({
     return vxm[`${this.currentNetwork}Bancor`]["liquidityHistory"];
   }
 
-  get tokens() {
+  get tokens(): ViewToken[] {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["tokens"];
   }
@@ -306,7 +305,9 @@ export class BancorModule extends VuexModule.With({
       const res = await any([
         fetchBinanceUsdPriceOfBnt(),
         new Promise(resolve => {
-          wait(500).then(() => resolve(fetchUsdPriceOfBntViaRelay()));
+          wait(500).then(() =>
+            resolve(fetchUsdPriceOfBntViaRelay(undefined, this.currentNetwork))
+          );
         })
       ]);
       const usdPrice = res as number;

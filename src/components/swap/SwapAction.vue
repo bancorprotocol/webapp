@@ -98,6 +98,7 @@ import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -202,7 +203,7 @@ export default class SwapAction extends Vue {
       return;
     }
 
-    this.$router.push({
+    this.$router.replace({
       name: "Swap",
       query: {
         from: id,
@@ -219,7 +220,7 @@ export default class SwapAction extends Vue {
       return;
     }
 
-    this.$router.push({
+    this.$router.replace({
       name: "Swap",
       query: {
         from: from,
@@ -228,12 +229,12 @@ export default class SwapAction extends Vue {
     });
   }
 
-  sanitizeAmount(amount: string) {
+  sanitizeAmount() {
     this.setDefault();
   }
 
   invertSelection() {
-    this.$router.push({
+    this.$router.replace({
       name: "Swap",
       query: {
         from: this.token2.id,
@@ -269,17 +270,13 @@ export default class SwapAction extends Vue {
       if (reward.slippage) {
         this.slippage = reward.slippage;
       } else {
-        this.slippage = 0
+        this.slippage = 0;
       }
       if (reward.fee) {
         this.fee = reward.fee;
       }
       this.amount2 = reward.amount;
-      console.log(
-        `Balance is currently known as balance1: ${this.balance1} ${amount} was just pushed`
-      );
-      const raiseError = Number(this.balance1) < Number(amount);
-      console.log(raiseError, "is the status of raise error");
+      const raiseError = new BigNumber(this.balance1).isLessThan(amount);
       this.errorToken1 = raiseError
         ? "Token balance is currently insufficient"
         : "";
@@ -337,13 +334,6 @@ export default class SwapAction extends Vue {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
-    const raiseError = Number(this.balance1) < Number(this.amount1);
-    console.log(
-      "route query watcher is passing updatePriceReturn",
-      this.amount1,
-      raiseError,
-      "is raise error status"
-    );
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
   }
@@ -356,9 +346,11 @@ export default class SwapAction extends Vue {
         from: vxm.bancor.tokens[1].id,
         to: vxm.bancor.tokens[0].id
       };
+      // @ts-ignore
       if (this.$route.query.from) defaultQuery.from = this.$route.query.from;
+      // @ts-ignore
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
-      await this.$router.push({ name: "Swap", query: defaultQuery });
+      await this.$router.replace({ name: "Swap", query: defaultQuery });
     }
 
     await this.calculateRate();

@@ -30,12 +30,6 @@
       </span>
     </gray-border-block>
 
-    <label-content-split
-      label="Full Coverage Date"
-      :value="fullCoverageDate"
-      class="mb-3"
-    />
-
     <main-button
       :label="actionButtonLabel"
       @click="openModal"
@@ -254,7 +248,7 @@ export default class AddProtectionDouble extends Vue {
     });
   }
 
-  async amountChanged(tokenAmount: string) {
+  async amountChanged() {
     const res = await vxm.ethBancor.calculateProtectionDouble({
       poolTokenAmount: { amount: this.amount, id: this.pool.id }
     });

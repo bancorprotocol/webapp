@@ -1,24 +1,23 @@
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
-import { AbiItem } from "web3-utils";
 import Onboard from "bnc-onboard";
-import { Asset, Sym, number_to_asset } from "eos-common";
+import { Asset, number_to_asset, Sym } from "eos-common";
 import { rpc } from "./eos/rpc";
 import {
-  TokenBalances,
-  EosMultiRelay,
-  TokenMeta,
   BaseToken,
-  TokenBalanceReturn,
-  TokenBalanceParam,
-  Step,
-  OnUpdate,
-  ViewToken,
-  ReserveFeed,
+  EosMultiRelay,
   ModalChoice,
+  OnUpdate,
+  ReserveFeed,
+  Step,
+  TokenBalanceParam,
+  TokenBalanceReturn,
+  TokenBalances,
+  TokenMeta,
   ViewAmount,
-  ViewRelay
+  ViewRelay,
+  ViewToken
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -26,7 +25,7 @@ import {
   buildConverterContract,
   buildLiquidityProtectionStoreContract
 } from "./eth/contractTypes";
-import { shrinkToken } from "./eth/helpers";
+import { removeLeadingZeros, shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
@@ -34,28 +33,28 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
-import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
-import { getAlchemyUrl, getInfuraAddress } from "@/api/web3"
+import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
 
 export enum PositionType {
   single,
   double
 }
 
-export const rewindBlocksByDays = (currentBlock: number, days: number, secondsPerBlock = 13.3) => {
-  if (!Number.isInteger(currentBlock)) throw new Error("Current block should be an integer")
+export const rewindBlocksByDays = (
+  currentBlock: number,
+  days: number,
+  secondsPerBlock = 13.3
+) => {
+  if (!Number.isInteger(currentBlock))
+    throw new Error("Current block should be an integer");
   const secondsToRewind = moment.duration(days, "days").asSeconds();
-  const blocksToRewind = parseInt(
-    String(secondsToRewind / secondsPerBlock)
-  );
+  const blocksToRewind = parseInt(String(secondsToRewind / secondsPerBlock));
   return currentBlock - blocksToRewind;
 };
 
-
 const zeroIfNegative = (big: BigNumber) =>
   big.isNegative() ? new BigNumber(0) : big;
-
 
 export const calculateMaxStakes = (
   tknReserveBalanceWei: string,
@@ -100,7 +99,7 @@ export const calculateMaxStakes = (
   return {
     maxAllowedBntWei: maxAllowedBnt.toString(),
     maxAllowedTknWei: maxAllowedBntInTkn.toString()
-  }
+  };
 };
 
 export interface LockedBalance {
@@ -112,32 +111,39 @@ export interface LockedBalance {
 export const traverseLockedBalances = async (
   contract: string,
   owner: string,
-  expectedCount: number
+  expectedCount: number,
+  network: EthNetworks
 ): Promise<LockedBalance[]> => {
-  console.log('traverseHit')
-  const storeContract = buildLiquidityProtectionStoreContract(contract);
+  console.log("traverseHit");
+  const storeContract = buildLiquidityProtectionStoreContract(
+    contract,
+    getWeb3(network, Provider.Alchemy)
+  );
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
 
-    console.log(startIndex, endIndex, 'is start and end index')
-    let lockedBalanceRes = await storeContract.methods
+    console.log(startIndex, endIndex, "is start and end index");
+    const lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
-      console.log('traverseHit 33')
+    console.log("traverseHit 33");
 
     const bntWeis = lockedBalanceRes["0"];
     const expirys = lockedBalanceRes["1"];
 
-    const zipped = zip(bntWeis, expirys) as [bntWei: string, timestamp: string][]
-    const withIndex = zipped.map(([bntWei, expiry], index) => ({
-      amountWei: bntWei,
-      expirationTime: Number(expiry),
-      index: index + startIndex
-    }) as LockedBalance);
+    const zipped = zip(bntWeis, expirys);
+    const withIndex = zipped.map(
+      ([bntWei, expiry], index) =>
+        ({
+          amountWei: bntWei,
+          expirationTime: Number(expiry),
+          index: index + startIndex
+        } as LockedBalance)
+    );
     lockedBalances = lockedBalances.concat(withIndex);
     if (lockedBalances.length >= expectedCount) break;
   }
@@ -182,7 +188,7 @@ export const multiSteps = async ({
 }) => {
   let state: any = {};
   for (const todo in items) {
-    let steps = items.map(
+    const steps = items.map(
       (todo, index): Step => ({
         name: String(index),
         description: todo.description
@@ -194,7 +200,7 @@ export const multiSteps = async ({
       throw new Error("onUpdate should be either a function or undefined");
     }
 
-    let newState = await items[todo].task(state);
+    const newState = await items[todo].task(state);
     if (typeof newState !== "undefined") {
       state = newState;
     }
@@ -246,10 +252,11 @@ export const prettifyNumber = (num: number | string, usd = false): string => {
   if (usd) {
     if (bigNum.eq(0)) return "$0.00";
     else if (bigNum.lt(0.01)) return "< $0.01";
+    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
     else return numeral(bigNum).format("$0,0.00");
   } else {
     if (bigNum.eq(0)) return "0";
-    else if (bigNum.gte(1000)) return numeral(bigNum).format("0,0.[00]");
+    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
     else if (bigNum.lt(0.000001)) return "< 0.000001";
     else return numeral(bigNum).format("0.[000000]");
   }
@@ -310,6 +317,19 @@ export const calculateProtectionLevel = (
   return new BigNumber(timeProgressedPastMinimum).div(waitingPeriod).toNumber();
 };
 
+export const calculateProgressLevel = (
+  startTimeSeconds: number,
+  endTimeSeconds: number
+) => {
+  if (endTimeSeconds < startTimeSeconds)
+    throw new Error("End time should be greater than start time");
+  const totalWaitingTime = endTimeSeconds - startTimeSeconds;
+  const now = moment().unix();
+  if (now >= endTimeSeconds) return 1;
+  const timeWaited = now - startTimeSeconds;
+  return timeWaited / totalWaitingTime;
+};
+
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))
@@ -327,9 +347,13 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 };
 
 export const fetchUsdPriceOfBntViaRelay = async (
-  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C"
+  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
+  network: EthNetworks
 ): Promise<number> => {
-  const contract = buildConverterContract(relayContractAddress);
+  const contract = buildConverterContract(
+    relayContractAddress,
+    getWeb3(network, Provider.Alchemy)
+  );
   const res = await contract.methods
     .getReturn(
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -355,7 +379,7 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-export let web3 = new Web3(
+export const web3 = new Web3(
   Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
 
@@ -410,6 +434,7 @@ interface TokenAmount {
   weiAmount: string;
 }
 export interface ConversionEventDecoded {
+  poolToken?: string;
   from: TokenAmount;
   to: TokenAmount;
   trader: string;
@@ -462,7 +487,7 @@ const decodeRemoveLiquidity = (
     newSupply: string;
   };
 
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
@@ -493,7 +518,7 @@ const decodeAddLiquidityEvent = (
     newBalance: string;
     newSupply: string;
   };
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
     blockNumber,
@@ -518,7 +543,7 @@ const decodeConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, fromAddress, toAddress, trader] = rawEvent.topics;
+  const [, fromAddress, toAddress, trader] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
@@ -560,7 +585,7 @@ const decodeNetworkConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, poolToken, fromAddress, toAddress] = rawEvent.topics;
+  const [, poolToken, fromAddress, toAddress] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
@@ -570,6 +595,7 @@ const decodeNetworkConversionEvent = (
     blockNumber,
     txHash,
     data: {
+      poolToken: removeLeadingZeros(poolToken),
       from: {
         address: removeLeadingZeros(fromAddress),
         weiAmount: picked.fromAmount
@@ -597,7 +623,7 @@ export const getConverterLogs = async (
   converterAddress: string,
   fromBlock: number
 ) => {
-  const address = getInfuraAddress(network);
+  const address = getAlchemyUrl(network, false);
   const LiquidityRemoved = web3.utils.sha3(
     "LiquidityRemoved(address,address,uint256,uint256,uint256)"
   ) as string;
@@ -661,7 +687,7 @@ export const getLogs = async (
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getInfuraAddress(network);
+  const address = getAlchemyUrl(network, false);
 
   const res = await axios.post<InfuraEventResponse>(address, {
     jsonrpc: "2.0",
@@ -675,12 +701,14 @@ export const getLogs = async (
     ],
     id: 1
   });
+
+  console.log(res, "is the raw return");
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
 };
 
-const RPC_URL = getInfuraAddress(EthNetworks.Mainnet);
+const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet, false);
 const APP_NAME = "Bancor Swap";
 
 const wallets = [
@@ -737,14 +765,21 @@ export const fetchReserveBalance = async (
   converterContract: any,
   reserveTokenAddress: string,
   versionNumber: number | string,
-  blockHeight? :number
+  blockHeight?: number
 ): Promise<string> => {
   try {
-    const res = await blockHeight !== undefined ? converterContract.methods[
-      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
-    ](reserveTokenAddress).call(null, blockHeight):  converterContract.methods[
-      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
-    ](reserveTokenAddress).call();
+    const res =
+      (await blockHeight) !== undefined
+        ? converterContract.methods[
+            Number(versionNumber) >= 17
+              ? "getConnectorBalance"
+              : "getReserveBalance"
+          ](reserveTokenAddress).call(null, blockHeight)
+        : converterContract.methods[
+            Number(versionNumber) >= 17
+              ? "getConnectorBalance"
+              : "getReserveBalance"
+          ](reserveTokenAddress).call();
     return res;
   } catch (e) {
     try {
@@ -1267,13 +1302,13 @@ export const buildPoolName = (
 ): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   const symbols = pool.reserves.map(x => x.symbol);
-  return symbols.join(separator);
+  return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (
   unixTime: number
 ): { date: string; time: string; dateTime: string } => {
-  const date = moment.unix(unixTime).format("MMM D yyyy")
+  const date = moment.unix(unixTime).format("MMM D yyyy");
   const time = moment.unix(unixTime).format("HH:mm");
   const dateTime = `${date} ${time}`;
 
