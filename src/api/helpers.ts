@@ -35,7 +35,7 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
-import { getAlchemyUrl } from "@/api/web3"
+import { getAlchemyUrl } from "@/api/web3";
 
 export enum PositionType {
   single,
@@ -372,9 +372,7 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-export let web3 = new Web3(
-  getAlchemyUrl(EthNetworks.Mainnet)
-);
+export const web3 = new Web3(getAlchemyUrl(EthNetworks.Mainnet));
 
 web3.eth.transactionBlockTimeout = 100;
 

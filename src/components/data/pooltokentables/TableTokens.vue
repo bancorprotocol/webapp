@@ -15,7 +15,7 @@
       <coloured-percentage :percentage="data.value" />
     </template>
 
-    <template v-slot:head(liquidityProtection)>
+    <template #head(liquidityProtection)>
       <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
     </template>
 
