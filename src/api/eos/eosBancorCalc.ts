@@ -265,13 +265,6 @@ export const chopRelays = (relays: DryRelay[]) => {
   }, []);
 };
 
-export function getOppositeSymbol(relay: ChoppedRelay, symbol: Symbol): Symbol {
-  const oppositeToken = relay.reserves.find(
-    token => !token.symbol.isEqual(symbol)
-  )!!;
-  return oppositeToken.symbol;
-}
-
 function relayOffersSymbols(symbol1: Symbol, symbol2: Symbol) {
   return function(relay: DryRelay) {
     const inReserves = relay.reserves.every(
@@ -440,9 +433,7 @@ export function addFee(
 const sortReservesByAsset = (asset: Asset, reserves: TokenAmount[]) => {
   if (!reserves.some(reserve => reserve.amount.symbol.isEqual(asset.symbol)))
     throw new Error("Asset does not exist in these reserves");
-  return reserves.sort((a, b) =>
-    a.amount.symbol.isEqual(asset.symbol) ? -1 : 1
-  );
+  return reserves.sort(a => (a.amount.symbol.isEqual(asset.symbol) ? -1 : 1));
 };
 
 const highestNumber = (number1: number, number2: number) =>

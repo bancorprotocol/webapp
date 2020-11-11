@@ -48,7 +48,7 @@ export const router = new Router({
   mode: "history",
   base: process.env.BASE_URL,
   scrollBehavior(to, from, savedPosition) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       setTimeout(() => {
         if (savedPosition) {
           resolve(savedPosition);

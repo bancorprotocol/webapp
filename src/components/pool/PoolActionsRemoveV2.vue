@@ -118,12 +118,12 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay, ViewReserve } from "@/types/bancor";
+import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
-import { compareString } from "../../api/helpers";
+import { compareString } from "@/api/helpers";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import AlertBlock from "@/components/common/AlertBlock.vue";
@@ -344,7 +344,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   }
 
   @Watch("pool")
-  async updateSelection(pool: ViewRelay) {
+  async updateSelection() {
     // this.selectedToken = "";
     await this.getPoolBalances();
     // this.percentageUpdate(this.percentage);

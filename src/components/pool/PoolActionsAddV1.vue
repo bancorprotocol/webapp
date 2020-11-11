@@ -48,7 +48,7 @@ import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
-import { compareString, formatNumber, formatPercent } from "../../api/helpers";
+import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 
 @Component({
   components: {

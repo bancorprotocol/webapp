@@ -22,7 +22,7 @@
       v-model="modal"
       :tokens="tokens"
       @select="select"
-      :allowTokenAdd="type == 'primary'"
+      :allow-token-add="type == 'primary'"
     />
   </div>
 </template>
@@ -34,7 +34,7 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 import { VModel } from "@/api/helpers";
-import { ViewModalToken, ViewToken } from "@/types/bancor";
+import { ViewToken } from "@/types/bancor";
 
 @Component({
   components: { ModalTokenSelect, PoolLogos, GrayBorderBlock }

@@ -4,7 +4,6 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
 import moment from "moment";
 
 @Component

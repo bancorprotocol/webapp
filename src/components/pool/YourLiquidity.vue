@@ -89,10 +89,10 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { PoolTokenPosition, ViewRelay, ViewReserve } from "@/types/bancor";
+import { PoolTokenPosition, ViewReserve } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";
 import { formatNumber } from "@/api/helpers";
 import MultiInputField from "@/components/common/MultiInputField.vue";
