@@ -6501,7 +6501,7 @@ export class EthBancorModule
 
     onUpdate!(2, steps);
 
-    const networkContract = buildNetworkContract(this.contracts.BancorNetwork, getWeb3(this.currentNetwork));
+    const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
 
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
