@@ -98,7 +98,7 @@ import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
-import BigNumber from 'bignumber.js';
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -229,7 +229,7 @@ export default class SwapAction extends Vue {
     });
   }
 
-  sanitizeAmount(amount: string) {
+  sanitizeAmount() {
     this.setDefault();
   }
 
@@ -270,7 +270,7 @@ export default class SwapAction extends Vue {
       if (reward.slippage) {
         this.slippage = reward.slippage;
       } else {
-        this.slippage = 0
+        this.slippage = 0;
       }
       if (reward.fee) {
         this.fee = reward.fee;
@@ -334,7 +334,6 @@ export default class SwapAction extends Vue {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
-    const raiseError = new BigNumber(this.balance1).isLessThan(this.amount1);
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
   }

@@ -11,7 +11,6 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import LineChart from "./LineChart.vue";
 import Chart from "chart.js";
 import numeral from "numeral";
-import { formatNumber } from "@/api/helpers";
 
 @Component({
   components: {

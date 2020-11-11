@@ -8,7 +8,7 @@
     toggle-class="block-rounded"
     no-caret
   >
-    <template v-slot:button-content>
+    <template #button-content>
       <font-awesome-icon icon="cog" fixed-width />
     </template>
 
@@ -79,7 +79,7 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, Watch } from "vue-property-decorator";
+import { Prop, Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 @Component({
@@ -117,7 +117,7 @@ export default class SettingsMenu extends Vue {
     vxm.general.toggleDarkMode();
   }
 
-  set darkMode(value: boolean) {
+  set darkMode(_: boolean) {
     vxm.general.toggleDarkMode();
   }
 }
