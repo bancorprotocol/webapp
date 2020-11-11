@@ -1,10 +1,9 @@
-import { compareString } from "@/api/helpers";
+import { testy } from "@/api/pureHelpers";
 
 describe("unit testing on helpers file", () => {
   test("compare string", async () => {
-    const tested = compareString("hello", "HELLO");
+    const tested = testy();
 
-    expect(tested).toBe(true);
-    expect(true).toBe(true);
+    expect(tested).toBe(5);
   });
 });
