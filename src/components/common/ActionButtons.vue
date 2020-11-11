@@ -4,17 +4,25 @@
       v-if="pool"
       @click="goToPool"
       variant="primary"
-      class="mr-3 table-button"
+      class="mr-3"
+      :class="small ? 'table-button-small' : 'table-button'"
     >
-      Add Liquidity
+      <span v-if="!small">Add Liquidity</span>
+      <font-awesome-icon v-else icon="plus" />
     </b-btn>
 
     <b-btn
       @click="goToSwap"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-      class="table-button"
+      :class="small ? 'table-button-small' : 'table-button'"
     >
-      Trade
+      <span v-if="!small">Trade</span>
+      <font-awesome-icon
+        v-else
+        icon="exchange-alt"
+        v-b-tooltip.hover
+        title="Trade"
+      />
     </b-btn>
   </div>
 </template>
@@ -28,6 +36,7 @@ import { ViewToken, ViewRelay } from "@/types/bancor";
 export default class ActionButtons extends Vue {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
+  @Prop({ default: false }) small!: boolean;
 
   get darkMode() {
     return vxm.general.darkMode;
@@ -70,5 +79,11 @@ export default class ActionButtons extends Vue {
   font-weight: 500 !important;
   width: 132px;
   padding: 9px 0px 9px 0px !important;
+}
+
+.table-button-small {
+  @extend .table-button;
+
+  width: 50px;
 }
 </style>
