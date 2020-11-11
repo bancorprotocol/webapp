@@ -2,22 +2,22 @@ import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
 import Onboard from "bnc-onboard";
-import { Asset, Sym, number_to_asset } from "eos-common";
+import { Asset, number_to_asset, Sym } from "eos-common";
 import { rpc } from "./eos/rpc";
 import {
-  TokenBalances,
-  EosMultiRelay,
-  TokenMeta,
   BaseToken,
-  TokenBalanceReturn,
-  TokenBalanceParam,
-  Step,
-  OnUpdate,
-  ViewToken,
-  ReserveFeed,
+  EosMultiRelay,
   ModalChoice,
+  OnUpdate,
+  ReserveFeed,
+  Step,
+  TokenBalanceParam,
+  TokenBalanceReturn,
+  TokenBalances,
+  TokenMeta,
   ViewAmount,
-  ViewRelay
+  ViewRelay,
+  ViewToken
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -25,7 +25,7 @@ import {
   buildConverterContract,
   buildLiquidityProtectionStoreContract
 } from "./eth/contractTypes";
-import { shrinkToken } from "./eth/helpers";
+import { removeLeadingZeros, shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
@@ -33,9 +33,8 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
-import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
-import { getAlchemyUrl } from "@/api/web3";
+import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
 
 export enum PositionType {
   single,
@@ -112,10 +111,14 @@ export interface LockedBalance {
 export const traverseLockedBalances = async (
   contract: string,
   owner: string,
-  expectedCount: number
+  expectedCount: number,
+  network: EthNetworks
 ): Promise<LockedBalance[]> => {
   console.log("traverseHit");
-  const storeContract = buildLiquidityProtectionStoreContract(contract);
+  const storeContract = buildLiquidityProtectionStoreContract(
+    contract,
+    getWeb3(network, Provider.Alchemy)
+  );
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
@@ -344,9 +347,13 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 };
 
 export const fetchUsdPriceOfBntViaRelay = async (
-  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C"
+  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
+  network: EthNetworks
 ): Promise<number> => {
-  const contract = buildConverterContract(relayContractAddress);
+  const contract = buildConverterContract(
+    relayContractAddress,
+    getWeb3(network, Provider.Alchemy)
+  );
   const res = await contract.methods
     .getReturn(
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -372,7 +379,9 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-export const web3 = new Web3(getAlchemyUrl(EthNetworks.Mainnet));
+export const web3 = new Web3(
+  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
+);
 
 web3.eth.transactionBlockTimeout = 100;
 
@@ -614,7 +623,7 @@ export const getConverterLogs = async (
   converterAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network);
+  const address = getAlchemyUrl(network, false);
   const LiquidityRemoved = web3.utils.sha3(
     "LiquidityRemoved(address,address,uint256,uint256,uint256)"
   ) as string;
@@ -678,7 +687,7 @@ export const getLogs = async (
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network);
+  const address = getAlchemyUrl(network, false);
 
   const res = await axios.post<InfuraEventResponse>(address, {
     jsonrpc: "2.0",
@@ -699,7 +708,7 @@ export const getLogs = async (
   return decoded;
 };
 
-const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet);
+const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet, false);
 const APP_NAME = "Bancor Swap";
 
 const wallets = [

@@ -2,14 +2,28 @@ import { getNetworkVariables } from "@/store/config";
 import { EthNetworks } from "@/api/helpers";
 import Web3 from "web3";
 
-const buildAlchemyUrl = (network: string, projectId: string) =>
-  `wss://eth-${network}.ws.alchemyapi.io/v2/${projectId}`;
+const buildAlchemyUrl = (
+  network: string,
+  projectId: string,
+  wss: boolean = true
+) =>
+  `${wss ? "wss" : "https"}://eth-${network}${
+    wss ? ".ws" : ""
+  }.alchemyapi.io/v2/${projectId}`;
 
-export const getAlchemyUrl = (network: EthNetworks) => {
+export const getAlchemyUrl = (network: EthNetworks, wss: boolean = true) => {
   if (network == EthNetworks.Mainnet) {
-    return buildAlchemyUrl("mainnet", getNetworkVariables(network).alchemyKey);
+    return buildAlchemyUrl(
+      "mainnet",
+      getNetworkVariables(network).alchemyKey,
+      wss
+    );
   } else if (network == EthNetworks.Ropsten) {
-    return buildAlchemyUrl("ropsten", getNetworkVariables(network).alchemyKey);
+    return buildAlchemyUrl(
+      "ropsten",
+      getNetworkVariables(network).alchemyKey,
+      wss
+    );
   }
   throw new Error("alchemy address for network not supported ");
 };
@@ -22,7 +36,10 @@ const providerCache: {
   [key: string]: any;
 } = {};
 
-export const getWeb3 = (network: EthNetworks, provider: Provider): Web3 => {
+export const getWeb3 = (
+  network: EthNetworks,
+  provider: Provider = Provider.Alchemy
+): Web3 => {
   let web3Url;
   switch (provider) {
     case Provider.Alchemy:
