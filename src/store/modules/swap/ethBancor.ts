@@ -1652,9 +1652,11 @@ export class EthBancorModule
       const contract = buildLiquidityProtectionStoreContract(liquidityStore);
       const owner = this.isAuthenticated;
       console.time("time to get ID count");
+      console.log("getting id count", owner, "was the owner");
       const idCount = Number(
         await contract.methods.protectedLiquidityCount(owner).call()
       );
+      console.log("got id count", idCount);
       console.timeEnd("time to get ID count");
       if (idCount == 0) return;
       console.time("time to get ids");
@@ -1676,7 +1678,9 @@ export class EthBancorModule
       );
 
       console.time("secondsToGetCurrentBlock");
+      console.log("blockNumber");
       const currentBlockNumber = await web3.eth.getBlockNumber();
+      console.log("blockNumberEnd");
       console.timeEnd("secondsToGetCurrentBlock");
 
       const uniqueAnchors = uniqWith(
@@ -1688,13 +1692,14 @@ export class EthBancorModule
         blockHeight: number;
         days: number;
         label: string;
-      }[] = ([[1, "day"], [7, "week"]] as [number, string][]).map(
-        ([days, label]) => ({
-          blockHeight: rewindBlocksByDays(currentBlockNumber, days),
-          days,
-          label
-        })
-      );
+      }[] = ([
+        [1, "day"],
+        [7, "week"]
+      ] as [number, string][]).map(([days, label]) => ({
+        blockHeight: rewindBlocksByDays(currentBlockNumber, days),
+        days,
+        label
+      }));
 
       const [withAprs, withLiquidityReturn] = await Promise.all([
         (async () => {
@@ -3762,12 +3767,14 @@ export class EthBancorModule
           poolTokenBalance.poolToken.decimals
         );
 
-        const maxWithdrawWei = (await v2Converter.methods
-          .removeLiquidityReturnAndFee(
-            poolTokenBalance.poolToken.contract,
-            poolTokenBalanceWei
-          )
-          .call())[0];
+        const maxWithdrawWei = (
+          await v2Converter.methods
+            .removeLiquidityReturnAndFee(
+              poolTokenBalance.poolToken.contract,
+              poolTokenBalanceWei
+            )
+            .call()
+        )[0];
 
         return {
           ...poolTokenBalance,
@@ -4915,7 +4922,10 @@ export class EthBancorModule
     ) as ChainLinkRelay[];
 
     const v1RelayShapes = v1Relays.map(relay =>
-      reserveBalanceShape(relay.contract, relay.reserves.map(r => r.contract))
+      reserveBalanceShape(
+        relay.contract,
+        relay.reserves.map(r => r.contract)
+      )
     );
     const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
       v2PoolBalanceShape(
@@ -5427,7 +5437,10 @@ export class EthBancorModule
   }) {
     const res = await getLogs(network, networkContract, fromBlock);
 
-    const uniqTxHashes = uniqWith(res.map(x => x.txHash), compareString);
+    const uniqTxHashes = uniqWith(
+      res.map(x => x.txHash),
+      compareString
+    );
 
     const groups = uniqTxHashes.map(hash =>
       res.filter(x => compareString(x.txHash, hash))
@@ -5498,32 +5511,39 @@ export class EthBancorModule
         compareString(trade.data.poolToken!, relay.id)
       );
       const decFee = relay.fee / 100;
-      const accumulatedFees = trades.reduce((acc, item) => {
-        const currentTally = findOrThrow(acc, balance =>
-          compareString(balance.id, item.data.to.address)
-        );
-        const exitingAmount = new BigNumber(item.data.to.weiAmount);
+      const accumulatedFees = trades.reduce(
+        (acc, item) => {
+          const currentTally = findOrThrow(acc, balance =>
+            compareString(balance.id, item.data.to.address)
+          );
+          const exitingAmount = new BigNumber(item.data.to.weiAmount);
 
-        const feeLessMag = 1 - decFee;
-        const feeLessAmount = exitingAmount.times(feeLessMag);
-        const feePaid = exitingAmount.minus(feeLessAmount);
+          const feeLessMag = 1 - decFee;
+          const feeLessAmount = exitingAmount.times(feeLessMag);
+          const feePaid = exitingAmount.minus(feeLessAmount);
 
-        const newTotalAmount = new BigNumber(
-          currentTally.collectedFees.plus(feePaid).toFixed(0)
-        );
-        const newTotalVolume = new BigNumber(exitingAmount).plus(
-          currentTally.totalVolume
-        );
-        return updateArray(
-          acc,
-          reserve => compareString(reserve.id, currentTally.id),
-          reserve => ({
-            ...reserve,
-            collectedFees: newTotalAmount,
-            totalVolume: newTotalVolume
-          })
-        );
-      }, relay.reserves.map(reserve => ({ id: reserve.contract, collectedFees: new BigNumber(0), totalVolume: new BigNumber(0) })));
+          const newTotalAmount = new BigNumber(
+            currentTally.collectedFees.plus(feePaid).toFixed(0)
+          );
+          const newTotalVolume = new BigNumber(exitingAmount).plus(
+            currentTally.totalVolume
+          );
+          return updateArray(
+            acc,
+            reserve => compareString(reserve.id, currentTally.id),
+            reserve => ({
+              ...reserve,
+              collectedFees: newTotalAmount,
+              totalVolume: newTotalVolume
+            })
+          );
+        },
+        relay.reserves.map(reserve => ({
+          id: reserve.contract,
+          collectedFees: new BigNumber(0),
+          totalVolume: new BigNumber(0)
+        }))
+      );
 
       return {
         relay,

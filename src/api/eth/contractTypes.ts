@@ -15,9 +15,12 @@ import {
   ABILiquidityProtection,
   ABILiquidityProtectionStore
 } from "@/api/eth/ethAbis";
-import { web3 } from "@/api/helpers";
+import { EthNetworks } from "@/api/helpers";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
+import { getWeb3, Provider } from "../web3";
+
+const web3 = getWeb3(1, 0);
 
 const buildContract = (abi: AbiItem[], contractAddress?: string) =>
   contractAddress

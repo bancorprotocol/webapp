@@ -6,9 +6,9 @@ const buildAlchemyUrl = (network: string, projectId: string) =>
   `wss://eth-${network}.ws.alchemyapi.io/v2/${projectId}`;
 
 export const getAlchemyUrl = (network: EthNetworks) => {
-  if (network == EthNetworks.Mainnet) {
+  if (network == 1) {
     return buildAlchemyUrl("mainnet", getNetworkVariables(network).alchemyKey);
-  } else if (network == EthNetworks.Ropsten) {
+  } else if (network == 3) {
     return buildAlchemyUrl("ropsten", getNetworkVariables(network).alchemyKey);
   }
   throw new Error("alchemy address for network not supported ");
