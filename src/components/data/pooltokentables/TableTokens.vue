@@ -9,17 +9,13 @@
   >
     <template #cell(symbol)="data">
       <pool-logos :token="data.item" :cursor="false" />
-
-      <!--      <router-link :to="{ name: 'DetailsToken', params: { id: data.item.id } }">-->
-      <!--        <pool-logos :token="data.item" :cursor="false" />-->
-      <!--      </router-link>-->
     </template>
 
     <template #cell(change24h)="data">
       <coloured-percentage :percentage="data.value" />
     </template>
 
-    <template #head(liquidityProtection)>
+    <template v-slot:head(liquidityProtection)>
       <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
     </template>
 

@@ -35,7 +35,7 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
-import { getAlchemyUrl, getInfuraAddress } from "@/api/web3";
+import { getAlchemyUrl } from "@/api/web3"
 
 export enum PositionType {
   single,
@@ -372,8 +372,8 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-export const web3 = new Web3(
-  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
+export let web3 = new Web3(
+  getAlchemyUrl(EthNetworks.Mainnet)
 );
 
 web3.eth.transactionBlockTimeout = 100;
@@ -616,7 +616,7 @@ export const getConverterLogs = async (
   converterAddress: string,
   fromBlock: number
 ) => {
-  const address = getInfuraAddress(network);
+  const address = getAlchemyUrl(network);
   const LiquidityRemoved = web3.utils.sha3(
     "LiquidityRemoved(address,address,uint256,uint256,uint256)"
   ) as string;
@@ -680,7 +680,7 @@ export const getLogs = async (
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getInfuraAddress(network);
+  const address = getAlchemyUrl(network);
 
   const res = await axios.post<InfuraEventResponse>(address, {
     jsonrpc: "2.0",
@@ -701,7 +701,7 @@ export const getLogs = async (
   return decoded;
 };
 
-const RPC_URL = getInfuraAddress(EthNetworks.Mainnet);
+const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet);
 const APP_NAME = "Bancor Swap";
 
 const wallets = [
