@@ -78,7 +78,7 @@ export interface Item {
 })
 export default class DataTable extends Vue {
   @Prop() fields!: ViewTableField[];
-  @Prop() items!: any[];
+  @Prop() items!: Item[];
   @Prop() filter!: string;
   @Prop() filterBy!: string;
   @Prop() defaultSort!: string;
