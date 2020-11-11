@@ -313,21 +313,6 @@ export const calculateProtectionLevel = (
   return new BigNumber(timeProgressedPastMinimum).div(waitingPeriod).toNumber();
 };
 
-export const calculatePositionFees = (
-  originalPoolTokenAmount: string,
-  depositedAmount: string,
-  depositedReserveCurrentBalance: string,
-  opposingDepositedReserveCurrentBalance: string,
-  reserveRate: string
-) => {
-  // original pool token amount * (current reserve balance, current pool token balance)
-
-  const currentReserveToPoolBalanceRate = 3;
-  const amount1 = new BigNumber(originalPoolTokenAmount).times(2);
-
-  return true;
-};
-
 export const calculateProgressLevel = (
   startTimeSeconds: number,
   endTimeSeconds: number

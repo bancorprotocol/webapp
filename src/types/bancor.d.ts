@@ -694,6 +694,11 @@ export interface Service {
   features: Feature[];
 }
 
+export interface TokenReward {
+  amount: string;
+  symbol: string;
+  usdValue?: string;
+}
 export interface ViewProtectedLiquidity {
   id: string;
   stake: {
@@ -703,11 +708,9 @@ export interface ViewProtectedLiquidity {
     symbol: string;
     unixTime: number;
   };
-  protectedAmount: {
-    amount: string;
-    symbol: string;
-    usdValue?: number;
-  };
+  protectedAmount: TokenReward;
+  fullyProtected: TokenReward;
+  fees: TokenReward;
   roi: number;
   apr: {
     day: number;

@@ -145,6 +145,7 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
+import { calculatePositionFees } from '@/api/pureHelpers';
 
 interface Balance {
   balance: string;
@@ -1784,47 +1785,22 @@ export class EthBancorModule
             );
             const rate0 = new BigNumber(position.reserveRateN).div(
               position.reserveRateD
+            ).toString()
+
+
+           const feeAmountWei = calculatePositionFees(
+               position.poolAmount,
+               currentPoolBalances.smartTokenSupplyWei,
+               position.reserveAmount,
+               depositedReserve.weiAmount,
+               opposingReserve.weiAmount,
+               rate0
             );
 
-            const rate1 = new BigNumber(opposingReserve.weiAmount).div(
-              depositedReserve.weiAmount
-            );
-
-            const depositedAmount = position.reserveAmount;
-
-            const currentReserveToPoolRate = new BigNumber(
-              depositedReserve.weiAmount
-            ).times(currentPoolBalances.smartTokenSupplyWei);
-            const amount1 = new BigNumber(position.poolAmount).times(
-              currentReserveToPoolRate
-            );
-            const amount0 = new BigNumber(depositedAmount);
-
-            const magicRate = rate1.div(rate0);
-            console.log(magicRate.toString(), "is the magic rate");
-
-            const feePercent = amount1
-              .div(amount0)
-              .times(magicRate)
-              .sqrt()
-              .minus(1);
-
-            const feeAmount = new BigNumber(depositedAmount).times(feePercent);
-
-            const shrunk = shrinkToken(feeAmount.toString(), 18);
+            const shrunk = shrinkToken(feeAmountWei, 18);
 
             console.log(shrunk, "is the fee amount");
 
-            console.log(
-              feePercent.toString(),
-              "fee percent",
-              feeAmount.toString(),
-              "is the fee amount",
-              "rate 0 is",
-              rate0.toString(),
-              "decimal form",
-              shrunk
-            );
 
             return {
               positionId: position.id,
