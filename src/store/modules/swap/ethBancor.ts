@@ -149,36 +149,6 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { combineLatest, from, Subject, of, Observable } from "rxjs";
-import { distinctUntilChanged, map, filter } from "rxjs/operators";
-
-const contracts = {
-  BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
-  BancorConverterRegistry: "0xeB53781A5a0819375d04251A615e3a039f296Ca9",
-  LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-  LiquidityProtection: "0x53F36c56eCD4FB145989710Fa3E3Cc28AE4aCE88"
-};
-
-const selectedNetwork = new Subject();
-selectedNetwork.next(EthNetworks.Mainnet);
-
-selectedNetwork.pipe(distinctUntilChanged());
-
-const currentNetwork = new Subject();
-const bancorContracts = new Subject();
-const registeredAnchors = new Subject();
-
-currentNetwork.pipe(distinctUntilChanged());
-
-const x = new Observable();
-currentNetwork.next(EthNetworks.Mainnet);
-bancorContracts.next(contracts);
-
-currentNetwork.pipe(distinctUntilChanged());
-bancorContracts.pipe(distinctUntilChanged());
-
-const liquidity = new Observable();
-bancorContracts.subscribe(value => value);
 
 interface Balance {
   balance: string;
