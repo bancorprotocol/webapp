@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
