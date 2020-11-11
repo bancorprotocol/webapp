@@ -99,7 +99,7 @@ export default class TablePools extends Vue {
         label: "Liquidity",
         key: "liqDepth",
         tooltip: "The value of tokens in the pool.",
-        minWidth: "150px"
+        minWidth: "120px"
       },
       {
         id: 4,
@@ -123,14 +123,14 @@ export default class TablePools extends Vue {
               key: "feesGenerated",
               tooltip:
                 "The value of swap fees collected in the pool in the past 24h.",
-              minWidth: "100px"
+              minWidth: "140px"
             },
             {
               id: 7,
               label: "1y Fees / Liquidity",
               key: "feesVsLiquidity",
               tooltip: "24h fees annualized divided by liquidity in the pool.",
-              minWidth: "120px"
+              minWidth: "190px"
             }
           ]
         : []),
