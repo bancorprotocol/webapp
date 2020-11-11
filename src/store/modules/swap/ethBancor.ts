@@ -1836,22 +1836,6 @@ export class EthBancorModule
         }),
         Promise.all(
           allPositions.map(async position => {
-            const calculateFees = (
-              originalPoolTokenAmount: string,
-              
-              depositedAmount: string,
-              depositedReserveCurrentBalance: string,
-              opposingDepositedReserveCurrentBalance: string,
-              reserveRate: string
-            ) => {
-
-              // original pool token amount * (current reserve balance, current pool token balance)
-
-              const currentReserveToPoolBalanceRate = 
-              const amount1 = new BigNumber(originalPoolTokenAmount).times()
-
-            };
-
             const currentPoolBalances = await this.fetchRelayBalances({
               poolId: position.poolToken
             });
@@ -1871,10 +1855,12 @@ export class EthBancorModule
 
             const depositedAmount = position.reserveAmount;
 
-            const currentReserveToPoolRate = new BigNumber(depositedReserve.weiAmount).times(
-              currentPoolBalances.smartTokenSupplyWei
+            const currentReserveToPoolRate = new BigNumber(
+              depositedReserve.weiAmount
+            ).times(currentPoolBalances.smartTokenSupplyWei);
+            const amount1 = new BigNumber(position.poolAmount).times(
+              currentReserveToPoolRate
             );
-            const amount1 = new BigNumber(position.poolAmount).times(currentReserveToPoolRate);
             const amount0 = new BigNumber(depositedAmount);
 
             const magicRate = rate1.div(rate0);
