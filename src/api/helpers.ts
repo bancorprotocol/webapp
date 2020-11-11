@@ -1295,7 +1295,7 @@ export const buildPoolName = (
 ): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   const symbols = pool.reserves.map(x => x.symbol);
-  return symbols.join(separator);
+  return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (
