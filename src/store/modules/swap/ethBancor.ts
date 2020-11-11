@@ -145,6 +145,7 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
+import { calculatePositionFees } from '@/api/pureHelpers';
 
 interface Balance {
   balance: string;
@@ -1574,8 +1575,6 @@ export class EthBancorModule
   }
 
   @action async fetchProtectionPositions(storeAddress?: string) {
-    console.log("fetchProtectionPositions");
-    console.count("fetchProtectionPositions");
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
     if (!this.isAuthenticated) {
@@ -1584,33 +1583,22 @@ export class EthBancorModule
     try {
       const contract = buildLiquidityProtectionStoreContract(liquidityStore);
       const owner = this.isAuthenticated;
-      console.time("time to get ID count");
       const idCount = Number(
         await contract.methods.protectedLiquidityCount(owner).call()
       );
-      console.timeEnd("time to get ID count");
       if (idCount == 0) return;
-      console.time("time to get ids");
       const ids = await contract.methods.protectedLiquidityIds(owner).call();
-      console.timeEnd("time to get ids");
-      console.time("time to get all positions");
       const allPositions = await Promise.all(
         ids.map(id => protectionById(liquidityStore, id))
       );
-      console.timeEnd("time to get all positions");
-      console.log(allPositions, "are all positions");
       if (allPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
-
-      console.log("contracts", this.contracts.LiquidityProtection);
 
       const lpContract = buildLiquidityProtectionContract(
         this.contracts.LiquidityProtection
       );
 
-      console.time("secondsToGetCurrentBlock");
       const currentBlockNumber = await web3.eth.getBlockNumber();
-      console.timeEnd("secondsToGetCurrentBlock");
 
       const uniqueAnchors = uniqWith(
         allPositions.map(pos => pos.poolToken),
@@ -1630,7 +1618,7 @@ export class EthBancorModule
         label
       }));
 
-      const [withAprs, withLiquidityReturn] = await Promise.all([
+      const [withAprs, withLiquidityReturn, withFees] = await Promise.all([
         (async () => {
           try {
             const poolHistoricalBalances = await Promise.all(
@@ -1744,29 +1732,82 @@ export class EthBancorModule
         })(),
         Promise.all(
           allPositions.map(async position => {
-            const fullWaitTime = moment()
+            const now = moment();
+            const nowUnix = now.unix();
+            const fullWaitTime = now
+              .clone()
               .add(1, "year")
               .unix();
 
-            const liquidityReturn = await getRemoveLiquidityReturn(
-              this.contracts.LiquidityProtection,
-              position.id,
-              oneMillion.toString(),
-              fullWaitTime
-            );
+            const timeNow = moment().unix();
+
+            const [
+              fullLiquidityReturn,
+              currentLiquidityReturn
+            ] = await Promise.all([
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                fullWaitTime
+              ),
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                timeNow
+              )
+            ]);
 
             return {
               positionId: position.id,
-              liquidityReturn,
+              fullLiquidityReturn,
+              currentLiquidityReturn,
               roiDec: calculateReturnOnInvestment(
                 position.reserveAmount,
-                liquidityReturn.targetAmount
+                fullLiquidityReturn.targetAmount
               )
             };
           })
         ).catch(e => {
           console.warn("Error fetching ROIs", e);
-        })
+        }),
+        Promise.all(
+          allPositions.map(async position => {
+            const currentPoolBalances = await this.fetchRelayBalances({
+              poolId: position.poolToken
+            });
+
+            const [depositedReserve, opposingReserve] = sortAlongSide(
+              currentPoolBalances.reserves,
+              reserve => reserve.contract,
+              [position.reserveToken]
+            );
+            const rate0 = new BigNumber(position.reserveRateN).div(
+              position.reserveRateD
+            ).toString()
+
+
+           const feeAmountWei = calculatePositionFees(
+               position.poolAmount,
+               currentPoolBalances.smartTokenSupplyWei,
+               position.reserveAmount,
+               depositedReserve.weiAmount,
+               opposingReserve.weiAmount,
+               rate0
+            );
+
+            const shrunk = shrinkToken(feeAmountWei, 18);
+
+            console.log(shrunk, "is the fee amount");
+
+
+            return {
+              positionId: position.id,
+              amount: shrunk
+            };
+          })
+        )
       ]);
 
       const positions = allPositions.map(
@@ -1776,10 +1817,14 @@ export class EthBancorModule
             withLiquidityReturn.find(p => position.id == p.positionId);
           const roiReturn =
             withAprs && withAprs.find(p => position.id == p.positionId);
+
+          const fee = withFees.find(p => position.id == p.positionId);
+
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
-            ...(roiReturn && omit(roiReturn, ["positionId"]))
+            ...(roiReturn && omit(roiReturn, ["positionId"])),
+            ...(fee && omit(fee, ["positionId"]))
           };
         }
       );
@@ -2061,9 +2106,16 @@ export class EthBancorModule
         );
 
         const fullyProtectedDec =
-          singleEntry.liquidityReturn &&
+          singleEntry.fullLiquidityReturn &&
           shrinkToken(
-            singleEntry.liquidityReturn.targetAmount,
+            singleEntry.fullLiquidityReturn.targetAmount,
+            reservePrecision
+          );
+
+        const currentProtectedDec =
+          singleEntry.currentLiquidityReturn &&
+          shrinkToken(
+            singleEntry.currentLiquidityReturn.targetAmount,
             reservePrecision
           );
 
@@ -2078,10 +2130,22 @@ export class EthBancorModule
             this.liquidityProtectionSettings.networkToken
           ) && reserveTokenDec;
 
+        // stake - original
+        // full coverage - full wait time
+        // protectedAmount - current wait time
+
         return {
           id: `${singleEntry.poolToken}:${singleEntry.id}`,
           whitelisted: isWhiteListed,
           ...(givenVBnt && { givenVBnt }),
+          single: true,
+          apr: {
+            day: Number(singleEntry.oneDayDec),
+            // month: Number(singleEntry.on)
+            week: Number(singleEntry.oneWeekDec)
+          },
+          insuranceStart: startTime + minDelay,
+          fullCoverage: startTime + maxDelay,
           stake: {
             amount: reserveTokenDec,
             symbol: reserveToken.symbol,
@@ -2093,29 +2157,42 @@ export class EthBancorModule
                 .toNumber()
             })
           },
-          single: true,
-          apr: {
-            day: Number(singleEntry.oneDayDec),
-            // month: Number(singleEntry.on)
-            week: Number(singleEntry.oneWeekDec)
-          },
-          insuranceStart: startTime + minDelay,
-          fullCoverage: startTime + maxDelay,
-          // @ts-ignore
-          fullyProtected: {
-            amount: fullyProtectedDec
-          },
-          protectedAmount: {
-            amount: fullyProtectedDec,
-            symbol: reserveToken.symbol,
-            ...(reserveToken.price &&
-              fullyProtectedDec && {
-                usdValue: new BigNumber(fullyProtectedDec)
-                  .times(reserveToken.price!)
+          ...(fullyProtectedDec && {
+            fullyProtected: {
+              amount: fullyProtectedDec,
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price && {
+                usdValue: new BigNumber(reserveTokenDec)
+                  .times(reserveToken.price)
                   .toNumber()
               })
-          },
+            }
+          }),
+          ...(currentProtectedDec && {
+            protectedAmount: {
+              amount: currentProtectedDec,
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price &&
+                fullyProtectedDec && {
+                  usdValue: new BigNumber(currentProtectedDec)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
+            }
+          }),
           coverageDecPercent: progressPercent,
+          ...(singleEntry.fee && {
+            fees: {
+              amount: singleEntry.fee.amount,
+              symbol: reserveToken.symbol
+              // ...(reserveToken.price &&
+              //   fullyProtectedDec && {
+              //     usdValue: new BigNumber(1)
+              //       .times(reserveToken.price!)
+              //       .toNumber()
+              //   })
+            }
+          }),
           roi:
             fullyProtectedDec &&
             Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))

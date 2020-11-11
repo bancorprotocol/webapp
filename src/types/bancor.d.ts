@@ -26,6 +26,11 @@ export interface ProtectLiquidityParams {
   onUpdate?: OnUpdate;
 }
 
+export interface PositionReturn {
+  baseAmount: string;
+  networkAmount: string;
+  targetAmount: string;
+}
 export interface ProtectedLiquidityCalculated {
   id: string;
   owner: string;
@@ -39,12 +44,12 @@ export interface ProtectedLiquidityCalculated {
   oneDayDec?: string;
   oneWeekDec?: string;
   // oneMonthDec: string;
-  roiDec?: string;
-  liquidityReturn?: {
-    baseAmount: string;
-    networkAmount: string;
-    targetAmount: string;
+  fee?: {
+    amount: string;
   };
+  roiDec?: string;
+  fullLiquidityReturn?: PositionReturn;
+  currentLiquidityReturn?: PositionReturn;
 }
 export interface TokenPrice {
   id: string;
@@ -689,6 +694,11 @@ export interface Service {
   features: Feature[];
 }
 
+export interface TokenReward {
+  amount: string;
+  symbol: string;
+  usdValue?: string;
+}
 export interface ViewProtectedLiquidity {
   id: string;
   stake: {
@@ -698,15 +708,13 @@ export interface ViewProtectedLiquidity {
     symbol: string;
     unixTime: number;
   };
-  protectedAmount: {
-    amount: string;
-    symbol: string;
-    usdValue?: number;
-  };
+  protectedAmount: TokenReward;
+  fullyProtected: TokenReward;
+  fees: TokenReward;
   roi: number;
   apr: {
     day: number;
-    // week: number;
+    week: number;
     // month: number;
   };
   single: boolean;
