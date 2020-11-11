@@ -60,7 +60,7 @@
       <modal-token-select
         v-if="tokens && tokens.length > 0"
         v-model="modal"
-        :allowTokenAdd="allowTokenAdd"
+        :allow-token-add="allowTokenAdd"
         :tokens="tokens"
         @select="select"
       />

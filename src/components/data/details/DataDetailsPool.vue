@@ -76,10 +76,10 @@
             :items="poolTokensTable.items"
             :fields="poolTokensTable.fields"
             :filter="searchTokens"
-            :filterFunction="doFilter"
+            :filter-function="doFilter"
             sort-by="reserveWeight"
           >
-            <template v-slot:cell(symbol)="data">
+            <template #cell(symbol)="data">
               <pool-logos :token="data.item" :cursor="false" />
             </template>
           </table-wrapper>

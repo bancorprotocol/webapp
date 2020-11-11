@@ -8,7 +8,7 @@
     toggle-class="block-rounded"
     no-caret
   >
-    <template v-slot:button-content>
+    <template #button-content>
       <font-awesome-icon icon="cog" fixed-width />
     </template>
 

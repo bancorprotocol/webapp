@@ -5,8 +5,8 @@
         <tr :class="darkMode ? 'table-header-dark' : 'table-header-light'">
           <th
             @click="setSortBy(column)"
-            v-for="(column, index) in fields"
-            :key="index"
+            v-for="column in fields"
+            :key="column.id"
             scope="col"
             :class="isColumnSort(column) ? 'cursor' : ''"
             :style="getWidthStyle(column)"
@@ -29,14 +29,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="pool in paginatedItems" :key="pool.id">
-          <td v-for="(column, index) in fields" :key="index">
+        <tr v-for="item in paginatedItems" :key="item.id">
+          <td v-for="column in fields" :key="column.id">
             <slot
               :name="`cell(${column.key})`"
-              :item="pool"
-              :value="pool[column.key]"
+              :item="item"
+              :value="item[column.key]"
             >
-              {{ pool[column.key] }}
+              {{ item[column.key] }}
             </slot>
           </td>
         </tr>
@@ -46,7 +46,7 @@
     <table-pagination
       v-if="!hidePagination"
       :current-page.sync="currentPage"
-      :rowCount="modifiedItems.length"
+      :row-count="modifiedItems.length"
       :per-page="perPage"
     />
   </div>
@@ -58,7 +58,8 @@ import { vxm } from "@/store";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 
-export interface ViewTableFields {
+export interface ViewTableField {
+  id: number;
   label: string;
   key: string;
   sort?: boolean;
@@ -73,7 +74,7 @@ export interface ViewTableFields {
   }
 })
 export default class DataTable extends Vue {
-  @Prop() fields!: ViewTableFields[];
+  @Prop() fields!: ViewTableField[];
   @Prop() items!: any[];
   @Prop() filter!: string;
   @Prop() filterBy!: string;
@@ -81,17 +82,28 @@ export default class DataTable extends Vue {
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
+  @Prop() filterFunction?: Function;
 
   sortBy: string = this.defaultSort;
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
 
   get modifiedItems() {
-    const filtered = this.items.filter(
-      (t: any) =>
-        t[this.filterBy] &&
-        t[this.filterBy].toUpperCase().includes(this.filter.toUpperCase())
-    );
+    let filtered = [];
+    const items = this.items;
+    const filter = this.filter;
+    const filterBy = this.filterBy;
+    const filterFunction = this.filterFunction;
+
+    if (filterFunction !== undefined) {
+      filtered = items.filter((t: any) => filterFunction(t, filter));
+    } else {
+      filtered = items.filter(
+        (t: any) =>
+          t[filterBy] &&
+          t[filterBy].toUpperCase().includes(filter.toUpperCase())
+      );
+    }
 
     return sort(filtered)[this.descOrder ? "desc" : "asc"](
       (t: any) => t[this.sortBy]
@@ -105,18 +117,18 @@ export default class DataTable extends Vue {
     return this.modifiedItems.slice(startIndex, endIndex);
   }
 
-  isColumnSort(column: ViewTableFields) {
+  isColumnSort(column: ViewTableField) {
     return column.sort === undefined || column.sort;
   }
 
-  setSortBy(column: ViewTableFields) {
+  setSortBy(column: ViewTableField) {
     if (this.isColumnSort(column)) {
       if (this.sortBy === column.key) this.descOrder = !this.descOrder;
       else this.sortBy = column.key;
     } else return;
   }
 
-  getWidthStyle(column: ViewTableFields) {
+  getWidthStyle(column: ViewTableField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)

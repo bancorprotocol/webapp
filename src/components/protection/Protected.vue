@@ -6,7 +6,7 @@
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"
-      :filterFunction="doFilter"
+      :filter-function="doFilter"
       sort-by="insuranceStart"
     >
       <template #head(stake)="data">
@@ -33,7 +33,15 @@
         />
       </template>
 
-      <template v-slot:cell(stake)="data">
+      <template #head(currentCoverage)="data">
+        {{ data.label }}
+        <font-awesome-icon
+          v-b-popover.hover.top="toolTips.currentCoverage"
+          icon="info-circle"
+        />
+      </template>
+
+      <template #cell(stake)="data">
         <div>
           {{ `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}` }}
         </div>
@@ -78,7 +86,7 @@
         </div>
       </template>
 
-      <template v-slot:cell(protectedAmount)="data">
+      <template #cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -98,11 +106,11 @@
         />
       </template>
 
-      <template v-slot:cell(roi)="data">
+      <template #cell(roi)="data">
         <span>{{ data.value }}</span>
       </template>
 
-      <template v-slot:cell(apr)="data">
+      <template #cell(apr)="data">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{
@@ -125,7 +133,7 @@
         <!-- </div> -->
       </template>
 
-      <template v-slot:cell(insuranceStart)="data">
+      <template #cell(insuranceStart)="data">
         <div class="d-flex flex-column">
           <span v-text="formatDate(data.item.insuranceStart).date" />
           <span
@@ -136,7 +144,7 @@
         </div>
       </template>
 
-      <template v-slot:cell(currentCoverage)="data">
+      <template #cell(currentCoverage)="data">
         <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(data.item.coverageDecPercent) }}
           <div
@@ -155,30 +163,21 @@
               triggers="hover"
               placement="bottom"
             >
-              Until the "cliff" is reached, you are entitled to exercise 0% of
-              your impermanent loss protection. When the cliff is reached, you
-              are entitled to 30% coverage. Coverage increases by 1% per day
-              until 100% coverage is reached (full protection).
+              Impermanent loss protection starts 30 days after your deposit, at
+              which point the "cliff" is reached and protection rises from 30%,
+              by 1% per day, until 100% protection is reached.
             </b-popover>
           </div>
-          <b-progress
-            :value="data.item.coverageDecPercent * 100"
-            :max="100"
-            height="7px"
-            class="my-1"
-          />
-          <span class="text-primary">
-            {{ formatEndTime(data.item.fullCoverage) }}
-          </span>
         </div>
 
         <remaining-time2
           :from="data.item.stake.unixTime * 1000"
           :to="data.item.fullCoverage * 1000"
+          class="mt-1"
         />
       </template>
 
-      <template v-slot:cell(actionButtons)="data">
+      <template #cell(actionButtons)="data">
         <b-btn
           @click="goToWithdraw(data.item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -283,7 +282,9 @@ export default class Protected extends Vue {
         "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value).",
       fees: "Fees your stake has earned since you entered the pool.",
       roi: "The ROI of your fully protected value vs. your initial stake.",
-      apr: "How much the pool has earned within different time frames."
+      apr: "How much the pool has earned within different time frames.",
+      currentCoverage:
+        "The impermanent loss protection you have accrued. Impermanent loss protection starts 30 days after your deposit, at a rate of 30% and gradually increases 1% per day until you reach 100% protection."
     };
     return tooltips;
   }
