@@ -1,5 +1,7 @@
 module.exports = {
-  chainWebpack: config => config.resolve.symlinks(false),
+  chainWebpack: (config) => {
+    config.resolve.symlinks(false)
+  },
   pluginOptions: {
     i18n: {
       locale: "en",
