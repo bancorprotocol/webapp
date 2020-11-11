@@ -67,7 +67,10 @@ export interface ViewTableField {
   minWidth?: string;
   maxWidth?: string;
 }
-
+export interface Item {
+    id: string;
+    [key: string]: any
+}
 @Component({
   components: {
     TablePagination
