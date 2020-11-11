@@ -37,6 +37,7 @@ import { pick, zip } from "lodash";
 import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
 import { getAlchemyUrl } from "@/api/web3"
+import { getNetworkVariables } from '@/store/config';
 
 export enum PositionType {
   single,
@@ -676,7 +677,10 @@ export const getLogs = async (
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network);
+  // const address = getAlchemyUrl(network);
+
+
+  const address = `https://eth-mainnet.alchemyapi.io/v2/${getNetworkVariables(network).alchemyKey}`
 
   const res = await axios.post<InfuraEventResponse>(address, {
     jsonrpc: "2.0",
