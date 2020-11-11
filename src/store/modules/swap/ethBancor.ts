@@ -322,8 +322,11 @@ const estimateBlockTimeUnix = (
   knownBlockNumberTime: number,
   averageBlockTimeSeconds = 13
 ): number => {
-  if (knownBlockNumber < blockNumber)
-    throw new Error("Write more maths to support this");
+  if (knownBlockNumber < blockNumber) {
+    const blockgap = blockNumber - knownBlockNumber;
+    const timegap = blockgap * averageBlockTimeSeconds;
+    return knownBlockNumberTime + timegap;
+  }
   const blockGap = knownBlockNumber - blockNumber;
   const timeGap = blockGap * averageBlockTimeSeconds;
   return knownBlockNumberTime - timeGap;
