@@ -18,7 +18,7 @@ export const getNetworkVariables = (
 ): EthNetworkVariables => {
   const ethToken = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
   switch (ethNetwork) {
-    case 1:
+    case EthNetworks.Mainnet:
       return {
         contractRegistry: "0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4",
         bntToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -31,7 +31,7 @@ export const getNetworkVariables = (
         etherscanUrl: "https://etherscan.io/",
         alchemyKey: process.env.VUE_APP_ALCHEMY_MAINNET || ""
       };
-    case 3:
+    case EthNetworks.Ropsten:
       return {
         contractRegistry: "0xA6DB4B0963C37Bc959CbC0a874B5bDDf2250f26F",
         bntToken: "0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5",
