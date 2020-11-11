@@ -3053,7 +3053,7 @@ export class EthBancorModule
   @action async getGeometricMean(amounts: string[]) {
     const converter = buildConverterContract(
       getNetworkVariables(this.currentNetwork).converterContractForMaths,
-      getWeb3(this.currentEthNetwork, Provider.Alchemy)
+      getWeb3(this.currentNetwork, Provider.Alchemy)
     );
     return converter.methods.geometricMean(amounts).call();
   }
@@ -3833,7 +3833,7 @@ export class EthBancorModule
   }
 
   @action async getTokenSupply(tokenAddress: string) {
-    const contract = buildTokenContract(tokenAddress, getWeb3(this.currentEthNetwork));
+    const contract = buildTokenContract(tokenAddress, getWeb3(this.currentNetwork));
     return contract.methods.totalSupply().call();
   }
 
@@ -6043,7 +6043,7 @@ export class EthBancorModule
 
     const [tokenSupplys, reserveBalances] = ((await this.multi({
       groupsOfShapes: [
-        poolsToCalculate.map(pool => tokenSupplyShape(pool.id, this.currentEthNetwork)),
+        poolsToCalculate.map(pool => tokenSupplyShape(pool.id, this.currentNetwork)),
         reservesShapes
       ],
       blockHeight: weekAgo
