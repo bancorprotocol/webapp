@@ -1,17 +1,17 @@
-import { action, createModule, mutation } from "vuex-class-component";
-import { ContractMethods, EthAddress } from "@/types/bancor";
-import { shrinkToken } from "@/api/eth/helpers";
+import {action, createModule, mutation} from "vuex-class-component";
+import {ContractMethods, EthAddress} from "@/types/bancor";
+import {shrinkToken} from "@/api/eth/helpers";
 import {
   buildGovernanceContract,
   buildTokenContract
 } from "@/api/eth/contractTypes";
-import { CallReturn } from "eth-multicall";
-import { ContractSendMethod } from "web3-eth-contract";
+import {CallReturn} from "eth-multicall";
+import {ContractSendMethod} from "web3-eth-contract";
 import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
-import { EthNetworks, web3 } from "@/api/helpers";
-import { getNetworkVariables } from "@/store/config";
+import {EthNetworks, web3} from "@/api/helpers";
+import {getNetworkVariables} from "@/store/config";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
@@ -36,8 +36,8 @@ export interface ProposalMetaData {
 
 interface Votes {
   voted: undefined | "for" | "against";
-  for: number;
-  against: number;
+  for: string;
+  against: string;
 }
 
 export interface Voter {
@@ -117,16 +117,10 @@ export class EthereumGovernance extends VuexModule.With({
   symbol?: string;
   decimals?: number;
 
-  metaDataCache: { [id: string]: ProposalMetaData } = {};
+  metaDataCache: {[id: string]: ProposalMetaData} = {};
 
   @mutation
-  setContracts({
-    governance,
-    token
-  }: {
-    governance: Governance;
-    token: Token;
-  }) {
+  setContracts({governance, token}: {governance: Governance; token: Token}) {
     this.tokenContract = token;
     this.governanceContract = governance;
     this.isLoaded = true;
@@ -245,7 +239,7 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getVotes({ voter }: { voter: EthAddress }): Promise<BigNumber> {
+  async getVotes({voter}: {voter: EthAddress}): Promise<BigNumber> {
     if (!voter) throw new Error("Cannot get votes without voter address");
 
     const [decimals, weiVotes] = await Promise.all([
@@ -259,7 +253,7 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getBalance({ account }: { account: EthAddress }): Promise<BigNumber> {
+  async getBalance({account}: {account: EthAddress}): Promise<BigNumber> {
     if (!account) throw new Error("Cannot get balance without address");
 
     const [decimals, weiBalance] = await Promise.all([
@@ -277,7 +271,7 @@ export class EthereumGovernance extends VuexModule.With({
     account
   }: {
     account: EthAddress;
-  }): Promise<{ till: number; for: number }> {
+  }): Promise<{till: number; for: number}> {
     if (!account) throw new Error("Cannot get lock without address");
 
     const till =
@@ -489,22 +483,23 @@ export class EthereumGovernance extends VuexModule.With({
           : 0
       } as any,
       metadata: metadata,
-      voters: await this.getVoters({ proposal })
+      voters: await this.getVoters({proposal})
     };
-    const { for: vFor, against: vAgainst } = prop.votes;
+    const {for: vFor, against: vAgainst} = prop.votes;
     prop.votes.voted =
       vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
 
     return prop;
   }
 
-  @action async getVoters({
+  @action
+  async getVoters({
     proposal
   }: {
     proposal: Proposal;
-  }): Promise<{ votes: Votes; account: string }[]> {
+  }): Promise<{votes: Votes; account: string}[]> {
     const voteEvents = await this.governanceContract.getPastEvents("Vote", {
-      filter: { _id: proposal.id.toString() },
+      filter: {_id: proposal.id.toString()},
       fromBlock: 0,
       toBlock: "latest"
     });
@@ -526,7 +521,7 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
-  async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
+  async getProposals({voter}: {voter?: string}): Promise<Proposal[]> {
     console.log(
       "getting proposals",
       Date.now(),
@@ -595,9 +590,7 @@ export class EthereumGovernance extends VuexModule.With({
     return metadata;
   }
 
-  @mutation setMetaDataCache(metaDataCache: {
-    [id: string]: ProposalMetaData;
-  }) {
+  @mutation setMetaDataCache(metaDataCache: {[id: string]: ProposalMetaData}) {
     this.metaDataCache = metaDataCache;
   }
 
@@ -609,7 +602,7 @@ export class EthereumGovernance extends VuexModule.With({
   }): Promise<string> {
     const ipfs = IpfsHttpClient({url: ipfsUrl});
 
-    const { path } = await ipfs.add(
+    const {path} = await ipfs.add(
       Buffer.from(JSON.stringify(proposalMetaData, null, 2))
     );
     return path;
@@ -620,7 +613,7 @@ export class EthereumGovernance extends VuexModule.With({
     postId
   }: {
     postId: string;
-  }): Promise<{ description: string }> {
+  }): Promise<{description: string}> {
     const post = await axios
       .get(`${discourseUrl}posts/${postId}.json`)
       .then(response => {
@@ -642,7 +635,7 @@ export class EthereumGovernance extends VuexModule.With({
     topicId
   }: {
     topicId: string;
-  }): Promise<{ title: string; description: string }> {
+  }): Promise<{title: string; description: string}> {
     const topic = await axios
       .get(`${discourseUrl}t/${topicId}.json`)
       .then(response => {
@@ -654,7 +647,7 @@ export class EthereumGovernance extends VuexModule.With({
       });
 
     const postId = topic.post_stream.posts[0].id;
-    const { description } = await this.getPostFromDiscourse({
+    const {description} = await this.getPostFromDiscourse({
       postId
     });
     return {

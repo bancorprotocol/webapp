@@ -2,7 +2,7 @@
   <div v-if="!proposals">
     <div class="d-flex justify-content-center align-items-center my-5">
       <b-spinner
-        style="display: block; width: 2rem; height: 2rem;"
+        style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
         label="Loading..."
@@ -43,7 +43,7 @@
         class="align-rows-cells cursor"
         @click="() => openProposal(proposal)"
       >
-        <td :class="{ 'no-border': !isNaN(opened) && proposal.id === opened }">
+        <td :class="{'no-border': !isNaN(opened) && proposal.id === opened}">
           {{ proposal.id }}
         </td>
         <td class="font-size-14 font-w500">
@@ -134,9 +134,7 @@
         </td>
         <td colspan="2">
           <div class="pb-1">
-            <span class="font-size-12 text-muted-light">
-              Vote Start
-            </span>
+            <span class="font-size-12 text-muted-light"> Vote Start </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
               {{ formatDate(proposal.start) }}
             </span>
@@ -145,9 +143,7 @@
             </span>
           </div>
           <div>
-            <span class="font-size-12 text-muted-light">
-              Quorum/Required
-            </span>
+            <span class="font-size-12 text-muted-light"> Quorum/Required </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
               {{ proposal.quorum / 10000 }}% /
               {{ proposal.quorumRequired / 10000 }}%
@@ -159,7 +155,7 @@
             <a
               :href="getBIPLink(proposal)"
               target="_blank"
-              style="width: 100%; display: inline-block;"
+              style="width: 100%; display: inline-block"
             >
               <main-button
                 :small="true"
@@ -174,7 +170,7 @@
             <a
               :href="getIPFSUrl(proposal.hash)"
               target="_blank"
-              style="width: 100%; display: inline-block;"
+              style="width: 100%; display: inline-block"
             >
               <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
                 IPFS
@@ -189,17 +185,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import {Component, Prop, Vue} from "vue-property-decorator";
+import {vxm} from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
-import { shortenEthAddress } from "@/api/helpers";
-import {
-  ipfsViewUrl,
-  Proposal
-} from "@/store/modules/governance/ethGovernance";
+import {ViewTableFields} from "@/components/common/TableHeader.vue";
+import {shortenEthAddress} from "@/api/helpers";
+import {ipfsViewUrl, Proposal} from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -225,11 +218,11 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "Details",
-        key: '',
+        key: ""
       },
       {
         label: "Result",
-        key: '',
+        key: "",
         maxWidth: "120px",
         minWidth: "120px"
       },
@@ -253,7 +246,7 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "",
-        key: '',
+        key: "",
         maxWidth: "10px"
       }
     ];
@@ -322,17 +315,20 @@ export default class DoneProposals extends Vue {
   cursor: pointer;
   color: $primary !important;
 }
+
 .align-rows-cells {
   @at-root .table & > td {
     vertical-align: top !important;
   }
 }
+
 .fix-pie {
   circle,
   text {
     display: none;
   }
 }
+
 .pie-wrapper {
   height: 24px;
   width: 24px;
@@ -344,6 +340,7 @@ export default class DoneProposals extends Vue {
   &--for {
     color: #3ec8c8 !important;
   }
+
   &--against {
     color: #de4a5c !important;
   }
