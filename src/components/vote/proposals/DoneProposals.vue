@@ -31,7 +31,7 @@
     :items="proposals"
     :fields="fields"
     default-sort="to"
-    :hidePagination="true"
+    :hide-pagination="true"
   >
     <template
       v-for="proposal in proposals"
@@ -218,13 +218,13 @@ export default class DoneProposals extends Vue {
   get fields(): ViewTableFields[] {
     return [
       {
-        label: "",
+        label: "ID",
         key: "id",
         minWidth: "16px",
         maxWidth: "16px"
       },
       {
-        label: "Proposal ID"
+        label: "Details"
       },
       {
         label: "Result",
@@ -305,7 +305,7 @@ export default class DoneProposals extends Vue {
   }
 
   async mounted() {
-    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl()
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }

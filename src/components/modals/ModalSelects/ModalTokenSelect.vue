@@ -6,7 +6,7 @@
     title="Select a token"
     subtitle="Tokens"
   >
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <div
         @click="selectToken(item.id)"
         class="d-flex align-items-center justify-content-between"
@@ -26,10 +26,12 @@
       </div>
     </template>
     <template v-if="allowTokenAdd" #footer>
-      <p>
+      <p class="mb-0">
         Can't find the token you're looking for?
-        <span style="color: blue" @click="promptTokenAddModal">Add token</span>
       </p>
+      <span @click="promptTokenAddModal" class="text-primary cursor font-w600">
+        Add token
+      </span>
       <modal-base title="Add Token" v-model="addTokenModal">
         <multi-input-field
           v-model="addTokenText"
@@ -45,17 +47,16 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop, Emit } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 
-import { ViewRelay, ViewToken, ViewModalToken } from "@/types/bancor";
+import { ViewModalToken } from "@/types/bancor";
 import { formatNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
-import wait from "waait";
 
 const INVALID_ADDRESS = "Invalid address";
 
@@ -71,6 +72,10 @@ export default class ModalSelectToken extends Vue {
   addTokenModal: boolean = false;
   addTokenText: string = "";
   error: string = "";
+
+  get isEos() {
+    return vxm.bancor.currentNetwork === "eos";
+  }
 
   @Emit("select")
   selectToken(id: string) {
@@ -90,7 +95,9 @@ export default class ModalSelectToken extends Vue {
   }
 
   promptTokenAddModal() {
-    this.addTokenModal = true;
+    if (this.isEos)
+      window.open("https://github.com/eoscafe/eos-airdrops/", "_blank");
+    else this.addTokenModal = true;
   }
 
   async triggerAdd() {

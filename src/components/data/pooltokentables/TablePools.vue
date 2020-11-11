@@ -4,10 +4,10 @@
     :items="items"
     :fields="fields"
     :filter="filter"
-    :filterFunction="doFilter"
+    :filter-function="doFilter"
     sort-by="liqDepth"
   >
-    <template v-slot:head(liqDepth)="data">
+    <template #head(liqDepth)="data">
       {{ data.label }}
       <font-awesome-icon
         v-b-popover.hover.top="toolTips.liqDepth"
@@ -15,7 +15,7 @@
       />
     </template>
 
-    <template v-slot:head(fee)="data">
+    <template #head(fee)="data">
       {{ data.label }}
       <font-awesome-icon
         v-b-popover.hover.top="toolTips.fee"
@@ -23,7 +23,7 @@
       />
     </template>
 
-    <template v-slot:head(feesGenerated)="data">
+    <template #head(feesGenerated)="data">
       {{ data.label }}
       <font-awesome-icon
         v-b-popover.hover.top="toolTips.feesGenerated"
@@ -31,7 +31,7 @@
       />
     </template>
 
-    <template v-slot:head(feesVsLiquidity)="data">
+    <template #head(feesVsLiquidity)="data">
       {{ data.label }}
       <font-awesome-icon
         v-b-popover.hover.top="toolTips.feesVsLiquidity"
@@ -39,7 +39,7 @@
       />
     </template>
 
-    <template v-slot:cell(symbol)="data">
+    <template #cell(symbol)="data">
       <pool-logos :pool="data.item" :cursor="false" />
 
       <!-- <router-link :to="{ name: 'DetailsPool', params: { id: data.item.id } }">
@@ -47,18 +47,18 @@
       </router-link>-->
     </template>
 
-    <template v-slot:head(liquidityProtection)="data">
+    <template #head(liquidityProtection)>
       <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
     </template>
 
-    <template v-slot:cell(liquidityProtection)="data">
+    <template #cell(liquidityProtection)="data">
       <img
         v-if="data.value"
         :src="require(`@/assets/media/icons/liquidity_active.svg`)"
       />
     </template>
 
-    <template v-slot:cell(actionButtons)="data">
+    <template #cell(actionButtons)="data">
       <action-buttons :pool="data.item" />
     </template>
   </table-wrapper>

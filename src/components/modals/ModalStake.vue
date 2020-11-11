@@ -241,9 +241,11 @@ export default class ModalStake extends Vue {
   @Watch("isAuthenticated")
   @Watch("show")
   async update() {
-    this.currentBalance = await vxm.ethGovernance.getBalance({
-      account: this.isAuthenticated
-    });
+    this.currentBalance = this.isAuthenticated
+      ? await vxm.ethGovernance.getBalance({
+          account: this.isAuthenticated
+        })
+      : new BigNumber(0);
 
     this.setStakeInput();
 

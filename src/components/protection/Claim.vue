@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 pt-4 border-top">
+  <div class="px-4 pt-4">
     <b-row>
       <b-col xl="6">
         <sub-content-block title="Available to claim">
@@ -43,7 +43,6 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
-import moment from "moment";
 import { vxm } from "@/store";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";

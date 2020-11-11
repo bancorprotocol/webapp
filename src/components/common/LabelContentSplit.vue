@@ -24,25 +24,24 @@
     </div>
 
     <span
-      v-if="value && !loading"
+      v-if="!loading"
       class="font-size-12 font-w600"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      {{ value }}
+      <slot>{{ value }}</slot>
     </span>
     <span
-      v-if="value && loading"
+      v-else
       class="font-size-12 font-w600"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <font-awesome-icon icon="circle-notch" spin />
     </span>
-    <slot v-else></slot>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
 @Component

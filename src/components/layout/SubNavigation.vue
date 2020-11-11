@@ -22,22 +22,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import wait from "waait";
-import { router } from "@/router";
-import { sync } from "vuex-router-sync";
-import {
-  services,
-  Feature,
-  buildTokenId,
-  compareString,
-  findOrThrow
-} from "@/api/helpers";
-import { store } from "../../store";
-import { ModuleParam } from "../../types/bancor";
-import { ethReserveAddress } from "../../api/eth/ethAbis";
-import { Route } from "vue-router";
 
 @Component
 export default class SubNavigation extends Vue {

@@ -20,7 +20,6 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import numeral from "numeral";
 
 import ProgressBar from "@/components/common/ProgressBar.vue";
 
