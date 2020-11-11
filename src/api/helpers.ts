@@ -249,6 +249,7 @@ export const prettifyNumber = (num: number | string, usd = false): string => {
   if (usd) {
     if (bigNum.eq(0)) return "$0.00";
     else if (bigNum.lt(0.01)) return "< $0.01";
+    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
     else return numeral(bigNum).format("$0,0.00");
   } else {
     if (bigNum.eq(0)) return "0";
