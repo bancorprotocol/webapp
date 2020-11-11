@@ -35,7 +35,6 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
 import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
-import { getNetworkVariables } from "@/store/config";
 
 export enum PositionType {
   single,
@@ -128,7 +127,7 @@ export const traverseLockedBalances = async (
     const endIndex = startIndex + scopeRange;
 
     console.log(startIndex, endIndex, "is start and end index");
-    let lockedBalanceRes = await storeContract.methods
+    const lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
     console.log("traverseHit 33");
@@ -380,7 +379,7 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-export let web3 = new Web3(
+export const web3 = new Web3(
   Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
 
@@ -1015,13 +1014,11 @@ const isAuthenticatedViaModule = (module: EosTransitModule) => {
   return isAuthenticated;
 };
 
-export const getBankBalance = async (): Promise<
-  {
-    id: number;
-    quantity: string;
-    symbl: string;
-  }[]
-> => {
+export const getBankBalance = async (): Promise<{
+  id: number;
+  quantity: string;
+  symbl: string;
+}[]> => {
   const account = isAuthenticatedViaModule(vxm.eosWallet);
   const res: {
     rows: {
