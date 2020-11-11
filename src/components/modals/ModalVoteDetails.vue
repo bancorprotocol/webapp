@@ -114,13 +114,13 @@
 </template>
 
 <script lang="ts">
-import {vxm} from "@/store/";
-import {Component, Vue, Prop} from "vue-property-decorator";
-import {prettifyNumber, VModel} from "@/api/helpers";
+import { vxm } from "@/store/";
+import { Component, Vue, Prop } from "vue-property-decorator";
+import { prettifyNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
-import {Proposal, Voter} from "@/store/modules/governance/ethGovernance";
+import { Proposal, Voter } from "@/store/modules/governance/ethGovernance";
 import TableWrapper from "@/components/common/TableWrapper.vue";
-import {BvTableFieldArray} from "bootstrap-vue/src/components/table";
+import { BvTableFieldArray } from "bootstrap-vue/src/components/table";
 import BigNumber from "bignumber.js";
 
 @Component({
@@ -130,7 +130,7 @@ import BigNumber from "bignumber.js";
   }
 })
 export default class ModalVoteDetails extends Vue {
-  @VModel({type: Boolean}) show!: boolean;
+  @VModel({ type: Boolean }) show!: boolean;
   @Prop() proposal!: Proposal;
 
   symbol: string = "";

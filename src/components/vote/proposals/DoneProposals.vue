@@ -43,7 +43,7 @@
         class="align-rows-cells cursor"
         @click="() => openProposal(proposal)"
       >
-        <td :class="{'no-border': !isNaN(opened) && proposal.id === opened}">
+        <td :class="{ 'no-border': !isNaN(opened) && proposal.id === opened }">
           {{ proposal.id }}
         </td>
         <td class="font-size-14 font-w500">
@@ -185,14 +185,17 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from "vue-property-decorator";
-import {vxm} from "@/store";
+import { Component, Prop, Vue } from "vue-property-decorator";
+import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
-import {ViewTableFields} from "@/components/common/TableHeader.vue";
-import {shortenEthAddress} from "@/api/helpers";
-import {ipfsViewUrl, Proposal} from "@/store/modules/governance/ethGovernance";
+import { ViewTableFields } from "@/components/common/TableHeader.vue";
+import { shortenEthAddress } from "@/api/helpers";
+import {
+  ipfsViewUrl,
+  Proposal
+} from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
