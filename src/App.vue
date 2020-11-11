@@ -52,7 +52,7 @@
     >
       This interface is in beta. Use it at your own risk.
       <a href="https://infura.io/" target="_blank"
-        >Infura is currently having service issues, some features may be
+        >Infura is currently experiencing service issues, some features may be
         disabled</a
       >
     </div>
