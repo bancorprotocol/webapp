@@ -68,8 +68,8 @@ export interface ViewTableField {
   maxWidth?: string;
 }
 export interface Item {
-    id: string;
-    [key: string]: any
+  id: string;
+  [key: string]: any;
 }
 @Component({
   components: {

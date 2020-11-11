@@ -9,9 +9,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { State, Getter, Mutation, Action } from 'vuex-class';
-// import { vxm } from "@/store";
-import numeral from "numeral";
+import { State, Getter, Mutation, Action } from "vuex-class";
 
 @Component
 export default class TestProgressBar extends Vue {
@@ -19,19 +17,19 @@ export default class TestProgressBar extends Vue {
   @Prop() percentage?: number;
 
   // for testing
-  @Getter('isCountryBanned', {namespace: 'GeneralNewModule'})
+  @Getter("isCountryBanned", { namespace: "GeneralNewModule" })
   isCountryBanned!: boolean;
 
-  @State('darkMode', {namespace: 'GeneralNewModule'})
+  @State("darkMode", { namespace: "GeneralNewModule" })
   darkMode!: boolean;
 
-  @State('countryCode', {namespace: 'GeneralNewModule'})
+  @State("countryCode", { namespace: "GeneralNewModule" })
   countryCode!: string;
 
-  @Mutation('toggleDarkMode', {namespace: 'GeneralNewModule'})
+  @Mutation("toggleDarkMode", { namespace: "GeneralNewModule" })
   toggleDarkMode!: () => void;
 
-  @Action('getUserCountry', {namespace: 'GeneralNewModule'})
+  @Action("getUserCountry", { namespace: "GeneralNewModule" })
   getUserCountry!: () => void;
 
   get percentageValue() {
@@ -39,16 +37,16 @@ export default class TestProgressBar extends Vue {
   }
 
   async mounted() {
-    console.log('Getter: ', this.isCountryBanned)
-    console.log('State: ', this.darkMode)
+    console.log("Getter: ", this.isCountryBanned);
+    console.log("State: ", this.darkMode);
     this.toggleDarkMode();
-    console.log('Mutated: ', this.darkMode)
-    await this.getUserCountry()
-    console.log('Action performed: ', this.countryCode)
+    console.log("Mutated: ", this.darkMode);
+    await this.getUserCountry();
+    console.log("Action performed: ", this.countryCode);
   }
 
   // get darkMode() {
-    // return vxm.general.darkMode;
+  // return vxm.general.darkMode;
   // }
 }
 </script>

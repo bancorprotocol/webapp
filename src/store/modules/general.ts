@@ -39,7 +39,8 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
     );
   }
 
-  @action async getUserCountry() {
+  @action
+  async getUserCountry() {
     const countryCode = await getCountryCode();
     this.setCountryCode(countryCode);
   }
@@ -53,7 +54,7 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
     localStorage.setItem("darkMode", this.darkMode.toString());
   }
 
-  @mutation setLanguage(lang?: string) {
+  @mutation setLanguage(_?: string) {
     // if (lang) {
     //   this.language = i18n.locale = lang;
     //   localStorage.setItem("language", lang);

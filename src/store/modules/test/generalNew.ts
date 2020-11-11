@@ -1,10 +1,10 @@
 // import { Module, GetterTree, MutationTree, ActionTree } from 'vuex'
-import { VuexModule, Module, Mutation, Action } from 'vuex-module-decorators';
+import { VuexModule, Module, Mutation, Action } from "vuex-module-decorators";
 
 // import i18n from "@/i18n";
 import { getCountryCode } from "@/api/helpers";
 
-@Module({namespaced: true})
+@Module({ namespaced: true })
 export default class GeneralNewModule extends VuexModule {
   public language: string = "en";
   public darkMode: boolean = false;
@@ -38,14 +38,14 @@ export default class GeneralNewModule extends VuexModule {
     );
   }
 
-  @Action({ commit: 'setCountryCode' })
-  async getUserCountry() {    
+  @Action({ commit: "setCountryCode" })
+  async getUserCountry() {
     const countryCode = await getCountryCode();
     return countryCode;
   }
 
   @Mutation setCountryCode(countryCode: string) {
-    this.countryCode = countryCode;    
+    this.countryCode = countryCode;
   }
 
   @Mutation toggleDarkMode() {
@@ -53,7 +53,6 @@ export default class GeneralNewModule extends VuexModule {
     localStorage.setItem("darkMode", this.darkMode.toString());
   }
 }
-
 
 /* try it only using with vuex lib */
 // export class GeneralNew {
@@ -99,7 +98,7 @@ export default class GeneralNewModule extends VuexModule {
 //   toggleDarkMode(state) {
 //     state.darkMode = !state.darkMode;
 //     localStorage.setItem("darkMode", state.darkMode.toString());
-//   }  
+//   }
 // }
 
 // const actions: ActionTree<GeneralNew, any> = {
@@ -118,4 +117,3 @@ export default class GeneralNewModule extends VuexModule {
 // };
 
 // export default GeneralNewModule;
-

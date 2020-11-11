@@ -86,7 +86,7 @@
         </div>
       </template>
 
-      <template v-slot:cell(fullyProtected)="data">
+      <template #cell(fullyProtected)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -105,27 +105,7 @@
           class="font-size-12 font-w400 text-primary"
         />
       </template>
-      <template v-slot:cell(currentReturn)="data">
-        <div class="d-flex align-items-start">
-          <span
-            v-text="
-              data.value && typeof data.value.amount !== 'undefined'
-                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
-                : 'Error calculating'
-            "
-          />
-        </div>
-        <span
-          v-if="
-            data.value.usdValue !== undefined &&
-              typeof data.value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
-      </template>
-
-      <template v-slot:cell(protectedAmount)="data">
+      <template #cell(currentReturn)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -145,7 +125,7 @@
         />
       </template>
 
-      <template v-slot:cell(fees)="data">
+      <template #cell(protectedAmount)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -165,7 +145,27 @@
         />
       </template>
 
-      <template v-slot:cell(roi)="data">
+      <template #cell(fees)="data">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+
+      <template #cell(roi)="data">
         <span>{{ data.value }}</span>
       </template>
 
