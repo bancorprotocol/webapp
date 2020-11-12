@@ -72,7 +72,7 @@
       </template>
 
       <template #cell(roi)="{ value }">
-        {{ stringifyPercentage(Number(value)) }}
+        {{ typeof value !== "undefined" ? stringifyPercentage(value) : "N/A" }}
       </template>
 
       <template #cell(apr)="{ value }">
@@ -81,7 +81,7 @@
           {{
             typeof value.day !== "undefined"
               ? stringifyPercentage(value.day)
-              : "Error calculating"
+              : "N/A"
           }}
         </div>
         <div class="d-flex align-items-center my-1">
@@ -89,7 +89,7 @@
           {{
             typeof value.week !== "undefined"
               ? stringifyPercentage(value.week)
-              : "Error calculating"
+              : "N/A"
           }}
         </div>
       </template>
@@ -215,7 +215,8 @@ export default class Protected extends Vue {
   }
 
   stringifyPercentage(percentage: number) {
-    return numeral(percentage).format("0.00%");
+    if (percentage < 0.0001) return "< 0.01%";
+    else return numeral(percentage).format("0.00%");
   }
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
@@ -251,13 +252,13 @@ export default class Protected extends Vue {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      {
-        id: 4,
-        key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
-        minWidth: "90px"
-      },
+      // {
+      //   id: 4,
+      //   key: "fees",
+      //   label: "Fees",
+      //   tooltip: "Fees your stake has earned since you entered the pool.",
+      //   minWidth: "90px"
+      // },
       {
         id: 5,
         key: "roi",
