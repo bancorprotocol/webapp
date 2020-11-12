@@ -2208,7 +2208,7 @@ export class EthBancorModule
               amount: fullyProtectedDec,
               symbol: reserveToken.symbol,
               ...(reserveToken.price && {
-                usdValue: new BigNumber(reserveTokenDec)
+                usdValue: new BigNumber(fullyProtectedDec)
                   .times(reserveToken.price)
                   .toNumber()
               })
