@@ -32,8 +32,7 @@
     "bignumber.js": "^9.0.0",
     "bnc-onboard": "^1.13.2",
     "bootstrap": "^4.5.0",
-    "bootstrap-vue": "^2.16.0",
-    "chart.js": "^2.9.3",
+    "bootstrap-vue": "^2.16.0",    
     "core-js": "^3.6.5",
     "csv-parse": "^4.9.1",
     "decimal.js": "^10.2.0",
@@ -81,8 +80,7 @@
     "web3": "^1.2.11"
   },
   "devDependencies": {
-    "@babel/plugin-transform-modules-commonjs": "^7.12.1",
-    "@types/chart.js": "^2.9.24",
+    "@babel/plugin-transform-modules-commonjs": "^7.12.1",    
     "@types/jest": "^24.0.19",
     "@types/webpack": "^4.39.1",
     "@vue/cli-plugin-babel": "~4.5.0",
