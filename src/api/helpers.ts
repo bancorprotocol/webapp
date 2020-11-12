@@ -390,6 +390,7 @@ export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 export interface InfuraEventResponse {
   jsonrpc: string;
   id: number;
+  error: Error;
   result: RawEventResponse[];
 }
 
@@ -623,7 +624,9 @@ export const getConverterLogs = async (
   converterAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network, false);
+  // const address = getAlchemyUrl(network, false);
+  const address = getInfuraAddress(network);
+
   const LiquidityRemoved = web3.utils.sha3(
     "LiquidityRemoved(address,address,uint256,uint256,uint256)"
   ) as string;
@@ -651,6 +654,10 @@ export const getConverterLogs = async (
   });
 
   console.log(res, "was the raw res");
+
+  if(res.data.error) {
+    console.error("eth_getLogs failed!", res.data.error)
+  }
 
   const TokenRateUpdate = web3.utils.sha3(
     "TokenRateUpdate(address,address,uint256,uint256)"
@@ -682,12 +689,36 @@ export const getConverterLogs = async (
   };
 };
 
+const projectId = "da059c364a2f4e6eb89bfd89600bce07";
+
+const buildInfuraAddress = (
+  subdomain: string,
+  projectId: string,
+  wss: boolean = false
+) =>
+  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${
+    wss ? "ws/" : ""
+  }v3/${projectId}`;
+
+const getInfuraAddress = (
+  network: EthNetworks,
+  wss: boolean = false
+) => {
+  if (network == EthNetworks.Mainnet) {
+    return buildInfuraAddress("mainnet", projectId, wss);
+  } else if (network == EthNetworks.Ropsten) {
+    return buildInfuraAddress("ropsten", projectId, wss);
+  }
+  throw new Error("Infura address for network not supported ");
+};
+
 export const getLogs = async (
   network: EthNetworks,
   networkAddress: string,
   fromBlock: number
 ) => {
   const address = getAlchemyUrl(network, false);
+  // const address = getInfuraAddress(network);
 
   const res = await axios.post<InfuraEventResponse>(address, {
     jsonrpc: "2.0",
@@ -703,6 +734,11 @@ export const getLogs = async (
   });
 
   console.log(res, "is the raw return");
+
+  if(res.data.error) {
+    console.error("eth_getLogs failed!", res.data.error)
+  }
+
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
