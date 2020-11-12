@@ -717,8 +717,8 @@ export const getLogs = async (
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network, false);
-  // const address = getInfuraAddress(network);
+  // const address = getAlchemyUrl(network, false);
+  const address = getInfuraAddress(network);
 
   const res = await axios.post<InfuraEventResponse>(address, {
     jsonrpc: "2.0",
