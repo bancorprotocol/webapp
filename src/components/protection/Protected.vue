@@ -86,7 +86,66 @@
         </div>
       </template>
 
+      <template #cell(fullyProtected)="data">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+      <template #cell(currentReturn)="data">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+
       <template #cell(protectedAmount)="data">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              data.value && typeof data.value.amount !== 'undefined'
+                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+                : 'Error calculating'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            data.value.usdValue !== undefined &&
+              typeof data.value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+
+      <template #cell(fees)="data">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -295,31 +354,37 @@ export default class Protected extends Vue {
       {
         key: "stake",
         label: "Initial Stake",
-        thStyle: { "min-width": "250px" }
+        thStyle: { "min-width": "160px" }
+      },
+      {
+        key: "fullyProtected",
+        label: "Protected Value",
+        sortable: true,
+        thStyle: { "min-width": "160px" }
       },
       {
         key: "protectedAmount",
-        label: "Protected Value",
+        label: "Claimable Value",
         sortable: true,
-        thStyle: { "min-width": "210px" }
+        thStyle: { "min-width": "190px" }
       },
-      // {
-      //   key: "roi",
-      //   sortable: true,
-      //   thStyle: { "min-width": "60px" },
-      //   formatter: (value: string) =>
-      //     value ? this.stringifyPercentage(Number(value)) : "Error calculating"
-      // },
-      // {
-      //   key: "apr",
-      //   sortable: false,
-      //   thStyle: { "min-width": "100px" }
-      // },
       {
-        key: "insuranceStart",
-        label: "Protection Start",
+        key: "fees",
+        label: "Fees",
         sortable: true,
         thStyle: { "min-width": "160px" }
+      },
+      {
+        key: "roi",
+        sortable: true,
+        thStyle: { "min-width": "60px" },
+        formatter: (value: string) =>
+          value ? this.stringifyPercentage(Number(value)) : "Error calculating"
+      },
+      {
+        key: "apr",
+        sortable: false,
+        thStyle: { "min-width": "100px" }
       },
       {
         key: "currentCoverage",
