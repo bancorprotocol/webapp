@@ -1028,6 +1028,11 @@ export interface Relay {
   contract: ContractAccount;
   isMultiContract: boolean;
   fee: number;
+  feeHistory: {
+    blockNumber: number;
+    prevFee: number;
+    newFee: number;
+  }[];
   network: string;
   version: string;
   converterType: PoolType;

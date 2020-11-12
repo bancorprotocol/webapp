@@ -537,6 +537,11 @@ interface RefinedAbiRelay {
   connectorTokenCount: string;
   conversionFee: string;
   owner: string;
+  historicFees: {
+    prevFee: string;
+    newFee: string;
+    blockNumber: number;
+  }[];
 }
 
 const decToPpm = (dec: number | string): string =>
@@ -557,6 +562,55 @@ const determineConverterType = (
     return PoolType.Liquid;
   }
   throw new Error("Failed to determine the converter type");
+};
+
+const getHistoricFees = async (
+  converterAddress: string,
+  network: EthNetworks
+): Promise<{ prevFee: string; newFee: string; blockNumber: number }[]> => {
+  const w3 = getWeb3(network);
+  // const contract = buildV28ConverterContract(converterAddress, w3);
+  const contract = buildV28ConverterContract(converterAddress);
+
+  const events = await contract.getPastEvents("ConversionFeeUpdate", {
+    fromBlock: (await blockNumberHoursAgo(24, network)).blockHoursAgo,
+    toBlock: "latest"
+  });
+
+  const history = events.map(e => ({
+    prevFee: e.returnValues["_prevFee"] as string,
+    newFee: e.returnValues["_newFee"] as string,
+    blockNumber: e.blockNumber
+  }));
+
+  return history;
+};
+
+const getFeeByBlockNumber = (relay: Relay, blockNumber: number) => {
+  let fee = relay.fee;
+
+  for (const i in relay.feeHistory) {
+    const history = relay.feeHistory[i];
+    if (blockNumber < history.blockNumber) {
+      fee = history.prevFee;
+    }
+  }
+
+  return fee;
+};
+
+const blockNumberHoursAgo = async (hours: number, network: EthNetworks) => {
+  const currentBlock = await getWeb3(network).eth.getBlockNumber();
+  const secondsPerBlock = 13.3;
+  const secondsToRewind = moment.duration(hours, "hours").asSeconds();
+  const blocksToRewind = parseInt(
+    new BigNumber(secondsToRewind).div(secondsPerBlock).toString()
+  );
+  console.log(secondsToRewind, "are seconds to rewind", blocksToRewind);
+  return {
+    blockHoursAgo: currentBlock - blocksToRewind,
+    currentBlock
+  };
 };
 
 const smartTokenAnchor = (smartToken: Token) => ({
@@ -5040,22 +5094,32 @@ export class EthBancorModule
       poolAndSmartTokens
     );
 
-    const polished: RefinedAbiRelay[] = rawRelays
-      .filter(x => Number(x.connectorTokenCount) == 2)
-      .map(half => ({
-        ...half,
-        anchorAddress: findOrThrow(
-          convertersAndAnchors,
-          item => compareString(item.converterAddress, half.converterAddress),
-          "failed to find anchor address"
-        ).anchorAddress,
-        reserves: [half.connectorToken1, half.connectorToken2] as [
-          string,
-          string
-        ],
-        version: Number(half.version),
-        converterType: determineConverterType(half.converterType)
-      }));
+    const polished: RefinedAbiRelay[] = await Promise.all(
+      rawRelays
+        .filter(x => Number(x.connectorTokenCount) == 2)
+        .map(
+          async half =>
+            <RefinedAbiRelay>{
+              ...half,
+              anchorAddress: findOrThrow(
+                convertersAndAnchors,
+                item =>
+                  compareString(item.converterAddress, half.converterAddress),
+                "failed to find anchor address"
+              ).anchorAddress,
+              reserves: [half.connectorToken1, half.connectorToken2] as [
+                string,
+                string
+              ],
+              version: Number(half.version),
+              converterType: determineConverterType(half.converterType),
+              historicFees: await getHistoricFees(
+                half.converterAddress,
+                this.currentNetwork
+              )
+            }
+        )
+    );
 
     const overWroteVersions = updateArray(
       polished,
@@ -5235,7 +5299,12 @@ export class EthBancorModule
                 : undefined
           })),
           version: String(pool.version),
-          fee: Number(pool.conversionFee) / 10000
+          fee: Number(pool.conversionFee) / 10000,
+          feeHistory: pool.historicFees.map(e => ({
+            blockNumber: e.blockNumber,
+            prevFee: Number(e.prevFee) / 10000,
+            newFee: Number(e.newFee) / 10000
+          }))
         };
       }
     );
@@ -5296,6 +5365,11 @@ export class EthBancorModule
         })),
         contract: converterAddress,
         fee: Number(polishedHalf.conversionFee) / 10000,
+        feeHistory: polishedHalf.historicFees.map(e => ({
+          blockNumber: e.blockNumber,
+          prevFee: Number(e.prevFee) / 10000,
+          newFee: Number(e.newFee) / 10000
+        })),
         isMultiContract: false,
         network: "ETH",
         owner: polishedHalf.owner,
@@ -5409,7 +5483,7 @@ export class EthBancorModule
 
     const tokens = this.tokens;
 
-    const blockNow = await this.blockNumberHoursAgo(0);
+    const blockNow = await blockNumberHoursAgo(0, this.currentNetwork);
     const timeNow = moment().unix();
 
     const removeEvents = groupedRemoveLiquidityEvents
@@ -5579,7 +5653,6 @@ export class EthBancorModule
       const trades = singleTrades.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
-      const decFee = relay.fee / 100;
       const accumulatedFees = trades.reduce(
         (acc, item) => {
           const currentTally = findOrThrow(acc, balance =>
@@ -5587,6 +5660,8 @@ export class EthBancorModule
           );
           const exitingAmount = new BigNumber(item.data.to.weiAmount);
 
+          const decFee =
+            getFeeByBlockNumber(relay, Number(item.blockNumber)) / 100;
           const feeLessMag = 1 - decFee;
           const feeLessAmount = exitingAmount.times(feeLessMag);
           const feePaid = exitingAmount.minus(feeLessAmount);
@@ -5714,22 +5789,6 @@ export class EthBancorModule
     };
   }
 
-  @action async blockNumberHoursAgo(hours: number) {
-    const currentBlock = await getWeb3(
-      this.currentNetwork
-    ).eth.getBlockNumber();
-    const secondsPerBlock = 13.3;
-    const secondsToRewind = moment.duration(hours, "hours").asSeconds();
-    const blocksToRewind = parseInt(
-      new BigNumber(secondsToRewind).div(secondsPerBlock).toString()
-    );
-    console.log(secondsToRewind, "are seconds to rewind", blocksToRewind);
-    return {
-      blockHoursAgo: currentBlock - blocksToRewind,
-      currentBlock
-    };
-  }
-
   get availableBalances(): ViewLockedBalance[] {
     const now = moment();
     const bntPrice = this.bntUsdPrice;
@@ -5846,7 +5905,7 @@ export class EthBancorModule
         { currentBlock, blockHoursAgo }
       ] = await Promise.all([
         this.fetchContractAddresses(networkVariables.contractRegistry),
-        this.blockNumberHoursAgo(24)
+        blockNumberHoursAgo(24, currentNetwork)
       ]);
 
       console.log(contractAddresses, "are contract addresses");
@@ -5869,7 +5928,7 @@ export class EthBancorModule
       const [registeredAnchorAddresses, currentBlockInfo] = await Promise.all([
         this.fetchAnchorAddresses({
           converterRegistryAddress: contractAddresses.BancorConverterRegistry,
-          network: this.currentNetwork
+          network: currentNetwork
         }),
         web3.eth.getBlock(currentBlock)
       ]);
@@ -6391,7 +6450,7 @@ export class EthBancorModule
   @action async focusPool(id: string): Promise<FocusPoolRes> {
     const pool = await this.relayById(id);
     const converterAddress = pool.contract;
-    const yesterday = await this.blockNumberHoursAgo(24);
+    const yesterday = await blockNumberHoursAgo(24, this.currentNetwork);
 
     const res = await this.pullConverterEvents({
       converterAddress,
