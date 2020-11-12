@@ -98,6 +98,7 @@
         <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(item.coverageDecPercent) }}
           <div
+            v-if="!insuranceStarted(item.insuranceStart)"
             class="d-flex justify-content-between align-items-center text-danger"
           >
             <div>
