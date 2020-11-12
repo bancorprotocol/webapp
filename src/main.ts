@@ -1,4 +1,7 @@
 import Vue from "vue";
+import * as Sentry from "@sentry/browser";
+import { Vue as VueIntegration } from "@sentry/integrations";
+import { Integrations } from "@sentry/tracing";
 import App from "./App.vue";
 import { router } from "./router";
 import { store, vxm } from "./store/";
@@ -12,10 +15,34 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
-
 import { firebase } from "@firebase/app";
 import "@firebase/analytics";
 import VueGtag from "vue-gtag";
+
+const appVersion = JSON.parse(
+  unescape(escape(JSON.stringify(require("../package.json"))))
+).version;
+
+const isDev = process.env.NODE_ENV == "development";
+Sentry.init({
+  dsn:
+    "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
+  debug: isDev,
+  environment: isDev ? "development" : "prod/staging",
+  release: `swap-${appVersion}`,
+  integrations: [
+    new VueIntegration({
+      Vue,
+      tracing: true,
+      tracingOptions: {
+        trackComponents: false
+      }
+    }),
+    new Integrations.BrowserTracing()
+  ],
+  sampleRate: 0.1,
+  tracesSampleRate: 0.1
+});
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4yWnTGa6qj6dR1RLW6Clod0iMn4niflU",

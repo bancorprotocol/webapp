@@ -1,4 +1,4 @@
-import { createModule, action, mutation } from "vuex-class-component";
+import { action, createModule, mutation } from "vuex-class-component";
 import { ContractMethods, EthAddress } from "@/types/bancor";
 import { shrinkToken } from "@/api/eth/helpers";
 import {
@@ -11,10 +11,10 @@ import { ContractSendMethod } from "web3-eth-contract";
 import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
 import axios from "axios";
 import BigNumber from "bignumber.js";
+import { EthNetworks, web3 } from "@/api/helpers";
+import { getNetworkVariables } from "@/store/config";
+import { getWeb3 } from "@/api/web3";
 
-export const governanceContractAddress =
-  "0x892f481bd6e9d7d26ae365211d9b45175d5d00e4";
-export const etherscanUrl = "https://etherscan.io/";
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
 const discourseUrl = "https://gov.bancor.network/";
@@ -105,6 +105,7 @@ export class EthereumGovernance extends VuexModule.With({
   tokenContract: Token = {} as Token;
 
   isLoaded: boolean = false;
+  lastTransaction: number = 0;
 
   symbol?: string;
   decimals?: number;
@@ -131,6 +132,11 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @mutation
+  setLastTransaction(time: number) {
+    this.lastTransaction = time;
+  }
+
+  @mutation
   setSymbol(symbol: string) {
     this.symbol = symbol;
   }
@@ -146,9 +152,30 @@ export class EthereumGovernance extends VuexModule.With({
   }
 
   @action
+  async getNetwork(): Promise<EthNetworks> {
+    const currentNetwork: EthNetworks = await web3.eth.getChainId();
+    console.log(`current network is: ${EthNetworks[currentNetwork]}`);
+    return currentNetwork;
+  }
+
+  @action
+  async getGovernanceContractAddress() {
+    const networkVariables = getNetworkVariables(await this.getNetwork());
+    return networkVariables.governanceContractAddress;
+  }
+
+  @action
+  async getEtherscanUrl() {
+    const networkVariables = getNetworkVariables(await this.getNetwork());
+    return networkVariables.etherscanUrl;
+  }
+
+  @action
   async init() {
+    const w3 = getWeb3(await this.getNetwork());
     const governanceContract: Governance = buildGovernanceContract(
-      governanceContractAddress
+      await this.getGovernanceContractAddress(),
+      w3
     );
 
     const tokenAddress = await governanceContract.methods.govToken().call();
@@ -156,7 +183,7 @@ export class EthereumGovernance extends VuexModule.With({
 
     await this.setContracts({
       governance: governanceContract,
-      token: buildTokenContract(tokenAddress)
+      token: buildTokenContract(tokenAddress, w3)
     });
   }
 
@@ -275,23 +302,33 @@ export class EthereumGovernance extends VuexModule.With({
       throw new Error("Cannot stake without address or amount");
 
     const allowance = await this.tokenContract.methods
-      .allowance(account, governanceContractAddress)
+      .allowance(account, await this.getGovernanceContractAddress())
       .call();
 
     console.log("staking", amount);
     console.log("allowance", allowance);
 
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+
     if (Number(allowance) < Number(amount)) {
-      await this.tokenContract.methods
-        .approve(governanceContractAddress, amount.toString())
+      const tokenAddress = await txContract.methods.govToken().call();
+      const tokenContract = buildTokenContract(tokenAddress);
+      await tokenContract.methods
+        .approve(await this.getGovernanceContractAddress(), amount.toString())
         .send({
           from: account
         });
+
+      this.setLastTransaction(Date.now());
     }
 
-    await this.governanceContract.methods.stake(amount.toString()).send({
+    await txContract.methods.stake(amount.toString()).send({
       from: account
     });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
@@ -307,9 +344,14 @@ export class EthereumGovernance extends VuexModule.With({
     if (!account || !amount)
       throw new Error("Cannot unstake without address or amount");
 
-    await this.governanceContract.methods.unstake(amount.toString()).send({
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.unstake(amount.toString()).send({
       from: account
     });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
@@ -327,9 +369,14 @@ export class EthereumGovernance extends VuexModule.With({
     if (!executor || !hash || !account)
       throw new Error("Cannot propose without execturo and hash");
 
-    await this.governanceContract.methods.propose(executor, hash).send({
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.propose(executor, hash).send({
       from: account
     });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
@@ -345,9 +392,14 @@ export class EthereumGovernance extends VuexModule.With({
     if (!account || !proposalId)
       throw new Error("Cannot vote for without address or proposal id");
 
-    await this.governanceContract.methods.voteFor(proposalId.toString()).send({
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.voteFor(proposalId.toString()).send({
       from: account
     });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }
@@ -363,11 +415,14 @@ export class EthereumGovernance extends VuexModule.With({
     if (!account || !proposalId)
       throw new Error("Cannot vote against without address or proposal id");
 
-    await this.governanceContract.methods
-      .voteAgainst(proposalId.toString())
-      .send({
-        from: account
-      });
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.voteAgainst(proposalId.toString()).send({
+      from: account
+    });
+
+    this.setLastTransaction(Date.now());
 
     return true;
   }

@@ -9,17 +9,65 @@ import {
 } from "@/types/bancor";
 import {
   getBalance,
-  getTokenBalances,
   compareString,
   compareToken,
   assetToDecNumberString
 } from "@/api/helpers";
 import { vxm } from "@/store";
-
-import _ from "lodash";
+import _, { differenceWith } from "lodash";
 import { multiContract } from "@/api/eos/multiContractTx";
 import wait from "waait";
 import { Asset, number_to_asset, Sym } from "eos-common";
+import { dfuseClient } from '@/api/eos/rpc';
+
+
+export const getTokenBalancesDfuse = async (
+  accountName: string
+): Promise<TokenBalanceReturn[]> => {
+  try {
+    const res = await dfuseClient.graphql<{
+      accountBalances: {
+        edges: {
+          node: {
+            account: string;
+            contract: string;
+            symbol: string;
+            precision: number;
+            balance: string;
+          };
+        }[];
+      };
+    }>(
+      `
+      query($account: String!, $limit: Uint32, $opts: [ACCOUNT_BALANCE_OPTION!]) {
+        accountBalances(account: $account,limit: $limit, options: $opts) {
+          edges {
+            node {
+              account
+              contract
+              symbol
+              precision
+              balance
+            }
+          }
+        }
+      }`,
+      {
+        variables: {
+          account: accountName,
+          opts: ["EOS_INCLUDE_STAKED"],
+          limit: 90
+        }
+      }
+    );
+    const tokens = res.data.accountBalances.edges.map(item => item.node);
+    const userTokens = tokens.filter(token => compareString(token.account, accountName));
+
+    return userTokens.map(token => ({ balance: assetToDecNumberString(new Asset(token.balance)), contract: token.contract, symbol: token.symbol, precision: token.precision }))
+  } catch (e) {
+    throw new Error("Failed to fetch tokens dFuse");
+  }
+};
 
 const requiredProps = ["balance", "contract", "symbol"];
 
@@ -134,20 +182,25 @@ export class EosNetworkModule
   @action async fetchBulkBalances(
     tokens: GetBalanceParam["tokens"]
   ): Promise<TokenBalanceReturn[]> {
-    const balances = await Promise.all(
-      tokens.map(async token => {
-        const balance = await getBalance(
-          token.contract,
-          token.symbol,
-          token.precision
-        );
-        return {
-          ...token,
-          balance: assetToDecNumberString(new Asset(balance))
-        };
-      })
-    );
-    return balances;
+
+    const bulkBalances = await getTokenBalancesDfuse(this.isAuthenticated);
+
+    const missingTokens = differenceWith(tokens, bulkBalances, compareToken);
+
+    if (missingTokens.length == 0) return bulkBalances;
+    const bulkRequested = await dfuseClient.stateTablesForAccounts<{ balance: string }>(missingTokens.map(x => x.contract), this.isAuthenticated, 'accounts');
+    const dfuseParsed = bulkRequested.tables.filter(table => table.rows.length > 0).flatMap(table => ({ contract: table.account, balance: table.rows[0].json!.balance }));
+    const extraBalances = dfuseParsed.map((json): TokenBalanceReturn => {
+      const asset = new Asset(json.balance)
+      return {
+        balance: assetToDecNumberString(asset),
+        contract: json.contract,
+        symbol: asset.symbol.code().to_string(),
+        precision: asset.symbol.precision()
+      }
+    })
+
+    return [...bulkBalances, ...extraBalances];
   }
 
   @mutation clearBalances() {
@@ -164,50 +217,14 @@ export class EosNetworkModule
     if (!params || params?.tokens?.length == 0) {
       const tokensToFetch = this.balances;
 
-      const [directTokens, bonusTokens] = await Promise.all([
-        this.fetchBulkBalances(tokensToFetch),
-        getTokenBalances(this.isAuthenticated).catch(() => ({
-          tokens: [] as TokenBalance[]
-        }))
-      ]);
-
-      const equalisedBalances = bonusTokens.tokens.map(
-        tokenBalanceToTokenBalanceReturn
-      );
-      const merged = _.uniqWith(
-        [...directTokens, ...equalisedBalances],
-        compareToken
-      );
-      this.updateTokenBalances(merged);
-      return merged;
+      const fetchedTokens = await this.fetchBulkBalances(tokensToFetch);
+      this.updateTokenBalances(fetchedTokens);
+      return fetchedTokens;
     }
 
     const tokensAskedFor = params!.tokens;
 
-    if (params?.slow) {
-      const bulkTokens = await getTokenBalances(this.isAuthenticated);
-      const equalisedBalances = bulkTokens.tokens.map(
-        tokenBalanceToTokenBalanceReturn
-      );
-      this.updateTokenBalances(equalisedBalances);
-      const missedTokens = _.differenceWith(
-        tokensAskedFor,
-        equalisedBalances,
-        compareToken
-      );
-      const remainingBalances = await this.fetchBulkBalances(missedTokens);
-      this.updateTokenBalances(remainingBalances);
-      return [...equalisedBalances, ...remainingBalances].filter(
-        includedInTokens(tokensAskedFor)
-      );
-    }
-
-    const [directTokens, bonusTokens] = await Promise.all([
-      this.fetchBulkBalances(tokensAskedFor),
-      getTokenBalances(this.isAuthenticated).catch(() => ({
-        tokens: [] as TokenBalance[]
-      }))
-    ]);
+    const directTokens = await this.fetchBulkBalances(tokensAskedFor);
 
     const allTokensReceived = tokensAskedFor.every(fetchableToken =>
       directTokens.some(fetchedToken =>
@@ -219,15 +236,8 @@ export class EosNetworkModule
       "fetch bulk balances failed to return all tokens asked for!"
     );
 
-    const equalisedBalances: TokenBalanceReturn[] = bonusTokens.tokens.map(
-      tokenBalanceToTokenBalanceReturn
-    );
-    const merged = _.uniqWith(
-      [...directTokens, ...equalisedBalances],
-      compareToken
-    );
     if (!params.disableSetting) {
-      this.updateTokenBalances(merged);
+      this.updateTokenBalances(directTokens);
     }
     return directTokens.filter(includedInTokens(tokensAskedFor));
   }

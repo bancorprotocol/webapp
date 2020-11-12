@@ -1,97 +1,135 @@
 <template>
-  <content-block title="Stake" :shadow-light="true" :px0="true">
+  <content-block
+    id="vote-stake"
+    :no-header="true"
+    :shadow-light="true"
+    :px0="true"
+  >
     <div
-      class="p-3"
-      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+      class="d-flex justify-content-between align-items-center py-2 px-3"
+      :class="[darkMode ? 'border-bottom-dark' : 'border-bottom-light']"
     >
-      <span
-        class="text-uppercase font-size-12 font-w500"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        Your Balance
-      </span>
-      <div
-        class="font-size-12 font-w500"
+      <h3
+        class="m-0 p-0 my-2 font-size-14 font-w600 w-100 text-left cursor"
         :class="darkMode ? 'text-dark' : 'text-light'"
+        @click="opened = !opened"
       >
-        {{ prettifyNumber(balance.toNumber()) }} {{ symbol }}
-      </div>
+        Stake
+        <font-awesome-icon
+          class="open-icon"
+          :icon="opened ? 'caret-up' : 'caret-down'"
+        />
+      </h3>
     </div>
 
-    <div
-      class="p-3"
-      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
-    >
-      <span
-        class="text-uppercase font-size-12 font-w500"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        Currently Staked
-      </span>
+    <div v-if="opened">
       <div
-        class="font-size-12 font-w500"
-        :class="darkMode ? 'text-dark' : 'text-light'"
+        class="p-3"
+        :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
       >
-        {{ prettifyNumber(votes.toNumber()) }} {{ symbol }}
+        <span
+          class="text-uppercase font-size-12 font-w500"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          Your Balance
+        </span>
+        <div
+          class="font-size-12 font-w500"
+          :class="darkMode ? 'text-dark' : 'text-light'"
+        >
+          {{ prettifyNumber(balance.toNumber()) }} {{ symbol }}
+        </div>
       </div>
-    </div>
 
-    <div class="p-3 pb-0">
-      <main-button
-        @click="stakeModal = true"
-        label="Stake Tokens"
-        :active="true"
-        :large="true"
-        :block="true"
-        class="font-size-14 mb-3"
-      />
-      <modal-stake v-model="stakeModal" />
+      <div
+        class="p-3"
+        :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+      >
+        <span
+          class="text-uppercase font-size-12 font-w500"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          Currently Staked
+        </span>
+        <div
+          class="font-size-12 font-w500"
+          :class="darkMode ? 'text-dark' : 'text-light'"
+        >
+          {{ prettifyNumber(votes.toNumber()) }} {{ symbol }}
+        </div>
+      </div>
 
-      <div v-if="lock.for === 0 && votes > 0">
+      <div class="p-3 pb-0">
         <main-button
-          @click="unstakeModal = true"
-          label="Unstake Tokens"
-          :active="false"
+          @click="stakeModal = true"
+          label="Stake Tokens"
+          :active="true"
           :large="true"
           :block="true"
           class="font-size-14 mb-3"
         />
-        <modal-unstake v-model="unstakeModal" />
-      </div>
+        <modal-stake v-model="stakeModal" />
 
-      <span v-if="lock.till > Date.now()">
-        <remaining-time
-          class="mb-2"
-          variant="unlock"
-          :from="Date.now()"
-          :to="lock.till"
-        />
-      </span>
-
-      <div
-        class="font-size-12 font-w400 text-center"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        <div>
-          Government contract
-          <a
-            :href="getEtherscanUrl(governanceContractAddress)"
-            class="font-w500"
-            target="_blank"
-          >
-            {{ shortAddress(governanceContractAddress) }}
-          </a>
+        <div v-if="lock.for === 0 && votes > 0">
+          <main-button
+            @click="unstakeModal = true"
+            label="Unstake Tokens"
+            :active="false"
+            :large="true"
+            :block="true"
+            class="font-size-14 mb-3"
+          />
+          <modal-unstake v-model="unstakeModal" />
         </div>
 
-        <div>
-          Government token
-          <a
-            :href="getEtherscanUrl(tokenAddress)"
-            class="font-w500"
-            target="_blank"
-          >
-            {{ shortAddress(tokenAddress) }}
-          </a>
+        <span v-if="lock.till > Date.now()">
+          <remaining-time
+            class="mb-2"
+            variant="unlock"
+            :from="Date.now()"
+            :to="lock.till"
+          />
+        </span>
+
+        <div
+          class="font-size-12 font-w400 text-center"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          <div>
+            Governance contract
+            <a
+              :href="getEtherscanUrl(governanceContractAddress)"
+              class="font-w500"
+              target="_blank"
+            >
+              {{ shortAddress(governanceContractAddress) }}
+            </a>
+
+            <font-awesome-icon
+              class="ml-1 cursor"
+              v-if="governanceContractAddress"
+              icon="copy"
+              @click="() => copy(governanceContractAddress)"
+            />
+          </div>
+
+          <div>
+            Governance token
+            <a
+              :href="getEtherscanUrl(tokenAddress)"
+              class="font-w500"
+              target="_blank"
+            >
+              {{ shortAddress(tokenAddress) }}
+            </a>
+
+            <font-awesome-icon
+              class="ml-1 cursor"
+              v-if="tokenAddress"
+              icon="copy"
+              @click="() => copy(tokenAddress)"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -103,10 +141,6 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { EthAddress } from "@/types/bancor";
-import {
-  etherscanUrl,
-  governanceContractAddress
-} from "@/store/modules/governance/ethGovernance";
 import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
@@ -114,6 +148,7 @@ import ProgressBar from "@/components/common/ProgressBar.vue";
 import ModalStake from "@/components/modals/ModalStake.vue";
 import ModalUnstake from "@/components/modals/ModalUnstake.vue";
 import BigNumber from "bignumber.js";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 
 @Component({
   components: {
@@ -122,16 +157,20 @@ import BigNumber from "bignumber.js";
     RemainingTime,
     ProgressBar,
     ModalStake,
-    ModalUnstake
+    ModalUnstake,
+    LabelContentSplit
   }
 })
 export default class Stake extends Vue {
   stakeModal = false;
   unstakeModal = false;
 
+  opened: boolean = true;
+
   votes: BigNumber = new BigNumber(0);
   balance: BigNumber = new BigNumber(0);
   symbol: string = "";
+  etherscanUrl: string = "";
 
   lock: {
     till: number;
@@ -141,12 +180,8 @@ export default class Stake extends Vue {
     for: 0
   };
 
-  governanceContractAddress: EthAddress = governanceContractAddress;
+  governanceContractAddress: EthAddress = "";
   tokenAddress: EthAddress = "";
-
-  get isEth() {
-    return this.$route.params.service === "eth";
-  }
 
   get darkMode() {
     return vxm.general.darkMode;
@@ -156,12 +191,20 @@ export default class Stake extends Vue {
     return vxm.wallet.isAuthenticated;
   }
 
+  get lastTransaction() {
+    return vxm.ethGovernance.lastTransaction;
+  }
+
   get loaded() {
     return vxm.ethGovernance.isLoaded;
   }
 
+  copy(address: string) {
+    navigator.clipboard.writeText(address);
+  }
+
   getEtherscanUrl(token: string) {
-    return `${etherscanUrl}address/${token}`;
+    return `${this.etherscanUrl}address/${token}`;
   }
 
   shortAddress(address: EthAddress) {
@@ -175,17 +218,24 @@ export default class Stake extends Vue {
   @Watch("isAuthenticated")
   @Watch("stakeModal")
   @Watch("unstakeModal")
+  @Watch("lastTransaction")
   async update() {
     const [balance, votes, lock, tokenAddress, symbol] = await Promise.all([
-      vxm.ethGovernance.getBalance({
-        account: this.isAuthenticated
-      }),
-      vxm.ethGovernance.getVotes({
-        voter: this.isAuthenticated
-      }),
-      vxm.ethGovernance.getLock({
-        account: this.isAuthenticated
-      }),
+      this.isAuthenticated
+        ? vxm.ethGovernance.getBalance({
+            account: this.isAuthenticated
+          })
+        : new BigNumber(0),
+      this.isAuthenticated
+        ? vxm.ethGovernance.getVotes({
+            voter: this.isAuthenticated
+          })
+        : new BigNumber(0),
+      this.isAuthenticated
+        ? vxm.ethGovernance.getLock({
+            account: this.isAuthenticated
+          })
+        : { till: 0, for: 0 },
       vxm.ethGovernance.getTokenAddress(),
       vxm.ethGovernance.getSymbol()
     ]);
@@ -195,6 +245,8 @@ export default class Stake extends Vue {
     this.lock = lock;
     this.tokenAddress = tokenAddress;
     this.symbol = symbol;
+    this.governanceContractAddress = await vxm.ethGovernance.getGovernanceContractAddress();
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
   }
 
   async mounted() {
@@ -203,4 +255,13 @@ export default class Stake extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+#vote-stake .open-icon {
+  position: absolute;
+  right: 30px;
+}
+
+#vote-stake .block-content {
+  padding-bottom: 0 !important;
+}
+</style>

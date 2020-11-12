@@ -2,6 +2,7 @@
   <div
     v-if="msg !== ''"
     class="w-100 mt-1 font-size-14"
+    @click="click"
     :class="
       darkMode ? 'alert-' + variant + '-dark' : 'alert-' + variant + '-light'
     "
@@ -12,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
 @Component
@@ -20,6 +21,9 @@ export default class AlertBlock extends Vue {
   @Prop({ default: "info" }) variant!: "info" | "error" | "warning";
   @Prop() title?: string;
   @Prop({ default: "" }) msg!: string;
+
+  @Emit()
+  click() {}
 
   get darkMode() {
     return vxm.general.darkMode;

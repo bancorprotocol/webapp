@@ -14,42 +14,6 @@ const addZeros = (numberOfZeros: number, noLeadingZeros: string) => {
   return res;
 };
 
-export const calculateHistoricPoolBalanceByConversions = (
-  currentReserveBalances: WeiExtendedAsset[],
-  conversionEvents: { from: WeiExtendedAsset; to: WeiExtendedAsset }[]
-) => {
-  return conversionEvents.reduce((acc, item) => {
-    const fromBalance = findOrThrow(
-      acc,
-      balance => compareString(balance.contract, item.from.contract),
-      "failed to find from token in reserve balances"
-    );
-    const toBalance = findOrThrow(
-      acc,
-      balance => compareString(balance.contract, item.to.contract),
-      "failed to find to token in reserve balances"
-    );
-
-    const newFromBalanceWei = new BigNumber(fromBalance.weiAmount)
-      .minus(item.from.weiAmount)
-      .toString();
-    const newToBalanceWei = new BigNumber(toBalance.weiAmount)
-      .plus(item.to.weiAmount)
-      .toString();
-
-    return [
-      {
-        contract: fromBalance.contract,
-        weiAmount: newFromBalanceWei
-      },
-      {
-        contract: toBalance.contract,
-        weiAmount: newToBalanceWei
-      }
-    ] as WeiExtendedAsset[];
-  }, currentReserveBalances);
-};
-
 export const removeLeadingZeros = (hexString: string) => {
   const removedOx = hexString.startsWith("0x") ? hexString.slice(2) : hexString;
 
@@ -68,10 +32,17 @@ export const removeLeadingZeros = (hexString: string) => {
   } else throw new Error(`Failed parsing hex ${hexString}`);
 };
 
-export const shrinkToken = (amount: string | number, precision: number) =>
-  new BigNumber(amount)
+export const shrinkToken = (
+  amount: string | number,
+  precision: number,
+  chopZeros = false
+) => {
+  const res = new BigNumber(amount)
     .div(new BigNumber(10).pow(precision))
     .toFixed(precision);
+
+  return chopZeros ? new BigNumber(res).toString() : res;
+};
 
 export const makeBatchRequest = (calls: any[], from: string) => {
   let batch = new web3.BatchRequest();

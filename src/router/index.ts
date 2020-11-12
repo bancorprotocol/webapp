@@ -22,6 +22,7 @@ import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue
 import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
+import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
 import VotePage from "@/components/vote/VotePage.vue";
 
 Vue.use(Router);
@@ -118,8 +119,19 @@ export const router = new Router({
       }
     },
     {
+      path: "/:service/pool/create",
+      name: "PoolCreate",
+      components: {
+        Nav: Navigation,
+        Hero: CreateHome
+      },
+      props: true,
+      meta: {
+        feature: "Liquidity"
+      }
+    },
+    {
       path: "/:service/pool/:id",
-      redirect: "/404",
       name: "PoolAdd",
       components: {
         Nav: Navigation,
@@ -148,6 +160,14 @@ export const router = new Router({
       components: {
         Nav: Navigation,
         default: LiquidityProtectionSummary
+      }
+    },
+    {
+      path: "/:service/protection/whitelistedpools",
+      name: "WhitelistedPools",
+      components: {
+        Nav: Navigation,
+        default: WhitelistedPools
       }
     },
     {
@@ -187,15 +207,6 @@ export const router = new Router({
       ]
     },
     {
-      path: "/:service/pool/create/",
-      name: "PoolCreate",
-      components: {
-        Nav: Navigation,
-        Hero: CreateHome
-      },
-      props: true
-    },
-    {
       path: "/:service/swap",
       name: "Swap",
       components: {
@@ -219,19 +230,28 @@ export const router = new Router({
         {
           path: "",
           name: "DataSummary",
-          component: DataSummary
+          component: DataSummary,
+          meta: {
+            feature: "Data"
+          }
         },
         {
           path: "token/:id",
           name: "DetailsToken",
           redirect: "/404",
-          component: DataDetailsToken
+          component: DataDetailsToken,
+          meta: {
+            feature: "Data"
+          }
         },
         {
           path: "pool/:id",
           name: "DetailsPool",
           redirect: "/404",
-          component: DataDetailsPool
+          component: DataDetailsPool,
+          meta: {
+            feature: "Data"
+          }
         }
       ]
     },
@@ -247,7 +267,10 @@ export const router = new Router({
         {
           path: "",
           name: "VotePage",
-          component: VotePage
+          component: VotePage,
+          meta: {
+            feature: "Vote"
+          }
         }
       ]
     },

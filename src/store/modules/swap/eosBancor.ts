@@ -66,7 +66,7 @@ import {
 import { multiContract } from "@/api/eos/multiContractTx";
 import { multiContractAction } from "@/contracts/multi";
 import { vxm } from "@/store";
-import { rpc } from "@/api/eos/rpc";
+import { rpc, dfuseClient } from "@/api/eos/rpc";
 import {
   findCost,
   relaysToConvertPaths,
@@ -86,8 +86,8 @@ import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
-import { createDfuseClient } from "@dfuse/client";
 import moment from "moment";
+import * as Sentry from "@sentry/browser";
 
 const networkContract = "thisisbancor";
 
@@ -111,22 +111,20 @@ const searchTransactionsWithHigherBlock = `query ($limit: Int64!, $highBlockNum:
   }
 }`;
 
-const client = createDfuseClient({
-  apiKey: "web_af8f1c42eca1bec0d8b6d6248625b62d",
-  network: "mainnet.eos.dfuse.io"
-});
-
 const past24HourTrades = async (
   lastBlockTarget?: number,
   highBlockNum = -1,
   tradesFetched: DFuseTrade[] = []
 ): Promise<DFuseTrade[]> => {
-  const response = await client.graphql(searchTransactionsWithHigherBlock, {
-    variables: {
-      limit: 1000,
-      highBlockNum
+  const response = await dfuseClient.graphql(
+    searchTransactionsWithHigherBlock,
+    {
+      variables: {
+        limit: 1000,
+        highBlockNum
+      }
     }
-  });
+  );
 
   if (response.errors && response.errors.length > 0) {
     throw new Error(response.errors[0].message);
@@ -683,11 +681,14 @@ export class EosBancorModule
 
   @action async onAuthChange(isAuthenticated: string | false) {
     if (isAuthenticated) {
+      Sentry.setUser({ id: isAuthenticated });
       const reserves = uniqWith(
         this.relaysList.flatMap(relay => relay.reserves),
         (a, b) => compareString(a.id, b.id)
       );
       this.fetchTokenBalancesIfPossible(reserves);
+    } else {
+      Sentry.configureScope(scope => scope.setUser(null));
     }
   }
 
@@ -707,17 +708,22 @@ export class EosBancorModule
         )
       )
     );
-    return smartTokenBalances.map(balance => {
+
+    const viewRelays = this.relays;
+    const data = smartTokenBalances.map(balance => {
       const smartTokenId = buildTokenId(balance);
-      const relay = this.relaysList.find(relay =>
-        compareString(buildTokenId(relay.smartToken), smartTokenId)
+      const viewRelay = viewRelays.find(relay =>
+        compareString(relay.id, smartTokenId)
       )!;
-      const viewRelay = this.relay(relay.id);
+      if (!viewRelay)
+        console.warn("Pool token position does not have a relay", smartTokenId);
       return {
         relay: viewRelay,
         smartTokenAmount: balance.balance
       };
     });
+
+    return data.filter(row => row.relay);
   }
 
   get balance() {
@@ -1262,7 +1268,7 @@ export class EosBancorModule
 
     for (const chunk in remainingChunks) {
       await wait(waitTime);
-      let relays = await this.hydrateOldRelays(remainingChunks[chunk]);
+      const relays = await this.hydrateOldRelays(remainingChunks[chunk]);
       this.buildManuallyIfNotIncludedInExistingFeeds({
         relays,
         existingFeeds: bancorApiFeeds
@@ -1646,9 +1652,11 @@ export class EosBancorModule
       ).price;
 
       const relayFeeds: RelayFeed[] = relays.flatMap(relay => {
-        const [secondaryReserve, primaryReserve] = sortByNetworkTokens(
-          relay.reserves,
-          reserve => reserve.symbol.code().to_string()
+        const [
+          secondaryReserve,
+          primaryReserve
+        ] = sortByNetworkTokens(relay.reserves, reserve =>
+          reserve.symbol.code().to_string()
         );
 
         const token = tokenPrices.find(price =>
@@ -2050,7 +2058,7 @@ export class EosBancorModule
     let lastTxId: string = "";
     for (var i = 0; i < suggestTxs; i++) {
       onUpdate!(i, steps);
-      let txRes = await this.triggerTx(
+      const txRes = await this.triggerTx(
         await this.doubleLiquidateActions({
           relay,
           reserveAssets: reserveAssets.map(asset => asset.amount),

@@ -197,7 +197,6 @@ import DataTable from "@/components/deprecated/DataTable.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
 import {
-  etherscanUrl,
   ipfsViewUrl,
   Proposal
 } from "@/store/modules/governance/ethGovernance";
@@ -212,18 +211,20 @@ import {
 export default class DoneProposals extends Vue {
   @Prop() proposals?: Proposal[];
   symbol: string = "";
-  opened?: number = undefined;
+  etherscanUrl: string = "";
+
+  opened: number = -1;
 
   get fields(): ViewTableFields[] {
     return [
       {
-        label: "",
+        label: "ID",
         key: "id",
         minWidth: "16px",
         maxWidth: "16px"
       },
       {
-        label: "Proposal ID"
+        label: "Details"
       },
       {
         label: "Result",
@@ -264,7 +265,7 @@ export default class DoneProposals extends Vue {
   }
 
   getEtherscanUrl(address: string) {
-    return `${etherscanUrl}address/${address}`;
+    return `${this.etherscanUrl}address/${address}`;
   }
 
   formatDate(date: number) {
@@ -304,6 +305,7 @@ export default class DoneProposals extends Vue {
   }
 
   async mounted() {
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl()
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }

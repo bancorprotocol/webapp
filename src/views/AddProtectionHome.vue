@@ -1,30 +1,15 @@
 <template>
   <div class="mt-3">
-    <gray-border-block
-      v-for="option in stakeOptions"
-      :key="option.id"
-      :class="option.id <= stakeOptions.length ? 'mb-3' : ''"
-    >
-      <h5
-        class="font-size-14 font-w600 text-uppercase my-2"
-        :class="darkMode ? 'text-white' : 'text-primary'"
-      >
-        {{ option.title }}
-      </h5>
-      <p class="font-size-14 font-w400 mb-3">
-        {{ option.desc }}
-      </p>
-      <main-button
-        @click="openModal(option.id)"
-        :label="option.buttonTxt"
-        :active="option.buttonEnabled"
-        :large="true"
-        :disabled="!option.buttonEnabled"
-        class="mb-2 font-size-14"
-      />
-    </gray-border-block>
+    <alert-block :msg="infoMsg" class="my-3" />
 
-    <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
+    <stake-buttons @click="openModal" />
+
+    <modal-pool-select
+      @select="selectPool"
+      v-model="modal"
+      :pools="pools"
+      :show-token-balance="showTokenBalance"
+    />
   </div>
 </template>
 
@@ -34,9 +19,13 @@ import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import StakeButtons from "@/components/protection/StakeButtons.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
   components: {
+    AlertBlock,
+    StakeButtons,
     GrayBorderBlock,
     MainButton,
     ModalPoolSelect
@@ -46,42 +35,19 @@ export default class AddProtectionHome extends Vue {
   modal = false;
 
   singleMode: boolean | null = null;
-
-  get phase2() {
-    return vxm.general.phase2;
-  }
-
-  get stakeOptions() {
-    return [
-      {
-        id: 0,
-        title: `Protect Single Token ${this.phase2 ? "" : "(Coming Soon)"}`,
-        desc:
-          "Add liquidity with one reserve, be exposed to it only and protect it from impermanent loss.",
-        buttonTxt: "Stake & protect token",
-        buttonActive: true,
-        buttonEnabled: this.phase2
-      },
-      {
-        id: 1,
-        title: "Protect Pool Token",
-        desc:
-          "Stake pool tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
-        buttonTxt: "Stake pool token",
-        buttonActive: false,
-        buttonEnabled: true
-      }
-    ];
-  }
+  showTokenBalance = false;
 
   get pools() {
-    return vxm.bancor.relays.filter(
-      pool => pool.liquidityProtection
-    );
+    return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
+  }
+
+  get infoMsg() {
+    return "By joining a pool, liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.";
   }
 
   openModal(optionId: number) {
     this.singleMode = optionId === 0;
+    this.showTokenBalance = this.singleMode;
     this.modal = true;
   }
 

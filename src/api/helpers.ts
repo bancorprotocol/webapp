@@ -1,24 +1,23 @@
 import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import { JsonRpc } from "eosjs";
-import { AbiItem } from "web3-utils";
 import Onboard from "bnc-onboard";
-import { Asset, Sym, number_to_asset } from "eos-common";
+import { Asset, number_to_asset, Sym } from "eos-common";
 import { rpc } from "./eos/rpc";
 import {
-  TokenBalances,
-  EosMultiRelay,
-  TokenMeta,
   BaseToken,
-  TokenBalanceReturn,
-  TokenBalanceParam,
-  Step,
-  OnUpdate,
-  ViewToken,
-  ReserveFeed,
+  EosMultiRelay,
   ModalChoice,
+  OnUpdate,
+  ReserveFeed,
+  Step,
+  TokenBalanceParam,
+  TokenBalanceReturn,
+  TokenBalances,
+  TokenMeta,
   ViewAmount,
-  ViewRelay
+  ViewRelay,
+  ViewToken
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -26,7 +25,7 @@ import {
   buildConverterContract,
   buildLiquidityProtectionStoreContract
 } from "./eth/contractTypes";
-import { shrinkToken } from "./eth/helpers";
+import { removeLeadingZeros, shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
@@ -34,23 +33,75 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
-import { removeLeadingZeros } from "./eth/helpers";
 import moment from "moment";
+import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
+import { getNetworkVariables } from "@/store/config";
 
 export enum PositionType {
   single,
   double
 }
 
-const bancorSubgraphInstance = axios.create({
-  baseURL: "https://api.thegraph.com/subgraphs/name/blocklytics/bancor-v2",
-  method: "post"
-});
+export const rewindBlocksByDays = (
+  currentBlock: number,
+  days: number,
+  secondsPerBlock = 13.3
+) => {
+  if (!Number.isInteger(currentBlock))
+    throw new Error("Current block should be an integer");
+  const secondsToRewind = moment.duration(days, "days").asSeconds();
+  const blocksToRewind = parseInt(String(secondsToRewind / secondsPerBlock));
+  return currentBlock - blocksToRewind;
+};
 
-const chainlinkSubgraphInstance = axios.create({
-  baseURL: "https://api.thegraph.com/subgraphs/name/melonproject/chainlink",
-  method: "post"
-});
+const zeroIfNegative = (big: BigNumber) =>
+  big.isNegative() ? new BigNumber(0) : big;
+
+export const calculateMaxStakes = (
+  tknReserveBalanceWei: string,
+  bntReserveBalanceWei: string,
+  poolTokenSupplyWei: string,
+  poolTokenSystemBalanceWei: string,
+  maxSystemNetworkTokenAmount: string,
+  maxSystemNetworkTokenRatioPpm: string
+) => {
+  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
+  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
+  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
+  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
+  const maxSystemNetworkTokenRatioDec = new BigNumber(
+    maxSystemNetworkTokenRatioPpm
+  ).div(1000000);
+
+  // calculating the systemBNT  from system pool tokens
+  const rate = bntReserveBalance.div(poolTokenSupply);
+  const systemBNT = poolTokenSystemBalance.times(rate);
+
+  // allowed BNT based on limit cap
+  const maxLimitBnt = zeroIfNegative(
+    new BigNumber(maxSystemNetworkTokenAmount).minus(systemBNT)
+  );
+
+  // allowed BNT based on ratio cap
+  const maxRatioBnt = zeroIfNegative(
+    new BigNumber(maxSystemNetworkTokenRatioDec)
+      .times(bntReserveBalance)
+      .minus(systemBNT)
+  );
+
+  const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
+
+  const maxAllowedBntInTkn = lowestAmount.times(
+    tknReserveBalance.div(bntReserveBalance)
+  );
+
+  const maxAllowedBnt = systemBNT;
+
+  return {
+    maxAllowedBntWei: maxAllowedBnt.toString(),
+    maxAllowedTknWei: maxAllowedBntInTkn.toString()
+  };
+};
 
 export interface LockedBalance {
   index: number;
@@ -61,10 +112,14 @@ export interface LockedBalance {
 export const traverseLockedBalances = async (
   contract: string,
   owner: string,
-  expectedCount: number
+  expectedCount: number,
+  network: EthNetworks
 ): Promise<LockedBalance[]> => {
-  console.log('traverseHit')
-  const storeContract = buildLiquidityProtectionStoreContract(contract);
+  console.log("traverseHit");
+  const storeContract = buildLiquidityProtectionStoreContract(
+    contract,
+    getWeb3(network, Provider.Alchemy)
+  );
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
@@ -72,41 +127,30 @@ export const traverseLockedBalances = async (
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
 
-    console.log(startIndex, endIndex, 'is start and end index')
+    console.log(startIndex, endIndex, "is start and end index");
     let lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
-      console.log('traverseHit 33')
+    console.log("traverseHit 33");
 
     const bntWeis = lockedBalanceRes["0"];
     const expirys = lockedBalanceRes["1"];
 
-    const zipped = zip(bntWeis, expirys) as [bntWei: string, timestamp: string][]
-    const withIndex = zipped.map(([bntWei, expiry], index) => ({
-      amountWei: bntWei,
-      expirationTime: Number(expiry),
-      index: index + startIndex
-    }) as LockedBalance);
+    const zipped = zip(bntWeis, expirys);
+    const withIndex = zipped.map(
+      ([bntWei, expiry], index) =>
+        ({
+          amountWei: bntWei,
+          expirationTime: Number(expiry),
+          index: index + startIndex
+        } as LockedBalance)
+    );
     lockedBalances = lockedBalances.concat(withIndex);
     if (lockedBalances.length >= expectedCount) break;
   }
 
   console.log(lockedBalances, "should be inspected");
   return lockedBalances;
-};
-
-export const chainlinkSubgraph = async (query: string) => {
-  const res = await chainlinkSubgraphInstance.post("", { query });
-  if (res.data.errors && res.data.errors.length > 0)
-    throw new Error(res.data.errors[0].message);
-  return res.data.data;
-};
-
-export const bancorSubgraph = async (query: string) => {
-  const res = await bancorSubgraphInstance.post("", { query });
-  if (res.data.errors && res.data.errors.length > 0)
-    throw new Error(res.data.errors[0].message);
-  return res.data.data;
 };
 
 export function VModel(propsArgs: PropOptions = {}) {
@@ -212,7 +256,7 @@ export const prettifyNumber = (num: number | string, usd = false): string => {
     else return numeral(bigNum).format("$0,0.00");
   } else {
     if (bigNum.eq(0)) return "0";
-    else if (bigNum.gte(1000)) return numeral(bigNum).format("0,0.[00]");
+    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
     else if (bigNum.lt(0.000001)) return "< 0.000001";
     else return numeral(bigNum).format("0.[000000]");
   }
@@ -252,7 +296,7 @@ export interface StringPool {
   destSymbol: string;
 }
 
-export const formatPercent = (decNumber: number) =>
+export const formatPercent = (decNumber: number | string) =>
   numeral(decNumber).format("0.00%");
 
 export const calculateProtectionLevel = (
@@ -273,6 +317,19 @@ export const calculateProtectionLevel = (
   return new BigNumber(timeProgressedPastMinimum).div(waitingPeriod).toNumber();
 };
 
+export const calculateProgressLevel = (
+  startTimeSeconds: number,
+  endTimeSeconds: number
+) => {
+  if (endTimeSeconds < startTimeSeconds)
+    throw new Error("End time should be greater than start time");
+  const totalWaitingTime = endTimeSeconds - startTimeSeconds;
+  const now = moment().unix();
+  if (now >= endTimeSeconds) return 1;
+  const timeWaited = now - startTimeSeconds;
+  return timeWaited / totalWaitingTime;
+};
+
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))
@@ -290,9 +347,13 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 };
 
 export const fetchUsdPriceOfBntViaRelay = async (
-  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C"
+  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
+  network: EthNetworks
 ): Promise<number> => {
-  const contract = buildConverterContract(relayContractAddress);
+  const contract = buildConverterContract(
+    relayContractAddress,
+    getWeb3(network, Provider.Alchemy)
+  );
   const res = await contract.methods
     .getReturn(
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -318,23 +379,11 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-const projectId = "da059c364a2f4e6eb89bfd89600bce07";
-
-const buildInfuraAddress = (subdomain: string, projectId: string) =>
-  `https://${subdomain}.infura.io/v3/${projectId}`;
-
-const getInfuraAddress = (network: EthNetworks) => {
-  if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId);
-  } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId);
-  }
-  throw new Error("Infura address for network not supported ");
-};
-
 export let web3 = new Web3(
-  Web3.givenProvider || getInfuraAddress(EthNetworks.Mainnet)
+  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
+
+web3.eth.transactionBlockTimeout = 100;
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
@@ -385,6 +434,7 @@ interface TokenAmount {
   weiAmount: string;
 }
 export interface ConversionEventDecoded {
+  poolToken?: string;
   from: TokenAmount;
   to: TokenAmount;
   trader: string;
@@ -545,6 +595,7 @@ const decodeNetworkConversionEvent = (
     blockNumber,
     txHash,
     data: {
+      poolToken: removeLeadingZeros(poolToken),
       from: {
         address: removeLeadingZeros(fromAddress),
         weiAmount: picked.fromAmount
@@ -572,7 +623,7 @@ export const getConverterLogs = async (
   converterAddress: string,
   fromBlock: number
 ) => {
-  const address = getInfuraAddress(network);
+  const address = getAlchemyUrl(network, false);
   const LiquidityRemoved = web3.utils.sha3(
     "LiquidityRemoved(address,address,uint256,uint256,uint256)"
   ) as string;
@@ -636,7 +687,7 @@ export const getLogs = async (
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getInfuraAddress(network);
+  const address = getAlchemyUrl(network, false);
 
   const res = await axios.post<InfuraEventResponse>(address, {
     jsonrpc: "2.0",
@@ -650,12 +701,14 @@ export const getLogs = async (
     ],
     id: 1
   });
+
+  console.log(res, "is the raw return");
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
 };
 
-const RPC_URL = getInfuraAddress(EthNetworks.Mainnet);
+const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet, false);
 const APP_NAME = "Bancor Swap";
 
 const wallets = [
@@ -712,14 +765,21 @@ export const fetchReserveBalance = async (
   converterContract: any,
   reserveTokenAddress: string,
   versionNumber: number | string,
-  blockHeight? :number
+  blockHeight?: number
 ): Promise<string> => {
   try {
-    const res = await blockHeight !== undefined ? converterContract.methods[
-      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
-    ](reserveTokenAddress).call(null, blockHeight):  converterContract.methods[
-      Number(versionNumber) >= 17 ? "getConnectorBalance" : "getReserveBalance"
-    ](reserveTokenAddress).call();
+    const res =
+      (await blockHeight) !== undefined
+        ? converterContract.methods[
+            Number(versionNumber) >= 17
+              ? "getConnectorBalance"
+              : "getReserveBalance"
+          ](reserveTokenAddress).call(null, blockHeight)
+        : converterContract.methods[
+            Number(versionNumber) >= 17
+              ? "getConnectorBalance"
+              : "getReserveBalance"
+          ](reserveTokenAddress).call();
     return res;
   } catch (e) {
     try {
@@ -954,11 +1014,13 @@ const isAuthenticatedViaModule = (module: EosTransitModule) => {
   return isAuthenticated;
 };
 
-export const getBankBalance = async (): Promise<{
-  id: number;
-  quantity: string;
-  symbl: string;
-}[]> => {
+export const getBankBalance = async (): Promise<
+  {
+    id: number;
+    quantity: string;
+    symbl: string;
+  }[]
+> => {
   const account = isAuthenticatedViaModule(vxm.eosWallet);
   const res: {
     rows: {
@@ -1248,8 +1310,8 @@ export const buildPoolName = (
 export const formatUnixTime = (
   unixTime: number
 ): { date: string; time: string; dateTime: string } => {
-  const date = moment(unixTime * 1000).format("DD/MM/YY");
-  const time = moment(unixTime * 1000).format("HH:mm");
+  const date = moment.unix(unixTime).format("MMM D yyyy");
+  const time = moment.unix(unixTime).format("HH:mm");
   const dateTime = `${date} ${time}`;
 
   return { date, time, dateTime };

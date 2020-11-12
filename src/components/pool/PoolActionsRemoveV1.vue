@@ -124,6 +124,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -209,10 +210,14 @@ export default class PoolActionsRemoveV1 extends Vue {
       if (typeof results.opposingAmount !== "undefined") {
         this.amountToken2 = results.opposingAmount;
       }
-      this.token1Error =
-        this.balance1 < tokenAmount ? "Insufficient balance" : "";
-      this.token2Error =
-        this.balance2 < this.amountToken2 ? "Insufficient balance" : "";
+      this.token1Error = new BigNumber(this.balance1).isLessThan(tokenAmount)
+        ? "Token balance is currently insufficient"
+        : "";
+      this.token2Error = new BigNumber(this.balance2).isLessThan(
+        this.amountToken2
+      )
+        ? "Token balance is currently insufficient"
+        : "";
     } catch (e) {
       this.token1Error = e.message;
       this.token2Error = "";
@@ -238,14 +243,14 @@ export default class PoolActionsRemoveV1 extends Vue {
       if (typeof results.opposingAmount !== "undefined") {
         this.amountToken1 = results.opposingAmount;
       }
-      this.token1Error =
-        this.balance1 < this.amountToken1
-          ? "Token balance is currently insufficient"
-          : "";
-      this.token2Error =
-        this.balance2 < tokenAmount
-          ? "Token balance is currently insufficient"
-          : "";
+      this.token1Error = new BigNumber(this.balance1).isLessThan(
+        this.amountToken1
+      )
+        ? "Token balance is currently insufficient"
+        : "";
+      this.token2Error = new BigNumber(this.balance2).isLessThan(tokenAmount)
+        ? "Token balance is currently insufficient"
+        : "";
     } catch (e) {
       this.token2Error = e.message;
       this.token1Error = "";

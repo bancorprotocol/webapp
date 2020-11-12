@@ -11,6 +11,7 @@ import { EthAddress } from "@/types/bancor";
 import { fromWei, isAddress, toHex, toWei } from "web3-utils";
 import { shrinkToken } from "@/api/eth/helpers";
 import { vxm } from "@/store";
+import { getWeb3, Provider } from "@/api/web3";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
@@ -95,7 +96,9 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    vxm.ethBancor.updateBalance([ethReserveAddress, fromWei(nativeBalance)]);
+    vxm.ethBancor.updateUserBalances([
+      { balance: fromWei(nativeBalance), id: ethReserveAddress }
+    ]);
   }
 
   @action async checkAlreadySignedIn() {
@@ -131,7 +134,9 @@ export class EthereumModule extends VuexModule.With({
     } else {
       if (!tokenContractAddress)
         throw new Error("tokenContractAddress is falsy");
-      const tokenContract = new web3.eth.Contract(
+
+      const web3View = getWeb3(this.currentNetwork, Provider.Alchemy);
+      const tokenContract = new web3View.eth.Contract(
         ABISmartToken,
         tokenContractAddress
       );

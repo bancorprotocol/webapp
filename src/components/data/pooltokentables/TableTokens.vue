@@ -1,5 +1,6 @@
 <template>
   <table-wrapper
+    primarykey="id"
     :items="items"
     :fields="fields"
     :filter="filter"
@@ -8,14 +9,21 @@
   >
     <template v-slot:cell(symbol)="data">
       <pool-logos :token="data.item" :cursor="false" />
-
-      <!--      <router-link :to="{ name: 'DetailsToken', params: { id: data.item.id } }">-->
-      <!--        <pool-logos :token="data.item" :cursor="false" />-->
-      <!--      </router-link>-->
     </template>
 
     <template v-slot:cell(change24h)="data">
       <coloured-percentage :percentage="data.value" />
+    </template>
+
+    <template v-slot:head(liquidityProtection)>
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
+    </template>
+
+    <template v-slot:cell(liquidityProtection)="data">
+      <img
+        v-if="data.value"
+        :src="require(`@/assets/media/icons/liquidity_active.svg`)"
+      />
     </template>
 
     <template v-slot:cell(actionButtons)="data">
@@ -32,6 +40,8 @@ import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
+import { ViewToken } from "@/types/bancor";
+
 @Component({
   components: {
     ColouredPercentage,
@@ -44,6 +54,10 @@ export default class TableTokens extends Vue {
   @Prop() filter!: string;
 
   fields = [
+    {
+      key: "liquidityProtection",
+      sortable: true
+    },
     {
       key: "symbol",
       label: "Name",
@@ -67,6 +81,7 @@ export default class TableTokens extends Vue {
           currency: "USD"
         }).format(value)
     },
+    /*
     {
       key: "volume24h",
       label: "24h Volume",
@@ -78,6 +93,7 @@ export default class TableTokens extends Vue {
           currency: "USD"
         }).format(value)
     },
+    */
     {
       key: "liqDepth",
       label: "Liquidity Depth",
@@ -100,10 +116,11 @@ export default class TableTokens extends Vue {
     return vxm.bancor.tokens;
   }
 
-  doFilter(row: any, filter: string) {
+  doFilter(row: ViewToken, filter: string) {
+    const searchTerm = filter.toLowerCase();
     return (
-      (row.name && row.name.toLowerCase().indexOf(filter) >= 0) ||
-      (row.symbol && row.symbol.toLowerCase().indexOf(filter) >= 0)
+      (row.name && row.name.toLowerCase().includes(searchTerm)) ||
+      (row.symbol && row.symbol.toLowerCase().includes(searchTerm))
     );
   }
 }

@@ -51,61 +51,9 @@
       class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
     >
       This interface is in beta. Use it at your own risk.
-      <b-form-checkbox v-if="isDevOrStaging" v-model="status">
-        Dev option: Phase 2
-      </b-form-checkbox>
     </div>
     <div name="MainLayout" class="main-layout">
-      <div
-        name="side-bar"
-        class="side-bar"
-        :class="darkMode ? 'side-bar-dark' : ''"
-      >
-        <b-navbar-brand class="pb-1 brand-icon">
-          <router-link
-            :to="{ name: 'Swap', params: { service: selectedNetwork } }"
-          >
-            <img
-              v-if="darkMode"
-              src="@/assets/media/logos/bancor-white.png"
-              height="35px"
-              class="mb-1"
-            />
-            <img
-              v-else
-              src="@/assets/media/logos/bancor-black.png"
-              height="35px"
-              class="mb-1"
-            />
-          </router-link>
-        </b-navbar-brand>
-        <div class="side-bar-links">
-          <div
-            v-for="link in links"
-            :key="link.key"
-            @click="sideLinkClicked(link.key)"
-            class="side-bar-link"
-            :class="[
-              $route.name === link.route
-                ? darkMode
-                  ? 'clicked-link-dark'
-                  : 'clicked-link'
-                : darkMode
-                ? 'side-bar-link-dark'
-                : 'side-bar-link',
-              link.hideMobile ? 'hide-on-mobile' : ''
-            ]"
-          >
-            <img
-              class="side-bar-link-icon"
-              :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
-            />
-            <span>{{ link.label }}</span>
-          </div>
-        </div>
-        <div class="middle-space" />
-        <p class="tm-text">© Bancor 2020</p>
-      </div>
+      <side-bar />
       <main
         id="main-container"
         :class="
@@ -135,91 +83,26 @@
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
+import SideBar from "@/components/layout/SideBar.vue";
 import { vxm } from "@/store/";
 import { WalletProvider } from "eos-transit";
 import wait from "waait";
 
 @Component({
   components: {
-    ModalLogin
+    ModalLogin,
+    SideBar
   }
 })
 export default class App extends Vue {
   loading = true;
   error = false;
-  selectedLink = "swap";
-  links = [
-    {
-      route: "DataSummary",
-      key: "data",
-      label: "Data",
-      newTab: false,
-      hideMobile: false,
-      svgName: "data"
-    },
-    {
-      route: "Swap",
-      key: "swap",
-      label: "Swap",
-      newTab: false,
-      hideMobile: false,
-      svgName: "swap"
-    },
-    {
-      route: "LiqProtection",
-      key: "liquidity",
-      label: "Protection",
-      newTab: false,
-      hideMobile: false,
-      svgName: "liquidity"
-    },
-    {
-      route: "https://gov.bancor.network",
-      key: "governance",
-      label: "Governance",
-      newTab: true,
-      hideMobile: false,
-      svgName: "governance"
-    },
-    {
-      route: "VotePage",
-      key: "vote",
-      label: "Vote",
-      newTab: false,
-      hideMobile: false,
-      svgName: "vote"
-    },
-    {
-      route: "https://x.bancor.network/",
-      key: "bancorx",
-      label: "Bancor X",
-      newTab: true,
-      hideMobile: true,
-      svgName: "bancorx"
-    },
-    {
-      route: "https://wallet.bancor.network/",
-      key: "wallet",
-      label: "Bancor Wallet",
-      newTab: true,
-      hideMobile: true,
-      svgName: "bancor"
-    }
-  ];
 
   get isDevOrStaging() {
     return (
       process.env.NODE_ENV == "development" ||
       window.location.host.includes("staging")
     );
-  }
-
-  get status() {
-    return vxm.general.phase2;
-  }
-
-  set status(value: boolean) {
-    vxm.general.setPhase(!!value);
   }
 
   get selectedNetwork() {
@@ -276,17 +159,6 @@ export default class App extends Vue {
     window.open(url, "_blank");
   }
 
-  sideLinkClicked(newSelected: string) {
-    if (this.selectedLink == newSelected) return;
-    const link = this.links.find(x => x.key === newSelected);
-    if (link && !link.newTab) {
-      this.$router.push({ name: link.route });
-      this.selectedLink = newSelected;
-    } else if (link) {
-      this.openUrl(link.route);
-    }
-  }
-
   async created() {
     console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
@@ -301,7 +173,6 @@ export default class App extends Vue {
     }
     vxm.general.setLanguage();
     vxm.general.getUserCountry();
-    this.onRouteChange();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;
@@ -310,14 +181,6 @@ export default class App extends Vue {
   @Watch("$route.params.service")
   async onServiceChange() {
     await this.loadBancor();
-  }
-  @Watch("$route")
-  async onRouteChange() {
-    const path = this.$route.fullPath;
-    if (path.includes("swap")) this.selectedLink = "swap";
-    if (path.includes("pool")) this.selectedLink = "swap";
-    if (path.includes("data")) this.selectedLink = "data";
-    if (path.includes("protection")) this.selectedLink = "liquidity";
   }
 }
 </script>
@@ -364,185 +227,6 @@ h2 {
   padding: 12px;
   @media screen and (max-width: 768px) {
     margin-bottom: 56px;
-  }
-}
-
-.side-bar {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-width: 230px;
-  background-color: #e6ebf2;
-  z-index: 10;
-  @media screen and (max-width: 768px) {
-    position: fixed;
-    overflow: hidden;
-    bottom: 0px;
-    left: 0;
-    width: 100%;
-    height: 56px;
-    background-color: white;
-    border-top: 1px solid #e6ebf2;
-  }
-  .brand-icon {
-    @media screen and (max-width: 768px) {
-      display: none;
-    }
-    margin-top: 18px;
-    margin-left: 25px;
-    width: 80.9px;
-    height: 22px;
-    object-fit: contain;
-  }
-  .side-bar-links {
-    margin-top: 28px;
-    @media screen and (max-width: 768px) {
-      width: 100%;
-      height: 56px;
-      align-items: center;
-      margin-top: 0px;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-    }
-  }
-  .side-bar-link {
-    padding-left: 25px;
-    width: 100%;
-    cursor: pointer;
-    height: 40px;
-    position: relative;
-    @media screen and (max-width: 768px) {
-      padding-left: 0px;
-      display: flex;
-      flex-direction: column;
-    }
-    span {
-      height: 40px;
-      display: inline-flex;
-      align-items: center;
-      font-family: Inter;
-      font-size: 14px;
-      font-weight: 500;
-      font-stretch: normal;
-      font-style: normal;
-      line-height: normal;
-      letter-spacing: normal;
-      color: #6b7c93;
-      @media screen and (max-width: 768px) {
-        align-self: center;
-        font-size: 10px;
-      }
-    }
-    .side-bar-link-icon {
-      align-self: center;
-      width: 14px;
-      height: 14px;
-      margin-right: 12px;
-      @media screen and (max-width: 768px) {
-        width: 32px;
-        height: 32px;
-        margin-right: 0px;
-      }
-    }
-  }
-  .middle-space {
-    flex-grow: 1;
-  }
-  .tm-text {
-    width: 88px;
-    height: 15px;
-    font-family: Inter;
-    font-size: 12px;
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #97a5b8;
-    margin-left: 25px;
-    @media screen and (max-width: 768px) {
-      display: none;
-    }
-  }
-  .clicked-link {
-    span {
-      color: #0f59d1;
-    }
-    img {
-      filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg)
-        brightness(0.7);
-      color: #0f59d1;
-    }
-    @media screen and (min-width: 769px) {
-      background-color: #f8f9fd;
-      border-left: 2px solid #0f59d1;
-      &::before {
-        content: "";
-        position: absolute;
-        left: 202px;
-        top: -26px;
-        width: 26px;
-        height: 26px;
-        background-color: transparent;
-        border-bottom-right-radius: 14px;
-        box-shadow: 0 11px 0 0 #f8f9fd;
-      }
-      &::after {
-        content: "";
-        position: absolute;
-        left: 202px;
-        top: 40px;
-        width: 26px;
-        height: 26px;
-        background-color: transparent;
-        border-top-right-radius: 14px;
-        box-shadow: 0 -11px 0 0 #f8f9fd;
-      }
-    }
-  }
-}
-.side-bar-dark {
-  background-color: #0a2540;
-}
-.side-bar-link-dark {
-  span {
-    color: #aaa !important;
-  }
-}
-.clicked-link-dark {
-  span {
-    color: #fff !important;
-  }
-  img {
-    filter: invert(0.2) saturate(5) brightness(1);
-    color: #0f59d1;
-  }
-  @media screen and (min-width: 769px) {
-    background-color: #1c344e;
-    border-left: 2px solid #0f59d1;
-    &::before {
-      content: "";
-      position: absolute;
-      left: 202px;
-      top: -26px;
-      width: 26px;
-      height: 26px;
-      background-color: transparent;
-      border-bottom-right-radius: 14px;
-      box-shadow: 0 11px 0 0 #1c344e;
-    }
-    &::after {
-      content: "";
-      position: absolute;
-      left: 202px;
-      top: 40px;
-      width: 26px;
-      height: 26px;
-      background-color: transparent;
-      border-top-right-radius: 14px;
-      box-shadow: 0 -11px 0 0 #1c344e;
-    }
   }
 }
 </style>

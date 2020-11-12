@@ -6,6 +6,7 @@
     :search.sync="search"
   >
     <table-wrapper
+      primarykey="id"
       :items="protectedTxTable.items"
       :fields="protectedTxTable.fields"
       :filter="search"
@@ -174,7 +175,7 @@ export default class ProtectedLiquidities extends Vue {
   }
 
   get protectedLiquidity() {
-    return vxm.ethBancor.protectedLiquidity;
+    return vxm.ethBancor.protectedPositions;
   }
 
   get protectedTxTable() {

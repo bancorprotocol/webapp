@@ -26,7 +26,7 @@ export interface ProtectLiquidityParams {
   onUpdate?: OnUpdate;
 }
 
-export interface ProtectedLiquidity {
+export interface ProtectedLiquidityCalculated {
   id: string;
   owner: string;
   poolToken: string;
@@ -36,8 +36,11 @@ export interface ProtectedLiquidity {
   reserveRateN: string;
   reserveRateD: string;
   timestamp: string;
-  poolRoi: string;
-  liquidityReturn: {
+  oneDayDec?: string;
+  oneWeekDec?: string;
+  // oneMonthDec: string;
+  roiDec?: string;
+  liquidityReturn?: {
     baseAmount: string;
     networkAmount: string;
     targetAmount: string;
@@ -237,6 +240,7 @@ export interface ViewToken {
   name: string;
   price?: number;
   liqDepth?: number;
+  liquidityProtection?: boolean;
   logo: string;
   change24h?: number;
   volume24h?: number;
@@ -277,6 +281,10 @@ export interface ViewRelay {
   whitelisted: boolean;
   v2: boolean;
   version: number;
+  feesGenerated?: string;
+  feesVsLiquidity?: string;
+  apr?: string;
+  volume?: string;
 }
 
 export interface ContractMethods<T> extends Contract {
@@ -698,8 +706,8 @@ export interface ViewProtectedLiquidity {
   roi: number;
   apr: {
     day: number;
-    week: number;
-    month: number;
+    // week: number;
+    // month: number;
   };
   single: boolean;
   whitelisted: boolean;
