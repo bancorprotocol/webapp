@@ -62,7 +62,7 @@ export interface ViewTableField {
   id: number;
   label: string;
   key: string;
-  sort?: boolean;
+  sortable?: boolean;
   tooltip?: string;
   minWidth?: string;
   maxWidth?: string;
@@ -121,7 +121,7 @@ export default class DataTable extends Vue {
   }
 
   isColumnSort(column: ViewTableField) {
-    return column.sort === undefined || column.sort;
+    return column.sortable === undefined || column.sortable;
   }
 
   setSortBy(column: ViewTableField) {
