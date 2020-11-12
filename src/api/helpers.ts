@@ -655,8 +655,8 @@ export const getConverterLogs = async (
 
   console.log(res, "was the raw res");
 
-  if(res.data.error) {
-    console.error("eth_getLogs failed!", res.data.error)
+  if (res.data.error) {
+    console.error("eth_getLogs failed!", res.data.error);
   }
 
   const TokenRateUpdate = web3.utils.sha3(
@@ -700,10 +700,7 @@ const buildInfuraAddress = (
     wss ? "ws/" : ""
   }v3/${projectId}`;
 
-const getInfuraAddress = (
-  network: EthNetworks,
-  wss: boolean = false
-) => {
+const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
   if (network == EthNetworks.Mainnet) {
     return buildInfuraAddress("mainnet", projectId, wss);
   } else if (network == EthNetworks.Ropsten) {
@@ -735,8 +732,8 @@ export const getLogs = async (
 
   console.log(res, "is the raw return");
 
-  if(res.data.error) {
-    console.error("eth_getLogs failed!", res.data.error)
+  if (res.data.error) {
+    console.error("eth_getLogs failed!", res.data.error);
   }
 
   const decoded = res.data.result.map(decodeNetworkConversionEvent);
