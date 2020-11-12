@@ -639,7 +639,7 @@ export const getConverterLogs = async (
     "Conversion(address,address,address,uint256,uint256,int256)"
   ) as string;
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -651,12 +651,14 @@ export const getConverterLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "was the raw res");
+  const response = await axios.post<InfuraEventResponse>(address, request);
 
-  if (res.data.error) {
-    console.error("eth_getLogs failed!", res.data.error);
+  console.log(response, "was the raw res");
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
   }
 
   const TokenRateUpdate = web3.utils.sha3(
@@ -668,7 +670,9 @@ export const getConverterLogs = async (
 
   const topicsToIgnore = [TokenRateUpdate, PriceDataUpdate];
 
-  const focusedTopics = res.data.result.filter(isNotTopics(topicsToIgnore));
+  const focusedTopics = response.data.result.filter(
+    isNotTopics(topicsToIgnore)
+  );
 
   const conversions = focusedTopics
     .filter(isTopic(Conversion))
@@ -717,7 +721,7 @@ export const getLogs = async (
   // const address = getAlchemyUrl(network, false);
   const address = getInfuraAddress(network);
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -728,15 +732,17 @@ export const getLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "is the raw return");
+  const response = await axios.post<InfuraEventResponse>(address, request);
 
-  if (res.data.error) {
-    console.error("eth_getLogs failed!", res.data.error);
+  console.log(response, "is the raw return");
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
   }
 
-  const decoded = res.data.result.map(decodeNetworkConversionEvent);
+  const decoded = response.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
 };
