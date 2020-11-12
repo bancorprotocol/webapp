@@ -33,7 +33,7 @@
       :items="proposals"
       :fields="fields"
       default-sort="to"
-      :hidePagination="true"
+      :hide-pagination="true"
     >
       <template v-for="proposal in proposals">
         <tr
@@ -156,7 +156,7 @@
             <div class="pt-2">
               <remaining-time
                 type="warn"
-                :showSeconds="true"
+                :show-seconds="true"
                 :from="proposal.start"
                 :to="proposal.end"
               />
@@ -341,11 +341,13 @@ export default class OpenProposals extends Vue {
       },
       {
         label: "Details",
+        key: "",
         minWidth: "450px",
         maxWidth: "500px"
       },
       {
         label: "Vote",
+        key: "",
         minWidth: "300px",
         maxWidth: "300px"
       }

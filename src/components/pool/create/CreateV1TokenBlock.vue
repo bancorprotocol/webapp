@@ -24,7 +24,7 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import SelectTokenBlock from "@/components/common/SelectTokenBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import { VModel } from "@/api/helpers";
-import { ViewModalToken, ViewToken } from "@/types/bancor";
+import { ViewToken } from "@/types/bancor";
 
 @Component({
   components: {

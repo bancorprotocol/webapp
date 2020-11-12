@@ -248,7 +248,7 @@ export default class AddProtectionDouble extends Vue {
     });
   }
 
-  async amountChanged(tokenAmount: string) {
+  async amountChanged() {
     const res = await vxm.ethBancor.calculateProtectionDouble({
       poolTokenAmount: { amount: this.amount, id: this.pool.id }
     });

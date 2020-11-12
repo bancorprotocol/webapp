@@ -9,7 +9,20 @@
         :class="column.key ? 'cursor' : ''"
         :style="getWidthStyle(column)"
       >
-        {{ column.label }}
+        <span v-if="column.key !== 'liquidityProtection'" class="mr-1">
+          {{ column.label }}
+          <font-awesome-icon
+            v-if="column.tooltip"
+            icon="info-circle"
+            class="mr-1"
+            v-b-popover.hover.top="column.tooltip"
+          />
+        </span>
+        <img
+          v-else
+          :src="require(`@/assets/media/icons/liquidity.svg`)"
+          class="mr-1"
+        />
         <font-awesome-icon
           v-if="column.key && column.key === sortByKey"
           :icon="desc ? 'caret-down' : 'caret-up'"
@@ -21,12 +34,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Prop, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
 import { vxm } from "@/store";
 
 export interface ViewTableFields {
   label: string;
   key?: string;
+  tooltip?: string;
   minWidth?: string;
   maxWidth?: string;
 }

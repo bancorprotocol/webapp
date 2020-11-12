@@ -35,7 +35,6 @@ import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
 import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
-import { getNetworkVariables } from "@/store/config";
 
 export enum PositionType {
   single,
@@ -123,12 +122,12 @@ export const traverseLockedBalances = async (
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
 
     console.log(startIndex, endIndex, "is start and end index");
-    let lockedBalanceRes = await storeContract.methods
+    const lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
     console.log("traverseHit 33");
@@ -189,7 +188,7 @@ export const multiSteps = async ({
 }) => {
   let state: any = {};
   for (const todo in items) {
-    let steps = items.map(
+    const steps = items.map(
       (todo, index): Step => ({
         name: String(index),
         description: todo.description
@@ -201,7 +200,7 @@ export const multiSteps = async ({
       throw new Error("onUpdate should be either a function or undefined");
     }
 
-    let newState = await items[todo].task(state);
+    const newState = await items[todo].task(state);
     if (typeof newState !== "undefined") {
       state = newState;
     }
@@ -253,6 +252,7 @@ export const prettifyNumber = (num: number | string, usd = false): string => {
   if (usd) {
     if (bigNum.eq(0)) return "$0.00";
     else if (bigNum.lt(0.01)) return "< $0.01";
+    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
     else return numeral(bigNum).format("$0,0.00");
   } else {
     if (bigNum.eq(0)) return "0";
@@ -379,7 +379,7 @@ export enum EthNetworks {
   Goerli = 5
 }
 
-export let web3 = new Web3(
+export const web3 = new Web3(
   Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
 );
 
@@ -488,7 +488,7 @@ const decodeRemoveLiquidity = (
     newSupply: string;
   };
 
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
@@ -519,7 +519,7 @@ const decodeAddLiquidityEvent = (
     newBalance: string;
     newSupply: string;
   };
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
     blockNumber,
@@ -544,7 +544,7 @@ const decodeConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, fromAddress, toAddress, trader] = rawEvent.topics;
+  const [, fromAddress, toAddress, trader] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
@@ -586,7 +586,7 @@ const decodeNetworkConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, poolToken, fromAddress, toAddress] = rawEvent.topics;
+  const [, poolToken, fromAddress, toAddress] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
@@ -639,7 +639,7 @@ export const getConverterLogs = async (
     "Conversion(address,address,address,uint256,uint256,int256)"
   ) as string;
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -651,12 +651,14 @@ export const getConverterLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "was the raw res");
+  const response = await axios.post<InfuraEventResponse>(address, request);
 
-  if(res.data.error) {
-    console.error("eth_getLogs failed!", res.data.error)
+  console.log(response, "was the raw res");
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
   }
 
   const TokenRateUpdate = web3.utils.sha3(
@@ -668,7 +670,9 @@ export const getConverterLogs = async (
 
   const topicsToIgnore = [TokenRateUpdate, PriceDataUpdate];
 
-  const focusedTopics = res.data.result.filter(isNotTopics(topicsToIgnore));
+  const focusedTopics = response.data.result.filter(
+    isNotTopics(topicsToIgnore)
+  );
 
   const conversions = focusedTopics
     .filter(isTopic(Conversion))
@@ -700,10 +704,7 @@ const buildInfuraAddress = (
     wss ? "ws/" : ""
   }v3/${projectId}`;
 
-const getInfuraAddress = (
-  network: EthNetworks,
-  wss: boolean = false
-) => {
+const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
   if (network == EthNetworks.Mainnet) {
     return buildInfuraAddress("mainnet", projectId, wss);
   } else if (network == EthNetworks.Ropsten) {
@@ -720,7 +721,7 @@ export const getLogs = async (
   // const address = getAlchemyUrl(network, false);
   const address = getInfuraAddress(network);
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -731,15 +732,17 @@ export const getLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "is the raw return");
+  const response = await axios.post<InfuraEventResponse>(address, request);
 
-  if(res.data.error) {
-    console.error("eth_getLogs failed!", res.data.error)
+  console.log(response, "is the raw return");
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
   }
 
-  const decoded = res.data.result.map(decodeNetworkConversionEvent);
+  const decoded = response.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
 };
@@ -1050,13 +1053,11 @@ const isAuthenticatedViaModule = (module: EosTransitModule) => {
   return isAuthenticated;
 };
 
-export const getBankBalance = async (): Promise<
-  {
-    id: number;
-    quantity: string;
-    symbl: string;
-  }[]
-> => {
+export const getBankBalance = async (): Promise<{
+  id: number;
+  quantity: string;
+  symbl: string;
+}[]> => {
   const account = isAuthenticatedViaModule(vxm.eosWallet);
   const res: {
     rows: {
@@ -1340,7 +1341,7 @@ export const buildPoolName = (
 ): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   const symbols = pool.reserves.map(x => x.symbol);
-  return symbols.join(separator);
+  return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (

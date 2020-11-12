@@ -18,7 +18,6 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import numeral from "numeral";
 
 @Component
 export default class RemainingTime extends Vue {

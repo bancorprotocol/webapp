@@ -7,8 +7,7 @@ import {
 } from "@/api/eth/contractTypes";
 import { CallReturn } from "eth-multicall";
 import { ContractSendMethod } from "web3-eth-contract";
-// @ts-ignore
-import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
+import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
 import { EthNetworks, web3 } from "@/api/helpers";
@@ -551,7 +550,7 @@ export class EthereumGovernance extends VuexModule.With({
       return this.metaDataCache[hash];
     }
 
-    const ipfs = ipfsHttpClient(ipfsUrl);
+    const ipfs = IpfsHttpClient({ url: ipfsUrl });
 
     let metadata;
 
@@ -590,7 +589,7 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     proposalMetaData: ProposalMetaData;
   }): Promise<string> {
-    const ipfs = ipfsHttpClient(ipfsUrl);
+    const ipfs = IpfsHttpClient({ url: ipfsUrl });
 
     const { path } = await ipfs.add(
       Buffer.from(JSON.stringify(proposalMetaData, null, 2))

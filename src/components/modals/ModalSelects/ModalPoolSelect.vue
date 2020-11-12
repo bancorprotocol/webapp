@@ -6,7 +6,7 @@
     title="Select a pool"
     subtitle="Pools"
   >
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <select-pool-row
         @click="selectPool(item.id)"
         :pool="item"
