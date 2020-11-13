@@ -137,7 +137,11 @@ import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
-import { priorityEthPools } from "./staticRelays";
+import {
+  findPreviousPoolFee,
+  previousPoolFees,
+  priorityEthPools
+} from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
@@ -5579,13 +5583,20 @@ export class EthBancorModule
       const trades = singleTrades.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
-      const decFee = relay.fee / 100;
+      const currentFee = relay.fee / 100;
       const accumulatedFees = trades.reduce(
         (acc, item) => {
           const currentTally = findOrThrow(acc, balance =>
             compareString(balance.id, item.data.to.address)
           );
           const exitingAmount = new BigNumber(item.data.to.weiAmount);
+
+          const decFee =
+            findPreviousPoolFee(
+              previousPoolFees,
+              Number(item.blockNumber),
+              relay.id
+            ) || currentFee;
 
           const feeLessMag = 1 - decFee;
           const feeLessAmount = exitingAmount.times(feeLessMag);
