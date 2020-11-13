@@ -395,7 +395,6 @@ export interface PreviousPoolFee {
   id: string;
 }
 
-
 export const previousPoolFees: PreviousPoolFee[] = [
   {
     oldDecFee: 0.01,
@@ -403,7 +402,6 @@ export const previousPoolFees: PreviousPoolFee[] = [
     id: "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5"
   }
 ];
-
 
 export const findPreviousPoolFee = (
   previousPoolFees: PreviousPoolFee[],
