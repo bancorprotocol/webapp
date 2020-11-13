@@ -5745,32 +5745,32 @@ export class EthBancorModule
 
     console.log(tradesCollected, "are the trades collected");
     const withUsdValues = tradesCollected.map(trade => ({
-        ...trade,
-        accumulatedFees: trade.accumulatedFees.map(fee => {
-          const viewToken = tokens.find(x => compareString(x.id, fee.id))!;
-          const decAmountFees = shrinkToken(
-            fee.collectedFees,
-            viewToken.precision
-          );
-          const decAmountVolume = shrinkToken(
-            fee.totalVolume,
-            viewToken.precision
-          );
-          const usdFees = new BigNumber(decAmountFees)
-            .times(viewToken.price!)
-            .toString();
+      ...trade,
+      accumulatedFees: trade.accumulatedFees.map(fee => {
+        const viewToken = tokens.find(x => compareString(x.id, fee.id))!;
+        const decAmountFees = shrinkToken(
+          fee.collectedFees,
+          viewToken.precision
+        );
+        const decAmountVolume = shrinkToken(
+          fee.totalVolume,
+          viewToken.precision
+        );
+        const usdFees = new BigNumber(decAmountFees)
+          .times(viewToken.price!)
+          .toString();
 
-          const usdVolume = new BigNumber(decAmountVolume)
-            .times(viewToken.price!)
-            .toString();
+        const usdVolume = new BigNumber(decAmountVolume)
+          .times(viewToken.price!)
+          .toString();
 
-          return {
-            ...fee,
-            usdFees,
-            usdVolume
-          };
-        })
-      }));
+        return {
+          ...fee,
+          usdFees,
+          usdVolume
+        };
+      })
+    }));
 
     const accumulatedFee = withUsdValues.map(trade => {
       const totalFees = trade.accumulatedFees.reduce(
