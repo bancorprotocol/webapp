@@ -137,7 +137,11 @@ import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
-import { priorityEthPools } from "./staticRelays";
+import {
+  findPreviousPoolFee,
+  previousPoolFees,
+  priorityEthPools
+} from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
@@ -2022,9 +2026,25 @@ export class EthBancorModule
     id: string;
   }): Promise<TxResponse> {
     const dbId = id.split(":")[1];
+
+    const liquidityProtectionContract = this.contracts.LiquidityProtection;
     const contract = buildLiquidityProtectionContract(
       this.contracts.LiquidityProtection
     );
+
+    const position = findOrThrow(this.protectedPositionsArr, position => compareString(position.id, dbId), `failed to find the referenced position of ${dbId}`);
+    const isDissolvingNetworkToken = compareString(this.liquidityProtectionSettings.networkToken, position.reserveToken);
+    if (isDissolvingNetworkToken) {
+      const dissolvingFullPosition = decPercent === 1;
+      const weiApprovalAmount = dissolvingFullPosition ? position.reserveAmount : new BigNumber(position.reserveAmount).times(decPercent + 0.01).toFixed(0);
+      await this.triggerApprovalIfRequired({
+        owner: this.isAuthenticated,
+        spender: liquidityProtectionContract,
+        amount: weiApprovalAmount,
+        tokenAddress: this.liquidityProtectionSettings.govToken
+      })
+    }
+
     const txHash = await this.resolveTxOnConfirmation({
       tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent))
     });
@@ -5653,6 +5673,7 @@ export class EthBancorModule
       const trades = singleTrades.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
+      const currentFee = relay.fee / 100;
       const accumulatedFees = trades.reduce(
         (acc, item) => {
           const currentTally = findOrThrow(acc, balance =>
@@ -5661,7 +5682,15 @@ export class EthBancorModule
           const exitingAmount = new BigNumber(item.data.to.weiAmount);
 
           const decFee =
-            getFeeByBlockNumber(relay, Number(item.blockNumber)) / 100;
+            findPreviousPoolFee(
+              previousPoolFees,
+              Number(item.blockNumber),
+              relay.id
+            ) || currentFee;
+
+          // const decFee =
+          //  getFeeByBlockNumber(relay, Number(item.blockNumber)) / 100;
+
           const feeLessMag = 1 - decFee;
           const feeLessAmount = exitingAmount.times(feeLessMag);
           const feePaid = exitingAmount.minus(feeLessAmount);
