@@ -247,7 +247,10 @@ export const formatNumber = (num: number | string, size: number = 4) => {
   return reduced;
 };
 
-export const prettifyNumber = (num: number | string, usd = false): string => {
+export const prettifyNumber = (
+  num: number | string | BigNumber,
+  usd = false
+): string => {
   const bigNum = new BigNumber(num);
   if (usd) {
     if (bigNum.eq(0)) return "$0.00";
