@@ -1972,9 +1972,25 @@ export class EthBancorModule
     id: string;
   }): Promise<TxResponse> {
     const dbId = id.split(":")[1];
+
+    const liquidityProtectionContract = this.contracts.LiquidityProtection;
     const contract = buildLiquidityProtectionContract(
       this.contracts.LiquidityProtection
     );
+
+    const position = findOrThrow(this.protectedPositionsArr, position => compareString(position.id, dbId), `failed to find the referenced position of ${dbId}`);
+    const isDissolvingNetworkToken = compareString(this.liquidityProtectionSettings.networkToken, position.reserveToken);
+    if (isDissolvingNetworkToken) {
+      const dissolvingFullPosition = decPercent === 1;
+      const weiApprovalAmount = dissolvingFullPosition ? position.reserveAmount : new BigNumber(position.reserveAmount).times(decPercent + 0.01).toFixed(0);
+      await this.triggerApprovalIfRequired({
+        owner: this.isAuthenticated,
+        spender: liquidityProtectionContract,
+        amount: weiApprovalAmount,
+        tokenAddress: this.liquidityProtectionSettings.govToken
+      })
+    }
+
     const txHash = await this.resolveTxOnConfirmation({
       tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent))
     });
