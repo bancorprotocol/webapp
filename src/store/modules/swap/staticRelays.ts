@@ -398,7 +398,7 @@ export interface PreviousPoolFee {
 export const previousPoolFees: PreviousPoolFee[] = [
   {
     oldDecFee: 0.01,
-    blockNumber: 11248371,
+    blockNumber: 11248429,
     id: "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5"
   }
 ];
