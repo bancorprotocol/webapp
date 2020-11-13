@@ -4,13 +4,13 @@
       class="d-none d-md-flex"
       :dark-mode="darkMode"
       :data="dataObject"
-      @sideLinkClicked="sideLinkClicked"
+      @linkClicked="navigateToRoute"
     />
     <side-bar-bottom
       class="d-md-none"
       :dark-mode="darkMode"
       :data="dataObject"
-      @sideLinkClicked="sideLinkClicked"
+      @linkClicked="navigateToRoute"
     />
   </div>
 </template>
@@ -20,12 +20,21 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
+
+export interface ViewSideBarLink {
+  route: string;
+  key: string;
+  label: string;
+  newTab: boolean;
+  hideMobile: boolean;
+  svgName: string;
+}
 @Component({
   components: { SideBarBottom, SideBarLeft }
 })
 export default class SideBar extends Vue {
   selectedLink = "swap";
-  links = [
+  links: ViewSideBarLink[] = [
     {
       route: "DataSummary",
       key: "data",
@@ -94,21 +103,19 @@ export default class SideBar extends Vue {
     this.onRouteChange();
   }
 
-  openUrl(url: string) {
+  openNewTab(url: string) {
     window.open(url, "_blank");
   }
   get darkMode() {
     return vxm.general.darkMode;
   }
 
-  sideLinkClicked(newSelected: string) {
-    if (this.selectedLink == newSelected) return;
-    const link = this.links.find(x => x.key === newSelected);
-    if (link && !link.newTab) {
+  navigateToRoute(link: ViewSideBarLink) {
+    if (!link.newTab) {
       this.$router.push({ name: link.route });
-      this.selectedLink = newSelected;
-    } else if (link) {
-      this.openUrl(link.route);
+      this.selectedLink = link.route;
+    } else {
+      this.openNewTab(link.route);
     }
   }
 
