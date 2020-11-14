@@ -138,7 +138,7 @@ export default class TablePools extends Vue {
         id: 8,
         label: "Actions",
         key: "actions",
-        sort: false,
+        sortable: false,
         minWidth: "150px",
         maxWidth: "150px"
       }

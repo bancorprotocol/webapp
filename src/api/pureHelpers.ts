@@ -22,16 +22,11 @@ export const calculatePositionFees = (
     depositedReserveCurrentBalance
   );
 
-  const randomRate = rate1.div(rate0);
-  const feePercent = amount1
-    .div(amount0)
-    .times(randomRate)
+  const rateDiv = rate1.div(rate0);
+  const result = rateDiv
     .sqrt()
-    .minus(1);
+    .times(amount1)
+    .minus(amount0);
 
-  const feeAmount = new BigNumber(depositedAmount).times(feePercent);
-
-  const result = feeAmount.toFixed(0);
-
-  return result;
+  return result.toFixed(0);
 };

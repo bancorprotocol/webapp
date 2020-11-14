@@ -1,7 +1,7 @@
 <template>
   <div class="side-bar" :class="darkMode ? 'side-bar-dark' : ''">
     <b-navbar-brand class="pb-1 brand-icon">
-      <router-link :to="{ name: 'Swap' }">
+      <router-link :to="{ name: 'Data' }">
         <img
           v-if="darkMode"
           src="@/assets/media/logos/bancor-white.png"
@@ -17,8 +17,8 @@
       </router-link>
     </b-navbar-brand>
     <div class="side-bar-links">
-      <router-link
-        tag="div"
+      <div
+        @click="linkClicked(link)"
         v-for="link in data.links"
         :key="link.key"
         :to="{ name: link.route }"
@@ -39,7 +39,7 @@
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
         <span>{{ link.label }}</span>
-      </router-link>
+      </div>
     </div>
     <div class="middle-space" />
     <p class="tm-text">© Bancor 2020</p>
@@ -48,6 +48,7 @@
 
 <script lang="ts">
 import { Prop, Component, Vue, Emit } from "vue-property-decorator";
+import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarLeft extends Vue {
@@ -67,9 +68,9 @@ export default class SideBarLeft extends Vue {
     } else return false;
   }
 
-  @Emit("sideLinkClicked")
-  sideLinkClicked(key: string) {
-    return key;
+  @Emit("linkClicked")
+  linkClicked(link: ViewSideBarLink) {
+    return link;
   }
 }
 </script>

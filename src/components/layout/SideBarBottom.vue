@@ -1,8 +1,8 @@
 <template>
   <div class="bottom-bar" :class="darkMode ? 'side-bar-dark' : ''">
     <div class="side-bar-links">
-      <router-link
-        tag="div"
+      <div
+        @click="linkClicked(link)"
         v-for="link in data.links.filter(l => !l.hideMobile)"
         :key="link.key"
         :to="{ name: link.route }"
@@ -22,13 +22,14 @@
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
         <span>{{ link.label }}</span>
-      </router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Prop, Component, Vue, Emit } from "vue-property-decorator";
+import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarBottom extends Vue {
@@ -48,9 +49,9 @@ export default class SideBarBottom extends Vue {
     } else return false;
   }
 
-  @Emit("sideLinkClicked")
-  sideLinkClicked(key: string) {
-    return key;
+  @Emit("linkClicked")
+  linkClicked(link: ViewSideBarLink) {
+    return link;
   }
 }
 </script>
