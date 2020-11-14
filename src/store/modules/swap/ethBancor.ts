@@ -32,7 +32,6 @@ import {
   ViewAddEvent,
   ViewAmountWithMeta,
   FocusPoolRes,
-  ProtectedLiquidity,
   ProtectedLiquidityCalculated,
   ProtectLiquidityParams,
   OnUpdate,
@@ -51,12 +50,10 @@ import {
   compareString,
   findOrThrow,
   updateArray,
-  networkTokens,
   isOdd,
   multiSteps,
   EthNetworks,
   PoolType,
-  Anchor,
   TraditionalRelay,
   ChainLinkRelay,
   SmartToken,
@@ -76,10 +73,10 @@ import {
   AddLiquidityEvent,
   RemoveLiquidityEvent,
   traverseLockedBalances,
-  calculateProtectionLevel,
   LockedBalance,
   rewindBlocksByDays,
-  calculateMaxStakes
+  calculateMaxStakes,
+  calculateProgressLevel
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -144,7 +141,13 @@ import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
-import { knownPools, knownV2Anchors, priorityEthPools } from "./staticRelays";
+import {
+  findPreviousPoolFee,
+  previousPoolFees,
+  priorityEthPools,
+  knownPools,
+  knownV2Anchors
+} from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
@@ -152,7 +155,7 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { combineLatest, from, Subject, of, Observable, merge } from "rxjs";
+import { combineLatest, from, of, Observable } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -161,20 +164,20 @@ import {
   mergeMap,
   tap,
   switchMap,
-  share,
   shareReplay,
   pluck,
   scan,
   first as firstItem
 } from "rxjs/operators";
+import { calculatePositionFees } from "@/api/pureHelpers";
 
 interface Balance {
   balance: string;
   id: string;
 }
 
-const tokenSupplyShape = (tokenAddress: string) => {
-  const contract = buildTokenContract(tokenAddress);
+const tokenSupplyShape = (tokenAddress: string, network: EthNetworks) => {
+  const contract = buildTokenContract(tokenAddress, getWeb3(network));
   return {
     tokenContract: ORIGIN_ADDRESS,
     supply: contract.methods.totalSupply()
@@ -202,9 +205,13 @@ const dualPoolRoiShape = (
   protectionContractAddress: string,
   anchor: string,
   reserves: TokenWei[],
-  poolTokenSupply: string
+  poolTokenSupply: string,
+  network: EthNetworks
 ) => {
-  const contract = buildLiquidityProtectionContract(protectionContractAddress);
+  const contract = buildLiquidityProtectionContract(
+    protectionContractAddress,
+    getWeb3(network)
+  );
 
   const [oneReserve, twoReserve] = reserves;
 
@@ -233,8 +240,12 @@ const dualPoolRoiShape = (
   };
 };
 
-const slimBalanceShape = (contractAddress: string, owner: string) => {
-  const contract = buildTokenContract(contractAddress);
+const slimBalanceShape = (
+  contractAddress: string,
+  owner: string,
+  network: EthNetworks
+) => {
+  const contract = buildTokenContract(contractAddress, getWeb3(network));
   const template = {
     contract: ORIGIN_ADDRESS,
     balance: contract.methods.balanceOf(owner)
@@ -242,25 +253,18 @@ const slimBalanceShape = (contractAddress: string, owner: string) => {
   return template;
 };
 
-const balanceShape = (contractAddress: string, owner: string) => {
-  const contract = buildTokenContract(contractAddress);
+const balanceShape = (
+  contractAddress: string,
+  owner: string,
+  network: EthNetworks
+) => {
+  const contract = buildTokenContract(contractAddress, getWeb3(network));
   const template = {
     contract: ORIGIN_ADDRESS,
     balance: contract.methods.balanceOf(owner),
     decimals: contract.methods.decimals()
   };
   return template;
-};
-
-const samePoolAmount = (liq1Balance: string, liq2Balance: string) => {
-  const liq1 = new BigNumber(liq1Balance);
-  const liq2 = new BigNumber(liq2Balance);
-
-  const first = liq1.isLessThanOrEqualTo(liq2.plus(1));
-  const second = liq2.isLessThanOrEqualTo(liq1.plus(1));
-
-  const passed = first && second;
-  return passed;
 };
 
 interface PoolApr {
@@ -277,12 +281,6 @@ const calculateReturnOnInvestment = (
     .minus(1)
     .toString();
 };
-
-const samePointOfEntry = (a: ProtectedLiquidity, b: ProtectedLiquidity) =>
-  compareString(a.poolToken, b.poolToken) &&
-  a.timestamp == b.timestamp &&
-  compareString(a.owner, b.owner) &&
-  samePoolAmount(a.poolAmount, b.poolAmount);
 
 // returns the rate of 1 pool token in reserve token units
 const calculatePoolTokenRate = (
@@ -344,9 +342,9 @@ const estimateBlockTimeUnix = (
   averageBlockTimeSeconds = 13
 ): number => {
   if (knownBlockNumber < blockNumber) {
-    const blockGap = blockNumber - blockNumber;
-    const timeGap = blockGap * averageBlockTimeSeconds;
-    return knownBlockNumberTime + timeGap;
+    const blockgap = blockNumber - knownBlockNumber;
+    const timegap = blockgap * averageBlockTimeSeconds;
+    return knownBlockNumberTime + timegap;
   }
   const blockGap = knownBlockNumber - blockNumber;
   const timeGap = blockGap * averageBlockTimeSeconds;
@@ -499,11 +497,6 @@ const calculateShareOfPool = (
 
   return shareOfPool;
 };
-
-const relayIncludesReserves = (reserves: string[]) => (relay: Relay) =>
-  relay.reserves.every(reserve =>
-    reserves.some(r => compareString(reserve.contract, r))
-  );
 
 const compareRelayByReserves = (a: Relay, b: Relay) =>
   a.reserves.every(reserve =>
@@ -860,9 +853,10 @@ const poolTokenShape = (address: string) => {
 const v2PoolBalanceShape = (
   contractAddress: string,
   reserveOne: string,
-  reserveTwo: string
+  reserveTwo: string,
+  network: EthNetworks
 ) => {
-  const contract = buildV2Converter(contractAddress);
+  const contract = buildV2Converter(contractAddress, getWeb3(network));
   return {
     converterAddress: ORIGIN_ADDRESS,
     primaryReserveToken: contract.methods.primaryReserveToken(),
@@ -877,8 +871,14 @@ const v2PoolBalanceShape = (
   };
 };
 
-const liquidityProtectionShape = (contractAddress: string) => {
-  const contract = buildLiquidityProtectionContract(contractAddress);
+const liquidityProtectionShape = (
+  contractAddress: string,
+  network: EthNetworks
+) => {
+  const contract = buildLiquidityProtectionContract(
+    contractAddress,
+    getWeb3(network)
+  );
   return {
     minProtectionDelay: contract.methods.minProtectionDelay(),
     maxProtectionDelay: contract.methods.maxProtectionDelay(),
@@ -932,12 +932,6 @@ interface V2Response {
   reserveFeeds: ReserveFeed[];
   pools: (RelayWithReserveBalances | ChainLinkRelay)[];
 }
-
-const sortFeedByExtraProps = (a: ReserveFeed, b: ReserveFeed) => {
-  if (a.change24H || a.volume24H) return -1;
-  if (b.change24H || a.volume24H) return 1;
-  return 0;
-};
 
 const compareAnchorAndConverter = (
   a: ConverterAndAnchor,
@@ -1008,11 +1002,6 @@ interface ConverterAndAnchor {
   anchorAddress: string;
 }
 
-const networkTokenAddresses = [
-  "0x309627af60F0926daa6041B8279484312f2bf060",
-  "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C"
-];
-
 const metaToModalChoice = (meta: TokenMeta): ModalChoice => ({
   id: meta.contract,
   contract: meta.contract,
@@ -1049,11 +1038,6 @@ const generateEtherscanAccountLink = (
   account: string,
   ropsten: boolean = false
 ) => `https://${ropsten ? "ropsten." : ""}etherscan.io/address/${account}`;
-
-interface AnchorProps {
-  anchor: Anchor;
-  converterType: PoolType;
-}
 
 const iouTokensInRelay = (relay: Relay): Token[] => {
   if (relay.converterType == PoolType.ChainLink) {
@@ -1158,23 +1142,6 @@ const hasTwoConnectors = (relay: RefinedAbiRelay) => {
   return test;
 };
 
-const networkTokenIncludedInReserves = (networkTokenAddresses: string[]) => (
-  relay: RefinedAbiRelay
-) => {
-  const test = relay.reserves.some(reserve =>
-    networkTokenAddresses.some(networkAddress =>
-      compareString(networkAddress, reserve)
-    )
-  );
-  if (!test)
-    console.warn(
-      "Dropping",
-      relay.anchorAddress,
-      "because it does not feature a network token"
-    );
-  return test;
-};
-
 interface StakedAndReserve {
   converterAddress: string;
   reserves: {
@@ -1196,7 +1163,7 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethHardCode = updateArray(
     tokens,
     token => compareString(token.contract, ethReserveAddress),
-    _ => ethReserveToken
+    () => ethReserveToken
   );
 
   const decimalIsWrong = (decimals: number | undefined) =>
@@ -1295,8 +1262,12 @@ const tokenShape = (contractAddress: string) => {
   return template;
 };
 
-const reserveBalanceShape = (contractAddress: string, reserves: string[]) => {
-  const contract = buildConverterContract(contractAddress);
+const reserveBalanceShape = (
+  contractAddress: string,
+  reserves: string[],
+  network: EthNetworks
+) => {
+  const contract = buildConverterContract(contractAddress, getWeb3(network));
   const [reserveOne, reserveTwo] = reserves;
   return {
     converterAddress: ORIGIN_ADDRESS,
@@ -1541,7 +1512,9 @@ export class EthBancorModule
 
   @action async fetchLiquidityProtectionSettings(contractAddress: string) {
     const [[settings]] = ((await this.multi({
-      groupsOfShapes: [[liquidityProtectionShape(contractAddress)]]
+      groupsOfShapes: [
+        [liquidityProtectionShape(contractAddress, this.currentNetwork)]
+      ]
     })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const newSettings = {
@@ -1588,7 +1561,8 @@ export class EthBancorModule
       liquidityProtectionStoreAddress ||
       this.contracts.LiquidityProtectionStore;
     const liquidityProtection = buildLiquidityProtectionStoreContract(
-      contractAddress
+      contractAddress,
+      getWeb3(this.currentNetwork)
     );
     const whiteListedPools = await liquidityProtection.methods
       .whitelistedPools()
@@ -1660,42 +1634,42 @@ export class EthBancorModule
   }
 
   @action async fetchProtectionPositions(storeAddress?: string) {
-    console.log("fetchProtectionPositions");
-    console.count("fetchProtectionPositions");
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
     if (!this.isAuthenticated) {
       return;
     }
     try {
-      const contract = buildLiquidityProtectionStoreContract(liquidityStore);
+      const w3 = getWeb3(this.currentNetwork);
+      const contract = buildLiquidityProtectionStoreContract(
+        liquidityStore,
+        w3
+      );
       const owner = this.isAuthenticated;
       console.time("time to get ID count");
+      console.log("getting id count", owner, "was the owner");
       const idCount = Number(
         await contract.methods.protectedLiquidityCount(owner).call()
       );
+      console.log("got id count", idCount);
       console.timeEnd("time to get ID count");
       if (idCount == 0) return;
-      console.time("time to get ids");
       const ids = await contract.methods.protectedLiquidityIds(owner).call();
-      console.timeEnd("time to get ids");
-      console.time("time to get all positions");
       const allPositions = await Promise.all(
-        ids.map(id => protectionById(liquidityStore, id))
+        ids.map(id => protectionById(liquidityStore, id, this.currentNetwork))
       );
-      console.timeEnd("time to get all positions");
-      console.log(allPositions, "are all positions");
       if (allPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
 
-      console.log("contracts", this.contracts.LiquidityProtection);
-
       const lpContract = buildLiquidityProtectionContract(
-        this.contracts.LiquidityProtection
+        this.contracts.LiquidityProtection,
+        w3
       );
 
       console.time("secondsToGetCurrentBlock");
-      const currentBlockNumber = await web3.eth.getBlockNumber();
+      console.log("blockNumber");
+      const currentBlockNumber = await w3.eth.getBlockNumber();
+      console.log("blockNumberEnd");
       console.timeEnd("secondsToGetCurrentBlock");
 
       const uniqueAnchors = uniqWith(
@@ -1707,15 +1681,16 @@ export class EthBancorModule
         blockHeight: number;
         days: number;
         label: string;
-      }[] = ([[1, "day"], [7, "week"]] as [number, string][]).map(
-        ([days, label]) => ({
-          blockHeight: rewindBlocksByDays(currentBlockNumber, days),
-          days,
-          label
-        })
-      );
+      }[] = ([
+        [1, "day"],
+        [7, "week"]
+      ] as [number, string][]).map(([days, label]) => ({
+        blockHeight: rewindBlocksByDays(currentBlockNumber, days),
+        days,
+        label
+      }));
 
-      const [withAprs, withLiquidityReturn] = await Promise.all([
+      const [withAprs, withLiquidityReturn, withFees] = await Promise.all([
         (async () => {
           try {
             const poolHistoricalBalances = await Promise.all(
@@ -1829,29 +1804,84 @@ export class EthBancorModule
         })(),
         Promise.all(
           allPositions.map(async position => {
-            const fullWaitTime = moment()
+            const now = moment();
+            const fullWaitTime = now
+              .clone()
               .add(1, "year")
               .unix();
 
-            const liquidityReturn = await getRemoveLiquidityReturn(
-              this.contracts.LiquidityProtection,
-              position.id,
-              oneMillion.toString(),
-              fullWaitTime
-            );
+            const timeNow = moment().unix();
+
+            const [
+              fullLiquidityReturn,
+              currentLiquidityReturn
+            ] = await Promise.all([
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                fullWaitTime,
+                this.currentNetwork
+              ),
+              getRemoveLiquidityReturn(
+                this.contracts.LiquidityProtection,
+                position.id,
+                oneMillion.toString(),
+                timeNow,
+                this.currentNetwork
+              )
+            ]);
 
             return {
               positionId: position.id,
-              liquidityReturn,
+              fullLiquidityReturn,
+              currentLiquidityReturn,
               roiDec: calculateReturnOnInvestment(
                 position.reserveAmount,
-                liquidityReturn.targetAmount
+                fullLiquidityReturn.targetAmount
               )
             };
           })
         ).catch(e => {
           console.warn("Error fetching ROIs", e);
-        })
+        }),
+        Promise.all(
+          allPositions.map(async position => {
+            const currentPoolBalances = await this.fetchRelayBalances({
+              poolId: position.poolToken
+            });
+
+            const [
+              depositedReserve,
+              opposingReserve
+            ] = sortAlongSide(
+              currentPoolBalances.reserves,
+              reserve => reserve.contract,
+              [position.reserveToken]
+            );
+            const rate0 = new BigNumber(position.reserveRateN)
+              .div(position.reserveRateD)
+              .toString();
+
+            const feeAmountWei = calculatePositionFees(
+              position.poolAmount,
+              currentPoolBalances.smartTokenSupplyWei,
+              position.reserveAmount,
+              depositedReserve.weiAmount,
+              opposingReserve.weiAmount,
+              rate0
+            );
+
+            const shrunk = shrinkToken(feeAmountWei, 18);
+
+            console.log(shrunk, "is the fee amount");
+
+            return {
+              positionId: position.id,
+              amount: shrunk
+            };
+          })
+        )
       ]);
 
       const positions = allPositions.map(
@@ -1861,10 +1891,14 @@ export class EthBancorModule
             withLiquidityReturn.find(p => position.id == p.positionId);
           const roiReturn =
             withAprs && withAprs.find(p => position.id == p.positionId);
+
+          const fee = withFees.find(p => position.id == p.positionId);
+
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
-            ...(roiReturn && omit(roiReturn, ["positionId"]))
+            ...(roiReturn && omit(roiReturn, ["positionId"])),
+            ...(fee && omit(fee, ["positionId"]))
           };
         }
       );
@@ -1942,16 +1976,12 @@ export class EthBancorModule
     })) as string;
 
     this.fetchProtectionPositions();
-    this.fetchAndSetTokenBalances([
+    this.spamBalances([
       this.liquidityProtectionSettings.govToken,
       reserveTokenAddress
     ]);
-    wait(2000).then(() => {
+    wait(3000).then(() => {
       this.fetchProtectionPositions();
-      this.fetchAndSetTokenBalances([
-        this.liquidityProtectionSettings.govToken,
-        reserveTokenAddress
-      ]);
     });
 
     return {
@@ -1968,9 +1998,36 @@ export class EthBancorModule
     id: string;
   }): Promise<TxResponse> {
     const dbId = id.split(":")[1];
+
+    const liquidityProtectionContract = this.contracts.LiquidityProtection;
     const contract = buildLiquidityProtectionContract(
       this.contracts.LiquidityProtection
     );
+
+    const position = findOrThrow(
+      this.protectedPositionsArr,
+      position => compareString(position.id, dbId),
+      `failed to find the referenced position of ${dbId}`
+    );
+    const isDissolvingNetworkToken = compareString(
+      this.liquidityProtectionSettings.networkToken,
+      position.reserveToken
+    );
+    if (isDissolvingNetworkToken) {
+      const dissolvingFullPosition = decPercent === 1;
+      const weiApprovalAmount = dissolvingFullPosition
+        ? position.reserveAmount
+        : new BigNumber(position.reserveAmount)
+            .times(decPercent + 0.01)
+            .toFixed(0);
+      await this.triggerApprovalIfRequired({
+        owner: this.isAuthenticated,
+        spender: liquidityProtectionContract,
+        amount: weiApprovalAmount,
+        tokenAddress: this.liquidityProtectionSettings.govToken
+      });
+    }
+
     const txHash = await this.resolveTxOnConfirmation({
       tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent))
     });
@@ -2085,7 +2142,8 @@ export class EthBancorModule
     const contractAddress =
       storeAddress || this.contracts.LiquidityProtectionStore;
     const storeContract = buildLiquidityProtectionStoreContract(
-      contractAddress
+      contractAddress,
+      getWeb3(this.currentNetwork)
     );
     const lockedBalanceCount = Number(
       await storeContract.methods.lockedBalanceCount(owner).call()
@@ -2096,7 +2154,8 @@ export class EthBancorModule
         ? await traverseLockedBalances(
             contractAddress,
             owner,
-            lockedBalanceCount
+            lockedBalanceCount,
+            this.currentNetwork
           )
         : [];
     this.setLockedBalances(lockedBalances);
@@ -2150,15 +2209,22 @@ export class EthBancorModule
         );
 
         const fullyProtectedDec =
-          singleEntry.liquidityReturn &&
+          singleEntry.fullLiquidityReturn &&
           shrinkToken(
-            singleEntry.liquidityReturn.targetAmount,
+            singleEntry.fullLiquidityReturn.targetAmount,
             reservePrecision
           );
-        const protectionAchieved = calculateProtectionLevel(
+
+        const currentProtectedDec =
+          singleEntry.currentLiquidityReturn &&
+          shrinkToken(
+            singleEntry.currentLiquidityReturn.targetAmount,
+            reservePrecision
+          );
+
+        const progressPercent = calculateProgressLevel(
           startTime,
-          minDelay,
-          maxDelay
+          startTime + maxDelay
         );
 
         const givenVBnt =
@@ -2167,10 +2233,22 @@ export class EthBancorModule
             this.liquidityProtectionSettings.networkToken
           ) && reserveTokenDec;
 
+        // stake - original
+        // full coverage - full wait time
+        // protectedAmount - current wait time
+
         return {
           id: `${singleEntry.poolToken}:${singleEntry.id}`,
           whitelisted: isWhiteListed,
           ...(givenVBnt && { givenVBnt }),
+          single: true,
+          apr: {
+            day: Number(singleEntry.oneDayDec),
+            // month: Number(singleEntry.on)
+            week: Number(singleEntry.oneWeekDec)
+          },
+          insuranceStart: startTime + minDelay,
+          fullCoverage: startTime + maxDelay,
           stake: {
             amount: reserveTokenDec,
             symbol: reserveToken.symbol,
@@ -2182,29 +2260,42 @@ export class EthBancorModule
                 .toNumber()
             })
           },
-          single: true,
-          apr: {
-            day: Number(singleEntry.oneDayDec),
-            // month: Number(singleEntry.on)
-            week: Number(singleEntry.oneWeekDec)
-          },
-          insuranceStart: startTime + minDelay,
-          fullCoverage: startTime + maxDelay,
-          // @ts-ignore
-          fullyProtected: {
-            amount: fullyProtectedDec
-          },
-          protectedAmount: {
-            amount: fullyProtectedDec,
-            symbol: reserveToken.symbol,
-            ...(reserveToken.price &&
-              fullyProtectedDec && {
+          ...(fullyProtectedDec && {
+            fullyProtected: {
+              amount: fullyProtectedDec,
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price && {
                 usdValue: new BigNumber(fullyProtectedDec)
-                  .times(reserveToken.price!)
+                  .times(reserveToken.price)
                   .toNumber()
               })
-          },
-          coverageDecPercent: protectionAchieved,
+            }
+          }),
+          ...(currentProtectedDec && {
+            protectedAmount: {
+              amount: currentProtectedDec,
+              symbol: reserveToken.symbol,
+              ...(reserveToken.price &&
+                fullyProtectedDec && {
+                  usdValue: new BigNumber(currentProtectedDec)
+                    .times(reserveToken.price!)
+                    .toNumber()
+                })
+            }
+          }),
+          coverageDecPercent: progressPercent,
+          ...(singleEntry.fee && {
+            fees: {
+              amount: singleEntry.fee.amount,
+              symbol: reserveToken.symbol
+              // ...(reserveToken.price &&
+              //   fullyProtectedDec && {
+              //     usdValue: new BigNumber(1)
+              //       .times(reserveToken.price!)
+              //       .toNumber()
+              //   })
+            }
+          }),
           roi:
             fullyProtectedDec &&
             Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
@@ -2217,7 +2308,8 @@ export class EthBancorModule
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
-    const allIouTokens = this.relaysList.flatMap(iouTokensInRelay);
+    const relaysList = this.relaysList;
+    const allIouTokens = relaysList.flatMap(iouTokensInRelay);
     const existingBalances = this.tokenBalances.filter(
       balance =>
         balance.balance !== "0" &&
@@ -2226,7 +2318,7 @@ export class EthBancorModule
         )
     );
 
-    const relevantRelays = this.relaysList.filter(relay =>
+    const relevantRelays = relaysList.filter(relay =>
       iouTokensInRelay(relay).some(token =>
         existingBalances.some(balance =>
           compareString(balance.id, token.contract)
@@ -2283,10 +2375,6 @@ export class EthBancorModule
           )
       );
     return remainingPools.length > 0;
-  }
-
-  get currentEthNetwork() {
-    return vxm.ethWallet.currentNetwork as EthNetworks;
   }
 
   @mutation setLoadingPools(status: boolean) {
@@ -2529,7 +2617,8 @@ export class EthBancorModule
       converterRegistryAddress,
       poolType,
       reserveTokenAddresses,
-      reserveWeights
+      reserveWeights,
+      this.currentNetwork
     );
     if (poolAlreadyExists)
       throw new Error(`Similar pool already exists (${poolAlreadyExists})`);
@@ -2551,7 +2640,7 @@ export class EthBancorModule
     const pool = await this.relayById(poolId);
     const reserveSymbols = pool.reserves.map(reserve => reserve.symbol);
     const sortedSymbols = sortByNetworkTokens(reserveSymbols, x => x);
-    const [networkToken, primaryReserveToken] = sortedSymbols;
+    const [, primaryReserveToken] = sortedSymbols;
     return getSmartTokenHistory(primaryReserveToken.toLowerCase());
   }
 
@@ -2625,9 +2714,10 @@ export class EthBancorModule
             converterAddress: string;
             newConverterTx: string;
           }) => {
-            const registeredAnchorAddresses = await this.fetchAnchorAddresses(
-              this.contracts.BancorConverterRegistry
-            );
+            const registeredAnchorAddresses = await this.fetchAnchorAddresses({
+              converterRegistryAddress: this.contracts.BancorConverterRegistry,
+              network: this.currentNetwork
+            });
             const convertersAndAnchors = await this.add(
               registeredAnchorAddresses
             );
@@ -2698,7 +2788,6 @@ export class EthBancorModule
     const txRes = await Promise.all(
       chunked.map(arr => {
         const first = arr[0].index;
-        const last = arr[arr.length - 1].index;
         return this.resolveTxOnConfirmation({
           tx: contract.methods.claimBalance(String(first), String(50))
         });
@@ -2772,7 +2861,7 @@ export class EthBancorModule
             resolve(txHash);
           }
         })
-        .on("confirmation", (confirmationNumber: number) => {
+        .on("confirmation", () => {
           resolve(txHash);
         })
         .on("error", (error: any) => reject(error));
@@ -2794,7 +2883,7 @@ export class EthBancorModule
   }
 
   get supportedFeatures() {
-    return (symbolName: string) => {
+    return () => {
       return ["addLiquidity", "removeLiquidity"];
     };
   }
@@ -2924,7 +3013,7 @@ export class EthBancorModule
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
       .map(relay => {
-        const [networkReserve, tokenReserve] = relay.reserves;
+        const [, tokenReserve] = relay.reserves;
 
         const { poolContainerAddress } = relay.anchor;
 
@@ -2969,7 +3058,7 @@ export class EthBancorModule
         relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
       )
       .map(relay => {
-        const [networkReserve, tokenReserve] = relay.reserves;
+        const [, tokenReserve] = relay.reserves;
 
         const smartTokenSymbol = relay.anchor.symbol;
         const hasHistory = availableHistories.some(history =>
@@ -3049,7 +3138,8 @@ export class EthBancorModule
 
   @action async getGeometricMean(amounts: string[]) {
     const converter = buildConverterContract(
-      getNetworkVariables(this.currentNetwork).converterContractForMaths
+      getNetworkVariables(this.currentNetwork).converterContractForMaths,
+      getWeb3(this.currentNetwork, Provider.Alchemy)
     );
     return converter.methods.geometricMean(amounts).call();
   }
@@ -3077,8 +3167,14 @@ export class EthBancorModule
   }) {
     const { reserves, version, contract } = await this.relayById(poolId);
 
-    const converterContract = buildConverterContract(contract);
-    const smartTokenContract = buildTokenContract(poolId);
+    const converterContract = buildConverterContract(
+      contract,
+      getWeb3(this.currentNetwork)
+    );
+    const smartTokenContract = buildTokenContract(
+      poolId,
+      getWeb3(this.currentNetwork)
+    );
 
     const requestAtParticularBlock = typeof blockHeight !== undefined;
 
@@ -3255,7 +3351,8 @@ export class EthBancorModule
           v2PoolBalanceShape(
             relay.contract,
             reserveOne.contract,
-            reserveTwo.contract
+            reserveTwo.contract,
+            this.currentNetwork
           )
         ]
       ]
@@ -3339,7 +3436,10 @@ export class EthBancorModule
       .div(sameReserve.stakedBalance)
       .toNumber();
 
-    const v2Converter = buildV2Converter(relay.contract);
+    const v2Converter = buildV2Converter(
+      relay.contract,
+      getWeb3(this.currentNetwork)
+    );
     const maxStakingEnabled = await v2Converter.methods
       .maxStakedBalanceEnabled()
       .call();
@@ -3387,7 +3487,8 @@ export class EthBancorModule
     if (!isValidAddress)
       throw new Error(`${tokenAddress} is not a valid address`);
     const contract = buildLiquidityProtectionStoreContract(
-      this.contracts.LiquidityProtectionStore
+      this.contracts.LiquidityProtectionStore,
+      getWeb3(this.currentNetwork)
     );
     return contract.methods.systemBalance(tokenAddress).call();
   }
@@ -3544,11 +3645,11 @@ export class EthBancorModule
     const owner = this.isAuthenticated;
 
     const knownDecimalShapes = knownDecimals.map(address =>
-      slimBalanceShape(address, owner)
+      slimBalanceShape(address, owner, this.currentNetwork)
     );
 
     const unknownDecimalShapes = unknownDecimals.map(address =>
-      balanceShape(address, owner)
+      balanceShape(address, owner, this.currentNetwork)
     );
 
     try {
@@ -3734,7 +3835,10 @@ export class EthBancorModule
     poolTokenWei: string;
     poolTokenContract: string;
   }) {
-    const v2Converter = buildV2Converter(converterAddress);
+    const v2Converter = buildV2Converter(
+      converterAddress,
+      getWeb3(this.currentNetwork)
+    );
 
     const res = await v2Converter.methods
       .removeLiquidityReturnAndFee(poolTokenContract, poolTokenWei)
@@ -3769,7 +3873,10 @@ export class EthBancorModule
       })
     );
 
-    const v2Converter = buildV2Converter(relay.contract);
+    const v2Converter = buildV2Converter(
+      relay.contract,
+      getWeb3(this.currentNetwork)
+    );
     const data = await Promise.all(
       poolTokenBalances.map(async poolTokenBalance => {
         const poolTokenBalanceWei = expandToken(
@@ -3777,12 +3884,14 @@ export class EthBancorModule
           poolTokenBalance.poolToken.decimals
         );
 
-        const maxWithdrawWei = (await v2Converter.methods
-          .removeLiquidityReturnAndFee(
-            poolTokenBalance.poolToken.contract,
-            poolTokenBalanceWei
-          )
-          .call())[0];
+        const maxWithdrawWei = (
+          await v2Converter.methods
+            .removeLiquidityReturnAndFee(
+              poolTokenBalance.poolToken.contract,
+              poolTokenBalanceWei
+            )
+            .call()
+        )[0];
 
         return {
           ...poolTokenBalance,
@@ -3825,7 +3934,10 @@ export class EthBancorModule
   }
 
   @action async getTokenSupply(tokenAddress: string) {
-    const contract = buildTokenContract(tokenAddress);
+    const contract = buildTokenContract(
+      tokenAddress,
+      getWeb3(this.currentNetwork)
+    );
     return contract.methods.totalSupply().call();
   }
 
@@ -3934,7 +4046,8 @@ export class EthBancorModule
       }),
       liquidationLimit({
         converterContract: relay.contract,
-        poolTokenAddress: sameReserve.poolToken.poolToken.contract
+        poolTokenAddress: sameReserve.poolToken.poolToken.contract,
+        network: this.currentNetwork
       })
     ]);
 
@@ -4249,7 +4362,7 @@ export class EthBancorModule
         .on("transactionHash", (hash: string) => {
           txHash = hash;
         })
-        .on("confirmation", (confirmationNumber: number) => {
+        .on("confirmation", () => {
           resolve(txHash);
         })
         .on("error", (error: any) => reject(error));
@@ -4577,8 +4690,8 @@ export class EthBancorModule
   }
 
   @action async spamBalances(tokenAddresses: string[]) {
-    for (var i = 0; i < 5; i++) {
-      await this.fetchTokenBalances(tokenAddresses);
+    for (let i = 0; i < 5; i++) {
+      await this.fetchAndSetTokenBalances(tokenAddresses);
       await wait(1500);
     }
   }
@@ -4745,12 +4858,18 @@ export class EthBancorModule
     converterAddress: string;
     reserveTokenAddress: string;
   }): Promise<string> {
-    const contract = buildV2Converter(converterAddress);
+    const contract = buildV2Converter(
+      converterAddress,
+      getWeb3(this.currentNetwork)
+    );
     return contract.methods.reserveStakedBalance(reserveTokenAddress).call();
   }
 
   @action async fetchV2ConverterReserveWeights(converterAddress: string) {
-    const contract = buildV2Converter(converterAddress);
+    const contract = buildV2Converter(
+      converterAddress,
+      getWeb3(this.currentNetwork)
+    );
     const weights = await contract.methods.effectiveReserveWeights().call();
     return [weights["0"], weights["1"]];
   }
@@ -4766,7 +4885,8 @@ export class EthBancorModule
   @action async relaysContainingToken(tokenId: string): Promise<string[]> {
     return getConvertibleTokenAnchors({
       converterRegistryAddress: this.contracts.BancorConverterRegistry,
-      tokenAddress: tokenId
+      tokenAddress: tokenId,
+      network: this.currentNetwork
     });
   }
 
@@ -4815,7 +4935,12 @@ export class EthBancorModule
     to: string;
     networkContractAddress: string;
   }) {
-    return conversionPath({ networkContractAddress, from, to });
+    return conversionPath({
+      networkContractAddress,
+      from,
+      to,
+      network: this.currentNetwork
+    });
   }
 
   @action async relaysRequiredForTrade({
@@ -4929,17 +5054,22 @@ export class EthBancorModule
     ) as ChainLinkRelay[];
 
     const v1RelayShapes = v1Relays.map(relay =>
-      reserveBalanceShape(relay.contract, relay.reserves.map(r => r.contract))
+      reserveBalanceShape(
+        relay.contract,
+        relay.reserves.map(r => r.contract),
+        this.currentNetwork
+      )
     );
     const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
       v2PoolBalanceShape(
         relay.contract,
         relay.reserves[0].contract,
-        relay.reserves[1].contract
+        relay.reserves[1].contract,
+        this.currentNetwork
       )
     );
 
-    const [v1RelayBalances, v2RelayBalances] = await this.multi({
+    await this.multi({
       groupsOfShapes: [v1RelayShapes, v2RelayPoolBalanceShapes]
     });
   }
@@ -5068,13 +5198,18 @@ export class EthBancorModule
       groupsOfShapes: [
         tokenAddressesMissing.map(tokenShape),
         verifiedV1Pools.map(v1Pool =>
-          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
+          reserveBalanceShape(
+            v1Pool.converterAddress,
+            v1Pool.reserves,
+            this.currentNetwork
+          )
         ),
         verifiedV2Pools.map(pool =>
           v2PoolBalanceShape(
             pool.converterAddress,
             pool.reserves[0],
-            pool.reserves[1]
+            pool.reserves[1],
+            this.currentNetwork
           )
         )
       ],
@@ -5388,7 +5523,7 @@ export class EthBancorModule
       );
 
     const conversionEvents = res.conversions
-      .filter((event, index) => {
+      .filter(event => {
         const res = tokenAddressesInEvent(event).every(address =>
           tokens.some(token => compareString(token.id, address))
         );
@@ -5428,7 +5563,10 @@ export class EthBancorModule
   }) {
     const res = await getLogs(network, networkContract, fromBlock);
 
-    const uniqTxHashes = uniqWith(res.map(x => x.txHash), compareString);
+    const uniqTxHashes = uniqWith(
+      res.map(x => x.txHash),
+      compareString
+    );
 
     const groups = uniqTxHashes.map(hash =>
       res.filter(x => compareString(x.txHash, hash))
@@ -5498,33 +5636,47 @@ export class EthBancorModule
       const trades = singleTrades.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
-      const decFee = relay.fee / 100;
-      const accumulatedFees = trades.reduce((acc, item) => {
-        const currentTally = findOrThrow(acc, balance =>
-          compareString(balance.id, item.data.to.address)
-        );
-        const exitingAmount = new BigNumber(item.data.to.weiAmount);
+      const currentFee = relay.fee / 100;
+      const accumulatedFees = trades.reduce(
+        (acc, item) => {
+          const currentTally = findOrThrow(acc, balance =>
+            compareString(balance.id, item.data.to.address)
+          );
+          const exitingAmount = new BigNumber(item.data.to.weiAmount);
 
-        const feeLessMag = 1 - decFee;
-        const feeLessAmount = exitingAmount.times(feeLessMag);
-        const feePaid = exitingAmount.minus(feeLessAmount);
+          const decFee =
+            findPreviousPoolFee(
+              previousPoolFees,
+              Number(item.blockNumber),
+              relay.id
+            ) || currentFee;
 
-        const newTotalAmount = new BigNumber(
-          currentTally.collectedFees.plus(feePaid).toFixed(0)
-        );
-        const newTotalVolume = new BigNumber(exitingAmount).plus(
-          currentTally.totalVolume
-        );
-        return updateArray(
-          acc,
-          reserve => compareString(reserve.id, currentTally.id),
-          reserve => ({
-            ...reserve,
-            collectedFees: newTotalAmount,
-            totalVolume: newTotalVolume
-          })
-        );
-      }, relay.reserves.map(reserve => ({ id: reserve.contract, collectedFees: new BigNumber(0), totalVolume: new BigNumber(0) })));
+          const feeLessMag = 1 - decFee;
+          const feeLessAmount = exitingAmount.times(feeLessMag);
+          const feePaid = exitingAmount.minus(feeLessAmount);
+
+          const newTotalAmount = new BigNumber(
+            currentTally.collectedFees.plus(feePaid).toFixed(0)
+          );
+          const newTotalVolume = new BigNumber(exitingAmount).plus(
+            currentTally.totalVolume
+          );
+          return updateArray(
+            acc,
+            reserve => compareString(reserve.id, currentTally.id),
+            reserve => ({
+              ...reserve,
+              collectedFees: newTotalAmount,
+              totalVolume: newTotalVolume
+            })
+          );
+        },
+        relay.reserves.map(reserve => ({
+          id: reserve.contract,
+          collectedFees: new BigNumber(0),
+          totalVolume: new BigNumber(0)
+        }))
+      );
 
       return {
         relay,
@@ -5627,7 +5779,9 @@ export class EthBancorModule
   }
 
   @action async blockNumberHoursAgo(hours: number) {
-    const currentBlock = await web3.eth.getBlockNumber();
+    const currentBlock = await getWeb3(
+      this.currentNetwork
+    ).eth.getBlockNumber();
     const secondsPerBlock = 13.3;
     const secondsToRewind = moment.duration(hours, "hours").asSeconds();
     const blocksToRewind = parseInt(
@@ -5719,6 +5873,11 @@ export class EthBancorModule
     );
 
     networkVersion$.pipe(switchMap(getTokenMeta)).subscribe(this.setTokenMeta);
+    this.warmEthApi()
+      .then(tokens => {
+        bancorApiTokens = tokens;
+      })
+      .catch(() => {});
 
     networkVersion$
       .pipe(
@@ -5733,6 +5892,10 @@ export class EthBancorModule
 
     this.fetchUsdPriceOfBnt();
 
+    console.time("FirstPromise");
+
+    this.fetchUsdPriceOfBnt();
+
     const currentBlock$ = from(web3.eth.getBlockNumber()).pipe(
       map(block => [moment().unix(), block]),
       shareReplay(1)
@@ -5742,12 +5905,6 @@ export class EthBancorModule
       map(getNetworkVariables),
       shareReplay(1)
     );
-
-    this.warmEthApi()
-      .then(tokens => {
-        bancorApiTokens = tokens;
-      })
-      .catch(_ => {});
 
     interface DataCache<T> {
       allEmissions: T[];
@@ -5862,7 +6019,12 @@ export class EthBancorModule
       .subscribe(this.setWhiteListedPools);
 
     const anchors$ = bancorConverterRegistry$.pipe(
-      switchMap(this.fetchAnchorAddresses),
+      switchMap(converterRegistryAddress =>
+        this.fetchAnchorAddresses({
+          converterRegistryAddress,
+          network: this.currentNetwork
+        })
+      ),
       shareReplay(1)
     );
 
@@ -5889,7 +6051,8 @@ export class EthBancorModule
         (async () => {
           const converters = await getConvertersByAnchors({
             anchorAddresses,
-            converterRegistryAddress
+            converterRegistryAddress,
+            network: this.currentNetwork
           });
           return zipAnchorAndConverters(anchorAddresses, converters);
         })()
@@ -5929,8 +6092,11 @@ export class EthBancorModule
       shareReplay(1)
     );
 
-    combineLatest([authenticated$, liquidityProtectionStore$]).subscribe(
-      ([_, storeAddress]) => this.fetchProtectionPositions(storeAddress)
+    combineLatest([
+      authenticated$,
+      liquidityProtectionStore$
+    ]).subscribe(([_, storeAddress]) =>
+      this.fetchProtectionPositions(storeAddress)
     );
 
     try {
@@ -6069,19 +6235,24 @@ export class EthBancorModule
       pool => !this.poolAprs.some(apr => compareString(pool.id, apr.poolId))
     );
 
-    const currentBlock = await web3.eth.getBlockNumber();
+    const currentBlock = await getWeb3(
+      this.currentNetwork
+    ).eth.getBlockNumber();
     const weekAgo = rewindBlocksByDays(currentBlock, 7);
 
     const reservesShapes = poolsToCalculate.map(pool =>
       reserveBalanceShape(
         pool.contract,
-        pool.reserves.map(reserve => reserve.contract)
+        pool.reserves.map(reserve => reserve.contract),
+        this.currentNetwork
       )
     );
 
     const [tokenSupplys, reserveBalances] = ((await this.multi({
       groupsOfShapes: [
-        poolsToCalculate.map(pool => tokenSupplyShape(pool.id)),
+        poolsToCalculate.map(pool =>
+          tokenSupplyShape(pool.id, this.currentNetwork)
+        ),
         reservesShapes
       ],
       blockHeight: weekAgo
@@ -6139,7 +6310,8 @@ export class EthBancorModule
               weiAmount: reserves.reserveTwo
             }
           ],
-          poolTokenSupply
+          poolTokenSupply,
+          this.currentNetwork
         );
       });
 
@@ -6259,8 +6431,9 @@ export class EthBancorModule
       this.fetchTokenBalances(withoutEth),
       (async () => {
         if (!includesEth) return;
-        const weiBalance = await web3.eth.getBalance(this
-          .isAuthenticated as string);
+        const weiBalance = await web3.eth.getBalance(
+          this.isAuthenticated as string
+        );
         return fromWei(weiBalance);
       })()
     ]);
@@ -6280,12 +6453,19 @@ export class EthBancorModule
   ) {
     return getConvertersByAnchors({
       anchorAddresses,
-      converterRegistryAddress: this.contracts.BancorConverterRegistry
+      converterRegistryAddress: this.contracts.BancorConverterRegistry,
+      network: this.currentNetwork
     });
   }
 
-  @action async fetchAnchorAddresses(converterRegistryAddress: string) {
-    return getAnchors(converterRegistryAddress);
+  @action async fetchAnchorAddresses({
+    converterRegistryAddress,
+    network
+  }: {
+    converterRegistryAddress: string;
+    network: EthNetworks;
+  }) {
+    return getAnchors(converterRegistryAddress, network);
   }
 
   @mutation updateRelays(relays: Relay[]) {
@@ -6407,7 +6587,10 @@ export class EthBancorModule
   }
 
   @action async mintEthErcIfRequired(decString: string) {
-    const contract = buildTokenContract(ethErc20WrapperContract);
+    const contract = buildTokenContract(
+      ethErc20WrapperContract,
+      getWeb3(this.currentNetwork)
+    );
     const currentBalance = await contract.methods
       .balanceOf(this.isAuthenticated as string)
       .call();
@@ -6619,7 +6802,8 @@ export class EthBancorModule
     return getReturnByPath({
       networkContract: this.contracts.BancorNetwork,
       path,
-      amount
+      amount,
+      network: this.currentNetwork
     });
   }
 
@@ -6630,7 +6814,10 @@ export class EthBancorModule
       .find(reserve => compareString(reserve.contract, tokenAddress));
     if (!reserve) {
       try {
-        const contract = buildTokenContract(tokenAddress);
+        const contract = buildTokenContract(
+          tokenAddress,
+          getWeb3(this.currentNetwork)
+        );
         const decimals = await contract.methods.decimals().call();
         return Number(decimals);
       } catch (e) {
@@ -6652,13 +6839,14 @@ export class EthBancorModule
     outputs: ViewAmountDetail[];
     expectedValue: ViewAmountDetail;
   }> {
-    const [pool, posId] = id.split(":");
+    const [, posId] = id.split(":");
     const ppm = new BigNumber(decPercent).times(oneMillion).toString();
     const res = await getRemoveLiquidityReturn(
       this.contracts.LiquidityProtection,
       posId,
       ppm,
-      moment().unix()
+      moment().unix(),
+      this.currentNetwork
     );
 
     const position = findOrThrow(
@@ -6666,7 +6854,7 @@ export class EthBancorModule
       pos => compareString(pos.id, posId),
       "failed finding protected position"
     );
-    const { reserveToken, reserveAmount } = position;
+    const { reserveToken } = position;
 
     const reserveTokenObj = findOrThrow(
       this.relaysList.flatMap(r => r.reserves),
@@ -6742,7 +6930,10 @@ export class EthBancorModule
 
       let slippage: number | undefined;
       try {
-        const contract = buildConverterContract(relays[0].contract);
+        const contract = buildConverterContract(
+          relays[0].contract,
+          getWeb3(this.currentNetwork)
+        );
         const fromReserveBalanceWei = await contract.methods
           .getConnectorBalance(fromTokenContract)
           .call();

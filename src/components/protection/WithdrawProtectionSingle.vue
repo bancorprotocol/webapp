@@ -88,12 +88,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import {
-  TxResponse,
-  ViewAmount,
-  ViewAmountDetail,
-  ViewRelay
-} from "@/types/bancor";
+import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -104,10 +99,6 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
-
-interface ViewAmountUsd extends ViewAmount {
-  usdValue: number;
-}
 
 @Component({
   components: {
@@ -151,8 +142,6 @@ export default class WithdrawProtectionSingle extends Vue {
   }
 
   get position() {
-    const [poolId, first, second] = this.$route.params.id.split(":");
-
     const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
       compareString(position.id, this.$route.params.id)
     );

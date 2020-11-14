@@ -1,4 +1,5 @@
 import { DryRelay } from "@/api/eos/eosBancorCalc";
+import { compareString } from "@/api/helpers";
 import { Sym } from "eos-common";
 
 const bntToken = {
@@ -1591,3 +1592,29 @@ export const knownV2Anchors = [
   "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
   "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237"
 ];
+export interface PreviousPoolFee {
+  oldDecFee: number;
+  blockNumber: number;
+  id: string;
+}
+
+export const previousPoolFees: PreviousPoolFee[] = [
+  {
+    oldDecFee: 0.01,
+    blockNumber: 11248504,
+    id: "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5"
+  }
+];
+
+export const findPreviousPoolFee = (
+  previousPoolFees: PreviousPoolFee[],
+  blockNumber: number,
+  relayId: string
+) => {
+  const previousFee = previousPoolFees.find(
+    poolFee =>
+      compareString(relayId, poolFee.id) && blockNumber < poolFee.blockNumber
+  );
+  const res = previousFee && previousFee.oldDecFee;
+  return res;
+};

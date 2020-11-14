@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Line, mixins } from "vue-chartjs-typescript";
-import { Component, Vue, Watch, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-property-decorator";
 
 const { reactiveProp } = mixins;
 

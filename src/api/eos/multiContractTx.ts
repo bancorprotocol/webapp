@@ -1,14 +1,7 @@
 import { vxm } from "@/store/";
-import { multiContractAction, SemiAction } from "../../contracts/multi";
+import { multiContractAction, SemiAction } from "@/contracts/multi";
 import { TokenAmount } from "@/api/eos/eosBancorCalc";
 import { Asset } from "eos-common";
-
-interface Action {
-  account: string;
-  name: string;
-  data: any;
-  authorization: Auth[];
-}
 
 type TxResponse = any;
 
@@ -18,8 +11,6 @@ interface Auth {
 }
 
 type GetAuth = () => Auth[];
-
-type TriggerTx = (actions: Action[]) => Promise<TxResponse>;
 
 class MultiContractTx {
   contractName: string;
@@ -143,14 +134,6 @@ class MultiContractTx {
       enabled
     ) as SemiAction;
     return action;
-  }
-
-  enableConversion(symbolCode: string, enabled: boolean): Promise<TxResponse> {
-    const action = this.enableConversionAction(
-      symbolCode,
-      enabled
-    ) as SemiAction;
-    return this.tx([action]);
   }
 
   createRelay(symbol: string, initialSupply: number): Promise<TxResponse> {

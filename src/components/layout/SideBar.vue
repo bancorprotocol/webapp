@@ -2,30 +2,39 @@
   <div class="bar-container">
     <side-bar-left
       class="d-none d-md-flex"
-      :darkMode="darkMode"
+      :dark-mode="darkMode"
       :data="dataObject"
-      @sideLinkClicked="sideLinkClicked"
+      @linkClicked="navigateToRoute"
     />
     <side-bar-bottom
       class="d-md-none"
-      :darkMode="darkMode"
+      :dark-mode="darkMode"
       :data="dataObject"
-      @sideLinkClicked="sideLinkClicked"
+      @linkClicked="navigateToRoute"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, Emit, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
+
+export interface ViewSideBarLink {
+  route: string;
+  key: string;
+  label: string;
+  newTab: boolean;
+  hideMobile: boolean;
+  svgName: string;
+}
 @Component({
   components: { SideBarBottom, SideBarLeft }
 })
 export default class SideBar extends Vue {
   selectedLink = "swap";
-  links = [
+  links: ViewSideBarLink[] = [
     {
       route: "DataSummary",
       key: "data",
@@ -93,35 +102,20 @@ export default class SideBar extends Vue {
   async created() {
     this.onRouteChange();
   }
-  detectSubdomain() {
-    const hostname = window.location.hostname;
-    const splitted = hostname.split(".");
-    const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
-    console.log(withoutStaging, "is without staging");
-    const subDomain = withoutStaging[0];
-    if (subDomain == "localhost") return;
-    if (subDomain == "data") {
-      this.selectedLink = "data";
-    } else if (subDomain == "swap") {
-      this.selectedLink = "swap";
-    }
-  }
 
-  openUrl(url: string) {
+  openNewTab(url: string) {
     window.open(url, "_blank");
   }
   get darkMode() {
     return vxm.general.darkMode;
   }
 
-  sideLinkClicked(newSelected: string) {
-    if (this.selectedLink == newSelected) return;
-    const link = this.links.find(x => x.key === newSelected);
-    if (link && !link.newTab) {
+  navigateToRoute(link: ViewSideBarLink) {
+    if (!link.newTab) {
       this.$router.push({ name: link.route });
-      this.selectedLink = newSelected;
-    } else if (link) {
-      this.openUrl(link.route);
+      this.selectedLink = link.route;
+    } else {
+      this.openNewTab(link.route);
     }
   }
 

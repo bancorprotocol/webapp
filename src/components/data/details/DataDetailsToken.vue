@@ -121,7 +121,6 @@ export interface TxHistoryView {
   }
 })
 export default class DataDetailsToken extends Vue {
-  loadingFocusPool = false;
   searchTx = "";
   searchTokens = "";
 
@@ -182,17 +181,6 @@ export default class DataDetailsToken extends Vue {
 
   get txItemsSwap() {
     return this.txHistory.conversionEvents;
-  }
-
-  async loadFocusPool() {
-    this.loadingFocusPool = true;
-    try {
-      this.txHistory = await vxm.bancor.focusSymbol(this.token.symbol);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      this.loadingFocusPool = false;
-    }
   }
 
   async created() {

@@ -47,13 +47,12 @@
 import { Component, Prop, Vue, Emit } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
-import {vxm} from "@/store";
-import {prettifyNumber} from "@/api/helpers";
-import {ViewRelay} from "@/types/bancor";
+import { vxm } from "@/store";
+import { prettifyNumber } from "@/api/helpers";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 
 @Component({
-  components: {LabelContentSplit, GrayBorderBlock, MainButton }
+  components: { LabelContentSplit, GrayBorderBlock, MainButton }
 })
 export default class StakeButtons extends Vue {
   @Prop({ default: false }) showAddLiquidity!: boolean;
@@ -63,7 +62,7 @@ export default class StakeButtons extends Vue {
   loadingMaxStakes = false;
 
   get poolId(): string | null {
-    return this.$route.params.id ?? null
+    return this.$route.params.id ?? null;
   }
 
   get stakeOptions() {
@@ -104,13 +103,15 @@ export default class StakeButtons extends Vue {
   }
 
   async loadMaxStakes() {
-    if (this.loadingMaxStakes || !this.poolId) return
+    if (this.loadingMaxStakes || !this.poolId) return;
     this.loadingMaxStakes = true;
     try {
       const result = await vxm.ethBancor.getMaxStakesView({
         poolId: this.poolId
       });
-      this.maxStakes = result.map(x => { return `${prettifyNumber(x.amount)} ${x.token}` })
+      this.maxStakes = result.map(x => {
+        return `${prettifyNumber(x.amount)} ${x.token}`;
+      });
     } catch (e) {
       console.log(e);
     } finally {
@@ -119,11 +120,11 @@ export default class StakeButtons extends Vue {
   }
 
   async created() {
-    await this.loadMaxStakes()
+    await this.loadMaxStakes();
   }
 
   get darkMode() {
-    return vxm.general.darkMode
+    return vxm.general.darkMode;
   }
 
   @Emit("click")

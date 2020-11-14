@@ -2,12 +2,13 @@
   <div class="bottom-bar" :class="darkMode ? 'side-bar-dark' : ''">
     <div class="side-bar-links">
       <div
+        @click="linkClicked(link)"
         v-for="link in data.links.filter(l => !l.hideMobile)"
         :key="link.key"
-        @click="sideLinkClicked(link.key)"
+        :to="{ name: link.route }"
         class="side-bar-link"
         :class="[
-          $route.name === link.route
+          isRouteActive(link.key)
             ? darkMode
               ? 'clicked-link-dark'
               : 'clicked-link'
@@ -28,16 +29,29 @@
 
 <script lang="ts">
 import { Prop, Component, Vue, Emit } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarBottom extends Vue {
   @Prop() data!: any;
   @Prop() darkMode!: boolean;
 
-  @Emit("sideLinkClicked")
-  sideLinkClicked(key: string) {
-    return key;
+  isRouteActive(key: string): boolean {
+    const fullPath = this.$route.fullPath;
+    if (fullPath.includes("swap") || fullPath.includes("pool")) {
+      return key === "swap";
+    } else if (fullPath.includes("data")) {
+      return key === "data";
+    } else if (fullPath.includes("protection")) {
+      return key === "liquidity";
+    } else if (fullPath.includes("vote")) {
+      return key === "vote";
+    } else return false;
+  }
+
+  @Emit("linkClicked")
+  linkClicked(link: ViewSideBarLink) {
+    return link;
   }
 }
 </script>

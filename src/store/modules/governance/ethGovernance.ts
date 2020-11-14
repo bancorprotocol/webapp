@@ -7,12 +7,12 @@ import {
 } from "@/api/eth/contractTypes";
 import { CallReturn } from "eth-multicall";
 import { ContractSendMethod } from "web3-eth-contract";
-// @ts-ignore
-import ipfsHttpClient from "ipfs-http-client/dist/index.min.js";
+import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
 import { EthNetworks, web3 } from "@/api/helpers";
 import { getNetworkVariables } from "@/store/config";
+import { getWeb3 } from "@/api/web3";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
@@ -171,8 +171,10 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action
   async init() {
+    const w3 = getWeb3(await this.getNetwork());
     const governanceContract: Governance = buildGovernanceContract(
-      await this.getGovernanceContractAddress()
+      await this.getGovernanceContractAddress(),
+      w3
     );
 
     const tokenAddress = await governanceContract.methods.govToken().call();
@@ -180,7 +182,7 @@ export class EthereumGovernance extends VuexModule.With({
 
     await this.setContracts({
       governance: governanceContract,
-      token: buildTokenContract(tokenAddress)
+      token: buildTokenContract(tokenAddress, w3)
     });
   }
 
@@ -305,8 +307,14 @@ export class EthereumGovernance extends VuexModule.With({
     console.log("staking", amount);
     console.log("allowance", allowance);
 
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+
     if (Number(allowance) < Number(amount)) {
-      await this.tokenContract.methods
+      const tokenAddress = await txContract.methods.govToken().call();
+      const tokenContract = buildTokenContract(tokenAddress);
+      await tokenContract.methods
         .approve(await this.getGovernanceContractAddress(), amount.toString())
         .send({
           from: account
@@ -315,7 +323,7 @@ export class EthereumGovernance extends VuexModule.With({
       this.setLastTransaction(Date.now());
     }
 
-    await this.governanceContract.methods.stake(amount.toString()).send({
+    await txContract.methods.stake(amount.toString()).send({
       from: account
     });
 
@@ -335,7 +343,10 @@ export class EthereumGovernance extends VuexModule.With({
     if (!account || !amount)
       throw new Error("Cannot unstake without address or amount");
 
-    await this.governanceContract.methods.unstake(amount.toString()).send({
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.unstake(amount.toString()).send({
       from: account
     });
 
@@ -357,7 +368,10 @@ export class EthereumGovernance extends VuexModule.With({
     if (!executor || !hash || !account)
       throw new Error("Cannot propose without execturo and hash");
 
-    await this.governanceContract.methods.propose(executor, hash).send({
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.propose(executor, hash).send({
       from: account
     });
 
@@ -377,7 +391,10 @@ export class EthereumGovernance extends VuexModule.With({
     if (!account || !proposalId)
       throw new Error("Cannot vote for without address or proposal id");
 
-    await this.governanceContract.methods.voteFor(proposalId.toString()).send({
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.voteFor(proposalId.toString()).send({
       from: account
     });
 
@@ -397,11 +414,12 @@ export class EthereumGovernance extends VuexModule.With({
     if (!account || !proposalId)
       throw new Error("Cannot vote against without address or proposal id");
 
-    await this.governanceContract.methods
-      .voteAgainst(proposalId.toString())
-      .send({
-        from: account
-      });
+    const txContract = buildGovernanceContract(
+      await this.getGovernanceContractAddress()
+    );
+    await txContract.methods.voteAgainst(proposalId.toString()).send({
+      from: account
+    });
 
     this.setLastTransaction(Date.now());
 
@@ -532,7 +550,7 @@ export class EthereumGovernance extends VuexModule.With({
       return this.metaDataCache[hash];
     }
 
-    const ipfs = ipfsHttpClient(ipfsUrl);
+    const ipfs = IpfsHttpClient({ url: ipfsUrl });
 
     let metadata;
 
@@ -571,7 +589,7 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     proposalMetaData: ProposalMetaData;
   }): Promise<string> {
-    const ipfs = ipfsHttpClient(ipfsUrl);
+    const ipfs = IpfsHttpClient({ url: ipfsUrl });
 
     const { path } = await ipfs.add(
       Buffer.from(JSON.stringify(proposalMetaData, null, 2))
