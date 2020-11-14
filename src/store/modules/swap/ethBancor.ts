@@ -2021,7 +2021,7 @@ export class EthBancorModule
             .times(decPercent + 0.01)
             .toFixed(0);
       await this.triggerApprovalIfRequired({
-        owner: this.isAuthenticated,
+        owner: this.isAuthenticated as string,
         spender: liquidityProtectionContract,
         amount: weiApprovalAmount,
         tokenAddress: this.liquidityProtectionSettings.govToken
@@ -6124,7 +6124,6 @@ export class EthBancorModule
     sync: ConverterAndAnchor[];
     async: ConverterAndAnchor[];
   }) {
-    console.log({ sync, async });
     const passedAsyncPools = async.filter(notBadRelay);
     const passedSyncPools = sync.filter(notBadRelay);
 
@@ -6153,43 +6152,10 @@ export class EthBancorModule
 
     const allASyncChunks = [...quickChunks, slowLoadAnchorSets];
 
-    (async () => {
-      try {
-        const tokenAddresses = await Promise.all(
-          allASyncChunks.map(this.addPoolsBulk)
-        );
-        const uniqueTokenAddreses = uniqWith(
-          tokenAddresses
-            .filter(Boolean)
-            .filter(x => Array.isArray(x) && x.length > 0)
-            .flat(1) as string[],
-          compareString
-        );
-        if (this.isAuthenticated) {
-          this.fetchAndSetTokenBalances(uniqueTokenAddreses);
-        }
-        this.addAprsToPools();
-        this.setLoadingPools(false);
-      } catch (e) {
-        console.log("Failed loading pools");
-        this.setLoadingPools(false);
-      }
-    })();
-
-    console.log("are the passed synced", {
-      async,
-      sync,
-      passedSyncPools,
-      passedAsyncPools
+    return new Promise(resolve => {
+      this.doThing([passedSyncPools]).then(resolve);
+      this.doThing(allASyncChunks);
     });
-    const timeBefore = Date.now();
-    const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
-    const timeAfter = Date.now();
-    console.log("loading time of", timeAfter - timeBefore, passedSyncPools);
-    if (this.isAuthenticated) {
-      this.fetchAndSetTokenBalances(uniqWith(tokenAddresses, compareString));
-    }
-    this.addAprsToPools();
   }
 
   @action async doThing(allASyncChunks: ConverterAndAnchor[][]) {
@@ -6207,10 +6173,6 @@ export class EthBancorModule
       this.fetchAndSetTokenBalances(uniqueTokenAddreses);
     }
     this.addAprsToPools();
-    this.setLoadingPools(false);
-  }
-  catch(e) {
-    console.log("Failed loading pools");
     this.setLoadingPools(false);
   }
 
@@ -6397,6 +6359,14 @@ export class EthBancorModule
     const tokenAddresses = pools
       .flatMap(tokensInRelay)
       .map(token => token.contract);
+
+      console.log(
+        "bulkGotResolved",
+        convertersAndAnchors.length,
+        "at",
+        parseInt(String(Date.now() / 1000)),
+        Date.now()
+      );
 
     return tokenAddresses;
   }
