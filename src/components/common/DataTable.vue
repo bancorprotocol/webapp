@@ -79,17 +79,21 @@ export interface Item {
 export default class DataTable extends Vue {
   @Prop() fields!: ViewTableField[];
   @Prop() items!: Item[];
-  @Prop() filter!: string;
-  @Prop() filterBy!: string;
-  @Prop() defaultSort!: string;
+  @Prop() filter?: string;
+  @Prop() filterBy?: string;
+  @Prop() defaultSort?: string;
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
   @Prop() filterFunction?: Function;
 
-  sortBy: string = this.defaultSort;
+  sortBy: string = ''
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
+
+  created() {
+    this.sortBy = this.defaultSort ? this.defaultSort : '';
+  }
 
   get modifiedItems() {
     let filtered = [];
@@ -97,20 +101,26 @@ export default class DataTable extends Vue {
     const filter = this.filter;
     const filterBy = this.filterBy;
     const filterFunction = this.filterFunction;
+    const sortBy = this.sortBy
 
     if (filterFunction !== undefined) {
       filtered = items.filter((t: any) => filterFunction(t, filter));
-    } else {
+    } else if (filter && filterBy) {
       filtered = items.filter(
         (t: any) =>
           t[filterBy] &&
           t[filterBy].toUpperCase().includes(filter.toUpperCase())
       );
+    } else {
+      filtered = items
     }
 
-    return sort(filtered)[this.descOrder ? "desc" : "asc"](
-      (t: any) => t[this.sortBy]
-    );
+    if (sortBy) {
+      return sort(filtered)[this.descOrder ? "desc" : "asc"](
+          (t: any) => t[sortBy]
+      )
+    }
+    else return filtered
   }
 
   get paginatedItems() {
