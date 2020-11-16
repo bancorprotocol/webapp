@@ -71,18 +71,6 @@
           title="Pool Tokens"
           :search.sync="searchTokens"
         >
-          <table-wrapper
-            primarykey="reserveId"
-            :items="poolTokensTable.items"
-            :fields="poolTokensTable.fields"
-            :filter="searchTokens"
-            :filter-function="doFilter"
-            sort-by="reserveWeight"
-          >
-            <template #cell(symbol)="data">
-              <pool-logos :token="data.item" :cursor="false" />
-            </template>
-          </table-wrapper>
         </content-block>
       </b-col>
 
@@ -116,7 +104,6 @@ import MainButton from "@/components/common/Button.vue";
 import { buildPoolName, formatNumber, shortenEthAddress } from "@/api/helpers";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import VersionBadge from "@/components/common/VersionBadge.vue";
-import TableWrapper from "@/components/common/TableWrapper.vue";
 import numeral from "numeral";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
@@ -130,7 +117,6 @@ export interface TxHistoryView {
   components: {
     ActionButtons,
     TableTransactions,
-    TableWrapper,
     VersionBadge,
     PoolLogosOverlapped,
     TransactionTables,
