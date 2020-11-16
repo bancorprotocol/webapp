@@ -400,6 +400,11 @@ export const previousPoolFees: PreviousPoolFee[] = [
     oldDecFee: 0.01,
     blockNumber: 11248504,
     id: "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5"
+  },
+  {
+    oldDecFee: 0.01,
+    blockNumber: 11268926,
+    id: "0x04D0231162b4784b706908c787CE32bD075db9b7"
   }
 ];
 
