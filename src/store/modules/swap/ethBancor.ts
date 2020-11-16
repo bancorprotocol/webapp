@@ -546,6 +546,9 @@ interface RefinedAbiRelay {
 const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
+const ppmToDec = (ppm: number | string): number =>
+  new BigNumber(ppm).dividedBy(oneMillion).toNumber();
+
 const determineConverterType = (
   converterType: string | undefined
 ): PoolType => {
@@ -566,14 +569,13 @@ const determineConverterType = (
 const getHistoricFees = async (
   id: string,
   converterAddress: string,
-  network: EthNetworks
+  network: EthNetworks,
+  blockHoursAgo: number,
+  currentBlock: number
 ): Promise<PreviousPoolFee[]> => {
   const w3 = getWeb3(network);
   const contract = buildV28ConverterContract(converterAddress, w3);
-  const { blockHoursAgo, currentBlock } = await blockNumberHoursAgo(
-    24,
-    network
-  );
+
   const history = [];
   const chunkSize = 2000;
 
@@ -591,7 +593,7 @@ const getHistoricFees = async (
     history.push(
       ...events.map(e => ({
         id,
-        oldDecFee: e.returnValues["_prevFee"] / (10000 * 100),
+        oldDecFee: ppmToDec(e.returnValues["_prevFee"]),
         blockNumber: e.blockNumber
       }))
     );
@@ -5681,7 +5683,7 @@ export class EthBancorModule
   }
 
   get previousRelayBalances() {
-    const singleTrades = this.singleTradeHistoryArr;
+    const { singleTradeHistoryArr, previousPoolFees } = this;
 
     const anchorsRecentlyTradedAgainst = uniqWith(
       this.singleTradeHistoryArr
@@ -5697,7 +5699,7 @@ export class EthBancorModule
     );
 
     const tradesCollected = relays.map(relay => {
-      const trades = singleTrades.filter(trade =>
+      const trades = singleTradeHistoryArr.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
       const currentFee = relay.fee / 100;
@@ -5710,7 +5712,7 @@ export class EthBancorModule
 
           const decFee =
             findPreviousPoolFee(
-              this.previousPoolFeesArr,
+              previousPoolFees,
               Number(item.blockNumber),
               relay.id
             ) || currentFee;
@@ -6329,15 +6331,36 @@ export class EthBancorModule
       relaysByLiqDepth.map(relay => relay.id)
     );
 
+    const chunkedRelaysList = chunk(relaysList, 5);
+    const { blockHoursAgo, currentBlock } = await blockNumberHoursAgo(
+      24,
+      this.currentNetwork
+    );
+
     const historicFees: PreviousPoolFee[] = (
       await Promise.all(
-        relaysList.map(relay =>
-          getHistoricFees(relay.id, relay.contract, this.currentNetwork)
-        )
+        chunkedRelaysList.map(async relays => {
+          const result: PreviousPoolFee[][] = [];
+          for (const relay of relays) {
+            result.push(
+              await getHistoricFees(
+                relay.id,
+                relay.contract,
+                this.currentNetwork,
+                blockHoursAgo,
+                currentBlock
+              )
+            );
+          }
+          return result.flat(1);
+        })
       )
     ).flat(1);
 
-    this.setHistoricFees([...this.previousPoolFeesArr, ...historicFees]);
+    if (historicFees.length > 0) {
+      console.log("rrrr", historicFees);
+      this.setHistoricFees([...this.previousPoolFees, ...historicFees]);
+    }
   }
 
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
@@ -6349,8 +6372,6 @@ export class EthBancorModule
 
     const allPools = [...pools];
     const allReserveFeeds = [...reserveFeeds];
-
-    void this.checkFees(allPools);
 
     const poolsFailed = differenceWith(convertersAndAnchors, allPools, (a, b) =>
       compareString(a.anchorAddress, b.id)
@@ -6367,6 +6388,8 @@ export class EthBancorModule
     const tokenAddresses = pools
       .flatMap(tokensInRelay)
       .map(token => token.contract);
+
+    void this.checkFees(allPools);
 
     return tokenAddresses;
   }
