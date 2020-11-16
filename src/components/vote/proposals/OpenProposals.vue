@@ -35,7 +35,7 @@
       default-sort="to"
       :hide-pagination="true"
     >
-      <template #cell(details)="{ item }">
+      <template #cell(name)="{ item }">
         <div class="font-size-14 font-w500">
           {{ item.name }}
         </div>
@@ -156,7 +156,7 @@
         </div>
       </template>
 
-      <template #cell(vote)="{ item }">
+      <template #cell(votes)="{ item }">
         <div class="pl-3 container-border h-100">
           <div
               v-if="!item.votes.voted && item.end > Date.now()"
@@ -334,14 +334,14 @@ export default class OpenProposals extends Vue {
       {
         id: 2,
         label: "Details",
-        key: "details",
+        key: "name",
         minWidth: "450px",
         maxWidth: "500px"
       },
       {
         id: 3,
         label: "Vote",
-        key: "vote",
+        key: "votes",
         minWidth: "300px",
         maxWidth: "300px"
       }
