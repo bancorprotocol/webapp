@@ -247,7 +247,10 @@ export const formatNumber = (num: number | string, size: number = 4) => {
   return reduced;
 };
 
-export const prettifyNumber = (num: number | string, usd = false): string => {
+export const prettifyNumber = (
+  num: number | string | BigNumber,
+  usd = false
+): string => {
   const bigNum = new BigNumber(num);
   if (usd) {
     if (bigNum.eq(0)) return "$0.00";
@@ -390,6 +393,7 @@ export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 export interface InfuraEventResponse {
   jsonrpc: string;
   id: number;
+  error: Error;
   result: RawEventResponse[];
 }
 
@@ -623,7 +627,9 @@ export const getConverterLogs = async (
   converterAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network, false);
+  // const address = getAlchemyUrl(network, false);
+  const address = getInfuraAddress(network);
+
   const LiquidityRemoved = web3.utils.sha3(
     "LiquidityRemoved(address,address,uint256,uint256,uint256)"
   ) as string;
@@ -636,7 +642,7 @@ export const getConverterLogs = async (
     "Conversion(address,address,address,uint256,uint256,int256)"
   ) as string;
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -648,9 +654,15 @@ export const getConverterLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "was the raw res");
+  const response = await axios.post<InfuraEventResponse>(address, request);
+
+  console.log(response, "was the raw res");
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
+  }
 
   const TokenRateUpdate = web3.utils.sha3(
     "TokenRateUpdate(address,address,uint256,uint256)"
@@ -661,7 +673,9 @@ export const getConverterLogs = async (
 
   const topicsToIgnore = [TokenRateUpdate, PriceDataUpdate];
 
-  const focusedTopics = res.data.result.filter(isNotTopics(topicsToIgnore));
+  const focusedTopics = response.data.result.filter(
+    isNotTopics(topicsToIgnore)
+  );
 
   const conversions = focusedTopics
     .filter(isTopic(Conversion))
@@ -682,14 +696,35 @@ export const getConverterLogs = async (
   };
 };
 
+const projectId = "da059c364a2f4e6eb89bfd89600bce07";
+
+const buildInfuraAddress = (
+  subdomain: string,
+  projectId: string,
+  wss: boolean = false
+) =>
+  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${
+    wss ? "ws/" : ""
+  }v3/${projectId}`;
+
+const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
+  if (network == EthNetworks.Mainnet) {
+    return buildInfuraAddress("mainnet", projectId, wss);
+  } else if (network == EthNetworks.Ropsten) {
+    return buildInfuraAddress("ropsten", projectId, wss);
+  }
+  throw new Error("Infura address for network not supported ");
+};
+
 export const getLogs = async (
   network: EthNetworks,
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network, false);
+  // const address = getAlchemyUrl(network, false);
+  const address = getInfuraAddress(network);
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -700,10 +735,17 @@ export const getLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "is the raw return");
-  const decoded = res.data.result.map(decodeNetworkConversionEvent);
+  const response = await axios.post<InfuraEventResponse>(address, request);
+
+  console.log(response, "is the raw return");
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
+  }
+
+  const decoded = response.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
 };

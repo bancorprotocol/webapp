@@ -1,251 +1,143 @@
 <template>
   <div>
-    <table-wrapper
-      v-if="protectedTxTable.items.length"
-      primarykey="id"
-      :items="protectedTxTable.items"
-      :fields="protectedTxTable.fields"
+    <data-table
+      v-if="protectedLiquidity.length"
+      :fields="fields"
+      :items="protectedLiquidity"
       :filter="search"
+      filter-by="stake"
       :filter-function="doFilter"
-      sort-by="insuranceStart"
+      default-sort="currentCoverageDec"
     >
-      <template #head(stake)="data">
-        {{ data.label }}
-        <font-awesome-icon
-          v-b-popover.hover.top="toolTips.stake"
-          icon="info-circle"
-        />
-      </template>
-
-      <template #head(protectedAmount)="data">
-        {{ data.label }}
-        <font-awesome-icon
-          v-b-popover.hover.top="toolTips.protectedAmount"
-          icon="info-circle"
-        />
-      </template>
-
-      <template #head(apr)="data">
-        {{ data.label }}
-        <font-awesome-icon
-          v-b-popover.hover.top="toolTips.apr"
-          icon="info-circle"
-        />
-      </template>
-
-      <template #head(currentCoverage)="data">
-        {{ data.label }}
-        <font-awesome-icon
-          v-b-popover.hover.top="toolTips.currentCoverage"
-          icon="info-circle"
-        />
-      </template>
-
-      <template #cell(stake)="data">
+      <template #cell(stake)="{ value }">
         <div>
-          {{ `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}` }}
+          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
         <div
-          v-if="data.value.usdValue !== undefined"
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          v-if="value.usdValue !== undefined"
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
         <div
-          v-text="formatDate(data.item.stake.unixTime).dateTime"
+          v-text="formatDate(value.unixTime).dateTime"
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         />
         <div class="d-flex align-items-center">
           <pool-logos-overlapped
-            :pool-id="data.value.poolId"
+            :pool-id="value.poolId"
             size="20"
             class="mr-1"
           />
-          {{ poolName(data.value.poolId) }}
-        </div>
-        <div v-if="false" class="d-flex align-items-start">
-          <pool-logos-overlapped :pool-id="data.value.poolId" size="20" />
-          <div class="d-flex flex-column ml-2">
-            <span>{{ poolName(data.value.poolId) }}</span>
-            <span
-              v-text="
-                `${prettifyNumber(data.value.amount)} ${data.item.stake.symbol}`
-              "
-            />
-            <span
-              v-if="data.value.usdValue !== undefined"
-              v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
-              class="font-size-12 font-w400 text-primary"
-            />
-            <span
-              v-text="formatDate(data.item.stake.unixTime).dateTime"
-              class="font-size-12 font-w400"
-              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-            />
-          </div>
+          {{ poolName(value.poolId) }}
         </div>
       </template>
 
-      <template #cell(fullyProtected)="data">
+      <template #cell(fullyProtected)="{ value }">
         <div class="d-flex align-items-start">
           <span
             v-text="
-              data.value && typeof data.value.amount !== 'undefined'
-                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+              value && typeof value.amount !== 'undefined'
+                ? `${prettifyNumber(value.amount)} ${value.symbol}`
                 : 'Error calculating'
             "
           />
         </div>
         <span
           v-if="
-            data.value.usdValue !== undefined &&
-              typeof data.value.amount !== 'undefined'
+            value.usdValue !== undefined && typeof value.amount !== 'undefined'
           "
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
       </template>
-      <template #cell(currentReturn)="data">
+
+      <template #cell(protectedAmount)="{ value }">
         <div class="d-flex align-items-start">
           <span
             v-text="
-              data.value && typeof data.value.amount !== 'undefined'
-                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
+              value && typeof value.amount !== 'undefined'
+                ? `${prettifyNumber(value.amount)} ${value.symbol}`
                 : 'Error calculating'
             "
           />
         </div>
         <span
           v-if="
-            data.value.usdValue !== undefined &&
-              typeof data.value.amount !== 'undefined'
+            value.usdValue !== undefined && typeof value.amount !== 'undefined'
           "
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
       </template>
 
-      <template #cell(protectedAmount)="data">
-        <div class="d-flex align-items-start">
-          <span
-            v-text="
-              data.value && typeof data.value.amount !== 'undefined'
-                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
-                : 'Error calculating'
-            "
-          />
-        </div>
-        <span
-          v-if="
-            data.value.usdValue !== undefined &&
-              typeof data.value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
+      <template #cell(roi)="{ value }">
+        {{ typeof value !== "undefined" ? stringifyPercentage(value) : "N/A" }}
       </template>
 
-      <template #cell(fees)="data">
-        <div class="d-flex align-items-start">
-          <span
-            v-text="
-              data.value && typeof data.value.amount !== 'undefined'
-                ? `${prettifyNumber(data.value.amount)} ${data.value.symbol}`
-                : 'Error calculating'
-            "
-          />
-        </div>
-        <span
-          v-if="
-            data.value.usdValue !== undefined &&
-              typeof data.value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(data.value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
-      </template>
-
-      <template #cell(roi)="data">
-        <span>{{ data.value }}</span>
-      </template>
-
-      <template #cell(apr)="data">
+      <template #cell(apr)="{ value }">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{
-            typeof data.value.day !== "undefined"
-              ? stringifyPercentage(data.value.day)
-              : "Error calculating"
+            typeof value.day !== "undefined"
+              ? stringifyPercentage(value.day)
+              : "N/A"
           }}
         </div>
         <div class="d-flex align-items-center my-1">
           <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
           {{
-            typeof data.value.week !== "undefined"
-              ? stringifyPercentage(data.value.week)
-              : "Error calculating"
+            typeof value.week !== "undefined"
+              ? stringifyPercentage(value.week)
+              : "N/A"
           }}
         </div>
-        <!-- <div class="d-flex align-items-center"> -->
-        <!-- <b-badge class="badge-version text-primary px-2 mr-2">1m</b-badge> -->
-        <!-- {{ stringifyPercentage(data.value.month) }} -->
-        <!-- </div> -->
       </template>
 
-      <template #cell(insuranceStart)="data">
-        <div class="d-flex flex-column">
-          <span v-text="formatDate(data.item.insuranceStart).date" />
-          <span
-            v-text="formatDate(data.item.insuranceStart).time"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-          />
-        </div>
-      </template>
-
-      <template #cell(currentCoverage)="data">
+      <template #cell(currentCoverage)="{ item }">
         <div class="d-flex flex-column font-size-12 font-w600">
-          {{ stringifyPercentage(data.item.coverageDecPercent) }}
+          {{ stringifyPercentage(item.coverageDecPercent) }}
           <div
+            v-if="!insuranceStarted(item.insuranceStart)"
             class="d-flex justify-content-between align-items-center text-danger"
           >
             <div>
               Cliff:
-              <countdown-timer :date-unix="data.item.insuranceStart" />
+              <countdown-timer :date-unix="item.insuranceStart" />
             </div>
             <font-awesome-icon
               icon="info-circle"
-              :id="'popover-cliff-' + data.item.id"
+              :id="'popover-cliff-' + item.id"
             />
             <b-popover
-              :target="'popover-cliff-' + data.item.id"
+              :target="'popover-cliff-' + item.id"
               triggers="hover"
               placement="bottom"
             >
-              Impermanent loss protection starts 30 days after your deposit, at
-              which point the "cliff" is reached and protection rises from 30%,
-              by 1% per day, until 100% protection is reached.
+              Impermanent loss protection starts vesting immediately when you
+              deposit. But you must be in the pool until the cliff is reached
+              before the protection can be utilized.
             </b-popover>
           </div>
         </div>
 
         <remaining-time2
-          :from="data.item.stake.unixTime * 1000"
-          :to="data.item.fullCoverage * 1000"
+          :from="item.stake.unixTime * 1000"
+          :to="item.fullCoverage * 1000"
           class="mt-1"
         />
       </template>
 
-      <template #cell(actionButtons)="data">
+      <template #cell(actions)="{ item }">
         <b-btn
-          @click="goToWithdraw(data.item.id)"
+          @click="goToWithdraw(item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           class="table-button"
         >
           Withdraw
         </b-btn>
       </template>
-    </table-wrapper>
+    </data-table>
 
     <protected-empty v-else class="mx-3" />
   </div>
@@ -255,7 +147,6 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import TableWrapper from "@/components/common/TableWrapper.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import {
   buildPoolName,
@@ -269,14 +160,15 @@ import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
+import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 
 @Component({
   components: {
+    DataTable,
     RemainingTime2,
     CountdownTimer,
     ProtectedEmpty,
     PoolLogosOverlapped,
-    TableWrapper,
     ContentBlock
   }
 })
@@ -321,7 +213,8 @@ export default class Protected extends Vue {
   }
 
   stringifyPercentage(percentage: number) {
-    return numeral(percentage).format("0.00%");
+    if (percentage < 0.0001) return "< 0.01%";
+    else return numeral(percentage).format("0.00%");
   }
 
   get protectedLiquidity(): ViewProtectedLiquidity[] {
@@ -332,73 +225,72 @@ export default class Protected extends Vue {
     return prettifyNumber(number, usd);
   }
 
-  get toolTips() {
-    const tooltips = {
-      stake: "Amount of tokens you originally staked in the pool.",
-      protectedAmount:
-        "Amount of tokens you can withdraw with 100% protection + fees.",
-      claimableValue:
-        "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value).",
-      fees: "Fees your stake has earned since you entered the pool.",
-      roi: "The ROI of your fully protected value vs. your initial stake.",
-      apr: "How much the pool has earned within different time frames.",
-      currentCoverage:
-        "The impermanent loss protection you have accrued. Impermanent loss protection starts 30 days after your deposit, at a rate of 30% and gradually increases 1% per day until you reach 100% protection."
-    };
-    return tooltips;
-  }
-
-  get protectedTxTable() {
-    const items: ViewProtectedLiquidity[] = this.protectedLiquidity;
-    const fields = [
+  get fields(): ViewTableField[] {
+    return [
       {
+        id: 1,
         key: "stake",
         label: "Initial Stake",
-        thStyle: { "min-width": "160px" }
+        tooltip: "Amount of tokens you originally staked in the pool.",
+        minWidth: "160px"
       },
       {
+        id: 2,
         key: "fullyProtected",
         label: "Protected Value",
-        sortable: true,
-        thStyle: { "min-width": "160px" }
+        tooltip:
+          "Amount of tokens you can withdraw with 100% protection + fees",
+        minWidth: "185px"
       },
       {
+        id: 3,
         key: "protectedAmount",
         label: "Claimable Value",
-        sortable: true,
-        thStyle: { "min-width": "190px" }
+        tooltip:
+          "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
+        minWidth: "180px"
       },
+      // {
+      //   id: 4,
+      //   key: "fees",
+      //   label: "Fees",
+      //   tooltip: "Fees your stake has earned since you entered the pool.",
+      //   minWidth: "90px"
+      // },
       {
-        key: "fees",
-        label: "Fees",
-        sortable: true,
-        thStyle: { "min-width": "160px" }
-      },
-      {
+        id: 5,
         key: "roi",
-        sortable: true,
-        thStyle: { "min-width": "60px" },
-        formatter: (value: string) =>
-          value ? this.stringifyPercentage(Number(value)) : "Error calculating"
+        label: "ROI",
+        tooltip:
+          "The ROI of your fully protected value vs. your initial stake.",
+        minWidth: "75px"
       },
       {
+        id: 6,
         key: "apr",
+        label: "Apr",
+        tooltip:
+          "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
         sortable: false,
-        thStyle: { "min-width": "100px" }
+        minWidth: "100px"
       },
       {
+        id: 7,
         key: "currentCoverage",
-        sortable: true,
-        thStyle: { "min-width": "180px" }
+        label: "Current Coverage",
+        tooltip:
+          "The impermanent loss protection you have accrued. Impermanent loss protection starts 30 days after your deposit, at a rate of 30% and gradually increases 1% per day until you reach 100% protection.",
+        minWidth: "195px"
       },
       {
-        key: "actionButtons",
+        id: 8,
+        key: "actions",
         label: "",
-        thStyle: { width: "160px", "min-width": "160px" }
+        sortable: false,
+        minWidth: "160px",
+        maxWidth: "160px"
       }
     ];
-
-    return { items, fields };
   }
 
   doFilter(row: any, filter: string) {

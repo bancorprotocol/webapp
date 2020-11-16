@@ -3,7 +3,6 @@
     :fields="fields"
     :items="items"
     :filter="filter"
-    filter-by="symbol"
     :filter-function="doFilter"
     default-sort="liqDepth"
   >
@@ -138,7 +137,7 @@ export default class TablePools extends Vue {
         id: 8,
         label: "Actions",
         key: "actions",
-        sort: false,
+        sortable: false,
         minWidth: "150px",
         maxWidth: "150px"
       }

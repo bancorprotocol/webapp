@@ -42,7 +42,7 @@
           class="text-nowrap d-inline-block text-right balance cursor"
           @click="useMax"
         >
-          Balance: {{ currentBalance }} {{ symbol }}
+          Balance: {{ prettifyNumber(currentBalance) }} {{ symbol }}
         </div>
       </div>
 
@@ -150,7 +150,7 @@
 <script lang="ts">
 import { vxm } from "@/store/";
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { prettifyNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
 
@@ -169,6 +169,8 @@ export default class ModalStake extends Vue {
   symbol: string = "";
   etherscanUrl: string = "";
   maxLock: number = 0;
+
+  prettifyNumber = prettifyNumber;
 
   get state() {
     return (
