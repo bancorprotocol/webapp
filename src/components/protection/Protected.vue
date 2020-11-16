@@ -147,7 +147,6 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import TableWrapper from "@/components/common/TableWrapper.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import {
   buildPoolName,
@@ -170,7 +169,6 @@ import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
     CountdownTimer,
     ProtectedEmpty,
     PoolLogosOverlapped,
-    TableWrapper,
     ContentBlock
   }
 })
