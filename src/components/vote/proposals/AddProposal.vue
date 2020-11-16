@@ -104,7 +104,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
@@ -113,6 +113,7 @@ import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
 import { formatNumber, VModel } from "@/api/helpers";
 import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -122,7 +123,7 @@ import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
     MainButton
   }
 })
-export default class AddProposal extends Vue {
+export default class AddProposal extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
   discourseUrl: string = "";
@@ -137,10 +138,6 @@ export default class AddProposal extends Vue {
 
   get proposalMinimumFormatted() {
     return formatNumber(this.proposalMinimum, 2);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   async onDiscourseInput(input: string) {

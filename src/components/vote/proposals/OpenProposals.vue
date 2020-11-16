@@ -295,7 +295,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import PieChart from "@/components/data/charts/PieChart.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
@@ -309,6 +309,7 @@ import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -322,7 +323,7 @@ import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
     ModalNotEnoughTokens
   }
 })
-export default class OpenProposals extends Vue {
+export default class OpenProposals extends BaseComponent {
   @Prop() proposals?: Proposal[];
 
   notEnoughTokensModal = false;
@@ -352,10 +353,6 @@ export default class OpenProposals extends Vue {
         maxWidth: "300px"
       }
     ];
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   prettifyNumber(number: string | number): string {
