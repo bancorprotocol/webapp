@@ -5882,6 +5882,7 @@ export class EthBancorModule
     networkVersion$
       .pipe(
         filter(version => version == EthNetworks.Mainnet),
+        firstItem(),
         switchMap(fetchSmartTokens)
       )
       .subscribe(availableSmartTokenHistories =>
@@ -5969,7 +5970,8 @@ export class EthBancorModule
 
     const bancorNetwork$ = contractAddresses$.pipe(
       pluck("BancorNetwork"),
-      distinctUntilChanged(compareString)
+      distinctUntilChanged(compareString),
+      shareReplay(1)
     );
 
     combineLatest([
@@ -6039,8 +6041,7 @@ export class EthBancorModule
           ...(bancorApiTokens &&
             bancorApiTokens.length > 0 && { tokenPrices: bancorApiTokens })
         })
-      ),
-      firstItem()
+      )
     );
 
     const anchorAndConverters$ = combineLatest([
@@ -6068,6 +6069,18 @@ export class EthBancorModule
         const timeTaken = newTime - timeStart;
         console.log(timeTaken, "was time taken");
       }
+    );
+
+    const authenticated$ = of(this.isAuthenticated).pipe(
+      filter(Boolean),
+      shareReplay(1)
+    );
+
+    combineLatest([
+      authenticated$,
+      liquidityProtectionStore$
+    ]).subscribe(([_, storeAddress]) =>
+      this.fetchProtectionPositions(storeAddress)
     );
 
     await combineLatest([bareMinimumAnchors$, anchorAndConverters$])
@@ -6148,7 +6161,7 @@ export class EthBancorModule
         )
     );
 
-    const quickChunks = chunk(quickLoadAnchorSet, 30);
+    const quickChunks = chunk(quickLoadAnchorSet, 100);
 
     const allASyncChunks = [...quickChunks, slowLoadAnchorSets];
 
