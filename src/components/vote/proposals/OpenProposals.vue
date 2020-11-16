@@ -32,7 +32,6 @@
       v-else-if="proposals"
       :items="items"
       :fields="fields"
-      default-sort="to"
       :hide-pagination="true"
     >
       <template #cell(name)="{ item }">
@@ -322,8 +321,10 @@ export default class OpenProposals extends Vue {
   currentVotes: BigNumber = new BigNumber(0);
 
   get items(): Proposal[] {
-    const items = this.proposals ? this.proposals.slice(0, this.proposals.length - 1) : [];
-    return items
+    if (this.proposals !== undefined && this.proposals.length) {
+      const length = this.proposals.length
+      return this.proposals.slice(0, length - 1)
+    } else return []
   }
 
   get fields(): ViewTableField[] {
