@@ -62,7 +62,8 @@ export const calculateMaxStakes = (
   poolTokenSupplyWei: string,
   poolTokenSystemBalanceWei: string,
   maxSystemNetworkTokenAmount: string,
-  maxSystemNetworkTokenRatioPpm: string
+  maxSystemNetworkTokenRatioPpm: string,
+  isHighTierPool: boolean
 ) => {
   const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
   const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
@@ -88,7 +89,7 @@ export const calculateMaxStakes = (
       .minus(systemBNT)
   );
 
-  const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
+  const lowestAmount = isHighTierPool ? maxLimitBnt : BigNumber.min(maxLimitBnt, maxRatioBnt);
 
   const maxAllowedBntInTkn = lowestAmount.times(
     tknReserveBalance.div(bntReserveBalance)

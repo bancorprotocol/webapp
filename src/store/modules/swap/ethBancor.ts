@@ -3487,10 +3487,16 @@ export class EthBancorModule
     return contract.methods.systemBalance(tokenAddress).call();
   }
 
+  @action async isHighTierPool(anchor: string): Promise<boolean> {
+    const contract = buildLiquidityProtectionContract(this.contracts.LiquidityProtection);
+    return contract.methods.isHighTierPool(anchor).call();
+  }
+
   @action async getMaxStakes({ poolId }: { poolId: string }) {
-    const [balances, poolTokenBalance] = await Promise.all([
+    const [balances, poolTokenBalance, isHighTierPool] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
-      this.fetchSystemBalance(poolId)
+      this.fetchSystemBalance(poolId),
+      this.isHighTierPool(poolId)
     ]);
 
     const [bntReserve, tknReserve] = sortAlongSide(
@@ -3509,7 +3515,8 @@ export class EthBancorModule
       balances.smartTokenSupplyWei,
       poolTokenBalance,
       this.liquidityProtectionSettings.maxSystemNetworkTokenAmount,
-      this.liquidityProtectionSettings.maxSystemNetworkTokenRatio
+      this.liquidityProtectionSettings.maxSystemNetworkTokenRatio,
+      isHighTierPool
     );
 
     return { maxStakes, bntReserve, tknReserve };
