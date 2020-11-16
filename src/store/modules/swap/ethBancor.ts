@@ -1730,8 +1730,23 @@ export class EthBancorModule
                     const reserveRateN = opposingTknBalance.weiAmount;
                     const reserveRateD = tknReserveBalance.weiAmount;
 
-                    const poolRoi = await lpContract.methods
-                      .poolROI(
+                    let poolRoi = "";
+
+                    try {
+                      poolRoi = await lpContract.methods
+                        .poolROI(
+                          poolToken,
+                          reserveToken,
+                          reserveAmount,
+                          poolRateN,
+                          poolRateD,
+                          reserveRateN,
+                          reserveRateD
+                        )
+                        .call();
+                    } catch (err) {
+                      console.error("getting pool roi failed!", err, {
+                        address: this.contracts.LiquidityProtection,
                         poolToken,
                         reserveToken,
                         reserveAmount,
@@ -1739,8 +1754,10 @@ export class EthBancorModule
                         poolRateD,
                         reserveRateN,
                         reserveRateD
-                      )
-                      .call();
+                      });
+
+                      throw err;
+                    }
 
                     const magnitude =
                       scale.label == "day"
@@ -1978,17 +1995,28 @@ export class EthBancorModule
       this.contracts.LiquidityProtection
     );
 
-    const position = findOrThrow(this.protectedPositionsArr, position => compareString(position.id, dbId), `failed to find the referenced position of ${dbId}`);
-    const isDissolvingNetworkToken = compareString(this.liquidityProtectionSettings.networkToken, position.reserveToken);
+    const position = findOrThrow(
+      this.protectedPositionsArr,
+      position => compareString(position.id, dbId),
+      `failed to find the referenced position of ${dbId}`
+    );
+    const isDissolvingNetworkToken = compareString(
+      this.liquidityProtectionSettings.networkToken,
+      position.reserveToken
+    );
     if (isDissolvingNetworkToken) {
       const dissolvingFullPosition = decPercent === 1;
-      const weiApprovalAmount = dissolvingFullPosition ? position.reserveAmount : new BigNumber(position.reserveAmount).times(decPercent + 0.01).toFixed(0);
+      const weiApprovalAmount = dissolvingFullPosition
+        ? position.reserveAmount
+        : new BigNumber(position.reserveAmount)
+            .times(decPercent + 0.01)
+            .toFixed(0);
       await this.triggerApprovalIfRequired({
         owner: this.isAuthenticated,
         spender: liquidityProtectionContract,
         amount: weiApprovalAmount,
         tokenAddress: this.liquidityProtectionSettings.govToken
-      })
+      });
     }
 
     const txHash = await this.resolveTxOnConfirmation({
