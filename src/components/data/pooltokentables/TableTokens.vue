@@ -1,118 +1,127 @@
 <template>
-  <table-wrapper
-    primarykey="id"
-    :items="items"
+  <data-table
     :fields="fields"
+    :items="items"
     :filter="filter"
+    filter-by="symbol"
     :filter-function="doFilter"
-    sort-by="liqDepth"
+    default-sort="liqDepth"
   >
-    <template #cell(symbol)="data">
-      <pool-logos :token="data.item" :cursor="false" />
-    </template>
-
-    <template #cell(change24h)="data">
-      <coloured-percentage :percentage="data.value" />
-    </template>
-
     <template #head(liquidityProtection)>
-      <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" class="mr-1" />
     </template>
 
-    <template #cell(liquidityProtection)="data">
+    <template #cell(liquidityProtection)="{ value }">
       <img
-        v-if="data.value"
+        v-if="value"
         :src="require(`@/assets/media/icons/liquidity_active.svg`)"
       />
     </template>
 
-    <template #cell(actionButtons)="data">
-      <action-buttons :token="data.item" />
+    <template #cell(symbol)="{ item }">
+      <pool-logos :token="item" :cursor="false" />
     </template>
-  </table-wrapper>
+
+    <template #cell(change24h)="{ value }">
+      <coloured-percentage :percentage="value" />
+    </template>
+
+    <template #cell(price)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(liqDepth)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(actionButtons)="{ item }">
+      <action-buttons :token="item" />
+    </template>
+  </data-table>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
-import TableWrapper from "@/components/common/TableWrapper.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
 import { ViewToken } from "@/types/bancor";
+import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import { prettifyNumber } from "@/api/helpers";
 
 @Component({
   components: {
+    DataTable,
     ColouredPercentage,
     PoolLogos,
-    ActionButtons,
-    TableWrapper
+    ActionButtons
   }
 })
 export default class TableTokens extends Vue {
   @Prop() filter!: string;
 
-  fields = [
+  prettifyNumber = prettifyNumber;
+
+  fields: ViewTableField[] = [
+    ...(this.isEth
+      ? [
+          {
+            id: 1,
+            label: "",
+            key: "liquidityProtection",
+            minWidth: "60px",
+            maxWidth: "60px"
+          }
+        ]
+      : []),
     {
-      key: "liquidityProtection",
-      sortable: true
-    },
-    {
-      key: "symbol",
+      id: 2,
       label: "Name",
-      thStyle: { "min-width": "160px" },
-      sortable: true
+      key: "symbol",
+      minWidth: "150px"
     },
     {
+      id: 3,
       key: "change24h",
       label: "24h Change",
-      thStyle: { "min-width": "135px" },
-      sortable: true
+      minWidth: "135px"
     },
     {
+      id: 4,
       key: "price",
       label: "Price USD",
-      thStyle: { "min-width": "120px" },
-      sortable: true,
-      formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD"
-        }).format(value)
+      minWidth: "120px"
     },
     /*
     {
+      id: 5,
       key: "volume24h",
       label: "24h Volume",
-      thStyle: { "min-width": "120px" },
-      sortable: true,
-      formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD"
-        }).format(value)
+      minWidth: "120px"
     },
     */
     {
+      id: 6,
       key: "liqDepth",
       label: "Liquidity Depth",
-      thStyle: { "min-width": "160px" },
-      sortable: true,
-      formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD"
-        }).format(value)
+      minWidth: "160px"
     },
     {
+      id: 7,
       key: "actionButtons",
       label: "Action",
-      thStyle: { width: "160px", "min-width": "160px" }
+      minWidth: "160px",
+      maxWidth: "160px"
     }
   ];
 
   get items() {
     return vxm.bancor.tokens;
+  }
+
+  get isEth() {
+    return this.$route.params.service == "eth";
   }
 
   doFilter(row: ViewToken, filter: string) {
