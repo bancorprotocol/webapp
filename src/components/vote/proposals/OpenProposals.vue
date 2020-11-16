@@ -30,7 +30,7 @@
     </div>
     <data-table
       v-else-if="proposals"
-      :items="proposals"
+      :items="items"
       :fields="fields"
       default-sort="to"
       :hide-pagination="true"
@@ -321,6 +321,11 @@ export default class OpenProposals extends Vue {
   etherscanUrl: string = "";
   currentVotes: BigNumber = new BigNumber(0);
 
+  get items(): Proposal[] {
+    const items = this.proposals ? this.proposals.slice(0, this.proposals.length - 1) : [];
+    return items
+  }
+
   get fields(): ViewTableField[] {
     console.log("proposals", this.proposals);
     return [
@@ -329,21 +334,24 @@ export default class OpenProposals extends Vue {
         label: "ID",
         key: "id",
         minWidth: "16px",
-        maxWidth: "16px"
+        maxWidth: "16px",
+        sortable: false
       },
       {
         id: 2,
         label: "Details",
         key: "name",
         minWidth: "450px",
-        maxWidth: "500px"
+        maxWidth: "500px",
+        sortable: false
       },
       {
         id: 3,
         label: "Vote",
         key: "votes",
         minWidth: "300px",
-        maxWidth: "300px"
+        maxWidth: "300px",
+        sortable: false
       }
     ];
   }
