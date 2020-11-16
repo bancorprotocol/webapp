@@ -89,7 +89,9 @@ export const calculateMaxStakes = (
       .minus(systemBNT)
   );
 
-  const lowestAmount = isHighTierPool ? maxLimitBnt : BigNumber.min(maxLimitBnt, maxRatioBnt);
+  const lowestAmount = isHighTierPool
+    ? maxLimitBnt
+    : BigNumber.min(maxLimitBnt, maxRatioBnt);
 
   const maxAllowedBntInTkn = lowestAmount.times(
     tknReserveBalance.div(bntReserveBalance)
