@@ -67,7 +67,7 @@ export default class PoolActionsAddHome extends Vue {
   }
 
   back() {
-    this.$router.push({ name: "Pool" });
+    this.$router.go(-1)
   }
 }
 </script>
