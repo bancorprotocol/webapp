@@ -123,7 +123,7 @@
             fixed-width
           />
           <font-awesome-icon
-            @click="openUrl('https://discord.gg/3wJxvP')"
+            @click="openUrl('https://discord.gg/EHK8wHbgau')"
             :icon="['fab', 'discord']"
             class="mr-2 menu-icon"
             fixed-width
