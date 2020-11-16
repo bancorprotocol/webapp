@@ -1788,8 +1788,23 @@ export class EthBancorModule
                     const reserveRateN = opposingTknBalance.weiAmount;
                     const reserveRateD = tknReserveBalance.weiAmount;
 
-                    const poolRoi = await lpContract.methods
-                      .poolROI(
+                    let poolRoi = "";
+
+                    try {
+                      poolRoi = await lpContract.methods
+                        .poolROI(
+                          poolToken,
+                          reserveToken,
+                          reserveAmount,
+                          poolRateN,
+                          poolRateD,
+                          reserveRateN,
+                          reserveRateD
+                        )
+                        .call();
+                    } catch (err) {
+                      console.error("getting pool roi failed!", err, {
+                        address: this.contracts.LiquidityProtection,
                         poolToken,
                         reserveToken,
                         reserveAmount,
@@ -1797,8 +1812,10 @@ export class EthBancorModule
                         poolRateD,
                         reserveRateN,
                         reserveRateD
-                      )
-                      .call();
+                      });
+
+                      throw err;
+                    }
 
                     const magnitude =
                       scale.label == "day"
