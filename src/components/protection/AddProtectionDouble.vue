@@ -12,7 +12,7 @@
     />
 
     <div v-if="amount">
-      <gray-border-block :gray-bg="true" class="my-3">      
+      <gray-border-block :gray-bg="true" class="mt-3">
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
@@ -28,6 +28,7 @@
       :active="true"
       :large="true"
       :disabled="disableActionButton"
+      class="mt-3"
     />
 
     <modal-base
