@@ -1,5 +1,9 @@
 import { Contract } from "web3-eth-contract";
 
+export interface TokenWei {
+  tokenContract: string;
+  weiAmount: string;
+}
 export interface ProtectedViewPosition {
   type: number;
   whitelisted: boolean;

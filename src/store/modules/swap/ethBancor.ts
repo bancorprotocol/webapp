@@ -39,7 +39,8 @@ import {
   ViewLockedBalance,
   ProtectionRes,
   ViewAmountDetail,
-  WeiExtendedAsset
+  WeiExtendedAsset,
+  TokenWei
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -170,102 +171,23 @@ import {
   first as firstItem
 } from "rxjs/operators";
 import { calculatePositionFees } from "@/api/pureHelpers";
+import {
+  dualPoolRoiShape,
+  reserveBalanceShape,
+  tokenShape,
+  tokenSupplyShape,
+  slimBalanceShape,
+  balanceShape,
+  liquidityProtectionShape,
+  v2PoolBalanceShape,
+  relayShape,
+  poolTokenShape
+} from "@/api/eth/shapes";
 
 interface Balance {
   balance: string;
   id: string;
 }
-
-const tokenSupplyShape = (tokenAddress: string, network: EthNetworks) => {
-  const contract = buildTokenContract(tokenAddress, getWeb3(network));
-  return {
-    tokenContract: ORIGIN_ADDRESS,
-    supply: contract.methods.totalSupply()
-  };
-};
-
-const buildPoolRoiParams = (
-  poolToken: string,
-  poolTokenSupply: string,
-  primaryReserveToken: string,
-  primaryReserveBalance: string,
-  secondaryReserveBalance: string
-) =>
-  [
-    poolToken,
-    primaryReserveToken,
-    primaryReserveBalance,
-    new BigNumber(primaryReserveBalance).times(2).toString(),
-    poolTokenSupply,
-    secondaryReserveBalance,
-    primaryReserveBalance
-  ] as [string, string, string, string, string, string, string];
-
-const dualPoolRoiShape = (
-  protectionContractAddress: string,
-  anchor: string,
-  reserves: TokenWei[],
-  poolTokenSupply: string,
-  network: EthNetworks
-) => {
-  const contract = buildLiquidityProtectionContract(
-    protectionContractAddress,
-    getWeb3(network)
-  );
-
-  const [oneReserve, twoReserve] = reserves;
-
-  const oneParams = buildPoolRoiParams(
-    anchor,
-    poolTokenSupply,
-    oneReserve.tokenContract,
-    oneReserve.weiAmount,
-    twoReserve.weiAmount
-  );
-  const twoParams = buildPoolRoiParams(
-    anchor,
-    poolTokenSupply,
-    twoReserve.tokenContract,
-    twoReserve.weiAmount,
-    oneReserve.weiAmount
-  );
-
-  return {
-    anchor,
-    protectionAddress: ORIGIN_ADDRESS,
-    onePrimary: oneReserve.tokenContract,
-    twoPrimary: twoReserve.tokenContract,
-    oneRoi: contract.methods.poolROI(...oneParams),
-    twoRoi: contract.methods.poolROI(...twoParams)
-  };
-};
-
-const slimBalanceShape = (
-  contractAddress: string,
-  owner: string,
-  network: EthNetworks
-) => {
-  const contract = buildTokenContract(contractAddress, getWeb3(network));
-  const template = {
-    contract: ORIGIN_ADDRESS,
-    balance: contract.methods.balanceOf(owner)
-  };
-  return template;
-};
-
-const balanceShape = (
-  contractAddress: string,
-  owner: string,
-  network: EthNetworks
-) => {
-  const contract = buildTokenContract(contractAddress, getWeb3(network));
-  const template = {
-    contract: ORIGIN_ADDRESS,
-    balance: contract.methods.balanceOf(owner),
-    decimals: contract.methods.decimals()
-  };
-  return template;
-};
 
 interface PoolApr {
   poolId: string;
@@ -823,73 +745,6 @@ const buildReserveFeedsChainlink = (
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
-const relayShape = (converterAddress: string) => {
-  const contract = buildV28ConverterContract(converterAddress);
-  return {
-    converterAddress: ORIGIN_ADDRESS,
-    owner: contract.methods.owner(),
-    converterType: contract.methods.converterType(),
-    version: contract.methods.version(),
-    connectorTokenCount: contract.methods.connectorTokenCount(),
-    conversionFee: contract.methods.conversionFee(),
-    connectorToken1: contract.methods.connectorTokens(0),
-    connectorToken2: contract.methods.connectorTokens(1)
-  };
-};
-
-const poolTokenShape = (address: string) => {
-  const contract = buildContainerContract(address);
-  const isV2Pool = knownV2Anchors.some(anchor =>
-    compareString(address, anchor)
-  );
-  return {
-    symbol: contract.methods.symbol(),
-    decimals: contract.methods.decimals(),
-    ...(isV2Pool && { poolTokens: contract.methods.poolTokens() }),
-    contract: ORIGIN_ADDRESS
-  };
-};
-
-const v2PoolBalanceShape = (
-  contractAddress: string,
-  reserveOne: string,
-  reserveTwo: string,
-  network: EthNetworks
-) => {
-  const contract = buildV2Converter(contractAddress, getWeb3(network));
-  return {
-    converterAddress: ORIGIN_ADDRESS,
-    primaryReserveToken: contract.methods.primaryReserveToken(),
-    secondaryReserveToken: contract.methods.secondaryReserveToken(),
-    reserveOne,
-    reserveTwo,
-    reserveOnePoolToken: contract.methods.poolToken(reserveOne),
-    reserveTwoPoolToken: contract.methods.poolToken(reserveTwo),
-    reserveOneStakedBalance: contract.methods.reserveStakedBalance(reserveOne),
-    reserveTwoStakedBalance: contract.methods.reserveStakedBalance(reserveTwo),
-    effectiveReserveWeights: contract.methods.effectiveReserveWeights()
-  };
-};
-
-const liquidityProtectionShape = (
-  contractAddress: string,
-  network: EthNetworks
-) => {
-  const contract = buildLiquidityProtectionContract(
-    contractAddress,
-    getWeb3(network)
-  );
-  return {
-    minProtectionDelay: contract.methods.minProtectionDelay(),
-    maxProtectionDelay: contract.methods.maxProtectionDelay(),
-    lockDuration: contract.methods.lockDuration(),
-    networkToken: contract.methods.networkToken(),
-    govToken: contract.methods.govToken(),
-    maxSystemNetworkTokenAmount: contract.methods.maxSystemNetworkTokenAmount(),
-    maxSystemNetworkTokenRatio: contract.methods.maxSystemNetworkTokenRatio()
-  };
-};
-
 const calculatePercentIncrease = (
   small: number | string,
   big: number | string
@@ -897,11 +752,6 @@ const calculatePercentIncrease = (
   const profit = new BigNumber(big).minus(small);
   return profit.div(small).toString();
 };
-
-interface TokenWei {
-  tokenContract: string;
-  weiAmount: string;
-}
 
 const notBlackListed = (blackListedAnchors: string[]) => (
   converterAnchor: ConverterAndAnchor
@@ -1250,32 +1100,6 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
     console.error("failed to rebuild properly");
   }
   return { smartTokens, poolTokenAddresses };
-};
-
-const tokenShape = (contractAddress: string) => {
-  const contract = buildTokenContract(contractAddress);
-  const template = {
-    contract: ORIGIN_ADDRESS,
-    symbol: contract.methods.symbol(),
-    decimals: contract.methods.decimals()
-  };
-  return template;
-};
-
-const reserveBalanceShape = (
-  contractAddress: string,
-  reserves: string[],
-  network: EthNetworks
-) => {
-  const contract = buildConverterContract(contractAddress, getWeb3(network));
-  const [reserveOne, reserveTwo] = reserves;
-  return {
-    converterAddress: ORIGIN_ADDRESS,
-    reserveOneAddress: reserveOne,
-    reserveTwoAddress: reserveTwo,
-    reserveOne: contract.methods.getConnectorBalance(reserveOne),
-    reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
-  };
 };
 
 interface RegisteredContracts {
@@ -5056,8 +4880,7 @@ export class EthBancorModule
     const v1RelayShapes = v1Relays.map(relay =>
       reserveBalanceShape(
         relay.contract,
-        relay.reserves.map(r => r.contract),
-        this.currentNetwork
+        relay.reserves.map(r => r.contract)
       )
     );
     const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
@@ -5198,11 +5021,7 @@ export class EthBancorModule
       groupsOfShapes: [
         tokenAddressesMissing.map(tokenShape),
         verifiedV1Pools.map(v1Pool =>
-          reserveBalanceShape(
-            v1Pool.converterAddress,
-            v1Pool.reserves,
-            this.currentNetwork
-          )
+          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
         ),
         verifiedV2Pools.map(pool =>
           v2PoolBalanceShape(
@@ -6218,8 +6037,7 @@ export class EthBancorModule
     const reservesShapes = poolsToCalculate.map(pool =>
       reserveBalanceShape(
         pool.contract,
-        pool.reserves.map(reserve => reserve.contract),
-        this.currentNetwork
+        pool.reserves.map(reserve => reserve.contract)
       )
     );
 
