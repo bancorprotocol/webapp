@@ -292,6 +292,7 @@ export const buildLiquidityProtectionContract = (
   lockDuration: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
   isHighTierPool: (anchor: string) => CallReturn<boolean>;
+  highTierPools: () => CallReturn<string[]>;
   protectLiquidity: (
     anchor: string,
     poolTokenWei: string
