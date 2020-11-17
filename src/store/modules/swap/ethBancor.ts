@@ -6250,11 +6250,11 @@ export class EthBancorModule
 
   }
 
-  poolLiqMiningApr: PoolLiqMiningApr[] = [];
+  poolLiqMiningAprs: PoolLiqMiningApr[] = [];
 
 
   @mutation updateLiqMiningApr(liqMiningApr: PoolLiqMiningApr[]) {
-    this.poolLiqMiningApr = liqMiningApr;
+    this.poolLiqMiningAprs = liqMiningApr;
   }
 
   poolAprs: PoolApr[] = [];
