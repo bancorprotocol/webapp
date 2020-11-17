@@ -148,6 +148,34 @@ export const relayShape = (converterAddress: string) => {
   };
 };
 
+export const staticRelayShape = (converterAddress: string) => {
+  const contract = buildV28ConverterContract(converterAddress);
+  return {
+    converterAddress: ORIGIN_ADDRESS,
+    converterType: contract.methods.converterType(),
+    version: contract.methods.version(),
+    connectorToken1: contract.methods.connectorTokens(0),
+    connectorToken2: contract.methods.connectorTokens(1)
+  };
+};
+
+export const dynamicRelayShape = (
+  contractAddress: string,
+  reserves: string[]
+) => {
+  const contract = buildConverterContract(contractAddress);
+  const [reserveOne, reserveTwo] = reserves;
+  return {
+    converterAddress: ORIGIN_ADDRESS,
+    reserveOneAddress: reserveOne,
+    reserveTwoAddress: reserveTwo,
+    conversionFee: contract.methods.conversionFee(),
+    connectorTokenCount: contract.methods.connectorTokenCount(),
+    reserveOne: contract.methods.getConnectorBalance(reserveOne),
+    reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
+  };
+};
+
 export const poolTokenShape = (address: string) => {
   const contract = buildContainerContract(address);
   const isV2Pool = knownV2Anchors.some(anchor =>

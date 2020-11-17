@@ -156,19 +156,27 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { combineLatest, from, of, Observable } from "rxjs";
+import {
+  combineLatest,
+  from,
+  of,
+  Observable,
+  partition as partitionOb
+} from "rxjs";
 import {
   distinctUntilChanged,
   map,
   filter,
   startWith,
+  concatMap,
   mergeMap,
   tap,
   switchMap,
   shareReplay,
   pluck,
   scan,
-  first as firstItem
+  first as firstItem,
+  bufferTime
 } from "rxjs/operators";
 import { calculatePositionFees } from "@/api/pureHelpers";
 import {
@@ -5863,6 +5871,8 @@ export class EthBancorModule
       )
     );
 
+    // 555
+    //
     const anchorAndConverters$ = combineLatest([
       anchors$,
       bancorConverterRegistry$
@@ -5878,7 +5888,7 @@ export class EthBancorModule
         })()
       ),
       distinctArrayItem(knownPools, compareAnchorAndConverter),
-      tap(x => console.log(x, "was all")),
+      tap(x => console.log(x, "was all", parseInt(String(Date.now() / 1000)))),
       shareReplay(1)
     );
 
@@ -5902,34 +5912,65 @@ export class EthBancorModule
       this.fetchProtectionPositions(storeAddress)
     );
 
-    await combineLatest([bareMinimumAnchors$, anchorAndConverters$])
-      .pipe(
-        mergeMap(([minimumAnchors, anchorsAndConverters]) => {
-          const sync = anchorsAndConverters.filter(({ anchorAddress }) =>
-            minimumAnchors.some(a => compareString(a, anchorAddress))
-          );
-          const async = differenceWith(
-            anchorsAndConverters,
-            sync,
-            compareAnchorAndConverter
-          );
-
-          return this.addPools({ sync, async });
-        })
-      )
-      .toPromise();
-
-    const authenticated$ = of(this.isAuthenticated).pipe(
-      filter(Boolean),
-      shareReplay(1)
+    const moreData$ = anchorAndConverters$.pipe(
+      map(pairs => [
+        pairs.map(pair => pair.converterAddress).map(relayShape),
+        pairs.map(pair => pair.anchorAddress).map(poolTokenShape)
+      ]),
+      concatMap(groupsOfShapes => this.multi({ groupsOfShapes })),
+      map(
+        ([staticRelays, poolTokens]) =>
+          zip(staticRelays, poolTokens) as [AbiRelay, AbiCentralPoolToken][]
+      ),
+      mergeMap(zipped => from(zipped)),
+      map(([relay, poolToken]) => ({ relay, poolToken })),
+      filter(({ relay }) => relay.connectorTokenCount == "2"),
+      map(set => ({
+        ...set,
+        relay: {
+          ...set.relay,
+          version:
+            knownVersions.find(version =>
+              compareString(
+                version.converterAddress,
+                set.relay.converterAddress
+              )
+            )?.version || Number(set.relay.version)
+        }
+      })),
+      tap(x => console.log("prod", x))
     );
 
-    combineLatest([
-      authenticated$,
-      liquidityProtectionStore$
-    ]).subscribe(([_, storeAddress]) =>
-      this.fetchProtectionPositions(storeAddress)
-    );
+    const asArray$ = moreData$
+      .pipe(bufferTime(300))
+      .subscribe(x => console.log(x, "produc"));
+
+    // const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
+    // const allConverters = convertersAndAnchors.map(
+    //   item => item.converterAddress
+    // );
+
+    // const [rawRelays, poolAndSmartTokens] = ((await this.multi({
+    //   groupsOfShapes,
+    //   traditional: smallLoad
+    // })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
+
+    // await combineLatest([bareMinimumAnchors$, anchorAndConverters$])
+    //   .pipe(
+    //     mergeMap(([minimumAnchors, anchorsAndConverters]) => {
+    //       const sync = anchorsAndConverters.filter(({ anchorAddress }) =>
+    //         minimumAnchors.some(a => compareString(a, anchorAddress))
+    //       );
+    //       const async = differenceWith(
+    //         anchorsAndConverters,
+    //         sync,
+    //         compareAnchorAndConverter
+    //       );
+
+    //       return this.addPools({ sync, async });
+    //     })
+    //   )
+    //   .toPromise();
 
     try {
       this.moduleInitiated();
@@ -6191,13 +6232,13 @@ export class EthBancorModule
       .flatMap(tokensInRelay)
       .map(token => token.contract);
 
-      console.log(
-        "bulkGotResolved",
-        convertersAndAnchors.length,
-        "at",
-        parseInt(String(Date.now() / 1000)),
-        Date.now()
-      );
+    console.log(
+      "bulkGotResolved",
+      convertersAndAnchors.length,
+      "at",
+      parseInt(String(Date.now() / 1000)),
+      Date.now()
+    );
 
     return tokenAddresses;
   }
