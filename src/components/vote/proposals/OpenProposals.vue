@@ -297,7 +297,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
-import PieChart from "@/components/data/charts/PieChart.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -317,8 +316,7 @@ import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
     RemainingTime,
     DataTable,
     ButtonProgress,
-    MainButton,
-    PieChart,
+    MainButton,    
     ModalNotEnoughTokens
   }
 })
