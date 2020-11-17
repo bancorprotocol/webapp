@@ -39,7 +39,9 @@ import {
   ViewLockedBalance,
   ProtectionRes,
   ViewAmountDetail,
-  WeiExtendedAsset
+  WeiExtendedAsset,
+  PoolLiqMiningApr,
+  LiqMiningApr
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -251,18 +253,6 @@ const balanceShape = (
 interface PoolApr {
   poolId: string;
   oneWeekApr: string;
-}
-
-interface PoolLiqMiningApr {
-  poolId: string,
-  rewards: LiqMiningApr[]
-}
-
-interface LiqMiningApr {
-  symbol: string;
-  address: string;
-  amount: string;
-  reward?: number;
 }
 
 const calculateReturnOnInvestment = (
@@ -3124,6 +3114,11 @@ export class EthBancorModule
             .toString();
 
         const volume = feesGenerated && feesGenerated.totalVolume;
+
+        const aprMiningRewards = this.poolLiqMiningAprs.find(apr =>
+          compareString(apr.poolId, relay.id)
+        );
+
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -3149,7 +3144,8 @@ export class EthBancorModule
           ...(apr && { apr: apr.oneWeekApr }),
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
           ...(feesVsLiquidity && { feesVsLiquidity }),
-          ...(volume && { volume })
+          ...(volume && { volume }),
+          aprMiningRewards
         } as ViewRelay;
       });
   }
@@ -6172,16 +6168,14 @@ export class EthBancorModule
       getWeb3(this.currentNetwork)
     );
 
-    const liqMiningApr: PoolLiqMiningApr[] = []
+    const liqMiningApr: PoolLiqMiningApr[] = [];
 
     for (const pool of onlyHighTier as RelayWithReserveBalances[]) {
       const highCap = highCapPools.some(p => compareString(p, pool.id));
 
       const [bnt, token] = await Promise.all(
         pool.reserves.map(
-          async (
-            r
-          ): Promise<LiqMiningApr> => ({
+          async (r): Promise<LiqMiningApr> => ({
             symbol: r.symbol,
             address: r.contract,
             amount: await lpContract.methods
@@ -6192,7 +6186,6 @@ export class EthBancorModule
       );
 
       if (highCap) {
-
         bnt.reward = new BigNumber(
           new BigNumber("70000000000000000000000")
             .multipliedBy(52)
@@ -6232,26 +6225,22 @@ export class EthBancorModule
           .dividedBy(oneMillion)
           .toNumber();
       } else {
-
         // todo implement the low cap version of the calculations
       }
-
 
       const result: PoolLiqMiningApr = {
         poolId: pool.id,
         rewards: [bnt, token]
-      }
+      };
 
-      liqMiningApr.push(result)
+      liqMiningApr.push(result);
       console.log("htp", result, pool.reserveBalances);
     }
 
-    this.updateLiqMiningApr(liqMiningApr)
-
+    this.updateLiqMiningApr(liqMiningApr);
   }
 
   poolLiqMiningAprs: PoolLiqMiningApr[] = [];
-
 
   @mutation updateLiqMiningApr(liqMiningApr: PoolLiqMiningApr[]) {
     this.poolLiqMiningAprs = liqMiningApr;
