@@ -22,6 +22,20 @@
       <pool-logos :pool="item" :cursor="false" />
     </template>
 
+    <template #cell(aprMiningRewards)="{ value }">
+      <div v-if="value">
+        <template v-for="reward in value.rewards">
+          <div :key="reward.address">
+            {{
+              `${reward.symbol} ${
+                reward.reward ? prettifyNumber(reward.reward) : "????"
+              }`
+            }}
+          </div>
+        </template>
+      </div>
+    </template>
+
     <template #cell(liqDepth)="{ value }">
       {{ prettifyNumber(value, true) }}
     </template>
@@ -102,6 +116,14 @@ export default class TablePools extends Vue {
       },
       {
         id: 4,
+        label: "Rewards",
+        key: "aprMiningRewards",
+        tooltip:
+          "Estimated APR based on weekly BNT Liquidity Mining rewards (pending governance vote). Counter indicates time until 12-week rewards cycle concludes.",
+        minWidth: "150px"
+      },
+      {
+        id: 5,
         label: "Fee",
         key: "fee",
         tooltip:
@@ -111,13 +133,13 @@ export default class TablePools extends Vue {
       ...(this.isEth
         ? [
             {
-              id: 5,
+              id: 6,
               label: "Volume (24h)",
               key: "volume",
               minWidth: "140px"
             },
             {
-              id: 6,
+              id: 7,
               label: "Fees (24hr)",
               key: "feesGenerated",
               tooltip:
@@ -125,7 +147,7 @@ export default class TablePools extends Vue {
               minWidth: "140px"
             },
             {
-              id: 7,
+              id: 8,
               label: "1y Fees / Liquidity",
               key: "feesVsLiquidity",
               tooltip: "24h fees annualized divided by liquidity in the pool.",
@@ -134,7 +156,7 @@ export default class TablePools extends Vue {
           ]
         : []),
       {
-        id: 8,
+        id: 9,
         label: "Actions",
         key: "actions",
         sortable: false,
