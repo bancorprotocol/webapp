@@ -27,6 +27,7 @@ import { faShieldAlt } from "@fortawesome/free-solid-svg-icons/faShieldAlt";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
 
 export const fas = [
   faArrowCircleRight,
@@ -56,7 +57,8 @@ export const fas = [
   faShieldAlt,
   faThumbsUp,
   faTimes,
-  faTimesCircle
+  faTimesCircle,
+  faChevronLeft
 ]
 
 
