@@ -1,7 +1,9 @@
 <template>
   <b-card>
     <h3>SimpleComp</h3>
-    <h1>{{ msg }}</h1>    
+    <div>{{msg}}</div>
+    <!-- <input type="text" @input="actionInput" />
+    <button @click="actionClick()">Click</button> -->
   </b-card>
 </template>
 
@@ -11,6 +13,13 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 @Component
 export default class TestWorld extends Vue {
   @Prop() private msg!: string;
+  
+  // actionInput(event) {
+  //   const inputValue = event.target.value
+  //   if (inputValue === 'input') {
+  //     this.$store.dispatch('actionInput', { inputValue })
+  //   }
+  // }
 }
 </script>
 

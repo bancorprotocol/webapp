@@ -8,5 +8,7 @@ describe('SimpleComp.vue', () => {
       propsData: { msg }
     })
     expect(wrapper.text()).toMatch(msg)
+
+    // expect(wrapper.find('.progress-line-bar__progress').style.width)
   })
 })

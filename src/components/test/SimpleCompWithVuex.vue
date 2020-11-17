@@ -1,11 +1,13 @@
 <template>
   <b-card>
     <h3>Simple Comp With Vuex</h3>
-    <p>isCountryBanned: {{isCountryBanned}}</p>
-    <p>darkMode: {{darkMode}}</p>
-    <p>countryCode: {{countryCode}}</p>
-    <b-btn @click="toggleDarkMode">ToggleDarkMode</b-btn>
-    <b-btn @click="getUserCountry">GetUserCountry</b-btn>
+    <div class="prop-div">{{msg}}</div>
+    <p>{{isCountryBanned}}</p>
+    <p>{{darkMode}}</p>
+    <p>{{countryCode}}</p>
+    <b-btn class="btn-toggle" @click="toggleDarkMode">ToggleDarkMode</b-btn>    
+    <input type="text" @input="getUserCountry" />
+    <b-btn @click="getUserCountry">GetUserCountry</b-btn>    
   </b-card>
 </template>
 
@@ -17,7 +19,7 @@ const general = namespace('general')
 
 @Component
 export default class SimpleCompWithVuex extends Vue {
-  @Prop() type?: "warn" | "error" | "info";  
+  @Prop() msg?: string;
   
   @general.Getter("isCountryBanned")
   isCountryBanned!: boolean;
@@ -35,13 +37,14 @@ export default class SimpleCompWithVuex extends Vue {
   getUserCountry!: () => void;  
 
   async mounted() {
-    console.log("Getter: ", this.isCountryBanned);
-    console.log("State: ", this.darkMode);
-    this.toggleDarkMode();
-    console.log("Mutated: ", this.darkMode);
-    await this.getUserCountry();
-    console.log("Action performed: ", this.countryCode);
+    // console.log("Getter: ", this.isCountryBanned);
+    // console.log("State: ", this.darkMode);
+    // this.toggleDarkMode();
+    // console.log("Mutated: ", this.darkMode);
+    // await this.getUserCountry();
+    // console.log("Action performed: ", this.countryCode);
   }
+
 }
 </script>
 
