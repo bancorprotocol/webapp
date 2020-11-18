@@ -573,41 +573,28 @@ const getHistoricFees = async (
   id: string,
   converterAddress: string,
   network: EthNetworks,
-  blockHoursAgo: number,
-  currentBlock: number
+  blockHoursAgo: number
 ): Promise<PreviousPoolFee[]> => {
   const w3 = getWeb3(network);
   const contract = buildV28ConverterContract(converterAddress, w3);
 
   const history = [];
-  const chunkSize = 2000;
+  const options = {
+    fromBlock: 0,
+    toBlock: "latest"
+  };
 
-  let startBlock = blockHoursAgo;
-  let endblock = startBlock + chunkSize;
+  const events = await contract.getPastEvents("ConversionFeeUpdate", options);
 
-  while (startBlock < currentBlock) {
-    const options = {
-      fromBlock: startBlock,
-      toBlock: endblock
-    };
-
-    const events = await contract.getPastEvents("ConversionFeeUpdate", options);
-
-    history.push(
-      ...events.map(e => ({
+  history.push(
+    ...events
+      .filter(e => e.blockNumber >= blockHoursAgo)
+      .map(e => ({
         id,
         oldDecFee: ppmToDec(e.returnValues["_prevFee"]),
         blockNumber: e.blockNumber
       }))
-    );
-
-    startBlock = endblock;
-    endblock += chunkSize;
-
-    if (endblock > currentBlock) {
-      endblock = currentBlock;
-    }
-  }
+  );
 
   return history;
 };
@@ -6512,31 +6499,22 @@ export class EthBancorModule
       relaysByLiqDepth.map(relay => relay.id)
     );
 
-    const chunkedRelaysList = chunk(relaysList, 5);
-    const { blockHoursAgo, currentBlock } = await blockNumberHoursAgo(
+    const historicFees: PreviousPoolFee[] = [];
+    const { blockHoursAgo } = await blockNumberHoursAgo(
       24,
       this.currentNetwork
     );
 
-    const historicFees: PreviousPoolFee[] = (
-      await Promise.all(
-        chunkedRelaysList.map(async relays => {
-          const result: PreviousPoolFee[][] = [];
-          for (const relay of relays) {
-            result.push(
-              await getHistoricFees(
-                relay.id,
-                relay.contract,
-                this.currentNetwork,
-                blockHoursAgo,
-                currentBlock
-              )
-            );
-          }
-          return result.flat(1);
-        })
-      )
-    ).flat(1);
+    for (const relay of relaysList) {
+      historicFees.push(
+        ...(await getHistoricFees(
+          relay.id,
+          relay.contract,
+          this.currentNetwork,
+          blockHoursAgo
+        ))
+      );
+    }
 
     if (historicFees.length > 0) {
       console.log("historic fees", historicFees);
