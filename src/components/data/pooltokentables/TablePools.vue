@@ -155,10 +155,10 @@ export default class TablePools extends Vue {
             },
             {
               id: 8,
-              label: "1y Fees / Liquidity",
+              label: "APR",
               key: "feesVsLiquidity",
               tooltip: "24h fees annualized divided by liquidity in the pool.",
-              minWidth: "190px"
+              minWidth: "80px"
             }
           ]
         : []),
