@@ -758,15 +758,12 @@ const APP_NAME = "Bancor Swap";
 
 const wallets = [
   { walletName: "metamask", preferred: true },
-  { walletName: "lattice", appName: "Bancor Swap", rpcUrl: RPC_URL, preferred: true },
+  { walletName: "lattice", rpcUrl: RPC_URL, appName: APP_NAME },
   { walletName: "imToken", rpcUrl: RPC_URL, preferred: true },
   { walletName: "coinbase" },
   { walletName: "trust", rpcUrl: RPC_URL, preferred: true },
   { walletName: "dapper" },
-  {
-    walletName: "ledger",
-    rpcUrl: RPC_URL
-  },
+  { walletName: "ledger", rpcUrl: RPC_URL },
   { walletName: "authereum" },
   { walletName: "opera", preferred: true },
   { walletName: "operaTouch" },
