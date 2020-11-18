@@ -6378,6 +6378,7 @@ export class EthBancorModule
     ).flat(1);
 
     if (historicFees.length > 0) {
+      console.log("historic fees", historicFees)
       this.setHistoricFees([...this.previousPoolFees, ...historicFees]);
     }
   }
