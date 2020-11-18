@@ -2,24 +2,34 @@
   <b-card>
     <h3>SimpleComp</h3>
     <div>{{msg}}</div>
-    <!-- <input type="text" @input="actionInput" />
-    <button @click="actionClick()">Click</button> -->
+    <simple-child-comp @click="onClick" />
+    <p>{{renderTxt}}</p>
+    <div class="div-show">
+      <div v-if="isShow">SHOW</div>
+    </div>
+    <div class="div-bg" style="width: 200px">
+      DIV-BG
+    </div>
   </b-card>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
+import SimpleChildComp from "./SimpleChildComp.vue";
 
-@Component
+@Component({
+  components: { SimpleChildComp }
+})
 export default class TestWorld extends Vue {
   @Prop() private msg!: string;
+  @Prop() private isShow: boolean = true;
+
+  renderTxt: string = "";
   
-  // actionInput(event) {
-  //   const inputValue = event.target.value
-  //   if (inputValue === 'input') {
-  //     this.$store.dispatch('actionInput', { inputValue })
-  //   }
-  // }
+  onClick(param: string) {
+    this.renderTxt = param;
+    console.log('fff', param)
+  }    
 }
 </script>
 
