@@ -10,6 +10,9 @@
     <div class="div-bg" style="width: 200px">
       DIV-BG
     </div>
+    <div class="div-ip">
+      <input type="text" />
+    </div>    
   </b-card>
 </template>
 

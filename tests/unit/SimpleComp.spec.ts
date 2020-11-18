@@ -1,9 +1,9 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import { Vue } from "vue-property-decorator";
 import SimpleComp from '@/components/test/SimpleComp.vue';
 import SimpleChildComp from '@/components/test/SimpleChildComp.vue';
 
 describe('SimpleComp.vue', () => {
+  /* check property */
   it('renders props.msg when passed', () => {
     const msg = 'new message';
     const wrapper = shallowMount(SimpleComp, {
@@ -12,20 +12,35 @@ describe('SimpleComp.vue', () => {
     expect(wrapper.text()).toMatch(msg);    
   })
 
-  // it('displays same width what we want', () => {
-  //   const wrapper = shallowMount(SimpleComp);
-  //   expect(wrapper.find('.div-bg').style.width)
+  // not work well
+  // it('display value in text input when setValue is emitted', async () => {
+  //   const wrapper = mount(SimpleComp)
+  //   const txtInput = wrapper.find('input[type="text"]')
+    
+  //   await txtInput.setValue('test');
+
+  //   expect(wrapper.find('input[type="text"]').element).toBe('test');
   // })
+
+  it('displays same width what we want', () => {
+    const wrapper = shallowMount(SimpleComp);
+    
+    expect(wrapper.find('.div-bg').exists()).toBe(true);
+    expect(wrapper.find('.div-bg').element.style.width).toBe('200px');
+  })
  
   it('displays "clicked" when custom event is emitted', async () => {
     // not work well
     const wrapper = mount(SimpleComp);
-    wrapper.findComponent(SimpleChildComp).vm.$emit('click');
-    // await wrapper.findComponent(SimpleChildComp).find('button').trigger('click');    
+    const childRef = wrapper.findComponent(SimpleChildComp)
+    childRef.vm.$emit('click');
+    // await childRef.find('button').trigger('click');
 
-    expect(wrapper.emitted().click).toBeTruthy();    
-    // await Vue.nextTick()
-    
+    await wrapper.vm.$nextTick()
+
+    expect(childRef.exists()).toBe(true);
+    expect(wrapper.emitted().click).toBeTruthy();
+    expect(wrapper.emitted().click?.length).toBe(1);
     // expect(wrapper.find('p').html()).toContain('clicked');    
   })
 
