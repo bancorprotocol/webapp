@@ -1,6 +1,7 @@
 import { DryRelay } from "@/api/eos/eosBancorCalc";
 import { compareString } from "@/api/helpers";
 import { Sym } from "eos-common";
+import moment from "moment";
 
 const bntToken = {
   contract: "bntbntbntbnt",
@@ -406,6 +407,20 @@ export const previousPoolFees: PreviousPoolFee[] = [
     blockNumber: 11268926,
     id: "0x04D0231162b4784b706908c787CE32bD075db9b7"
   }
+];
+
+export const liquidityMiningEndTime = moment(
+  "2021-02-08 20:15 +0000",
+  "YYYY-MM-DD HH:mm Z"
+).unix();
+
+export const highCapPools = [
+  "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+  "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec",
+  "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306",
+  "0x874d8dE5b26c9D9f6aA8d7bab283F9A9c6f777f4",
+  "0xE5Df055773Bf9710053923599504831c7DBdD697",
+  "0x04D0231162b4784b706908c787CE32bD075db9b7"
 ];
 
 export const findPreviousPoolFee = (

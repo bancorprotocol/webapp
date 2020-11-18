@@ -1,4 +1,15 @@
-import { calculatePositionFees } from "@/api/pureHelpers";
+import {
+  calculatePositionFees,
+  decToPpm,
+  miningBntReward,
+  miningTknReward
+} from "@/api/pureHelpers";
+
+describe("dec to ppm works", () => {
+  test("60%", () => {
+    expect(decToPpm(0.6)).toBe("600000");
+  });
+});
 
 describe("can calculate position fees", () => {
   test("test two", async () => {
@@ -29,5 +40,33 @@ describe("can calculate position fees", () => {
       reserveRate
     );
     expect(res).toBe("-1933747839780032");
+  });
+});
+
+describe("can calculate mining aprs", () => {
+  test("bnt", () => {
+    const protectedBnt = "3390211026483950866776662";
+
+    const res = miningBntReward(protectedBnt, true);
+
+    const expectedResult = 1.07367947646;
+    expect(res).toBeCloseTo(expectedResult);
+  });
+
+  test("tkn", () => {
+    const protectedTkn = "11221593721149874107090";
+    const bntReserveBalance = "8101409855370277274285454";
+    const tknReserveBalance = "15800503317283360679542";
+
+    const res = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
+      protectedTkn,
+      true
+    );
+
+    const expectedResult = 0.271131748522;
+
+    expect(res).toBeCloseTo(expectedResult);
   });
 });
