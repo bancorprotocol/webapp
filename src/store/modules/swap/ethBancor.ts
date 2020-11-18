@@ -5908,8 +5908,6 @@ export class EthBancorModule
       )
     );
 
-    // 555
-    //
     const anchorAndConverters$ = combineLatest([
       anchors$,
       bancorConverterRegistry$
@@ -5979,7 +5977,7 @@ export class EthBancorModule
     );
 
     const asArray$ = moreData$
-      .pipe(bufferTime(300))
+      .pipe(bufferTime(100))
       .subscribe(x => console.log(x, "produc"));
 
     // const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
