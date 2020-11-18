@@ -6363,6 +6363,8 @@ export class EthBancorModule
               )
             );
           }
+
+          await wait(200);
           return result.flat(1);
         })
       )
