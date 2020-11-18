@@ -139,7 +139,7 @@ import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {
   findPreviousPoolFee,
-  previousPoolFees,
+  PreviousPoolFee,
   priorityEthPools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
@@ -256,10 +256,7 @@ const calculateReturnOnInvestment = (
   investment: string,
   newReturn: string
 ): string => {
-  return new BigNumber(newReturn)
-    .div(investment)
-    .minus(1)
-    .toString();
+  return new BigNumber(newReturn).div(investment).minus(1).toString();
 };
 
 // returns the rate of 1 pool token in reserve token units
@@ -546,6 +543,9 @@ interface RefinedAbiRelay {
 const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
+const ppmToDec = (ppm: number | string): number =>
+  new BigNumber(ppm).dividedBy(oneMillion).toNumber();
+
 const determineConverterType = (
   converterType: string | undefined
 ): PoolType => {
@@ -561,6 +561,63 @@ const determineConverterType = (
     return PoolType.Liquid;
   }
   throw new Error("Failed to determine the converter type");
+};
+
+const getHistoricFees = async (
+  id: string,
+  converterAddress: string,
+  network: EthNetworks,
+  blockHoursAgo: number,
+  currentBlock: number
+): Promise<PreviousPoolFee[]> => {
+  const w3 = getWeb3(network);
+  const contract = buildV28ConverterContract(converterAddress, w3);
+
+  const history = [];
+  const chunkSize = 2000;
+
+  let startBlock = blockHoursAgo;
+  let endblock = startBlock + chunkSize;
+
+  while (startBlock < currentBlock) {
+    const options = {
+      fromBlock: startBlock,
+      toBlock: endblock
+    };
+
+    const events = await contract.getPastEvents("ConversionFeeUpdate", options);
+
+    history.push(
+      ...events.map(e => ({
+        id,
+        oldDecFee: ppmToDec(e.returnValues["_prevFee"]),
+        blockNumber: e.blockNumber
+      }))
+    );
+
+    startBlock = endblock;
+    endblock += chunkSize;
+
+    if (endblock > currentBlock) {
+      endblock = currentBlock;
+    }
+  }
+
+  return history;
+};
+
+const blockNumberHoursAgo = async (hours: number, network: EthNetworks) => {
+  const currentBlock = await getWeb3(network).eth.getBlockNumber();
+  const secondsPerBlock = 13.3;
+  const secondsToRewind = moment.duration(hours, "hours").asSeconds();
+  const blocksToRewind = parseInt(
+    new BigNumber(secondsToRewind).div(secondsPerBlock).toString()
+  );
+  console.log(secondsToRewind, "are seconds to rewind", blocksToRewind);
+  return {
+    blockHoursAgo: currentBlock - blocksToRewind,
+    currentBlock
+  };
 };
 
 const smartTokenAnchor = (smartToken: Token) => ({
@@ -896,10 +953,7 @@ interface RawV2Pool {
 }
 
 const calculateMean = (a: string, b: string) =>
-  new BigNumber(a)
-    .plus(b)
-    .div(2)
-    .toString();
+  new BigNumber(a).plus(b).div(2).toString();
 
 interface V2Response {
   reserveFeeds: ReserveFeed[];
@@ -1796,10 +1850,7 @@ export class EthBancorModule
         Promise.all(
           allPositions.map(async position => {
             const now = moment();
-            const fullWaitTime = now
-              .clone()
-              .add(1, "year")
-              .unix();
+            const fullWaitTime = now.clone().add(1, "year").unix();
 
             const timeNow = moment().unix();
 
@@ -2124,6 +2175,10 @@ export class EthBancorModule
 
   @mutation setLoadingPositions(value: boolean) {
     this.loadingProtectedPositions = value;
+  }
+
+  @mutation setHistoricFees(value: PreviousPoolFee[]) {
+    this.previousPoolFeesArr = value;
   }
 
   @action async fetchLockedBalances(storeAddress?: string) {
@@ -5108,22 +5163,28 @@ export class EthBancorModule
       poolAndSmartTokens
     );
 
-    const polished: RefinedAbiRelay[] = rawRelays
-      .filter(x => Number(x.connectorTokenCount) == 2)
-      .map(half => ({
-        ...half,
-        anchorAddress: findOrThrow(
-          convertersAndAnchors,
-          item => compareString(item.converterAddress, half.converterAddress),
-          "failed to find anchor address"
-        ).anchorAddress,
-        reserves: [half.connectorToken1, half.connectorToken2] as [
-          string,
-          string
-        ],
-        version: Number(half.version),
-        converterType: determineConverterType(half.converterType)
-      }));
+    const polished: RefinedAbiRelay[] = await Promise.all(
+      rawRelays
+        .filter(x => Number(x.connectorTokenCount) == 2)
+        .map(
+          async half =>
+            <RefinedAbiRelay>{
+              ...half,
+              anchorAddress: findOrThrow(
+                convertersAndAnchors,
+                item =>
+                  compareString(item.converterAddress, half.converterAddress),
+                "failed to find anchor address"
+              ).anchorAddress,
+              reserves: [half.connectorToken1, half.connectorToken2] as [
+                string,
+                string
+              ],
+              version: Number(half.version),
+              converterType: determineConverterType(half.converterType)
+            }
+        )
+    );
 
     const overWroteVersions = updateArray(
       polished,
@@ -5477,7 +5538,7 @@ export class EthBancorModule
 
     const tokens = this.tokens;
 
-    const blockNow = await this.blockNumberHoursAgo(0);
+    const blockNow = await blockNumberHoursAgo(0, this.currentNetwork);
     const timeNow = moment().unix();
 
     const removeEvents = groupedRemoveLiquidityEvents
@@ -5612,6 +5673,7 @@ export class EthBancorModule
 
   liquidityHistoryArr: DecodedTimedEvent<ConversionEventDecoded>[] = [];
   singleTradeHistoryArr: DecodedEvent<ConversionEventDecoded>[] = [];
+  previousPoolFeesArr: PreviousPoolFee[] = [];
 
   @mutation setLiquidityHistory({
     joinedTradeEvents,
@@ -5627,8 +5689,12 @@ export class EthBancorModule
       .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
   }
 
+  get previousPoolFees() {
+    return this.previousPoolFeesArr;
+  }
+
   get previousRelayBalances() {
-    const singleTrades = this.singleTradeHistoryArr;
+    const { singleTradeHistoryArr, previousPoolFees } = this;
 
     const anchorsRecentlyTradedAgainst = uniqWith(
       this.singleTradeHistoryArr
@@ -5644,7 +5710,7 @@ export class EthBancorModule
     );
 
     const tradesCollected = relays.map(relay => {
-      const trades = singleTrades.filter(trade =>
+      const trades = singleTradeHistoryArr.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
       const currentFee = relay.fee / 100;
@@ -5789,22 +5855,6 @@ export class EthBancorModule
     };
   }
 
-  @action async blockNumberHoursAgo(hours: number) {
-    const currentBlock = await getWeb3(
-      this.currentNetwork
-    ).eth.getBlockNumber();
-    const secondsPerBlock = 13.3;
-    const secondsToRewind = moment.duration(hours, "hours").asSeconds();
-    const blocksToRewind = parseInt(
-      new BigNumber(secondsToRewind).div(secondsPerBlock).toString()
-    );
-    console.log(secondsToRewind, "are seconds to rewind", blocksToRewind);
-    return {
-      blockHoursAgo: currentBlock - blocksToRewind,
-      currentBlock
-    };
-  }
-
   get availableBalances(): ViewLockedBalance[] {
     const now = moment();
     const bntPrice = this.bntUsdPrice;
@@ -5921,7 +5971,7 @@ export class EthBancorModule
         { currentBlock, blockHoursAgo }
       ] = await Promise.all([
         this.fetchContractAddresses(networkVariables.contractRegistry),
-        this.blockNumberHoursAgo(24)
+        blockNumberHoursAgo(24, currentNetwork)
       ]);
 
       console.log(contractAddresses, "are contract addresses");
@@ -5944,7 +5994,7 @@ export class EthBancorModule
       const [registeredAnchorAddresses, currentBlockInfo] = await Promise.all([
         this.fetchAnchorAddresses({
           converterRegistryAddress: contractAddresses.BancorConverterRegistry,
-          network: this.currentNetwork
+          network: currentNetwork
         }),
         web3.eth.getBlock(currentBlock)
       ]);
@@ -6283,6 +6333,47 @@ export class EthBancorModule
     }
   }
 
+  @action async checkFees(pools: Relay[]) {
+    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
+
+    const relaysList = sortAlongSide(
+      pools,
+      relay => relay.id,
+      relaysByLiqDepth.map(relay => relay.id)
+    );
+
+    const chunkedRelaysList = chunk(relaysList, 5);
+    const { blockHoursAgo, currentBlock } = await blockNumberHoursAgo(
+      24,
+      this.currentNetwork
+    );
+
+    const historicFees: PreviousPoolFee[] = (
+      await Promise.all(
+        chunkedRelaysList.map(async relays => {
+          const result: PreviousPoolFee[][] = [];
+          for (const relay of relays) {
+            result.push(
+              await getHistoricFees(
+                relay.id,
+                relay.contract,
+                this.currentNetwork,
+                blockHoursAgo,
+                currentBlock
+              )
+            );
+          }
+          return result.flat(1);
+        })
+      )
+    ).flat(1);
+
+    if (historicFees.length > 0) {
+      console.log("historic fees", historicFees);
+      this.setHistoricFees([...this.previousPoolFees, ...historicFees]);
+    }
+  }
+
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
     if (!convertersAndAnchors || convertersAndAnchors.length == 0) return;
 
@@ -6308,6 +6399,8 @@ export class EthBancorModule
     const tokenAddresses = pools
       .flatMap(tokensInRelay)
       .map(token => token.contract);
+
+    void this.checkFees(allPools);
 
     return tokenAddresses;
   }
@@ -6466,7 +6559,7 @@ export class EthBancorModule
   @action async focusPool(id: string): Promise<FocusPoolRes> {
     const pool = await this.relayById(id);
     const converterAddress = pool.contract;
-    const yesterday = await this.blockNumberHoursAgo(24);
+    const yesterday = await blockNumberHoursAgo(24, this.currentNetwork);
 
     const res = await this.pullConverterEvents({
       converterAddress,

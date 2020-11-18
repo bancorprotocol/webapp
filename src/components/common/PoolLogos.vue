@@ -19,7 +19,10 @@
         class="img-avatar img-avatar32 bg-white"
         :src="token.logo"
         alt="Token Logo"
-        style="box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08); border: solid 1px #e6ebf2;"
+        style="
+          box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+          border: solid 1px #e6ebf2;
+        "
       />
       <span class="ml-2 mr-2">{{ token.symbol }}</span>
       <font-awesome-icon v-if="dropdown" icon="caret-down" />

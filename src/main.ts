@@ -78,7 +78,7 @@ sync(store, router, { moduleName: "routeModule" });
 
 Vue.mixin({
   methods: {
-    promptAuth: async function() {
+    promptAuth: async function () {
       const isAuthenticated = this.$store.getters["wallet/isAuthenticated"];
       if (isAuthenticated) return;
       const currentNetwork = this.$store.getters["bancor/currentNetwork"];
