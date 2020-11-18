@@ -35,6 +35,12 @@ export interface ProposalMetaData {
   revision: string;
 }
 
+interface Votes {
+  voted: undefined | "for" | "against";
+  for: number;
+  against: number;
+}
+
 export interface Proposal {
   id: number;
   // timestamp
@@ -52,11 +58,7 @@ export interface Proposal {
   totalVotesFor: number;
   totalVotes: number;
   totalVotesAvailable: number;
-  votes: {
-    voted: undefined | "for" | "against";
-    for: number;
-    against: number;
-  };
+  votes: Votes;
   metadata?: ProposalMetaData;
 }
 
