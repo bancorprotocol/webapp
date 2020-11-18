@@ -39,7 +39,8 @@ import {
   ViewLockedBalance,
   ProtectionRes,
   ViewAmountDetail,
-  WeiExtendedAsset
+  WeiExtendedAsset,
+  PoolLiqMiningApr
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -139,6 +140,8 @@ import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {
   findPreviousPoolFee,
+  highCapPools,
+  liquidityMiningEndTime,
   PreviousPoolFee,
   priorityEthPools
 } from "./staticRelays";
@@ -149,7 +152,12 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { calculatePositionFees } from "@/api/pureHelpers";
+import {
+  calculatePositionFees,
+  decToPpm,
+  miningBntReward,
+  miningTknReward
+} from "@/api/pureHelpers";
 
 interface Balance {
   balance: string;
@@ -539,9 +547,6 @@ interface RefinedAbiRelay {
   conversionFee: string;
   owner: string;
 }
-
-const decToPpm = (dec: number | string): string =>
-  new BigNumber(dec).times(oneMillion).toFixed(0);
 
 const ppmToDec = (ppm: number | string): number =>
   new BigNumber(ppm).dividedBy(oneMillion).toNumber();
@@ -953,6 +958,7 @@ const compareAnchorAndConverter = (
 ) =>
   compareString(a.anchorAddress, b.anchorAddress) &&
   compareString(a.converterAddress, b.converterAddress);
+
 interface RawAbiRelay {
   connectorToken1: string;
   connectorToken2: string;
@@ -1289,6 +1295,28 @@ const reserveBalanceShape = (
     reserveTwoAddress: reserveTwo,
     reserveOne: contract.methods.getConnectorBalance(reserveOne),
     reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
+  };
+};
+
+const protectedReservesShape = (
+  storeAddress: string,
+  anchorAddress: string,
+  reserveOneAddress: string,
+  reserveTwoAddress: string
+) => {
+  const contract = buildLiquidityProtectionStoreContract(storeAddress);
+  return {
+    anchorAddress,
+    reserveOneAddress,
+    reserveTwoAddress,
+    reserveOneProtected: contract.methods.totalProtectedReserveAmount(
+      anchorAddress,
+      reserveOneAddress
+    ),
+    reserveTwoProtected: contract.methods.totalProtectedReserveAmount(
+      anchorAddress,
+      reserveTwoAddress
+    )
   };
 };
 
@@ -1639,6 +1667,24 @@ export class EthBancorModule
       blockExplorerLink: await this.createExplorerLink(res),
       txId: res
     };
+  }
+
+  highTierPoolsArr: string[] = [];
+
+  @mutation setHighTierPools(highTierPools: string[]) {
+    console.log("high tier pools", highTierPools);
+    this.highTierPoolsArr = highTierPools;
+  }
+
+  @action async fetchAndSetHighTierPools(liquidityProtectionContract: string) {
+    const lpContract = buildLiquidityProtectionContract(
+      liquidityProtectionContract || this.contracts.LiquidityProtection,
+      getWeb3(this.currentNetwork)
+    );
+
+    const highTierPools = await lpContract.methods.highTierPools().call();
+
+    this.setHighTierPools(highTierPools);
   }
 
   protectedPositionsArr: ProtectedLiquidityCalculated[] = [];
@@ -3086,6 +3132,7 @@ export class EthBancorModule
     const availableHistories = this.availableHistories;
 
     const aprs = this.poolAprs;
+    const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
     const whiteListedPools = this.whiteListedPools;
     const previousRelayBalances = this.previousRelayBalances;
 
@@ -3142,6 +3189,11 @@ export class EthBancorModule
             .toString();
 
         const volume = feesGenerated && feesGenerated.totalVolume;
+
+        const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
+          compareString(apr.poolId, relay.id)
+        );
+
         return {
           id: relay.anchor.contract,
           version: Number(relay.version),
@@ -3167,7 +3219,8 @@ export class EthBancorModule
           ...(apr && { apr: apr.oneWeekApr }),
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
           ...(feesVsLiquidity && { feesVsLiquidity }),
-          ...(volume && { volume })
+          ...(volume && { volume }),
+          aprMiningRewards
         } as ViewRelay;
       });
   }
@@ -3530,21 +3583,9 @@ export class EthBancorModule
   }
 
   @action async isHighTierPool(anchor: string): Promise<boolean> {
-    const contract = buildLiquidityProtectionContract(
-      this.contracts.LiquidityProtection,
-      getWeb3(this.currentNetwork)
+    return this.highTierPoolsArr.some(anchorId =>
+      compareString(anchor, anchorId)
     );
-    let isHighTier = false;
-
-    try {
-      isHighTier = await contract.methods.isHighTierPool(anchor).call();
-    } catch (error) {
-      console.error(
-        `getting isHighTierPool failed on '${this.contracts.LiquidityProtection}' ${error.message}!`
-      );
-    }
-
-    return isHighTier;
   }
 
   @action async getMaxStakes({ poolId }: { poolId: string }) {
@@ -5963,6 +6004,8 @@ export class EthBancorModule
 
       console.log(contractAddresses, "are contract addresses");
 
+      void this.fetchAndSetHighTierPools(contractAddresses.LiquidityProtection);
+
       this.fetchLiquidityProtectionSettings(
         contractAddresses.LiquidityProtection
       );
@@ -6155,6 +6198,7 @@ export class EthBancorModule
           this.fetchAndSetTokenBalances(uniqueTokenAddreses);
         }
         this.addAprsToPools();
+        this.addLiqMiningAprsToPools();
         this.setLoadingPools(false);
       } catch (e) {
         console.log("Failed loading pools");
@@ -6167,6 +6211,131 @@ export class EthBancorModule
       this.fetchAndSetTokenBalances(uniqWith(tokenAddresses, compareString));
     }
     this.addAprsToPools();
+    this.addLiqMiningAprsToPools();
+  }
+
+  @action async addLiqMiningAprsToPools() {
+    const existing = this.relaysList;
+    const highTierPools = existing.filter(relay =>
+      this.highTierPoolsArr.some(htp => compareString(relay.id, htp))
+    ) as RelayWithReserveBalances[];
+
+    const storeAddress = this.contracts.LiquidityProtectionStore;
+
+    const protectedShapes = highTierPools.map(pool => {
+      const [reserveOne, reserveTwo] = pool.reserves;
+      return protectedReservesShape(
+        storeAddress,
+        pool.id,
+        reserveOne.contract,
+        reserveTwo.contract
+      );
+    });
+
+    const [protectedReserves] = ((await this.multi({
+      groupsOfShapes: [protectedShapes]
+    })) as unknown[]) as {
+      anchorAddress: string;
+      reserveOneAddress: string;
+      reserveTwoAddress: string;
+      reserveOneProtected: string;
+      reserveTwoProtected: string;
+    }[][];
+
+    const zippedProtectedReserves = protectedReserves.map(protectedReserve => ({
+      anchorAddress: protectedReserve.anchorAddress,
+      reserves: [
+        {
+          contract: protectedReserve.reserveOneAddress,
+          amount: protectedReserve.reserveOneProtected
+        },
+        {
+          contract: protectedReserve.reserveTwoAddress,
+          amount: protectedReserve.reserveTwoProtected
+        }
+      ]
+    }));
+
+    console.log(
+      protectedReserves,
+      "are the protected reserves",
+      zippedProtectedReserves
+    );
+
+    const res = zippedProtectedReserves.map(pool => {
+      const isHighCap = highCapPools.some(anchor =>
+        compareString(anchor, pool.anchorAddress)
+      );
+      const poolBalances = findOrThrow(highTierPools, p =>
+        compareString(pool.anchorAddress, p.id)
+      );
+      const [
+        bntProtectedReserve,
+        tknProtectedReserve
+      ] = sortAlongSide(pool.reserves, reserve => reserve.contract, [
+        this.liquidityProtectionSettings.networkToken
+      ]);
+      const [
+        bntReserve,
+        tknReserve
+      ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
+        this.liquidityProtectionSettings.networkToken
+      ]);
+
+      return {
+        ...pool,
+        bntReward: miningBntReward(bntProtectedReserve.amount, isHighCap),
+        tknReward: miningTknReward(
+          tknReserve.amount,
+          bntReserve.amount,
+          tknProtectedReserve.amount,
+          isHighCap
+        )
+      };
+    });
+
+    const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
+      const [bntReserve, tknReserve] = sortAlongSide(
+        calculated.reserves,
+        reserve => reserve.contract,
+        [this.liquidityProtectionSettings.networkToken]
+      );
+      const fullTknReserve = findOrThrow(
+        highTierPools.flatMap(pool => pool.reserves),
+        reserve => compareString(reserve.contract, tknReserve.contract),
+        "failed to find reserve"
+      );
+      return {
+        poolId: calculated.anchorAddress,
+        endTime: liquidityMiningEndTime,
+        rewards: [
+          {
+            address: bntReserve.contract,
+            amount: bntReserve.amount,
+            symbol: "BNT",
+            reward: calculated.bntReward
+          },
+          {
+            address: tknReserve.contract,
+            amount: tknReserve.amount,
+            symbol: fullTknReserve.symbol,
+            reward: calculated.tknReward
+          }
+        ]
+      };
+    });
+
+    this.updateLiqMiningApr(liqMiningApr);
+  }
+
+  poolLiqMiningAprs: PoolLiqMiningApr[] = [];
+
+  @mutation updateLiqMiningApr(liqMiningApr: PoolLiqMiningApr[]) {
+    const existing = this.poolLiqMiningAprs;
+    const withoutOld = existing.filter(
+      apr => !liqMiningApr.some(a => compareString(a.poolId, apr.poolId))
+    );
+    this.poolLiqMiningAprs = [...withoutOld, ...liqMiningApr];
   }
 
   poolAprs: PoolApr[] = [];

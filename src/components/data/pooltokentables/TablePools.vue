@@ -22,6 +22,26 @@
       <pool-logos :pool="item" :cursor="false" />
     </template>
 
+    <template #cell(aprMiningRewards)="{ value }">
+      <div v-if="value && value.rewards">
+        <template v-for="reward in value.rewards">
+          <div :key="reward.address" class="font-size-12">
+            {{
+              `${reward.symbol} ${
+                reward.reward ? formatPercent(reward.reward) : "N/A"
+              }`
+            }}
+          </div>
+        </template>
+        <b-badge variant="danger">
+          <countdown-timer
+            :date-unix="value.endTime"
+            msg-countdown-ended="Rewards ended"
+          />
+        </b-badge>
+      </div>
+    </template>
+
     <template #cell(liqDepth)="{ value }">
       {{ prettifyNumber(value, true) }}
     </template>
@@ -57,9 +77,10 @@ import { formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
 import { ViewTableField } from "@/components/common/DataTable.vue";
+import CountdownTimer from "@/components/common/CountdownTimer.vue";
 
 @Component({
-  components: { DataTable, PoolLogos, ActionButtons }
+  components: { CountdownTimer, DataTable, PoolLogos, ActionButtons }
 })
 export default class TablePools extends Vue {
   @Prop() items!: ViewRelay[];
@@ -102,6 +123,14 @@ export default class TablePools extends Vue {
       },
       {
         id: 4,
+        label: "Rewards",
+        key: "aprMiningRewards",
+        tooltip:
+          "Estimated APR based on weekly BNT Liquidity Mining rewards (pending governance vote). Counter indicates time until 12-week rewards cycle concludes.",
+        minWidth: "150px"
+      },
+      {
+        id: 5,
         label: "Fee",
         key: "fee",
         tooltip:
@@ -111,13 +140,13 @@ export default class TablePools extends Vue {
       ...(this.isEth
         ? [
             {
-              id: 5,
+              id: 6,
               label: "Volume (24h)",
               key: "volume",
               minWidth: "140px"
             },
             {
-              id: 6,
+              id: 7,
               label: "Fees (24hr)",
               key: "feesGenerated",
               tooltip:
@@ -125,16 +154,16 @@ export default class TablePools extends Vue {
               minWidth: "140px"
             },
             {
-              id: 7,
-              label: "1y Fees / Liquidity",
+              id: 8,
+              label: "APR",
               key: "feesVsLiquidity",
               tooltip: "24h fees annualized divided by liquidity in the pool.",
-              minWidth: "190px"
+              minWidth: "80px"
             }
           ]
         : []),
       {
-        id: 8,
+        id: 9,
         label: "Actions",
         key: "actions",
         sortable: false,
