@@ -293,6 +293,7 @@ export const buildLiquidityProtectionContract = (
   maxSystemNetworkTokenRatio: () => CallReturn<string>;
   lockDuration: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
+  isHighTierPool: (anchor: string) => CallReturn<boolean>;
   protectLiquidity: (
     anchor: string,
     poolTokenWei: string
