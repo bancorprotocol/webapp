@@ -3,7 +3,6 @@
     :fields="fields"
     :items="items"
     :filter="filter"
-    filter-by="symbol"
     :filter-function="doFilter"
     default-sort="liqDepth"
   >

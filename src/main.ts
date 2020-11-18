@@ -11,8 +11,8 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import "@/assets/_scss/main.scss";
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { fas } from "@fortawesome/free-solid-svg-icons";
-import { fab } from "@fortawesome/free-brands-svg-icons";
+import { fas, fab } from "@/assets/icons";
+
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
 import { firebase } from "@firebase/app";
@@ -24,25 +24,26 @@ const appVersion = JSON.parse(
 ).version;
 
 const isDev = process.env.NODE_ENV == "development";
-Sentry.init({
-  dsn:
-    "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
-  debug: isDev,
-  environment: isDev ? "development" : "prod/staging",
-  release: `swap-${appVersion}`,
-  integrations: [
-    new VueIntegration({
-      Vue,
-      tracing: true,
-      tracingOptions: {
-        trackComponents: false
-      }
-    }),
-    new Integrations.BrowserTracing()
-  ],
-  sampleRate: 0.1,
-  tracesSampleRate: 0.1
-});
+!isDev &&
+  Sentry.init({
+    dsn:
+      "https://fc7323571bfc4b8c8aa158e071a9b907@o465012.ingest.sentry.io/5476475",
+    debug: isDev,
+    environment: isDev ? "development" : "prod/staging",
+    release: `swap-${appVersion}`,
+    integrations: [
+      new VueIntegration({
+        Vue,
+        tracing: true,
+        tracingOptions: {
+          trackComponents: false
+        }
+      }),
+      new Integrations.BrowserTracing()
+    ],
+    sampleRate: 0.1,
+    tracesSampleRate: 0.1
+  });
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4yWnTGa6qj6dR1RLW6Clod0iMn4niflU",
@@ -67,7 +68,7 @@ Vue.use(
 
 Vue.use(BootstrapVue);
 
-library.add(fas, fab);
+library.add(...fas, ...fab);
 
 Vue.component("FontAwesomeIcon", FontAwesomeIcon);
 
