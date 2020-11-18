@@ -28,11 +28,17 @@
           <div :key="reward.address">
             {{
               `${reward.symbol} ${
-                reward.reward ? prettifyNumber(reward.reward) : "????"
+                reward.reward ? formatPercent(reward.reward) : "N/A"
               }`
             }}
           </div>
         </template>
+        <b-badge variant="danger">
+          <countdown-timer
+            :date-unix="value.endTime"
+            msg-countdown-ended="Rewards ended"
+          />
+        </b-badge>
       </div>
     </template>
 
@@ -71,9 +77,10 @@ import { formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
 import { ViewTableField } from "@/components/common/DataTable.vue";
+import CountdownTimer from "@/components/common/CountdownTimer.vue";
 
 @Component({
-  components: { DataTable, PoolLogos, ActionButtons }
+  components: { CountdownTimer, DataTable, PoolLogos, ActionButtons }
 })
 export default class TablePools extends Vue {
   @Prop() items!: ViewRelay[];
