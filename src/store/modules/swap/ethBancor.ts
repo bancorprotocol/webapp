@@ -152,7 +152,12 @@ import moment from "moment";
 import { getNetworkVariables } from "../../config";
 import { getWeb3, Provider } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { calculatePositionFees } from "@/api/pureHelpers";
+import {
+  calculatePositionFees,
+  decToPpm,
+  miningHighCapBntReward,
+  miningHighCapTknReward
+} from "@/api/pureHelpers";
 
 interface Balance {
   balance: string;
@@ -259,7 +264,10 @@ const calculateReturnOnInvestment = (
   investment: string,
   newReturn: string
 ): string => {
-  return new BigNumber(newReturn).div(investment).minus(1).toString();
+  return new BigNumber(newReturn)
+    .div(investment)
+    .minus(1)
+    .toString();
 };
 
 // returns the rate of 1 pool token in reserve token units
@@ -543,8 +551,6 @@ interface RefinedAbiRelay {
   owner: string;
 }
 
-const decToPpm = (dec: number | string): string =>
-  new BigNumber(dec).times(oneMillion).toFixed(0);
 
 const determineConverterType = (
   converterType: string | undefined
@@ -896,7 +902,10 @@ interface RawV2Pool {
 }
 
 const calculateMean = (a: string, b: string) =>
-  new BigNumber(a).plus(b).div(2).toString();
+  new BigNumber(a)
+    .plus(b)
+    .div(2)
+    .toString();
 
 interface V2Response {
   reserveFeeds: ReserveFeed[];
@@ -1246,6 +1255,28 @@ const reserveBalanceShape = (
     reserveTwoAddress: reserveTwo,
     reserveOne: contract.methods.getConnectorBalance(reserveOne),
     reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
+  };
+};
+
+const protectedReservesShape = (
+  storeAddress: string,
+  anchorAddress: string,
+  reserveOneAddress: string,
+  reserveTwoAddress: string
+) => {
+  const contract = buildLiquidityProtectionStoreContract(storeAddress);
+  return {
+    anchorAddress,
+    reserveOneAddress,
+    reserveTwoAddress,
+    reserveOneProtected: contract.methods.totalProtectedReserveAmount(
+      anchorAddress,
+      reserveOneAddress
+    ),
+    reserveTwoProtected: contract.methods.totalProtectedReserveAmount(
+      anchorAddress,
+      reserveTwoAddress
+    )
   };
 };
 
@@ -1605,10 +1636,9 @@ export class EthBancorModule
     this.highTierPoolsArr = highTierPools;
   }
 
-  @action
-  async loadHighTierPools() {
+  @action async fetchAndSetHighTierPools(liquidityProtectionContract: string) {
     const lpContract = buildLiquidityProtectionContract(
-      this.contracts.LiquidityProtection,
+      liquidityProtectionContract || this.contracts.LiquidityProtection,
       getWeb3(this.currentNetwork)
     );
 
@@ -1813,7 +1843,10 @@ export class EthBancorModule
         Promise.all(
           allPositions.map(async position => {
             const now = moment();
-            const fullWaitTime = now.clone().add(1, "year").unix();
+            const fullWaitTime = now
+              .clone()
+              .add(1, "year")
+              .unix();
 
             const timeNow = moment().unix();
 
@@ -5934,7 +5967,7 @@ export class EthBancorModule
 
       console.log(contractAddresses, "are contract addresses");
 
-      await this.loadHighTierPools();
+      void this.fetchAndSetHighTierPools(contractAddresses.LiquidityProtection);
 
       this.fetchLiquidityProtectionSettings(
         contractAddresses.LiquidityProtection
@@ -6146,85 +6179,91 @@ export class EthBancorModule
 
   @action async addLiqMiningAprsToPools() {
     const existing = this.relaysList;
-    const onlyHighTier = existing.filter(relay =>
+    const highTierPools = existing.filter(relay =>
       this.highTierPoolsArr.some(htp => compareString(relay.id, htp))
-    );
+    ) as RelayWithReserveBalances[];
+
+    const storeAddress = this.contracts.LiquidityProtectionStore;
 
     const lpContract = buildLiquidityProtectionStoreContract(
-      this.contracts.LiquidityProtectionStore,
+      storeAddress,
       getWeb3(this.currentNetwork)
     );
 
-    const liqMiningApr: PoolLiqMiningApr[] = [];
+    // const liqMiningApr: PoolLiqMiningApr[] = [];
 
-    for (const pool of onlyHighTier as RelayWithReserveBalances[]) {
-      const highCap = highCapPools.some(p => compareString(p, pool.id));
-
-      const [bnt, token] = await Promise.all(
-        pool.reserves.map(
-          async (r): Promise<LiqMiningApr> => ({
-            symbol: r.symbol,
-            address: r.contract,
-            amount: await lpContract.methods
-              .totalProtectedReserveAmount(pool.id, r.contract)
-              .call()
-          })
-        )
+    const protectedShapes = highTierPools.map(pool => {
+      const [reserveOne, reserveTwo] = pool.reserves;
+      return protectedReservesShape(
+        storeAddress,
+        pool.id,
+        reserveOne.contract,
+        reserveTwo.contract
       );
+    });
 
-      if (highCap) {
-        bnt.reward = new BigNumber(
-          new BigNumber("70000000000000000000000")
-            .multipliedBy(52)
-            .dividedBy(new BigNumber(bnt.amount))
+    const [protectedReserves] = ((await this.multi({
+      groupsOfShapes: [protectedShapes]
+    })) as unknown[]) as {
+      anchorAddress: string;
+      reserveOneAddress: string;
+      reserveTwoAddress: string;
+      reserveOneProtected: string;
+      reserveTwoProtected: string;
+    }[][];
+
+    const zippedProtectedReserves = protectedReserves.map(protectedReserve => ({
+      anchorAddress: protectedReserve.anchorAddress,
+      reserves: [
+        {
+          contract: protectedReserve.reserveOneAddress,
+          amount: protectedReserve.reserveOneProtected
+        },
+        {
+          contract: protectedReserve.reserveTwoAddress,
+          amount: protectedReserve.reserveTwoProtected
+        }
+      ]
+    }));
+
+    console.log(
+      protectedReserves,
+      "are the protected reserves",
+      zippedProtectedReserves
+    );
+
+    const liqMiningApr = zippedProtectedReserves.map(pool => {
+      const isHighCap = highCapPools.some(anchor =>
+        compareString(anchor, pool.anchorAddress)
+      );
+      const poolBalances = findOrThrow(highTierPools, p =>
+        compareString(pool.anchorAddress, p.id)
+      );
+      const [
+        bntProtectedReserve,
+        tknProtectedReserve
+      ] = sortAlongSide(pool.reserves, reserve => reserve.contract, [
+        this.liquidityProtectionSettings.networkToken
+      ]);
+      const [
+        bntReserve,
+        tknReserve
+      ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
+        this.liquidityProtectionSettings.networkToken
+      ]);
+
+      return {
+        ...pool,
+        bntReward: miningHighCapBntReward(bntProtectedReserve.amount),
+        tknReward: miningHighCapTknReward(
+          tknReserve.amount,
+          bntReserve.amount,
+          tknProtectedReserve.amount
         )
-          .multipliedBy(100)
-          .dividedBy(oneMillion)
-          .toNumber();
-
-        /*
-        (
-          30000000000000000000000*  (
-            (total TKN reserve)/(total BNT reserve)
-          )
-          * 52/total protoected TKN in the pool
-         )*100
-         */
-
-        token.reward = new BigNumber(
-          new BigNumber("30000000000000000000000")
-            .multipliedBy(
-              new BigNumber(
-                pool.reserveBalances.find(rb =>
-                  compareString(rb.id, token.address)
-                )!.amount
-              ).dividedBy(
-                pool.reserveBalances.find(rb =>
-                  compareString(rb.id, bnt.address)
-                )!.amount
-              )
-            )
-
-            .multipliedBy(new BigNumber(52))
-            .dividedBy(new BigNumber(bnt.amount))
-        )
-          .multipliedBy(100)
-          .dividedBy(oneMillion)
-          .toNumber();
-      } else {
-        // todo implement the low cap version of the calculations
-      }
-
-      const result: PoolLiqMiningApr = {
-        poolId: pool.id,
-        rewards: [bnt, token]
       };
+    });
 
-      liqMiningApr.push(result);
-      console.log("htp", result, pool.reserveBalances);
-    }
-
-    this.updateLiqMiningApr(liqMiningApr);
+    // this.updateLiqMiningApr(liqMiningApr);
   }
 
   poolLiqMiningAprs: PoolLiqMiningApr[] = [];

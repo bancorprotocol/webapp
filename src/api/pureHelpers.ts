@@ -1,5 +1,7 @@
 import BigNumber from "bignumber.js";
 
+const oneMillion = new BigNumber(1000000);
+
 export const calculatePositionFees = (
   originalPoolTokenAmount: string,
   currentPoolTokenSupply: string,
@@ -29,4 +31,34 @@ export const calculatePositionFees = (
     .minus(amount0);
 
   return result.toFixed(0);
+};
+
+export const decToPpm = (dec: number | string): string =>
+  new BigNumber(dec).times(oneMillion).toFixed(0);
+
+export const miningBntReward = (protectedBnt: string, highCap: boolean) => {
+  const baseNumber = "7000000000000000000000";
+  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
+
+  return new BigNumber(magicalNumber)
+    .multipliedBy(52)
+    .dividedBy(protectedBnt)
+    .toNumber();
+};
+
+export const miningTknReward = (
+  tknReserveBalance: string,
+  bntReserveBalance: string,
+  protectedTkn: string,
+  highCap: boolean
+) => {
+  const baseNumber = "3000000000000000000000";
+  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
+  return new BigNumber(
+    new BigNumber(magicalNumber)
+      .multipliedBy(tknReserveBalance)
+      .dividedBy(bntReserveBalance)
+      .multipliedBy(52)
+      .dividedBy(protectedTkn)
+  ).toNumber();
 };

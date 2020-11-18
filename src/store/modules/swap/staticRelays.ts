@@ -1,6 +1,7 @@
 import { DryRelay } from "@/api/eos/eosBancorCalc";
 import { compareString } from "@/api/helpers";
 import { Sym } from "eos-common";
+import moment from 'moment';
 
 const bntToken = {
   contract: "bntbntbntbnt",
@@ -407,6 +408,13 @@ export const previousPoolFees: PreviousPoolFee[] = [
     id: "0x04D0231162b4784b706908c787CE32bD075db9b7"
   }
 ];
+
+export const expectedTime = moment(
+  "2021-02-08 20:15 +0000", 
+  "YYYY-MM-DD HH:mm Z"
+);
+
+console.log(expectedTime.format(), 'was formatted expected time')
 
 export const highCapPools = [
   "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
