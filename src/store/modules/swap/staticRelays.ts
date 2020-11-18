@@ -1,7 +1,7 @@
 import { DryRelay } from "@/api/eos/eosBancorCalc";
 import { compareString } from "@/api/helpers";
 import { Sym } from "eos-common";
-import moment from 'moment';
+import moment from "moment";
 
 const bntToken = {
   contract: "bntbntbntbnt",

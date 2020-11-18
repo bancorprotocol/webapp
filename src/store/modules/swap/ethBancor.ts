@@ -40,8 +40,7 @@ import {
   ProtectionRes,
   ViewAmountDetail,
   WeiExtendedAsset,
-  PoolLiqMiningApr,
-  LiqMiningApr
+  PoolLiqMiningApr
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -3133,7 +3132,7 @@ export class EthBancorModule
     const availableHistories = this.availableHistories;
 
     const aprs = this.poolAprs;
-    const poolLiquidityMiningAprs = this.poolLiqMiningAprs
+    const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
     const whiteListedPools = this.whiteListedPools;
     const previousRelayBalances = this.previousRelayBalances;
 
