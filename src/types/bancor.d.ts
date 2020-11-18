@@ -735,6 +735,7 @@ export interface ViewLockedBalance {
 
 export interface PoolLiqMiningApr {
   poolId: string;
+  endTime: number;
   rewards: LiqMiningApr[];
 }
 

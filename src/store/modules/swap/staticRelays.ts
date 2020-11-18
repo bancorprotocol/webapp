@@ -409,12 +409,10 @@ export const previousPoolFees: PreviousPoolFee[] = [
   }
 ];
 
-export const expectedTime = moment(
-  "2021-02-08 20:15 +0000", 
+export const liquidityMiningEndTime = moment(
+  "2021-02-08 20:15 +0000",
   "YYYY-MM-DD HH:mm Z"
-);
-
-console.log(expectedTime.format(), 'was formatted expected time')
+).unix();
 
 export const highCapPools = [
   "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",

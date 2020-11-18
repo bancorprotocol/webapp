@@ -143,7 +143,8 @@ import {
   findPreviousPoolFee,
   previousPoolFees,
   priorityEthPools,
-  highCapPools
+  highCapPools, 
+  liquidityMiningEndTime
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -155,8 +156,8 @@ import * as Sentry from "@sentry/browser";
 import {
   calculatePositionFees,
   decToPpm,
-  miningHighCapBntReward,
-  miningHighCapTknReward
+  miningBntReward,
+  miningTknReward
 } from "@/api/pureHelpers";
 
 interface Balance {
@@ -550,7 +551,6 @@ interface RefinedAbiRelay {
   conversionFee: string;
   owner: string;
 }
-
 
 const determineConverterType = (
   converterType: string | undefined
@@ -3091,6 +3091,7 @@ export class EthBancorModule
     const availableHistories = this.availableHistories;
 
     const aprs = this.poolAprs;
+    const poolLiquidityMiningAprs = this.poolLiqMiningAprs
     const whiteListedPools = this.whiteListedPools;
     const previousRelayBalances = this.previousRelayBalances;
 
@@ -3148,7 +3149,7 @@ export class EthBancorModule
 
         const volume = feesGenerated && feesGenerated.totalVolume;
 
-        const aprMiningRewards = this.poolLiqMiningAprs.find(apr =>
+        const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
           compareString(apr.poolId, relay.id)
         );
 
@@ -6185,13 +6186,6 @@ export class EthBancorModule
 
     const storeAddress = this.contracts.LiquidityProtectionStore;
 
-    const lpContract = buildLiquidityProtectionStoreContract(
-      storeAddress,
-      getWeb3(this.currentNetwork)
-    );
-
-    // const liqMiningApr: PoolLiqMiningApr[] = [];
-
     const protectedShapes = highTierPools.map(pool => {
       const [reserveOne, reserveTwo] = pool.reserves;
       return protectedReservesShape(
@@ -6232,7 +6226,7 @@ export class EthBancorModule
       zippedProtectedReserves
     );
 
-    const liqMiningApr = zippedProtectedReserves.map(pool => {
+    const res = zippedProtectedReserves.map(pool => {
       const isHighCap = highCapPools.some(anchor =>
         compareString(anchor, pool.anchorAddress)
       );
@@ -6254,22 +6248,58 @@ export class EthBancorModule
 
       return {
         ...pool,
-        bntReward: miningHighCapBntReward(bntProtectedReserve.amount),
-        tknReward: miningHighCapTknReward(
+        bntReward: miningBntReward(bntProtectedReserve.amount, isHighCap),
+        tknReward: miningTknReward(
           tknReserve.amount,
           bntReserve.amount,
-          tknProtectedReserve.amount
+          tknProtectedReserve.amount,
+          isHighCap
         )
       };
     });
 
-    // this.updateLiqMiningApr(liqMiningApr);
+    const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
+      const [bntReserve, tknReserve] = sortAlongSide(
+        calculated.reserves,
+        reserve => reserve.contract,
+        [this.liquidityProtectionSettings.networkToken]
+      );
+      const fullTknReserve = findOrThrow(
+        highTierPools.flatMap(pool => pool.reserves),
+        reserve => compareString(reserve.contract, tknReserve.contract),
+        "failed to find reserve"
+      );
+      return {
+        poolId: calculated.anchorAddress,
+        endTime: liquidityMiningEndTime,
+        rewards: [
+          {
+            address: bntReserve.contract,
+            amount: bntReserve.amount,
+            symbol: "BNT",
+            reward: calculated.bntReward
+          },
+          {
+            address: tknReserve.contract,
+            amount: tknReserve.amount,
+            symbol: fullTknReserve.symbol,
+            reward: calculated.tknReward
+          }
+        ]
+      };
+    });
+
+    this.updateLiqMiningApr(liqMiningApr);
   }
 
   poolLiqMiningAprs: PoolLiqMiningApr[] = [];
 
   @mutation updateLiqMiningApr(liqMiningApr: PoolLiqMiningApr[]) {
-    this.poolLiqMiningAprs = liqMiningApr;
+    const existing = this.poolLiqMiningAprs;
+    const withoutOld = existing.filter(
+      apr => !liqMiningApr.some(a => compareString(a.poolId, apr.poolId))
+    );
+    this.poolLiqMiningAprs = [...withoutOld, ...liqMiningApr];
   }
 
   poolAprs: PoolApr[] = [];
