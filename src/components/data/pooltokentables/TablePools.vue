@@ -23,7 +23,7 @@
     </template>
 
     <template #cell(aprMiningRewards)="{ value }">
-      <div v-if="value">
+      <div v-if="value && value.rewards">
         <template v-for="reward in value.rewards">
           <div :key="reward.address" class="font-size-12">
             {{
