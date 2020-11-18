@@ -6553,6 +6553,8 @@ export class EthBancorModule
   }
 
   @action async fetchAndSetTokenBalances(tokenContractAddresses: string[]) {
+    if (!this.isAuthenticated) return;
+
     const governanceToken =
       web3.utils.isAddress(this.liquidityProtectionSettings.govToken) &&
       this.liquidityProtectionSettings.govToken;
