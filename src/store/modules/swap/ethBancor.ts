@@ -566,7 +566,8 @@ const determineConverterType = (
 const getHistoricFees = async (
   id: string,
   converterAddress: string,
-  network: EthNetworks
+  network: EthNetworks,
+  blockHoursAgo: number
 ): Promise<PreviousPoolFee[]> => {
   const w3 = getWeb3(network);
   const contract = buildV28ConverterContract(converterAddress, w3);
@@ -580,11 +581,13 @@ const getHistoricFees = async (
   const events = await contract.getPastEvents("ConversionFeeUpdate", options);
 
   history.push(
-    ...events.map(e => ({
-      id,
-      oldDecFee: ppmToDec(e.returnValues["_prevFee"]),
-      blockNumber: e.blockNumber
-    }))
+    ...events
+      .filter(e => e.blockNumber >= blockHoursAgo)
+      .map(e => ({
+        id,
+        oldDecFee: ppmToDec(e.returnValues["_prevFee"]),
+        blockNumber: e.blockNumber
+      }))
   );
 
   return history;
@@ -6326,14 +6329,19 @@ export class EthBancorModule
       relaysByLiqDepth.map(relay => relay.id)
     );
 
-    const historicFees: PreviousPoolFee[] =[]
+    const historicFees: PreviousPoolFee[] = [];
+    const { blockHoursAgo } = await blockNumberHoursAgo(
+      24,
+      this.currentNetwork
+    );
 
     for (const relay of relaysList) {
       historicFees.push(
         ...(await getHistoricFees(
           relay.id,
           relay.contract,
-          this.currentNetwork
+          this.currentNetwork,
+          blockHoursAgo
         ))
       );
     }
