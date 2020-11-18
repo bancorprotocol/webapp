@@ -25,10 +25,7 @@ export const calculatePositionFees = (
   );
 
   const rateDiv = rate1.div(rate0);
-  const result = rateDiv
-    .sqrt()
-    .times(amount1)
-    .minus(amount0);
+  const result = rateDiv.sqrt().times(amount1).minus(amount0);
 
   return result.toFixed(0);
 };

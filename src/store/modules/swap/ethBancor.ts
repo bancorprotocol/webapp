@@ -265,10 +265,7 @@ const calculateReturnOnInvestment = (
   investment: string,
   newReturn: string
 ): string => {
-  return new BigNumber(newReturn)
-    .div(investment)
-    .minus(1)
-    .toString();
+  return new BigNumber(newReturn).div(investment).minus(1).toString();
 };
 
 // returns the rate of 1 pool token in reserve token units
@@ -962,10 +959,7 @@ interface RawV2Pool {
 }
 
 const calculateMean = (a: string, b: string) =>
-  new BigNumber(a)
-    .plus(b)
-    .div(2)
-    .toString();
+  new BigNumber(a).plus(b).div(2).toString();
 
 interface V2Response {
   reserveFeeds: ReserveFeed[];
@@ -1903,10 +1897,7 @@ export class EthBancorModule
         Promise.all(
           allPositions.map(async position => {
             const now = moment();
-            const fullWaitTime = now
-              .clone()
-              .add(1, "year")
-              .unix();
+            const fullWaitTime = now.clone().add(1, "year").unix();
 
             const timeNow = moment().unix();
 
@@ -6548,6 +6539,7 @@ export class EthBancorModule
     ).flat(1);
 
     if (historicFees.length > 0) {
+      console.log("historic fees", historicFees);
       this.setHistoricFees([...this.previousPoolFees, ...historicFees]);
     }
   }

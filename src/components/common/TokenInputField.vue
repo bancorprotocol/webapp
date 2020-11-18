@@ -15,7 +15,7 @@
       <b-form-input
         type="text"
         v-model="tokenAmount"
-        style="border-right: 0 !important;"
+        style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
         :disabled="disabled"
@@ -26,7 +26,7 @@
         <div
           class="rounded-right d-flex align-items-center px-2"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-          style="border-left: 0 !important;"
+          style="border-left: 0 !important"
         >
           <div
             v-if="token"

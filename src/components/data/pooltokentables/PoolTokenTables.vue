@@ -10,7 +10,7 @@
     </div>
     <div class="float-right mr-2" v-if="loading">
       <b-spinner
-        style="display: block; width: 1.5rem; height: 1.5rem;"
+        style="display: block; width: 1.5rem; height: 1.5rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
         label="Loading..."
