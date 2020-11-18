@@ -29,8 +29,8 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
 @Component({
   components: {
     TransactionTables,
-    PoolTokenTables,    
-    Statistics,    
+    PoolTokenTables,
+    Statistics,
     ContentBlock
   }
 })
