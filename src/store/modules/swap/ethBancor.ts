@@ -3508,22 +3508,9 @@ export class EthBancorModule
   }
 
   @action async isHighTierPool(anchor: string): Promise<boolean> {
-    // todo: use this.highTierPoolArr over doing requests here
-    const contract = buildLiquidityProtectionContract(
-      this.contracts.LiquidityProtection,
-      getWeb3(this.currentNetwork)
+    return this.highTierPoolsArr.some(anchorId =>
+      compareString(anchor, anchorId)
     );
-    let isHighTier = false;
-
-    try {
-      isHighTier = await contract.methods.isHighTierPool(anchor).call();
-    } catch (error) {
-      console.error(
-        `getting isHighTierPool failed on '${this.contracts.LiquidityProtection}' ${error.message}!`
-      );
-    }
-
-    return isHighTier;
   }
 
   @action async getMaxStakes({ poolId }: { poolId: string }) {
