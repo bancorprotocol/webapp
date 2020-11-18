@@ -25,7 +25,7 @@
     <template #cell(aprMiningRewards)="{ value }">
       <div v-if="value">
         <template v-for="reward in value.rewards">
-          <div :key="reward.address">
+          <div :key="reward.address" class="font-size-12">
             {{
               `${reward.symbol} ${
                 reward.reward ? formatPercent(reward.reward) : "N/A"
