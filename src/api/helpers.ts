@@ -62,7 +62,8 @@ export const calculateMaxStakes = (
   poolTokenSupplyWei: string,
   poolTokenSystemBalanceWei: string,
   maxSystemNetworkTokenAmount: string,
-  maxSystemNetworkTokenRatioPpm: string
+  maxSystemNetworkTokenRatioPpm: string,
+  isHighTierPool: boolean
 ) => {
   const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
   const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
@@ -88,7 +89,9 @@ export const calculateMaxStakes = (
       .minus(systemBNT)
   );
 
-  const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
+  const lowestAmount = isHighTierPool
+    ? maxLimitBnt
+    : BigNumber.min(maxLimitBnt, maxRatioBnt);
 
   const maxAllowedBntInTkn = lowestAmount.times(
     tknReserveBalance.div(bntReserveBalance)
@@ -755,14 +758,12 @@ const APP_NAME = "Bancor Swap";
 
 const wallets = [
   { walletName: "metamask", preferred: true },
+  { walletName: "lattice", rpcUrl: RPC_URL, appName: APP_NAME },
   { walletName: "imToken", rpcUrl: RPC_URL, preferred: true },
   { walletName: "coinbase" },
   { walletName: "trust", rpcUrl: RPC_URL, preferred: true },
   { walletName: "dapper" },
-  {
-    walletName: "ledger",
-    rpcUrl: RPC_URL
-  },
+  { walletName: "ledger", rpcUrl: RPC_URL },
   { walletName: "authereum" },
   { walletName: "opera", preferred: true },
   { walletName: "operaTouch" },
@@ -1056,11 +1057,13 @@ const isAuthenticatedViaModule = (module: EosTransitModule) => {
   return isAuthenticated;
 };
 
-export const getBankBalance = async (): Promise<{
-  id: number;
-  quantity: string;
-  symbl: string;
-}[]> => {
+export const getBankBalance = async (): Promise<
+  {
+    id: number;
+    quantity: string;
+    symbl: string;
+  }[]
+> => {
   const account = isAuthenticatedViaModule(vxm.eosWallet);
   const res: {
     rows: {

@@ -16,7 +16,7 @@
       <b-dropdown-header class="text-uppercase"
         >Transaction Settings</b-dropdown-header
       >
-      <b-dropdown-text style="width: 300px;">
+      <b-dropdown-text style="width: 300px">
         <p class="font-size-sm mb-0">Slippage Tolerance</p>
         <slippage-tolerance />
       </b-dropdown-text>

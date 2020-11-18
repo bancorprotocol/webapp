@@ -88,9 +88,7 @@
     <label-content-split
       v-if="false"
       label="Price"
-      :value="
-        `1 ${pool.reserves[1].symbol} = ${rate} ${pool.reserves[0].symbol}`
-      "
+      :value="`1 ${pool.reserves[1].symbol} = ${rate} ${pool.reserves[0].symbol}`"
       class="my-3"
     />
 
@@ -102,8 +100,8 @@
       class="mt-1"
       :disabled="
         token1Error !== '' ||
-          token2Error !== '' ||
-          !(amountToken1 && amountToken2)
+        token2Error !== '' ||
+        !(amountToken1 && amountToken2)
       "
     />
 

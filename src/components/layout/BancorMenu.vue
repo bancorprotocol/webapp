@@ -14,7 +14,7 @@
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
       <b-dropdown-header class="text-uppercase">Bancor</b-dropdown-header>
-      <b-dropdown-item style="width: 230px;" disabled>
+      <b-dropdown-item style="width: 230px" disabled>
         <font-awesome-icon icon="info" class="mr-2" fixed-width /> About (Coming
         Soon)
       </b-dropdown-item>
@@ -123,7 +123,7 @@
             fixed-width
           />
           <font-awesome-icon
-            @click="openUrl('https://discord.gg/3wJxvP')"
+            @click="openUrl('https://discord.gg/EHK8wHbgau')"
             :icon="['fab', 'discord']"
             class="mr-2 menu-icon"
             fixed-width

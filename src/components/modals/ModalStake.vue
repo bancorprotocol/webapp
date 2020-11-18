@@ -64,7 +64,7 @@
             src="@/assets/media/logos/bancor-white2.png"
           />
 
-          <span class=" font-size-14 font-w500">{{ symbol }}</span>
+          <span class="font-size-14 font-w500">{{ symbol }}</span>
         </div>
       </div>
 
