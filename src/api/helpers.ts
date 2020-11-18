@@ -758,6 +758,7 @@ const APP_NAME = "Bancor Swap";
 
 const wallets = [
   { walletName: "metamask", preferred: true },
+  { walletName: "lattice", appName: "Bancor Swap", rpcUrl: RPC_URL, preferred: true },
   { walletName: "imToken", rpcUrl: RPC_URL, preferred: true },
   { walletName: "coinbase" },
   { walletName: "trust", rpcUrl: RPC_URL, preferred: true },
