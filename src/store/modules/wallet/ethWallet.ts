@@ -1,9 +1,5 @@
 import { createModule, mutation, action } from "vuex-class-component";
-import {
-  compareString,
-  onboard,
-  selectedWeb3Wallet,
-} from "@/api/helpers";
+import { compareString, onboard, selectedWeb3Wallet } from "@/api/helpers";
 import { ABISmartToken, ethReserveAddress } from "@/api/eth/ethAbis";
 import { EthAddress } from "@/types/bancor";
 import { fromWei, isAddress, toHex, toWei } from "web3-utils";
