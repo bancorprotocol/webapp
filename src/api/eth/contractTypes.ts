@@ -198,6 +198,9 @@ export const buildV28ConverterContract = (
     toTokenAddress: string,
     wei: string
   ) => CallReturn<{ "0": string; "1": string }>;
+  recentAverageRate: (
+    tokenAddress: string
+  ) => CallReturn<{ denominator: string; numerator: string }>;
   owner: () => CallReturn<string>;
   version: () => CallReturn<string>;
   converterType: () => CallReturn<string>;
