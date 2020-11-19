@@ -3,7 +3,7 @@
     <label-content-split :label="label" class="mb-1">
       <span
         @click="tokenAmount = balance"
-        v-if="isAuthenticated"
+        v-if="currentUser"
         class="font-size-12 font-w500 cursor"
       >
         {{ formattedBalance }}
@@ -53,7 +53,7 @@
         </div>
       </b-input-group-append>
       <alert-block
-        v-if="isAuthenticated && errorMsg !== ''"
+        v-if="currentUser && errorMsg !== ''"
         variant="error"
         :msg="errorMsg"
       />
@@ -152,8 +152,8 @@ export default class TokenInputField extends Vue {
     return vxm.general.darkMode;
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 }
 </script>

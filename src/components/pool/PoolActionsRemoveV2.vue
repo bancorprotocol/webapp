@@ -182,7 +182,7 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   get balanceError() {
     if (this.errorMessage) return this.errorMessage;
-    if (!this.isAuthenticated) return "";
+    if (!this.currentUser) return "";
     if (this.amountSmartToken === "") return "";
     if (this.insufficientBalance) return "Insufficient balance";
     else return "";
@@ -199,12 +199,12 @@ export default class PoolActionsRemoveV2 extends Vue {
     return vxm.general.darkMode;
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }
@@ -233,9 +233,9 @@ export default class PoolActionsRemoveV2 extends Vue {
     ];
   }
 
-  @Watch("isAuthenticated")
-  authChange(isAuthenticated: string | boolean) {
-    if (isAuthenticated) {
+  @Watch("currentUser")
+  authChange(currentUser: string | boolean) {
+    if (currentUser) {
       this.getPoolBalances();
     }
   }
@@ -245,7 +245,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   }
 
   async getPoolBalances() {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
     const res = await vxm.bancor.getUserBalances(this.pool.id);
     const contrastAgainstReserves = {
       ...res,

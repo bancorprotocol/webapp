@@ -6,8 +6,9 @@ import {
 } from "@/api/pureHelpers";
 
 describe("dec to ppm works", () => {
-  test("60%", () => {
+  test("range of percentages", () => {
     expect(decToPpm(0.6)).toBe("600000");
+    expect(decToPpm(1)).toBe("1000000");
   });
 });
 
@@ -29,8 +30,6 @@ describe("can calculate position fees", () => {
       reserveRate: "290.61911993101308091657"
     };
 
-    // current result is -1933747839780032
-
     const res = calculatePositionFees(
       originalPoolTokenAmount,
       currentPoolTokenSupply,
@@ -44,7 +43,7 @@ describe("can calculate position fees", () => {
 });
 
 describe("can calculate mining aprs", () => {
-  test("bnt", () => {
+  test("bnt high cap", () => {
     const protectedBnt = "3390211026483950866776662";
 
     const res = miningBntReward(protectedBnt, true);
@@ -53,7 +52,16 @@ describe("can calculate mining aprs", () => {
     expect(res).toBeCloseTo(expectedResult);
   });
 
-  test("tkn", () => {
+  test("bnt low cap", () => {
+    const protectedBnt = "3390211026483950866776662";
+
+    const res = miningBntReward(protectedBnt, false);
+
+    const expectedResult = 0.10736794764;
+    expect(res).toBeCloseTo(expectedResult);
+  });
+
+  test("tkn high cap", () => {
     const protectedTkn = "11221593721149874107090";
     const bntReserveBalance = "8101409855370277274285454";
     const tknReserveBalance = "15800503317283360679542";
@@ -66,6 +74,23 @@ describe("can calculate mining aprs", () => {
     );
 
     const expectedResult = 0.271131748522;
+
+    expect(res).toBeCloseTo(expectedResult);
+  });
+
+  test("tkn low cap", () => {
+    const protectedTkn = "11221593721149874107090";
+    const bntReserveBalance = "8101409855370277274285454";
+    const tknReserveBalance = "15800503317283360679542";
+
+    const res = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
+      protectedTkn,
+      false
+    );
+
+    const expectedResult = 0.027113174852;
 
     expect(res).toBeCloseTo(expectedResult);
   });
