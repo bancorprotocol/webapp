@@ -586,7 +586,6 @@ const getHistoricFees = async (
   const w3 = getWeb3(network);
   const contract = buildV28ConverterContract(converterAddress, w3);
 
-  const history = [];
   const options = {
     fromBlock: 0,
     toBlock: "latest"
@@ -594,17 +593,13 @@ const getHistoricFees = async (
 
   const events = await contract.getPastEvents("ConversionFeeUpdate", options);
 
-  history.push(
-    ...events
-      .filter(e => e.blockNumber >= blockHoursAgo)
-      .map(e => ({
-        id,
-        oldDecFee: ppmToDec(e.returnValues["_prevFee"]),
-        blockNumber: e.blockNumber
-      }))
-  );
-
-  return history;
+  return events
+    .filter(event => event.blockNumber >= blockHoursAgo)
+    .map(event => ({
+      id,
+      oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
+      blockNumber: event.blockNumber
+    }));
 };
 
 const blockNumberHoursAgo = async (hours: number, network: EthNetworks) => {
