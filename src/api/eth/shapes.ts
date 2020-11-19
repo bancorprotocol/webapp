@@ -5,7 +5,8 @@ import {
   buildContainerContract,
   buildConverterContract,
   buildTokenContract,
-  buildLiquidityProtectionContract
+  buildLiquidityProtectionContract,
+  buildLiquidityProtectionStoreContract
 } from "@/api/eth/contractTypes";
 import { compareString, EthNetworks } from "../helpers";
 import { getWeb3 } from "../web3";
@@ -14,6 +15,28 @@ import { TokenWei } from "@/types/bancor";
 import { knownV2Anchors } from "@/store/modules/swap/staticRelays";
 
 const ORIGIN_ADDRESS = DataTypes.originAddress;
+
+export const protectedReservesShape = (
+  storeAddress: string,
+  anchorAddress: string,
+  reserveOneAddress: string,
+  reserveTwoAddress: string
+) => {
+  const contract = buildLiquidityProtectionStoreContract(storeAddress);
+  return {
+    anchorAddress,
+    reserveOneAddress,
+    reserveTwoAddress,
+    reserveOneProtected: contract.methods.totalProtectedReserveAmount(
+      anchorAddress,
+      reserveOneAddress
+    ),
+    reserveTwoProtected: contract.methods.totalProtectedReserveAmount(
+      anchorAddress,
+      reserveTwoAddress
+    )
+  };
+};
 
 export const slimBalanceShape = (
   contractAddress: string,
