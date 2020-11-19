@@ -11,24 +11,16 @@
       @select="selectPool"
     />
 
-    <gray-border-block :gray-bg="true" class="my-3">
-      <div v-if="amount">
+    <div v-if="amount">
+      <gray-border-block :gray-bg="true" class="mt-3">
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
           :label="index == 0 ? `Value you receive` : ``"
           :value="`${formatNumber(output.amount)} ${output.symbol}`"
         />
-      </div>
-
-      <span
-        class="font-size-14 font-w400"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        If pool ratio will be changed during protection period - you’ll receive
-        change value in BNT.
-      </span>
-    </gray-border-block>
+      </gray-border-block>
+    </div>
 
     <main-button
       :label="actionButtonLabel"
@@ -36,6 +28,7 @@
       :active="true"
       :large="true"
       :disabled="disableActionButton"
+      class="mt-3"
     />
 
     <modal-base
@@ -156,8 +149,8 @@ export default class AddProtectionDouble extends Vue {
     else return "Stake and Protect";
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   get disableActionButton() {
@@ -214,7 +207,7 @@ export default class AddProtectionDouble extends Vue {
   }
 
   async openModal() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     // @ts-ignore
     else await this.promptAuth();
   }

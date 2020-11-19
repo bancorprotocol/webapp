@@ -34,7 +34,7 @@ import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
-import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
+import { getAlchemyUrl, web3, getInfuraAddress } from "@/api/web3";
 
 export enum PositionType {
   single,
@@ -62,7 +62,8 @@ export const calculateMaxStakes = (
   poolTokenSupplyWei: string,
   poolTokenSystemBalanceWei: string,
   maxSystemNetworkTokenAmount: string,
-  maxSystemNetworkTokenRatioPpm: string
+  maxSystemNetworkTokenRatioPpm: string,
+  isHighTierPool: boolean
 ) => {
   const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
   const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
@@ -88,7 +89,9 @@ export const calculateMaxStakes = (
       .minus(systemBNT)
   );
 
-  const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
+  const lowestAmount = isHighTierPool
+    ? maxLimitBnt
+    : BigNumber.min(maxLimitBnt, maxRatioBnt);
 
   const maxAllowedBntInTkn = lowestAmount.times(
     tknReserveBalance.div(bntReserveBalance)
@@ -112,13 +115,10 @@ export const traverseLockedBalances = async (
   contract: string,
   owner: string,
   expectedCount: number,
-  network: EthNetworks
+  w3: Web3
 ): Promise<LockedBalance[]> => {
   console.log("traverseHit");
-  const storeContract = buildLiquidityProtectionStoreContract(
-    contract,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const storeContract = buildLiquidityProtectionStoreContract(contract, w3);
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
@@ -351,12 +351,9 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 
 export const fetchUsdPriceOfBntViaRelay = async (
   relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
-  network: EthNetworks
+  w3: Web3
 ): Promise<number> => {
-  const contract = buildConverterContract(
-    relayContractAddress,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const contract = buildConverterContract(relayContractAddress, w3);
   const res = await contract.methods
     .getReturn(
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -381,12 +378,6 @@ export enum EthNetworks {
   Rinkeby = 4,
   Goerli = 5
 }
-
-export const web3 = new Web3(
-  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
-);
-
-web3.eth.transactionBlockTimeout = 100;
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
@@ -696,26 +687,6 @@ export const getConverterLogs = async (
   };
 };
 
-const projectId = "da059c364a2f4e6eb89bfd89600bce07";
-
-const buildInfuraAddress = (
-  subdomain: string,
-  projectId: string,
-  wss: boolean = false
-) =>
-  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${
-    wss ? "ws/" : ""
-  }v3/${projectId}`;
-
-const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
-  if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId, wss);
-  } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId, wss);
-  }
-  throw new Error("Infura address for network not supported ");
-};
-
 export const getLogs = async (
   network: EthNetworks,
   networkAddress: string,
@@ -755,14 +726,12 @@ const APP_NAME = "Bancor Swap";
 
 const wallets = [
   { walletName: "metamask", preferred: true },
+  { walletName: "lattice", rpcUrl: RPC_URL, appName: APP_NAME },
   { walletName: "imToken", rpcUrl: RPC_URL, preferred: true },
   { walletName: "coinbase" },
   { walletName: "trust", rpcUrl: RPC_URL, preferred: true },
   { walletName: "dapper" },
-  {
-    walletName: "ledger",
-    rpcUrl: RPC_URL
-  },
+  { walletName: "ledger", rpcUrl: RPC_URL },
   { walletName: "authereum" },
   { walletName: "opera", preferred: true },
   { walletName: "operaTouch" },
@@ -862,7 +831,7 @@ export const getBalance = async (
   symbolName: string,
   precision?: number
 ): Promise<string> => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: { rows: { balance: string }[] } = await rpc.get_table_rows({
     code: contract,
     scope: account,
@@ -1049,19 +1018,21 @@ export interface ChainLinkRelay extends Relay {
   anchor: PoolContainer;
 }
 
-const isAuthenticatedViaModule = (module: EosTransitModule) => {
-  const isAuthenticated =
+const currentUserViaModule = (module: EosTransitModule) => {
+  const currentUser =
     module.wallet && module.wallet.auth && module.wallet.auth.accountName;
-  if (!isAuthenticated) throw new Error("Not logged in");
-  return isAuthenticated;
+  if (!currentUser) throw new Error("Not logged in");
+  return currentUser;
 };
 
-export const getBankBalance = async (): Promise<{
-  id: number;
-  quantity: string;
-  symbl: string;
-}[]> => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+export const getBankBalance = async (): Promise<
+  {
+    id: number;
+    quantity: string;
+    symbl: string;
+  }[]
+> => {
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: {
     rows: {
       id: number;

@@ -27,6 +27,7 @@ import {
 import { fetchBinanceUsdPriceOfBnt } from "@/api/helpers";
 import wait from "waait";
 import { defaultModule } from "@/router";
+import { web3 } from "@/api/web3";
 
 interface BntPrice {
   price: null | number;
@@ -306,7 +307,7 @@ export class BancorModule extends VuexModule.With({
         fetchBinanceUsdPriceOfBnt(),
         new Promise(resolve => {
           wait(500).then(() =>
-            resolve(fetchUsdPriceOfBntViaRelay(undefined, this.currentNetwork))
+            resolve(fetchUsdPriceOfBntViaRelay(undefined, web3))
           );
         })
       ]);
@@ -425,7 +426,7 @@ export class BancorModule extends VuexModule.With({
   }
 
   @action async refreshBalances(symbols: string[] = []) {
-    if (vxm.wallet.isAuthenticated) {
+    if (vxm.wallet.currentUser) {
       return this.dispatcher(["refreshBalances", symbols]);
     }
   }

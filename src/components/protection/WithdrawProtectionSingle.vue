@@ -10,11 +10,9 @@
 
     <label-content-split
       label="Fully Protected Value"
-      :value="
-        `${prettifyNumber(position.protectedAmount.amount)} ${
-          position.stake.symbol
-        }`
-      "
+      :value="`${prettifyNumber(position.protectedAmount.amount)} ${
+        position.stake.symbol
+      }`"
       class="my-3"
     />
 
@@ -41,9 +39,9 @@
       <label-content-split
         v-if="expectedValue"
         label="Output value of"
-        :value="
-          `${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
-        "
+        :value="`${prettifyNumber(expectedValue.amount)} ${
+          expectedValue.symbol
+        }`"
       />
 
       <label-content-split
