@@ -5,9 +5,9 @@ import {
   buildRegistryContract,
   buildLiquidityProtectionContract
 } from "./contractTypes";
-import { EthNetworks, zeroAddress } from "../helpers";
+import { zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
-import { getWeb3 } from "@/api/web3";
+import { EthNetworks, getWeb3 } from "@/api/web3";
 import Web3 from "web3";
 
 export const getApprovedBalanceWei = async ({

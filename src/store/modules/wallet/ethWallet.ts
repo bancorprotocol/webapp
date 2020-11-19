@@ -3,14 +3,13 @@ import {
   compareString,
   onboard,
   selectedWeb3Wallet,
-  EthNetworks
 } from "@/api/helpers";
 import { ABISmartToken, ethReserveAddress } from "@/api/eth/ethAbis";
 import { EthAddress } from "@/types/bancor";
 import { fromWei, isAddress, toHex, toWei } from "web3-utils";
 import { shrinkToken } from "@/api/eth/helpers";
 import { vxm } from "@/store";
-import { getWeb3, Provider, web3 } from "@/api/web3";
+import { EthNetworks, getWeb3, Provider, web3 } from "@/api/web3";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {

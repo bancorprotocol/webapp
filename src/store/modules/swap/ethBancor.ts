@@ -53,7 +53,6 @@ import {
   updateArray,
   isOdd,
   multiSteps,
-  EthNetworks,
   PoolType,
   TraditionalRelay,
   ChainLinkRelay,
@@ -149,7 +148,7 @@ import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 import { getNetworkVariables } from "@/api/config";
-import { getWeb3, web3 } from "@/api/web3";
+import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
 import {
   calculatePositionFees,

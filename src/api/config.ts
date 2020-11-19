@@ -1,4 +1,4 @@
-import { EthNetworks } from "@/api/helpers";
+import { EthNetworks } from "@/api/web3"
 
 interface EthNetworkVariables {
   contractRegistry: string;
