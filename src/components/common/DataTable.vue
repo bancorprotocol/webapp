@@ -102,6 +102,7 @@ export default class DataTable extends Vue {
     const filter = this.filter;
     const filterBy = this.filterBy;
     const filterFunction = this.filterFunction;
+    const sortBy = this.sortBy;
 
     if (filterFunction !== undefined) {
       filtered = items.filter((t: any) => filterFunction(t, filter));
@@ -115,12 +116,14 @@ export default class DataTable extends Vue {
       filtered = items;
     }
 
-    return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
-      const value = t[this.sortBy];
-      const number = new BigNumber(value);
-      if (BigNumber.isBigNumber(number)) return number.toNumber();
-      else return value;
-    });
+    if (sortBy) {
+      return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
+        const value = t[sortBy];
+        const number = new BigNumber(value);
+        if (BigNumber.isBigNumber(number)) return number.toNumber();
+        else return value;
+      });
+    } else return filtered;
   }
 
   get paginatedItems() {
