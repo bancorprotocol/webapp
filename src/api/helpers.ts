@@ -863,7 +863,7 @@ export const getBalance = async (
   symbolName: string,
   precision?: number
 ): Promise<string> => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: { rows: { balance: string }[] } = await rpc.get_table_rows({
     code: contract,
     scope: account,
@@ -1050,11 +1050,11 @@ export interface ChainLinkRelay extends Relay {
   anchor: PoolContainer;
 }
 
-const isAuthenticatedViaModule = (module: EosTransitModule) => {
-  const isAuthenticated =
+const currentUserViaModule = (module: EosTransitModule) => {
+  const currentUser =
     module.wallet && module.wallet.auth && module.wallet.auth.accountName;
-  if (!isAuthenticated) throw new Error("Not logged in");
-  return isAuthenticated;
+  if (!currentUser) throw new Error("Not logged in");
+  return currentUser;
 };
 
 export const getBankBalance = async (): Promise<
@@ -1064,7 +1064,7 @@ export const getBankBalance = async (): Promise<
     symbl: string;
   }[]
 > => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: {
     rows: {
       id: number;

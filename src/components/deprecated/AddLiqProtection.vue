@@ -203,11 +203,7 @@ export default class AddLiqProtection extends Vue {
 
   back() {
     this.$router.push({ name: "LiqProtection" });
-  }
-
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
-  }
+  }  
 
   setDefault() {
     this.sections = [];

@@ -199,7 +199,7 @@ export default class AddProposal extends Vue {
 
     // propose!
     await vxm.ethGovernance.propose({
-      account: vxm.wallet.isAuthenticated,
+      account: vxm.wallet.currentUser,
       executor: this.contractAddress,
       hash
     });

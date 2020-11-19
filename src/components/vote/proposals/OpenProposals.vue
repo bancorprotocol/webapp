@@ -394,7 +394,7 @@ export default class OpenProposals extends Vue {
 
     if (this.currentVotes.isGreaterThan(0)) {
       await vxm.ethGovernance.voteFor({
-        account: vxm.ethWallet.isAuthenticated,
+        account: vxm.ethWallet.currentUser,
         proposalId
       });
     } else {
@@ -407,7 +407,7 @@ export default class OpenProposals extends Vue {
 
     if (this.currentVotes.isGreaterThan(0)) {
       await vxm.ethGovernance.voteAgainst({
-        account: vxm.ethWallet.isAuthenticated,
+        account: vxm.ethWallet.currentUser,
         proposalId
       });
     } else {
@@ -417,7 +417,7 @@ export default class OpenProposals extends Vue {
 
   async update() {
     this.currentVotes = await vxm.ethGovernance.getVotes({
-      voter: vxm.wallet.isAuthenticated
+      voter: vxm.wallet.currentUser
     });
   }
   async mounted() {

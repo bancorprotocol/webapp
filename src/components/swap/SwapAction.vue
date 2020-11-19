@@ -145,7 +145,7 @@ export default class SwapAction extends Vue {
   }
 
   get disableButton() {
-    if (!this.isAuthenticated && this.amount1) return false;
+    if (!this.currentUser && this.amount1) return false;
     else if (
       this.amount1 &&
       this.amount2 &&
@@ -243,12 +243,12 @@ export default class SwapAction extends Vue {
     });
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   async initConvert() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }
