@@ -8,6 +8,7 @@
       filter-by="stake"
       :filter-function="doFilter"
       default-sort="currentCoverageDec"
+      default-order="asc"
     >
       <template #cell(stake)="{ value }">
         <div>
