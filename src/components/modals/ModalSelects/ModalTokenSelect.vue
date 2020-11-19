@@ -26,9 +26,7 @@
       </div>
     </template>
     <template v-if="allowTokenAdd" #footer>
-      <p class="mb-0">
-        Can't find the token you're looking for?
-      </p>
+      <p class="mb-0">Can't find the token you're looking for?</p>
       <span @click="promptTokenAddModal" class="text-primary cursor font-w600">
         Add token
       </span>

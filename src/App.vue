@@ -13,7 +13,7 @@
       <img v-else src="@/assets/media/logos/bancor-black2.png" height="85px" />
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
-          style="display: block; width: 2rem; height: 2rem;"
+          style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
           label="Loading..."
@@ -163,7 +163,6 @@ export default class App extends Vue {
     const darkMode = localStorage.getItem("darkMode") === "true";
     if (darkMode) vxm.general.toggleDarkMode();
 
-    vxm.general.setLanguage();
     vxm.general.getUserCountry();
     await this.loadBancor();
 

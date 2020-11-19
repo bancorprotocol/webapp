@@ -59,8 +59,7 @@ export const fas = [
   faTimes,
   faTimesCircle,
   faChevronLeft
-]
-
+];
 
 /* free-brands-svg-icons */
 import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
@@ -77,5 +76,4 @@ export const fab = [
   faRedditAlien,
   faTelegramPlane,
   faTwitter
-]
-
+];

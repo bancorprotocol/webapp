@@ -37,7 +37,7 @@
         >
           <div v-if="loading" class="d-flex justify-content-center my-3">
             <b-spinner
-              style="width: 3rem; height: 3rem;"
+              style="width: 3rem; height: 3rem"
               class="text-primary"
               label="Loading..."
             />

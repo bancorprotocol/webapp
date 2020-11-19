@@ -294,6 +294,7 @@ export interface ViewRelay {
   feesVsLiquidity?: string;
   apr?: string;
   volume?: string;
+  aprMiningRewards?: PoolLiqMiningApr;
 }
 
 export interface ContractMethods<T> extends Contract {
@@ -734,4 +735,17 @@ export interface ViewLockedBalance {
   amount: string;
   usdValue: number;
   lockedUntil: number;
+}
+
+export interface PoolLiqMiningApr {
+  poolId: string;
+  endTime: number;
+  rewards: LiqMiningApr[];
+}
+
+export interface LiqMiningApr {
+  symbol: string;
+  address: string;
+  amount: string;
+  reward?: number;
 }
