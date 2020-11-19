@@ -4,7 +4,7 @@
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
-          style="display: block; width: 2rem; height: 2rem;"
+          style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
           label="Loading..."
@@ -60,7 +60,7 @@
                       'https://gov.bancor.network/'
                     ) &&
                     proposal.metadata.payload.metadata.discourse) ||
-                    undefined
+                  undefined
                 "
               >
                 <font-awesome-icon icon="external-link-alt" />
@@ -78,7 +78,7 @@
                       'https://github.com/'
                     ) &&
                     proposal.metadata.payload.metadata.github) ||
-                    undefined
+                  undefined
                 "
               >
                 <font-awesome-icon :icon="['fab', 'github']" />
@@ -235,8 +235,9 @@
                   <div
                     class="votes-bar__progress"
                     :style="{
-                      width: `${(100 / proposal.totalVotes) *
-                        proposal.totalVotesFor}%`
+                      width: `${
+                        (100 / proposal.totalVotes) * proposal.totalVotesFor
+                      }%`
                     }"
                   />
                   <div class="votes-bar__content text-uppercase">
@@ -295,9 +296,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
-import PieChart from "@/components/data/charts/PieChart.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -318,7 +318,6 @@ import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
     DataTable,
     ButtonProgress,
     MainButton,
-    PieChart,
     ModalNotEnoughTokens
   }
 })
@@ -358,6 +357,10 @@ export default class OpenProposals extends Vue {
     return vxm.general.darkMode;
   }
 
+  get currentUser() {
+    return vxm.wallet.currentUser;
+  }
+
   prettifyNumber(number: string | number): string {
     return prettifyNumber(number);
   }
@@ -395,7 +398,7 @@ export default class OpenProposals extends Vue {
 
     if (this.currentVotes.isGreaterThan(0)) {
       await vxm.ethGovernance.voteFor({
-        account: vxm.ethWallet.isAuthenticated,
+        account: vxm.ethWallet.currentUser,
         proposalId
       });
     } else {
@@ -408,7 +411,7 @@ export default class OpenProposals extends Vue {
 
     if (this.currentVotes.isGreaterThan(0)) {
       await vxm.ethGovernance.voteAgainst({
-        account: vxm.ethWallet.isAuthenticated,
+        account: vxm.ethWallet.currentUser,
         proposalId
       });
     } else {
@@ -416,11 +419,15 @@ export default class OpenProposals extends Vue {
     }
   }
 
+  @Watch("currentUser")
   async update() {
-    this.currentVotes = await vxm.ethGovernance.getVotes({
-      voter: vxm.wallet.isAuthenticated
-    });
+    if (this.currentUser) {
+      this.currentVotes = await vxm.ethGovernance.getVotes({
+        voter: this.currentUser
+      });
+    }
   }
+
   async mounted() {
     this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();

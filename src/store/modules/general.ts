@@ -39,8 +39,7 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
     );
   }
 
-  @action
-  async getUserCountry() {
+  @action async getUserCountry() {
     const countryCode = await getCountryCode();
     this.setCountryCode(countryCode);
   }
@@ -52,21 +51,5 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   @mutation toggleDarkMode() {
     this.darkMode = !this.darkMode;
     localStorage.setItem("darkMode", this.darkMode.toString());
-  }
-
-  @mutation setLanguage(_?: string) {
-    // if (lang) {
-    //   this.language = i18n.locale = lang;
-    //   localStorage.setItem("language", lang);
-    // } else {
-    //   const userLang: string | null = localStorage.getItem("language");
-    //   if (userLang) {
-    //     this.language = i18n.locale = userLang;
-    //   } else {
-    //     const browserLang = navigator.language.split("-")[0];
-    //     this.language = i18n.locale = browserLang;
-    //     localStorage.setItem("language", browserLang);
-    //   }
-    // }
   }
 }

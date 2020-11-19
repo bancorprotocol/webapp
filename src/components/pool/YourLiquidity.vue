@@ -117,12 +117,12 @@ export default class YourLiquidity extends Vue {
     );
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   get noLiquidityFoundMsg() {
-    if (!this.isAuthenticated) return "Connect Wallet to see your Liquidity";
+    if (!this.currentUser) return "Connect Wallet to see your Liquidity";
     return this.search
       ? "No Results found."
       : "You dont have any Liquidity yet";

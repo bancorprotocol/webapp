@@ -758,14 +758,12 @@ const APP_NAME = "Bancor Swap";
 
 const wallets = [
   { walletName: "metamask", preferred: true },
+  { walletName: "lattice", rpcUrl: RPC_URL, appName: APP_NAME },
   { walletName: "imToken", rpcUrl: RPC_URL, preferred: true },
   { walletName: "coinbase" },
   { walletName: "trust", rpcUrl: RPC_URL, preferred: true },
   { walletName: "dapper" },
-  {
-    walletName: "ledger",
-    rpcUrl: RPC_URL
-  },
+  { walletName: "ledger", rpcUrl: RPC_URL },
   { walletName: "authereum" },
   { walletName: "opera", preferred: true },
   { walletName: "operaTouch" },
@@ -865,7 +863,7 @@ export const getBalance = async (
   symbolName: string,
   precision?: number
 ): Promise<string> => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: { rows: { balance: string }[] } = await rpc.get_table_rows({
     code: contract,
     scope: account,
@@ -1052,19 +1050,21 @@ export interface ChainLinkRelay extends Relay {
   anchor: PoolContainer;
 }
 
-const isAuthenticatedViaModule = (module: EosTransitModule) => {
-  const isAuthenticated =
+const currentUserViaModule = (module: EosTransitModule) => {
+  const currentUser =
     module.wallet && module.wallet.auth && module.wallet.auth.accountName;
-  if (!isAuthenticated) throw new Error("Not logged in");
-  return isAuthenticated;
+  if (!currentUser) throw new Error("Not logged in");
+  return currentUser;
 };
 
-export const getBankBalance = async (): Promise<{
-  id: number;
-  quantity: string;
-  symbl: string;
-}[]> => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+export const getBankBalance = async (): Promise<
+  {
+    id: number;
+    quantity: string;
+    symbl: string;
+  }[]
+> => {
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: {
     rows: {
       id: number;

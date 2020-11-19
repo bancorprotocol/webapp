@@ -3,12 +3,10 @@ import {
   buildNetworkContract,
   buildV2Converter,
   buildRegistryContract,
-  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionContract
 } from "./contractTypes";
 import { EthNetworks, zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
-import { ProtectedLiquidity } from "@/types/bancor";
 import { getWeb3 } from "@/api/web3";
 
 export const getApprovedBalanceWei = async ({
@@ -152,33 +150,6 @@ export const existingPool = async (
 
   if (res == zeroAddress) return false;
   return res;
-};
-
-export const protectionById = async (
-  storeContract: string,
-  protectionId: string,
-  network: EthNetworks
-): Promise<ProtectedLiquidity> => {
-  const contract = buildLiquidityProtectionStoreContract(
-    storeContract,
-    getWeb3(network)
-  );
-  const res = await contract.methods.protectedLiquidity(protectionId).call();
-  const keys = [
-    "owner",
-    "poolToken",
-    "reserveToken",
-    "poolAmount",
-    "reserveAmount",
-    "reserveRateN",
-    "reserveRateD",
-    "timestamp"
-  ];
-  const base = fromPairs(keys.map((key, index) => [key, res[index]]));
-  return {
-    ...base,
-    id: protectionId
-  } as ProtectedLiquidity;
 };
 
 export const getRemoveLiquidityReturn = async (

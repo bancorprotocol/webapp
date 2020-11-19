@@ -67,7 +67,7 @@
               {{ selectedProvider.meta.name }}
             </h5>
           </div>
-          <h3 class="mt-5 text-danger  text-center">
+          <h3 class="mt-5 text-danger text-center">
             <font-awesome-icon icon="exclamation-circle" class="mr-2" />
             Connection Error
           </h3>
