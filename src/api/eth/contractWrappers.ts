@@ -8,6 +8,7 @@ import {
 import { EthNetworks, zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
 import { getWeb3 } from "@/api/web3";
+import Web3 from "web3";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -29,55 +30,55 @@ export const getReturnByPath = async ({
   networkContract,
   path,
   amount,
-  network
+  web3
 }: {
   networkContract: string;
   path: string[];
   amount: string;
-  network: EthNetworks;
+  web3: Web3;
 }): Promise<string> => {
-  const contract = buildNetworkContract(networkContract, getWeb3(network));
+  const contract = buildNetworkContract(networkContract, web3);
   return contract.methods.rateByPath(path, amount).call();
 };
 
 export const liquidationLimit = async ({
   converterContract,
   poolTokenAddress,
-  network
+  web3
 }: {
   converterContract: string;
   poolTokenAddress: string;
-  network: EthNetworks;
+  web3: Web3;
 }) => {
-  const contract = buildV2Converter(converterContract, getWeb3(network));
+  const contract = buildV2Converter(converterContract, web3);
   return contract.methods.liquidationLimit(poolTokenAddress).call();
 };
 
 export const fetchPoolToken = async ({
   anchorContract,
   reserveTokenAddress,
-  network
+  web3
 }: {
   anchorContract: string;
   reserveTokenAddress: string;
-  network: EthNetworks;
+  web3: Web3;
 }) => {
-  const contract = buildV2Converter(anchorContract, getWeb3(network));
+  const contract = buildV2Converter(anchorContract, web3);
   return contract.methods.poolToken(reserveTokenAddress).call();
 };
 
 export const getConvertersByAnchors = async ({
   anchorAddresses,
   converterRegistryAddress,
-  network
+  web3
 }: {
   anchorAddresses: string[];
   converterRegistryAddress: string;
-  network: EthNetworks;
+  web3: Web3;
 }) => {
   const registryContract = buildRegistryContract(
     converterRegistryAddress,
-    getWeb3(network)
+    web3
   );
   return registryContract.methods
     .getConvertersByAnchors(anchorAddresses)
@@ -86,11 +87,11 @@ export const getConvertersByAnchors = async ({
 
 export const getAnchors = async (
   converterRegistryAddress: string,
-  network: EthNetworks
+  web3: Web3
 ) => {
   const registryContract = buildRegistryContract(
     converterRegistryAddress,
-    getWeb3(network)
+    web3
   );
   return registryContract.methods.getAnchors().call();
 };
@@ -98,15 +99,15 @@ export const getAnchors = async (
 export const getConvertibleTokenAnchors = async ({
   converterRegistryAddress,
   tokenAddress,
-  network
+  web3
 }: {
   converterRegistryAddress: string;
   tokenAddress: string;
-  network: EthNetworks;
+  web3: Web3;
 }) => {
   const registryContract = buildRegistryContract(
     converterRegistryAddress,
-    getWeb3(network)
+    web3
   );
   return registryContract.methods
     .getConvertibleTokenAnchors(tokenAddress)
@@ -117,17 +118,14 @@ export const conversionPath = async ({
   networkContractAddress,
   from,
   to,
-  network
+  web3
 }: {
   networkContractAddress: string;
   from: string;
   to: string;
-  network: EthNetworks;
+  web3: Web3;
 }) => {
-  const networkContract = buildNetworkContract(
-    networkContractAddress,
-    getWeb3(network)
-  );
+  const networkContract = buildNetworkContract(networkContractAddress, web3);
   return networkContract.methods.conversionPath(from, to).call();
 };
 
@@ -157,12 +155,9 @@ export const getRemoveLiquidityReturn = async (
   id: string,
   ppm: string,
   removeTimestamp: number,
-  network: EthNetworks
+  web3: Web3
 ) => {
-  const contract = buildLiquidityProtectionContract(
-    protectionContract,
-    getWeb3(network)
-  );
+  const contract = buildLiquidityProtectionContract(protectionContract, web3);
 
   const res = await contract.methods
     .removeLiquidityReturn(id, ppm, String(removeTimestamp))

@@ -1,6 +1,5 @@
 import { createModule, mutation, action } from "vuex-class-component";
 import {
-  web3,
   compareString,
   onboard,
   selectedWeb3Wallet,
@@ -11,7 +10,7 @@ import { EthAddress } from "@/types/bancor";
 import { fromWei, isAddress, toHex, toWei } from "web3-utils";
 import { shrinkToken } from "@/api/eth/helpers";
 import { vxm } from "@/store";
-import { getWeb3, Provider } from "@/api/web3";
+import { getWeb3, Provider, web3 } from "@/api/web3";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
@@ -113,6 +112,8 @@ export class EthereumModule extends VuexModule.With({
       throw new Error(
         "Cannot get balance without both the account holder and token contract address"
       );
+    const web3View = getWeb3(this.currentNetwork, Provider.Alchemy);
+
     if (
       compareString(
         tokenContractAddress,
@@ -120,13 +121,12 @@ export class EthereumModule extends VuexModule.With({
       ) ||
       compareString(tokenContractAddress, ethReserveAddress)
     ) {
-      const weiBalance = await web3.eth.getBalance(accountHolder);
+      const weiBalance = await web3View.eth.getBalance(accountHolder);
       return fromWei(weiBalance);
     } else {
       if (!tokenContractAddress)
         throw new Error("tokenContractAddress is falsy");
 
-      const web3View = getWeb3(this.currentNetwork, Provider.Alchemy);
       const tokenContract = new web3View.eth.Contract(
         ABISmartToken,
         tokenContractAddress

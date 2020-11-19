@@ -34,7 +34,7 @@ import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
-import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
+import { getAlchemyUrl, web3, getInfuraAddress } from "@/api/web3";
 
 export enum PositionType {
   single,
@@ -115,13 +115,10 @@ export const traverseLockedBalances = async (
   contract: string,
   owner: string,
   expectedCount: number,
-  network: EthNetworks
+  w3: Web3
 ): Promise<LockedBalance[]> => {
   console.log("traverseHit");
-  const storeContract = buildLiquidityProtectionStoreContract(
-    contract,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const storeContract = buildLiquidityProtectionStoreContract(contract, w3);
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
@@ -354,12 +351,9 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 
 export const fetchUsdPriceOfBntViaRelay = async (
   relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
-  network: EthNetworks
+  w3: Web3
 ): Promise<number> => {
-  const contract = buildConverterContract(
-    relayContractAddress,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const contract = buildConverterContract(relayContractAddress, w3);
   const res = await contract.methods
     .getReturn(
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -384,12 +378,6 @@ export enum EthNetworks {
   Rinkeby = 4,
   Goerli = 5
 }
-
-export const web3 = new Web3(
-  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
-);
-
-web3.eth.transactionBlockTimeout = 100;
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
@@ -697,26 +685,6 @@ export const getConverterLogs = async (
     removeLiquidity,
     conversions
   };
-};
-
-const projectId = "da059c364a2f4e6eb89bfd89600bce07";
-
-const buildInfuraAddress = (
-  subdomain: string,
-  projectId: string,
-  wss: boolean = false
-) =>
-  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${
-    wss ? "ws/" : ""
-  }v3/${projectId}`;
-
-const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
-  if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId, wss);
-  } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId, wss);
-  }
-  throw new Error("Infura address for network not supported ");
 };
 
 export const getLogs = async (
