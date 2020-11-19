@@ -101,7 +101,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
 import MainButton from "@/components/common/Button.vue";
-import { buildPoolName, formatNumber, shortenEthAddress } from "@/api/helpers";
+import {buildPoolName, formatNumber, prettifyNumber, shortenEthAddress} from "@/api/helpers";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import VersionBadge from "@/components/common/VersionBadge.vue";
 import numeral from "numeral";
@@ -152,10 +152,7 @@ export default class DataPool extends Vue {
   }
 
   get liqDepth() {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD"
-    }).format(this.pool.liqDepth);
+    return prettifyNumber(this.pool.liqDepth, true)
   }
 
   get shortAddress() {
@@ -227,10 +224,7 @@ export default class DataPool extends Vue {
         label: "USD Value",
         sortable: true,
         formatter: (value: number) =>
-          new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD"
-          }).format(value ?? 0)
+          prettifyNumber(value, true)
       }
     ];
 
