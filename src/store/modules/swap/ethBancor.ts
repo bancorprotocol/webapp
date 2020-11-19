@@ -170,9 +170,9 @@ combineLatest([currentBlock$, convertersAndAnchors$])
       const blockYesterday = rewindBlocksByDays(currentBlock, 1);
       const { converterAddress, anchorAddress } = converterAndAnchor;
       return getHistoricFees(
+        w3,
         anchorAddress,
         converterAddress,
-        EthNetworks.Mainnet,
         blockYesterday
       );
     }),
