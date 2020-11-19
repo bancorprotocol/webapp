@@ -10,18 +10,9 @@ describe('SimpleComp.vue', () => {
       propsData: { msg }
     });
     expect(wrapper.text()).toMatch(msg);    
-  })
+  })  
 
-  // not work well
-  // it('display value in text input when setValue is emitted', async () => {
-  //   const wrapper = mount(SimpleComp)
-  //   const txtInput = wrapper.find('input[type="text"]')
-    
-  //   await txtInput.setValue('test');
-
-  //   expect(wrapper.find('input[type="text"]').element).toBe('test');
-  // })
-
+  /* check div && css */
   it('displays same width what we want', () => {
     const wrapper = shallowMount(SimpleComp);
     
@@ -29,8 +20,8 @@ describe('SimpleComp.vue', () => {
     expect(wrapper.find('.div-bg').element.style.width).toBe('200px');
   })
  
+  /* check emitted event */
   it('displays "clicked" when custom event is emitted', async () => {
-    // not work well
     const wrapper = mount(SimpleComp);
     const childRef = wrapper.findComponent(SimpleChildComp)
     childRef.vm.$emit('click');
@@ -44,6 +35,7 @@ describe('SimpleComp.vue', () => {
     // expect(wrapper.find('p').html()).toContain('clicked');    
   })
 
+  /* check visibility of div */
   it('should render SHOW, then hide it', async () => {
     const wrapper = mount(SimpleComp)
     expect(wrapper.find(".div-show").text()).toMatch(/SHOW/);
@@ -53,6 +45,15 @@ describe('SimpleComp.vue', () => {
     })
     expect(wrapper.find(".div-show").isEmpty()).toBe(true);
   })
-  
+
+  // not work well
+  // it('display value in text input when setValue is emitted', async () => {
+  //   const wrapper = mount(SimpleComp)
+  //   const txtInput = wrapper.find('input[type="text"]')
+    
+  //   await txtInput.setValue('test');
+
+  //   expect(wrapper.find('input[type="text"]').element).toBe('test');
+  // })
 
 })
