@@ -2088,12 +2088,22 @@ export class EthBancorModule
       this.liquidityProtectionSettings.networkToken,
       position.reserveToken
     );
+    const ppmPercent = decToPpm(decPercent);
+
+    console.log({ ppmPercent, decPercent }, "issue 560");
+    console.assert(
+      decPercent == 1,
+      "dec percent passed from View layer was not 1!"
+    );
+    console.assert();
+
     if (isDissolvingNetworkToken) {
       const dissolvingFullPosition = decPercent === 1;
+      const roundingBuffer = 0.01;
       const weiApprovalAmount = dissolvingFullPosition
         ? position.reserveAmount
         : new BigNumber(position.reserveAmount)
-            .times(decPercent + 0.01)
+            .times(decPercent + roundingBuffer)
             .toFixed(0);
       await this.triggerApprovalIfRequired({
         owner: this.isAuthenticated,
@@ -2104,7 +2114,7 @@ export class EthBancorModule
     }
 
     const txHash = await this.resolveTxOnConfirmation({
-      tx: contract.methods.removeLiquidity(dbId, decToPpm(decPercent))
+      tx: contract.methods.removeLiquidity(dbId, ppmPercent)
     });
 
     (async () => {
