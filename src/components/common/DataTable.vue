@@ -57,6 +57,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
+import BigNumber from "bignumber.js";
 
 export interface ViewTableField {
   id: number;
@@ -108,9 +109,12 @@ export default class DataTable extends Vue {
       );
     }
 
-    return sort(filtered)[this.descOrder ? "desc" : "asc"](
-      (t: any) => t[this.sortBy]
-    );
+    return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
+      const value = t[this.sortBy];
+      const number = new BigNumber(value);
+      if (BigNumber.isBigNumber(number)) return number.toNumber();
+      else return value;
+    });
   }
 
   get paginatedItems() {
