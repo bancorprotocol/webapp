@@ -96,7 +96,6 @@ import {
   conversionPath,
   getTokenSupplyWei,
   existingPool,
-  protectionById,
   getRemoveLiquidityReturn
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
