@@ -57,6 +57,7 @@
     "lodash.debounce": "^4.0.8",
     "moment": "^2.28.0",
     "numeral": "^2.0.6",
+    "rxjs": "^6.6.3",
     "vue": "^2.6.11",
     "vue-analytics": "^5.17.2",
     "vue-class-component": "^7.2.3",
