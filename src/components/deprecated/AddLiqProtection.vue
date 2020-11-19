@@ -203,7 +203,7 @@ export default class AddLiqProtection extends Vue {
 
   back() {
     this.$router.push({ name: "LiqProtection" });
-  }  
+  }
 
   setDefault() {
     this.sections = [];

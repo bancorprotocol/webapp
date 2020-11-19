@@ -10,9 +10,9 @@ import { ContractSendMethod } from "web3-eth-contract";
 import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
-import { EthNetworks } from "@/api/helpers";
-import { getWeb3, web3 } from "@/api/web3";
-import { getNetworkVariables } from "@/api/config";
+import { EthNetworks, web3 } from "@/api/helpers";
+import { getWeb3 } from "@/api/web3";
+import { getNetworkVariables } from "@/store/config";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
@@ -173,7 +173,7 @@ export class EthereumGovernance extends VuexModule.With({
     const tokenAddress = await governanceContract.methods.govToken().call();
     console.log("vote token address", tokenAddress);
 
-    await this.setContracts({
+    this.setContracts({
       governance: governanceContract,
       token: buildTokenContract(tokenAddress, w3)
     });

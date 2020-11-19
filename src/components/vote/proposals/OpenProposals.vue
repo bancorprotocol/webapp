@@ -296,7 +296,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
@@ -357,6 +357,10 @@ export default class OpenProposals extends Vue {
     return vxm.general.darkMode;
   }
 
+  get currentUser() {
+    return vxm.wallet.currentUser;
+  }
+
   prettifyNumber(number: string | number): string {
     return prettifyNumber(number);
   }
@@ -415,11 +419,15 @@ export default class OpenProposals extends Vue {
     }
   }
 
+  @Watch("currentUser")
   async update() {
-    this.currentVotes = await vxm.ethGovernance.getVotes({
-      voter: vxm.wallet.currentUser
-    });
+    if (this.currentUser) {
+      this.currentVotes = await vxm.ethGovernance.getVotes({
+        voter: this.currentUser
+      });
+    }
   }
+
   async mounted() {
     this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
