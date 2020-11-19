@@ -1,4 +1,7 @@
+import { StaticRelay } from "@/store/modules/swap/ethBancor";
+import { ConverterAndAnchor } from "@/types/bancor";
 import BigNumber from "bignumber.js";
+import { compareString } from "./helpers";
 
 const oneMillion = new BigNumber(1000000);
 
@@ -59,3 +62,16 @@ export const miningTknReward = (
       .dividedBy(protectedTkn)
   ).toNumber();
 };
+
+export const compareStaticRelayAndSet = (
+  staticRelay: StaticRelay,
+  anchorAndConverter: ConverterAndAnchor
+) =>
+  compareString(
+    staticRelay.poolToken.contract,
+    anchorAndConverter.anchorAddress
+  ) &&
+  compareString(
+    staticRelay.converterAddress,
+    anchorAndConverter.converterAddress
+  );

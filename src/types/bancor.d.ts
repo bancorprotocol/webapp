@@ -749,3 +749,8 @@ export interface LiqMiningApr {
   amount: string;
   reward?: number;
 }
+
+export interface ConverterAndAnchor {
+  converterAddress: string;
+  anchorAddress: string;
+}

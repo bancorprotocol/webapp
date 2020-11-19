@@ -41,7 +41,8 @@ import {
   ViewAmountDetail,
   WeiExtendedAsset,
   TokenWei,
-  PoolLiqMiningApr
+  PoolLiqMiningApr,
+  ConverterAndAnchor
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -145,7 +146,8 @@ import {
   knownPools,
   PreviousPoolFee,
   highCapPools,
-  liquidityMiningEndTime
+  liquidityMiningEndTime,
+  moreStaticRelays
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -159,7 +161,8 @@ import {
   from,
   of,
   Observable,
-  partition as partitionOb
+  partition as partitionOb,
+  merge
 } from "rxjs";
 import {
   distinctUntilChanged,
@@ -180,7 +183,8 @@ import {
   calculatePositionFees,
   decToPpm,
   miningBntReward,
-  miningTknReward
+  miningTknReward,
+  compareStaticRelayAndSet
 } from "@/api/pureHelpers";
 import {
   dualPoolRoiShape,
@@ -193,7 +197,8 @@ import {
   v2PoolBalanceShape,
   relayShape,
   poolTokenShape,
-  protectedReservesShape
+  protectedReservesShape,
+  staticRelayShape
 } from "@/api/eth/shapes";
 
 interface Balance {
@@ -876,6 +881,26 @@ interface AbiRelay extends RawAbiRelay {
   converterAddress: string;
 }
 
+export interface AbiStaticRelay {
+  converterAddress: string;
+  converterType: string;
+  version: string;
+  connectorToken1: string;
+  connectorToken2: string;
+}
+
+export interface StaticRelay {
+  converterAddress: string;
+  converterType: number;
+  version: number;
+  reserves: string[];
+  poolToken: {
+    symbol: string;
+    decimals: string;
+    contract: string;
+  };
+}
+
 interface RawAbiToken {
   contract: string;
   symbol: string;
@@ -896,11 +921,6 @@ interface RawAbiCentralPoolToken extends RawAbiToken {
 
 interface AbiCentralPoolToken extends RawAbiCentralPoolToken {
   contract: string;
-}
-
-interface ConverterAndAnchor {
-  converterAddress: string;
-  anchorAddress: string;
 }
 
 const metaToModalChoice = (meta: TokenMeta): ModalChoice => ({
@@ -5986,15 +6006,7 @@ export class EthBancorModule
       ),
       distinctArrayItem(knownPools, compareAnchorAndConverter),
       tap(x => console.log(x, "was all", parseInt(String(Date.now() / 1000)))),
-      shareReplay(1)
-    );
-
-    combineLatest([anchorAndConverters$, bancorConverterRegistry$]).subscribe(
-      () => {
-        const newTime = Date.now();
-        const timeTaken = newTime - timeStart;
-        console.log(timeTaken, "was time taken");
-      }
+      shareReplay<ConverterAndAnchor[]>(1)
     );
 
     const authenticated$ = of(this.isAuthenticated).pipe(
@@ -6009,19 +6021,48 @@ export class EthBancorModule
       this.fetchProtectionPositions(storeAddress)
     );
 
-    const moreData$ = anchorAndConverters$.pipe(
+    const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
+      mergeMap(from),
+      tap(x => console.log("from", x))
+    ) as Observable<ConverterAndAnchor>;
+
+    const [
+      toLocalLoad$,
+      toRemoteLoad$
+    ] = partitionOb(individualAnchorsAndConverters$, anchorAndConverter =>
+      moreStaticRelays.some(staticRelay =>
+        compareStaticRelayAndSet(staticRelay, anchorAndConverter)
+      )
+    );
+
+    const staticRelayLocal$ = toLocalLoad$.pipe(
+      map(anchorAndConverter =>
+        findOrThrow(
+          moreStaticRelays,
+          staticRelay =>
+            compareStaticRelayAndSet(staticRelay, anchorAndConverter),
+          "failed to find static relay"
+        )
+      ),
+      tap(x => console.log(x, "was static relay local emission"))
+    );
+
+    const staticRelaysRemote$ = toRemoteLoad$.pipe(
+      bufferTime(100),
       map(pairs => [
-        pairs.map(pair => pair.converterAddress).map(relayShape),
+        pairs.map(pair => pair.converterAddress).map(staticRelayShape),
         pairs.map(pair => pair.anchorAddress).map(poolTokenShape)
       ]),
       concatMap(groupsOfShapes => this.multi({ groupsOfShapes })),
       map(
         ([staticRelays, poolTokens]) =>
-          zip(staticRelays, poolTokens) as [AbiRelay, AbiCentralPoolToken][]
+          zip(staticRelays, poolTokens) as [
+            AbiStaticRelay,
+            AbiCentralPoolToken
+          ][]
       ),
       mergeMap(zipped => from(zipped)),
       map(([relay, poolToken]) => ({ relay, poolToken })),
-      filter(({ relay }) => relay.connectorTokenCount == "2"),
       map(set => ({
         ...set,
         relay: {
@@ -6035,12 +6076,23 @@ export class EthBancorModule
             )?.version || Number(set.relay.version)
         }
       })),
+      map(({ relay, poolToken }) => ({
+        ...relay,
+        poolToken,
+        reserves: [relay.connectorToken1, relay.connectorToken2] as [
+          string,
+          string
+        ],
+        version: Number(relay.version),
+        converterType: determineConverterType(relay.converterType)
+      })),
       tap(x => console.log("prod", x))
     );
 
-    const asArray$ = moreData$
-      .pipe(bufferTime(100))
-      .subscribe(x => console.log(x, "produc"));
+    const staticRelays$ = merge([
+      staticRelayLocal$,
+      staticRelaysRemote$
+    ]).subscribe(x => console.log("is on the good one", x));
 
     // const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
     // const allConverters = convertersAndAnchors.map(
