@@ -41,7 +41,7 @@ export default class Navigation extends Vue {
     vxm.ethWallet.checkAlreadySignedIn();
   }
 
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   onAuthentication(account: string) {
     if (account) {
       vxm.bancor.refreshBalances();
@@ -49,7 +49,7 @@ export default class Navigation extends Vue {
   }
 
   get loginTooltip() {
-    return this.selectedNetwork == "eth" && vxm.ethWallet.isAuthenticated
+    return this.selectedNetwork == "eth" && vxm.ethWallet.currentUser
       ? "Logout via wallet"
       : "";
   }
@@ -59,18 +59,18 @@ export default class Navigation extends Vue {
   }
 
   get shortenedEthAddress() {
-    const isAuthenticated = vxm.ethWallet.isAuthenticated;
-    return isAuthenticated.length > 13
-      ? shortenEthAddress(isAuthenticated)
-      : isAuthenticated;
+    const currentUser = vxm.ethWallet.currentUser;
+    return currentUser.length > 13
+      ? shortenEthAddress(currentUser)
+      : currentUser;
   }
 
   get loginButtonLabel() {
     if (this.selectedWallet == "eos") {
       return this.loginStatus[0];
     } else {
-      const isAuthenticated = vxm.ethWallet.isAuthenticated;
-      if (isAuthenticated) {
+      const currentUser = vxm.ethWallet.currentUser;
+      if (currentUser) {
         return this.shortenedEthAddress;
       } else return "Connect Wallet";
     }
@@ -80,7 +80,7 @@ export default class Navigation extends Vue {
     if (this.selectedWallet == "eos") {
       return this.loginStatus[1];
     } else {
-      return vxm.ethWallet.isAuthenticated ? "power-off" : "arrow-circle-right";
+      return vxm.ethWallet.currentUser ? "power-off" : "arrow-circle-right";
     }
   }
 
@@ -88,8 +88,8 @@ export default class Navigation extends Vue {
     return this.loginStatus[2];
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   async loginActionEos() {
@@ -106,7 +106,7 @@ export default class Navigation extends Vue {
   }
 
   async loginActionEth() {
-    if (vxm.ethWallet.isAuthenticated) {
+    if (vxm.ethWallet.currentUser) {
       // Cannot logout of MetaMask
     } else {
       await vxm.ethWallet.connect();

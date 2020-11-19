@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
+import { createProxy, extractVuexModule } from "vuex-class-component";
 import { GeneralModule } from "./modules/general";
 import { EosTransitModule } from "./modules/wallet/eosWallet";
 import { EthereumModule } from "./modules/wallet/ethWallet";
@@ -10,8 +11,7 @@ import { BancorModule } from "./modules/swap/index";
 import { WalletModule } from "./modules/wallet/index";
 import { NetworkModule } from "./modules/network/index";
 import { EosNetworkModule } from "./modules/network/eosNetwork";
-import { createProxy, extractVuexModule } from "vuex-class-component";
-import { EthereumGovernance } from "@/store/modules/governance/ethGovernance";
+import { EthereumGovernance } from "./modules/governance/ethGovernance";
 
 Vue.use(Vuex);
 

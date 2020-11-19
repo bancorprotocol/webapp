@@ -39,8 +39,7 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
     );
   }
 
-  @action
-  async getUserCountry() {
+  @action async getUserCountry() {
     const countryCode = await getCountryCode();
     this.setCountryCode(countryCode);
   }

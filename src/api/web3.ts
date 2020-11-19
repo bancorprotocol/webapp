@@ -1,4 +1,4 @@
-import { getNetworkVariables } from "@/store/config";
+import { getNetworkVariables } from "@/api/config";
 import { EthNetworks } from "@/api/helpers";
 import Web3 from "web3";
 
@@ -56,3 +56,32 @@ export const getWeb3 = (
 
   return new Web3(wssProvider);
 };
+
+const projectId = "da059c364a2f4e6eb89bfd89600bce07";
+
+const buildInfuraAddress = (
+  subdomain: string,
+  projectId: string,
+  wss: boolean = false
+) =>
+  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${
+    wss ? "ws/" : ""
+  }v3/${projectId}`;
+
+export const getInfuraAddress = (
+  network: EthNetworks,
+  wss: boolean = false
+) => {
+  if (network == EthNetworks.Mainnet) {
+    return buildInfuraAddress("mainnet", projectId, wss);
+  } else if (network == EthNetworks.Ropsten) {
+    return buildInfuraAddress("ropsten", projectId, wss);
+  }
+  throw new Error("Infura address for network not supported ");
+};
+
+export const web3 = new Web3(
+  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
+);
+
+web3.eth.transactionBlockTimeout = 100;

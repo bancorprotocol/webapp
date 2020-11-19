@@ -10,9 +10,9 @@ import { ContractSendMethod } from "web3-eth-contract";
 import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
-import { EthNetworks, web3 } from "@/api/helpers";
-import { getNetworkVariables } from "@/store/config";
-import { getWeb3 } from "@/api/web3";
+import { EthNetworks } from "@/api/helpers";
+import { getWeb3, web3 } from "@/api/web3";
+import { getNetworkVariables } from "@/api/config";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
@@ -120,8 +120,7 @@ export class EthereumGovernance extends VuexModule.With({
 
   metaDataCache: { [id: string]: ProposalMetaData } = {};
 
-  @mutation
-  setContracts({
+  @mutation setContracts({
     governance,
     token
   }: {
@@ -139,47 +138,39 @@ export class EthereumGovernance extends VuexModule.With({
     );
   }
 
-  @mutation
-  setLastTransaction(time: number) {
+  @mutation setLastTransaction(time: number) {
     this.lastTransaction = time;
   }
 
-  @mutation
-  setSymbol(symbol: string) {
+  @mutation setSymbol(symbol: string) {
     this.symbol = symbol;
   }
 
-  @mutation
-  setDecimals(decimals: number) {
+  @mutation setDecimals(decimals: number) {
     this.decimals = decimals;
   }
 
-  @action
-  async getTokenAddress(): Promise<EthAddress> {
+  @action async getTokenAddress(): Promise<EthAddress> {
     return this.tokenContract.options.address;
   }
 
-  @action
-  async getNetwork(): Promise<EthNetworks> {
+  @action async getNetwork(): Promise<EthNetworks> {
     const currentNetwork: EthNetworks = await web3.eth.getChainId();
     console.log(`current network is: ${EthNetworks[currentNetwork]}`);
     return currentNetwork;
   }
 
-  @action
-  async getGovernanceContractAddress() {
+  @action async getGovernanceContractAddress() {
     const networkVariables = getNetworkVariables(await this.getNetwork());
     return networkVariables.governanceContractAddress;
   }
 
-  @action
-  async getEtherscanUrl() {
+  @action async getEtherscanUrl() {
     const networkVariables = getNetworkVariables(await this.getNetwork());
     return networkVariables.etherscanUrl;
   }
 
-  @action
-  async init() {
+  @action async init() {
     const w3 = getWeb3(await this.getNetwork());
     const governanceContract: Governance = buildGovernanceContract(
       await this.getGovernanceContractAddress(),
@@ -189,14 +180,13 @@ export class EthereumGovernance extends VuexModule.With({
     const tokenAddress = await governanceContract.methods.govToken().call();
     console.log("vote token address", tokenAddress);
 
-    await this.setContracts({
+    this.setContracts({
       governance: governanceContract,
       token: buildTokenContract(tokenAddress, w3)
     });
   }
 
-  @action
-  async getSymbol(): Promise<string> {
+  @action async getSymbol(): Promise<string> {
     if (!this.symbol) {
       const symbol = await this.tokenContract.methods.symbol().call();
       this.setSymbol(symbol);
@@ -206,8 +196,7 @@ export class EthereumGovernance extends VuexModule.With({
     }
   }
 
-  @action
-  async getDecimals(): Promise<number> {
+  @action async getDecimals(): Promise<number> {
     if (!this.decimals) {
       const decimals = Number(
         await this.tokenContract.methods.decimals().call()
@@ -219,27 +208,23 @@ export class EthereumGovernance extends VuexModule.With({
     }
   }
 
-  @action
-  async getVoteLockDuration(): Promise<number> {
+  @action async getVoteLockDuration(): Promise<number> {
     return Number(
       await this.governanceContract.methods.voteLockDuration().call()
     );
   }
 
-  @action
-  async getVoteDuration(): Promise<number> {
+  @action async getVoteDuration(): Promise<number> {
     return Number(await this.governanceContract.methods.voteDuration().call());
   }
 
-  @action
-  async getVoteLockFraction(): Promise<number> {
+  @action async getVoteLockFraction(): Promise<number> {
     return Number(
       await this.governanceContract.methods.voteLockFraction().call()
     );
   }
 
-  @action
-  async getNewProposalMinimum(): Promise<number> {
+  @action async getNewProposalMinimum(): Promise<number> {
     const [min, decimals] = await Promise.all([
       this.governanceContract.methods.newProposalMinimum().call(),
       this.getDecimals()
@@ -247,8 +232,7 @@ export class EthereumGovernance extends VuexModule.With({
     return Number(shrinkToken(min, decimals));
   }
 
-  @action
-  async getVotes({ voter }: { voter: EthAddress }): Promise<BigNumber> {
+  @action async getVotes({ voter }: { voter: EthAddress }): Promise<BigNumber> {
     if (!voter) throw new Error("Cannot get votes without voter address");
 
     const [decimals, weiVotes] = await Promise.all([
@@ -261,8 +245,11 @@ export class EthereumGovernance extends VuexModule.With({
     return new BigNumber(weiVotes).dividedBy(new BigNumber(10).pow(decimals));
   }
 
-  @action
-  async getBalance({ account }: { account: EthAddress }): Promise<BigNumber> {
+  @action async getBalance({
+    account
+  }: {
+    account: EthAddress;
+  }): Promise<BigNumber> {
     if (!account) throw new Error("Cannot get balance without address");
 
     const [decimals, weiBalance] = await Promise.all([
@@ -275,8 +262,7 @@ export class EthereumGovernance extends VuexModule.With({
     return new BigNumber(weiBalance).dividedBy(new BigNumber(10).pow(decimals));
   }
 
-  @action
-  async getLock({
+  @action async getLock({
     account
   }: {
     account: EthAddress;
@@ -298,8 +284,7 @@ export class EthereumGovernance extends VuexModule.With({
     return lock;
   }
 
-  @action
-  async stake({
+  @action async stake({
     account,
     amount
   }: {
@@ -341,8 +326,7 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
-  @action
-  async unstake({
+  @action async unstake({
     account,
     amount
   }: {
@@ -364,8 +348,7 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
-  @action
-  async propose({
+  @action async propose({
     account,
     executor,
     hash
@@ -389,8 +372,7 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
-  @action
-  async voteFor({
+  @action async voteFor({
     account,
     proposalId
   }: {
@@ -412,8 +394,7 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
-  @action
-  async voteAgainst({
+  @action async voteAgainst({
     account,
     proposalId
   }: {
@@ -435,8 +416,7 @@ export class EthereumGovernance extends VuexModule.With({
     return true;
   }
 
-  @action
-  async getProposal({
+  @action async getProposal({
     proposalId,
     voter
   }: {
@@ -470,7 +450,7 @@ export class EthereumGovernance extends VuexModule.With({
       console.log("Getting metadata failed!", err, proposal.hash);
     }
 
-    const prop = {
+    const prop: Proposal = {
       id: Number(proposal.id),
       start: Number(proposal.start) * 1000,
       end: Number(proposal.end) * 1000,
@@ -485,7 +465,7 @@ export class EthereumGovernance extends VuexModule.With({
       totalVotesFor,
       totalVotesAvailable,
       totalVotes: totalVotesFor + totalVotesAgainst,
-      votes: {
+      votes: <Votes>{
         for: voter
           ? parseFloat(
               shrinkToken(
@@ -506,10 +486,11 @@ export class EthereumGovernance extends VuexModule.With({
               )
             )
           : 0
-      } as any,
+      },
       metadata: metadata,
       voters: await this.getVoters({ proposal })
     };
+
     const { for: vFor, against: vAgainst } = prop.votes;
     prop.votes.voted =
       vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
@@ -517,8 +498,7 @@ export class EthereumGovernance extends VuexModule.With({
     return prop;
   }
 
-  @action
-  async getVoters({
+  @action async getVoters({
     proposal
   }: {
     proposal: Proposal;
@@ -545,8 +525,7 @@ export class EthereumGovernance extends VuexModule.With({
     });
   }
 
-  @action
-  async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
+  @action async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
     console.log(
       "getting proposals",
       Date.now(),
@@ -576,8 +555,7 @@ export class EthereumGovernance extends VuexModule.With({
     return proposals.reverse();
   }
 
-  @action
-  async getFromIPFS({
+  @action async getFromIPFS({
     hash,
     timeoutInSeconds
   }: {
@@ -621,8 +599,7 @@ export class EthereumGovernance extends VuexModule.With({
     this.metaDataCache = metaDataCache;
   }
 
-  @action
-  async storeInIPFS({
+  @action async storeInIPFS({
     proposalMetaData
   }: {
     proposalMetaData: ProposalMetaData;
@@ -635,8 +612,7 @@ export class EthereumGovernance extends VuexModule.With({
     return path;
   }
 
-  @action
-  async getPostFromDiscourse({
+  @action async getPostFromDiscourse({
     postId
   }: {
     postId: string;
@@ -657,8 +633,7 @@ export class EthereumGovernance extends VuexModule.With({
     };
   }
 
-  @action
-  async getTopicFromDiscourse({
+  @action async getTopicFromDiscourse({
     topicId
   }: {
     topicId: string;
