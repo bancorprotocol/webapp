@@ -1895,8 +1895,6 @@ export class EthBancorModule
                         reserveRateN,
                         reserveRateD
                       });
-
-                      throw err;
                     }
 
                     const magnitude =
