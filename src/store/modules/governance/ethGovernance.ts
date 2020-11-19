@@ -10,9 +10,9 @@ import { ContractSendMethod } from "web3-eth-contract";
 import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
-import { EthNetworks, web3 } from "@/api/helpers";
-import { getNetworkVariables } from "@/store/config";
-import { getWeb3 } from "@/api/web3";
+import { EthNetworks } from "@/api/helpers";
+import { getWeb3, web3 } from "@/api/web3";
+import { getNetworkVariables } from "@/api/config";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";

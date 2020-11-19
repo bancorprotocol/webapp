@@ -15,10 +15,10 @@ import {
   ABIV2Converter,
   V2PoolsTokenContainer
 } from "@/api/eth/ethAbis";
-import { web3 } from "@/api/helpers";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import Web3 from "web3";
+import { web3 } from "@/api/web3";
 
 const buildContract = (
   abi: AbiItem[],
