@@ -6,8 +6,9 @@ import {
 } from "@/api/pureHelpers";
 
 describe("dec to ppm works", () => {
-  test("60%", () => {
+  test("range of percentages", () => {
     expect(decToPpm(0.6)).toBe("600000");
+    expect(decToPpm(1)).toBe("1000000");
   });
 });
 
