@@ -159,6 +159,29 @@ import {
   miningBntReward,
   miningTknReward
 } from "@/api/pureHelpers";
+import { Subject, combineLatest } from "rxjs";
+import { concatMap, filter } from "rxjs/operators";
+
+const currentBlock$ = new Subject<number>();
+const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
+
+combineLatest([currentBlock$, convertersAndAnchors$])
+  .pipe(
+    concatMap(([currentBlock, converterAndAnchor]) => {
+      const blockYesterday = rewindBlocksByDays(currentBlock, 1);
+      const { converterAddress, anchorAddress } = converterAndAnchor;
+      return getHistoricFees(
+        anchorAddress,
+        converterAddress,
+        EthNetworks.Mainnet,
+        blockYesterday
+      );
+    }),
+    filter(feeEvents => feeEvents.length > 0)
+  )
+  .subscribe(fees => {
+    vxm.ethBancor.updateHistoricPoolFees(fees);
+  });
 
 const protectedPositionShape = (storeAddress: string, protectionId: string) => {
   const contract = buildLiquidityProtectionStoreContract(storeAddress);
@@ -591,15 +614,16 @@ const getHistoricFees = async (
     toBlock: "latest"
   };
 
-  const events = await contract.getPastEvents("ConversionFeeUpdate", options);
+  const res = await contract.getPastEvents("ConversionFeeUpdate", options);
 
-  return events
+  const events = res
     .filter(event => event.blockNumber >= blockHoursAgo)
     .map(event => ({
       id,
       oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
       blockNumber: event.blockNumber
     }));
+  return events;
 };
 
 const blockNumberHoursAgo = async (hours: number, network: EthNetworks) => {
@@ -2257,8 +2281,9 @@ export class EthBancorModule
     this.loadingProtectedPositions = value;
   }
 
-  @mutation setHistoricFees(value: PreviousPoolFee[]) {
-    this.previousPoolFeesArr = value;
+  @mutation updateHistoricPoolFees(newFees: PreviousPoolFee[]) {
+    const currentFees = this.previousPoolFeesArr;
+    this.previousPoolFeesArr = [...currentFees, ...newFees];
   }
 
   @action async fetchLockedBalances(storeAddress?: string) {
@@ -6049,6 +6074,8 @@ export class EthBancorModule
         blockNumberHoursAgo(24, currentNetwork)
       ]);
 
+      currentBlock$.next(currentBlock);
+
       console.log(contractAddresses, "are contract addresses");
 
       void this.fetchAndSetHighTierPools(contractAddresses.LiquidityProtection);
@@ -6538,8 +6565,8 @@ export class EthBancorModule
   }
 
   @action async checkFees(pools: Relay[]) {
-    console.count('checkFees')
-    console.log('asked to check', pools)
+    console.count("checkFees");
+    console.log("asked to check", pools);
     const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
 
     const relaysList = sortAlongSide(
@@ -6548,27 +6575,12 @@ export class EthBancorModule
       relaysByLiqDepth.map(relay => relay.id)
     );
 
-    const { blockHoursAgo } = await blockNumberHoursAgo(
-      24,
-      this.currentNetwork
+    const convertersAndAnchors: ConverterAndAnchor[] = relaysList.map(
+      relay => ({ anchorAddress: relay.id, converterAddress: relay.contract })
     );
-
-    for (const relay of relaysList) {
-      console.log(
-        "pool fees fetching",
-        relay.reserves.map(x => x.symbol).join(" ")
-      );
-      const poolFees = await getHistoricFees(
-        relay.id,
-        relay.contract,
-        this.currentNetwork,
-        blockHoursAgo
-        );
-      console.log("fetched pool fees", poolFees);
-      if (poolFees.length > 0) {
-        this.setHistoricFees([...this.previousPoolFees, ...poolFees]);
-      }
-    }
+    convertersAndAnchors.forEach(converterAndAnchor =>
+      convertersAndAnchors$.next(converterAndAnchor)
+    );
   }
 
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
