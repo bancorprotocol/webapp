@@ -6580,7 +6580,11 @@ export class EthBancorModule
     const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
 
     const relaysList = sortAlongSide(
-      pools,
+      pools.filter(
+        p =>
+          relaysByLiqDepth.find(r => compareString(r.id, p.id))?.liqDepth ||
+          0 > 0
+      ),
       relay => relay.id,
       relaysByLiqDepth.map(relay => relay.id)
     );
