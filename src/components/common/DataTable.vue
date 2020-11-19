@@ -102,7 +102,6 @@ export default class DataTable extends Vue {
     const filter = this.filter;
     const filterBy = this.filterBy;
     const filterFunction = this.filterFunction;
-    const sortBy = this.sortBy;
 
     if (filterFunction !== undefined) {
       filtered = items.filter((t: any) => filterFunction(t, filter));

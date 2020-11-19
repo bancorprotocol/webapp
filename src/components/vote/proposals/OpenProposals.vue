@@ -42,36 +42,36 @@
         <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
           <span>More about proposal:</span>
           <a
-              target="_blank"
-              class="font-size-14 font-w500 pl-2"
-              :href="
-                  (item.metadata &&
-                    item.metadata.payload &&
-                    item.metadata.payload.metadata &&
-                    item.metadata.payload.metadata.discourse.startsWith(
-                      'https://gov.bancor.network/'
-                    ) &&
-                    item.metadata.payload.metadata.discourse) ||
-                    undefined
-                "
+            target="_blank"
+            class="font-size-14 font-w500 pl-2"
+            :href="
+              (item.metadata &&
+                item.metadata.payload &&
+                item.metadata.payload.metadata &&
+                item.metadata.payload.metadata.discourse.startsWith(
+                  'https://gov.bancor.network/'
+                ) &&
+                item.metadata.payload.metadata.discourse) ||
+              undefined
+            "
           >
             <font-awesome-icon icon="external-link-alt" />
             Discussion Forum
           </a>
           <a
-              target="_blank"
-              class="font-size-14 font-w500 pl-2"
-              :href="
-                  (item.metadata &&
-                    item.metadata.payload &&
-                    item.metadata.payload.metadata &&
-                    item.metadata.payload.metadata.github &&
-                    item.metadata.payload.metadata.github.startsWith(
-                      'https://github.com/'
-                    ) &&
-                    item.metadata.payload.metadata.github) ||
-                    undefined
-                "
+            target="_blank"
+            class="font-size-14 font-w500 pl-2"
+            :href="
+              (item.metadata &&
+                item.metadata.payload &&
+                item.metadata.payload.metadata &&
+                item.metadata.payload.metadata.github &&
+                item.metadata.payload.metadata.github.startsWith(
+                  'https://github.com/'
+                ) &&
+                item.metadata.payload.metadata.github) ||
+              undefined
+            "
           >
             <font-awesome-icon :icon="['fab', 'github']" />
             GitHub
@@ -81,63 +81,51 @@
         <b-row>
           <b-col cols="6">
             <b-row class="pb-1">
-              <b-col
-                  class="font-size-12 text-muted-light text-nowrap"
-                  cols="4"
-              >
+              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
                 Vote Start
               </b-col>
               <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
                 {{ formatDate(item.start) }}
               </b-col>
-              <b-col
-                  class="font-size-12 font-w500 text-muted-light"
-                  cols="2"
-              >
+              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
                 {{ formatTime(item.start) }}
               </b-col>
             </b-row>
             <b-row>
-              <b-col
-                  class="font-size-12 text-muted-light text-nowrap"
-                  cols="4"
-              >
+              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
                 Vote End
               </b-col>
               <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
                 {{ formatDate(item.end) }}
               </b-col>
-              <b-col
-                  class="font-size-12 font-w500 text-muted-light"
-                  cols="2"
-              >
+              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
                 {{ formatTime(item.end) }}
               </b-col>
             </b-row>
           </b-col>
           <b-col cols="6">
             <div
-                class="font-size-12 pb-1"
-                :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+              class="font-size-12 pb-1"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
               Proposed by
               <a
-                  target="_blank"
-                  class="font-size-12 font-w500 fix-a"
-                  :href="getEtherscanUrl(item.proposer)"
+                target="_blank"
+                class="font-size-12 font-w500 fix-a"
+                :href="getEtherscanUrl(item.proposer)"
               >
                 {{ shortAddress(item.proposer) }}
               </a>
             </div>
             <div
-                class="font-size-12"
-                :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+              class="font-size-12"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
               Contract to execute
               <a
-                  target="_blank"
-                  class="font-size-12 font-w500 fix-a"
-                  :href="getEtherscanUrl(item.executor)"
+                target="_blank"
+                class="font-size-12 font-w500 fix-a"
+                :href="getEtherscanUrl(item.executor)"
               >
                 {{ shortAddress(item.executor) }}
               </a>
@@ -147,10 +135,10 @@
 
         <div class="pt-2">
           <remaining-time
-              type="warn"
-              :show-seconds="true"
-              :from="item.start"
-              :to="item.end"
+            type="warn"
+            :show-seconds="true"
+            :from="item.start"
+            :to="item.end"
           />
         </div>
       </template>
@@ -158,66 +146,62 @@
       <template #cell(votes)="{ item }">
         <div class="pl-3 container-border h-100">
           <div
-              v-if="!item.votes.voted && item.end > Date.now()"
-              class="d-flex align-items-center mb-2"
+            v-if="!item.votes.voted && item.end > Date.now()"
+            class="d-flex align-items-center mb-2"
           >
             <main-button
-                @click="voteFor(item.id.toString())"
-                label="Vote for"
-                :large="true"
-                :active="true"
-                :block="true"
-                class="font-size-14 font-w400 mr-3 text-uppercase button-vote button-vote--for"
+              @click="voteFor(item.id.toString())"
+              label="Vote for"
+              :large="true"
+              :active="true"
+              :block="true"
+              class="font-size-14 font-w400 mr-3 text-uppercase button-vote button-vote--for"
             />
 
             <main-button
-                @click="voteAgainst(item.id.toString())"
-                label="Vote against"
-                :large="true"
-                :active="true"
-                :block="true"
-                class="font-size-14 font-w400 mt-0 text-uppercase button-vote button-vote--against"
+              @click="voteAgainst(item.id.toString())"
+              label="Vote against"
+              :large="true"
+              :active="true"
+              :block="true"
+              class="font-size-14 font-w400 mt-0 text-uppercase button-vote button-vote--against"
             />
           </div>
 
           <div v-if="item.votes.voted">
             <div
-                class="votes-bar--empty voted-box mb-2"
-                :class="'votes-bar--' + item.votes.voted"
+              class="votes-bar--empty voted-box mb-2"
+              :class="'votes-bar--' + item.votes.voted"
             >
               <div class="row">
-                    <span class="col-3">
-                      <span class="text-uppercase">{{
-                          item.votes.voted
-                        }}</span>
-                    </span>
+                <span class="col-3">
+                  <span class="text-uppercase">{{ item.votes.voted }}</span>
+                </span>
                 <span class="col-9 text-right">
-                      {{ item.votes.for || item.votes.against }}
-                      {{ symbol }}
-                    </span>
+                  {{ item.votes.for || item.votes.against }}
+                  {{ symbol }}
+                </span>
               </div>
               <div class="row">
                 <div
-                    class="col-4 tiny-text"
-                    :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+                  class="col-4 tiny-text"
+                  :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
                 >
                   <span>your vote</span>
                 </div>
                 <div class="col-8 font-size-12 text-right voted-box__text">
-                      <span
-                          class="tiny-text"
-                          :class="
-                          darkMode ? 'text-body-dark' : 'text-muted-light'
-                        "
-                      >
-                        {{
-                          (
-                              ((item.votes.for || item.votes.against) /
-                                  item.totalVotes) *
-                              100
-                          ).toFixed(2)
-                        }}% from voters
-                      </span>
+                  <span
+                    class="tiny-text"
+                    :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+                  >
+                    {{
+                      (
+                        ((item.votes.for || item.votes.against) /
+                          item.totalVotes) *
+                        100
+                      ).toFixed(2)
+                    }}% from voters
+                  </span>
                 </div>
               </div>
             </div>
@@ -226,38 +210,35 @@
           <div class="font-size-12 font-w500 text-uppercase">
             <div class="votes-bar">
               <div
-                  class="votes-bar__progress"
-                  :style="{
-                      width: `${(100 / item.totalVotes) *
-                        item.totalVotesFor}%`
-                    }"
+                class="votes-bar__progress"
+                :style="{
+                  width: `${(100 / item.totalVotes) * item.totalVotesFor}%`
+                }"
               />
               <div class="votes-bar__content text-uppercase">
-                    <span>
-                      For
-                      {{
-                        (
-                            (100 / item.totalVotes) *
-                            item.totalVotesFor || 0
-                        ).toFixed(2)
-                      }}%
-                    </span>
                 <span>
-                      Against
-                      {{
+                  For
+                  {{
+                    ((100 / item.totalVotes) * item.totalVotesFor || 0).toFixed(
+                      2
+                    )
+                  }}%
+                </span>
+                <span>
+                  Against
+                  {{
                     (
-                        (100 / item.totalVotes) *
-                        item.totalVotesAgainst || 0
+                      (100 / item.totalVotes) * item.totalVotesAgainst || 0
                     ).toFixed(2)
                   }}%
-                    </span>
+                </span>
               </div>
             </div>
           </div>
 
           <div
-              class="tiny-text font-w500"
-              :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+            class="tiny-text font-w500"
+            :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
           >
             <div class="row pt-2">
               <div class="col-6">
@@ -271,11 +252,11 @@
 
             <div class="row pt-2">
               <div class="col-12">
-                    <span>
-                      {{ (item.quorum / 10000).toFixed(2) }}% Quorum ({{
-                        (item.quorumRequired / 10000).toFixed(2)
-                      }}% to pass)
-                    </span>
+                <span>
+                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum ({{
+                    (item.quorumRequired / 10000).toFixed(2)
+                  }}% to pass)
+                </span>
               </div>
             </div>
           </div>
@@ -319,7 +300,7 @@ export default class OpenProposals extends Vue {
   currentVotes: BigNumber = new BigNumber(0);
 
   get items(): Proposal[] {
-    return this.proposals ? this.proposals.slice() : []
+    return this.proposals ? this.proposals.slice() : [];
   }
 
   get fields(): ViewTableField[] {
