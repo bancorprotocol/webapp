@@ -1,87 +1,99 @@
 <template>
   <div class="table-responsive">
-    <table :class="darkMode ? 'dark-table' : 'table'">
-      <table-header
-        :fields="fields"
-        :sort-by.sync="sortBy"
-        @update:sortBy="modifyItems"
-        :desc-order.sync="descOrder"
-        @update:descOrder="modifyItems"
-      />
-      <tbody>
-        <slot />
-      </tbody>
-    </table>
-
-    <table-pagination
-      v-if="!hidePagination"
-      :current-page.sync="currentPage"
-      @update:currentPage="modifyItems"
-      :row-count.sync="modifiedItems.length"
-      @update:rowCount="modifyItems"
-      :per-page="perPage"
-    />
+    <data-table   
+      :items="proposals"
+      :fields="fields"
+      default-sort="to"
+      :hide-pagination="true"
+    >
+      <template
+        v-for="field in fields"
+        class="font-w500 font-size-14 aling-rows-cells"          
+        >
+        <tr
+          :key="'r1-' + field.id"
+          class="align-rows-cells cursor"
+        >
+          <td>
+            {{ field.id }}
+          </td>
+          <td class="font-size-14 font-w500">
+            {{ field.name }}
+          </td>
+          <td
+          class="result"                
+          >
+            Approved
+          </td>
+          <td>
+            {{ field.totalVotesFor }}            
+          </td>
+          <td>            
+            {{ field.totalVotesAgainst }}            
+          </td>                        
+        </tr>            
+        </template>      
+    </data-table>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import TableHeader, {
+import {
   ViewTableFields
 } from "@/components/common/TableHeader.vue";
-import TablePagination from "@/components/common/TablePagination.vue";
+import DataTable from "@/components/deprecated/DataTable.vue";
 import { VModel } from "@/api/helpers";
 import sort from "fast-sort";
 
 @Component({
   components: {
-    TableHeader,
-    TablePagination
+    DataTable
   }
 })
-export default class DataTable extends Vue {
-  @Prop() fields!: ViewTableFields[];
-  @Prop() items!: any[];
-  @VModel() paginatedItems!: any[];
-  @Prop() filter!: string;
-  @Prop() filterBy!: string;
-  @Prop() defaultSort!: string;
-  @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
-  @Prop({ default: 10 }) perPage!: number;
-  @Prop({ default: false }) hidePagination!: boolean;
-
-  sortBy: string = this.defaultSort;
-  descOrder: boolean = this.defaultOrder === "desc";
-  currentPage = 1;
-  modifiedItems: any[] = [];
-
-  modifyItems() {
-    const items = this.items;
-    const filtered = items.filter(
-      (t: any) =>
-        t[this.filterBy] && t[this.filterBy].includes(this.filter.toUpperCase())
-    );
-    this.modifiedItems = sort(filtered)[this.descOrder ? "desc" : "asc"](
-      (t: any) => t[this.sortBy]
-    );
-    this.paginateItems();
-  }
-
-  paginateItems() {
-    this.paginatedItems = this.modifiedItems.slice(
-      this.currentPage * this.perPage - this.perPage,
-      this.currentPage * this.perPage
-    );
-  }
-
-  @Watch("filter")
-  @Watch("items")
-  updateItems() {
-    this.modifyItems();
-  }
-
-  mounted() {
-    this.modifyItems();
+export default class TableComp extends Vue {
+  get fields(): ViewTableFields[] {
+    return [
+      {
+        label: "ID",
+        key: "id",
+        minWidth: "16px",
+        maxWidth: "16px"
+      },
+      {
+        label: "Details",
+        key: ""
+      },
+      {
+        label: "Result",
+        key: "",
+        maxWidth: "120px",
+        minWidth: "120px"
+      },
+      {
+        label: "Votes for",
+        key: "votesFor",
+        maxWidth: "140px",
+        minWidth: "140px"
+      },
+      {
+        label: "Votes against",
+        key: "votesAgainst",
+        maxWidth: "140px",
+        minWidth: "140px"
+      },
+      {
+        label: "Vote start",
+        key: "startDate",
+        maxWidth: "120px",
+        minWidth: "120px"
+      },
+      {
+        label: "",
+        key: "",
+        maxWidth: "10px"
+      }
+    ];
   }
 }
 </script>
