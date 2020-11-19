@@ -1764,7 +1764,7 @@ export class EthBancorModule
   }) {
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
-    if (!this.isAuthenticated) {
+    if (!this.currentUser) {
       return;
     }
     try {
@@ -1773,7 +1773,7 @@ export class EthBancorModule
         liquidityStore,
         w3
       );
-      const owner = this.isAuthenticated;
+      const owner = this.currentUser;
       console.time("time to get ID count");
       console.log("getting id count", owner, "was the owner");
       const idCount = Number(
@@ -2096,7 +2096,7 @@ export class EthBancorModule
           task: async () => {
             if (!depositIsEth) {
               await this.triggerApprovalIfRequired({
-                owner: this.isAuthenticated,
+                owner: this.currentUser,
                 spender: liqudityProtectionContractAddress,
                 amount: reserveAmountWei,
                 tokenAddress: reserveTokenAddress
@@ -2177,7 +2177,7 @@ export class EthBancorModule
             .times(decPercent + roundingBuffer)
             .toFixed(0);
       await this.triggerApprovalIfRequired({
-        owner: this.isAuthenticated,
+        owner: this.currentUser,
         spender: liquidityProtectionContract,
         amount: weiApprovalAmount,
         tokenAddress: this.liquidityProtectionSettings.govToken
@@ -2223,7 +2223,7 @@ export class EthBancorModule
           task: async () => {
             await this.triggerApprovalIfRequired({
               amount: poolTokenWei,
-              owner: this.isAuthenticated,
+              owner: this.currentUser,
               spender: liquidityProtectionContractAddress,
               tokenAddress: poolToken.contract
             });
@@ -2297,7 +2297,7 @@ export class EthBancorModule
   }
 
   @action async fetchLockedBalances(storeAddress?: string) {
-    const owner = this.isAuthenticated;
+    const owner = this.currentUser;
     if (!owner) return;
 
     const contractAddress =
@@ -2327,7 +2327,7 @@ export class EthBancorModule
   loadingProtectedPositions = true;
 
   get protectedPositions(): ViewProtectedLiquidity[] {
-    const owner = this.isAuthenticated;
+    const owner = this.currentUser;
     if (!owner) return [];
 
     const { minDelay, maxDelay } = this.liquidityProtectionSettings;
@@ -2668,8 +2668,8 @@ export class EthBancorModule
     };
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   @mutation moduleInitiated() {
@@ -3011,7 +3011,7 @@ export class EthBancorModule
     return new Promise((resolve, reject) => {
       let txHash: string;
       tx.send({
-        from: this.isAuthenticated,
+        from: this.currentUser,
         ...(gas && { gas }),
         ...(value && { value: toHex(value) })
       })
@@ -3803,7 +3803,7 @@ export class EthBancorModule
   @action async fetchTokenBalances(
     tokenAddresses: string[]
   ): Promise<Balance[]> {
-    if (!this.isAuthenticated)
+    if (!this.currentUser)
       throw new Error("Cannot fetch balances when not logged in");
     const uniqueAddresses = uniqWith(tokenAddresses, compareString);
 
@@ -3821,7 +3821,7 @@ export class EthBancorModule
       decimalIsKnown
     );
 
-    const owner = this.isAuthenticated;
+    const owner = this.currentUser;
 
     const knownDecimalShapes = knownDecimals.map(address =>
       slimBalanceShape(address, owner, this.currentNetwork)
@@ -3893,7 +3893,7 @@ export class EthBancorModule
     if (!tokenContractAddress)
       throw new Error("Token contract address cannot be falsy");
     const balance = await vxm.ethWallet.getBalance({
-      accountHolder: userAddress || vxm.wallet.isAuthenticated,
+      accountHolder: userAddress || vxm.wallet.currentUser,
       tokenContractAddress,
       keepWei
     });
@@ -4102,8 +4102,8 @@ export class EthBancorModule
   }
 
   @action async getUserBalances(relayId: string): Promise<UserPoolBalances> {
-    if (!vxm.wallet.isAuthenticated)
-      throw new Error("Cannot find users .isAuthenticated");
+    if (!vxm.wallet.currentUser)
+      throw new Error("Cannot find users .currentUser");
 
     const poolType = await this.getPoolType(relayId);
     console.log("detected pool type is", poolType);
@@ -4332,7 +4332,7 @@ export class EthBancorModule
     );
 
     const smartUserBalanceWei = await vxm.ethWallet.getBalance({
-      accountHolder: vxm.wallet.isAuthenticated,
+      accountHolder: vxm.wallet.currentUser,
       tokenContractAddress: smartTokenAddress,
       keepWei: true
     });
@@ -4534,7 +4534,7 @@ export class EthBancorModule
       let txHash: string;
       web3.eth
         .sendTransaction({
-          from: this.isAuthenticated,
+          from: this.currentUser,
           to: ethErc20WrapperContract,
           value: toHex(toWei(ethDec))
         })
@@ -4761,7 +4761,7 @@ export class EthBancorModule
         }
         if (compareString(balance.contract, ethReserveAddress)) return;
         return this.triggerApprovalIfRequired({
-          owner: this.isAuthenticated,
+          owner: this.currentUser,
           amount: expandToken(balance.amount!, balance.decimals),
           spender: converterAddress,
           tokenAddress: balance.contract
@@ -6094,7 +6094,7 @@ export class EthBancorModule
         contractAddresses.LiquidityProtection
       );
       this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
-      if (this.isAuthenticated) {
+      if (this.currentUser) {
         this.fetchProtectionPositions({
           storeAddress: contractAddresses.LiquidityProtectionStore,
           blockNumberNow: currentBlock
@@ -6279,7 +6279,7 @@ export class EthBancorModule
             .flat(1) as string[],
           compareString
         );
-        if (this.isAuthenticated) {
+        if (this.currentUser) {
           this.fetchAndSetTokenBalances(uniqueTokenAddreses);
         }
         this.addAprsToPools();
@@ -6292,7 +6292,7 @@ export class EthBancorModule
     })();
 
     const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
-    if (this.isAuthenticated) {
+    if (this.currentUser) {
       this.fetchAndSetTokenBalances(uniqWith(tokenAddresses, compareString));
     }
     this.addAprsToPools();
@@ -6625,7 +6625,7 @@ export class EthBancorModule
   }
 
   @action async fetchAndSetTokenBalances(tokenContractAddresses: string[]) {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
 
     const governanceToken =
       web3.utils.isAddress(this.liquidityProtectionSettings.govToken) &&
@@ -6655,7 +6655,7 @@ export class EthBancorModule
       this.fetchTokenBalances(withoutEth),
       (async () => {
         if (!includesEth) return;
-        const weiBalance = await web3.eth.getBalance(this.isAuthenticated);
+        const weiBalance = await web3.eth.getBalance(this.currentUser);
         return fromWei(weiBalance);
       })()
     ]);
@@ -6793,7 +6793,7 @@ export class EthBancorModule
   }
 
   @action async focusSymbol(id: string) {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
     this.fetchTokenBalances([id]);
 
     const tokenTracked = this.tokens.find(token => compareString(token.id, id));
@@ -6814,7 +6814,7 @@ export class EthBancorModule
       getWeb3(this.currentNetwork)
     );
     const currentBalance = await contract.methods
-      .balanceOf(this.isAuthenticated)
+      .balanceOf(this.currentUser)
       .call();
 
     const currentBalanceDec = shrinkToken(currentBalance, 18);
@@ -6936,7 +6936,7 @@ export class EthBancorModule
     if (!fromIsEth) {
       onUpdate!(1, steps);
       await this.triggerApprovalIfRequired({
-        owner: this.isAuthenticated,
+        owner: this.currentUser,
         amount: fromWei,
         spender: this.contracts.BancorNetwork,
         tokenAddress: fromTokenContract

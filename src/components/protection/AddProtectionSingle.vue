@@ -212,8 +212,8 @@ export default class AddProtectionSingle extends Vue {
     else return "Stake and Protect";
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   get disableActionButton() {
@@ -316,7 +316,7 @@ export default class AddProtectionSingle extends Vue {
   }
 
   async openModal() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     // @ts-ignore
     else await this.promptAuth();
   }

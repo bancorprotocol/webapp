@@ -141,12 +141,12 @@ export default class PoolActionsAddV2 extends Vue {
     else return "Supply";
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }
@@ -161,7 +161,7 @@ export default class PoolActionsAddV2 extends Vue {
       balanceError,
       "was balance error"
     );
-    if (!this.isAuthenticated) return "";
+    if (!this.currentUser) return "";
     else if (this.amount === "") return "";
     else if (this.errorMsg !== "") return this.errorMsg;
     else if (balanceError) return "Insufficient balance";

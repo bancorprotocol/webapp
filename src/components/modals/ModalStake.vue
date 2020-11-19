@@ -196,8 +196,8 @@ export default class ModalStake extends Vue {
     return vxm.general.darkMode;
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   setStakeInput() {
@@ -205,7 +205,7 @@ export default class ModalStake extends Vue {
   }
 
   getEtherscanUrl() {
-    return `${this.etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
+    return `${this.etherscanUrl}address/${this.currentUser}#tokentxns`;
   }
 
   stake() {
@@ -219,7 +219,7 @@ export default class ModalStake extends Vue {
 
   async doStake() {
     await vxm.ethGovernance.stake({
-      account: this.isAuthenticated,
+      account: this.currentUser,
       amount: this.stakeValue
         .multipliedBy(
           new BigNumber(10).pow(await vxm.ethGovernance.getDecimals())
@@ -240,12 +240,12 @@ export default class ModalStake extends Vue {
   }
 
   @Watch("step")
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   @Watch("show")
   async update() {
-    this.currentBalance = this.isAuthenticated
+    this.currentBalance = this.currentUser
       ? await vxm.ethGovernance.getBalance({
-          account: this.isAuthenticated
+          account: this.currentUser
         })
       : new BigNumber(0);
 
