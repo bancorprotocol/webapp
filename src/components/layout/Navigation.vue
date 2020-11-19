@@ -1,53 +1,20 @@
 <template>
-  <div>
-    <b-navbar class="navBar">
-      <div class="d-flex justify-content-between container-xl">
-        <div />
-        <!-- <b-navbar-brand class="pb-1" style="width: 250px">
-          <router-link
-            :to="{ name: 'Swap', params: { service: selectedNetwork } }"
-          >
-            <img
-              v-if="darkMode"
-              src="@/assets/media/logos/bancor-white2.png"
-              height="35px"
-              class="mb-1"
-            />
-            <img
-              v-else
-              src="@/assets/media/logos/bancor-black2.png"
-              height="35px"
-              class="mb-1"
-            />
-          </router-link>
-        </b-navbar-brand> -->
-
-        <div class="d-flex justify-content-end" style="width: 250px">
-          <b-navbar-nav class="mr-2">
-            <b-btn
-              v-if="showLogin"
-              @click="loginAction"
-              variant="white"
-              class="block-rounded"
-              size="sm"
-              v-b-tooltip.hover
-              :title="loginTooltip"
-            >
-              <span class="d-none d-sm-inline mr-2">{{
-                loginButtonLabel
-              }}</span>
-              <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
-            </b-btn>
-          </b-navbar-nav>
-          <b-navbar-nav class="mr-2">
-            <settings-menu :show-tx="showLogin" />
-          </b-navbar-nav>
-          <b-navbar-nav>
-            <bancor-menu />
-          </b-navbar-nav>
-        </div>
-      </div>
-    </b-navbar>
+  <div class="container-xl px-0">
+    <div id="navigation-top" class="d-flex justify-content-end">
+      <b-btn
+        @click="loginAction"
+        variant="white"
+        class="block-rounded"
+        size="sm"
+        v-b-tooltip.hover
+        :title="loginTooltip"
+      >
+        <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
+        <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
+      </b-btn>
+      <settings-menu />
+      <bancor-menu />
+    </div>
   </div>
 </template>
 
@@ -70,18 +37,6 @@ export default class Navigation extends Vue {
     return vxm.wallet.currentWallet;
   }
 
-  get selected() {
-    return this.selectedNetwork;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get showLogin() {
-    return !this.$route.fullPath.includes("data");
-  }
-
   created() {
     vxm.ethWallet.checkAlreadySignedIn();
   }
@@ -90,25 +45,13 @@ export default class Navigation extends Vue {
   onAuthentication(account: string) {
     if (account) {
       vxm.bancor.refreshBalances();
-      // @ts-ignore
-      // this.$analytics.setUserId(account);
-      // @ts-ignore
-      // this.$analytics.logEvent("login", { account });
     }
   }
 
-  get language() {
-    return vxm.general.language;
-  }
-
   get loginTooltip() {
-    return this.selected == "eth" && vxm.ethWallet.isAuthenticated
+    return this.selectedNetwork == "eth" && vxm.ethWallet.isAuthenticated
       ? "Logout via wallet"
       : "";
-  }
-
-  set language(lang: string) {
-    vxm.general.setLanguage(lang);
   }
 
   get loginStatus() {
@@ -178,52 +121,12 @@ export default class Navigation extends Vue {
 }
 </script>
 
-<style>
-.navItem {
-  margin: 2px 2px;
-}
+<style lang="scss">
+#navigation-top {
+  margin: 1rem 0;
 
-#form-group {
-  margin-bottom: unset;
-}
-
-@media (max-width: 768px) {
-  .networks {
-    margin-top: 15px;
-    margin-bottom: 15px;
+  & > * {
+    margin-left: 0.75rem;
   }
-
-  .login {
-    margin-top: 15px;
-  }
-}
-
-.features {
-  flex-grow: 2;
-  flex-basis: auto;
-  display: flex;
-  justify-content: center;
-}
-
-.spacer {
-  display: hidden;
-  flex-grow: 1;
-}
-
-.networks {
-  flex-grow: 1;
-  flex-basis: auto;
-  display: flex;
-  justify-content: center;
-}
-
-.big {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-label.active {
-  color: black !important;
 }
 </style>

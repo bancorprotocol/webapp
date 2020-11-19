@@ -42,7 +42,7 @@
           class="text-nowrap d-inline-block text-right balance cursor"
           @click="useMax"
         >
-          Balance: {{ currentStake }} {{ symbol }}
+          Balance: {{ prettifyNumber(currentStake) }} {{ symbol }}
         </div>
       </div>
 
@@ -64,7 +64,7 @@
             src="@/assets/media/logos/bancor-white2.png"
           />
 
-          <span class=" font-size-14 font-w500">{{ symbol }}</span>
+          <span class="font-size-14 font-w500">{{ symbol }}</span>
         </div>
       </div>
 
@@ -140,7 +140,7 @@
 <script lang="ts">
 import { vxm } from "@/store/";
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { prettifyNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
 
@@ -155,6 +155,8 @@ export default class ModalUnstake extends Vue {
   currentStake: BigNumber = new BigNumber(0);
   unstakeInput: string = "";
   unstakeValue: BigNumber = new BigNumber(0);
+
+  prettifyNumber = prettifyNumber;
 
   step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";

@@ -71,12 +71,13 @@ export const buildGovernanceContract = (
 }> => buildContract(ABIBancorGovernance, contractAddress, web3);
 
 export const buildContainerContract = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   poolTokens(): CallReturn<string[]>;
   symbol: () => CallReturn<string>;
   decimals: () => CallReturn<string>;
-}> => buildContract(ABIContainerContract, contractAddress);
+}> => buildContract(ABIContainerContract, contractAddress, web3);
 
 export const buildV2PoolsContainer = (
   contractAddress: string
@@ -167,7 +168,8 @@ export const buildV2Converter = (
 }> => buildContract(ABIV2Converter, contractAddress, web3);
 
 export const buildV28ConverterContract = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   acceptTokenOwnership: () => ContractSendMethod;
   acceptOwnership: () => ContractSendMethod;
@@ -203,7 +205,7 @@ export const buildV28ConverterContract = (
   connectorTokens: (index: number) => CallReturn<string>;
   conversionFee: () => CallReturn<string>;
   reserveBalance: (reserveToken: string) => CallReturn<string>;
-}> => buildContract(ABIConverterV28, contractAddress);
+}> => buildContract(ABIConverterV28, contractAddress, web3);
 
 export const buildNetworkContract = (
   contractAddress: string,
@@ -291,6 +293,8 @@ export const buildLiquidityProtectionContract = (
   maxSystemNetworkTokenRatio: () => CallReturn<string>;
   lockDuration: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
+  isHighTierPool: (anchor: string) => CallReturn<boolean>;
+  highTierPools: () => CallReturn<string[]>;
   protectLiquidity: (
     anchor: string,
     poolTokenWei: string

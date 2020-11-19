@@ -207,7 +207,7 @@ export function relayHasBothSymbols(
   symbol1: Symbol,
   symbol2: Symbol
 ): (choppedRelay: ChoppedRelay) => boolean {
-  return function(relay: ChoppedRelay) {
+  return function (relay: ChoppedRelay) {
     return relay.reserves.every(
       token =>
         tokenToSymbolName(token) == symbolToSymbolName(symbol1) ||
@@ -266,7 +266,7 @@ export const chopRelays = (relays: DryRelay[]) => {
 };
 
 function relayOffersSymbols(symbol1: Symbol, symbol2: Symbol) {
-  return function(relay: DryRelay) {
+  return function (relay: DryRelay) {
     const inReserves = relay.reserves.every(
       token => token.symbol.isEqual(symbol1) || token.symbol.isEqual(symbol2)
     );
