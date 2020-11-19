@@ -40,7 +40,8 @@ import {
   ProtectionRes,
   ViewAmountDetail,
   WeiExtendedAsset,
-  PoolLiqMiningApr
+  PoolLiqMiningApr,
+  ProtectedLiquidity
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -95,7 +96,6 @@ import {
   conversionPath,
   getTokenSupplyWei,
   existingPool,
-  protectionById,
   getRemoveLiquidityReturn
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
@@ -113,7 +113,8 @@ import {
   toPairs,
   fromPairs,
   chunk,
-  last
+  last,
+  isEqual
 } from "lodash";
 import {
   buildNetworkContract,
@@ -158,6 +159,14 @@ import {
   miningBntReward,
   miningTknReward
 } from "@/api/pureHelpers";
+
+const protectedPositionShape = (storeAddress: string, protectionId: string) => {
+  const contract = buildLiquidityProtectionStoreContract(storeAddress);
+  return {
+    positionId: protectionId,
+    position: contract.methods.protectedLiquidity(protectionId)
+  };
+};
 
 interface Balance {
   balance: string;
@@ -1657,10 +1666,10 @@ export class EthBancorModule
     (async () => {
       await wait(700);
       this.fetchLockedBalances();
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
       await wait(4000);
       this.fetchLockedBalances();
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
     })();
 
     return {
@@ -1694,7 +1703,46 @@ export class EthBancorModule
     this.protectedPositionsArr = positions;
   }
 
-  @action async fetchProtectionPositions(storeAddress?: string) {
+  @action async fetchPositionsMulti({
+    positionIds,
+    liquidityStore
+  }: {
+    positionIds: string[];
+    liquidityStore: string;
+  }): Promise<ProtectedLiquidity[]> {
+    const positionShapes = positionIds.map(id =>
+      protectedPositionShape(liquidityStore, id)
+    );
+
+    const [multiPositions] = await this.multi({
+      groupsOfShapes: [positionShapes]
+    });
+
+    const keys = [
+      "owner",
+      "poolToken",
+      "reserveToken",
+      "poolAmount",
+      "reserveAmount",
+      "reserveRateN",
+      "reserveRateD",
+      "timestamp",
+      "id"
+    ];
+
+    // @ts-ignore
+    return multiPositions
+      .map(res => ({ ...res.position, "8": res.positionId }))
+      .map(res => fromPairs(keys.map((key, index) => [key, res[index]])));
+  }
+
+  @action async fetchProtectionPositions({
+    storeAddress,
+    blockNumberNow
+  }: {
+    storeAddress?: string;
+    blockNumberNow?: number;
+  }) {
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
     if (!this.isAuthenticated) {
@@ -1715,10 +1763,20 @@ export class EthBancorModule
       console.log("got id count", idCount);
       console.timeEnd("time to get ID count");
       if (idCount == 0) return;
-      const ids = await contract.methods.protectedLiquidityIds(owner).call();
-      const allPositions = await Promise.all(
-        ids.map(id => protectionById(liquidityStore, id, this.currentNetwork))
-      );
+      const positionIds = await contract.methods
+        .protectedLiquidityIds(owner)
+        .call();
+
+      const [allPositions, currentBlockNumber] = await Promise.all([
+        this.fetchPositionsMulti({
+          positionIds,
+          liquidityStore
+        }),
+        (async () => {
+          return blockNumberNow || w3.eth.getBlockNumber();
+        })()
+      ]);
+
       if (allPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
 
@@ -1726,12 +1784,6 @@ export class EthBancorModule
         this.contracts.LiquidityProtection,
         w3
       );
-
-      console.time("secondsToGetCurrentBlock");
-      console.log("blockNumber");
-      const currentBlockNumber = await w3.eth.getBlockNumber();
-      console.log("blockNumberEnd");
-      console.timeEnd("secondsToGetCurrentBlock");
 
       const uniqueAnchors = uniqWith(
         allPositions.map(pos => pos.poolToken),
@@ -2050,13 +2102,13 @@ export class EthBancorModule
       onUpdate
     })) as string;
 
-    this.fetchProtectionPositions();
+    this.fetchProtectionPositions({});
     this.spamBalances([
       this.liquidityProtectionSettings.govToken,
       reserveTokenAddress
     ]);
     wait(3000).then(() => {
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
     });
 
     return {
@@ -2110,10 +2162,10 @@ export class EthBancorModule
     (async () => {
       await wait(600);
       this.fetchLockedBalances();
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
       await wait(2000);
       this.fetchLockedBalances();
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
     })();
 
     return {
@@ -2167,11 +2219,11 @@ export class EthBancorModule
     ]);
 
     (async () => {
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
       await wait(2000);
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
       await wait(5000);
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
     })();
 
     return {
@@ -6011,9 +6063,10 @@ export class EthBancorModule
       );
       this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.isAuthenticated) {
-        this.fetchProtectionPositions(
-          contractAddresses.LiquidityProtectionStore
-        );
+        this.fetchProtectionPositions({
+          storeAddress: contractAddresses.LiquidityProtectionStore,
+          blockNumberNow: currentBlock
+        });
         this.fetchLockedBalances(contractAddresses.LiquidityProtectionStore);
       }
 
@@ -6690,7 +6743,7 @@ export class EthBancorModule
         ]);
       }
       console.log(userAddress, "fetching protected positions for");
-      this.fetchProtectionPositions();
+      this.fetchProtectionPositions({});
       this.fetchLockedBalances();
       const allTokens = this.relaysList.flatMap(tokensInRelay);
       const uniqueTokenAddresses = uniqWith(
