@@ -87,21 +87,21 @@ export default class DataTable extends Vue {
   @Prop({ default: false }) hidePagination!: boolean;
   @Prop() filterFunction?: Function;
 
-  sortBy: string = ''
+  sortBy: string = "";
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
 
   created() {
-    this.sortBy = this.defaultSort ? this.defaultSort : '';
+    this.sortBy = this.defaultSort ? this.defaultSort : "";
   }
 
   get modifiedItems() {
     let filtered = [];
-    const items = this.items;
+    const items = this.items.slice();
     const filter = this.filter;
     const filterBy = this.filterBy;
     const filterFunction = this.filterFunction;
-    const sortBy = this.sortBy
+    const sortBy = this.sortBy;
 
     if (filterFunction !== undefined) {
       filtered = items.filter((t: any) => filterFunction(t, filter));
@@ -112,15 +112,14 @@ export default class DataTable extends Vue {
           t[filterBy].toUpperCase().includes(filter.toUpperCase())
       );
     } else {
-      filtered = items
+      filtered = items;
     }
 
     if (sortBy) {
       return sort(filtered)[this.descOrder ? "desc" : "asc"](
-          (t: any) => t[sortBy]
-      )
-    }
-    else return filtered
+        (t: any) => t[sortBy]
+      );
+    } else return filtered;
   }
 
   get paginatedItems() {

@@ -162,7 +162,7 @@
               class="d-flex align-items-center mb-2"
           >
             <main-button
-                @click="() => voteFor(item.id.toString())"
+                @click="voteFor(item.id.toString())"
                 label="Vote for"
                 :large="true"
                 :active="true"
@@ -321,10 +321,7 @@ export default class OpenProposals extends Vue {
   currentVotes: BigNumber = new BigNumber(0);
 
   get items(): Proposal[] {
-    if (this.proposals !== undefined && this.proposals.length) {
-      const length = this.proposals.length
-      return this.proposals.slice(0, length - 1)
-    } else return []
+    return this.proposals ? this.proposals.slice() : []
   }
 
   get fields(): ViewTableField[] {
