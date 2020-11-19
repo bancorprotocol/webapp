@@ -44,7 +44,7 @@ export class EthereumModule extends VuexModule.With({
     this.loggedInAccount = account;
   }
 
-  get isAuthenticated() {
+  get currentUser() {
     return this.loggedInAccount;
   }
 
@@ -79,7 +79,7 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async accountChange(loggedInAccount: string) {
-    if (loggedInAccount !== this.isAuthenticated) {
+    if (loggedInAccount !== this.currentUser) {
       this.setLoggedInAccount(loggedInAccount);
       vxm.ethBancor.onAuthChange(loggedInAccount);
     }
@@ -159,7 +159,7 @@ export class EthereumModule extends VuexModule.With({
     const value = toHex(weiAmount);
     const params = [
       {
-        from: this.isAuthenticated,
+        from: this.currentUser,
         to: recipient,
         value
       }

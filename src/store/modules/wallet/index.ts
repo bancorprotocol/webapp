@@ -27,9 +27,9 @@ export class WalletModule extends VuexModule.With({ namespaced: "wallet/" }) {
     }
   }
 
-  get isAuthenticated() {
+  get currentUser() {
     // @ts-ignore
-    return vxm[`${vxm.bancor.wallet}Wallet`].isAuthenticated;
+    return vxm[`${vxm.bancor.wallet}Wallet`].currentUser;
   }
 
   @action async dispatcher(methodName: string, params: any = null) {

@@ -426,7 +426,7 @@ export class BancorModule extends VuexModule.With({
   }
 
   @action async refreshBalances(symbols: string[] = []) {
-    if (vxm.wallet.isAuthenticated) {
+    if (vxm.wallet.currentUser) {
       return this.dispatcher(["refreshBalances", symbols]);
     }
   }

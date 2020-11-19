@@ -109,9 +109,9 @@ export class EosNetworkModule
     };
   }
 
-  get isAuthenticated() {
+  get currentUser() {
     // @ts-ignore
-    return this.$store.rootGetters["eosWallet/isAuthenticated"];
+    return this.$store.rootGetters["eosWallet/currentUser"];
   }
 
   get networkId() {
@@ -155,7 +155,7 @@ export class EosNetworkModule
   }
 
   @action async transfer({ to, amount, id, memo }: TransferParam) {
-    if (!this.isAuthenticated) throw new Error("Not authenticated!");
+    if (!this.currentUser) throw new Error("Not authenticated!");
     const symbol = id;
     const dirtyReserve = vxm.eosBancor.relaysList
       .flatMap(relay => relay.reserves)
@@ -182,7 +182,7 @@ export class EosNetworkModule
   @action async fetchBulkBalances(
     tokens: GetBalanceParam["tokens"]
   ): Promise<TokenBalanceReturn[]> {
-    const bulkBalances = await getTokenBalancesDfuse(this.isAuthenticated);
+    const bulkBalances = await getTokenBalancesDfuse(this.currentUser);
 
     const missingTokens = differenceWith(tokens, bulkBalances, compareToken);
 
@@ -191,7 +191,7 @@ export class EosNetworkModule
       balance: string;
     }>(
       missingTokens.map(x => x.contract),
-      this.isAuthenticated,
+      this.currentUser,
       "accounts"
     );
     const dfuseParsed = bulkRequested.tables
@@ -224,7 +224,7 @@ export class EosNetworkModule
   }
 
   @action public async getBalances(params?: GetBalanceParam) {
-    if (!this.isAuthenticated) throw new Error("Not logged in.");
+    if (!this.currentUser) throw new Error("Not logged in.");
 
     if (!params || params?.tokens?.length == 0) {
       const tokensToFetch = this.balances;

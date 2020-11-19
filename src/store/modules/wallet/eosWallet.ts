@@ -78,7 +78,7 @@ export class EosTransitModule extends VuexModule.With({
     } else return login;
   }
 
-  get isAuthenticated(): string | false {
+  get currentUser(): string | false {
     // @ts-ignore
     return this.wallet && this.wallet.auth && this.wallet.auth.accountName;
   }
