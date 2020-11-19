@@ -61,7 +61,7 @@
     />
 
     <modal-base
-      title="You are adding liquidity protection"
+      title="You are staking and protecting:"
       v-model="modal"
       @input="setDefault"
     >
