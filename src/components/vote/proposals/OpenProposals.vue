@@ -421,7 +421,7 @@ export default class OpenProposals extends Vue {
 
   @Watch("currentUser")
   async update() {
-    if(this.currentUser) {
+    if (this.currentUser) {
       this.currentVotes = await vxm.ethGovernance.getVotes({
         voter: this.currentUser
       });

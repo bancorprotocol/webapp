@@ -113,8 +113,7 @@ import {
   toPairs,
   fromPairs,
   chunk,
-  last,
-  isEqual
+  last
 } from "lodash";
 import {
   buildNetworkContract,

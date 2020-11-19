@@ -11,8 +11,8 @@ import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
 import { EthNetworks, web3 } from "@/api/helpers";
-import { getWeb3 } from "@/api/web3"
-import { getNetworkVariables } from "@/store/config"
+import { getWeb3 } from "@/api/web3";
+import { getNetworkVariables } from "@/store/config";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";

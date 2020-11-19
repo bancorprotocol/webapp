@@ -3,12 +3,10 @@ import {
   buildNetworkContract,
   buildV2Converter,
   buildRegistryContract,
-  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionContract
 } from "./contractTypes";
 import { EthNetworks, zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
-import { ProtectedLiquidity } from "@/types/bancor";
 import { getWeb3 } from "@/api/web3";
 
 export const getApprovedBalanceWei = async ({
