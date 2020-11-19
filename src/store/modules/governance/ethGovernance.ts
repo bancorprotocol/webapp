@@ -10,8 +10,7 @@ import { ContractSendMethod } from "web3-eth-contract";
 import IpfsHttpClient from "ipfs-http-client";
 import axios from "axios";
 import BigNumber from "bignumber.js";
-import { EthNetworks } from "@/api/helpers";
-import { getWeb3, web3 } from "@/api/web3";
+import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import { getNetworkVariables } from "@/api/config";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";

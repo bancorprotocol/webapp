@@ -34,7 +34,7 @@ import { PropOptions } from "vue";
 import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
-import { getAlchemyUrl, web3, getInfuraAddress } from "@/api/web3";
+import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
 
 export enum PositionType {
   single,
@@ -372,12 +372,6 @@ export const updateArray = <T>(
 
 export type Wei = string | number;
 export type Ether = string | number;
-export enum EthNetworks {
-  Mainnet = 1,
-  Ropsten = 3,
-  Rinkeby = 4,
-  Goerli = 5
-}
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
