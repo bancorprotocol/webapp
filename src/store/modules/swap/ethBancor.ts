@@ -6538,6 +6538,8 @@ export class EthBancorModule
   }
 
   @action async checkFees(pools: Relay[]) {
+    console.count('checkFees')
+    console.log('asked to check', pools)
     const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
 
     const relaysList = sortAlongSide(
@@ -6546,26 +6548,26 @@ export class EthBancorModule
       relaysByLiqDepth.map(relay => relay.id)
     );
 
-    const historicFees: PreviousPoolFee[] = [];
     const { blockHoursAgo } = await blockNumberHoursAgo(
       24,
       this.currentNetwork
     );
 
     for (const relay of relaysList) {
-      historicFees.push(
-        ...(await getHistoricFees(
-          relay.id,
-          relay.contract,
-          this.currentNetwork,
-          blockHoursAgo
-        ))
+      console.log(
+        "pool fees fetching",
+        relay.reserves.map(x => x.symbol).join(" ")
       );
-    }
-
-    if (historicFees.length > 0) {
-      console.log("historic fees", historicFees);
-      this.setHistoricFees([...this.previousPoolFees, ...historicFees]);
+      const poolFees = await getHistoricFees(
+        relay.id,
+        relay.contract,
+        this.currentNetwork,
+        blockHoursAgo
+        );
+      console.log("fetched pool fees", poolFees);
+      if (poolFees.length > 0) {
+        this.setHistoricFees([...this.previousPoolFees, ...poolFees]);
+      }
     }
   }
 
