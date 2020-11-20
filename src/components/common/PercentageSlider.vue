@@ -28,16 +28,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop } from "vue-property-decorator";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import { VModel } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { LabelContentSplit, MainButton }
 })
-export default class PercentageSlider extends Vue {
+export default class PercentageSlider extends BaseComponent {
   @Prop() label!: string;
   @Prop({ default: false }) showButtons!: boolean;
   @VModel({ type: String }) percentage!: string;
@@ -50,10 +50,6 @@ export default class PercentageSlider extends Vue {
     if (this.percentage === percentage) return "primary";
     else if (this.darkMode) return "outline-gray-dark";
     else return "outline-gray";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

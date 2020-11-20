@@ -53,11 +53,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewTableField {
   id: number;
@@ -77,7 +77,7 @@ export interface Item {
     TablePagination
   }
 })
-export default class DataTable extends Vue {
+export default class DataTable extends BaseComponent {
   @Prop() fields!: ViewTableField[];
   @Prop() items!: Item[];
   @Prop() filter?: string;
@@ -157,10 +157,6 @@ export default class DataTable extends Vue {
   @Watch("descOrder")
   onFilterChange() {
     this.currentPage = 1;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

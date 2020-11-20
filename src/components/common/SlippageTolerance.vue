@@ -28,21 +28,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class SettingsMenu extends Vue {
+export default class SettingsMenu extends BaseComponent {
   options = [0.1, 0.5, 1];
 
   custom = "";
 
   get currentSlippage() {
     return vxm.bancor.slippageTolerance;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   get formInputStyles() {

@@ -28,21 +28,17 @@
   </b-card>
 </template>
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {}
 })
-export default class CollapsableBlock extends Vue {
+export default class CollapsableBlock extends BaseComponent {
   @Prop() title!: string;
   @Prop({ default: "" }) headerIcon!: string;
 
   open = false;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

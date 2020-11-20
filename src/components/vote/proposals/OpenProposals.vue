@@ -267,7 +267,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
@@ -332,14 +332,6 @@ export default class OpenProposals extends BaseComponent {
         sortable: false
       }
     ];
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   prettifyNumber(number: string | number): string {

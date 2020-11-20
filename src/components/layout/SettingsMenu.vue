@@ -79,26 +79,19 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue } from "vue-property-decorator";
+import { Prop, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 @Component({
   components: { SlippageTolerance }
 })
-export default class SettingsMenu extends Vue {
+export default class SettingsMenu extends BaseComponent {
   @Prop({ default: true }) showTx!: boolean;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 
   get showTxSettings() {
     if (this.$route.fullPath.includes("data")) return false;
     else return true;
-  }
-
-  get currentNetwork() {
-    return vxm.bancor.currentNetwork;
   }
 
   get appVersion() {

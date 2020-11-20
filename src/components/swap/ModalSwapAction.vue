@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { Step, TxResponse, ViewToken } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -83,6 +83,7 @@ import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import numeral from "numeral";
 import { VModel } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -92,7 +93,7 @@ import { VModel } from "@/api/helpers";
     ModalBase
   }
 })
-export default class ModalSwapAction extends Vue {
+export default class ModalSwapAction extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
   @Prop() amount1!: string;
   @Prop() token1!: ViewToken;
@@ -196,10 +197,6 @@ export default class ModalSwapAction extends Vue {
   onUpdate(stepIndex: number, steps: Step[]) {
     this.stepIndex = stepIndex;
     this.sections = steps;
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
   }
 }
 </script>

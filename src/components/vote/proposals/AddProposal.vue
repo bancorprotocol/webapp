@@ -196,7 +196,7 @@ export default class AddProposal extends BaseComponent {
 
     // propose!
     await vxm.ethGovernance.propose({
-      account: vxm.wallet.currentUser,
+      account: this.currentUser,
       executor: this.contractAddress,
       hash
     });

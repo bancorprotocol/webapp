@@ -184,14 +184,6 @@ export default class Stake extends BaseComponent {
   governanceContractAddress: EthAddress = "";
   tokenAddress: EthAddress = "";
 
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
-  }
-
   get lastTransaction() {
     return vxm.ethGovernance.lastTransaction;
   }

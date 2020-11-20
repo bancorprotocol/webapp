@@ -46,23 +46,19 @@
 </template>
 
 <script lang="ts">
-import { vxm } from "@/store/";
-import { Component, Prop, PropSync, Vue } from "vue-property-decorator";
+import { Component, Prop, PropSync } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
 import MultiInputField from "@/components/common/MultiInputField.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 @Component({
   components: { MultiInputField }
 })
-export default class ModalBase extends Vue {
+export default class ModalBase extends BaseComponent {
   @Prop() title!: string;
   @VModel({ type: Boolean }) show!: boolean;
   @PropSync("search", { type: String }) searchField?: string;
   @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
   @Prop({ default: false }) fixedHeight!: boolean;
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
 
   get contentClass() {
     return [

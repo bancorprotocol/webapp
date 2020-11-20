@@ -97,7 +97,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import {
   LiquidityParams,
@@ -114,6 +114,7 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import numeral from "numeral";
 import { VModel } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -125,7 +126,7 @@ import { VModel } from "@/api/helpers";
     MainButton
   }
 })
-export default class ModalPoolAction extends Vue {
+export default class ModalPoolAction extends BaseComponent {
   @VModel({ type: Boolean }) modal!: boolean;
   @Prop() amountsArray!: string[];
   @Prop() selectedToken?: ViewReserve;
@@ -157,10 +158,6 @@ export default class ModalPoolAction extends Vue {
 
   get withdrawLiquidity(): boolean {
     return this.$route.params.poolAction === "remove";
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
   }
 
   setDefault() {

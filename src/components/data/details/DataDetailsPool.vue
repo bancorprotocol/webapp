@@ -91,7 +91,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Statistics from "@/components/data/statistics/Statistics.vue";
@@ -112,6 +112,7 @@ import VersionBadge from "@/components/common/VersionBadge.vue";
 import numeral from "numeral";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 export interface TxHistoryView {
   addEvents: any[];
   conversionEvents: any[];
@@ -133,7 +134,7 @@ export interface TxHistoryView {
     MainButton
   }
 })
-export default class DataPool extends Vue {
+export default class DataPool extends BaseComponent {
   loadingFocusPool = false;
   searchTx = "";
   searchTokens = "";
@@ -190,10 +191,6 @@ export default class DataPool extends Vue {
 
   get poolVersion() {
     return this.pool.v2 ? 2 : 1;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   get poolTokensTable() {

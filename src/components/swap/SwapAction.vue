@@ -88,7 +88,7 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue } from "vue-property-decorator";
+import { Watch, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -99,6 +99,7 @@ import numeral from "numeral";
 import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -109,7 +110,7 @@ import BigNumber from "bignumber.js";
     MainButton
   }
 })
-export default class SwapAction extends Vue {
+export default class SwapAction extends BaseComponent {
   amount1 = "";
   amount2 = "";
 
@@ -241,10 +242,6 @@ export default class SwapAction extends Vue {
         to: this.token1.id
       }
     });
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   async initConvert() {

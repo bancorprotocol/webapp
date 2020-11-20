@@ -19,20 +19,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { shortenEthAddress } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { BancorMenu, SettingsMenu }
 })
-export default class Navigation extends Vue {
-  get selectedNetwork() {
-    return vxm.bancor.currentNetwork;
-  }
-
+export default class Navigation extends BaseComponent {
   get selectedWallet() {
     return vxm.wallet.currentWallet;
   }
@@ -49,7 +46,7 @@ export default class Navigation extends Vue {
   }
 
   get loginTooltip() {
-    return this.selectedNetwork == "eth" && vxm.ethWallet.currentUser
+    return this.currentNetwork == "eth" && this.currentUser
       ? "Logout via wallet"
       : "";
   }
@@ -86,10 +83,6 @@ export default class Navigation extends Vue {
 
   get spin() {
     return this.loginStatus[2];
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   async loginActionEos() {

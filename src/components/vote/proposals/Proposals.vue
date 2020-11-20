@@ -86,14 +86,6 @@ export default class Proposals extends BaseComponent {
     return this.darkMode ? "outline-gray-dark" : "outline-gray";
   }
 
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
-  }
-
   get lastTransaction() {
     return vxm.ethGovernance.lastTransaction;
   }

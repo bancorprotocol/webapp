@@ -14,13 +14,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import StakeButtons from "@/components/protection/StakeButtons.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -31,7 +32,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
     ModalPoolSelect
   }
 })
-export default class AddProtectionHome extends Vue {
+export default class AddProtectionHome extends BaseComponent {
   modal = false;
 
   singleMode: boolean | null = null;
@@ -66,10 +67,6 @@ export default class AddProtectionHome extends Vue {
         });
       }
     }, 400);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>
