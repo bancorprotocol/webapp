@@ -1,6 +1,12 @@
 import { getNetworkVariables } from "@/api/config";
-import { EthNetworks } from "@/api/helpers";
 import Web3 from "web3";
+
+export enum EthNetworks {
+  Mainnet = 1,
+  Ropsten = 3,
+  Rinkeby = 4,
+  Goerli = 5
+}
 
 const buildAlchemyUrl = (
   network: string,
