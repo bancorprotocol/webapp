@@ -88,9 +88,7 @@
     <label-content-split
       v-if="false"
       label="Price"
-      :value="
-        `1 ${pool.reserves[1].symbol} = ${rate} ${pool.reserves[0].symbol}`
-      "
+      :value="`1 ${pool.reserves[1].symbol} = ${rate} ${pool.reserves[0].symbol}`"
       class="my-3"
     />
 
@@ -102,8 +100,8 @@
       class="mt-1"
       :disabled="
         token1Error !== '' ||
-          token2Error !== '' ||
-          !(amountToken1 && amountToken2)
+        token2Error !== '' ||
+        !(amountToken1 && amountToken2)
       "
     />
 
@@ -158,12 +156,12 @@ export default class PoolActionsRemoveV1 extends Vue {
 
   res: any = null;
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }
@@ -262,13 +260,13 @@ export default class PoolActionsRemoveV1 extends Vue {
     return vxm.general.darkMode;
   }
 
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   async onAuthChange() {
     await this.fetchBalances();
   }
 
   async fetchBalances() {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
     const res = await vxm.bancor.getUserBalances(this.pool.id);
     if (this.pool.reserves[0].id === res.maxWithdrawals[0].id) {
       this.balance1 = res.maxWithdrawals[0].amount;

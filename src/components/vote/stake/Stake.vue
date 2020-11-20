@@ -184,8 +184,12 @@ export default class Stake extends BaseComponent {
   governanceContractAddress: EthAddress = "";
   tokenAddress: EthAddress = "";
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get darkMode() {
+    return vxm.general.darkMode;
+  }
+
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   get lastTransaction() {
@@ -212,25 +216,25 @@ export default class Stake extends BaseComponent {
     return prettifyNumber(number);
   }
 
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   @Watch("stakeModal")
   @Watch("unstakeModal")
   @Watch("lastTransaction")
   async update() {
     const [balance, votes, lock, tokenAddress, symbol] = await Promise.all([
-      this.isAuthenticated
+      this.currentUser
         ? vxm.ethGovernance.getBalance({
-            account: this.isAuthenticated
+            account: this.currentUser
           })
         : new BigNumber(0),
-      this.isAuthenticated
+      this.currentUser
         ? vxm.ethGovernance.getVotes({
-            voter: this.isAuthenticated
+            voter: this.currentUser
           })
         : new BigNumber(0),
-      this.isAuthenticated
+      this.currentUser
         ? vxm.ethGovernance.getLock({
-            account: this.isAuthenticated
+            account: this.currentUser
           })
         : { till: 0, for: 0 },
       vxm.ethGovernance.getTokenAddress(),

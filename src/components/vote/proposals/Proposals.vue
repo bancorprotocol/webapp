@@ -6,20 +6,31 @@
     :no-header="true"
   >
     <div>
-      <div
-        class="new-proposal-button cursor"
-        @click="showNewProposal = true"
-        :class="darkMode ? 'text-dark' : 'text-light'"
-      >
-        + New Proposal
+      <div class="float-right d-flex mt-3 mr-3">
+        <a href="https://discord.gg/EHK8wHbgau" target="_blank" class="mr-2">
+          <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
+            <font-awesome-icon :icon="['fab', 'discord']" />
+            <span class="d-none d-lg-block ml-2">Discord</span>
+          </b-btn>
+        </a>
+        <a href="https://gov.bancor.network/" target="_blank" class="mr-2">
+          <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
+            <img :src="require(`@/assets/media/icons/governance.svg`)" />
+            <span class="d-none d-lg-block ml-2">Governance</span>
+          </b-btn>
+        </a>
+        <b-btn
+          @click="showNewProposal = true"
+          variant="primary"
+          class="proposal-cta-button"
+        >
+          + <span class="d-none d-lg-block ml-2">New Proposal</span>
+        </b-btn>
       </div>
+
       <add-proposal v-model="showNewProposal" />
 
-      <b-tabs
-        class="overlap-tabs"
-        no-fade
-        :class="darkMode ? 'tabs-dark' : 'tabs-light'"
-      >
+      <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
         <b-tab title="Open Proposals" active>
           <open-proposals
             :proposals="
@@ -71,20 +82,28 @@ export default class Proposals extends BaseComponent {
     return this.$route.params.service === "eth";
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get ctaBtnVariant() {
+    return this.darkMode ? "outline-gray-dark" : "outline-gray";
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode;
+  }
+
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   get lastTransaction() {
     return vxm.ethGovernance.lastTransaction;
   }
 
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   @Watch("showNewProposal")
   @Watch("lastTransaction")
   async updateProposals() {
     this.proposals = await vxm.ethGovernance.getProposals({
-      voter: this.isAuthenticated
+      voter: this.currentUser
     });
     this.proposalsLoaded = true;
   }
@@ -98,36 +117,17 @@ export default class Proposals extends BaseComponent {
 <style lang="scss">
 @import "@/assets/_scss/custom/_variables";
 
-.overlap-tabs > * > .nav.nav-tabs {
-  margin-bottom: -1px;
-  border-bottom: 1px solid $gray-border !important;
-  position: relative;
-}
-
 #proposals .nav-tabs li {
   line-height: 28px;
   padding-bottom: 0 !important;
   padding-top: 6px !important;
 }
 
-.new-proposal-button {
-  height: 24px;
-  line-height: 21px;
-  padding: 0 20px;
-  border-radius: 8px !important;
-  border: 1px solid $gray-placeholder !important;
-  color: $text-color-light !important;
+.proposal-cta-button {
+  min-height: 23px;
+  display: flex !important;
+  align-items: center !important;
+  padding: 1px 13px !important;
   font-size: 13px !important;
-  position: absolute;
-  display: inline-block;
-  top: 15px;
-  right: 26px;
-  z-index: 2;
-}
-
-@media (max-width: 450px) {
-  .new-proposal-button {
-    top: -25px;
-  }
 }
 </style>

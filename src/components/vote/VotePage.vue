@@ -10,7 +10,7 @@
   <span v-else>
     <div class="d-flex justify-content-center align-items-center my-5">
       <b-spinner
-        style="display: block; width: 2rem; height: 2rem;"
+        style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
         label="Loading..."

@@ -4,7 +4,7 @@
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
-          style="display: block; width: 2rem; height: 2rem;"
+          style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
           label="Loading..."
@@ -30,281 +30,251 @@
     </div>
     <data-table
       v-else-if="proposals"
-      :items="proposals"
+      :items="items"
       :fields="fields"
-      default-sort="to"
       :hide-pagination="true"
     >
-      <template v-for="proposal in proposals">
-        <tr
-          :key="proposal.id"
-          class="font-w500 font-size-14 align-rows-cells"
-          :class="darkMode ? 'text-dark' : 'text-light'"
-        >
-          <td>{{ proposal.id }}</td>
-          <td>
-            <div class="font-size-14 font-w500">
-              {{ proposal.name }}
-            </div>
+      <template #cell(name)="{ item }">
+        <div class="font-size-14 font-w500">
+          {{ item.name }}
+        </div>
 
-            <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
-              <span>More about proposal:</span>
-              <a
-                target="_blank"
-                class="font-size-14 font-w500 pl-2"
-                :href="
-                  (proposal.metadata &&
-                    proposal.metadata.payload &&
-                    proposal.metadata.payload.metadata &&
-                    proposal.metadata.payload.metadata.discourse.startsWith(
-                      'https://gov.bancor.network/'
-                    ) &&
-                    proposal.metadata.payload.metadata.discourse) ||
-                    undefined
-                "
-              >
-                <font-awesome-icon icon="external-link-alt" />
-                Discussion Forum
-              </a>
-              <a
-                target="_blank"
-                class="font-size-14 font-w500 pl-2"
-                :href="
-                  (proposal.metadata &&
-                    proposal.metadata.payload &&
-                    proposal.metadata.payload.metadata &&
-                    proposal.metadata.payload.metadata.github &&
-                    proposal.metadata.payload.metadata.github.startsWith(
-                      'https://github.com/'
-                    ) &&
-                    proposal.metadata.payload.metadata.github) ||
-                    undefined
-                "
-              >
-                <font-awesome-icon :icon="['fab', 'github']" />
-                GitHub
-              </a>
-            </div>
+        <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
+          <span>More about proposal:</span>
+          <a
+            target="_blank"
+            class="font-size-14 font-w500 pl-2"
+            :href="
+              (item.metadata &&
+                item.metadata.payload &&
+                item.metadata.payload.metadata &&
+                item.metadata.payload.metadata.discourse.startsWith(
+                  'https://gov.bancor.network/'
+                ) &&
+                item.metadata.payload.metadata.discourse) ||
+              undefined
+            "
+          >
+            <font-awesome-icon icon="external-link-alt" />
+            Discussion Forum
+          </a>
+          <a
+            target="_blank"
+            class="font-size-14 font-w500 pl-2"
+            :href="
+              (item.metadata &&
+                item.metadata.payload &&
+                item.metadata.payload.metadata &&
+                item.metadata.payload.metadata.github &&
+                item.metadata.payload.metadata.github.startsWith(
+                  'https://github.com/'
+                ) &&
+                item.metadata.payload.metadata.github) ||
+              undefined
+            "
+          >
+            <font-awesome-icon :icon="['fab', 'github']" />
+            GitHub
+          </a>
+        </div>
 
-            <b-row>
-              <b-col cols="6">
-                <b-row class="pb-1">
-                  <b-col
-                    class="font-size-12 text-muted-light text-nowrap"
-                    cols="4"
-                  >
-                    Vote Start
-                  </b-col>
-                  <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
-                    {{ formatDate(proposal.start) }}
-                  </b-col>
-                  <b-col
-                    class="font-size-12 font-w500 text-muted-light"
-                    cols="2"
-                  >
-                    {{ formatTime(proposal.start) }}
-                  </b-col>
-                </b-row>
-                <b-row>
-                  <b-col
-                    class="font-size-12 text-muted-light text-nowrap"
-                    cols="4"
-                  >
-                    Vote End
-                  </b-col>
-                  <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
-                    {{ formatDate(proposal.end) }}
-                  </b-col>
-                  <b-col
-                    class="font-size-12 font-w500 text-muted-light"
-                    cols="2"
-                  >
-                    {{ formatTime(proposal.end) }}
-                  </b-col>
-                </b-row>
+        <b-row>
+          <b-col cols="6">
+            <b-row class="pb-1">
+              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
+                Vote Start
               </b-col>
-              <b-col cols="6">
-                <div
-                  class="font-size-12 pb-1"
-                  :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-                >
-                  Proposed by
-                  <a
-                    target="_blank"
-                    class="font-size-12 font-w500 fix-a"
-                    :href="getEtherscanUrl(proposal.proposer)"
-                  >
-                    {{ shortAddress(proposal.proposer) }}
-                  </a>
-                </div>
-                <div
-                  class="font-size-12"
-                  :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-                >
-                  Contract to execute
-                  <a
-                    target="_blank"
-                    class="font-size-12 font-w500 fix-a"
-                    :href="getEtherscanUrl(proposal.executor)"
-                  >
-                    {{ shortAddress(proposal.executor) }}
-                  </a>
-                </div>
+              <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
+                {{ formatDate(item.start) }}
+              </b-col>
+              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
+                {{ formatTime(item.start) }}
               </b-col>
             </b-row>
-
-            <div class="pt-2">
-              <remaining-time
-                type="warn"
-                :show-seconds="true"
-                :from="proposal.start"
-                :to="proposal.end"
-              />
-            </div>
-          </td>
-          <td>
-            <div class="pl-3 container-border h-100">
-              <div
-                v-if="!proposal.votes.voted && proposal.end > Date.now()"
-                class="d-flex align-items-center mb-2"
+            <b-row>
+              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
+                Vote End
+              </b-col>
+              <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
+                {{ formatDate(item.end) }}
+              </b-col>
+              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
+                {{ formatTime(item.end) }}
+              </b-col>
+            </b-row>
+          </b-col>
+          <b-col cols="6">
+            <div
+              class="font-size-12 pb-1"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              Proposed by
+              <a
+                target="_blank"
+                class="font-size-12 font-w500 fix-a"
+                :href="getEtherscanUrl(item.proposer)"
               >
-                <main-button
-                  @click="() => voteFor(proposal.id.toString())"
-                  label="Vote for"
-                  :large="true"
-                  :active="true"
-                  :block="true"
-                  class="font-size-14 font-w400 mr-3 text-uppercase button-vote button-vote--for"
-                />
+                {{ shortAddress(item.proposer) }}
+              </a>
+            </div>
+            <div
+              class="font-size-12"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              Contract to execute
+              <a
+                target="_blank"
+                class="font-size-12 font-w500 fix-a"
+                :href="getEtherscanUrl(item.executor)"
+              >
+                {{ shortAddress(item.executor) }}
+              </a>
+            </div>
+          </b-col>
+        </b-row>
 
-                <main-button
-                  @click="voteAgainst(proposal.id.toString())"
-                  label="Vote against"
-                  :large="true"
-                  :active="true"
-                  :block="true"
-                  class="font-size-14 font-w400 mt-0 text-uppercase button-vote button-vote--against"
-                />
+        <div class="pt-2">
+          <remaining-time
+            type="warn"
+            :show-seconds="true"
+            :from="item.start"
+            :to="item.end"
+          />
+        </div>
+      </template>
+
+      <template #cell(votes)="{ item }">
+        <div class="pl-3 container-border h-100">
+          <div
+            v-if="!item.votes.voted && item.end > Date.now()"
+            class="d-flex align-items-center mb-2"
+          >
+            <main-button
+              @click="voteFor(item.id.toString())"
+              label="Vote for"
+              :large="true"
+              :active="true"
+              :block="true"
+              class="font-size-14 font-w400 mr-3 text-uppercase button-vote button-vote--for"
+            />
+
+            <main-button
+              @click="voteAgainst(item.id.toString())"
+              label="Vote against"
+              :large="true"
+              :active="true"
+              :block="true"
+              class="font-size-14 font-w400 mt-0 text-uppercase button-vote button-vote--against"
+            />
+          </div>
+
+          <div v-if="item.votes.voted">
+            <div
+              class="votes-bar--empty voted-box mb-2"
+              :class="'votes-bar--' + item.votes.voted"
+            >
+              <div class="row">
+                <span class="col-3">
+                  <span class="text-uppercase">{{ item.votes.voted }}</span>
+                </span>
+                <span class="col-9 text-right">
+                  {{ item.votes.for || item.votes.against }}
+                  {{ symbol }}
+                </span>
               </div>
-
-              <div v-if="proposal.votes.voted">
+              <div class="row">
                 <div
-                  class="votes-bar--empty voted-box mb-2"
-                  :class="'votes-bar--' + proposal.votes.voted"
+                  class="col-4 tiny-text"
+                  :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
                 >
-                  <div class="row">
-                    <span class="col-3">
-                      <span class="text-uppercase">{{
-                        proposal.votes.voted
-                      }}</span>
-                    </span>
-                    <span class="col-9 text-right">
-                      {{ proposal.votes.for || proposal.votes.against }}
-                      {{ symbol }}
-                    </span>
-                  </div>
-                  <div class="row">
-                    <div
-                      class="col-4 tiny-text"
-                      :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
-                    >
-                      <span>your vote</span>
-                    </div>
-                    <div class="col-8 font-size-12 text-right voted-box__text">
-                      <span
-                        class="tiny-text"
-                        :class="
-                          darkMode ? 'text-body-dark' : 'text-muted-light'
-                        "
-                      >
-                        {{
-                          (
-                            ((proposal.votes.for || proposal.votes.against) /
-                              proposal.totalVotes) *
-                            100
-                          ).toFixed(2)
-                        }}% from voters
-                      </span>
-                    </div>
-                  </div>
+                  <span>your vote</span>
                 </div>
-              </div>
-
-              <div class="font-size-12 font-w500 text-uppercase">
-                <div class="votes-bar">
-                  <div
-                    class="votes-bar__progress"
-                    :style="{
-                      width: `${(100 / proposal.totalVotes) *
-                        proposal.totalVotesFor}%`
-                    }"
-                  />
-                  <div class="votes-bar__content text-uppercase">
-                    <span>
-                      For
-                      {{
-                        (
-                          (100 / proposal.totalVotes) *
-                            proposal.totalVotesFor || 0
-                        ).toFixed(2)
-                      }}%
-                    </span>
-                    <span>
-                      Against
-                      {{
-                        (
-                          (100 / proposal.totalVotes) *
-                            proposal.totalVotesAgainst || 0
-                        ).toFixed(2)
-                      }}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                class="tiny-text font-w500"
-                :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
-              >
-                <div class="row pt-2">
-                  <div class="col-6">
-                    {{ prettifyNumber(proposal.totalVotesFor) }} {{ symbol }}
-                  </div>
-                  <div class="col-6 text-right">
-                    {{ prettifyNumber(proposal.totalVotesAgainst) }}
-                    {{ symbol }}
-                  </div>
-                </div>
-
-                <div class="row pt-2">
-                  <div class="col-12">
-                    <span>
-                      {{ (proposal.quorum / 10000).toFixed(2) }}% Quorum ({{
-                        (proposal.quorumRequired / 10000).toFixed(2)
-                      }}% to pass)
-                    </span>
-                  </div>
+                <div class="col-8 font-size-12 text-right voted-box__text">
+                  <span
+                    class="tiny-text"
+                    :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+                  >
+                    {{
+                      (
+                        ((item.votes.for || item.votes.against) /
+                          item.totalVotes) *
+                        100
+                      ).toFixed(2)
+                    }}% from voters
+                  </span>
                 </div>
               </div>
             </div>
-          </td>
-        </tr>
+          </div>
+
+          <div class="font-size-12 font-w500 text-uppercase">
+            <div class="votes-bar">
+              <div
+                class="votes-bar__progress"
+                :style="{
+                  width: `${(100 / item.totalVotes) * item.totalVotesFor}%`
+                }"
+              />
+              <div class="votes-bar__content text-uppercase">
+                <span>
+                  For
+                  {{
+                    ((100 / item.totalVotes) * item.totalVotesFor || 0).toFixed(
+                      2
+                    )
+                  }}%
+                </span>
+                <span>
+                  Against
+                  {{
+                    (
+                      (100 / item.totalVotes) * item.totalVotesAgainst || 0
+                    ).toFixed(2)
+                  }}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="tiny-text font-w500"
+            :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+          >
+            <div class="row pt-2">
+              <div class="col-6">
+                {{ prettifyNumber(item.totalVotesFor) }} {{ symbol }}
+              </div>
+              <div class="col-6 text-right">
+                {{ prettifyNumber(item.totalVotesAgainst) }}
+                {{ symbol }}
+              </div>
+            </div>
+
+            <div class="row pt-2">
+              <div class="col-12">
+                <span>
+                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum ({{
+                    (item.quorumRequired / 10000).toFixed(2)
+                  }}% to pass)
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </template>
     </data-table>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
-import PieChart from "@/components/data/charts/PieChart.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import DataTable from "@/components/deprecated/DataTable.vue";
+import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import MainButton from "@/components/common/Button.vue";
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
@@ -319,7 +289,6 @@ import BaseComponent from "@/components/BaseComponent.vue";
     DataTable,
     ButtonProgress,
     MainButton,
-    PieChart,
     ModalNotEnoughTokens
   }
 })
@@ -331,28 +300,46 @@ export default class OpenProposals extends BaseComponent {
   etherscanUrl: string = "";
   currentVotes: BigNumber = new BigNumber(0);
 
-  get fields(): ViewTableFields[] {
+  get items(): Proposal[] {
+    return this.proposals ? this.proposals.slice() : [];
+  }
+
+  get fields(): ViewTableField[] {
     console.log("proposals", this.proposals);
     return [
       {
+        id: 1,
         label: "ID",
         key: "id",
         minWidth: "16px",
-        maxWidth: "16px"
+        maxWidth: "16px",
+        sortable: false
       },
       {
+        id: 2,
         label: "Details",
-        key: "",
+        key: "name",
         minWidth: "450px",
-        maxWidth: "500px"
+        maxWidth: "500px",
+        sortable: false
       },
       {
+        id: 3,
         label: "Vote",
-        key: "",
+        key: "votes",
         minWidth: "300px",
-        maxWidth: "300px"
+        maxWidth: "300px",
+        sortable: false
       }
     ];
+  }
+
+  get darkMode() {
+    return vxm.general.darkMode;
+  }
+
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   prettifyNumber(number: string | number): string {
@@ -392,7 +379,7 @@ export default class OpenProposals extends BaseComponent {
 
     if (this.currentVotes.isGreaterThan(0)) {
       await vxm.ethGovernance.voteFor({
-        account: vxm.ethWallet.isAuthenticated,
+        account: vxm.ethWallet.currentUser,
         proposalId
       });
     } else {
@@ -405,7 +392,7 @@ export default class OpenProposals extends BaseComponent {
 
     if (this.currentVotes.isGreaterThan(0)) {
       await vxm.ethGovernance.voteAgainst({
-        account: vxm.ethWallet.isAuthenticated,
+        account: vxm.ethWallet.currentUser,
         proposalId
       });
     } else {
@@ -413,11 +400,15 @@ export default class OpenProposals extends BaseComponent {
     }
   }
 
+  @Watch("currentUser")
   async update() {
-    this.currentVotes = await vxm.ethGovernance.getVotes({
-      voter: vxm.wallet.isAuthenticated
-    });
+    if (this.currentUser) {
+      this.currentVotes = await vxm.ethGovernance.getVotes({
+        voter: this.currentUser
+      });
+    }
   }
+
   async mounted() {
     this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
