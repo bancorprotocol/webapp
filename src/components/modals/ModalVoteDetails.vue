@@ -47,7 +47,7 @@
       </span>
     </div>
 
-    <table-wrapper
+    <data-table
       :items="getVoters()"
       :fields="fields"
       class="p-0"
@@ -97,7 +97,7 @@
       <template #cell(percentOfTotal)="data">
         <div class="text-right">{{ data.item.percentOfTotal }}%</div>
       </template>
-    </table-wrapper>
+    </data-table>
 
     <template slot="modal-footer">
       <div class="text-center w-100">
@@ -115,18 +115,17 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit } from "vue-property-decorator";
 import { prettifyNumber, VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { Proposal, Voter } from "@/store/modules/governance/ethGovernance";
-import TableWrapper from "@/components/common/TableWrapper.vue";
-import { BvTableFieldArray } from "bootstrap-vue/src/components/table";
 import BigNumber from "bignumber.js";
+import DataTable, { ViewTableField } from "@/components/common/DataTable.vue"
 
 @Component({
   components: {
     MainButton,
-    TableWrapper
+    DataTable
   }
 })
 export default class ModalVoteDetails extends Vue {
@@ -137,38 +136,44 @@ export default class ModalVoteDetails extends Vue {
   decimals: number = 0;
   etherscanUrl: string = "";
 
-  fields: BvTableFieldArray = [
+  fields: ViewTableField[] = [
     {
+      id: 0,
       key: "index",
       label: "#",
       sortable: true
     },
     {
+      id: 1,
       key: "account",
       label: "User Wallet",
       sortable: true
     },
     {
+      id: 2,
       key: "weight",
       label: "Amount",
       sortable: true,
-      formatter: (data, key, object) => {
+      /*formatter: (data, key, object) => {
         return object.votes.for !== "0"
           ? object.votes.for
           : object.votes.against;
       },
       sortByFormatted: true
+      */
     },
     {
+      id: 3,
       key: "voted",
       label: "Vote",
       sortable: true,
-      formatter: (data, key, object) => {
+      /*formatter: (data, key, object) => {
         return object.votes.voted.toUpperCase();
       },
-      sortByFormatted: true
+      sortByFormatted: true*/
     },
     {
+      id: 4,
       key: "percentOfTotal",
       label: "% of Total",
       sortable: true
@@ -217,7 +222,9 @@ export default class ModalVoteDetails extends Vue {
     return vxm.general.darkMode;
   }
 
+  @Emit("hide")
   onHide() {
+    console.log("fa");
     this.show = false;
   }
 

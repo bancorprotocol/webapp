@@ -221,11 +221,11 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "Details",
-        key: ""
+        key: "details"
       },
       {
         label: "Result",
-        key: "",
+        key: "result",
         maxWidth: "120px",
         minWidth: "120px"
       },
@@ -249,7 +249,7 @@ export default class DoneProposals extends Vue {
       },
       {
         label: "",
-        key: "",
+        key: "spacer",
         maxWidth: "10px"
       }
     ];
@@ -298,8 +298,8 @@ export default class DoneProposals extends Vue {
     return proposal?.metadata?.payload?.metadata?.discourse || "#";
   }
 
-  openProposal(proposal: any) {
-    this.opened = proposal.id === this.opened ? undefined : proposal.id;
+  openProposal(proposal: Proposal) {
+    this.opened = proposal.id === this.opened ? -1 : proposal.id;
     this.$forceUpdate();
   }
 

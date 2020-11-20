@@ -2,8 +2,10 @@
   <div id="open-proposals">
     <modal-not-enough-tokens v-model="notEnoughTokensModal" />
     <modal-vote-details
+      v-if="proposals && opened > -1"
       v-model="voteDetailsModal"
-      :proposal="selectedProposal"
+      @hide="hideDetails"
+      :proposal="proposals.find(p => p.id === opened)"
     />
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
@@ -255,61 +257,50 @@
             </div>
 
             <div class="row pt-2">
-              <div class="col-12">
-                <span>
-                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum ({{
-                    (item.quorumRequired / 10000).toFixed(2)
-                  }}% to pass)
+              <div class="col-6">
+            <span>
+              {{
+                item.voters.filter(v => v.votes.voted === "for")
+                    .length
+              }}
+              Users
+            </span>
+              </div>
+              <div class="col-6 text-right">
+            <span>
+              {{
+                item.voters.filter(v => v.votes.voted === "against")
+                    .length
+              }}
+              Users
+            </span>
+              </div>
+            </div>
+
+            <div class="row pt-2">
+              <div class="col-6 pt-1">
+                <span v-if="Date.now() > item.end">
+                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum
                 </span>
               </div>
-            </div>
-          </div>
-        </div>
-                <div class="row pt-2">
-                  <div class="col-6">
-                    <span>
-                      {{
-                        proposal.voters.filter(v => v.votes.voted === "for")
-                          .length
-                      }}
-                      Users
-                    </span>
-                  </div>
-                  <div class="col-6 text-right">
-                    <span>
-                      {{
-                        proposal.voters.filter(v => v.votes.voted === "against")
-                          .length
-                      }}
-                      Users
-                    </span>
-                  </div>
-                </div>
-
-                <div class="row pt-1">
-                  <div class="col-6 pt-1">
-                    <span v-if="Date.now() > proposal.end">
-                      {{ (proposal.quorum / 10000).toFixed(2) }}% Quorum
-                    </span>
-                  </div>
-                  <div class="col-6 text-right">
-                    <b-btn
-                      @click="() => showDetails(proposal.id)"
-                      :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-                      class="block-rounded btn-sm"
-                    >
-                      <span class="font-size-14 font-w500">
-                        <font-awesome-icon icon="poll" />
-                        Breakdown
-                      </span>
-                    </b-btn>
-                  </div>
-                </div>
+              <div class="col-6 text-right">
+                <b-btn
+                    @click="() => showDetails(item.id)"
+                    :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+                    class="block-rounded btn-sm"
+                >
+                  <span class="font-size-14 font-w500">
+                    <font-awesome-icon icon="poll" />
+                    Breakdown
+                  </span>
+                </b-btn>
               </div>
             </div>
-          </td>
-        </tr>
+
+          </div>
+        </div>
       </template>
+
     </data-table>
   </div>
 </template>
@@ -346,7 +337,7 @@ export default class OpenProposals extends Vue {
 
   notEnoughTokensModal = false;
   voteDetailsModal = false;
-  selectedProposal?: Proposal;
+  opened: number = -1;
 
   symbol: string = "";
   etherscanUrl: string = "";
@@ -427,8 +418,12 @@ export default class OpenProposals extends Vue {
   }
 
   showDetails(id: number) {
-    this.selectedProposal = this.proposals?.find(p => p.id === id);
+    this.opened = id === this.opened ? -1 : id;
     this.voteDetailsModal = true;
+  }
+
+  hideDetails() {
+    this.opened = -1;
   }
 
   async voteFor(proposalId: string) {

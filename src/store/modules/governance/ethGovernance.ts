@@ -467,25 +467,17 @@ export class EthereumGovernance extends VuexModule.With({
       totalVotes: totalVotesFor + totalVotesAgainst,
       votes: <Votes>{
         for: voter
-          ? parseFloat(
-              shrinkToken(
+          ?
                 await this.governanceContract.methods
                   .votesForOf(voter, proposal.id)
-                  .call(),
-                decimals
-              )
-            )
-          : 0,
+                  .call()
+          : "0",
         against: voter
-          ? parseFloat(
-              shrinkToken(
-                await this.governanceContract.methods
+          ?     await this.governanceContract.methods
                   .votesAgainstOf(voter, proposal.id)
-                  .call(),
-                decimals
-              )
-            )
-          : 0
+                  .call()
+
+          : "0"
       },
       metadata: metadata,
       voters: await this.getVoters({ proposal })
