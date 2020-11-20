@@ -34,7 +34,7 @@ export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
 export const miningBntReward = (protectedBnt: string, highCap: boolean) => {
-  const baseNumber = "7000000000000000000000";
+  const baseNumber = "14000000000000000000000";
   const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
 
   return new BigNumber(magicalNumber)
@@ -49,7 +49,7 @@ export const miningTknReward = (
   protectedTkn: string,
   highCap: boolean
 ) => {
-  const baseNumber = "3000000000000000000000";
+  const baseNumber = "6000000000000000000000";
   const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
   return new BigNumber(
     new BigNumber(magicalNumber)
