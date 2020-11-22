@@ -59,10 +59,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Emit, PropSync } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit, PropSync, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ModalBase from "@/components/modals/ModalBase.vue";
-import { VModel } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 
 @Component({
