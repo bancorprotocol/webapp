@@ -141,6 +141,7 @@ import {
   highCapPools,
   liquidityMiningEndTime,
   PreviousPoolFee,
+  previousPoolFees,
   priorityEthPools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
@@ -5752,7 +5753,7 @@ export class EthBancorModule
   }
 
   get previousPoolFees() {
-    return this.previousPoolFeesArr;
+    return [...this.previousPoolFeesArr, ...previousPoolFees];
   }
 
   get previousRelayBalances() {
