@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { Step, TxResponse, ViewToken } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -82,7 +82,6 @@ import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import numeral from "numeral";
-import { VModel } from "@/api/helpers";
 
 @Component({
   components: {

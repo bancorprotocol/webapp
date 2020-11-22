@@ -97,7 +97,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import {
   LiquidityParams,
@@ -113,7 +113,6 @@ import MainButton from "@/components/common/Button.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import numeral from "numeral";
-import { VModel } from "@/api/helpers";
 
 @Component({
   components: {
