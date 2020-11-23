@@ -79,7 +79,7 @@
 
       <template #cell(voted)="data">
         <div class="text-uppercase" :class="getVoteClass(data.value)">
-          {{ data.value ? "FOR" : "AGAINST" }}
+          {{ data.value === 1 ? "FOR" : "AGAINST" }}
         </div>
       </template>
 
@@ -160,8 +160,8 @@ export default class ModalVoteDetails extends Vue {
     }
   ];
 
-  getVoteClass(vote: boolean) {
-    return vote ? "voted-for" : "voted-against";
+  getVoteClass(vote: number) {
+    return vote === 1 ? "voted-for" : "voted-against";
   }
 
   getVoters() {
@@ -172,7 +172,7 @@ export default class ModalVoteDetails extends Vue {
         percentOfTotal: this.calculatePercentOfTotal(
           v.votes.for !== "0" ? v.votes.for : v.votes.against
         ),
-        voted: v.votes.voted === "for",
+        voted: v.votes.voted === "for" ? 1 : 2,
         weight: v.votes.for !== "0" ? v.votes.for : v.votes.against
       };
     });
