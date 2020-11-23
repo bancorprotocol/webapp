@@ -31,9 +31,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 
-@Component({
-  components: {}
-})
+@Component
 export default class CollapsableBlock extends Vue {
   @Prop() title!: string;
   @Prop({ default: "" }) headerIcon!: string;
