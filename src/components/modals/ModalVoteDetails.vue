@@ -65,9 +65,7 @@
       </template>
 
       <template #head(weight)>
-        <div class="text-right">
-          Amount
-        </div>
+        <div class="text-right">Amount</div>
       </template>
 
       <template #cell(weight)="data">
@@ -90,9 +88,7 @@
       </template>
 
       <template #head(percentOfTotal)>
-        <div class="text-right">
-          % of Total
-        </div>
+        <div class="text-right">% of Total</div>
       </template>
 
       <template #cell(percentOfTotal)="data">
@@ -183,9 +179,7 @@ export default class ModalVoteDetails extends Vue {
           v.votes.for !== "0" ? v.votes.for : v.votes.against
         ),
         voted: v.votes.voted?.toUpperCase(),
-        weight: v.votes.for !== "0"
-            ? v.votes.for
-            : v.votes.against
+        weight: v.votes.for !== "0" ? v.votes.for : v.votes.against
       };
     });
   }
