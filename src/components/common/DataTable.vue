@@ -118,10 +118,17 @@ export default class DataTable extends Vue {
 
     if (sortBy) {
       return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
-        const value = t[sortBy];
-        const number = new BigNumber(value);
-        if (BigNumber.isBigNumber(number)) return number.toNumber();
-        else return value;
+        if (
+          t[sortBy] !== 0 &&
+          t[sortBy] !== "0" &&
+          t[sortBy] !== undefined &&
+          t[sortBy] !== null
+        ) {
+          const value = t[sortBy];
+          const number = new BigNumber(value);
+          if (BigNumber.isBigNumber(number)) return number.toNumber();
+          else return null;
+        } else return null;
       });
     } else return filtered;
   }
