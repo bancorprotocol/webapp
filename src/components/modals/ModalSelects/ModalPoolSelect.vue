@@ -17,9 +17,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop } from "vue-property-decorator";
+import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import { ViewRelay } from "@/types/bancor";
-import { VModel } from "@/api/helpers";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";

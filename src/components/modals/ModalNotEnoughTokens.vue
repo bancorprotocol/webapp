@@ -62,8 +62,7 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { Component, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 

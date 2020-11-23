@@ -41,8 +41,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { Component, Prop, VModel } from "vue-property-decorator";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 

@@ -45,14 +45,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit } from "vue-property-decorator";
+import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-
 import { ViewModalToken } from "@/types/bancor";
-import { formatNumber, VModel } from "@/api/helpers";
+import { formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
 import BaseComponent from "@/components/BaseComponent.vue";

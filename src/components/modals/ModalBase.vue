@@ -46,10 +46,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync, VModel } from "vue-property-decorator";
 import { VModel } from "@/api/helpers";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+
 @Component({
   components: { MultiInputField }
 })

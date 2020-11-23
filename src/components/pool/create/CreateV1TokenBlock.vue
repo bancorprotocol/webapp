@@ -18,11 +18,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, PropSync } from "vue-property-decorator";
+import { Component, Emit, Prop, PropSync, VModel } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import SelectTokenBlock from "@/components/common/SelectTokenBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
-import { VModel } from "@/api/helpers";
 import { ViewToken } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
 

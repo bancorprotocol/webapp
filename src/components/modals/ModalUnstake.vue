@@ -139,8 +139,8 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Watch } from "vue-property-decorator";
-import { prettifyNumber, VModel } from "@/api/helpers";
+import { Component, Watch, VModel } from "vue-property-decorator";
+import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";

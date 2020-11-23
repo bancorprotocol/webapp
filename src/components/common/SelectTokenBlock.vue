@@ -28,12 +28,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop } from "vue-property-decorator";
+import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
-import { VModel } from "@/api/helpers";
 import { ViewToken } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
 

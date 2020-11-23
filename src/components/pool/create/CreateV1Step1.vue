@@ -30,10 +30,9 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, VModel } from "vue-property-decorator";
 import CreateV1TokenBlock from "./CreateV1TokenBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { VModel } from "@/api/helpers";
 import { CreateStep1 } from "@/views/CreateHome.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 

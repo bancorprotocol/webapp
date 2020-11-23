@@ -152,24 +152,6 @@ export const traverseLockedBalances = async (
   return lockedBalances;
 };
 
-export function VModel(propsArgs: PropOptions = {}) {
-  const valueKey: string = "value";
-  return createDecorator((componentOptions, key) => {
-    (componentOptions.props || ((componentOptions.props = {}) as any))[
-      valueKey
-    ] = propsArgs;
-    (componentOptions.computed || (componentOptions.computed = {}))[key] = {
-      get() {
-        return (this as any)[valueKey];
-      },
-      set(value: any) {
-        // @ts-ignore
-        this.$emit("input", value);
-      }
-    };
-  });
-}
-
 export const networkTokens = ["BNT", "USDB"];
 
 export const isOdd = (num: number) => num % 2 == 1;

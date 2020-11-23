@@ -28,10 +28,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, VModel } from "vue-property-decorator";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
-import { VModel } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
