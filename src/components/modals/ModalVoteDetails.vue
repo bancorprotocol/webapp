@@ -51,6 +51,7 @@
       :items="getVoters()"
       :fields="fields"
       class="p-0"
+      hide-pagination="true"
       per-page="100000000"
     >
       <template #cell(account)="data">
@@ -63,9 +64,9 @@
         </a>
       </template>
 
-      <template #head(weight)="data">
+      <template #head(weight)>
         <div class="text-right">
-          {{ data.label }}
+          Amount
         </div>
       </template>
 
@@ -88,9 +89,9 @@
         </div>
       </template>
 
-      <template #head(percentOfTotal)="data">
+      <template #head(percentOfTotal)>
         <div class="text-right">
-          {{ data.label }}
+          % of Total
         </div>
       </template>
 
@@ -154,23 +155,12 @@ export default class ModalVoteDetails extends Vue {
       key: "weight",
       label: "Amount",
       sortable: true
-      /*formatter: (data, key, object) => {
-        return object.votes.for !== "0"
-          ? object.votes.for
-          : object.votes.against;
-      },
-      sortByFormatted: true
-      */
     },
     {
       id: 3,
       key: "voted",
       label: "Vote",
       sortable: true
-      /*formatter: (data, key, object) => {
-        return object.votes.voted.toUpperCase();
-      },
-      sortByFormatted: true*/
     },
     {
       id: 4,
@@ -191,7 +181,11 @@ export default class ModalVoteDetails extends Vue {
         ...v,
         percentOfTotal: this.calculatePercentOfTotal(
           v.votes.for !== "0" ? v.votes.for : v.votes.against
-        )
+        ),
+        voted: v.votes.voted?.toUpperCase(),
+        weight: v.votes.for !== "0"
+            ? v.votes.for
+            : v.votes.against
       };
     });
   }
