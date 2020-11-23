@@ -31,9 +31,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component({
-  components: {}
-})
+@Component
 export default class CollapsableBlock extends BaseComponent {
   @Prop() title!: string;
   @Prop({ default: "" }) headerIcon!: string;
