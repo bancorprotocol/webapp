@@ -80,41 +80,57 @@ export interface Item {
 export default class DataTable extends Vue {
   @Prop() fields!: ViewTableField[];
   @Prop() items!: Item[];
-  @Prop() filter!: string;
-  @Prop() filterBy!: string;
-  @Prop() defaultSort!: string;
+  @Prop() filter?: string;
+  @Prop() filterBy?: string;
+  @Prop() defaultSort?: string;
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
   @Prop() filterFunction?: Function;
 
-  sortBy: string = this.defaultSort;
+  sortBy: string = "";
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
 
+  created() {
+    this.sortBy = this.defaultSort ? this.defaultSort : "";
+  }
+
   get modifiedItems() {
     let filtered = [];
-    const items = this.items;
+    const items = this.items.slice();
     const filter = this.filter;
     const filterBy = this.filterBy;
     const filterFunction = this.filterFunction;
+    const sortBy = this.sortBy;
 
     if (filterFunction !== undefined) {
       filtered = items.filter((t: any) => filterFunction(t, filter));
-    } else {
+    } else if (filter && filterBy) {
       filtered = items.filter(
         (t: any) =>
           t[filterBy] &&
           t[filterBy].toUpperCase().includes(filter.toUpperCase())
       );
+    } else {
+      filtered = items;
     }
 
-    return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
-      const value = t[this.sortBy];
-      const number = new BigNumber(value);
-      if (BigNumber.isBigNumber(number)) return number.toNumber();
-      else return value;
-    });
+    if (sortBy) {
+      return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
+        if (
+          t[sortBy] !== 0 &&
+          t[sortBy] !== "0" &&
+          t[sortBy] !== undefined &&
+          t[sortBy] !== null
+        ) {
+          const value = t[sortBy];
+          const number = new BigNumber(value);
+          if (BigNumber.isBigNumber(number)) return number.toNumber();
+          else return null;
+        } else return null;
+      });
+    } else return filtered;
   }
 
   get paginatedItems() {

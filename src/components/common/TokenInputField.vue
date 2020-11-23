@@ -3,7 +3,7 @@
     <label-content-split :label="label" class="mb-1">
       <span
         @click="tokenAmount = balance"
-        v-if="isAuthenticated"
+        v-if="currentUser"
         class="font-size-12 font-w500 cursor"
       >
         {{ formattedBalance }}
@@ -53,7 +53,7 @@
         </div>
       </b-input-group-append>
       <alert-block
-        v-if="isAuthenticated && errorMsg !== ''"
+        v-if="currentUser && errorMsg !== ''"
         variant="error"
         :msg="errorMsg"
       />
@@ -75,12 +75,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Emit } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { formatNumber, VModel } from "@/api/helpers";
+import { formatNumber } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
@@ -152,8 +152,8 @@ export default class TokenInputField extends Vue {
     return vxm.general.darkMode;
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 }
 </script>

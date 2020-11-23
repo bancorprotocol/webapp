@@ -139,8 +139,8 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { prettifyNumber, VModel } from "@/api/helpers";
+import { Component, Vue, Watch, VModel } from "vue-property-decorator";
+import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
 
@@ -186,8 +186,8 @@ export default class ModalUnstake extends Vue {
     return vxm.general.darkMode;
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   setUnstakeInput() {
@@ -195,7 +195,7 @@ export default class ModalUnstake extends Vue {
   }
 
   getEtherscanUrl() {
-    return `${this.etherscanUrl}address/${this.isAuthenticated}#tokentxns`;
+    return `${this.etherscanUrl}address/${this.currentUser}#tokentxns`;
   }
 
   unstake() {
@@ -211,7 +211,7 @@ export default class ModalUnstake extends Vue {
 
   async doUnstake() {
     await vxm.ethGovernance.unstake({
-      account: this.isAuthenticated,
+      account: this.currentUser,
       amount: this.unstakeValue
         .multipliedBy(
           new BigNumber(10).pow(await vxm.ethGovernance.getDecimals())
@@ -232,11 +232,11 @@ export default class ModalUnstake extends Vue {
   }
 
   @Watch("step")
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   @Watch("show")
   async update() {
     this.currentStake = await vxm.ethGovernance.getVotes({
-      voter: this.isAuthenticated
+      voter: this.currentUser
     });
 
     this.setUnstakeInput();

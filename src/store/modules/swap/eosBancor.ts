@@ -611,7 +611,7 @@ export class EosBancorModule
 
   get supportedFeatures() {
     return (id: string) => {
-      const isAuthenticated = this.isAuthenticated;
+      const currentUser = this.currentUser;
       const relay = this.relaysList.find(relay => compareString(relay.id, id))!;
       if (!relay.isMultiContract) return ["removeLiquidity"];
       const features: Feature[] = [
@@ -630,19 +630,19 @@ export class EosBancorModule
         ]
       ];
       return features
-        .filter(([, test]) => test(relay, isAuthenticated))
+        .filter(([, test]) => test(relay, currentUser))
         .map(([name]) => name);
     };
   }
 
-  get isAuthenticated() {
+  get currentUser() {
     // @ts-ignore
-    return this.$store.rootGetters[`${this.wallet}Wallet/isAuthenticated`];
+    return this.$store.rootGetters[`${this.wallet}Wallet/currentUser`];
   }
 
-  @action async onAuthChange(isAuthenticated: string | false) {
-    if (isAuthenticated) {
-      Sentry.setUser({ id: isAuthenticated });
+  @action async onAuthChange(currentUser: string | false) {
+    if (currentUser) {
+      Sentry.setUser({ id: currentUser });
       const reserves = uniqWith(
         this.relaysList.flatMap(relay => relay.reserves),
         (a, b) => compareString(a.id, b.id)
@@ -806,7 +806,7 @@ export class EosBancorModule
   }
 
   @action async fetchTokenBalancesIfPossible(tokens: TokenBalanceParam[]) {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
     const tokensFetched = this.currentUserBalances;
     const allTokens = _.uniqWith(
       this.relaysList.flatMap(relay => relay.reserves),
@@ -1763,7 +1763,7 @@ export class EosBancorModule
   }
 
   @action async refreshBalances(tokens: BaseToken[] = []) {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
     if (tokens.length > 0) {
       await vxm.eosNetwork.getBalances({ tokens });
       return;
@@ -1813,7 +1813,7 @@ export class EosBancorModule
             const fundAmount = smartTokenAmount;
 
             const fundAction = multiContractAction.fund(
-              this.isAuthenticated,
+              this.currentUser,
               smartTokenAmount.to_string()
             );
 
@@ -1848,7 +1848,7 @@ export class EosBancorModule
             if (failedDueToBadCalculation) {
               const { fundAmount, addLiquidityActions } = state;
               const backupFundAction = multiContractAction.fund(
-                vxm.wallet.isAuthenticated,
+                vxm.wallet.currentUser,
                 number_to_asset(
                   Number(fundAmount) * 0.96,
                   new Symbol(relay.smartToken.symbol, 4)
@@ -1870,7 +1870,7 @@ export class EosBancorModule
           task: async () => {
             const bankBalances = await this.fetchBankBalances({
               smartTokenSymbol: relay.smartToken.symbol,
-              accountHolder: this.isAuthenticated
+              accountHolder: this.currentUser
             });
 
             const aboveZeroBalances = bankBalances
@@ -1963,7 +1963,7 @@ export class EosBancorModule
         relay.smartToken.contract,
         number_to_asset(0, reserveAsset.symbol),
         relay.contract,
-        this.isAuthenticated
+        this.currentUser
       )
     );
     return actions;
@@ -2378,7 +2378,7 @@ export class EosBancorModule
     try {
       const res: { rows: { balance: string }[] } = await rpc.get_table_rows({
         code: contract,
-        scope: this.isAuthenticated,
+        scope: this.currentUser,
         table: "accounts"
       });
       return (
@@ -2425,12 +2425,12 @@ export class EosBancorModule
     });
     const convertPath = relaysToConvertPaths(fromSymbolInit, path);
 
-    const isAuthenticated = this.isAuthenticated;
+    const currentUser = this.currentUser;
 
     const memo = composeMemo(
       convertPath,
       String((toAmount * 0.96).toFixed(toSymbolInit.precision())),
-      isAuthenticated
+      currentUser
     );
 
     const fromTokenContract = fromToken.contract;
@@ -2482,7 +2482,7 @@ export class EosBancorModule
     const openActions = await multiContract.openActions(
       contract,
       symbol.toString(true),
-      this.isAuthenticated
+      this.currentUser
     );
     return openActions;
   }

@@ -8,13 +8,14 @@
       filter-by="stake"
       :filter-function="doFilter"
       default-sort="currentCoverageDec"
+      default-order="asc"
     >
       <template #cell(stake)="{ value }">
         <div>
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
         <div
-          v-if="value.usdValue !== undefined"
+          v-if="value && value.usdValue !== undefined"
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
@@ -45,7 +46,9 @@
         </div>
         <span
           v-if="
-            value.usdValue !== undefined && typeof value.amount !== 'undefined'
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
@@ -64,11 +67,17 @@
         </div>
         <span
           v-if="
-            value.usdValue !== undefined && typeof value.amount !== 'undefined'
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
+      </template>
+
+      <template #cell(fees)="{ value }">
+        {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
       </template>
 
       <template #cell(roi)="{ value }">
@@ -250,13 +259,13 @@ export default class Protected extends Vue {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      // {
-      //   id: 4,
-      //   key: "fees",
-      //   label: "Fees",
-      //   tooltip: "Fees your stake has earned since you entered the pool.",
-      //   minWidth: "90px"
-      // },
+      {
+        id: 4,
+        key: "fees",
+        label: "Fees",
+        tooltip: "Fees your stake has earned since you entered the pool.",
+        minWidth: "110px"
+      },
       {
         id: 5,
         key: "roi",

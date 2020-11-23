@@ -47,9 +47,9 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Prop, PropSync, Vue } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { Component, Prop, PropSync, Vue, VModel } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
+
 @Component({
   components: { MultiInputField }
 })
