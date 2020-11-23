@@ -77,7 +77,7 @@
       </template>
 
       <template #cell(fees)="{ value }">
-        {{ stringifyPercentage(value) }}
+        {{ stringifyPercentage(value.amount) }}
       </template>
 
       <template #cell(roi)="{ value }">
