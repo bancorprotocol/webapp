@@ -165,50 +165,49 @@ import {
   map,
   scan,
   tap,
-  first as firstItem
+  first as firstItem,
+  delay
 } from "rxjs/operators";
 import Web3 from "web3";
 
 const currentBlock$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
-
 const bufferToggle$ = new Subject();
 
-const remoteFetch = async () => {
-  console.log("fetching...");
-  await wait(1000);
-  console.log("fetched");
-};
 
-convertersAndAnchors$.pipe(firstItem()).subscribe(x => bufferToggle$.next());
+convertersAndAnchors$
+  .pipe(firstItem(), delay(1))
+  .subscribe(() => bufferToggle$.next());
 
-const bufferSystem$ = convertersAndAnchors$.pipe(
-  tap(x => console.log("before buffer", x)),
+const bufferedAnchorsAndConverters$ = convertersAndAnchors$.pipe(
   buffer(bufferToggle$),
-  tap(x => console.log("buffer after", x)),
   scan(
     (acc, item) => {
-      const data = [...acc.data, ...item];
-      const toEmit = data[0];
+      const allData = [...acc.data, ...item];
+
+      const sortedData = sortAlongSide(
+        allData,
+        x => x.anchorAddress,
+        priorityEthPools
+      );
+      const toEmit = sortedData[0];
+
       return {
-        data: data.slice(1),
+        data: sortedData.slice(1),
         toEmit
       };
     },
-    { data: [], toEmit: null }
+    {
+      data: [] as ConverterAndAnchor[],
+      // @ts-ignore
+      toEmit: (undefined as ConverterAndAnchor)!
+    }
   ),
+  filter(x => Boolean(x.toEmit)),
   map(x => x.toEmit)
 );
 
-const processor$ = bufferSystem$
-  .pipe(
-    tap(x => console.log("buffer got", x)),
-    concatMap(remoteFetch),
-    tap(bufferToggle$)
-  )
-  .subscribe(x => console.log("and we are out"));
-
-combineLatest([currentBlock$, convertersAndAnchors$])
+combineLatest([currentBlock$, bufferedAnchorsAndConverters$])
   .pipe(
     concatMap(([currentBlock, converterAndAnchor]) => {
       const blockYesterday = rewindBlocksByDays(currentBlock, 1);
@@ -220,6 +219,7 @@ combineLatest([currentBlock$, convertersAndAnchors$])
         blockYesterday
       );
     }),
+    tap(() => bufferToggle$.next()),
     filter(feeEvents => feeEvents.length > 0)
   )
   .subscribe(fees => {
