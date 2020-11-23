@@ -18,7 +18,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, PropSync, Vue, VModel } from "vue-property-decorator";
+import {
+  Component,
+  Emit,
+  Prop,
+  PropSync,
+  Vue,
+  VModel
+} from "vue-property-decorator";
 import { vxm } from "@/store/";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import SelectTokenBlock from "@/components/common/SelectTokenBlock.vue";

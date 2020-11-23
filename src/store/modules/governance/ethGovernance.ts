@@ -466,16 +466,14 @@ export class EthereumGovernance extends VuexModule.With({
       totalVotes: totalVotesFor + totalVotesAgainst,
       votes: <Votes>{
         for: voter
-          ?
-                await this.governanceContract.methods
-                  .votesForOf(voter, proposal.id)
-                  .call()
+          ? await this.governanceContract.methods
+              .votesForOf(voter, proposal.id)
+              .call()
           : "0",
         against: voter
-          ?     await this.governanceContract.methods
-                  .votesAgainstOf(voter, proposal.id)
-                  .call()
-
+          ? await this.governanceContract.methods
+              .votesAgainstOf(voter, proposal.id)
+              .call()
           : "0"
       },
       metadata: metadata,
@@ -516,7 +514,11 @@ export class EthereumGovernance extends VuexModule.With({
     });
   }
 
-  @action async getProposals({ voter }: { voter?: string }): Promise<Proposal[]> {
+  @action async getProposals({
+    voter
+  }: {
+    voter?: string;
+  }): Promise<Proposal[]> {
     console.log(
       "getting proposals",
       Date.now(),

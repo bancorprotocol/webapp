@@ -115,12 +115,12 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue, Prop, Emit } from "vue-property-decorator";
-import { prettifyNumber, VModel } from "@/api/helpers";
+import { Component, Vue, Prop, Emit, VModel } from "vue-property-decorator";
+import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { Proposal, Voter } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue"
+import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 
 @Component({
   components: {
@@ -153,7 +153,7 @@ export default class ModalVoteDetails extends Vue {
       id: 2,
       key: "weight",
       label: "Amount",
-      sortable: true,
+      sortable: true
       /*formatter: (data, key, object) => {
         return object.votes.for !== "0"
           ? object.votes.for
@@ -166,7 +166,7 @@ export default class ModalVoteDetails extends Vue {
       id: 3,
       key: "voted",
       label: "Vote",
-      sortable: true,
+      sortable: true
       /*formatter: (data, key, object) => {
         return object.votes.voted.toUpperCase();
       },

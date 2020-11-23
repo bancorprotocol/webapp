@@ -258,22 +258,18 @@
 
             <div class="row pt-2">
               <div class="col-6">
-            <span>
-              {{
-                item.voters.filter(v => v.votes.voted === "for")
-                    .length
-              }}
-              Users
-            </span>
+                <span>
+                  {{ item.voters.filter(v => v.votes.voted === "for").length }}
+                  Users
+                </span>
               </div>
               <div class="col-6 text-right">
-            <span>
-              {{
-                item.voters.filter(v => v.votes.voted === "against")
-                    .length
-              }}
-              Users
-            </span>
+                <span>
+                  {{
+                    item.voters.filter(v => v.votes.voted === "against").length
+                  }}
+                  Users
+                </span>
               </div>
             </div>
 
@@ -285,9 +281,9 @@
               </div>
               <div class="col-6 text-right">
                 <b-btn
-                    @click="() => showDetails(item.id)"
-                    :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-                    class="block-rounded btn-sm"
+                  @click="() => showDetails(item.id)"
+                  :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+                  class="block-rounded btn-sm"
                 >
                   <span class="font-size-14 font-w500">
                     <font-awesome-icon icon="poll" />
@@ -296,11 +292,9 @@
                 </b-btn>
               </div>
             </div>
-
           </div>
         </div>
       </template>
-
     </data-table>
   </div>
 </template>
