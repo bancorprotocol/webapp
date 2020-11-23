@@ -2068,7 +2068,7 @@ export class EthBancorModule
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
-            ...(fee && omit(fee, ["positionId"]))
+            ...(fee && { fee: omit(fee, ["positionId"]) })
           };
         }
       );
