@@ -59,7 +59,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit, PropSync, VModel } from "vue-property-decorator";
+import {
+  Component,
+  Prop,
+  Emit,
+  PropSync,
+  VModel
+} from "vue-property-decorator";
 import { vxm } from "@/store";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MainButton from "@/components/common/Button.vue";

@@ -18,7 +18,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, PropSync, VModel } from "vue-property-decorator";
+import {
+  Component,
+  Emit,
+  Prop,
+  PropSync,
+  VModel
+} from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import SelectTokenBlock from "@/components/common/SelectTokenBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";

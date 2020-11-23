@@ -2317,6 +2317,7 @@ export class EthBancorModule
 
   @mutation updateHistoricPoolFees(newFees: PreviousPoolFee[]) {
     const currentFees = this.previousPoolFeesArr;
+    console.log("historical fees", newFees);
     this.previousPoolFeesArr = [...currentFees, ...newFees];
   }
 
