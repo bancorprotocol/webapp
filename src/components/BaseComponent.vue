@@ -1,19 +1,15 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { namespace } from "vuex-class"
+
+const general = namespace("general");
+const bancor = namespace("bancor");
+const wallet = namespace("wallet");
 
 @Component
 export default class BaseComponent extends Vue {
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser(): string {
-    return vxm.wallet.currentUser;
-  }
-
-  get currentNetwork(): string {
-    return vxm.bancor.currentNetwork;
-  }
+  @bancor.State currentNetwork!: string;
+  @general.State darkMode!: boolean;
+  @wallet.State currentUser!: string;
 }
 </script>

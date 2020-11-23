@@ -109,10 +109,6 @@ export default class SettingsMenu extends BaseComponent {
   toggleDarkMode() {
     vxm.general.toggleDarkMode();
   }
-
-  set darkMode(_: boolean) {
-    vxm.general.toggleDarkMode();
-  }
 }
 </script>
 
