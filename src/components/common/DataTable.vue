@@ -87,6 +87,7 @@ export default class DataTable extends Vue {
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
   @Prop() filterFunction?: Function;
+  @Prop() sortFunction?: Function;
 
   sortBy: string = "";
   descOrder: boolean = this.defaultOrder === "desc";
@@ -116,8 +117,15 @@ export default class DataTable extends Vue {
       filtered = items;
     }
 
-    if (sortBy) {
-      return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
+    let sorted = [];
+    const sortFunction = this.sortFunction;
+
+    if (sortFunction !== undefined) {
+      sorted = sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) =>
+        sortFunction(t, sortBy)
+      );
+    } else if (sortBy) {
+      sorted = sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
         if (
           t[sortBy] !== 0 &&
           t[sortBy] !== "0" &&
@@ -130,7 +138,9 @@ export default class DataTable extends Vue {
           else return null;
         } else return null;
       });
-    } else return filtered;
+    } else sorted = filtered;
+
+    return sorted;
   }
 
   get paginatedItems() {
