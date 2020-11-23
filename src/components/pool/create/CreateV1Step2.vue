@@ -38,9 +38,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, VModel } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import { VModel } from "@/api/helpers";
 import { CreateStep2 } from "@/views/CreateHome.vue";
 
 @Component({
