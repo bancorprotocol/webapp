@@ -47,7 +47,7 @@
     <table-pagination
       v-if="!hidePagination"
       :current-page.sync="currentPage"
-      :row-count="modifiedItems.length"
+      :row-count="filteredItems.length"
       :per-page="perPage"
     />
   </div>
@@ -59,6 +59,7 @@ import { vxm } from "@/store";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import BigNumber from "bignumber.js";
+import { defaultTableSort } from "@/api/helpers";
 
 export interface ViewTableField {
   id: number;
@@ -98,13 +99,12 @@ export default class DataTable extends Vue {
     this.sortBy = this.defaultSort ? this.defaultSort : "";
   }
 
-  get modifiedItems() {
+  get filteredItems() {
     let filtered = [];
     const items = this.items.slice();
     const filter = this.filter;
     const filterBy = this.filterBy;
     const filterFunction = this.filterFunction;
-    const sortBy = this.sortBy;
 
     if (filterFunction !== undefined) {
       filtered = items.filter((t: any) => filterFunction(t, filter));
@@ -118,27 +118,24 @@ export default class DataTable extends Vue {
       filtered = items;
     }
 
+    return filtered;
+  }
+
+  get sortedItems() {
+    const filtered = this.filteredItems;
     let sorted = [];
+    const sortBy = this.sortBy;
     const sortFunction = this.sortFunction;
     const orderBy = this.descOrder ? "desc" : "asc";
 
-    if (sortFunction !== undefined) {
+    if (!sortBy) sorted = filtered;
+    else if (sortFunction !== undefined) {
       sorted = sort(filtered)[orderBy]((t: Item) => sortFunction(t, sortBy));
-    } else if (sortBy) {
-      sorted = sort(filtered)[orderBy]((t: Item) => {
-        if (
-          t[sortBy] !== 0 &&
-          t[sortBy] !== "0" &&
-          t[sortBy] !== undefined &&
-          t[sortBy] !== null
-        ) {
-          const value = t[sortBy];
-          const number = new BigNumber(value);
-          if (BigNumber.isBigNumber(number)) return number.toNumber();
-          else return null;
-        } else return null;
-      });
-    } else sorted = filtered;
+    } else {
+      sorted = sort(filtered)[orderBy]((t: Item) =>
+        defaultTableSort(t, sortBy)
+      );
+    }
 
     return sorted;
   }
@@ -147,7 +144,7 @@ export default class DataTable extends Vue {
     const perPage = this.perPage;
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
-    return this.modifiedItems.slice(startIndex, endIndex);
+    return this.sortedItems.slice(startIndex, endIndex);
   }
 
   isColumnSort(column: ViewTableField) {
