@@ -18,7 +18,7 @@
               v-if="column.tooltip"
               icon="info-circle"
               class="mr-1"
-              v-b-popover.hover.top="column.tooltip"
+              v-b-popover.hover.top.html="column.tooltip"
             />
             <font-awesome-icon
               v-if="column.key === sortBy"

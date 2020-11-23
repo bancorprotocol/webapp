@@ -148,7 +148,6 @@
           />
         </div>
       </template>
-
       <template #cell(votes)="{ item }">
         <div class="pl-3 container-border h-100">
           <div
@@ -366,7 +365,12 @@ export default class OpenProposals extends Vue {
         key: "votes",
         minWidth: "300px",
         maxWidth: "300px",
-        sortable: false
+        sortable: false,
+        tooltip: `<div class="pb-2">According to <a href="https://gov.bancor.network/t/bip3-governance-changes-bip-documentation-requirements-and-new-majority-and-quorum-rules/97" target="_blank" rel="noopener">BIP3</a>:</div>
+            <ul class="pl-3">
+                <li>Required quorum to pass proposals is 20% for standard BIPs & 40% for Token Whitelistings.</li>
+                <li>A 2/3rd majority (66.7%) of votes is also required for all BIP approvals.</li>
+            </ul>`
       }
     ];
   }
