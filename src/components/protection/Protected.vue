@@ -77,7 +77,7 @@
       </template>
 
       <template #cell(fees)="{ value }">
-        {{ stringifyPercentage(value.amount) }}
+        {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
       </template>
 
       <template #cell(roi)="{ value }">
@@ -264,7 +264,7 @@ export default class Protected extends Vue {
         key: "fees",
         label: "Fees",
         tooltip: "Fees your stake has earned since you entered the pool.",
-        minWidth: "90px"
+        minWidth: "110px"
       },
       {
         id: 5,
