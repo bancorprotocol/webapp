@@ -104,14 +104,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
-import { formatNumber, VModel } from "@/api/helpers";
+import { formatNumber } from "@/api/helpers";
 import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 
 @Component({

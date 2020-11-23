@@ -9,8 +9,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { Component, Vue, Prop, VModel } from "vue-property-decorator";
 
 @Component
 export default class BancorCheckbox extends Vue {
