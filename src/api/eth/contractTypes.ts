@@ -201,6 +201,7 @@ export const buildV28ConverterContract = (
   recentAverageRate: (
     tokenAddress: string
   ) => CallReturn<{ denominator: string; numerator: string }>;
+  averageRateMaxDeviation: () => CallReturn<string>;
   owner: () => CallReturn<string>;
   version: () => CallReturn<string>;
   converterType: () => CallReturn<string>;
