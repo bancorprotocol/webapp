@@ -8,7 +8,7 @@
             v-for="column in fields"
             :key="column.id"
             scope="col"
-            :class="isColumnSort(column) ? 'cursor' : ''"
+            :class="getThClass(column)"
             :style="getWidthStyle(column)"
           >
             <slot :name="`head(${column.key})`">
@@ -78,6 +78,7 @@ export interface ViewTableField {
   tooltip?: string;
   minWidth?: string;
   maxWidth?: string;
+  thClass?: string;
 }
 export interface Item {
   id: string;
@@ -160,6 +161,17 @@ export default class DataTable extends Vue {
       if (this.sortBy === column.key) this.descOrder = !this.descOrder;
       else this.sortBy = column.key;
     } else return;
+  }
+
+  getThClass(column: ViewTableField) {
+    const styles = [];
+    if (column.thClass) {
+      styles.push(column.thClass);
+    }
+    if (this.isColumnSort(column)) {
+      styles.push("cursor");
+    }
+    return styles;
   }
 
   getWidthStyle(column: ViewTableField) {
