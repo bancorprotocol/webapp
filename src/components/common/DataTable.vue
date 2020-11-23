@@ -14,6 +14,7 @@
             <slot :name="`head(${column.key})`">
               {{ column.label }}
             </slot>
+
             <font-awesome-icon
               v-if="column.tooltip"
               icon="info-circle"
@@ -119,13 +120,12 @@ export default class DataTable extends Vue {
 
     let sorted = [];
     const sortFunction = this.sortFunction;
+    const orderBy = this.descOrder ? "desc" : "asc";
 
     if (sortFunction !== undefined) {
-      sorted = sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) =>
-        sortFunction(t, sortBy)
-      );
+      sorted = sort(filtered)[orderBy]((t: Item) => sortFunction(t, sortBy));
     } else if (sortBy) {
-      sorted = sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
+      sorted = sort(filtered)[orderBy]((t: Item) => {
         if (
           t[sortBy] !== 0 &&
           t[sortBy] !== "0" &&
