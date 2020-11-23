@@ -14,12 +14,23 @@
             <slot :name="`head(${column.key})`">
               {{ column.label }}
             </slot>
-            <font-awesome-icon
-              v-if="column.tooltip"
-              icon="info-circle"
-              class="mr-1"
-              v-b-popover.hover.top.html="column.tooltip"
-            />
+            <template v-if="column.tooltip || isHtmlTooltip(column.key)">
+              <font-awesome-icon
+                :id="`tooltip-column-${column.id}`"
+                icon="info-circle"
+                class="mr-1"
+              />
+              <b-popover
+                :target="`tooltip-column-${column.id}`"
+                triggers="hover"
+                placement="bottom"
+              >
+                <slot :name="`tooltip(${column.key})`">
+                  {{ column.tooltip }}
+                </slot>
+              </b-popover>
+            </template>
+
             <font-awesome-icon
               v-if="column.key === sortBy"
               :icon="descOrder ? 'caret-down' : 'caret-up'"
@@ -157,6 +168,10 @@ export default class DataTable extends Vue {
     if (column.minWidth)
       styleString = styleString + "min-width: " + column.minWidth + ";";
     return styleString;
+  }
+
+  isHtmlTooltip(key: string) {
+    return !!this.$slots[`tooltip(${key})`];
   }
 
   @Watch("filter")
