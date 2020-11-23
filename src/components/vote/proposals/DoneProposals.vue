@@ -57,7 +57,7 @@
         </td>
         <td>
           <div class="font-size-14 font-w500">
-            {{ proposal.totalVotesFor }} {{ symbol }}
+            {{ prettifyNumber(proposal.totalVotesFor) }} {{ symbol }}
           </div>
           <div class="font-size-12 font-w500 result result--for">
             {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
@@ -65,7 +65,7 @@
         </td>
         <td>
           <div class="font-size-14 font-w500">
-            {{ proposal.totalVotesAgainst }} {{ symbol }}
+            {{ prettifyNumber(proposal.totalVotesAgainst) }} {{ symbol }}
           </div>
           <div class="font-size-12 font-w500 result result--against">
             {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
@@ -191,7 +191,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
-import { shortenEthAddress } from "@/api/helpers";
+import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import {
   ipfsViewUrl,
   Proposal
@@ -257,6 +257,10 @@ export default class DoneProposals extends Vue {
 
   get darkMode() {
     return vxm.general.darkMode;
+  }
+
+  prettifyNumber(num: string | number) {
+    return prettifyNumber(num);
   }
 
   getIPFSUrl(hash: string) {

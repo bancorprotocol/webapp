@@ -39,6 +39,7 @@
       :items="items"
       :fields="fields"
       :hide-pagination="true"
+      per-page="1000000"
     >
       <template #cell(name)="{ item }">
         <div class="font-size-14 font-w500">
@@ -183,7 +184,15 @@
                   <span class="text-uppercase">{{ item.votes.voted }}</span>
                 </span>
                 <span class="col-9 text-right">
-                  {{ item.votes.for || item.votes.against }}
+                  {{
+                    prettifyNumber(
+                      shrinkToken(
+                        item.votes.for !== "0"
+                          ? item.votes.for
+                          : item.votes.against
+                      )
+                    )
+                  }}
                   {{ symbol }}
                 </span>
               </div>
@@ -201,7 +210,11 @@
                   >
                     {{
                       (
-                        ((item.votes.for || item.votes.against) /
+                        (shrinkToken(
+                          item.votes.for !== "0"
+                            ? item.votes.for
+                            : item.votes.against
+                        ) /
                           item.totalVotes) *
                         100
                       ).toFixed(2)
@@ -333,6 +346,7 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
 import ModalVoteDetails from "@/components/modals/ModalVoteDetails.vue";
+import { shrinkToken } from "@/api/eth/helpers";
 
 @Component({
   components: {
@@ -354,6 +368,7 @@ export default class OpenProposals extends Vue {
   opened: number = -1;
 
   symbol: string = "";
+  decimals: number = 0;
   etherscanUrl: string = "";
   currentVotes: BigNumber = new BigNumber(0);
 
@@ -397,6 +412,10 @@ export default class OpenProposals extends Vue {
 
   get currentUser() {
     return vxm.wallet.currentUser;
+  }
+
+  shrinkToken(amount: string): string {
+    return shrinkToken(amount, this.decimals);
   }
 
   prettifyNumber(number: string | number): string {
@@ -478,6 +497,7 @@ export default class OpenProposals extends Vue {
   async mounted() {
     this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
+    this.decimals = await vxm.ethGovernance.getDecimals();
     await this.update();
   }
 }

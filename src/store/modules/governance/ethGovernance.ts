@@ -61,7 +61,7 @@ export interface Proposal {
   totalVotesAgainst: number;
   totalVotesFor: number;
   totalVotes: number;
-  totalVotesAvailable: number;
+  totalAvailableVotes: number;
   // votes of currently logged in user
   votes: Votes;
   metadata?: ProposalMetaData;
@@ -434,8 +434,8 @@ export class EthereumGovernance extends VuexModule.With({
     const totalVotesAgainst = parseFloat(
       shrinkToken(proposal.totalVotesAgainst, decimals)
     );
-    const totalVotesAvailable = parseFloat(
-      shrinkToken(proposal.totalVotesAvailable, decimals)
+    const totalAvailableVotes = parseFloat(
+      shrinkToken(proposal.totalAvailableVotes, decimals)
     );
 
     let metadata;
@@ -462,7 +462,7 @@ export class EthereumGovernance extends VuexModule.With({
       quorumRequired: proposal.quorumRequired,
       totalVotesAgainst,
       totalVotesFor,
-      totalVotesAvailable,
+      totalAvailableVotes,
       totalVotes: totalVotesFor + totalVotesAgainst,
       votes: <Votes>{
         for: voter
