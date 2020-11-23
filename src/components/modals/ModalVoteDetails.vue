@@ -64,10 +64,6 @@
         </a>
       </template>
 
-      <template #head(weight)>
-        <div class="text-right">Amount</div>
-      </template>
-
       <template #cell(weight)="data">
         <div class="text-right">
           {{
@@ -83,12 +79,8 @@
 
       <template #cell(voted)="data">
         <div class="text-uppercase" :class="getVoteClass(data.value)">
-          {{ data.value }}
+          {{ data.value ? "FOR" : "AGAINST" }}
         </div>
-      </template>
-
-      <template #head(percentOfTotal)>
-        <div class="text-right">% of Total</div>
       </template>
 
       <template #cell(percentOfTotal)="data">
@@ -135,39 +127,41 @@ export default class ModalVoteDetails extends Vue {
 
   fields: ViewTableField[] = [
     {
-      id: 0,
+      id: 1,
       key: "index",
       label: "#",
       sortable: true
     },
     {
-      id: 1,
+      id: 2,
       key: "account",
       label: "User Wallet",
       sortable: true
     },
     {
-      id: 2,
+      id: 3,
       key: "weight",
       label: "Amount",
-      sortable: true
+      sortable: true,
+      thClass: "text-right"
     },
     {
-      id: 3,
+      id: 4,
       key: "voted",
       label: "Vote",
       sortable: true
     },
     {
-      id: 4,
+      id: 5,
       key: "percentOfTotal",
       label: "% of Total",
-      sortable: true
+      sortable: true,
+      thClass: "text-right"
     }
   ];
 
-  getVoteClass(vote: string) {
-    return vote === "FOR" ? "voted-for" : "voted-against";
+  getVoteClass(vote: boolean) {
+    return vote ? "voted-for" : "voted-against";
   }
 
   getVoters() {
@@ -178,7 +172,7 @@ export default class ModalVoteDetails extends Vue {
         percentOfTotal: this.calculatePercentOfTotal(
           v.votes.for !== "0" ? v.votes.for : v.votes.against
         ),
-        voted: v.votes.voted?.toUpperCase(),
+        voted: v.votes.voted === "for",
         weight: v.votes.for !== "0" ? v.votes.for : v.votes.against
       };
     });
