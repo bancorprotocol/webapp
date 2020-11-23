@@ -158,13 +158,56 @@ import {
   miningTknReward
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
-import { concatMap, filter } from "rxjs/operators";
+import {
+  buffer,
+  concatMap,
+  filter,
+  map,
+  scan,
+  tap,
+  first as firstItem,
+  delay
+} from "rxjs/operators";
 import Web3 from "web3";
 
 const currentBlock$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
+const bufferToggle$ = new Subject();
 
-combineLatest([currentBlock$, convertersAndAnchors$])
+
+convertersAndAnchors$
+  .pipe(firstItem(), delay(1))
+  .subscribe(() => bufferToggle$.next());
+
+const bufferedAnchorsAndConverters$ = convertersAndAnchors$.pipe(
+  buffer(bufferToggle$),
+  scan(
+    (acc, item) => {
+      const allData = [...acc.data, ...item];
+
+      const sortedData = sortAlongSide(
+        allData,
+        x => x.anchorAddress,
+        priorityEthPools
+      );
+      const toEmit = sortedData[0];
+
+      return {
+        data: sortedData.slice(1),
+        toEmit
+      };
+    },
+    {
+      data: [] as ConverterAndAnchor[],
+      // @ts-ignore
+      toEmit: (undefined as ConverterAndAnchor)!
+    }
+  ),
+  filter(x => Boolean(x.toEmit)),
+  map(x => x.toEmit)
+);
+
+combineLatest([currentBlock$, bufferedAnchorsAndConverters$])
   .pipe(
     concatMap(([currentBlock, converterAndAnchor]) => {
       const blockYesterday = rewindBlocksByDays(currentBlock, 1);
@@ -176,6 +219,7 @@ combineLatest([currentBlock$, convertersAndAnchors$])
         blockYesterday
       );
     }),
+    tap(() => bufferToggle$.next()),
     filter(feeEvents => feeEvents.length > 0)
   )
   .subscribe(fees => {
