@@ -18,17 +18,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
-
+import { Component, Prop } from "vue-property-decorator";
 import ProgressBar from "@/components/common/ProgressBar.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     ProgressBar
   }
 })
-export default class ButtonProgress extends Vue {
+export default class ButtonProgress extends BaseComponent {
   @Prop() title?: string;
   @Prop() selected?: boolean;
   @Prop() type?: "warn" | "error" | "info";
@@ -37,10 +36,6 @@ export default class ButtonProgress extends Vue {
 
   get percentageValue() {
     return `${(+(this.percentage || 0))?.toFixed(1)}%`.replace(".0%", "%");
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

@@ -74,13 +74,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ProtectableLiquidity from "@/components/protection/ProtectableLiquidity.vue";
 import Protected from "@/components/protection/Protected.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import Claim from "@/components/protection/Claim.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -91,16 +92,12 @@ import Claim from "@/components/protection/Claim.vue";
     ProtectableLiquidity
   }
 })
-export default class LiquidityProtectionSummary extends Vue {
+export default class LiquidityProtectionSummary extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
 
   get loading() {
     return vxm.ethBancor.loadingPools;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

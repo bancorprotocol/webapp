@@ -25,13 +25,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch, VModel } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop, Watch, VModel } from "vue-property-decorator";
 import TableHeader, {
   ViewTableFields
 } from "@/components/common/TableHeader.vue";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -39,7 +39,7 @@ import sort from "fast-sort";
     TablePagination
   }
 })
-export default class DataTable extends Vue {
+export default class DataTable extends BaseComponent {
   @Prop() fields!: ViewTableFields[];
   @Prop() items!: any[];
   @VModel() paginatedItems!: any[];
@@ -78,10 +78,6 @@ export default class DataTable extends Vue {
   @Watch("items")
   updateItems() {
     this.modifyItems();
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   mounted() {

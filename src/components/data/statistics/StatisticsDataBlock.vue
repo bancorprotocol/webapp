@@ -23,18 +23,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class StatisticsDataBlock extends Vue {
+export default class StatisticsDataBlock extends BaseComponent {
   @Prop(String) title!: string;
   @Prop(String) value!: string;
   @Prop(Number) percentage?: number;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

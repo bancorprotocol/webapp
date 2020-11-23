@@ -7,19 +7,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class VersionBadge extends Vue {
+export default class VersionBadge extends BaseComponent {
   @Prop() version!: 1 | 2;
 
   get versionString() {
     return "V" + this.version;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

@@ -185,7 +185,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -196,6 +196,7 @@ import {
   ipfsViewUrl,
   Proposal
 } from "@/store/modules/governance/ethGovernance";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -204,7 +205,7 @@ import {
     MainButton
   }
 })
-export default class DoneProposals extends Vue {
+export default class DoneProposals extends BaseComponent {
   @Prop() proposals?: Proposal[];
   symbol: string = "";
   etherscanUrl: string = "";
@@ -253,10 +254,6 @@ export default class DoneProposals extends Vue {
         maxWidth: "10px"
       }
     ];
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   getIPFSUrl(hash: string) {

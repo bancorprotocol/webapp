@@ -75,8 +75,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Emit, VModel } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -85,6 +84,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -95,7 +95,7 @@ import BigNumber from "bignumber.js";
     ModalPoolSelect
   }
 })
-export default class TokenInputField extends Vue {
+export default class TokenInputField extends BaseComponent {
   @Prop() label!: string;
   @Prop() token?: ViewReserve;
   @Prop() pool?: ViewRelay;
@@ -146,14 +146,6 @@ export default class TokenInputField extends Vue {
 
   openModal() {
     this.modal = true;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 }
 </script>

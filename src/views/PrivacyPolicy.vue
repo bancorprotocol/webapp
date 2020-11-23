@@ -21,17 +21,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class PrivacyPolicy extends Vue {
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
+export default class PrivacyPolicy extends BaseComponent {
   get headingsMode() {
-    return vxm.general.darkMode ? "headings-dark" : "headings-light";
+    return this.darkMode ? "headings-dark" : "headings-light";
   }
 
   get title() {

@@ -1,5 +1,4 @@
 import { createModule, mutation, action } from "vuex-class-component";
-// import i18n from "@/i18n";
 import { getCountryCode } from "@/api/helpers";
 
 const VuexModule = createModule({

@@ -28,19 +28,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop } from "vue-property-decorator";
 import { ViewToken, ViewRelay } from "@/types/bancor";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class ActionButtons extends Vue {
+export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
   @Prop({ default: false }) small!: boolean;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 
   goToPool() {
     if (this.pool!.whitelisted) {

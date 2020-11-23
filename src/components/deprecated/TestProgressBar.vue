@@ -44,10 +44,6 @@ export default class TestProgressBar extends Vue {
     await this.getUserCountry();
     console.log("Action performed: ", this.countryCode);
   }
-
-  // get darkMode() {
-  // return vxm.general.darkMode;
-  // }
 }
 </script>
 
