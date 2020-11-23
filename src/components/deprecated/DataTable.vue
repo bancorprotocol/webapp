@@ -1,6 +1,6 @@
 <template>
   <div class="table-responsive">
-    <table :class="darkMode ? 'dark-table' : 'table'">
+    <table>
       <table-header
         :fields="fields"
         :sort-by.sync="sortBy"
@@ -26,12 +26,10 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { vxm } from "@/store";
 import TableHeader, {
   ViewTableFields
-} from "@/components/common/TableHeader.vue";
-import TablePagination from "@/components/common/TablePagination.vue";
-import { VModel } from "@/api/helpers";
+} from "@/components/deprecated/TableHeader.vue";
+import TablePagination from "@/components/deprecated/TablePagination.vue";
 import sort from "fast-sort";
 
 @Component({
@@ -42,15 +40,15 @@ import sort from "fast-sort";
 })
 export default class DataTable extends Vue {
   @Prop() fields!: ViewTableFields[];
-  @Prop() items!: any[];
-  @VModel() paginatedItems!: any[];
+  @Prop() items!: any[];  
   @Prop() filter!: string;
   @Prop() filterBy!: string;
   @Prop() defaultSort!: string;
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
-  @Prop({ default: false }) hidePagination!: boolean;
+  @Prop({ default: false }) hidePagination!: boolean;  
 
+  paginatedItems: any[] = [];
   sortBy: string = this.defaultSort;
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
@@ -79,10 +77,6 @@ export default class DataTable extends Vue {
   @Watch("items")
   updateItems() {
     this.modifyItems();
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   mounted() {

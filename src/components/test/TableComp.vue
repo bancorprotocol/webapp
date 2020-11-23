@@ -1,36 +1,39 @@
 <template>
   <div class="table-responsive">
+    <div id="r2-1">dfd</div>
     <data-table   
-      :items="proposals"
+      :items="items"
       :fields="fields"
       default-sort="to"
       :hide-pagination="true"
     >
       <template
-        v-for="field in fields"
+        v-for="field in items"
         class="font-w500 font-size-14 aling-rows-cells"          
         >
         <tr
           :key="'r1-' + field.id"
+          :id="'r1-' + field.id"
           class="align-rows-cells cursor"
         >
           <td>
             {{ field.id }}
           </td>
-          <td class="font-size-14 font-w500">
+          <td style="width: 120px">
             {{ field.name }}
           </td>
-          <td
-          class="result"                
-          >
-            Approved
+          <td class="result">
+            {{ field.result }}
           </td>
           <td>
             {{ field.totalVotesFor }}            
           </td>
           <td>            
             {{ field.totalVotesAgainst }}            
-          </td>                        
+          </td>
+          <td>
+            <button @click="clickAction(field.id)">Click</button>
+          </td>  
         </tr>            
         </template>      
     </data-table>
@@ -38,13 +41,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import {
-  ViewTableFields
-} from "@/components/common/TableHeader.vue";
+import { Component, Vue, Prop, Watch, Emit } from "vue-property-decorator";
+
 import DataTable from "@/components/deprecated/DataTable.vue";
-import { VModel } from "@/api/helpers";
 import sort from "fast-sort";
+
+interface ViewTableFields {
+  label: string;
+  key?: string;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+}
 
 @Component({
   components: {
@@ -52,6 +60,8 @@ import sort from "fast-sort";
   }
 })
 export default class TableComp extends Vue {
+  @Prop() private items!: any[];
+
   get fields(): ViewTableFields[] {
     return [
       {
@@ -61,39 +71,33 @@ export default class TableComp extends Vue {
         maxWidth: "16px"
       },
       {
-        label: "Details",
-        key: ""
+        label: "Name",
+        key: "name"
       },
       {
         label: "Result",
-        key: "",
+        key: "result",
         maxWidth: "120px",
         minWidth: "120px"
       },
       {
-        label: "Votes for",
-        key: "votesFor",
+        label: "Total Votes for",
+        key: "totalVotesFor",
         maxWidth: "140px",
         minWidth: "140px"
       },
       {
-        label: "Votes against",
-        key: "votesAgainst",
+        label: "Total Votes against",
+        key: "totalVotesAgainst",
         maxWidth: "140px",
         minWidth: "140px"
-      },
-      {
-        label: "Vote start",
-        key: "startDate",
-        maxWidth: "120px",
-        minWidth: "120px"
-      },
-      {
-        label: "",
-        key: "",
-        maxWidth: "10px"
-      }
-    ];
+      }      
+    ];    
+  }
+
+  @Emit("click")
+  clickAction(id: number) {
+    return id;
   }
 }
 </script>
