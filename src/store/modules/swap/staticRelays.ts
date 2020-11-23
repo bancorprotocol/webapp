@@ -1595,6 +1595,8 @@ export const knownV2Anchors = [
   "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
   "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237"
 ];
+
+export const previousPoolFees: PreviousPoolFee[] = [];
 export interface PreviousPoolFee {
   oldDecFee: number;
   blockNumber: number;

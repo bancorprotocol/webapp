@@ -145,14 +145,15 @@ import {
   PreviousPoolFee,
   highCapPools,
   liquidityMiningEndTime,
-  moreStaticRelays
+  moreStaticRelays,
+  previousPoolFees
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
 import moment from "moment";
 import { getNetworkVariables } from "@/api/config";
-import { EthNetworks, getWeb3, web3 } from "@/api/web3";
+import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
 import {
   combineLatest,
@@ -272,89 +273,6 @@ interface Balance {
   balance: string;
   id: string;
 }
-
-const tokenSupplyShape = (tokenAddress: string, w3: Web3) => {
-  const contract = buildTokenContract(tokenAddress, w3);
-  return {
-    tokenContract: ORIGIN_ADDRESS,
-    supply: contract.methods.totalSupply()
-  };
-};
-
-const buildPoolRoiParams = (
-  poolToken: string,
-  poolTokenSupply: string,
-  primaryReserveToken: string,
-  primaryReserveBalance: string,
-  secondaryReserveBalance: string
-) =>
-  [
-    poolToken,
-    primaryReserveToken,
-    primaryReserveBalance,
-    new BigNumber(primaryReserveBalance).times(2).toString(),
-    poolTokenSupply,
-    secondaryReserveBalance,
-    primaryReserveBalance
-  ] as [string, string, string, string, string, string, string];
-
-const dualPoolRoiShape = (
-  protectionContractAddress: string,
-  anchor: string,
-  reserves: TokenWei[],
-  poolTokenSupply: string,
-  w3: Web3
-) => {
-  const contract = buildLiquidityProtectionContract(
-    protectionContractAddress,
-    w3
-  );
-
-  const [oneReserve, twoReserve] = reserves;
-
-  const oneParams = buildPoolRoiParams(
-    anchor,
-    poolTokenSupply,
-    oneReserve.tokenContract,
-    oneReserve.weiAmount,
-    twoReserve.weiAmount
-  );
-  const twoParams = buildPoolRoiParams(
-    anchor,
-    poolTokenSupply,
-    twoReserve.tokenContract,
-    twoReserve.weiAmount,
-    oneReserve.weiAmount
-  );
-
-  return {
-    anchor,
-    protectionAddress: ORIGIN_ADDRESS,
-    onePrimary: oneReserve.tokenContract,
-    twoPrimary: twoReserve.tokenContract,
-    oneRoi: contract.methods.poolROI(...oneParams),
-    twoRoi: contract.methods.poolROI(...twoParams)
-  };
-};
-
-const slimBalanceShape = (contractAddress: string, owner: string, w3: Web3) => {
-  const contract = buildTokenContract(contractAddress, w3);
-  const template = {
-    contract: ORIGIN_ADDRESS,
-    balance: contract.methods.balanceOf(owner)
-  };
-  return template;
-};
-
-const balanceShape = (contractAddress: string, owner: string, w3: Web3) => {
-  const contract = buildTokenContract(contractAddress, w3);
-  const template = {
-    contract: ORIGIN_ADDRESS,
-    balance: contract.methods.balanceOf(owner),
-    decimals: contract.methods.decimals()
-  };
-  return template;
-};
 
 interface PoolApr {
   poolId: string;
@@ -948,64 +866,6 @@ const buildReserveFeedsChainlink = (
 const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
-const relayShape = (converterAddress: string) => {
-  const contract = buildV28ConverterContract(converterAddress);
-  return {
-    converterAddress: ORIGIN_ADDRESS,
-    owner: contract.methods.owner(),
-    converterType: contract.methods.converterType(),
-    version: contract.methods.version(),
-    connectorTokenCount: contract.methods.connectorTokenCount(),
-    conversionFee: contract.methods.conversionFee(),
-    connectorToken1: contract.methods.connectorTokens(0),
-    connectorToken2: contract.methods.connectorTokens(1)
-  };
-};
-
-const poolTokenShape = (address: string) => {
-  const contract = buildContainerContract(address);
-  return {
-    symbol: contract.methods.symbol(),
-    decimals: contract.methods.decimals(),
-    poolTokens: contract.methods.poolTokens(),
-    contract: ORIGIN_ADDRESS
-  };
-};
-
-const v2PoolBalanceShape = (
-  contractAddress: string,
-  reserveOne: string,
-  reserveTwo: string,
-  w3: Web3
-) => {
-  const contract = buildV2Converter(contractAddress, w3);
-  return {
-    converterAddress: ORIGIN_ADDRESS,
-    primaryReserveToken: contract.methods.primaryReserveToken(),
-    secondaryReserveToken: contract.methods.secondaryReserveToken(),
-    reserveOne,
-    reserveTwo,
-    reserveOnePoolToken: contract.methods.poolToken(reserveOne),
-    reserveTwoPoolToken: contract.methods.poolToken(reserveTwo),
-    reserveOneStakedBalance: contract.methods.reserveStakedBalance(reserveOne),
-    reserveTwoStakedBalance: contract.methods.reserveStakedBalance(reserveTwo),
-    effectiveReserveWeights: contract.methods.effectiveReserveWeights()
-  };
-};
-
-const liquidityProtectionShape = (contractAddress: string, w3: Web3) => {
-  const contract = buildLiquidityProtectionContract(contractAddress, w3);
-  return {
-    minProtectionDelay: contract.methods.minProtectionDelay(),
-    maxProtectionDelay: contract.methods.maxProtectionDelay(),
-    lockDuration: contract.methods.lockDuration(),
-    networkToken: contract.methods.networkToken(),
-    govToken: contract.methods.govToken(),
-    maxSystemNetworkTokenAmount: contract.methods.maxSystemNetworkTokenAmount(),
-    maxSystemNetworkTokenRatio: contract.methods.maxSystemNetworkTokenRatio()
-  };
-};
-
 const calculatePercentIncrease = (
   small: number | string,
   big: number | string
@@ -1376,54 +1236,6 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
   return { smartTokens, poolTokenAddresses };
 };
 
-const tokenShape = (contractAddress: string) => {
-  const contract = buildTokenContract(contractAddress);
-  const template = {
-    contract: ORIGIN_ADDRESS,
-    symbol: contract.methods.symbol(),
-    decimals: contract.methods.decimals()
-  };
-  return template;
-};
-
-const reserveBalanceShape = (
-  contractAddress: string,
-  reserves: string[],
-  w3: Web3
-) => {
-  const contract = buildConverterContract(contractAddress, w3);
-  const [reserveOne, reserveTwo] = reserves;
-  return {
-    converterAddress: ORIGIN_ADDRESS,
-    reserveOneAddress: reserveOne,
-    reserveTwoAddress: reserveTwo,
-    reserveOne: contract.methods.getConnectorBalance(reserveOne),
-    reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
-  };
-};
-
-const protectedReservesShape = (
-  storeAddress: string,
-  anchorAddress: string,
-  reserveOneAddress: string,
-  reserveTwoAddress: string
-) => {
-  const contract = buildLiquidityProtectionStoreContract(storeAddress);
-  return {
-    anchorAddress,
-    reserveOneAddress,
-    reserveTwoAddress,
-    reserveOneProtected: contract.methods.totalProtectedReserveAmount(
-      anchorAddress,
-      reserveOneAddress
-    ),
-    reserveTwoProtected: contract.methods.totalProtectedReserveAmount(
-      anchorAddress,
-      reserveTwoAddress
-    )
-  };
-};
-
 interface RegisteredContracts {
   BancorNetwork: string;
   BancorConverterRegistry: string;
@@ -1670,7 +1482,7 @@ export class EthBancorModule
       maxSystemNetworkTokenRatio: settings.maxSystemNetworkTokenRatio,
       maxSystemNetworkTokenAmount: settings.maxSystemNetworkTokenAmount
     } as LiquidityProtectionSettings;
-    if (this.isAuthenticated) {
+    if (this.currentUser) {
       this.fetchAndSetTokenBalances([newSettings.govToken]);
     }
     return newSettings;
@@ -5278,8 +5090,7 @@ export class EthBancorModule
     const v1RelayShapes = v1Relays.map(relay =>
       reserveBalanceShape(
         relay.contract,
-        relay.reserves.map(r => r.contract),
-        w3
+        relay.reserves.map(r => r.contract)
       )
     );
     const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
@@ -5426,7 +5237,7 @@ export class EthBancorModule
       groupsOfShapes: [
         tokenAddressesMissing.map(tokenShape),
         verifiedV1Pools.map(v1Pool =>
-          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves, w3)
+          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
         ),
         verifiedV2Pools.map(pool =>
           v2PoolBalanceShape(
@@ -6269,7 +6080,7 @@ export class EthBancorModule
           const converters = await getConvertersByAnchors({
             anchorAddresses,
             converterRegistryAddress,
-            network: this.currentNetwork
+            web3
           });
           return zipAnchorAndConverters(anchorAddresses, converters);
         })()
@@ -6461,9 +6272,8 @@ export class EthBancorModule
         .flat(1) as string[],
       compareString
     );
-    const tokenAddresses = await this.addPoolsBulk(passedSyncPools);
     if (this.currentUser) {
-      this.fetchAndSetTokenBalances(uniqWith(tokenAddresses, compareString));
+      this.fetchAndSetTokenBalances(uniqueTokenAddreses);
     }
     this.addAprsToPools();
     this.addLiqMiningAprsToPools();
@@ -6620,14 +6430,13 @@ export class EthBancorModule
     const reservesShapes = poolsToCalculate.map(pool =>
       reserveBalanceShape(
         pool.contract,
-        pool.reserves.map(reserve => reserve.contract),
-        w3
+        pool.reserves.map(reserve => reserve.contract)
       )
     );
 
     const [tokenSupplys, reserveBalances] = ((await this.multi({
       groupsOfShapes: [
-        poolsToCalculate.map(pool => tokenSupplyShape(pool.id, w3)),
+        poolsToCalculate.map(pool => tokenSupplyShape(pool.id)),
         reservesShapes
       ],
       blockHeight: weekAgo
@@ -6685,8 +6494,7 @@ export class EthBancorModule
               weiAmount: reserves.reserveTwo
             }
           ],
-          poolTokenSupply,
-          w3
+          poolTokenSupply
         );
       });
 

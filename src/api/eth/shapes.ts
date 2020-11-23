@@ -8,11 +8,12 @@ import {
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract
 } from "@/api/eth/contractTypes";
-import { compareString, EthNetworks } from "../helpers";
+import { EthNetworks } from "@/api/web3";
+import { compareString } from "../helpers";
 import { getWeb3 } from "../web3";
 import BigNumber from "bignumber.js";
-import { TokenWei } from "@/types/bancor";
 import { knownV2Anchors } from "@/store/modules/swap/staticRelays";
+import { TokenWei } from "@/types/bancor";
 
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
@@ -97,13 +98,9 @@ export const dualPoolRoiShape = (
   protectionContractAddress: string,
   anchor: string,
   reserves: TokenWei[],
-  poolTokenSupply: string,
-  network: EthNetworks
+  poolTokenSupply: string
 ) => {
-  const contract = buildLiquidityProtectionContract(
-    protectionContractAddress,
-    getWeb3(network)
-  );
+  const contract = buildLiquidityProtectionContract(protectionContractAddress);
 
   const [oneReserve, twoReserve] = reserves;
 
