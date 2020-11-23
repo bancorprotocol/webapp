@@ -126,7 +126,7 @@ export default class TablePools extends Vue {
         label: "Rewards",
         key: "aprMiningRewards",
         tooltip:
-          "Estimated APR based on weekly BNT Liquidity Mining rewards (pending governance vote). Counter indicates time until 12-week rewards cycle concludes.",
+          "Estimated APR based on the maximum (2x multiplier) weekly BNT Liquidity Mining rewards. Counter indicates time until 12-week rewards cycle concludes. Rewards are pending governance.",
         minWidth: "150px"
       },
       {

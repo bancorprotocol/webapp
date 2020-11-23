@@ -156,12 +156,12 @@ export default class PoolActionsRemoveV1 extends Vue {
 
   res: any = null;
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get currentUser() {
+    return vxm.wallet.currentUser;
   }
 
   async initAction() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }
@@ -260,13 +260,13 @@ export default class PoolActionsRemoveV1 extends Vue {
     return vxm.general.darkMode;
   }
 
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   async onAuthChange() {
     await this.fetchBalances();
   }
 
   async fetchBalances() {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
     const res = await vxm.bancor.getUserBalances(this.pool.id);
     if (this.pool.reserves[0].id === res.maxWithdrawals[0].id) {
       this.balance1 = res.maxWithdrawals[0].amount;

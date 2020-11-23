@@ -8,13 +8,14 @@
       filter-by="stake"
       :filter-function="doFilter"
       default-sort="currentCoverageDec"
+      default-order="asc"
     >
       <template #cell(stake)="{ value }">
         <div>
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
         <div
-          v-if="value.usdValue !== undefined"
+          v-if="value && value.usdValue !== undefined"
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
@@ -45,7 +46,9 @@
         </div>
         <span
           v-if="
-            value.usdValue !== undefined && typeof value.amount !== 'undefined'
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
@@ -64,7 +67,9 @@
         </div>
         <span
           v-if="
-            value.usdValue !== undefined && typeof value.amount !== 'undefined'
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"

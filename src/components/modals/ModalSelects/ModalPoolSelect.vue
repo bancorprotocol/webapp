@@ -17,10 +17,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Emit, Prop } from "vue-property-decorator";
+import { Component, Vue, Emit, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
-import { VModel } from "@/api/helpers";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 
