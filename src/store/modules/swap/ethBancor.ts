@@ -174,7 +174,6 @@ const currentBlock$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
 const bufferToggle$ = new Subject();
 
-
 convertersAndAnchors$
   .pipe(firstItem(), delay(1))
   .subscribe(() => bufferToggle$.next());
@@ -6569,23 +6568,10 @@ export class EthBancorModule
   }
 
   @action async checkFees(pools: Relay[]) {
-    console.count("checkFees");
-    console.log("asked to check", pools);
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
-
-    const relaysList = sortAlongSide(
-      pools.filter(
-        p =>
-          relaysByLiqDepth.find(r => compareString(r.id, p.id))?.liqDepth ||
-          0 > 0
-      ),
-      relay => relay.id,
-      relaysByLiqDepth.map(relay => relay.id)
-    );
-
-    const convertersAndAnchors: ConverterAndAnchor[] = relaysList.map(
-      relay => ({ anchorAddress: relay.id, converterAddress: relay.contract })
-    );
+    const convertersAndAnchors: ConverterAndAnchor[] = pools.map(relay => ({
+      anchorAddress: relay.id,
+      converterAddress: relay.contract
+    }));
     convertersAndAnchors.forEach(converterAndAnchor =>
       convertersAndAnchors$.next(converterAndAnchor)
     );
