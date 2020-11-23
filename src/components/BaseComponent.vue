@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { namespace } from "vuex-class"
+import { namespace } from "vuex-class";
 
 const general = namespace("general");
 const bancor = namespace("bancor");
