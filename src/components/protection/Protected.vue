@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="protected-table">
     <data-table
       v-if="protectedLiquidity.length"
       :fields="fields"
@@ -262,13 +262,13 @@ export default class Protected extends BaseComponent {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      // {
-      //   id: 4,
-      //   key: "fees",
-      //   label: "Fees",
-      //   tooltip: "Fees your stake has earned since you entered the pool.",
-      //   minWidth: "110px"
-      // },
+      {
+        id: 4,
+        key: "fees",
+        label: "Fees",
+        tooltip: "Fees your stake has earned since you entered the pool.",
+        minWidth: "110px"
+      },
       {
         id: 5,
         key: "roi",
@@ -324,4 +324,11 @@ export default class Protected extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+#protected-table {
+  table {
+    display: block;
+    min-height: 300px;
+  }
+}
+</style>
