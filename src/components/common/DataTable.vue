@@ -8,18 +8,29 @@
             v-for="column in fields"
             :key="column.id"
             scope="col"
-            :class="isColumnSort(column) ? 'cursor' : ''"
+            :class="getThClass(column)"
             :style="getWidthStyle(column)"
           >
             <slot :name="`head(${column.key})`">
               {{ column.label }}
             </slot>
-            <font-awesome-icon
-              v-if="column.tooltip"
-              icon="info-circle"
-              class="mr-1"
-              v-b-popover.hover.top="column.tooltip"
-            />
+            <template v-if="column.tooltip || isHtmlTooltip(column.key)">
+              <font-awesome-icon
+                :id="`tooltip-column-${column.id}`"
+                icon="info-circle"
+                class="mr-1"
+              />
+              <b-popover
+                :target="`tooltip-column-${column.id}`"
+                triggers="hover"
+                placement="bottom"
+              >
+                <slot :name="`tooltip(${column.key})`">
+                  {{ column.tooltip }}
+                </slot>
+              </b-popover>
+            </template>
+
             <font-awesome-icon
               v-if="column.key === sortBy"
               :icon="descOrder ? 'caret-down' : 'caret-up'"
@@ -67,6 +78,7 @@ export interface ViewTableField {
   tooltip?: string;
   minWidth?: string;
   maxWidth?: string;
+  thClass?: string;
 }
 export interface Item {
   id: string;
@@ -151,12 +163,27 @@ export default class DataTable extends BaseComponent {
     } else return;
   }
 
+  getThClass(column: ViewTableField) {
+    const styles = [];
+    if (column.thClass) {
+      styles.push(column.thClass);
+    }
+    if (this.isColumnSort(column)) {
+      styles.push("cursor");
+    }
+    return styles;
+  }
+
   getWidthStyle(column: ViewTableField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)
       styleString = styleString + "min-width: " + column.minWidth + ";";
     return styleString;
+  }
+
+  isHtmlTooltip(key: string) {
+    return !!this.$slots[`tooltip(${key})`];
   }
 
   @Watch("filter")
