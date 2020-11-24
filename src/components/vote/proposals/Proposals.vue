@@ -9,7 +9,10 @@
       <div class="float-right d-flex mt-3 mr-3">
         <a href="https://discord.gg/EHK8wHbgau" target="_blank" class="mr-2">
           <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
-            <font-awesome-icon :icon="['fab', 'discord']" />
+            <font-awesome-icon
+              :icon="['fab', 'discord']"
+              class="text-muted-light"
+            />
             <span class="d-none d-lg-block ml-2">Discord</span>
           </b-btn>
         </a>

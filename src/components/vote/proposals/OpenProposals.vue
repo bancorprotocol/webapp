@@ -298,7 +298,10 @@
                   class="block-rounded btn-sm"
                 >
                   <span class="font-size-14 font-w500">
-                    <font-awesome-icon icon="poll" />
+                    <font-awesome-icon
+                      icon="poll"
+                      class="text-muted-light mr-1"
+                    />
                     Breakdown
                   </span>
                 </b-btn>
