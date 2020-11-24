@@ -61,7 +61,6 @@
 <script lang="ts">
 import {
   Component,
-  Vue,
   Prop,
   Emit,
   PropSync,
@@ -70,11 +69,12 @@ import {
 import { vxm } from "@/store";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MainButton from "@/components/common/Button.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { ModalBase, MainButton }
 })
-export default class ModalSelect extends Vue {
+export default class ModalSelect extends BaseComponent {
   @VModel() show!: boolean;
   @Prop({ default: [] }) items!: any[];
   @Prop({ type: String, default: "" }) title!: string;
@@ -111,10 +111,6 @@ export default class ModalSelect extends Vue {
 
   get showAmount() {
     return this.currentStep * this.perStep;
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
   }
 }
 </script>

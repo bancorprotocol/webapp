@@ -333,7 +333,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
@@ -345,6 +345,7 @@ import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 import ModalVoteDetails from "@/components/modals/ModalVoteDetails.vue";
 import { shrinkToken } from "@/api/eth/helpers";
 
@@ -360,7 +361,7 @@ import { shrinkToken } from "@/api/eth/helpers";
     ModalNotEnoughTokens
   }
 })
-export default class OpenProposals extends Vue {
+export default class OpenProposals extends BaseComponent {
   @Prop() proposals?: Proposal[];
 
   notEnoughTokensModal = false;
@@ -404,14 +405,6 @@ export default class OpenProposals extends Vue {
         sortable: false
       }
     ];
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   shrinkToken(amount: string): string {

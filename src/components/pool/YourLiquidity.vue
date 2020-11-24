@@ -89,7 +89,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { PoolTokenPosition, ViewReserve } from "@/types/bancor";
@@ -98,6 +98,7 @@ import { formatNumber } from "@/api/helpers";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -108,17 +109,13 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
     MainButton
   }
 })
-export default class YourLiquidity extends Vue {
+export default class YourLiquidity extends BaseComponent {
   search = "";
 
   get positions(): PoolTokenPosition[] {
     return vxm.bancor.poolTokenPositions.filter((x: PoolTokenPosition) =>
       this.getPoolLabel(x.relay.reserves).includes(this.search.toUpperCase())
     );
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   get noLiquidityFoundMsg() {
@@ -171,10 +168,6 @@ export default class YourLiquidity extends Vue {
         account: id
       }
     });
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

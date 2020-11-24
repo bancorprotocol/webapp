@@ -18,10 +18,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -29,17 +30,13 @@ import TableTransactions from "@/components/data/transactiontables/TableTransact
     MultiInputField
   }
 })
-export default class TransactionTables extends Vue {
+export default class TransactionTables extends BaseComponent {
   search: string = "";
 
   get itemsSwap() {
     const liquidityHistory = vxm.bancor.liquidityHistory;
     if (liquidityHistory.loading) return [];
     return liquidityHistory.data;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

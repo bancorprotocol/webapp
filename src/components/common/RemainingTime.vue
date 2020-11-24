@@ -5,22 +5,22 @@
     <div class="remaining-time__progress" :style="{ width: percentage }"></div>
     <div v-if="remainingTime !== 0" class="remaining-time__content">
       <font-awesome-icon
-        v-if="!isUnlook && remainingPercentage < 1"
+        v-if="!isUnlock && remainingPercentage < 1"
         icon="clock"
         class="remaining-time__icon"
       />
       <span class="remaining-time__progress-text">{{ remaining }}</span>
-      <span v-if="isUnlook" class="remaining-time__desc">left to unlock</span>
+      <span v-if="isUnlock" class="remaining-time__desc">left to unlock</span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class RemainingTime extends Vue {
+export default class RemainingTime extends BaseComponent {
   @Prop() from?: number;
   @Prop() to?: number;
   @Prop() variant?: string;
@@ -42,7 +42,7 @@ export default class RemainingTime extends Vue {
     }
   }
 
-  get isUnlook() {
+  get isUnlock() {
     return this.variant === "unlock";
   }
 
@@ -57,7 +57,7 @@ export default class RemainingTime extends Vue {
     if (this.remainingTime < 0) {
       return "Vote Ended";
     }
-    if (this.isUnlook) {
+    if (this.isUnlock) {
       const diff = (this.to || 0) - Date.now();
       const day = 24 * 60 * 60 * 1000;
       let remaining = "";
@@ -80,10 +80,6 @@ export default class RemainingTime extends Vue {
       ${this.showSeconds ? `${Math.floor(s % 60) + 1}s` : ""}
       left
     `;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   updateTime() {

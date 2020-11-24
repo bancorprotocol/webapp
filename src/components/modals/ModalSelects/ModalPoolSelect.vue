@@ -17,16 +17,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Emit, Prop, VModel } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import { ViewRelay } from "@/types/bancor";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { ModalSelect, SelectPoolRow }
 })
-export default class ModalPoolSelect extends Vue {
+export default class ModalPoolSelect extends BaseComponent {
   @VModel({ type: Boolean }) modal!: boolean;
   @Prop() pools!: ViewRelay[];
   @Prop({ default: false }) showTokenBalance!: boolean;
@@ -55,10 +55,6 @@ export default class ModalPoolSelect extends Vue {
     console.log("modal pool select is emitting itself..?", id);
     this.modal = false;
     return id;
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
   }
 }
 </script>

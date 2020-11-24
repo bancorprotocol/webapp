@@ -14,16 +14,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from "vue-property-decorator";
+import { Component, Prop, Emit } from "vue-property-decorator";
 import { PoolTokenPosition, ViewRelay, ViewReserve } from "@/types/bancor";
 import { vxm } from "@/store";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { prettifyNumber } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { PoolLogos }
 })
-export default class SelectPoolRow extends Vue {
+export default class SelectPoolRow extends BaseComponent {
   @Prop() pool!: ViewRelay;
   @Prop({ default: false }) showTokenBalance!: boolean;
 
@@ -55,10 +56,6 @@ export default class SelectPoolRow extends Vue {
 
   getPoolLabel(reserves: ViewReserve[]) {
     return `${reserves[0].symbol}/${reserves[1].symbol}`;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

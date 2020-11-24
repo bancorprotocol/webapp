@@ -84,7 +84,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -97,6 +97,7 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -110,7 +111,7 @@ import BigNumber from "bignumber.js";
     MainButton
   }
 })
-export default class WithdrawProtectionSingle extends Vue {
+export default class WithdrawProtectionSingle extends BaseComponent {
   @Prop() pool!: ViewRelay;
 
   percentage: string = "50";
@@ -237,10 +238,6 @@ export default class WithdrawProtectionSingle extends Vue {
       : this.txBusy
       ? "processing ..."
       : "Confirm";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

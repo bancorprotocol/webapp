@@ -96,7 +96,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -116,6 +116,7 @@ import moment from "moment";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -130,7 +131,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
     MainButton
   }
 })
-export default class AddProtectionSingle extends Vue {
+export default class AddProtectionSingle extends BaseComponent {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
@@ -210,10 +211,6 @@ export default class AddProtectionSingle extends Vue {
   get actionButtonLabel() {
     if (!this.amount) return "Enter an Amount";
     else return "Stake and Protect";
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   get disableActionButton() {
@@ -352,10 +349,6 @@ export default class AddProtectionSingle extends Vue {
       name: "AddProtectionSingle",
       params: { id }
     });
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   async loadMaxStakes() {

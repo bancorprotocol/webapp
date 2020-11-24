@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
@@ -110,6 +110,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface CreateStep1 {
   token: ViewToken | null;
@@ -140,7 +141,7 @@ export interface CreateStep2 {
     MainButton
   }
 })
-export default class CreateHomeNew extends Vue {
+export default class CreateHomeNew extends BaseComponent {
   version: 1 | 2 = 1;
   step = 1;
   modal = false;
@@ -339,10 +340,6 @@ export default class CreateHomeNew extends Vue {
     }
   }
 
-  get currentUser() {
-    return vxm.wallet.currentUser;
-  }
-
   async nextStep() {
     if (!this.currentUser) {
       //@ts-ignore
@@ -365,10 +362,6 @@ export default class CreateHomeNew extends Vue {
     this.error = "";
     this.success = null;
     this.newPoolId = "";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>
