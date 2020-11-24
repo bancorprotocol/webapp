@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="protected-table">
     <data-table
       v-if="protectedLiquidity.length"
       :fields="fields"
@@ -324,4 +324,11 @@ export default class Protected extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+#protected-table {
+  table {
+    display: block;
+    min-height: 300px;
+  }
+}
+</style>
