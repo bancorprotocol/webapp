@@ -45,23 +45,23 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Emit } from "vue-property-decorator";
+import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-
 import { ViewModalToken } from "@/types/bancor";
-import { formatNumber, VModel } from "@/api/helpers";
+import { formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 const INVALID_ADDRESS = "Invalid address";
 
 @Component({
   components: { ModalSelect, MainButton, MultiInputField, ModalBase }
 })
-export default class ModalSelectToken extends Vue {
+export default class ModalSelectToken extends BaseComponent {
   @VModel() show!: boolean;
   @Prop() tokens!: ViewModalToken[];
   @Prop({ default: false }) allowTokenAdd!: boolean;
@@ -72,7 +72,7 @@ export default class ModalSelectToken extends Vue {
   error: string = "";
 
   get isEos() {
-    return vxm.bancor.currentNetwork === "eos";
+    return this.currentNetwork === "eos";
   }
 
   @Emit("select")
@@ -121,10 +121,6 @@ export default class ModalSelectToken extends Vue {
           token.symbol.toLowerCase().includes(search.toLowerCase())
         )
       : tokens;
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
   }
 }
 </script>

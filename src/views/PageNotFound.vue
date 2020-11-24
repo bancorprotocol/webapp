@@ -30,7 +30,7 @@
     >
       <main-button
         @click="
-          $router.push({ name: 'Swap', params: { service: selectedNetwork } })
+          $router.push({ name: 'Swap', params: { service: currentNetwork } })
         "
         class="px-5 mt-2"
         label="Go to homepage"
@@ -43,24 +43,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     MainButton
   }
 })
-export default class PageNotFound extends Vue {
-  get selectedNetwork() {
-    return vxm.bancor.currentNetwork;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-}
+export default class PageNotFound extends BaseComponent {}
 </script>
 
 <style lang="scss" scoped></style>

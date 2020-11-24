@@ -30,11 +30,10 @@ import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
-import { PropOptions } from "vue";
-import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
+import { Item } from "@/components/common/DataTable.vue";
 
 export enum PositionType {
   single,
@@ -151,24 +150,6 @@ export const traverseLockedBalances = async (
   console.log(lockedBalances, "should be inspected");
   return lockedBalances;
 };
-
-export function VModel(propsArgs: PropOptions = {}) {
-  const valueKey: string = "value";
-  return createDecorator((componentOptions, key) => {
-    (componentOptions.props || ((componentOptions.props = {}) as any))[
-      valueKey
-    ] = propsArgs;
-    (componentOptions.computed || (componentOptions.computed = {}))[key] = {
-      get() {
-        return (this as any)[valueKey];
-      },
-      set(value: any) {
-        // @ts-ignore
-        this.$emit("input", value);
-      }
-    };
-  });
-}
 
 export const networkTokens = ["BNT", "USDB"];
 
@@ -1320,4 +1301,25 @@ export const formatUnixTime = (
   const dateTime = `${date} ${time}`;
 
   return { date, time, dateTime };
+};
+
+export const defaultTableSort = (
+  row: Item,
+  sortBy: string,
+  sortZero: boolean = false
+) => {
+  const value = row[sortBy];
+  let isDefined: boolean;
+  if (!sortZero) {
+    isDefined =
+      value !== 0 && value !== "0" && value !== undefined && value !== null;
+  } else {
+    isDefined = value !== undefined && value !== null;
+  }
+  const number = new BigNumber(value);
+  const isBigNumber = BigNumber.isBigNumber(number);
+  if (isBigNumber) {
+    if (isDefined) return number.toNumber();
+    else return null;
+  } else return value;
 };

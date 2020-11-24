@@ -17,13 +17,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 @Component({
   components: { PoolLogosOverlapped }
 })
-export default class LogoAmountSymbol extends Vue {
+export default class LogoAmountSymbol extends BaseComponent {
   @Prop() tokenId?: string;
   @Prop() poolId?: string;
   @Prop() amount!: string | number;
@@ -32,10 +33,6 @@ export default class LogoAmountSymbol extends Vue {
 
   get logo() {
     return vxm.bancor.token(this.tokenId!).logo;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

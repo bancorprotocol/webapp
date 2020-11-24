@@ -7,7 +7,8 @@
       :filter="search"
       filter-by="stake"
       :filter-function="doFilter"
-      default-sort="currentCoverageDec"
+      :sort-function="customSort"
+      default-sort="currentCoverage"
       default-order="asc"
     >
       <template #cell(stake)="{ value }">
@@ -46,7 +47,9 @@
         </div>
         <span
           v-if="
-            value && value.usdValue !== undefined && typeof value.amount !== 'undefined'
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
@@ -65,11 +68,17 @@
         </div>
         <span
           v-if="
-            value && value.usdValue !== undefined && typeof value.amount !== 'undefined'
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
+      </template>
+
+      <template #cell(fees)="{ value }">
+        {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
       </template>
 
       <template #cell(roi)="{ value }">
@@ -145,13 +154,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import {
   buildPoolName,
   compareString,
+  defaultTableSort,
   formatUnixTime,
   prettifyNumber
 } from "@/api/helpers";
@@ -162,6 +172,7 @@ import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -173,7 +184,7 @@ import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
     ContentBlock
   }
 })
-export default class Protected extends Vue {
+export default class Protected extends BaseComponent {
   @Prop({ default: "" }) search!: string;
 
   poolName(id: string): string {
@@ -256,7 +267,7 @@ export default class Protected extends Vue {
       //   key: "fees",
       //   label: "Fees",
       //   tooltip: "Fees your stake has earned since you entered the pool.",
-      //   minWidth: "90px"
+      //   minWidth: "110px"
       // },
       {
         id: 5,
@@ -272,7 +283,7 @@ export default class Protected extends Vue {
         label: "Apr",
         tooltip:
           "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
-        sortable: false,
+        sortable: true,
         minWidth: "100px"
       },
       {
@@ -294,13 +305,21 @@ export default class Protected extends Vue {
     ];
   }
 
-  doFilter(row: any, filter: string) {
+  doFilter(row: ViewProtectedLiquidity, filter: string) {
     return (row.stake.symbol as string)
       .toLowerCase()
       .includes(filter.toLowerCase());
   }
-  get darkMode() {
-    return vxm.general.darkMode;
+
+  customSort(row: ViewProtectedLiquidity, sortBy: string) {
+    switch (sortBy) {
+      case "apr":
+        return row.apr.day;
+      case "currentCoverage":
+        return row.coverageDecPercent;
+      default:
+        return defaultTableSort(row, sortBy, true);
+    }
   }
 }
 </script>

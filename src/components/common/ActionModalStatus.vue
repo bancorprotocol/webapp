@@ -53,20 +53,16 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Prop, Component } from "vue-property-decorator";
 import { TxResponse } from "@/types/bancor";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class ActionModalStatus extends Vue {
+export default class ActionModalStatus extends BaseComponent {
   @Prop() error?: string;
   @Prop() success?: TxResponse | null;
   @Prop({ default: "Wait for your Wallet to prompt and continue there" })
   stepDescription!: string;
-
-  get currentNetwork() {
-    return vxm.bancor.currentNetwork;
-  }
 
   get explorerName() {
     switch (this.currentNetwork) {
@@ -77,10 +73,6 @@ export default class ActionModalStatus extends Vue {
       default:
         return `Block Explorer`;
     }
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

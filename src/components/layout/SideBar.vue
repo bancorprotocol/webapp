@@ -16,10 +16,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Watch } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewSideBarLink {
   route: string;
@@ -32,7 +32,7 @@ export interface ViewSideBarLink {
 @Component({
   components: { SideBarBottom, SideBarLeft }
 })
-export default class SideBar extends Vue {
+export default class SideBar extends BaseComponent {
   selectedLink = "swap";
   links: ViewSideBarLink[] = [
     {
@@ -105,9 +105,6 @@ export default class SideBar extends Vue {
 
   openNewTab(url: string) {
     window.open(url, "_blank");
-  }
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   navigateToRoute(link: ViewSideBarLink) {

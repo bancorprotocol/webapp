@@ -18,13 +18,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, PropSync, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import {
+  Component,
+  Emit,
+  Prop,
+  PropSync,
+  VModel
+} from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import SelectTokenBlock from "@/components/common/SelectTokenBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
-import { VModel } from "@/api/helpers";
 import { ViewToken } from "@/types/bancor";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -33,7 +38,7 @@ import { ViewToken } from "@/types/bancor";
     SelectTokenBlock
   }
 })
-export default class CreateV1TokenBlock extends Vue {
+export default class CreateV1TokenBlock extends BaseComponent {
   @Prop() type?: "primary" | "secondary";
   @VModel() token?: ViewToken;
   @PropSync("percentage", { type: String }) percent!: string;
@@ -41,10 +46,6 @@ export default class CreateV1TokenBlock extends Vue {
   @Emit("remove")
   removeToken() {
     return this.token!.id;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

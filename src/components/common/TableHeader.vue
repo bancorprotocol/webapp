@@ -34,8 +34,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop, PropSync } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewTableFields {
   label: string;
@@ -46,7 +46,7 @@ export interface ViewTableFields {
 }
 
 @Component
-export default class TableHeader extends Vue {
+export default class TableHeader extends BaseComponent {
   @Prop() fields!: ViewTableFields[];
   @PropSync("sortBy", { type: String }) sortByKey!: string;
   @PropSync("descOrder", { type: Boolean }) desc!: boolean;
@@ -64,10 +64,6 @@ export default class TableHeader extends Vue {
     if (column.minWidth)
       styleString = styleString + "min-width: " + column.minWidth + ";";
     return styleString;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

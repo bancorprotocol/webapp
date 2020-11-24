@@ -141,6 +141,7 @@ import {
   highCapPools,
   liquidityMiningEndTime,
   PreviousPoolFee,
+  previousPoolFees,
   priorityEthPools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
@@ -157,13 +158,55 @@ import {
   miningTknReward
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
-import { concatMap, filter } from "rxjs/operators";
+import {
+  buffer,
+  concatMap,
+  filter,
+  map,
+  scan,
+  tap,
+  first as firstItem,
+  delay
+} from "rxjs/operators";
 import Web3 from "web3";
 
 const currentBlock$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
+const bufferToggle$ = new Subject();
 
-combineLatest([currentBlock$, convertersAndAnchors$])
+convertersAndAnchors$
+  .pipe(firstItem(), delay(1))
+  .subscribe(() => bufferToggle$.next());
+
+const bufferedAnchorsAndConverters$ = convertersAndAnchors$.pipe(
+  buffer(bufferToggle$),
+  scan(
+    (acc, item) => {
+      const allData = [...acc.data, ...item];
+
+      const sortedData = sortAlongSide(
+        allData,
+        x => x.anchorAddress,
+        priorityEthPools
+      );
+      const toEmit = sortedData[0];
+
+      return {
+        data: sortedData.slice(1),
+        toEmit
+      };
+    },
+    {
+      data: [] as ConverterAndAnchor[],
+      // @ts-ignore
+      toEmit: (undefined as ConverterAndAnchor)!
+    }
+  ),
+  filter(x => Boolean(x.toEmit)),
+  map(x => x.toEmit)
+);
+
+combineLatest([currentBlock$, bufferedAnchorsAndConverters$])
   .pipe(
     concatMap(([currentBlock, converterAndAnchor]) => {
       const blockYesterday = rewindBlocksByDays(currentBlock, 1);
@@ -175,6 +218,7 @@ combineLatest([currentBlock$, convertersAndAnchors$])
         blockYesterday
       );
     }),
+    tap(() => bufferToggle$.next()),
     filter(feeEvents => feeEvents.length > 0)
   )
   .subscribe(fees => {
@@ -2024,7 +2068,7 @@ export class EthBancorModule
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
-            ...(fee && omit(fee, ["positionId"]))
+            ...(fee && { fee: omit(fee, ["positionId"]) })
           };
         }
       );
@@ -2273,6 +2317,7 @@ export class EthBancorModule
 
   @mutation updateHistoricPoolFees(newFees: PreviousPoolFee[]) {
     const currentFees = this.previousPoolFeesArr;
+    console.log("historical fees", newFees);
     this.previousPoolFeesArr = [...currentFees, ...newFees];
   }
 
@@ -5752,7 +5797,7 @@ export class EthBancorModule
   }
 
   get previousPoolFees() {
-    return this.previousPoolFeesArr;
+    return [...this.previousPoolFeesArr, ...previousPoolFees];
   }
 
   get previousRelayBalances() {
@@ -6524,23 +6569,10 @@ export class EthBancorModule
   }
 
   @action async checkFees(pools: Relay[]) {
-    console.count("checkFees");
-    console.log("asked to check", pools);
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
-
-    const relaysList = sortAlongSide(
-      pools.filter(
-        p =>
-          relaysByLiqDepth.find(r => compareString(r.id, p.id))?.liqDepth ||
-          0 > 0
-      ),
-      relay => relay.id,
-      relaysByLiqDepth.map(relay => relay.id)
-    );
-
-    const convertersAndAnchors: ConverterAndAnchor[] = relaysList.map(
-      relay => ({ anchorAddress: relay.id, converterAddress: relay.contract })
-    );
+    const convertersAndAnchors: ConverterAndAnchor[] = pools.map(relay => ({
+      anchorAddress: relay.id,
+      converterAddress: relay.contract
+    }));
     convertersAndAnchors.forEach(converterAndAnchor =>
       convertersAndAnchors$.next(converterAndAnchor)
     );

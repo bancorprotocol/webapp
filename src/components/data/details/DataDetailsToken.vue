@@ -88,7 +88,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { ViewRelay, ViewReserve, ViewToken } from "@/types/bancor";
@@ -101,6 +101,7 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
 import TablePools from "@/components/data/pooltokentables/TablePools.vue";
 import ActionButtons from "@/components/common/ActionButtons.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 export interface TxHistoryView {
   addEvents: any[];
   conversionEvents: any[];
@@ -120,7 +121,7 @@ export interface TxHistoryView {
     MainButton
   }
 })
-export default class DataDetailsToken extends Vue {
+export default class DataDetailsToken extends BaseComponent {
   searchTx = "";
   searchTokens = "";
 
@@ -164,10 +165,6 @@ export default class DataDetailsToken extends Vue {
 
   get tokenName() {
     return this.token.name;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   get poolTableItems() {

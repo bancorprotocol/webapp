@@ -26,10 +26,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import Stake from "@/components/vote/stake/Stake.vue";
 import Proposals from "@/components/vote/proposals/Proposals.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -37,17 +38,13 @@ import Proposals from "@/components/vote/proposals/Proposals.vue";
     Proposals
   }
 })
-export default class VotePage extends Vue {
+export default class VotePage extends BaseComponent {
   get isEth() {
     return this.$route.params.service === "eth";
   }
 
   get loaded() {
     return vxm.ethGovernance.isLoaded;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   async mounted() {
