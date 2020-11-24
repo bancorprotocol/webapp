@@ -13,7 +13,7 @@ describe("dec to ppm works", () => {
 });
 
 describe("can calculate position fees", () => {
-  test("test two", async () => {
+  test("Protected Position Fee", async () => {
     const {
       originalPoolTokenAmount,
       currentPoolTokenSupply,
