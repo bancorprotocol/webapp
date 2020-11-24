@@ -642,23 +642,30 @@ const getHistoricFees = async (
   converterAddress: string,
   blockHoursAgo: number
 ): Promise<PreviousPoolFee[]> => {
-  const contract = buildV28ConverterContract(converterAddress, w3);
+  let previousPoolFees: PreviousPoolFee[] = [];
 
+  const contract = buildV28ConverterContract(converterAddress, w3);
   const options = {
     fromBlock: 0,
     toBlock: "latest"
   };
 
-  const res = await contract.getPastEvents("ConversionFeeUpdate", options);
+  try {
+    const events = await contract.getPastEvents("ConversionFeeUpdate", options);
 
-  const events = res
-    .filter(event => event.blockNumber >= blockHoursAgo)
-    .map(event => ({
-      id,
-      oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
-      blockNumber: event.blockNumber
-    }));
-  return events;
+    previousPoolFees = events
+      .filter(event => event.blockNumber >= blockHoursAgo)
+      .map(event => ({
+        id,
+        oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
+        blockNumber: event.blockNumber
+      }));
+    return previousPoolFees;
+  } catch (err) {
+    console.error(err);
+  }
+
+  return previousPoolFees;
 };
 
 const blockNumberHoursAgo = async (hours: number, w3: Web3) => {
