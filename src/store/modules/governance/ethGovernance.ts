@@ -34,7 +34,7 @@ export interface ProposalMetaData {
   revision: string;
 }
 
-interface Votes {
+export interface Votes {
   voted: undefined | "for" | "against";
   for: string;
   against: string;

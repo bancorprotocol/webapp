@@ -66,13 +66,7 @@
 
       <template #cell(weight)="data">
         <div class="text-right">
-          {{
-            formatNumber(
-              data.item.votes.for !== "0"
-                ? data.item.votes.for
-                : data.item.votes.against
-            )
-          }}
+          {{ getWeight(data.item.votes) }}
           {{ symbol }}
         </div>
       </template>
@@ -107,10 +101,14 @@ import { vxm } from "@/store/";
 import { Component, Vue, Prop, Emit, VModel } from "vue-property-decorator";
 import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
-import { Proposal, Voter } from "@/store/modules/governance/ethGovernance";
+import {
+  Proposal,
+  Voter,
+  Votes
+} from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
-import { shrinkToken } from "@/api/eth/helpers"
+import { shrinkToken } from "@/api/eth/helpers";
 
 @Component({
   components: {
@@ -161,6 +159,10 @@ export default class ModalVoteDetails extends Vue {
     }
   ];
 
+  getWeight(votes: Votes): string {
+    return this.formatNumber(votes.for !== "0" ? votes.for : votes.against);
+  }
+
   getVoteClass(vote: number) {
     return vote === 1 ? "voted-for" : "voted-against";
   }
@@ -190,9 +192,7 @@ export default class ModalVoteDetails extends Vue {
   }
 
   formatNumber(num: string) {
-    return prettifyNumber(
-      shrinkToken(num, this.decimals)
-    );
+    return prettifyNumber(shrinkToken(num, this.decimals));
   }
 
   getEtherscanUrl(account: string) {
