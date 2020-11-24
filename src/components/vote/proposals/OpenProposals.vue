@@ -293,7 +293,7 @@
               </div>
               <div class="col-6 text-right">
                 <b-btn
-                  @click="() => showDetails(item.id)"
+                  @click="showDetails(item.id)"
                   :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
                   class="block-rounded btn-sm"
                 >
