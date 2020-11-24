@@ -32,6 +32,12 @@
       class="mt-3 mb-3"
     />
 
+    <alert-block
+      v-if="priceDeviationTooHigh && !inputError && amount"
+      variant="error"
+      msg="Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds."
+    />
+
     <gray-border-block v-else-if="outputs.length" :gray-bg="true" class="my-3">
       <div>
         {{ outputs }}
@@ -139,6 +145,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
   maxStakeAmount: string = "";
   maxStakeSymbol: string = "";
+  priceDeviationTooHigh: boolean = false;
 
   loadingMaxStakes = false;
 
@@ -162,6 +169,12 @@ export default class AddProtectionSingle extends BaseComponent {
   @Watch("token")
   async onTokenChange() {
     await this.loadMaxStakes();
+    await this.loadRecentAverageRate();
+  }
+
+  @Watch("currentUser")
+  async onUserChange() {
+    await this.loadRecentAverageRate();
   }
 
   toggleReserveIndex(x: string) {
@@ -210,11 +223,13 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get actionButtonLabel() {
     if (!this.amount) return "Enter an Amount";
+    else if (this.priceDeviationTooHigh) return "Price Deviation too High";
     else return "Stake and Protect";
   }
 
   get disableActionButton() {
     if (!this.amount) return true;
+    else if (this.priceDeviationTooHigh) return true;
     else return this.inputError ? true : false;
   }
 
@@ -344,6 +359,16 @@ export default class AddProtectionSingle extends BaseComponent {
     this.stepIndex = index;
   }
 
+  async loadRecentAverageRate() {
+    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
+      relayId: this.pool.id,
+      selectedTokenAddress: this.token.contract,
+      owner: this.currentUser
+    });
+
+    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
+  }
+
   async selectPool(id: string) {
     await this.$router.replace({
       name: "AddProtectionSingle",
@@ -368,6 +393,10 @@ export default class AddProtectionSingle extends BaseComponent {
     } finally {
       this.loadingMaxStakes = false;
     }
+  }
+
+  async mounted() {
+    await this.loadRecentAverageRate();
   }
 
   async created() {

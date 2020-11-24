@@ -200,8 +200,7 @@ export const buildV28ConverterContract = (
   ) => CallReturn<{ "0": string; "1": string }>;
   recentAverageRate: (
     tokenAddress: string
-  ) => CallReturn<{ denominator: string; numerator: string }>;
-  averageRateMaxDeviation: () => CallReturn<string>;
+  ) => CallReturn<{ "0": string; "1": string }>;
   owner: () => CallReturn<string>;
   version: () => CallReturn<string>;
   converterType: () => CallReturn<string>;
@@ -299,6 +298,7 @@ export const buildLiquidityProtectionContract = (
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
   isHighTierPool: (anchor: string) => CallReturn<boolean>;
   highTierPools: () => CallReturn<string[]>;
+  averageRateMaxDeviation: () => CallReturn<string>;
   protectLiquidity: (
     anchor: string,
     poolTokenWei: string

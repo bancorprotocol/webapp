@@ -2593,6 +2593,100 @@ export class EthBancorModule
     this.setLoadingPools(false);
   }
 
+  @action async checkPriceDeviationTooHigh({
+    relayId,
+    selectedTokenAddress,
+    owner
+  }: {
+    relayId: string;
+    selectedTokenAddress: string;
+    owner: string;
+  }): Promise<boolean> {
+    let priceDeviationTooHigh = false;
+
+    if (!owner) return priceDeviationTooHigh;
+
+    const relay = await this.relayById(relayId);
+
+    const converter = buildV28ConverterContract(relay.contract, w3);
+    const liquidityProtection = buildLiquidityProtectionContract(
+      this.contracts.LiquidityProtection,
+      w3
+    );
+    const liquidityProtectionStore = buildLiquidityProtectionStoreContract(
+      this.contracts.LiquidityProtectionStore,
+      w3
+    );
+
+    const [
+      recentAverageRateResult,
+      averageRateMaxDeviation,
+      positionIds
+    ] = await Promise.all([
+      converter.methods.recentAverageRate(selectedTokenAddress).call(),
+      liquidityProtection.methods.averageRateMaxDeviation().call(),
+      liquidityProtectionStore.methods.protectedLiquidityIds(owner).call()
+    ]);
+
+    const averageRate = new BigNumber(recentAverageRateResult["1"]).dividedBy(
+      recentAverageRateResult["0"]
+    );
+
+    console.log("averageRate", averageRate);
+
+    const allPositions = await this.fetchPositionsMulti({
+      positionIds,
+      liquidityStore: this.contracts.LiquidityProtectionStore
+    });
+
+    // only positions with selected token
+    const positions = allPositions.filter(
+      p =>
+        compareString(p.poolToken, relay.id) &&
+        compareString(p.reserveToken, selectedTokenAddress)
+    );
+    let primaryReserveBalance: BigNumber = new BigNumber(0);
+
+    for (const position of positions) {
+      primaryReserveBalance = primaryReserveBalance.plus(
+        new BigNumber(position.reserveAmount)
+      );
+    }
+
+    const secondaryReserveBalance = new BigNumber(
+      await liquidityProtectionStore.methods
+        .totalProtectedReserveAmount(
+          relay.id,
+          // the other token
+          relay.reserves.find(
+            r => !compareString(r.contract, selectedTokenAddress)
+          )!.contract
+        )
+        .call()
+    );
+
+    const spotRate = primaryReserveBalance.dividedBy(secondaryReserveBalance);
+    const averageRateMaxDeviationBN = new BigNumber(averageRateMaxDeviation);
+
+    priceDeviationTooHigh = !averageRate.isGreaterThan(
+      new BigNumber(1000000)
+        .minus(averageRateMaxDeviationBN)
+        .dividedBy(1000000) ||
+        new BigNumber(1000000)
+          .dividedBy(new BigNumber(1000000).minus(averageRateMaxDeviationBN))
+          .isGreaterThan(spotRate)
+    );
+    console.log(
+      "price deviation values",
+      primaryReserveBalance.toNumber(),
+      secondaryReserveBalance.toNumber(),
+      spotRate.toNumber(),
+      priceDeviationTooHigh
+    );
+
+    return priceDeviationTooHigh;
+  }
+
   get secondaryReserveChoices(): ModalChoice[] {
     return this.newNetworkTokenChoices;
   }
