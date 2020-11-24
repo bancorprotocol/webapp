@@ -13,7 +13,7 @@ describe("Simple Component with VueX", () => {
   const localVue = createLocalVue();
   localVue.use(Vuex);
 
-  /* Insert the mock into the store */
+  /* Inject the mock into the store */
   beforeEach(() => {
     state = {
       darkMode: false,

@@ -1,17 +1,28 @@
 <template>
   <div class="mt-3">    
-    <token-input-field
+    <!-- <token-input-field
       label="Input"
       :token="reserveOne"
       v-model="amount1"
       @input="tokenOneChanged"
       :balance="balance1"
       :error-msg="token1Error"
-    />
+    /> -->    
+    <input type="text" label="Input1" id="ipAmt1" v-model="amount1" @input="tokenOneChanged" />
+    <div id="reserve1">
+      {{reserveOne}}
+    </div>
+    <div id="balance1">
+      {{balance1}}
+    </div>
+    <div id="error1">
+      {{token1Error}}
+    </div>
+
     <div class="text-center my-3">
       <font-awesome-icon icon="plus" class="text-primary font-size-16" />
     </div>
-    <token-input-field
+    <!-- <token-input-field
       label="Input"
       :token="reserveTwo"
       v-model="amount2"
@@ -19,9 +30,43 @@
       class="mb-3"
       :balance="balance2"
       :error-msg="token2Error"
-    />
-    <rate-share-block :items="shareBlockItems" label="Prices and Pool Share" />
-    <main-button
+    /> -->
+    <input type="text" label="Input2" id="ipAmt2" v-model="amount2" @input="tokenTwoChanged" />
+    <div id="reserve2">
+      {{reserveTwo}}
+    </div>
+    <div id="balance2">
+      {{balance2}}
+    </div>
+    <div id="error2">
+      {{token2Error}}
+    </div>
+
+    <h4>Prices and Pool Share</h4>
+    <b-row>
+      <b-col
+        v-for="item in shareBlockItems"
+        :key="item.id"
+        cols="4"
+        class="text-center"
+      >
+        <div>
+          <span
+            class="font-size-12 text-light"            
+          >
+            {{ item.title }}
+          </span>
+        </div>
+        <span
+          class="font-size-12 font-w500 text-muted-light"          
+        >
+          {{ item.label }}
+        </span>
+      </b-col>
+    </b-row>
+
+    <!-- <rate-share-block :items="shareBlockItems" label="Prices and Pool Share" /> -->
+    <!-- <main-button
       @click="initAction"
       label="Supply"
       :active="true"
@@ -29,7 +74,7 @@
       class="mt-3"
       :loading="rateLoading"
       :disabled="disableMainButton"
-    />
+    /> -->
     <!-- <modal-pool-action
       v-model="modal"
       :amounts-array="[smartTokenAmount, amount1, amount2]"
@@ -42,25 +87,22 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { State, Getter, Mutation, Action, namespace } from "vuex-class";
 import { ViewRelay, ViewAmount } from "@/types/bancor";
-import PoolLogos from "@/components/common/PoolLogos.vue";
-import TokenInputField from "@/components/common/TokenInputField.vue";
-import MainButton from "@/components/common/Button.vue";
-import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+// import TokenInputField from "@/components/common/TokenInputField.vue";
+// import MainButton from "@/components/common/Button.vue";
 // import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
-import RateShareBlock from "@/components/common/RateShareBlock.vue";
-import { compareString, formatNumber, formatPercent } from "@/api/helpers";
+// import RateShareBlock from "@/components/common/RateShareBlock.vue";
+import { compareString, formatNumber, formatPercent } from "@/components/test/mockHelper";
+import { ViewToken } from "@/types/bancor";
 
 const bancor = namespace('bancor');
 const wallet = namespace('wallet');
 
 @Component({
   components: {
-    RateShareBlock,
-    // ModalPoolAction,
-    LabelContentSplit,
-    TokenInputField,
-    PoolLogos,
-    MainButton
+    // RateShareBlock,
+    // ModalPoolAction,    
+    // TokenInputField,    
+    // MainButton
   }
 })
 export default class PoolActionsAddV1 extends Vue {
@@ -83,7 +125,7 @@ export default class PoolActionsAddV1 extends Vue {
   currentUser!: string;  
 
   @bancor.Getter("token")
-  getterToken!: any;
+  getterToken!: (tokenId: string) => ViewToken;
 
   @bancor.Action("calculateOpposingDeposit")
   calculateOpposingDeposit!: (obj: any) => any;  
@@ -102,19 +144,16 @@ export default class PoolActionsAddV1 extends Vue {
     else await this.promptAuth();
   }
 
-  get balance1() {
-    return this.getterToken(this.reserveOne.id).balance ?? "0";
-    // return vxm.bancor.token(this.reserveOne.id).balance ?? "0";
+  get balance1() {    
+    return this.getterToken(this.reserveOne.id).balance ?? "0";    
   }
 
   get balance2() {
-    return this.getterToken(this.reserveTwo.id).balance ?? "0";
-    // return vxm.bancor.token(this.reserveTwo.id).balance ?? "0";
+    return this.getterToken(this.reserveTwo.id).balance ?? "0";    
   }
 
   get share() {
     return formatPercent(this.shareOfPool);
-    // return "";
   }
 
   get shareBlockItems() {
