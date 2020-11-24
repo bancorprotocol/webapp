@@ -7,7 +7,8 @@
       :filter="search"
       filter-by="stake"
       :filter-function="doFilter"
-      default-sort="currentCoverageDec"
+      :sort-function="customSort"
+      default-sort="currentCoverage"
       default-order="asc"
     >
       <template #cell(stake)="{ value }">
@@ -160,6 +161,7 @@ import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import {
   buildPoolName,
   compareString,
+  defaultTableSort,
   formatUnixTime,
   prettifyNumber
 } from "@/api/helpers";
@@ -260,13 +262,13 @@ export default class Protected extends BaseComponent {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      {
-        id: 4,
-        key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
-        minWidth: "110px"
-      },
+      // {
+      //   id: 4,
+      //   key: "fees",
+      //   label: "Fees",
+      //   tooltip: "Fees your stake has earned since you entered the pool.",
+      //   minWidth: "110px"
+      // },
       {
         id: 5,
         key: "roi",
@@ -281,7 +283,7 @@ export default class Protected extends BaseComponent {
         label: "Apr",
         tooltip:
           "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
-        sortable: false,
+        sortable: true,
         minWidth: "100px"
       },
       {
@@ -303,10 +305,21 @@ export default class Protected extends BaseComponent {
     ];
   }
 
-  doFilter(row: any, filter: string) {
+  doFilter(row: ViewProtectedLiquidity, filter: string) {
     return (row.stake.symbol as string)
       .toLowerCase()
       .includes(filter.toLowerCase());
+  }
+
+  customSort(row: ViewProtectedLiquidity, sortBy: string) {
+    switch (sortBy) {
+      case "apr":
+        return row.apr.day;
+      case "currentCoverage":
+        return row.coverageDecPercent;
+      default:
+        return defaultTableSort(row, sortBy, true);
+    }
   }
 }
 </script>
