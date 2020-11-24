@@ -13,11 +13,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class RemainingTime2 extends Vue {
+export default class RemainingTime2 extends BaseComponent {
   @Prop() from!: number;
   @Prop() to!: number;
   @Prop({ default: true }) showSeconds!: boolean;
@@ -50,10 +50,6 @@ export default class RemainingTime2 extends Vue {
       ${this.showSeconds ? `${Math.floor(s % 60) + 1}s` : ""}
       left
     `;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   updateTime() {

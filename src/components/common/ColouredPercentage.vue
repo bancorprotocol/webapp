@@ -15,21 +15,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop } from "vue-property-decorator";
 import numeral from "numeral";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class ColouredPercentage extends Vue {
+export default class ColouredPercentage extends BaseComponent {
   @Prop() percentage!: number | null;
 
   get formattedPercentage() {
     const percentage = this.percentage;
     return percentage ? numeral(percentage / 100).format("0.00%") : "N/A";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

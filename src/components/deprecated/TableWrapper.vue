@@ -44,11 +44,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop, Watch } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class TableWrapper extends Vue {
+export default class TableWrapper extends BaseComponent {
   @Prop() primarykey?: string;
   @Prop() items!: any[];
   @Prop() fields!: any[];
@@ -74,10 +74,6 @@ export default class TableWrapper extends Vue {
   }
   mounted() {
     this.onItemsChange();
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

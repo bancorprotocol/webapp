@@ -153,7 +153,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
@@ -170,6 +170,7 @@ import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -181,7 +182,7 @@ import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
     ContentBlock
   }
 })
-export default class Protected extends Vue {
+export default class Protected extends BaseComponent {
   @Prop({ default: "" }) search!: string;
 
   poolName(id: string): string {
@@ -306,9 +307,6 @@ export default class Protected extends Vue {
     return (row.stake.symbol as string)
       .toLowerCase()
       .includes(filter.toLowerCase());
-  }
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

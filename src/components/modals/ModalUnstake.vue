@@ -139,17 +139,18 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue, Watch, VModel } from "vue-property-decorator";
+import { Component, Watch, VModel } from "vue-property-decorator";
 import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     MainButton
   }
 })
-export default class ModalUnstake extends Vue {
+export default class ModalUnstake extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
   currentStake: BigNumber = new BigNumber(0);
@@ -180,14 +181,6 @@ export default class ModalUnstake extends Vue {
         this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
       ? "Unstake Tokens"
       : "Insufficient Amount";
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   setUnstakeInput() {
