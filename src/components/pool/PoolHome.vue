@@ -33,13 +33,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import SubNavigation from "@/components/layout/SubNavigation.vue";
 import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -50,7 +51,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
     ContentBlock
   }
 })
-export default class PoolHome extends Vue {
+export default class PoolHome extends BaseComponent {
   modal = false;
 
   get pools() {
@@ -72,10 +73,6 @@ export default class PoolHome extends Vue {
     }
 
     this.modal = false;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

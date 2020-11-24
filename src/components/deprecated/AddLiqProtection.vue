@@ -114,7 +114,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
@@ -131,6 +131,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BigNumber from "bignumber.js";
 import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquidity.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -149,7 +150,7 @@ import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquid
     MainButton
   }
 })
-export default class AddLiqProtection extends Vue {
+export default class AddLiqProtection extends BaseComponent {
   amount = "";
 
   selectedToken: ViewReserve | null = null;
@@ -219,10 +220,6 @@ export default class AddLiqProtection extends Vue {
 
   mounted() {
     this.selectedToken = this.pool.reserves[0];
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

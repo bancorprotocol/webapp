@@ -19,12 +19,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Statistics from "@/components/data/statistics/Statistics.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -34,13 +34,9 @@ import TransactionTables from "@/components/data/transactiontables/TransactionTa
     ContentBlock
   }
 })
-export default class DataSummary extends Vue {
+export default class DataSummary extends BaseComponent {
   get isEth() {
     return this.$route.params.service === "eth";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

@@ -1926,7 +1926,7 @@ export class EthBancorModule
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
-            ...(fee && omit(fee, ["positionId"]))
+            ...(fee && { fee: omit(fee, ["positionId"]) })
           };
         }
       );
@@ -2175,6 +2175,7 @@ export class EthBancorModule
 
   @mutation updateHistoricPoolFees(newFees: PreviousPoolFee[]) {
     const currentFees = this.previousPoolFeesArr;
+    console.log("historical fees", newFees);
     this.previousPoolFeesArr = [...currentFees, ...newFees];
   }
 

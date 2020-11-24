@@ -31,17 +31,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from "vue-property-decorator";
+import { Component, Prop, Emit } from "vue-property-decorator";
 import { ViewRelay, ViewToken } from "@/types/bancor";
-import { vxm } from "@/store";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName } from "@/api/helpers";
 import VersionBadge from "@/components/common/VersionBadge.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { VersionBadge, PoolLogosOverlapped }
 })
-export default class PoolLogos extends Vue {
+export default class PoolLogos extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
   @Prop({ default: false }) dropdown!: boolean;
@@ -58,10 +58,6 @@ export default class PoolLogos extends Vue {
 
   get poolName() {
     return buildPoolName(this.pool!.id);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

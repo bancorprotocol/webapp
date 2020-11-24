@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewAmount, ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -90,6 +90,7 @@ import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -103,7 +104,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
     MainButton
   }
 })
-export default class PoolActionsAddV2 extends Vue {
+export default class PoolActionsAddV2 extends BaseComponent {
   @Prop() pool!: ViewRelay;
 
   selectedToken: ViewReserve = this.pool.reserves[0];
@@ -139,10 +140,6 @@ export default class PoolActionsAddV2 extends Vue {
   get supplyButtonLabel() {
     if (this.amount === "") return "Enter an amount";
     else return "Supply";
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   async initAction() {
@@ -275,10 +272,6 @@ export default class PoolActionsAddV2 extends Vue {
         value: formatPercent(this.shareOfPool)
       }
     ];
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   async loadData() {

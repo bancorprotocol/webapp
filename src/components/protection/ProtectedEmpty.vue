@@ -26,11 +26,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class ProtectedEmpty extends Vue {
+export default class ProtectedEmpty extends BaseComponent {
   content = [
     {
       route: "AddProtectionHome",
@@ -47,10 +47,6 @@ export default class ProtectedEmpty extends Vue {
       buttonText: "Stake"
     }
   ];
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 
