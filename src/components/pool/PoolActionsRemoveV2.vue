@@ -116,7 +116,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -129,6 +129,7 @@ import BigNumber from "bignumber.js";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -150,7 +151,7 @@ interface PoolTokenUI {
     MainButton
   }
 })
-export default class PoolActionsRemoveV2 extends Vue {
+export default class PoolActionsRemoveV2 extends BaseComponent {
   @Prop() pool!: ViewRelay;
 
   percentage: string = "50";
@@ -193,14 +194,6 @@ export default class PoolActionsRemoveV2 extends Vue {
       token => token.id == this.selectedToken
     );
     return selectedToken!;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   async initAction() {

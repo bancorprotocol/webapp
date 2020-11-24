@@ -137,7 +137,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { EthAddress } from "@/types/bancor";
@@ -149,6 +149,7 @@ import ModalStake from "@/components/modals/ModalStake.vue";
 import ModalUnstake from "@/components/modals/ModalUnstake.vue";
 import BigNumber from "bignumber.js";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -161,7 +162,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
     LabelContentSplit
   }
 })
-export default class Stake extends Vue {
+export default class Stake extends BaseComponent {
   stakeModal = false;
   unstakeModal = false;
 
@@ -182,14 +183,6 @@ export default class Stake extends Vue {
 
   governanceContractAddress: EthAddress = "";
   tokenAddress: EthAddress = "";
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
-  }
 
   get lastTransaction() {
     return vxm.ethGovernance.lastTransaction;

@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -61,6 +61,7 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 import OpenProposals from "@/components/vote/proposals/OpenProposals.vue";
 import DoneProposals from "@/components/vote/proposals/DoneProposals.vue";
 import AddProposal from "@/components/vote/proposals/AddProposal.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -72,7 +73,7 @@ import AddProposal from "@/components/vote/proposals/AddProposal.vue";
     AddProposal
   }
 })
-export default class Proposals extends Vue {
+export default class Proposals extends BaseComponent {
   proposals: Proposal[] = [];
   proposalsLoaded: boolean = false;
   showNewProposal = false;
@@ -83,14 +84,6 @@ export default class Proposals extends Vue {
 
   get ctaBtnVariant() {
     return this.darkMode ? "outline-gray-dark" : "outline-gray";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   get lastTransaction() {

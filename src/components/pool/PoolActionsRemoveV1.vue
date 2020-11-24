@@ -114,7 +114,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -123,6 +123,7 @@ import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -133,7 +134,7 @@ import BigNumber from "bignumber.js";
     MainButton
   }
 })
-export default class PoolActionsRemoveV1 extends Vue {
+export default class PoolActionsRemoveV1 extends BaseComponent {
   @Prop() pool!: ViewRelay;
 
   detailMode = true;
@@ -155,10 +156,6 @@ export default class PoolActionsRemoveV1 extends Vue {
   modal = false;
 
   res: any = null;
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
-  }
 
   async initAction() {
     if (this.currentUser) this.modal = true;
@@ -254,10 +251,6 @@ export default class PoolActionsRemoveV1 extends Vue {
       this.token1Error = "";
     }
     this.rateLoading = false;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   @Watch("currentUser")

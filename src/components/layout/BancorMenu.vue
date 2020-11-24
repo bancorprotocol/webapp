@@ -146,15 +146,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class BancorMenu extends Vue {
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
+export default class BancorMenu extends BaseComponent {
   get isDataPage() {
     return this.$route.fullPath.includes("data");
   }
@@ -197,10 +194,6 @@ export default class BancorMenu extends Vue {
   }
 
   toggleDarkMode() {
-    vxm.general.toggleDarkMode();
-  }
-
-  set darkMode(_: boolean) {
     vxm.general.toggleDarkMode();
   }
 }

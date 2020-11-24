@@ -41,19 +41,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class LabelContentSplit extends Vue {
+export default class LabelContentSplit extends BaseComponent {
   @Prop() label!: string;
   @Prop() value?: string;
   @Prop({ default: false }) loading?: boolean;
   @Prop({ default: "" }) tooltip?: string;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

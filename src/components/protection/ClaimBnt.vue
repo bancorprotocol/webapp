@@ -39,13 +39,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop, Emit } from "vue-property-decorator";
 import moment from "moment";
 import { prettifyNumber } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class ClaimBnt extends Vue {
+export default class ClaimBnt extends BaseComponent {
   @Prop() item!: any;
 
   locked = true;
@@ -85,10 +85,6 @@ export default class ClaimBnt extends Vue {
 
   prettifyNumber(number: string | number): string {
     return prettifyNumber(number);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   created() {

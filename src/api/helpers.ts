@@ -30,8 +30,6 @@ import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
-import { PropOptions } from "vue";
-import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";

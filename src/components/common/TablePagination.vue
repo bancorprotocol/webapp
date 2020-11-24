@@ -37,21 +37,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, PropSync } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop, PropSync } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class TablePagination extends Vue {
+export default class TablePagination extends BaseComponent {
   @PropSync("currentPage", { type: Number }) current!: number;
   @Prop() rowCount!: number;
   @Prop() perPage!: number;
 
   get pagesTotal() {
     return Math.ceil(this.rowCount / this.perPage);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

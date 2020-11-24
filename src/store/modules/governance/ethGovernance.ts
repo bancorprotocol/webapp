@@ -34,10 +34,15 @@ export interface ProposalMetaData {
   revision: string;
 }
 
-interface Votes {
+export interface Votes {
   voted: undefined | "for" | "against";
-  for: number;
-  against: number;
+  for: string;
+  against: string;
+}
+
+export interface Voter {
+  votes: Votes;
+  account: string;
 }
 
 export interface Proposal {
@@ -56,9 +61,11 @@ export interface Proposal {
   totalVotesAgainst: number;
   totalVotesFor: number;
   totalVotes: number;
-  totalVotesAvailable: number;
+  totalAvailableVotes: number;
+  // votes of currently logged in user
   votes: Votes;
   metadata?: ProposalMetaData;
+  voters: Voter[];
 }
 
 interface Token
@@ -350,7 +357,7 @@ export class EthereumGovernance extends VuexModule.With({
     hash: string;
   }): Promise<boolean> {
     if (!executor || !hash || !account)
-      throw new Error("Cannot propose without execturo and hash");
+      throw new Error("Cannot propose without executor and hash");
 
     const txContract = buildGovernanceContract(
       await this.getGovernanceContractAddress()
@@ -427,8 +434,8 @@ export class EthereumGovernance extends VuexModule.With({
     const totalVotesAgainst = parseFloat(
       shrinkToken(proposal.totalVotesAgainst, decimals)
     );
-    const totalVotesAvailable = parseFloat(
-      shrinkToken(proposal.totalVotesAvailable, decimals)
+    const totalAvailableVotes = parseFloat(
+      shrinkToken(proposal.totalAvailableVotes, decimals)
     );
 
     let metadata;
@@ -455,31 +462,22 @@ export class EthereumGovernance extends VuexModule.With({
       quorumRequired: proposal.quorumRequired,
       totalVotesAgainst,
       totalVotesFor,
-      totalVotesAvailable,
+      totalAvailableVotes,
       totalVotes: totalVotesFor + totalVotesAgainst,
       votes: <Votes>{
         for: voter
-          ? parseFloat(
-              shrinkToken(
-                await this.governanceContract.methods
-                  .votesForOf(voter, proposal.id)
-                  .call(),
-                decimals
-              )
-            )
-          : 0,
+          ? await this.governanceContract.methods
+              .votesForOf(voter, proposal.id)
+              .call()
+          : "0",
         against: voter
-          ? parseFloat(
-              shrinkToken(
-                await this.governanceContract.methods
-                  .votesAgainstOf(voter, proposal.id)
-                  .call(),
-                decimals
-              )
-            )
-          : 0
+          ? await this.governanceContract.methods
+              .votesAgainstOf(voter, proposal.id)
+              .call()
+          : "0"
       },
-      metadata: metadata
+      metadata: metadata,
+      voters: await this.getVoters({ proposal })
     };
 
     const { for: vFor, against: vAgainst } = prop.votes;
@@ -487,6 +485,33 @@ export class EthereumGovernance extends VuexModule.With({
       vFor === vAgainst ? undefined : vFor > vAgainst ? "for" : "against";
 
     return prop;
+  }
+
+  @action async getVoters({
+    proposal
+  }: {
+    proposal: Proposal;
+  }): Promise<{ votes: Votes; account: string }[]> {
+    const voteEvents = await this.governanceContract.getPastEvents("Vote", {
+      filter: { _id: proposal.id.toString() },
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    return voteEvents.map(event => {
+      return {
+        account: event.returnValues["_voter"],
+        votes: {
+          voted: event.returnValues["_vote"] ? "for" : "against",
+          for: event.returnValues["_vote"]
+            ? event.returnValues["_weight"]
+            : "0",
+          against: event.returnValues["_vote"]
+            ? "0"
+            : event.returnValues["_weight"]
+        }
+      };
+    });
   }
 
   @action async getProposals({
