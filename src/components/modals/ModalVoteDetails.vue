@@ -110,6 +110,7 @@ import MainButton from "@/components/common/Button.vue";
 import { Proposal, Voter } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import { shrinkToken } from "@/api/eth/helpers"
 
 @Component({
   components: {
@@ -190,9 +191,7 @@ export default class ModalVoteDetails extends Vue {
 
   formatNumber(num: string) {
     return prettifyNumber(
-      new BigNumber(num)
-        .dividedBy(new BigNumber(10).pow(this.decimals))
-        .toString()
+      shrinkToken(num, this.decimals)
     );
   }
 
