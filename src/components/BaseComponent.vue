@@ -1,15 +1,16 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { namespace } from "vuex-class";
-
-const general = namespace("general");
-const bancor = namespace("bancor");
-const wallet = namespace("wallet");
+import { State, Getter } from "vuex-class";
 
 @Component
 export default class BaseComponent extends Vue {
-  @bancor.State currentNetwork!: string;
-  @general.State darkMode!: boolean;
-  @wallet.State currentUser!: string;
+  @Getter("currentNetwork", { namespace: "bancor" })
+  currentNetwork!: string;
+
+  @State("darkMode", { namespace: "general" })
+  darkMode!: boolean;
+
+  @Getter("currentUser", { namespace: "wallet" })
+  currentUser!: string;
 }
 </script>
