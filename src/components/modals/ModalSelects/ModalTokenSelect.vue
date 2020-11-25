@@ -51,7 +51,7 @@ import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import { ViewModalToken } from "@/types/bancor";
-import { formatNumber } from "@/api/helpers";
+import { compareString, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -99,14 +99,17 @@ export default class ModalSelectToken extends BaseComponent {
   }
 
   async triggerAdd() {
-    const tokenAddress = this.addTokenText;
     try {
-      const { symbol } = await vxm.ethBancor.addToken(tokenAddress);
+      const { tokenAddress } = await vxm.ethBancor.addToken(this.addTokenText);
       this.error = "";
       this.addTokenModal = false;
 
-      if (symbol) {
-        this.search = symbol;
+      if (tokenAddress) {
+        const token = this.tokens.find((t: ViewModalToken) =>
+          compareString(t.id, tokenAddress)
+        );
+        if (token) this.selectToken(token.id);
+        else this.error = "Token not found.";
       }
     } catch (e) {
       this.error = e.message;
