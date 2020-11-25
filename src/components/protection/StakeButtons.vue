@@ -62,6 +62,8 @@ export default class StakeButtons extends BaseComponent {
 
   loadingMaxStakes = false;
 
+  private interval: any;
+
   get poolId(): string | null {
     return this.$route.params.id ?? null;
   }
@@ -122,6 +124,13 @@ export default class StakeButtons extends BaseComponent {
 
   async created() {
     await this.loadMaxStakes();
+    this.interval = setInterval(async () => {
+      await this.loadMaxStakes();
+    }, 30000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 
   @Emit("click")
