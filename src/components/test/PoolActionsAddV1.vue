@@ -7,10 +7,11 @@
       @input="tokenOneChanged"
       :balance="balance1"
       :error-msg="token1Error"
-    /> -->    
-    <input type="text" label="Input1" id="ipAmt1" v-model="amount1" @input="tokenOneChanged" />
+    />     -->
+    <input type="text" label="Input1" id="ipAmt1" v-model="amount1" placeholder="Enter Amount"
+      @input="tokenOneChanged" />
     <div id="reserve1">
-      {{reserveOne}}
+      {{reserveOne.id}}
     </div>
     <div id="balance1">
       {{balance1}}
@@ -31,9 +32,11 @@
       :balance="balance2"
       :error-msg="token2Error"
     /> -->
-    <input type="text" label="Input2" id="ipAmt2" v-model="amount2" @input="tokenTwoChanged" />
+    
+    <input type="text" label="Input2" id="ipAmt2" v-model="amount2" placeholder="Enter Amount"
+      @input="tokenTwoChanged" />
     <div id="reserve2">
-      {{reserveTwo}}
+      {{reserveTwo.id}}
     </div>
     <div id="balance2">
       {{balance2}}
@@ -176,38 +179,38 @@ export default class PoolActionsAddV1 extends Vue {
         }
       ];
     }
-  }
+  }  
 
-  get advancedBlockItems() {
-    return [
-      {
-        label: this.reserveOne.symbol + " Deposit",
-        value: Number(this.amount1)
-      },
-      {
-        label: this.reserveTwo.symbol + " Deposit",
-        value: Number(this.amount2)
-      },
-      {
-        label: "Rates",
-        value:
-          this.singleUnitCosts.length > 1
-            ? `${this.singleUnitCosts[0].title} ${this.singleUnitCosts[0].label}`
-            : "0"
-      },
-      {
-        label: "",
-        value:
-          this.singleUnitCosts.length > 1
-            ? `${this.singleUnitCosts[1].title} ${this.singleUnitCosts[1].label}`
-            : "0"
-      },
-      {
-        label: "Share of Pool",
-        value: this.share
-      }
-    ];
-  }
+  // get advancedBlockItems() {
+  //   return [
+  //     {
+  //       label: this.reserveOne.symbol + " Deposit",
+  //       value: Number(this.amount1)
+  //     },
+  //     {
+  //       label: this.reserveTwo.symbol + " Deposit",
+  //       value: Number(this.amount2)
+  //     },
+  //     {
+  //       label: "Rates",
+  //       value:
+  //         this.singleUnitCosts.length > 1
+  //           ? `${this.singleUnitCosts[0].title} ${this.singleUnitCosts[0].label}`
+  //           : "0"
+  //     },
+  //     {
+  //       label: "",
+  //       value:
+  //         this.singleUnitCosts.length > 1
+  //           ? `${this.singleUnitCosts[1].title} ${this.singleUnitCosts[1].label}`
+  //           : "0"
+  //     },
+  //     {
+  //       label: "Share of Pool",
+  //       value: this.share
+  //     }
+  //   ];
+  // }
 
   get reserveOne() {
     return this.pool.reserves[0];
@@ -225,13 +228,23 @@ export default class PoolActionsAddV1 extends Vue {
     this.token2Error = "";
   }
 
-  async tokenOneChanged(tokenAmount: string) {
+  async tokenOneChanged(event: any) {
+    const tokenAmount = event.target.value    
+    
     if (!tokenAmount || tokenAmount === ".") {
       this.setDefault();
       return;
     }
     this.rateLoading = true;
     try {
+      const raiseToken1InsufficientBalance =
+        Number(this.balance1) < Number(tokenAmount);
+      this.token1Error = raiseToken1InsufficientBalance
+        ? "Insufficient balance"
+        : "";
+
+      if (this.token1Error) return;
+
       const results = await this.calculateOpposingDeposit({
         id: this.pool.id,
         reserves: [
@@ -242,13 +255,7 @@ export default class PoolActionsAddV1 extends Vue {
       });
       if (typeof results.opposingAmount !== "undefined") {
         this.amount2 = results.opposingAmount;
-      }
-
-      const raiseToken1InsufficientBalance =
-        Number(this.balance1) < Number(tokenAmount);
-      this.token1Error = raiseToken1InsufficientBalance
-        ? "Insufficient balance"
-        : "";
+      }      
 
       const raiseToken2InsufficientBalance =
         Number(this.balance2) < Number(this.amount2);
@@ -257,7 +264,7 @@ export default class PoolActionsAddV1 extends Vue {
         : "";
 
       this.shareOfPool = results.shareOfPool;
-      this.setSingleUnitCosts(results.singleUnitCosts);
+      // this.setSingleUnitCosts(results.singleUnitCosts);
     } catch (e) {
       this.token1Error = e.message;
       this.token2Error = "";
@@ -265,30 +272,39 @@ export default class PoolActionsAddV1 extends Vue {
     this.rateLoading = false;
   }
 
-  setSingleUnitCosts(units: ViewAmount[]) {
-    const items = units.map(unit => {
-      const token = this.pool.reserves.find(reserve =>
-        compareString(unit.id, reserve.id)
-      )!;
-      const opposingToken = this.pool.reserves.find(
-        reserve => !compareString(unit.id, reserve.id)
-      )!;
-      return {
-        id: token.id,
-        title: formatNumber(Number(unit.amount)),
-        label: `${opposingToken.symbol} per ${token.symbol}`
-      };
-    });
-    this.singleUnitCosts = items;
-  }
+  // setSingleUnitCosts(units: ViewAmount[]) {
+  //   const items = units.map(unit => {
+  //     const token = this.pool.reserves.find(reserve =>
+  //       compareString(unit.id, reserve.id)
+  //     )!;
+  //     const opposingToken = this.pool.reserves.find(
+  //       reserve => !compareString(unit.id, reserve.id)
+  //     )!;
+  //     return {
+  //       id: token.id,
+  //       title: formatNumber(Number(unit.amount)),
+  //       label: `${opposingToken.symbol} per ${token.symbol}`
+  //     };
+  //   });
+  //   this.singleUnitCosts = items;
+  // }
 
-  async tokenTwoChanged(tokenAmount: string) {
+  async tokenTwoChanged(event: any) {
+    const tokenAmount = event.target.value
     if (!tokenAmount || tokenAmount === ".") {
       this.setDefault();
       return;
     }
     this.rateLoading = true;
     try {
+      const raiseToken2InsufficientBalance =
+        Number(this.balance2) < Number(tokenAmount);
+      this.token2Error = raiseToken2InsufficientBalance
+        ? "Insufficient balance"
+        : "";
+
+      if (this.token2Error) return;
+
       const results = await this.calculateOpposingDeposit({
         id: this.pool.id,
         reserves: [
@@ -301,19 +317,14 @@ export default class PoolActionsAddV1 extends Vue {
         this.amount1 = results.opposingAmount;
       }
       this.shareOfPool = results.shareOfPool;
-      this.setSingleUnitCosts(results.singleUnitCosts);
+      // this.setSingleUnitCosts(results.singleUnitCosts);
 
       const raiseToken1InsufficientBalance =
         Number(this.balance1) < Number(this.amount1);
       this.token1Error = raiseToken1InsufficientBalance
         ? "Insufficient balance"
         : "";
-
-      const raiseToken2InsufficientBalance =
-        Number(this.balance2) < Number(tokenAmount);
-      this.token2Error = raiseToken2InsufficientBalance
-        ? "Insufficient balance"
-        : "";
+      
     } catch (e) {
       this.token1Error = "";
       this.token2Error = e.message;
@@ -321,7 +332,7 @@ export default class PoolActionsAddV1 extends Vue {
     this.rateLoading = false;
   }
 
-  async initialLoadPrices() {
+  async initialLoadPrices() {    
     const results = await this.calculateOpposingDeposit({
       id: this.pool.id,
       reserves: [
@@ -330,8 +341,7 @@ export default class PoolActionsAddV1 extends Vue {
       ],
       changedReserveId: this.reserveOne.id
     });
-    console.log('dfdd', results)
-    this.setSingleUnitCosts(results.singleUnitCosts);
+    // this.setSingleUnitCosts(results.singleUnitCosts);
   }
 
   created() {

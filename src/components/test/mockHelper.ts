@@ -1,5 +1,6 @@
 
 import BigNumber from "bignumber.js";
+import numeral from "numeral";
 
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];

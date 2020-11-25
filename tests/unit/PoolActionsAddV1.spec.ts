@@ -1,5 +1,6 @@
 import { mount, createLocalVue } from '@vue/test-utils';
 import PoolActionsAddComp from '@/components/test/PoolActionsAddV1.vue';
+import flushPromises from 'flush-promises'
 import Vuex from 'vuex';
 
 describe('PoolActionsAddV1.vue', () => {
@@ -12,6 +13,8 @@ describe('PoolActionsAddV1.vue', () => {
   /* 'CreateLocalVue' is isolated for testing */
   const localVue = createLocalVue();
   localVue.use(Vuex);
+
+  const relay = {"id":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13","version":41,"reserves":[{"id":"0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","reserveWeight":0.5,"reserveId":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b130xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","logo":["https://ropsten.etherscan.io/images/main/empty-token.png"],"symbol":"BNT","contract":"0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","smartTokenSymbol":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13"},{"id":"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","reserveWeight":0.5,"reserveId":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b130xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","logo":["https://ropsten.etherscan.io/images/main/empty-token.png"],"symbol":"ETH","contract":"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","smartTokenSymbol":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13"}],"fee":0.001,"liqDepth":4054.2175359446505,"owner":"0xc8021b971e69e60C5Deede19528B33dCD52cDbd8","symbol":"ETH","addLiquiditySupported":true,"removeLiquiditySupported":true,"liquidityProtection":true,"whitelisted":true,"focusAvailable":true,"v2":false,"apr":"0.001352","aprMiningRewards":{"poolId":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13","endTime":1612815300,"rewards":[{"address":"0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","amount":"231159864794590895968","symbol":"BNT","reward":1574.667818409788},{"address":"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","amount":"6056802050432771057","symbol":"ETH","reward":856.9767250672037}]}}
 
   /* Inject the mock into the store */
   beforeEach(() => {
@@ -37,9 +40,7 @@ describe('PoolActionsAddV1.vue', () => {
   })
 
   /* check property */
-  it('renders props.msg when passed', () => {
-    const relay = {"id":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13","version":41,"reserves":[{"id":"0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","reserveWeight":0.5,"reserveId":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b130xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","logo":["https://ropsten.etherscan.io/images/main/empty-token.png"],"symbol":"BNT","contract":"0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","smartTokenSymbol":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13"},{"id":"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","reserveWeight":0.5,"reserveId":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b130xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","logo":["https://ropsten.etherscan.io/images/main/empty-token.png"],"symbol":"ETH","contract":"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","smartTokenSymbol":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13"}],"fee":0.001,"liqDepth":4054.2175359446505,"owner":"0xc8021b971e69e60C5Deede19528B33dCD52cDbd8","symbol":"ETH","addLiquiditySupported":true,"removeLiquiditySupported":true,"liquidityProtection":true,"whitelisted":true,"focusAvailable":true,"v2":false,"apr":"0.001352","aprMiningRewards":{"poolId":"0x1aCE5DD13Ba14CA42695A905526f2ec366720b13","endTime":1612815300,"rewards":[{"address":"0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5","amount":"231159864794590895968","symbol":"BNT","reward":1574.667818409788},{"address":"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE","amount":"6056802050432771057","symbol":"ETH","reward":856.9767250672037}]}}
-
+  it('dispatches "calculateOpposingDeposit" when initialized', () => {
     const wrapper = mount(PoolActionsAddComp, {
       propsData: { pool: relay },
       data: () =>({
@@ -49,41 +50,109 @@ describe('PoolActionsAddV1.vue', () => {
       store,
       localVue
     });
-    expect(true).toBe(true);
+    
+    expect(actions.calculateOpposingDeposit).toHaveBeenCalled();
   })
 
-//   /* check div && css */
-//   it('displays same width what we want', () => {
-//     const wrapper = shallowMount(SimpleComp);
+  it('renders balance1 and balance2 when initialized', () => {
+    const balance1 = '0.000291';
+    const balance2 = '0.8931';
+    const wrapper = mount(PoolActionsAddComp, {
+      propsData: { pool: relay },
+      data: () =>({
+        balance1,
+        balance2
+      }),
+      store,
+      localVue
+    });
+
+    expect(wrapper.find('#balance1').exists()).toBe(true);
+    expect(wrapper.find('#balance2').exists()).toBe(true);    
+    expect(wrapper.find('#balance1').text()).toBe(balance1);
+    expect(wrapper.find('#balance2').text()).toBe(balance2);
+  })
+
+  it('displays reserveOneId and reserveTwoId from pool', () => {
+    const wrapper = mount(PoolActionsAddComp, {
+      propsData: { pool: relay },
+      data: () =>({
+        balance1: '0.000291',
+        balance2: '0.8931'
+      }),
+      store,
+      localVue
+    });
     
-//     expect(wrapper.find('.div-bg').exists()).toBe(true);
-//     expect(wrapper.find('.div-bg').element.style.width).toBe('200px');
-//   })
- 
-//   /* check emitted event */
-//   it('displays "clicked" when custom event is emitted', async () => {
-//     const wrapper = mount(SimpleComp);
-//     const childRef = wrapper.findComponent(SimpleChildComp)
-//     childRef.vm.$emit('click');
-//     // await childRef.find('button').trigger('click');
+    expect(wrapper.find('#reserve1').exists()).toBe(true);
+    expect(wrapper.find('#reserve2').exists()).toBe(true);
+    expect(wrapper.find('#reserve1').text()).toBe(relay.reserves[0].id);
+    expect(wrapper.find('#reserve2').text()).toBe(relay.reserves[1].id);
+  })
 
-//     await wrapper.vm.$nextTick()
+  it('dispatches "calculateOpposingDeposit" when token input is changed', () => {
+    const wrapper = mount(PoolActionsAddComp, {
+      propsData: { pool: relay },
+      data: () =>({
+        balance1: '0.000291',
+        balance2: '0.8931'
+      }),
+      store,
+      localVue
+    });
 
-//     expect(childRef.exists()).toBe(true);
-//     expect(wrapper.emitted().click).toBeTruthy();
-//     expect(wrapper.emitted().click?.length).toBe(1);
-//     // expect(wrapper.find('p').html()).toContain('clicked');    
-//   })
+    wrapper.find('#ipAmt1').setValue('0.001');
+    wrapper.find('#ipAmt1').trigger('input');
 
-//   /* check visibility of div */
-//   it('should render SHOW, then hide it', async () => {
-//     const wrapper = mount(SimpleComp)
-//     expect(wrapper.find(".div-show").text()).toMatch(/SHOW/);
+    wrapper.find('#ipAmt2').setValue('0.002');
+    wrapper.find('#ipAmt2').trigger('input');
 
-//     await wrapper.setData({
-//       isShow: false
-//     })
-//     expect(wrapper.find(".div-show").isEmpty()).toBe(true);
-//   })
+    expect(actions.calculateOpposingDeposit).toHaveBeenCalled();
+    expect(actions.calculateOpposingDeposit).toHaveBeenCalledTimes(3);
+  })
+
+  it('raised error as "raiseToken1InsufficientBalance" if balance1 is lower than tokenAmount', async () => {
+    const balance1 = '0.00291';
+    const balance2 = '0.8931';
+    const wrapper = mount(PoolActionsAddComp, {
+      propsData: { pool: relay },
+      data: () =>({
+        balance1,
+        balance2
+      }),
+      store,
+      localVue
+    });
+    
+    wrapper.find('#ipAmt1').setValue('0.1');
+    wrapper.find('#ipAmt1').trigger('input');
+
+    await flushPromises()
+    
+    expect(wrapper.find('#error1').exists()).toBe(true);
+    expect(wrapper.find('#error1').text()).toBe("Insufficient balance");
+  })
+
+  it('raised error as "raiseToken2InsufficientBalance" if balance2 is lower than tokenAmount', async () => {
+    const balance1 = '0.00291';
+    const balance2 = '0.8931';
+    const wrapper = mount(PoolActionsAddComp, {
+      propsData: { pool: relay },
+      data: () =>({
+        balance1,
+        balance2
+      }),
+      store,
+      localVue
+    });
+    
+    wrapper.find('#ipAmt2').setValue('1');
+    wrapper.find('#ipAmt2').trigger('input');
+
+    await flushPromises()
+    
+    expect(wrapper.find('#error2').exists()).toBe(true);
+    expect(wrapper.find('#error2').text()).toBe("Insufficient balance");
+  })
 
 })
