@@ -106,7 +106,11 @@ export default class ModalSelectToken extends BaseComponent {
       this.addTokenModal = false;
 
       if (symbol) {
-        this.search = symbol;
+        const token = this.tokens.find(
+          (t: ViewModalToken) => t.symbol === symbol
+        );
+        if (token) this.selectToken(token.id);
+        else this.error = "Token not found.";
       }
     } catch (e) {
       this.error = e.message;
