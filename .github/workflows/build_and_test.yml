@@ -1,0 +1,30 @@
+name: Build and Test
+
+on:
+  pull_request:
+    types: [opened, closed, edited, ready_for_review, review_requested, reopened]
+  push:
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: yarn
+      - name: Test
+        run: yarn test
+      - name: Build
+        env:
+          VUE_APP_I18N_LOCALE: "en"
+          VUE_APP_I18N_FALLBACK_LOCALE: "en"
+          VUE_APP_MULTICONTRACT: "bancorcnvrtr"
+          VUE_APP_SMARTTOKENCONTRACT: "smarttokens1"
+          VUE_APP_NETWORKCONTRACT: "thisisbancor"
+          VUE_APP_AFFILIATE: ${{ secrets.VUE_APP_AFFILIATE }}
+          VUE_APP_BLOCKNATIVE: ${{ secrets.VUE_APP_BLOCKNATIVE }}
+          VUE_APP_ALCHEMY_MAINNET: ${{ secrets.VUE_APP_ALCHEMY_MAINNET }}
+          VUE_APP_ALCHEMY_ROPSTEN: ${{ secrets.VUE_APP_ALCHEMY_ROPSTEN }}
+        run: yarn build
