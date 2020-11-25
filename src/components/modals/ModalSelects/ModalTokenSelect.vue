@@ -101,9 +101,13 @@ export default class ModalSelectToken extends BaseComponent {
   async triggerAdd() {
     const tokenAddress = this.addTokenText;
     try {
-      await vxm.ethBancor.addToken(tokenAddress);
+      const { symbol } = await vxm.ethBancor.addToken(tokenAddress);
       this.error = "";
       this.addTokenModal = false;
+
+      if (symbol) {
+        this.search = symbol;
+      }
     } catch (e) {
       this.error = e.message;
     }
