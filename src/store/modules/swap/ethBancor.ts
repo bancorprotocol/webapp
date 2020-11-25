@@ -4665,7 +4665,13 @@ export class EthBancorModule
     return newWei;
   }
 
-  @action async addToken(tokenAddress: string) {
+  @action async addToken(
+    tokenAddress: string
+  ): Promise<{
+    decimals: number;
+    symbol: string;
+    tokenAddress: string;
+  }> {
     const isAddress = web3.utils.isAddress(tokenAddress);
     if (!isAddress) throw new Error(`${tokenAddress} is not a valid address`);
 
@@ -4683,11 +4689,15 @@ export class EthBancorModule
         "Failed parsing token information, please ensure this is an ERC-20 token"
       );
 
-    this.addTokenToMeta({
+    const metadata = {
       decimals: Number(token.decimals),
       symbol: token.symbol,
       tokenAddress: token.contract
-    });
+    };
+
+    this.addTokenToMeta(metadata);
+
+    return metadata;
   }
 
   @mutation addTokenToMeta(token: {
