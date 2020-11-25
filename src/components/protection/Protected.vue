@@ -41,7 +41,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
-                : 'Error calculating'
+                : 'Stale data'
             "
           />
         </div>
@@ -62,7 +62,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
-                : 'Error calculating'
+                : 'please refresh'
             "
           />
         </div>
