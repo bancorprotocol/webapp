@@ -38,7 +38,7 @@ describe("can calculate position fees", () => {
       opposingDepositedReserveCurrentBalance,
       reserveRate
     );
-    expect(res).toBe("-1933747839780032");
+    expect(res).toBe("1933747839780032");
   });
 });
 
