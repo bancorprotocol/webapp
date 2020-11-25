@@ -15,7 +15,7 @@ jobs:
       - name: Install Dependencies
         run: yarn
       - name: Test
-        run: yarn test
+        run: yarn jest
       - name: Build
         env:
           VUE_APP_I18N_LOCALE: "en"
