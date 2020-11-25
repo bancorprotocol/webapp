@@ -59,3 +59,40 @@ export const miningTknReward = (
       .dividedBy(protectedTkn)
   ).toNumber();
 };
+
+export const calculatePriceDeviationTooHigh = (
+  averageRate: BigNumber,
+  primaryReserveBalance: BigNumber,
+  secondaryReserveBalance: BigNumber,
+  averageRateMaxDeviation: BigNumber
+): boolean => {
+  const spotRate = primaryReserveBalance.dividedBy(secondaryReserveBalance);
+
+  const averageRateMaxDeviationBase = new BigNumber(oneMillion).minus(
+    averageRateMaxDeviation
+  );
+
+  const priceDeviationTooHigh = !(
+    averageRate.isGreaterThan(
+      averageRateMaxDeviationBase.dividedBy(oneMillion)
+    ) &&
+    oneMillion.dividedBy(averageRateMaxDeviationBase).isGreaterThan(spotRate)
+  );
+
+  console.log(
+    "price deviation values",
+    "averageRate",
+    averageRate.toNumber(),
+    "primaryReserveBalance",
+    primaryReserveBalance.toNumber(),
+    "secondaryReserveBalance",
+    secondaryReserveBalance.toNumber(),
+    "averageRateMaxDeviation",
+    averageRateMaxDeviation.toNumber(),
+    "spotRate",
+    spotRate.toNumber(),
+    priceDeviationTooHigh
+  );
+
+  return priceDeviationTooHigh;
+};

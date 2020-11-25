@@ -153,6 +153,7 @@ import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
 import {
   calculatePositionFees,
+  calculatePriceDeviationTooHigh,
   decToPpm,
   miningBntReward,
   miningTknReward
@@ -2627,7 +2628,7 @@ export class EthBancorModule
 
     const [
       recentAverageRateResult,
-      averageRateMaxDeviation,
+      averageRateMaxDeviationResult,
       positionIds
     ] = await Promise.all([
       converter.methods.recentAverageRate(selectedTokenAddress).call(),
@@ -2641,6 +2642,7 @@ export class EthBancorModule
 
     console.log("averageRate", averageRate);
 
+    // get all positions for current user
     const allPositions = await this.fetchPositionsMulti({
       positionIds,
       liquidityStore: this.contracts.LiquidityProtectionStore
@@ -2652,8 +2654,9 @@ export class EthBancorModule
         compareString(p.poolToken, relay.id) &&
         compareString(p.reserveToken, selectedTokenAddress)
     );
-    let primaryReserveBalance: BigNumber = new BigNumber(0);
 
+    // calcualte primarey reserve balance
+    let primaryReserveBalance: BigNumber = new BigNumber(0);
     for (const position of positions) {
       primaryReserveBalance = primaryReserveBalance.plus(
         new BigNumber(position.reserveAmount)
@@ -2672,23 +2675,11 @@ export class EthBancorModule
         .call()
     );
 
-    const spotRate = primaryReserveBalance.dividedBy(secondaryReserveBalance);
-    const averageRateMaxDeviationBN = new BigNumber(averageRateMaxDeviation);
-
-    priceDeviationTooHigh = !averageRate.isGreaterThan(
-      new BigNumber(1000000)
-        .minus(averageRateMaxDeviationBN)
-        .dividedBy(1000000) ||
-        new BigNumber(1000000)
-          .dividedBy(new BigNumber(1000000).minus(averageRateMaxDeviationBN))
-          .isGreaterThan(spotRate)
-    );
-    console.log(
-      "price deviation values",
-      primaryReserveBalance.toNumber(),
-      secondaryReserveBalance.toNumber(),
-      spotRate.toNumber(),
-      priceDeviationTooHigh
+    priceDeviationTooHigh = calculatePriceDeviationTooHigh(
+      averageRate,
+      primaryReserveBalance,
+      secondaryReserveBalance,
+      new BigNumber(averageRateMaxDeviationResult)
     );
 
     return priceDeviationTooHigh;
