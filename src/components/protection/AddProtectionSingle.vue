@@ -164,6 +164,8 @@ export default class AddProtectionSingle extends BaseComponent {
 
   selectedTokenIndex = 0;
 
+  private interval: any;
+
   prettifyNumber = prettifyNumber;
 
   @Watch("token")
@@ -401,6 +403,13 @@ export default class AddProtectionSingle extends BaseComponent {
 
   async created() {
     await this.loadMaxStakes();
+    this.interval = setInterval(async () => {
+      await this.loadMaxStakes();
+    }, 30000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 }
 </script>
