@@ -259,13 +259,13 @@ export default class Protected extends Vue {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      {
-        id: 4,
-        key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
-        minWidth: "110px"
-      },
+      // {
+      //   id: 4,
+      //   key: "fees",
+      //   label: "Fees",
+      //   tooltip: "Fees your stake has earned since you entered the pool.",
+      //   minWidth: "110px"
+      // },
       {
         id: 5,
         key: "roi",
