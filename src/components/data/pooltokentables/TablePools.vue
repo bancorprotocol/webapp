@@ -4,6 +4,7 @@
     :items="items"
     :filter="filter"
     :filter-function="doFilter"
+    :sort-function="customSort"
     default-sort="liqDepth"
   >
     <template #head(liquidityProtection)>
@@ -72,8 +73,8 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { ViewRelay } from "@/types/bancor";
-import { formatPercent, prettifyNumber } from "@/api/helpers";
+import { ViewProtectedLiquidity, ViewRelay } from "@/types/bancor";
+import { defaultTableSort, formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
 import { ViewTableField } from "@/components/common/DataTable.vue";
@@ -176,6 +177,17 @@ export default class TablePools extends Vue {
   doFilter(row: ViewRelay, filter: string) {
     const symbols = row.reserves.map(reserve => reserve.symbol.toLowerCase());
     return symbols.some(symbol => symbol.includes(filter.toLowerCase()));
+  }
+
+  customSort(row: ViewRelay, sortBy: string) {
+    switch (sortBy) {
+      case "liquidityProtection":
+        return row.liquidityProtection;
+      case "symbol":
+        return row.symbol;
+      default:
+        return defaultTableSort(row, sortBy);
+    }
   }
 
   get isEth() {
