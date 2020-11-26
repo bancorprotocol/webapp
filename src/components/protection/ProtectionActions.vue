@@ -16,8 +16,6 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
   }
 })
 export default class ProtectionActions extends Vue {
-  withdrawProtection = false;
-
   get title() {
     const name = this.$route.name;
     switch (name) {
