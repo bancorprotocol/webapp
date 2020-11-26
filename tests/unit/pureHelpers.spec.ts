@@ -1,6 +1,7 @@
 import {
   calculatePositionFees,
   decToPpm,
+  expandToken,
   miningBntReward,
   miningTknReward
 } from "@/api/pureHelpers";
@@ -93,5 +94,17 @@ describe("can calculate mining aprs", () => {
     const expectedResult = 0.05422634970441928;
 
     expect(res).toBeCloseTo(expectedResult);
+  });
+});
+
+describe("can convert TKN amount to wei with correct precision and rounding", () => {
+  test("Expand Token - Convert to WEI", async () => {
+    const { amount, precision } = {
+      amount: "9.9999999999999999999999999999999999999999999",
+      precision: 18
+    };
+
+    const res = expandToken(amount, precision);
+    expect(res).toBe("9999999999999999999");
   });
 });
