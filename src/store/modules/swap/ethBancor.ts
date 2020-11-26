@@ -200,6 +200,7 @@ import {
   relayShape,
   poolTokenShape,
   protectedReservesShape,
+  dynamicRelayShape,
   staticRelayShape
 } from "@/api/eth/shapes";
 import Web3 from "web3";
@@ -259,7 +260,7 @@ combineLatest([currentBlockTwo$, bufferedAnchorsAndConverters$])
     vxm.ethBancor.updateHistoricPoolFees(fees);
   });
 
-let w3: Web3 = web3;
+const w3: Web3 = web3;
 
 const protectedPositionShape = (storeAddress: string, protectionId: string) => {
   const contract = buildLiquidityProtectionStoreContract(storeAddress);
@@ -952,6 +953,15 @@ export interface AbiStaticRelay {
   connectorToken2: string;
 }
 
+export interface AbiDynamicRelay {
+  converterAddress: string;
+  reserves: {
+    contract: string;
+    balance: string;
+  }[];
+  fee: string;
+}
+
 export interface StaticRelay {
   converterAddress: string;
   converterType: number;
@@ -1470,7 +1480,9 @@ export class EthBancorModule
 
   @action async fetchLiquidityProtectionSettings(contractAddress: string) {
     const [[settings]] = ((await this.multi({
-      groupsOfShapes: [[liquidityProtectionShape(contractAddress, w3)]]
+      groupsOfShapes: [
+        [liquidityProtectionShape(contractAddress, this.currentNetwork)]
+      ]
     })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const newSettings = {
@@ -3396,7 +3408,7 @@ export class EthBancorModule
             relay.contract,
             reserveOne.contract,
             reserveTwo.contract,
-            w3
+            this.currentNetwork
           )
         ]
       ]
@@ -3694,11 +3706,11 @@ export class EthBancorModule
     const owner = this.currentUser;
 
     const knownDecimalShapes = knownDecimals.map(address =>
-      slimBalanceShape(address, owner, w3)
+      slimBalanceShape(address, owner, this.currentNetwork)
     );
 
     const unknownDecimalShapes = unknownDecimals.map(address =>
-      balanceShape(address, owner, w3)
+      balanceShape(address, owner, this.currentNetwork)
     );
 
     try {
@@ -5099,7 +5111,7 @@ export class EthBancorModule
         relay.contract,
         relay.reserves[0].contract,
         relay.reserves[1].contract,
-        w3
+        this.currentNetwork
       )
     );
 
@@ -5245,7 +5257,7 @@ export class EthBancorModule
             pool.converterAddress,
             pool.reserves[0],
             pool.reserves[1],
-            w3
+            this.currentNetwork
           )
         )
       ],
@@ -6167,14 +6179,63 @@ export class EthBancorModule
         ],
         version: Number(relay.version),
         converterType: determineConverterType(relay.converterType)
-      })),
-      tap(x => console.log("prod", x))
+      }))
     );
 
-    const staticRelays$ = merge([
-      staticRelayLocal$,
-      staticRelaysRemote$
-    ]).subscribe(x => console.log("is on the good one", x));
+    const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$);
+
+    // tokenAddressesMissing.map(tokenShape),
+    // verifiedV1Pools.map(v1Pool =>
+    //   reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
+    // ),
+
+    const dynamicRelayRemote$ = staticRelays$.pipe(
+      bufferTime(100),
+      mergeMap(async staticRelays => {
+        const tokenMeta = this.tokenMeta;
+        const reserveTokens = staticRelays.flatMap(relay => relay.reserves);
+        const tokensMissing = reserveTokens.filter(
+          token => !tokenMeta.some(meta => compareString(meta.contract, token))
+        );
+
+        const tokensShape = tokensMissing.map(tokenShape);
+        const relaysShape = staticRelays.map(relay =>
+          dynamicRelayShape(relay.converterAddress, relay.reserves)
+        );
+
+        const [rawTokens, rawRelays] = ((await this.multi({
+          groupsOfShapes: [tokensShape, relaysShape]
+        })) as unknown) as [RawAbiToken[], AbiDynamicRelay[]];
+
+        const dynamicRelays = staticRelays.map(relay => {
+          const hydrated = findOrThrow(rawRelays, r =>
+            compareString(relay.converterAddress, r.converterAddress)
+          );
+          const reserveContracts = hydrated.reserves.map(x => x.contract);
+          const reserveTokens = reserveContracts.map(tokenContract => {
+            const rawToken = rawTokens.find(t =>
+              compareString(tokenContract, t.contract)
+            );
+            if (rawToken) return rawToken;
+            return findOrThrow(
+              tokenMeta,
+              meta => compareString(tokenContract, meta.contract),
+              "failed to find token in meta or raw token"
+            );
+          });
+
+          return {
+            ...relay,
+            reserves: hydrated.reserves,
+            fee: hydrated.fee
+          };
+        });
+      })
+    );
+
+    const hello = staticRelays$.subscribe(x =>
+      console.log("trying to make me cry", x)
+    );
 
     // const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
     // const allConverters = convertersAndAnchors.map(
@@ -6437,7 +6498,9 @@ export class EthBancorModule
 
     const [tokenSupplys, reserveBalances] = ((await this.multi({
       groupsOfShapes: [
-        poolsToCalculate.map(pool => tokenSupplyShape(pool.id)),
+        poolsToCalculate.map(pool =>
+          tokenSupplyShape(pool.id, this.currentNetwork)
+        ),
         reservesShapes
       ],
       blockHeight: weekAgo
