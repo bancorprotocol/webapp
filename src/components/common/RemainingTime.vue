@@ -189,9 +189,14 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   }
   &--unlock &__progress-text {
     padding-right: 8px;
-    font-size: 18px;
+    font-size: .9vw;
     color: $primary;
     font-weight: 600;
+    white-space: nowrap;
+
+    @media screen and (max-width: $breakpoint-mobile) {
+      font-size: 1rem;
+    }
   }
   &--unlock &__desc {
     padding-top: 4px;
