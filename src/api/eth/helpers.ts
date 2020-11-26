@@ -2,14 +2,6 @@ import BigNumber from "bignumber.js";
 import { isAddress } from "web3-utils";
 import { web3 } from "@/api/web3";
 
-export const expandToken = (amount: string | number, precision: number) => {
-  const trimmed = new BigNumber(amount).toFixed(precision, 1);
-  const inWei = new BigNumber(trimmed)
-    .times(new BigNumber(10).pow(precision))
-    .toFixed(0);
-  return inWei;
-};
-
 const addZeros = (numberOfZeros: number, noLeadingZeros: string) => {
   const zeros = [...Array(numberOfZeros)].map(() => "0");
   const res = ["0", "x", ...zeros, ...noLeadingZeros.split("").slice(2)].join(
