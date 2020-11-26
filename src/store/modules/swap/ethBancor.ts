@@ -126,7 +126,6 @@ import {
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
-  expandToken,
   generateEthPath,
   shrinkToken,
   TokenSymbol,
@@ -153,9 +152,11 @@ import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
 import {
   calculatePositionFees,
+  calculatePriceDeviationTooHigh,
   decToPpm,
   miningBntReward,
-  miningTknReward
+  miningTknReward,
+  expandToken
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
 import {
@@ -2598,6 +2599,65 @@ export class EthBancorModule
       await this.addPoolsBulk(remainingPools);
     }
     this.setLoadingPools(false);
+  }
+
+  @action async checkPriceDeviationTooHigh({
+    relayId,
+    selectedTokenAddress
+  }: {
+    relayId: string;
+    selectedTokenAddress: string;
+  }): Promise<boolean> {
+    let priceDeviationTooHigh = false;
+
+    const relay = await this.relayById(relayId);
+
+    const converter = buildV28ConverterContract(relay.contract, w3);
+    const liquidityProtection = buildLiquidityProtectionContract(
+      this.contracts.LiquidityProtection,
+      w3
+    );
+
+    const [
+      recentAverageRateResult,
+      averageRateMaxDeviationResult,
+      primaryReserveBalanceResult,
+      secondaryReserveBalanceResult
+    ] = await Promise.all([
+      converter.methods.recentAverageRate(selectedTokenAddress).call(),
+      liquidityProtection.methods.averageRateMaxDeviation().call(),
+      converter.methods
+        .reserveBalance(
+          // the selected token
+          relay.reserves.find(r =>
+            compareString(r.contract, selectedTokenAddress)
+          )!.contract
+        )
+        .call(),
+      converter.methods
+        .reserveBalance(
+          // the other token
+          relay.reserves.find(
+            r => !compareString(r.contract, selectedTokenAddress)
+          )!.contract
+        )
+        .call()
+    ]);
+
+    const averageRate = new BigNumber(recentAverageRateResult["1"]).dividedBy(
+      recentAverageRateResult["0"]
+    );
+
+    console.log("averageRate", averageRate);
+
+    priceDeviationTooHigh = calculatePriceDeviationTooHigh(
+      averageRate,
+      new BigNumber(primaryReserveBalanceResult),
+      new BigNumber(secondaryReserveBalanceResult),
+      new BigNumber(averageRateMaxDeviationResult)
+    );
+
+    return priceDeviationTooHigh;
   }
 
   get secondaryReserveChoices(): ModalChoice[] {

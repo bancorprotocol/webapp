@@ -313,6 +313,12 @@ export default class Protected extends BaseComponent {
 
   customSort(row: ViewProtectedLiquidity, sortBy: string) {
     switch (sortBy) {
+      case "stake":
+        return row.stake.unixTime;
+      case "fullyProtected":
+        return row.fullyProtected.usdValue;
+      case "protectedAmount":
+        return row.protectedAmount.usdValue;
       case "apr":
         return row.apr.day;
       case "currentCoverage":
