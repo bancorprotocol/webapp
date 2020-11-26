@@ -174,11 +174,6 @@ export default class AddProtectionSingle extends BaseComponent {
     await this.loadRecentAverageRate();
   }
 
-  @Watch("currentUser")
-  async onUserChange() {
-    await this.loadRecentAverageRate();
-  }
-
   toggleReserveIndex(x: string) {
     this.preTxError = "";
     this.selectedTokenIndex = this.pool.reserves.findIndex(
@@ -364,8 +359,7 @@ export default class AddProtectionSingle extends BaseComponent {
   async loadRecentAverageRate() {
     this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
       relayId: this.pool.id,
-      selectedTokenAddress: this.token.contract,
-      owner: this.currentUser
+      selectedTokenAddress: this.token.contract
     });
 
     console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
@@ -397,12 +391,9 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
-  async mounted() {
-    await this.loadRecentAverageRate();
-  }
-
   async created() {
     await this.loadMaxStakes();
+    await this.loadRecentAverageRate();
     this.interval = setInterval(async () => {
       await this.loadMaxStakes();
     }, 30000);

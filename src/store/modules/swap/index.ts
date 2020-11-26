@@ -433,16 +433,14 @@ export class BancorModule extends VuexModule.With({
 
   @action async checkPriceDeviationTooHigh({
     relayId,
-    selectedTokenAddress,
-    owner
+    selectedTokenAddress
   }: {
     relayId: string;
     selectedTokenAddress: string;
-    owner: string;
   }) {
     return this.dispatcher([
       "checkPriceDeviationTooHigh",
-      { relayId, selectedTokenAddress, owner }
+      { relayId, selectedTokenAddress }
     ]);
   }
 }

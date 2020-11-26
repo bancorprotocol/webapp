@@ -2603,16 +2603,12 @@ export class EthBancorModule
 
   @action async checkPriceDeviationTooHigh({
     relayId,
-    selectedTokenAddress,
-    owner
+    selectedTokenAddress
   }: {
     relayId: string;
     selectedTokenAddress: string;
-    owner: string;
   }): Promise<boolean> {
     let priceDeviationTooHigh = false;
-
-    if (!owner) return priceDeviationTooHigh;
 
     const relay = await this.relayById(relayId);
 
@@ -2621,19 +2617,31 @@ export class EthBancorModule
       this.contracts.LiquidityProtection,
       w3
     );
-    const liquidityProtectionStore = buildLiquidityProtectionStoreContract(
-      this.contracts.LiquidityProtectionStore,
-      w3
-    );
 
     const [
       recentAverageRateResult,
       averageRateMaxDeviationResult,
-      positionIds
+      primaryReserveBalanceResult,
+      secondaryReserveBalanceResult
     ] = await Promise.all([
       converter.methods.recentAverageRate(selectedTokenAddress).call(),
       liquidityProtection.methods.averageRateMaxDeviation().call(),
-      liquidityProtectionStore.methods.protectedLiquidityIds(owner).call()
+      converter.methods
+        .reserveBalance(
+          // the selected token
+          relay.reserves.find(r =>
+            compareString(r.contract, selectedTokenAddress)
+          )!.contract
+        )
+        .call(),
+      converter.methods
+        .reserveBalance(
+          // the other token
+          relay.reserves.find(
+            r => !compareString(r.contract, selectedTokenAddress)
+          )!.contract
+        )
+        .call()
     ]);
 
     const averageRate = new BigNumber(recentAverageRateResult["1"]).dividedBy(
@@ -2642,43 +2650,10 @@ export class EthBancorModule
 
     console.log("averageRate", averageRate);
 
-    // get all positions for current user
-    const allPositions = await this.fetchPositionsMulti({
-      positionIds,
-      liquidityStore: this.contracts.LiquidityProtectionStore
-    });
-
-    // only positions with selected token
-    const positions = allPositions.filter(
-      p =>
-        compareString(p.poolToken, relay.id) &&
-        compareString(p.reserveToken, selectedTokenAddress)
-    );
-
-    // calcualte primarey reserve balance
-    let primaryReserveBalance: BigNumber = new BigNumber(0);
-    for (const position of positions) {
-      primaryReserveBalance = primaryReserveBalance.plus(
-        new BigNumber(position.reserveAmount)
-      );
-    }
-
-    const secondaryReserveBalance = new BigNumber(
-      await liquidityProtectionStore.methods
-        .totalProtectedReserveAmount(
-          relay.id,
-          // the other token
-          relay.reserves.find(
-            r => !compareString(r.contract, selectedTokenAddress)
-          )!.contract
-        )
-        .call()
-    );
-
     priceDeviationTooHigh = calculatePriceDeviationTooHigh(
       averageRate,
-      primaryReserveBalance,
-      secondaryReserveBalance,
+      new BigNumber(primaryReserveBalanceResult),
+      new BigNumber(secondaryReserveBalanceResult),
       new BigNumber(averageRateMaxDeviationResult)
     );
 

@@ -72,25 +72,36 @@ export const calculatePriceDeviationTooHigh = (
     averageRateMaxDeviation
   );
 
+  const threshold = averageRate.dividedBy(spotRate);
+
+  const withinLowerThreshold = threshold.isGreaterThan(
+    averageRateMaxDeviationBase.dividedBy(oneMillion)
+  );
+
+  const withinHigherThreshold = oneMillion
+    .dividedBy(averageRateMaxDeviationBase)
+    .isGreaterThan(threshold);
+
   const priceDeviationTooHigh = !(
-    averageRate.isGreaterThan(
-      averageRateMaxDeviationBase.dividedBy(oneMillion)
-    ) &&
-    oneMillion.dividedBy(averageRateMaxDeviationBase).isGreaterThan(spotRate)
+    withinLowerThreshold && withinHigherThreshold
   );
 
   console.log(
     "price deviation values",
     "averageRate",
-    averageRate.toNumber(),
+    averageRate.toString(),
+    "withinLowerThreshold",
+    withinLowerThreshold,
     "primaryReserveBalance",
-    primaryReserveBalance.toNumber(),
+    primaryReserveBalance.toString(),
     "secondaryReserveBalance",
-    secondaryReserveBalance.toNumber(),
+    secondaryReserveBalance.toString(),
     "averageRateMaxDeviation",
-    averageRateMaxDeviation.toNumber(),
+    averageRateMaxDeviation.toString(),
     "spotRate",
-    spotRate.toNumber(),
+    spotRate.toString(),
+    "withinHigherThreshold",
+    withinHigherThreshold,
     priceDeviationTooHigh
   );
 
