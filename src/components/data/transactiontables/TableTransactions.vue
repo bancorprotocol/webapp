@@ -4,6 +4,7 @@
     :items="items"
     :filter="filter"
     :filter-function="doFilter"
+    :sort-function="customSort"
     default-sort="unixTime"
   >
     <template #cell(description)="{ item }">
@@ -38,12 +39,17 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
+import {
+  defaultTableSort,
+  prettifyNumber,
+  shortenEthAddress
+} from "@/api/helpers";
 import moment from "moment";
 import DataTable, {
   Item,
   ViewTableField
 } from "@/components/common/DataTable.vue";
+import { LiquidityHistory, ViewProtectedLiquidity } from "@/types/bancor";
 @Component({
   components: { DataTable }
 })
@@ -60,8 +66,7 @@ export default class TableTransactions extends Vue {
       id: 1,
       key: "description",
       label: "Description",
-      minWidth: "260px",
-      sortable: false
+      minWidth: "260px"
     },
     {
       id: 2,
@@ -73,13 +78,15 @@ export default class TableTransactions extends Vue {
       id: 3,
       key: "from",
       label: "Amount From",
-      minWidth: "200px"
+      minWidth: "200px",
+      sortable: false
     },
     {
       id: 4,
       key: "to",
       label: "Amount To",
-      minWidth: "200px"
+      minWidth: "200px",
+      sortable: false
     },
     {
       id: 5,
@@ -102,6 +109,17 @@ export default class TableTransactions extends Vue {
       (fromSymbol && fromSymbol.toLowerCase().indexOf(filter) >= 0) ||
       (toSymbol && toSymbol.toLowerCase().indexOf(filter) >= 0)
     );
+  }
+
+  customSort(row: any, sortBy: string) {
+    switch (sortBy) {
+      case "description":
+        return row.data.from.symbol;
+      case "account":
+        return row.data.account;
+      default:
+        return defaultTableSort(row, sortBy, true);
+    }
   }
 }
 </script>
