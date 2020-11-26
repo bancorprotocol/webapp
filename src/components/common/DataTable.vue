@@ -8,18 +8,30 @@
             v-for="column in fields"
             :key="column.id"
             scope="col"
-            :class="isColumnSort(column) ? 'cursor' : ''"
+            :class="getThClass(column)"
             :style="getWidthStyle(column)"
           >
             <slot :name="`head(${column.key})`">
               {{ column.label }}
             </slot>
-            <font-awesome-icon
-              v-if="column.tooltip"
-              icon="info-circle"
-              class="mr-1"
-              v-b-popover.hover.top="column.tooltip"
-            />
+
+            <template v-if="column.tooltip || isHtmlTooltip(column.key)">
+              <font-awesome-icon
+                :id="`tooltip-column-${column.id}`"
+                icon="info-circle"
+                class="mr-1"
+              />
+              <b-popover
+                :target="`tooltip-column-${column.id}`"
+                triggers="hover"
+                placement="bottom"
+              >
+                <slot :name="`tooltip(${column.key})`">
+                  {{ column.tooltip }}
+                </slot>
+              </b-popover>
+            </template>
+
             <font-awesome-icon
               v-if="column.key === sortBy"
               :icon="descOrder ? 'caret-down' : 'caret-up'"
@@ -46,7 +58,7 @@
     <table-pagination
       v-if="!hidePagination"
       :current-page.sync="currentPage"
-      :row-count="modifiedItems.length"
+      :row-count="filteredItems.length"
       :per-page="perPage"
     />
   </div>
@@ -57,6 +69,7 @@ import { Component, Prop, Watch } from "vue-property-decorator";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import BigNumber from "bignumber.js";
+import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewTableField {
@@ -67,6 +80,7 @@ export interface ViewTableField {
   tooltip?: string;
   minWidth?: string;
   maxWidth?: string;
+  thClass?: string;
 }
 export interface Item {
   id: string;
@@ -87,6 +101,7 @@ export default class DataTable extends BaseComponent {
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
   @Prop() filterFunction?: Function;
+  @Prop() sortFunction?: Function;
 
   sortBy: string = "";
   descOrder: boolean = this.defaultOrder === "desc";
@@ -96,13 +111,12 @@ export default class DataTable extends BaseComponent {
     this.sortBy = this.defaultSort ? this.defaultSort : "";
   }
 
-  get modifiedItems() {
+  get filteredItems() {
     let filtered = [];
     const items = this.items.slice();
     const filter = this.filter;
     const filterBy = this.filterBy;
     const filterFunction = this.filterFunction;
-    const sortBy = this.sortBy;
 
     if (filterFunction !== undefined) {
       filtered = items.filter((t: any) => filterFunction(t, filter));
@@ -116,28 +130,33 @@ export default class DataTable extends BaseComponent {
       filtered = items;
     }
 
-    if (sortBy) {
-      return sort(filtered)[this.descOrder ? "desc" : "asc"]((t: Item) => {
-        if (
-          t[sortBy] !== 0 &&
-          t[sortBy] !== "0" &&
-          t[sortBy] !== undefined &&
-          t[sortBy] !== null
-        ) {
-          const value = t[sortBy];
-          const number = new BigNumber(value);
-          if (BigNumber.isBigNumber(number)) return number.toNumber();
-          else return null;
-        } else return null;
-      });
-    } else return filtered;
+    return filtered;
+  }
+
+  get sortedItems() {
+    const filtered = this.filteredItems;
+    let sorted = [];
+    const sortBy = this.sortBy;
+    const sortFunction = this.sortFunction;
+    const orderBy = this.descOrder ? "desc" : "asc";
+
+    if (!sortBy) sorted = filtered;
+    else if (sortFunction !== undefined) {
+      sorted = sort(filtered)[orderBy]((t: Item) => sortFunction(t, sortBy));
+    } else {
+      sorted = sort(filtered)[orderBy]((t: Item) =>
+        defaultTableSort(t, sortBy)
+      );
+    }
+
+    return sorted;
   }
 
   get paginatedItems() {
     const perPage = this.perPage;
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
-    return this.modifiedItems.slice(startIndex, endIndex);
+    return this.sortedItems.slice(startIndex, endIndex);
   }
 
   isColumnSort(column: ViewTableField) {
@@ -151,12 +170,27 @@ export default class DataTable extends BaseComponent {
     } else return;
   }
 
+  getThClass(column: ViewTableField) {
+    const styles = [];
+    if (column.thClass) {
+      styles.push(column.thClass);
+    }
+    if (this.isColumnSort(column)) {
+      styles.push("cursor");
+    }
+    return styles;
+  }
+
   getWidthStyle(column: ViewTableField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)
       styleString = styleString + "min-width: " + column.minWidth + ";";
     return styleString;
+  }
+
+  isHtmlTooltip(key: string) {
+    return !!this.$slots[`tooltip(${key})`];
   }
 
   @Watch("filter")

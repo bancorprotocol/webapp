@@ -57,7 +57,7 @@
         </td>
         <td>
           <div class="font-size-14 font-w500">
-            {{ proposal.totalVotesFor }} {{ symbol }}
+            {{ prettifyNumber(proposal.totalVotesFor) }} {{ symbol }}
           </div>
           <div class="font-size-12 font-w500 result result--for">
             {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
@@ -65,7 +65,7 @@
         </td>
         <td>
           <div class="font-size-14 font-w500">
-            {{ proposal.totalVotesAgainst }} {{ symbol }}
+            {{ prettifyNumber(proposal.totalVotesAgainst) }} {{ symbol }}
           </div>
           <div class="font-size-12 font-w500 result result--against">
             {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
@@ -191,7 +191,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
-import { shortenEthAddress } from "@/api/helpers";
+import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
 import {
   ipfsViewUrl,
   Proposal
@@ -222,11 +222,11 @@ export default class DoneProposals extends BaseComponent {
       },
       {
         label: "Details",
-        key: ""
+        key: "details"
       },
       {
         label: "Result",
-        key: "",
+        key: "result",
         maxWidth: "120px",
         minWidth: "120px"
       },
@@ -250,10 +250,14 @@ export default class DoneProposals extends BaseComponent {
       },
       {
         label: "",
-        key: "",
+        key: "spacer",
         maxWidth: "10px"
       }
     ];
+  }
+
+  prettifyNumber(num: string | number) {
+    return prettifyNumber(num);
   }
 
   getIPFSUrl(hash: string) {
@@ -295,8 +299,8 @@ export default class DoneProposals extends BaseComponent {
     return proposal?.metadata?.payload?.metadata?.discourse || "#";
   }
 
-  openProposal(proposal: any) {
-    this.opened = proposal.id === this.opened ? undefined : proposal.id;
+  openProposal(proposal: Proposal) {
+    this.opened = proposal.id === this.opened ? -1 : proposal.id;
     this.$forceUpdate();
   }
 
@@ -315,17 +319,20 @@ export default class DoneProposals extends BaseComponent {
   cursor: pointer;
   color: $primary !important;
 }
+
 .align-rows-cells {
   @at-root .table & > td {
     vertical-align: top !important;
   }
 }
+
 .fix-pie {
   circle,
   text {
     display: none;
   }
 }
+
 .pie-wrapper {
   height: 24px;
   width: 24px;
@@ -337,6 +344,7 @@ export default class DoneProposals extends BaseComponent {
   &--for {
     color: #3ec8c8 !important;
   }
+
   &--against {
     color: #de4a5c !important;
   }

@@ -1,6 +1,12 @@
 <template>
   <div id="open-proposals">
     <modal-not-enough-tokens v-model="notEnoughTokensModal" />
+    <modal-vote-details
+      v-if="proposals && opened > -1"
+      v-model="voteDetailsModal"
+      @hide="hideDetails"
+      :proposal="proposals.find(p => p.id === opened)"
+    />
     <div v-if="!proposals">
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
@@ -33,6 +39,7 @@
       :items="items"
       :fields="fields"
       :hide-pagination="true"
+      per-page="1000000"
     >
       <template #cell(name)="{ item }">
         <div class="font-size-14 font-w500">
@@ -142,7 +149,6 @@
           />
         </div>
       </template>
-
       <template #cell(votes)="{ item }">
         <div class="pl-3 container-border h-100">
           <div
@@ -178,7 +184,15 @@
                   <span class="text-uppercase">{{ item.votes.voted }}</span>
                 </span>
                 <span class="col-9 text-right">
-                  {{ item.votes.for || item.votes.against }}
+                  {{
+                    prettifyNumber(
+                      shrinkToken(
+                        item.votes.for !== "0"
+                          ? item.votes.for
+                          : item.votes.against
+                      )
+                    )
+                  }}
                   {{ symbol }}
                 </span>
               </div>
@@ -196,7 +210,11 @@
                   >
                     {{
                       (
-                        ((item.votes.for || item.votes.against) /
+                        (shrinkToken(
+                          item.votes.for !== "0"
+                            ? item.votes.for
+                            : item.votes.against
+                        ) /
                           item.totalVotes) *
                         100
                       ).toFixed(2)
@@ -251,16 +269,64 @@
             </div>
 
             <div class="row pt-2">
-              <div class="col-12">
+              <div class="col-6">
                 <span>
-                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum ({{
-                    (item.quorumRequired / 10000).toFixed(2)
-                  }}% to pass)
+                  {{ item.voters.filter(v => v.votes.voted === "for").length }}
+                  Users
                 </span>
+              </div>
+              <div class="col-6 text-right">
+                <span>
+                  {{
+                    item.voters.filter(v => v.votes.voted === "against").length
+                  }}
+                  Users
+                </span>
+              </div>
+            </div>
+
+            <div class="row pt-2">
+              <div class="col-6 pt-1">
+                <span v-if="Date.now() > item.end">
+                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum
+                </span>
+              </div>
+              <div class="col-6 text-right">
+                <b-btn
+                  @click="showDetails(item.id)"
+                  :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+                  class="block-rounded btn-sm"
+                >
+                  <span class="font-size-14 font-w500">
+                    <font-awesome-icon icon="poll" />
+                    Breakdown
+                  </span>
+                </b-btn>
               </div>
             </div>
           </div>
         </div>
+      </template>
+      <template #tooltip(votes)>
+        <div class="pb-2">
+          According to
+          <a
+            href="https://gov.bancor.network/t/bip3-governance-changes-bip-documentation-requirements-and-new-majority-and-quorum-rules/97"
+            target="_blank"
+            rel="noopener"
+            >BIP3</a
+          >:
+        </div>
+        <ul class="pl-3">
+          <li>
+            Required quorum to pass proposals is 20% for standard BIPs & 40% for
+            Token Whitelistings.
+          </li>
+          <li>
+            A 2/3rd majority (66.7%) of votes is also required for all BIP
+            approvals.
+          </li>
+        </ul>
       </template>
     </data-table>
   </div>
@@ -280,9 +346,12 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import ModalVoteDetails from "@/components/modals/ModalVoteDetails.vue";
+import { shrinkToken } from "@/api/eth/helpers";
 
 @Component({
   components: {
+    ModalVoteDetails,
     ContentBlock,
     ProgressBar,
     RemainingTime,
@@ -296,7 +365,11 @@ export default class OpenProposals extends BaseComponent {
   @Prop() proposals?: Proposal[];
 
   notEnoughTokensModal = false;
+  voteDetailsModal = false;
+  opened: number = -1;
+
   symbol: string = "";
+  decimals: number = 0;
   etherscanUrl: string = "";
   currentVotes: BigNumber = new BigNumber(0);
 
@@ -334,6 +407,10 @@ export default class OpenProposals extends BaseComponent {
     ];
   }
 
+  shrinkToken(amount: string): string {
+    return shrinkToken(amount, this.decimals);
+  }
+
   prettifyNumber(number: string | number): string {
     return prettifyNumber(number);
   }
@@ -364,6 +441,15 @@ export default class OpenProposals extends BaseComponent {
 
   shortAddress(address: string) {
     return shortenEthAddress(address);
+  }
+
+  showDetails(id: number) {
+    this.opened = id === this.opened ? -1 : id;
+    this.voteDetailsModal = true;
+  }
+
+  hideDetails() {
+    this.opened = -1;
   }
 
   async voteFor(proposalId: string) {
@@ -404,6 +490,7 @@ export default class OpenProposals extends BaseComponent {
   async mounted() {
     this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
+    this.decimals = await vxm.ethGovernance.getDecimals();
     await this.update();
   }
 }
