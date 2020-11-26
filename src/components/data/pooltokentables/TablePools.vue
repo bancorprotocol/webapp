@@ -73,7 +73,11 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { ViewProtectedLiquidity, ViewRelay } from "@/types/bancor";
+import {
+  LiqMiningApr,
+  ViewProtectedLiquidity,
+  ViewRelay
+} from "@/types/bancor";
 import { defaultTableSort, formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
@@ -185,6 +189,16 @@ export default class TablePools extends Vue {
         return row.liquidityProtection;
       case "symbol":
         return row.symbol;
+      case "aprMiningRewards": {
+        const rewards = row.aprMiningRewards;
+        if (rewards) {
+          const reward = rewards.rewards.find(
+            (r: LiqMiningApr) => r.symbol !== "BNT"
+          );
+          return reward ? reward.reward : null;
+        }
+        return null;
+      }
       default:
         return defaultTableSort(row, sortBy);
     }
