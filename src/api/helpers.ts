@@ -30,11 +30,10 @@ import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
-import { PropOptions } from "vue";
-import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
 import moment from "moment";
-import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
+import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
+import { Item } from "@/components/common/DataTable.vue";
 
 export enum PositionType {
   single,
@@ -115,13 +114,10 @@ export const traverseLockedBalances = async (
   contract: string,
   owner: string,
   expectedCount: number,
-  network: EthNetworks
+  w3: Web3
 ): Promise<LockedBalance[]> => {
   console.log("traverseHit");
-  const storeContract = buildLiquidityProtectionStoreContract(
-    contract,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const storeContract = buildLiquidityProtectionStoreContract(contract, w3);
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
@@ -154,24 +150,6 @@ export const traverseLockedBalances = async (
   console.log(lockedBalances, "should be inspected");
   return lockedBalances;
 };
-
-export function VModel(propsArgs: PropOptions = {}) {
-  const valueKey: string = "value";
-  return createDecorator((componentOptions, key) => {
-    (componentOptions.props || ((componentOptions.props = {}) as any))[
-      valueKey
-    ] = propsArgs;
-    (componentOptions.computed || (componentOptions.computed = {}))[key] = {
-      get() {
-        return (this as any)[valueKey];
-      },
-      set(value: any) {
-        // @ts-ignore
-        this.$emit("input", value);
-      }
-    };
-  });
-}
 
 export const networkTokens = ["BNT", "USDB"];
 
@@ -354,12 +332,9 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 
 export const fetchUsdPriceOfBntViaRelay = async (
   relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
-  network: EthNetworks
+  w3: Web3
 ): Promise<number> => {
-  const contract = buildConverterContract(
-    relayContractAddress,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const contract = buildConverterContract(relayContractAddress, w3);
   const res = await contract.methods
     .getReturn(
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -378,18 +353,6 @@ export const updateArray = <T>(
 
 export type Wei = string | number;
 export type Ether = string | number;
-export enum EthNetworks {
-  Mainnet = 1,
-  Ropsten = 3,
-  Rinkeby = 4,
-  Goerli = 5
-}
-
-export const web3 = new Web3(
-  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
-);
-
-web3.eth.transactionBlockTimeout = 100;
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
@@ -697,26 +660,6 @@ export const getConverterLogs = async (
     removeLiquidity,
     conversions
   };
-};
-
-const projectId = "da059c364a2f4e6eb89bfd89600bce07";
-
-const buildInfuraAddress = (
-  subdomain: string,
-  projectId: string,
-  wss: boolean = false
-) =>
-  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${
-    wss ? "ws/" : ""
-  }v3/${projectId}`;
-
-const getInfuraAddress = (network: EthNetworks, wss: boolean = false) => {
-  if (network == EthNetworks.Mainnet) {
-    return buildInfuraAddress("mainnet", projectId, wss);
-  } else if (network == EthNetworks.Ropsten) {
-    return buildInfuraAddress("ropsten", projectId, wss);
-  }
-  throw new Error("Infura address for network not supported ");
 };
 
 export const getLogs = async (
@@ -1358,4 +1301,25 @@ export const formatUnixTime = (
   const dateTime = `${date} ${time}`;
 
   return { date, time, dateTime };
+};
+
+export const defaultTableSort = (
+  row: Item,
+  sortBy: string,
+  sortZero: boolean = false
+) => {
+  const value = row[sortBy];
+  let isDefined: boolean;
+  if (!sortZero) {
+    isDefined =
+      value !== 0 && value !== "0" && value !== undefined && value !== null;
+  } else {
+    isDefined = value !== undefined && value !== null;
+  }
+  const number = new BigNumber(value);
+  const isBigNumber = BigNumber.isBigNumber(number);
+  if (isBigNumber) {
+    if (isDefined) return number.toNumber();
+    else return null;
+  } else return value;
 };

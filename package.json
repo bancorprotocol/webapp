@@ -1,6 +1,6 @@
 {
   "name": "bancor-ui",
-  "version": "2.2.6",
+  "version": "2.2.9",
   "private": false,
   "scripts": {
     "start": "vue-cli-service serve",
@@ -64,7 +64,7 @@
     "vue-class-component": "^7.2.3",
     "vue-content-loader": "^0.2.2",
     "vue-gtag": "^1.8.0",
-    "vue-property-decorator": "^8.4.2",
+    "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.2.0",
     "vuex": "^3.4.0",
     "vuex-class": "^0.3.2",

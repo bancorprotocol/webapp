@@ -44,22 +44,25 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from "vue-property-decorator";
+import { Component, Prop, Emit } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import { vxm } from "@/store";
 import { prettifyNumber } from "@/api/helpers";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { LabelContentSplit, GrayBorderBlock, MainButton }
 })
-export default class StakeButtons extends Vue {
+export default class StakeButtons extends BaseComponent {
   @Prop({ default: false }) showAddLiquidity!: boolean;
 
   maxStakes: string[] = [];
 
   loadingMaxStakes = false;
+
+  private interval: any;
 
   get poolId(): string | null {
     return this.$route.params.id ?? null;
@@ -121,10 +124,13 @@ export default class StakeButtons extends Vue {
 
   async created() {
     await this.loadMaxStakes();
+    this.interval = setInterval(async () => {
+      await this.loadMaxStakes();
+    }, 30000);
   }
 
-  get darkMode() {
-    return vxm.general.darkMode;
+  destroyed() {
+    clearInterval(this.interval);
   }
 
   @Emit("click")

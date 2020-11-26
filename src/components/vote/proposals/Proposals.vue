@@ -9,7 +9,10 @@
       <div class="float-right d-flex mt-3 mr-3">
         <a href="https://discord.gg/EHK8wHbgau" target="_blank" class="mr-2">
           <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
-            <font-awesome-icon :icon="['fab', 'discord']" />
+            <font-awesome-icon
+              :icon="['fab', 'discord']"
+              class="text-muted-light"
+            />
             <span class="d-none d-lg-block ml-2">Discord</span>
           </b-btn>
         </a>
@@ -51,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -61,6 +64,7 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 import OpenProposals from "@/components/vote/proposals/OpenProposals.vue";
 import DoneProposals from "@/components/vote/proposals/DoneProposals.vue";
 import AddProposal from "@/components/vote/proposals/AddProposal.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -72,7 +76,7 @@ import AddProposal from "@/components/vote/proposals/AddProposal.vue";
     AddProposal
   }
 })
-export default class Proposals extends Vue {
+export default class Proposals extends BaseComponent {
   proposals: Proposal[] = [];
   proposalsLoaded: boolean = false;
   showNewProposal = false;
@@ -83,14 +87,6 @@ export default class Proposals extends Vue {
 
   get ctaBtnVariant() {
     return this.darkMode ? "outline-gray-dark" : "outline-gray";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   get lastTransaction() {

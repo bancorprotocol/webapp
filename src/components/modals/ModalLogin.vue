@@ -119,9 +119,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { WalletProvider } from "eos-transit";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 const mobileCompatibleWallets = [
   "EOS Lynx",
@@ -137,13 +138,9 @@ const isMobileCompatible = (mobileCompatibleIds: string[]) => (
 ): boolean => mobileCompatibleIds.some(id => provider.id == id);
 
 @Component
-export default class ModalLogin extends Vue {
+export default class ModalLogin extends BaseComponent {
   loading = false;
   error: any = false;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 
   get width() {
     return window.innerWidth;

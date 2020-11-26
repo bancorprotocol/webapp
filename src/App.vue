@@ -81,11 +81,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
 import SideBar from "@/components/layout/SideBar.vue";
 import { vxm } from "@/store/";
 import wait from "waait";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -93,7 +94,7 @@ import wait from "waait";
     SideBar
   }
 })
-export default class App extends Vue {
+export default class App extends BaseComponent {
   loading = true;
   error = false;
 
@@ -102,13 +103,6 @@ export default class App extends Vue {
       process.env.NODE_ENV == "development" ||
       window.location.host.includes("staging")
     );
-  }
-
-  get selectedNetwork() {
-    return vxm.bancor.currentNetwork;
-  }
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   async loadBancor() {

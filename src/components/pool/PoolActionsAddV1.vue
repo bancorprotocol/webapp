@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay, ViewAmount } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -49,6 +49,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -60,7 +61,7 @@ import { compareString, formatNumber, formatPercent } from "@/api/helpers";
     MainButton
   }
 })
-export default class PoolActionsAddV1 extends Vue {
+export default class PoolActionsAddV1 extends BaseComponent {
   @Prop() pool!: ViewRelay;
 
   smartTokenAmount: string = "??.??????";
@@ -82,10 +83,6 @@ export default class PoolActionsAddV1 extends Vue {
       this.token2Error !== "" ||
       !(this.amount1 && this.amount2)
     );
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   async initAction() {

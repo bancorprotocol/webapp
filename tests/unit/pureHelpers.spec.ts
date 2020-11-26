@@ -13,7 +13,7 @@ describe("dec to ppm works", () => {
 });
 
 describe("can calculate position fees", () => {
-  test("test two", async () => {
+  test("Protected Position Fee", async () => {
     const {
       originalPoolTokenAmount,
       currentPoolTokenSupply,
@@ -38,7 +38,7 @@ describe("can calculate position fees", () => {
       opposingDepositedReserveCurrentBalance,
       reserveRate
     );
-    expect(res).toBe("-1933747839780032");
+    expect(res).toBe("1933747839780032");
   });
 });
 
@@ -48,7 +48,7 @@ describe("can calculate mining aprs", () => {
 
     const res = miningBntReward(protectedBnt, true);
 
-    const expectedResult = 1.07367947646;
+    const expectedResult = 2.147358952917518;
     expect(res).toBeCloseTo(expectedResult);
   });
 
@@ -57,7 +57,7 @@ describe("can calculate mining aprs", () => {
 
     const res = miningBntReward(protectedBnt, false);
 
-    const expectedResult = 0.10736794764;
+    const expectedResult = 0.21473589529175177;
     expect(res).toBeCloseTo(expectedResult);
   });
 
@@ -73,7 +73,7 @@ describe("can calculate mining aprs", () => {
       true
     );
 
-    const expectedResult = 0.271131748522;
+    const expectedResult = 0.5422634970441929;
 
     expect(res).toBeCloseTo(expectedResult);
   });
@@ -90,7 +90,7 @@ describe("can calculate mining aprs", () => {
       false
     );
 
-    const expectedResult = 0.027113174852;
+    const expectedResult = 0.05422634970441928;
 
     expect(res).toBeCloseTo(expectedResult);
   });

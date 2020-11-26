@@ -57,15 +57,15 @@
   </div>
 </template>
 <script lang="ts">
-import { Component, Prop, Vue, PropSync, Emit } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop, PropSync, Emit } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import VersionBadge from "@/components/common/VersionBadge.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { VersionBadge, MultiInputField }
 })
-export default class ContentBlock extends Vue {
+export default class ContentBlock extends BaseComponent {
   @Prop() title?: string;
   @Prop({ default: false }) noHeader?: boolean;
   @Prop({ default: true }) rounded?: boolean;
@@ -84,10 +84,6 @@ export default class ContentBlock extends Vue {
     const color = this.darkMode ? "text-dark" : "text-light";
     const alignment = this.backButton ? "text-center" : "text-left";
     return [color, alignment];
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

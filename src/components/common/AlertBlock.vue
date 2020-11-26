@@ -13,21 +13,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Emit } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop, Emit } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class AlertBlock extends Vue {
+export default class AlertBlock extends BaseComponent {
   @Prop({ default: "info" }) variant!: "info" | "error" | "warning";
   @Prop() title?: string;
   @Prop({ default: "" }) msg!: string;
 
   @Emit()
   click() {}
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

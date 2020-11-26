@@ -28,6 +28,7 @@ import { faThumbsUp } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
+import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 
 export const fas = [
   faArrowCircleRight,
@@ -58,7 +59,8 @@ export const fas = [
   faThumbsUp,
   faTimes,
   faTimesCircle,
-  faChevronLeft
+  faChevronLeft,
+  faPoll
 ];
 
 /* free-brands-svg-icons */

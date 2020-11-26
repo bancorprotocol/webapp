@@ -62,23 +62,19 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { Component, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     MainButton
   }
 })
-export default class ModalNotEnoughTokens extends Vue {
+export default class ModalNotEnoughTokens extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
   symbol: string = "";
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
 
   onHide() {
     this.show = false;

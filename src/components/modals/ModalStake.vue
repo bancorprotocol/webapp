@@ -149,17 +149,18 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { prettifyNumber, VModel } from "@/api/helpers";
+import { Component, Watch, VModel } from "vue-property-decorator";
+import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     MainButton
   }
 })
-export default class ModalStake extends Vue {
+export default class ModalStake extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
   currentBalance: BigNumber = new BigNumber(0);
@@ -190,14 +191,6 @@ export default class ModalStake extends Vue {
         this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
       ? "Stake Tokens"
       : "Insufficient Amount";
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
-
-  get currentUser() {
-    return vxm.wallet.currentUser;
   }
 
   setStakeInput() {

@@ -30,7 +30,9 @@ import TableHeader, {
   ViewTableFields
 } from "@/components/deprecated/TableHeader.vue";
 import TablePagination from "@/components/deprecated/TablePagination.vue";
+
 import sort from "fast-sort";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -38,7 +40,7 @@ import sort from "fast-sort";
     TablePagination
   }
 })
-export default class DataTable extends Vue {
+export default class DataTable extends BaseComponent {
   @Prop() fields!: ViewTableFields[];
   @Prop() items!: any[];  
   @Prop() filter!: string;

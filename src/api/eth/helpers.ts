@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js";
-import { web3 } from "@/api/helpers";
 import { isAddress } from "web3-utils";
+import { web3 } from "@/api/web3";
 
 export const expandToken = (amount: string | number, precision: number) =>
   new BigNumber(amount).times(new BigNumber(10).pow(precision)).toFixed(0);

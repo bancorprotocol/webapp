@@ -49,8 +49,12 @@
         :label="index == 0 ? 'Output breakdown' : ''"
         :key="output.id"
         :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
+      />
+      <span
+        class="font-size-14 font-w400 mt-2"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >{{ outputInfo }}</span
       >
-      </label-content-split>
     </gray-border-block>
 
     <alert-block
@@ -84,7 +88,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -97,6 +101,7 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -110,7 +115,7 @@ import BigNumber from "bignumber.js";
     MainButton
   }
 })
-export default class WithdrawProtectionSingle extends Vue {
+export default class WithdrawProtectionSingle extends BaseComponent {
   @Prop() pool!: ViewRelay;
 
   percentage: string = "50";
@@ -124,7 +129,7 @@ export default class WithdrawProtectionSingle extends Vue {
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
-      ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
+      ? "You still haven’t reached full protection. There is a risk for impermanent loss and you might receive less than your original stake amount as a result."
       : "";
   }
 
@@ -136,6 +141,18 @@ export default class WithdrawProtectionSingle extends Vue {
 
   get inputError() {
     if (parseFloat(this.percentage) === 0) return "Percentage can not be Zero";
+    else return "";
+  }
+
+  get outputInfo() {
+    const isBnt =
+      this.outputs.length === 1 && this.outputs.find(o => o.symbol === "BNT");
+    const isTknWithBnt =
+      this.outputs.length === 2 && this.outputs.find(o => o.symbol === "BNT");
+    if (isBnt)
+      return "BNT withdrawals are subject to a 24h lock period before they can be claimed.";
+    else if (isTknWithBnt)
+      return "Part of your output is in BNT. This amount will be locked for 24h before it can be claimed";
     else return "";
   }
 
@@ -237,10 +254,6 @@ export default class WithdrawProtectionSingle extends Vue {
       : this.txBusy
       ? "processing ..."
       : "Confirm";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>
