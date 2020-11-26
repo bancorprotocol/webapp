@@ -126,7 +126,6 @@ import {
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
-  expandToken,
   generateEthPath,
   shrinkToken,
   TokenSymbol,
@@ -155,7 +154,8 @@ import {
   calculatePositionFees,
   decToPpm,
   miningBntReward,
-  miningTknReward
+  miningTknReward,
+  expandToken
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
 import {
