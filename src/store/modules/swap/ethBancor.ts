@@ -6179,7 +6179,8 @@ export class EthBancorModule
         ],
         version: Number(relay.version),
         converterType: determineConverterType(relay.converterType)
-      }))
+      })),
+      tap(x => console.log("was emitted remote", x))
     );
 
     const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$);
@@ -6191,11 +6192,21 @@ export class EthBancorModule
 
     const dynamicRelayRemote$ = staticRelays$.pipe(
       bufferTime(100),
+      filter(staticRelays => staticRelays && staticRelays.length > 0),
       mergeMap(async staticRelays => {
+        console.log(staticRelays, "are the things");
+        await wait(1);
+        console.log(staticRelays, "are the things 2");
         const tokenMeta = this.tokenMeta;
         const reserveTokens = staticRelays.flatMap(relay => relay.reserves);
         const tokensMissing = reserveTokens.filter(
           token => !tokenMeta.some(meta => compareString(meta.contract, token))
+        );
+
+        const cached = differenceWith(
+          reserveTokens,
+          tokensMissing,
+          compareString
         );
 
         const tokensShape = tokensMissing.map(tokenShape);
@@ -6206,6 +6217,13 @@ export class EthBancorModule
         const [rawTokens, rawRelays] = ((await this.multi({
           groupsOfShapes: [tokensShape, relaysShape]
         })) as unknown) as [RawAbiToken[], AbiDynamicRelay[]];
+
+        console.log(rawRelays, "are the raw relays", {
+          tokensShape,
+          relaysShape,
+          cached,
+          tokenMeta
+        });
 
         const dynamicRelays = staticRelays.map(relay => {
           const hydrated = findOrThrow(rawRelays, r =>
@@ -6224,18 +6242,30 @@ export class EthBancorModule
             );
           });
 
+          const reserves = hydrated.reserves.map(reserve =>
+            findOrThrow(reserveTokens, token =>
+              compareString(reserve.contract, token.contract)
+            )
+          );
+          const fee = hydrated.fee;
           return {
             ...relay,
-            reserves: hydrated.reserves,
-            fee: hydrated.fee
+            reserves,
+            fee
           };
         });
+
+        console.log(
+          "should be resolving...",
+          dynamicRelays,
+          "here are the static",
+          staticRelays
+        );
+        return dynamicRelays;
       })
     );
 
-    const hello = staticRelays$.subscribe(x =>
-      console.log("trying to make me cry", x)
-    );
+    dynamicRelayRemote$.subscribe(x => console.log(x, "was the final result?"));
 
     // const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
     // const allConverters = convertersAndAnchors.map(
