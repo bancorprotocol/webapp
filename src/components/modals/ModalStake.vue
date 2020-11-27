@@ -78,19 +78,11 @@
         :label="stakeLabel"
         :active="true"
         :block="true"
-        :disabled="
-          !(
-            stakeValue.isGreaterThan(0) &&
-            currentBalance.isGreaterThanOrEqualTo(stakeValue)
-          )
-        "
+        :disabled="!buttonActive"
         class="font-size-14 font-w400 mt-3 button-status"
         :class="{
           'button-status--empty': stakeInput.length === 0,
-          'button-status--invalid': !(
-            stakeValue.isGreaterThan(0) &&
-            currentBalance.isGreaterThanOrEqualTo(stakeValue)
-          )
+          'button-status--invalid': !buttonActive
         }"
       />
     </div>
@@ -173,6 +165,13 @@ export default class ModalStake extends BaseComponent {
 
   prettifyNumber = prettifyNumber;
 
+  get buttonActive() {
+    return (
+        this.stakeValue.isGreaterThan(0) &&
+        this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
+    )
+  }
+
   get state() {
     return (
       (this.stakeInput.length === 0 ||
@@ -224,7 +223,10 @@ export default class ModalStake extends BaseComponent {
   onHide() {
     this.show = false;
     this.step = "stake";
-    this.stakeValue = new BigNumber(0);
+    setTimeout(() => {
+      this.stakeInput = "";
+      this.setStakeInput()
+    }, 100)
   }
 
   useMax() {

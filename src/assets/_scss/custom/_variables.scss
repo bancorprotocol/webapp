@@ -60,6 +60,11 @@ $block-border-blue: $gray-border;
 $block-header-gray: #e7ebf1;
 $block-header-gray-dark: #e7ebf1;
 
+// Breakpoints
+$breakpoint-mobile: 576px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 1024px;
+
 
 // Table sorting
 $b-table-sort-icon-bg-width: 0.65em !default;

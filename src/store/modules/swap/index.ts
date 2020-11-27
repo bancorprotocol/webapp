@@ -430,4 +430,17 @@ export class BancorModule extends VuexModule.With({
       return this.dispatcher(["refreshBalances", symbols]);
     }
   }
+
+  @action async checkPriceDeviationTooHigh({
+    relayId,
+    selectedTokenAddress
+  }: {
+    relayId: string;
+    selectedTokenAddress: string;
+  }) {
+    return this.dispatcher([
+      "checkPriceDeviationTooHigh",
+      { relayId, selectedTokenAddress }
+    ]);
+  }
 }
