@@ -5900,9 +5900,9 @@ export class EthBancorModule
       const currentFee = relay.fee / 100;
       const accumulatedFees = trades.reduce(
         (acc, item) => {
-          const currentTally = findOrThrow(acc, balance =>
-            compareString(balance.id, item.data.to.address)
-          );
+          // const currentTally = findOrThrow(acc, balance =>
+          //   compareString(balance.id, item.data.to.address)
+          // );
           const exitingAmount = new BigNumber(item.data.to.weiAmount);
 
           const decFee =
@@ -5917,14 +5917,16 @@ export class EthBancorModule
           const feePaid = exitingAmount.minus(feeLessAmount);
 
           const newTotalAmount = new BigNumber(
-            currentTally.collectedFees.plus(feePaid).toFixed(0)
+            0
+            // currentTally.collectedFees.plus(feePaid).toFixed(0)
           );
           const newTotalVolume = new BigNumber(exitingAmount).plus(
-            currentTally.totalVolume
+            0
+            // currentTally.totalVolume
           );
           return updateArray(
             acc,
-            reserve => compareString(reserve.id, currentTally.id),
+            reserve => compareString(reserve.id, "123"),
             reserve => ({
               ...reserve,
               collectedFees: newTotalAmount,
