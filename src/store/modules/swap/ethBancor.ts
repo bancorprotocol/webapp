@@ -75,7 +75,6 @@ import {
   traverseLockedBalances,
   LockedBalance,
   rewindBlocksByDays,
-  calculateMaxStakes,
   calculateProgressLevel
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
@@ -156,7 +155,8 @@ import {
   decToPpm,
   miningBntReward,
   miningTknReward,
-  expandToken
+  expandToken,
+  calculateMaxStakes
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
 import {
