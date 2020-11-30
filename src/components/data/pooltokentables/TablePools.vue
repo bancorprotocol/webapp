@@ -52,18 +52,15 @@
     </template>
 
     <template #cell(volume)="{ value }">
-      <!--      {{ prettifyNumber(value, true) }}-->
-      N/A
+      {{ prettifyNumber(value, true) }}
     </template>
 
     <template #cell(feesGenerated)="{ value }">
-      <!--      {{ prettifyNumber(value, true) }}-->
-      N/A
+      {{ prettifyNumber(value, true) }}
     </template>
 
     <template #cell(feesVsLiquidity)="{ value }">
-      <!--      {{ formatPercent(value) }}-->
-      N/A
+      {{ formatPercent(value) }}
     </template>
 
     <template #cell(actions)="{ item }">

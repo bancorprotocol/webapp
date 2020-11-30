@@ -26,12 +26,12 @@
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         />
         <div class="d-flex align-items-center">
-          <!--  <pool-logos-overlapped
+          <pool-logos-overlapped
             :pool-id="value.poolId"
             size="20"
             class="mr-1"
           />
-          {{ poolName(value.poolId) }}-->
+          {{ poolName(value.poolId) }}
         </div>
       </template>
 
