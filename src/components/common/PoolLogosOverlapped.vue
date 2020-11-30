@@ -21,7 +21,17 @@ export default class PoolLogosOverlapped extends Vue {
   @Prop({ default: "32" }) size!: "16" | "20" | "32" | "48" | "96" | "128";
 
   get pool() {
-    return vxm.bancor.relay(this.poolId);
+    const pool = vxm.bancor.relay(this.poolId);
+    const fallbackLogo =
+      "https://ropsten.etherscan.io/images/main/empty-token.png";
+    if (pool) return pool;
+    else
+      return {
+        reserves: [
+          { id: 1, logo: fallbackLogo },
+          { id: 2, logo: fallbackLogo }
+        ]
+      };
   }
 
   styleClasses(index: number) {
