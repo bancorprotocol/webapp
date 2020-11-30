@@ -35,7 +35,12 @@
         xl="2"
         class="d-none d-xl-flex align-items-center justify-content-end"
       >
-        <b-btn variant="primary" style="width: 132px">Stake</b-btn>
+        <b-btn
+          variant="primary"
+          style="width: 132px"
+          :to="{ name: 'AddProtectionHome' }"
+          >Stake</b-btn
+        >
       </b-col>
     </b-row>
   </div>
