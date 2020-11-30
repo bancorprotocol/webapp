@@ -2145,6 +2145,7 @@ export class EthBancorModule
                 reserveTokenAddress,
                 reserveAmountWei
               ),
+              resolveImmediately: true,
               ...(depositIsEth && { value: reserveAmountWei })
             });
           }
