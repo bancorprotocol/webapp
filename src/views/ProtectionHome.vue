@@ -42,7 +42,11 @@
               label="Loading..."
             />
           </div>
-          <protected v-else :search="searchProtected" />
+          <ProtectedTable
+            v-else
+            :positions="positions"
+            :search="searchProtected"
+          />
         </content-block>
       </b-col>
     </b-row>
@@ -76,25 +80,26 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
-import ProtectableLiquidity from "@/components/protection/ProtectableLiquidity.vue";
-import Protected from "@/components/protection/Protected.vue";
+import ProtectedTable from "@/components/protection/ProtectedTable.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import MultiInputField from "@/components/common/MultiInputField.vue";
 import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ViewProtectedLiquidity } from "@/types/bancor";
 
 @Component({
   components: {
     Claim,
-    MultiInputField,
     ContentBlock,
-    Protected,
-    ProtectableLiquidity
+    ProtectedTable
   }
 })
-export default class LiquidityProtectionSummary extends BaseComponent {
+export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
+
+  get positions(): ViewProtectedLiquidity[] {
+    return vxm.ethBancor.protectedPositions;
+  }
 
   get loading() {
     return vxm.ethBancor.loadingPools;
