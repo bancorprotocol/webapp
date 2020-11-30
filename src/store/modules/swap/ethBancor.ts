@@ -5900,9 +5900,13 @@ export class EthBancorModule
       const currentFee = relay.fee / 100;
       const accumulatedFees = trades.reduce(
         (acc, item) => {
-          // const currentTally = findOrThrow(acc, balance =>
-          //   compareString(balance.id, item.data.to.address)
-          // );
+          const currentTally = acc.find(balance =>
+            compareString(balance.id, item.data.to.address)
+          );
+          if (!currentTally) {
+            console.error("Failing to find to address between trade pairs");
+            return acc;
+          }
           const exitingAmount = new BigNumber(item.data.to.weiAmount);
 
           const decFee =
@@ -5917,16 +5921,14 @@ export class EthBancorModule
           const feePaid = exitingAmount.minus(feeLessAmount);
 
           const newTotalAmount = new BigNumber(
-            0
-            // currentTally.collectedFees.plus(feePaid).toFixed(0)
+            currentTally.collectedFees.plus(feePaid).toFixed(0)
           );
           const newTotalVolume = new BigNumber(exitingAmount).plus(
-            0
-            // currentTally.totalVolume
+            currentTally.totalVolume
           );
           return updateArray(
             acc,
-            reserve => compareString(reserve.id, "123"),
+            reserve => compareString(reserve.id, currentTally.id),
             reserve => ({
               ...reserve,
               collectedFees: newTotalAmount,
