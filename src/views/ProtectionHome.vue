@@ -21,7 +21,7 @@
         </p>
       </b-col>
       <b-col cols="12">
-        <ProtectedSummary :positions="positions" />
+        <ProtectedSummary v-if="positions.length" :positions="positions" />
       </b-col>
       <b-col cols="12">
         <content-block
