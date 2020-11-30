@@ -327,8 +327,8 @@ export default class ProtectedTable extends BaseComponent {
 <style lang="scss">
 #protected-table {
   table {
-    display: block;
-    min-height: 300px;
+    // display: block;
+    // min-height: 300px;
   }
 }
 </style>
