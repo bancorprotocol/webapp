@@ -1678,17 +1678,20 @@ export class EthBancorModule
 
   @action async protectLiquidityTx({
     anchorAddress,
-    amountWei
+    amountWei,
+    resolveImmediately = false
   }: {
     anchorAddress: string;
     amountWei: string;
+    resolveImmediately: boolean;
   }) {
     const liquidityProtectionAddress = this.contracts.LiquidityProtection;
     const contract = buildLiquidityProtectionContract(
       liquidityProtectionAddress
     );
     return this.resolveTxOnConfirmation({
-      tx: contract.methods.protectLiquidity(anchorAddress, amountWei)
+      tx: contract.methods.protectLiquidity(anchorAddress, amountWei),
+      resolveImmediately
     });
   }
 
@@ -2267,7 +2270,8 @@ export class EthBancorModule
           task: async () => {
             return this.protectLiquidityTx({
               anchorAddress: poolToken.contract,
-              amountWei: poolTokenWei
+              amountWei: poolTokenWei,
+              resolveImmediately: true
             });
           }
         }
