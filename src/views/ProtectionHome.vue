@@ -9,14 +9,6 @@
           >
             Liquidity Protection
           </span>
-
-          <b-btn
-            variant="primary"
-            class="float-right"
-            :to="{ name: 'AddProtectionHome' }"
-          >
-            Stake
-          </b-btn>
         </div>
 
         <p
@@ -27,6 +19,9 @@
           impermanent loss by simply adding insurance to each of your
           transactions.
         </p>
+      </b-col>
+      <b-col cols="12">
+        <ProtectedSummary :positions="positions" />
       </b-col>
       <b-col cols="12">
         <content-block
@@ -85,9 +80,11 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
+import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 
 @Component({
   components: {
+    ProtectedSummary,
     Claim,
     ContentBlock,
     ProtectedTable
