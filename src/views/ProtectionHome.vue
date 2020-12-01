@@ -12,11 +12,11 @@
 
           <b-btn
             variant="primary"
+            style="width: 132px"
             class="float-right"
             :to="{ name: 'AddProtectionHome' }"
+            >Stake</b-btn
           >
-            Stake
-          </b-btn>
         </div>
 
         <p
@@ -27,6 +27,9 @@
           impermanent loss by simply adding insurance to each of your
           transactions.
         </p>
+      </b-col>
+      <b-col v-if="false" cols="12">
+        <ProtectedSummary v-if="positions.length" :positions="positions" />
       </b-col>
       <b-col cols="12">
         <content-block
@@ -42,7 +45,11 @@
               label="Loading..."
             />
           </div>
-          <protected v-else :search="searchProtected" />
+          <ProtectedTable
+            v-else
+            :positions="positions"
+            :search="searchProtected"
+          />
         </content-block>
       </b-col>
     </b-row>
@@ -76,25 +83,28 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
-import ProtectableLiquidity from "@/components/protection/ProtectableLiquidity.vue";
-import Protected from "@/components/protection/Protected.vue";
+import ProtectedTable from "@/components/protection/ProtectedTable.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import MultiInputField from "@/components/common/MultiInputField.vue";
 import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ViewProtectedLiquidity } from "@/types/bancor";
+import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 
 @Component({
   components: {
+    ProtectedSummary,
     Claim,
-    MultiInputField,
     ContentBlock,
-    Protected,
-    ProtectableLiquidity
+    ProtectedTable
   }
 })
-export default class LiquidityProtectionSummary extends BaseComponent {
+export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
+
+  get positions(): ViewProtectedLiquidity[] {
+    return vxm.ethBancor.protectedPositions;
+  }
 
   get loading() {
     return vxm.ethBancor.loadingPools;

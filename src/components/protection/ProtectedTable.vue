@@ -1,9 +1,9 @@
 <template>
   <div id="protected-table">
     <data-table
-      v-if="protectedLiquidity.length"
+      v-if="positions.length"
       :fields="fields"
-      :items="protectedLiquidity"
+      :items="positions"
       :filter="search"
       filter-by="stake"
       :filter-function="doFilter"
@@ -78,11 +78,17 @@
       </template>
 
       <template #cell(fees)="{ value }">
-        {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+        <div class="text-center">
+          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+        </div>
       </template>
 
       <template #cell(roi)="{ value }">
-        {{ typeof value !== "undefined" ? stringifyPercentage(value) : "N/A" }}
+        <div class="text-center">
+          {{
+            typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
+          }}
+        </div>
       </template>
 
       <template #cell(apr)="{ value }">
@@ -155,7 +161,6 @@
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import {
@@ -184,8 +189,9 @@ import BaseComponent from "@/components/BaseComponent.vue";
     ContentBlock
   }
 })
-export default class Protected extends BaseComponent {
+export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
+  @Prop() positions!: ViewProtectedLiquidity[];
 
   poolName(id: string): string {
     return buildPoolName(id);
@@ -208,9 +214,7 @@ export default class Protected extends BaseComponent {
   }
 
   goToWithdraw(id: string) {
-    const position = this.protectedLiquidity.find(pos =>
-      compareString(pos.id, id)
-    )!;
+    const position = this.positions.find(pos => compareString(pos.id, id))!;
     const routeName = position.single
       ? "WithdrawProtectionSingle"
       : "WithdrawProtectionDouble";
@@ -227,10 +231,6 @@ export default class Protected extends BaseComponent {
   stringifyPercentage(percentage: number) {
     if (percentage < 0.0001) return "< 0.01%";
     else return numeral(percentage).format("0.00%");
-  }
-
-  get protectedLiquidity(): ViewProtectedLiquidity[] {
-    return vxm.ethBancor.protectedPositions;
   }
 
   prettifyNumber(number: string | number, usd = false): string {
@@ -262,20 +262,22 @@ export default class Protected extends BaseComponent {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      // {
-      //   id: 4,
-      //   key: "fees",
-      //   label: "Fees",
-      //   tooltip: "Fees your stake has earned since you entered the pool.",
-      //   minWidth: "110px"
-      // },
+      {
+        id: 4,
+        key: "fees",
+        label: "Fees",
+        tooltip: "Fees your stake has earned since you entered the pool.",
+        minWidth: "110px",
+        thClass: "text-center"
+      },
       {
         id: 5,
         key: "roi",
         label: "ROI",
         tooltip:
           "The ROI of your fully protected value vs. your initial stake.",
-        minWidth: "75px"
+        minWidth: "75px",
+        thClass: "text-center"
       },
       {
         id: 6,
@@ -333,8 +335,8 @@ export default class Protected extends BaseComponent {
 <style lang="scss">
 #protected-table {
   table {
-    display: block;
-    min-height: 300px;
+    // display: block;
+    // min-height: 300px;
   }
 }
 </style>

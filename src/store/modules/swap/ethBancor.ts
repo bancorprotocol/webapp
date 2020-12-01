@@ -1648,7 +1648,11 @@ export class EthBancorModule
           this.tokens.find(token => compareString("ETH", token.symbol))!
             .price || 0
       },
-      twentyFourHourTradeCount: this.liquidityHistory.data.length
+      twentyFourHourTradeCount: this.liquidityHistory.data.length,
+      totalVolume24h: this.relays
+        .map(x => Number(x.volume || 0))
+        .reduce((sum, current) => sum + current),
+      bntUsdPrice: this.bntUsdPrice
     };
   }
 
@@ -2049,6 +2053,15 @@ export class EthBancorModule
               opposingReserve.weiAmount,
               rate0
             );
+            const debugInfo = {
+              originalPoolTokenAmount: position.poolAmount,
+              currentPoolTokenSupply: currentPoolBalances.smartTokenSupplyWei,
+              depositedAmount: position.reserveAmount,
+              depositedReserveCurrentBalance: depositedReserve.weiAmount,
+              opposingDepositedReserveCurrentBalance: opposingReserve.weiAmount,
+              reserveRate: rate0
+            };
+            console.log("asaf", position.poolToken, debugInfo);
 
             const shrunk = shrinkToken(feeAmountWei, 18);
 

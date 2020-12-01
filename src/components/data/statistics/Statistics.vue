@@ -7,33 +7,37 @@
         :percentage="-0.89"
       />
     </b-col> -->
-    <b-col md="6" lg="3" class="mb-0">
+
+    <b-col cols="6" lg="3" class="mb-4 mb-lg-0">
       <statistics-data-block title="Total Liquidity" :value="liquidityDepth" />
     </b-col>
-    <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+
+    <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+      <statistics-data-block title="BNT Price" :value="bntPriceUsd" />
+    </b-col>
+
+    <!--    <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
       <statistics-data-block
         :title="nativeTokenLabel"
         :value="nativeTokenPrice"
       />
+    </b-col>-->
+
+    <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+      <statistics-data-block title="Volume (24hrs)" :value="volume24h" />
     </b-col>
-    <b-col
-      md="6"
+
+    <!--    <b-col
+      cols="6"
       lg="3"
       class="mb-4 mb-md-0 mb-lg-0"
-      v-if="false && twentyFourHourTradeCount > 0"
+      v-if="twentyFourHourTradeCount > 0"
     >
       <statistics-data-block
-        title="Recent Conversions (24hrs)"
+        title="Swaps (24hrs)"
         :value="twentyFourHourTradeCount"
       />
-    </b-col>
-    <!-- <b-col md="6" lg="3"> -->
-    <!-- <statistics-data-block -->
-    <!-- title="24hrs Transactions" -->
-    <!-- value="123,456,789.00 ETH" -->
-    <!-- :percentage="+0.89" -->
-    <!-- /> -->
-    <!-- </b-col> -->
+    </b-col>-->
   </b-row>
 </template>
 
@@ -42,13 +46,23 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import numeral from "numeral";
+import { prettifyNumber } from "@/api/helpers";
 
 @Component({
   components: { StatisticsDataBlock }
 })
 export default class Statistics extends Vue {
   get liquidityDepth() {
-    return numeral(this.stats.totalLiquidityDepth).format("$0,0.00");
+    return prettifyNumber(this.stats.totalLiquidityDepth, true);
+  }
+
+  get bntPriceUsd() {
+    const price = this.stats.bntUsdPrice;
+    return price ? prettifyNumber(price, true) : "N/A";
+  }
+
+  get volume24h() {
+    return prettifyNumber(this.stats.totalVolume24h, true);
   }
 
   get nativeTokenLabel() {
