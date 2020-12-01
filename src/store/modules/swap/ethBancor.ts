@@ -77,7 +77,6 @@ import {
   traverseLockedBalances,
   LockedBalance,
   rewindBlocksByDays,
-  calculateMaxStakes,
   calculateProgressLevel
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
@@ -128,7 +127,6 @@ import {
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
-  expandToken,
   generateEthPath,
   shrinkToken,
   TokenSymbol,
@@ -156,13 +154,13 @@ import { getNetworkVariables } from "@/api/config";
 import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
 import {
+  Subject,
   combineLatest,
   from,
-  of,
   Observable,
+  of,
   partition as partitionOb,
-  merge,
-  Subject
+  merge
 } from "rxjs";
 import {
   distinctUntilChanged,
@@ -186,7 +184,10 @@ import {
   decToPpm,
   miningBntReward,
   miningTknReward,
-  compareStaticRelayAndSet
+  compareStaticRelayAndSet,
+  expandToken,
+  calculateMaxStakes,
+  calculatePriceDeviationTooHigh
 } from "@/api/pureHelpers";
 import {
   dualPoolRoiShape,
@@ -598,23 +599,30 @@ const getHistoricFees = async (
   converterAddress: string,
   blockHoursAgo: number
 ): Promise<PreviousPoolFee[]> => {
-  const contract = buildV28ConverterContract(converterAddress, w3);
+  let previousPoolFees: PreviousPoolFee[] = [];
 
+  const contract = buildV28ConverterContract(converterAddress, w3);
   const options = {
     fromBlock: 0,
     toBlock: "latest"
   };
 
-  const res = await contract.getPastEvents("ConversionFeeUpdate", options);
+  try {
+    const events = await contract.getPastEvents("ConversionFeeUpdate", options);
 
-  const events = res
-    .filter(event => event.blockNumber >= blockHoursAgo)
-    .map(event => ({
-      id,
-      oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
-      blockNumber: event.blockNumber
-    }));
-  return events;
+    previousPoolFees = events
+      .filter(event => event.blockNumber >= blockHoursAgo)
+      .map(event => ({
+        id,
+        oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
+        blockNumber: event.blockNumber
+      }));
+    return previousPoolFees;
+  } catch (err) {
+    console.error(err);
+  }
+
+  return previousPoolFees;
 };
 
 const blockNumberHoursAgo = async (hours: number, w3: Web3) => {
@@ -951,6 +959,16 @@ export interface AbiStaticRelay {
   version: string;
   connectorToken1: string;
   connectorToken2: string;
+}
+
+export interface RawABIDynamicRelay {
+  connectorTokenCount: string;
+  conversionFee: string;
+  converterAddress: string;
+  reserveOne: string;
+  reserveOneAddress: string;
+  reserveTwo: string;
+  reserveTwoAddress: string;
 }
 
 export interface AbiDynamicRelay {
@@ -2463,6 +2481,65 @@ export class EthBancorModule
     this.setLoadingPools(false);
   }
 
+  @action async checkPriceDeviationTooHigh({
+    relayId,
+    selectedTokenAddress
+  }: {
+    relayId: string;
+    selectedTokenAddress: string;
+  }): Promise<boolean> {
+    let priceDeviationTooHigh = false;
+
+    const relay = await this.relayById(relayId);
+
+    const converter = buildV28ConverterContract(relay.contract, w3);
+    const liquidityProtection = buildLiquidityProtectionContract(
+      this.contracts.LiquidityProtection,
+      w3
+    );
+
+    const [
+      recentAverageRateResult,
+      averageRateMaxDeviationResult,
+      primaryReserveBalanceResult,
+      secondaryReserveBalanceResult
+    ] = await Promise.all([
+      converter.methods.recentAverageRate(selectedTokenAddress).call(),
+      liquidityProtection.methods.averageRateMaxDeviation().call(),
+      converter.methods
+        .reserveBalance(
+          // the selected token
+          relay.reserves.find(r =>
+            compareString(r.contract, selectedTokenAddress)
+          )!.contract
+        )
+        .call(),
+      converter.methods
+        .reserveBalance(
+          // the other token
+          relay.reserves.find(
+            r => !compareString(r.contract, selectedTokenAddress)
+          )!.contract
+        )
+        .call()
+    ]);
+
+    const averageRate = new BigNumber(recentAverageRateResult["1"]).dividedBy(
+      recentAverageRateResult["0"]
+    );
+
+    console.log("averageRate", averageRate);
+
+    priceDeviationTooHigh = calculatePriceDeviationTooHigh(
+      averageRate,
+      new BigNumber(primaryReserveBalanceResult),
+      new BigNumber(secondaryReserveBalanceResult),
+      new BigNumber(averageRateMaxDeviationResult)
+    );
+
+    return priceDeviationTooHigh;
+  }
+
   get secondaryReserveChoices(): ModalChoice[] {
     return this.newNetworkTokenChoices;
   }
@@ -3089,7 +3166,6 @@ export class EthBancorModule
             (acc, item) => acc + item.reserveFeed!.liqDepth,
             0
           ),
-          owner: relay.owner,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
@@ -3181,7 +3257,6 @@ export class EthBancorModule
           })),
           fee: relay.fee / 100,
           liqDepth,
-          owner: relay.owner,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
@@ -4525,7 +4600,13 @@ export class EthBancorModule
     return newWei;
   }
 
-  @action async addToken(tokenAddress: string) {
+  @action async addToken(
+    tokenAddress: string
+  ): Promise<{
+    decimals: number;
+    symbol: string;
+    tokenAddress: string;
+  }> {
     const isAddress = web3.utils.isAddress(tokenAddress);
     if (!isAddress) throw new Error(`${tokenAddress} is not a valid address`);
 
@@ -4543,11 +4624,15 @@ export class EthBancorModule
         "Failed parsing token information, please ensure this is an ERC-20 token"
       );
 
-    this.addTokenToMeta({
+    const metadata = {
       decimals: Number(token.decimals),
       symbol: token.symbol,
       tokenAddress: token.contract
-    });
+    };
+
+    this.addTokenToMeta(metadata);
+
+    return metadata;
   }
 
   @mutation addTokenToMeta(token: {
@@ -5340,7 +5425,6 @@ export class EthBancorModule
           converterType: PoolType.ChainLink,
           isMultiContract: false,
           network: "ETH",
-          owner: pool.owner,
           reserves: rawPool.reserves.map(reserve => ({
             ...reserve.token,
             reserveWeight:
@@ -5412,7 +5496,6 @@ export class EthBancorModule
         fee: Number(polishedHalf.conversionFee) / 10000,
         isMultiContract: false,
         network: "ETH",
-        owner: polishedHalf.owner,
         version: String(polishedHalf.version),
         anchor: anchorProps.anchor,
         converterType: anchorProps.converterType
@@ -5692,9 +5775,13 @@ export class EthBancorModule
       const currentFee = relay.fee / 100;
       const accumulatedFees = trades.reduce(
         (acc, item) => {
-          const currentTally = findOrThrow(acc, balance =>
+          const currentTally = acc.find(balance =>
             compareString(balance.id, item.data.to.address)
           );
+          if (!currentTally) {
+            console.error("Failing to find to address between trade pairs");
+            return acc;
+          }
           const exitingAmount = new BigNumber(item.data.to.weiAmount);
 
           const decFee =
@@ -6194,13 +6281,15 @@ export class EthBancorModule
       bufferTime(100),
       filter(staticRelays => staticRelays && staticRelays.length > 0),
       mergeMap(async staticRelays => {
-        console.log(staticRelays, "are the things");
-        await wait(1);
-        console.log(staticRelays, "are the things 2");
         const tokenMeta = this.tokenMeta;
         const reserveTokens = staticRelays.flatMap(relay => relay.reserves);
         const tokensMissing = reserveTokens.filter(
-          token => !tokenMeta.some(meta => compareString(meta.contract, token))
+          token =>
+            !tokenMeta.some(
+              meta =>
+                compareString(meta.contract, token) &&
+                typeof meta.precision !== "undefined"
+            )
         );
 
         const cached = differenceWith(
@@ -6209,63 +6298,78 @@ export class EthBancorModule
           compareString
         );
 
+        console.warn(cached, "was the cached tokens...");
+
         const tokensShape = tokensMissing.map(tokenShape);
         const relaysShape = staticRelays.map(relay =>
           dynamicRelayShape(relay.converterAddress, relay.reserves)
         );
 
+        interface NewReserve extends RawAbiToken {
+          reserveBalance: string;
+        }
+
         const [rawTokens, rawRelays] = ((await this.multi({
           groupsOfShapes: [tokensShape, relaysShape]
-        })) as unknown) as [RawAbiToken[], AbiDynamicRelay[]];
-
-        console.log(rawRelays, "are the raw relays", {
-          tokensShape,
-          relaysShape,
-          cached,
-          tokenMeta
-        });
+        })) as unknown) as [RawAbiToken[], RawABIDynamicRelay[]];
 
         const dynamicRelays = staticRelays.map(relay => {
-          const hydrated = findOrThrow(rawRelays, r =>
-            compareString(relay.converterAddress, r.converterAddress)
-          );
-          const reserveContracts = hydrated.reserves.map(x => x.contract);
-          const reserveTokens = reserveContracts.map(tokenContract => {
-            const rawToken = rawTokens.find(t =>
-              compareString(tokenContract, t.contract)
-            );
-            if (rawToken) return rawToken;
-            return findOrThrow(
-              tokenMeta,
-              meta => compareString(tokenContract, meta.contract),
-              "failed to find token in meta or raw token"
-            );
-          });
+          try {
+            const hydrated = rawRelays.find(r =>
+              compareString(relay.converterAddress, r.converterAddress)
+            )!;
 
-          const reserves = hydrated.reserves.map(reserve =>
-            findOrThrow(reserveTokens, token =>
-              compareString(reserve.contract, token.contract)
-            )
-          );
-          const fee = hydrated.fee;
-          return {
-            ...relay,
-            reserves,
-            fee
-          };
+            const reserveContracts = [
+              [hydrated.reserveOneAddress, hydrated.reserveOne],
+              [hydrated.reserveTwoAddress, hydrated.reserveTwo]
+            ];
+            const reserves = reserveContracts.map(
+              ([reserveContract, reserveBalance]) => {
+                const rawToken = rawTokens.find(t =>
+                  compareString(reserveContract, t.contract)
+                );
+                if (rawToken) {
+                  return {
+                    ...rawToken,
+                    reserveBalance
+                  } as NewReserve;
+                } else {
+                  const meta = findOrThrow(
+                    tokenMeta,
+                    meta => compareString(reserveContract, meta.contract),
+                    "failed to find token in meta or raw token"
+                  );
+
+                  return {
+                    reserveBalance,
+                    contract: meta.contract,
+                    decimals: String(meta.precision),
+                    symbol: meta.symbol
+                  } as NewReserve;
+                }
+              }
+            );
+
+            const fee = hydrated.conversionFee;
+            return {
+              ...relay,
+              reserves,
+              fee
+            };
+          } catch (e) {
+            console.log("something went wrong here", e);
+            throw new Error();
+          }
         });
 
-        console.log(
-          "should be resolving...",
-          dynamicRelays,
-          "here are the static",
-          staticRelays
-        );
+        console.log("should be resolving...", dynamicRelays);
         return dynamicRelays;
       })
     );
 
-    dynamicRelayRemote$.subscribe(x => console.log(x, "was the final result?"));
+    dynamicRelayRemote$.subscribe(x => console.log(x, "timeeee"));
+
+    // dynamicRelayRemote$.subscribe(x => console.log(x, "was the final result?"));
 
     // const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
     // const allConverters = convertersAndAnchors.map(

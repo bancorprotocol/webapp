@@ -73,14 +73,11 @@
         :label="unstakeLabel"
         :active="true"
         :block="true"
-        :disabled="!currentStake.isGreaterThanOrEqualTo(unstakeValue)"
+        :disabled="!buttonActive"
         class="font-size-14 font-w400 mt-3 button-status"
         :class="{
           'button-status--empty': unstakeInput.length === 0,
-          'button-status--invalid': !(
-            unstakeValue.isGreaterThan(0) &&
-            currentStake.isGreaterThanOrEqualTo(unstakeValue)
-          )
+          'button-status--invalid': !buttonActive
         }"
       />
     </div>
@@ -163,6 +160,13 @@ export default class ModalUnstake extends BaseComponent {
   symbol: string = "";
   etherscanUrl: string = "";
 
+  get buttonActive() {
+    return (
+        this.unstakeValue.isGreaterThan(0) &&
+        this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
+    )
+  }
+
   get state() {
     return (
       (this.unstakeInput.length === 0 ||
@@ -221,7 +225,10 @@ export default class ModalUnstake extends BaseComponent {
   onHide() {
     this.show = false;
     this.step = "unstake";
-    this.unstakeValue = new BigNumber(0);
+    setTimeout(() => {
+      this.unstakeInput = "";
+      this.setUnstakeInput()
+    }, 100)
   }
 
   @Watch("step")

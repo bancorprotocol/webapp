@@ -1,9 +1,24 @@
 import {
   calculatePositionFees,
   decToPpm,
+  expandToken,
   miningBntReward,
-  miningTknReward
+  miningTknReward,
+  calculateMaxStakes
 } from "@/api/pureHelpers";
+import BigNumber from "bignumber.js";
+
+const shrinkToken = (
+  amount: string | number,
+  precision: number,
+  chopZeros = false
+) => {
+  const res = new BigNumber(amount)
+    .div(new BigNumber(10).pow(precision))
+    .toFixed(precision);
+
+  return chopZeros ? new BigNumber(res).toString() : res;
+};
 
 describe("dec to ppm works", () => {
   test("range of percentages", () => {
@@ -38,7 +53,7 @@ describe("can calculate position fees", () => {
       opposingDepositedReserveCurrentBalance,
       reserveRate
     );
-    expect(res).toBe("-1933747839780032");
+    expect(res).toBe("1933747839780032");
   });
 });
 
@@ -48,7 +63,7 @@ describe("can calculate mining aprs", () => {
 
     const res = miningBntReward(protectedBnt, true);
 
-    const expectedResult = 1.07367947646;
+    const expectedResult = 2.147358952917518;
     expect(res).toBeCloseTo(expectedResult);
   });
 
@@ -57,7 +72,7 @@ describe("can calculate mining aprs", () => {
 
     const res = miningBntReward(protectedBnt, false);
 
-    const expectedResult = 0.10736794764;
+    const expectedResult = 0.21473589529175177;
     expect(res).toBeCloseTo(expectedResult);
   });
 
@@ -73,7 +88,7 @@ describe("can calculate mining aprs", () => {
       true
     );
 
-    const expectedResult = 0.271131748522;
+    const expectedResult = 0.5422634970441929;
 
     expect(res).toBeCloseTo(expectedResult);
   });
@@ -90,8 +105,42 @@ describe("can calculate mining aprs", () => {
       false
     );
 
-    const expectedResult = 0.027113174852;
+    const expectedResult = 0.05422634970441928;
 
     expect(res).toBeCloseTo(expectedResult);
+  });
+});
+
+describe("can convert TKN amount to wei with correct precision and rounding", () => {
+  test("Expand Token - Convert to WEI", async () => {
+    const { amount, precision } = {
+      amount: "9.9999999999999999999999999999999999999999999",
+      precision: 18
+    };
+
+    const res = expandToken(amount, precision);
+    expect(res).toBe("9999999999999999999");
+  });
+});
+
+describe("calculate max stakes are as expected", () => {
+  test("results are as expected from #621", () => {
+    const yfiReserve = expandToken("22.823617377346322429", 18);
+    const bntReserve = expandToken("549542.316191026070027217", 18);
+    const poolTokenSupply = expandToken("2988.7630212873065", 18);
+    const systemBalance = expandToken("1430.881844360983306284", 18);
+
+    const { maxAllowedTknWei } = calculateMaxStakes(
+      yfiReserve,
+      bntReserve,
+      poolTokenSupply,
+      systemBalance,
+      expandToken(5000000, 18),
+      "500000",
+      false
+    );
+
+    const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
+    expect(numberRes).toBeCloseTo(0.96982720119);
   });
 });

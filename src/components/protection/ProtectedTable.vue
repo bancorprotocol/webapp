@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div id="protected-table">
     <data-table
-      v-if="protectedLiquidity.length"
+      v-if="positions.length"
       :fields="fields"
-      :items="protectedLiquidity"
+      :items="positions"
       :filter="search"
       filter-by="stake"
       :filter-function="doFilter"
@@ -41,7 +41,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
-                : 'Error calculating'
+                : 'Stale data'
             "
           />
         </div>
@@ -62,7 +62,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
-                : 'Error calculating'
+                : 'please refresh'
             "
           />
         </div>
@@ -155,7 +155,6 @@
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import {
@@ -184,8 +183,9 @@ import BaseComponent from "@/components/BaseComponent.vue";
     ContentBlock
   }
 })
-export default class Protected extends BaseComponent {
+export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
+  @Prop() positions!: ViewProtectedLiquidity[];
 
   poolName(id: string): string {
     return buildPoolName(id);
@@ -208,9 +208,7 @@ export default class Protected extends BaseComponent {
   }
 
   goToWithdraw(id: string) {
-    const position = this.protectedLiquidity.find(pos =>
-      compareString(pos.id, id)
-    )!;
+    const position = this.positions.find(pos => compareString(pos.id, id))!;
     const routeName = position.single
       ? "WithdrawProtectionSingle"
       : "WithdrawProtectionDouble";
@@ -227,10 +225,6 @@ export default class Protected extends BaseComponent {
   stringifyPercentage(percentage: number) {
     if (percentage < 0.0001) return "< 0.01%";
     else return numeral(percentage).format("0.00%");
-  }
-
-  get protectedLiquidity(): ViewProtectedLiquidity[] {
-    return vxm.ethBancor.protectedPositions;
   }
 
   prettifyNumber(number: string | number, usd = false): string {
@@ -262,13 +256,13 @@ export default class Protected extends BaseComponent {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      {
-        id: 4,
-        key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
-        minWidth: "110px"
-      },
+      // {
+      //   id: 4,
+      //   key: "fees",
+      //   label: "Fees",
+      //   tooltip: "Fees your stake has earned since you entered the pool.",
+      //   minWidth: "110px"
+      // },
       {
         id: 5,
         key: "roi",
@@ -313,6 +307,12 @@ export default class Protected extends BaseComponent {
 
   customSort(row: ViewProtectedLiquidity, sortBy: string) {
     switch (sortBy) {
+      case "stake":
+        return row.stake.unixTime;
+      case "fullyProtected":
+        return row.fullyProtected.usdValue;
+      case "protectedAmount":
+        return row.protectedAmount.usdValue;
       case "apr":
         return row.apr.day;
       case "currentCoverage":
@@ -324,4 +324,11 @@ export default class Protected extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+#protected-table {
+  table {
+    // display: block;
+    // min-height: 300px;
+  }
+}
+</style>

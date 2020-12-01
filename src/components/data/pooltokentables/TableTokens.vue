@@ -5,6 +5,7 @@
     :filter="filter"
     filter-by="symbol"
     :filter-function="doFilter"
+    :sort-function="customSort"
     default-sort="liqDepth"
   >
     <template #head(liquidityProtection)>
@@ -16,6 +17,7 @@
         v-if="value"
         :src="require(`@/assets/media/icons/liquidity_active.svg`)"
       />
+      <span v-else />
     </template>
 
     <template #cell(symbol)="{ item }">
@@ -46,9 +48,9 @@ import { vxm } from "@/store";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
-import { ViewToken } from "@/types/bancor";
+import { LiqMiningApr, ViewRelay, ViewToken } from "@/types/bancor";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
-import { prettifyNumber } from "@/api/helpers";
+import { defaultTableSort, prettifyNumber } from "@/api/helpers";
 
 @Component({
   components: {
@@ -112,7 +114,8 @@ export default class TableTokens extends Vue {
       key: "actionButtons",
       label: "Action",
       minWidth: "160px",
-      maxWidth: "160px"
+      maxWidth: "160px",
+      sortable: false
     }
   ];
 
@@ -130,6 +133,17 @@ export default class TableTokens extends Vue {
       (row.name && row.name.toLowerCase().includes(searchTerm)) ||
       (row.symbol && row.symbol.toLowerCase().includes(searchTerm))
     );
+  }
+
+  customSort(row: ViewRelay, sortBy: string) {
+    switch (sortBy) {
+      case "liquidityProtection":
+        return row.liquidityProtection;
+      case "symbol":
+        return row.symbol;
+      default:
+        return defaultTableSort(row, sortBy);
+    }
   }
 }
 </script>
