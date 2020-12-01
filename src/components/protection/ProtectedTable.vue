@@ -262,14 +262,14 @@ export default class ProtectedTable extends BaseComponent {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      {
-        id: 4,
-        key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
-        minWidth: "110px",
-        thClass: "text-center"
-      },
+      // {
+      //   id: 4,
+      //   key: "fees",
+      //   label: "Fees",
+      //   tooltip: "Fees your stake has earned since you entered the pool.",
+      //   minWidth: "110px",
+      //   thClass: "text-center"
+      // },
       {
         id: 5,
         key: "roi",
