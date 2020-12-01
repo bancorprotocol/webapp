@@ -4638,16 +4638,19 @@ export class EthBancorModule
   @action async fundRelay({
     converterAddress,
     fundAmount,
-    onHash
+    onHash,
+    resolveImmediately = false
   }: {
     converterAddress: string;
     fundAmount: string;
     onHash?: (hash: string) => void;
+    resolveImmediately: boolean;
   }) {
     const converterContract = buildConverterContract(converterAddress);
     return this.resolveTxOnConfirmation({
       tx: converterContract.methods.fund(fundAmount),
       gas: 950000,
+      resolveImmediately,
       ...(onHash && { onHash })
     });
   }
@@ -4656,12 +4659,14 @@ export class EthBancorModule
     converterAddress,
     reserves,
     minimumReturnWei,
-    onHash
+    onHash,
+    resolveImmediately = false
   }: {
     converterAddress: string;
     reserves: TokenWei[];
     minimumReturnWei: string;
     onHash?: (hash: string) => void;
+    resolveImmediately: boolean;
   }) {
     const contract = buildV28ConverterContract(converterAddress);
 
@@ -4676,6 +4681,7 @@ export class EthBancorModule
         minimumReturnWei
       ),
       onHash,
+      resolveImmediately,
       ...(newEthReserve && { value: newEthReserve.weiAmount })
     });
   }
@@ -4684,12 +4690,14 @@ export class EthBancorModule
     converterAddress,
     reserve,
     poolTokenMinReturnWei = "1",
-    onHash
+    onHash,
+    resolveImmediately = false
   }: {
     converterAddress: string;
     reserve: TokenWei;
     poolTokenMinReturnWei?: string;
     onHash?: (hash: string) => void;
+    resolveImmediately: boolean;
   }) {
     const contract = buildV2Converter(converterAddress);
 
@@ -4705,6 +4713,7 @@ export class EthBancorModule
         poolTokenMinReturnWei
       ),
       onHash: onHash,
+      resolveImmediately: true,
       ...(newEthReserve && { value: reserve.weiAmount })
     });
   }
@@ -4897,7 +4906,8 @@ export class EthBancorModule
             weiAmount: expandToken(balance.amount, balance.decimals)
           })),
         minimumReturnWei,
-        onHash: () => onUpdate!(2, steps)
+        onHash: () => onUpdate!(2, steps),
+        resolveImmediately: true
       });
     } else if (postV28 && relay.converterType == PoolType.ChainLink) {
       console.log("treating as a chainlink v2 relay");
@@ -4934,7 +4944,8 @@ export class EthBancorModule
         converterAddress,
         reserve: reserveToken,
         poolTokenMinReturnWei,
-        onHash: () => onUpdate!(2, steps)
+        onHash: () => onUpdate!(2, steps),
+        resolveImmediately: true
       });
     } else {
       console.log("treating as an old tradtional relay");
@@ -4949,7 +4960,8 @@ export class EthBancorModule
       txHash = await this.fundRelay({
         converterAddress,
         fundAmount: fundAmount.amount,
-        onHash: () => onUpdate!(2, steps)
+        onHash: () => onUpdate!(2, steps),
+        resolveImmediately: true
       });
     }
 
