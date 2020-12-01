@@ -160,6 +160,9 @@ export const router = new Router({
       components: {
         Nav: Navigation,
         default: LiquidityProtectionSummary
+      },
+      meta: {
+        feature: "Protection"
       }
     },
     {
