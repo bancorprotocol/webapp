@@ -280,9 +280,8 @@ export interface ViewRelay {
   id: string;
   symbol: string;
   liqDepth: number;
-  reserves: ViewReserve[];
   fee: number;
-  owner: string;
+  reserves: ViewReserve[];
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
   focusAvailable?: boolean;

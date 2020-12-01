@@ -926,7 +926,6 @@ export interface Relay {
   network: string;
   version: string;
   converterType: PoolType;
-  owner: string;
 }
 
 export interface RelayWithReserveBalances extends Relay {
