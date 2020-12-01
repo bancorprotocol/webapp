@@ -27,7 +27,7 @@
       <statistics-data-block title="Volume (24hrs)" :value="volume24h" />
     </b-col>
 
-    <b-col
+    <!--    <b-col
       cols="6"
       lg="3"
       class="mb-4 mb-md-0 mb-lg-0"
@@ -37,7 +37,7 @@
         title="Swaps (24hrs)"
         :value="twentyFourHourTradeCount"
       />
-    </b-col>
+    </b-col>-->
   </b-row>
 </template>
 
