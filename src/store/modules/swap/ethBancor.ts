@@ -2221,7 +2221,8 @@ export class EthBancorModule
     }
 
     const txHash = await this.resolveTxOnConfirmation({
-      tx: contract.methods.removeLiquidity(dbId, ppmPercent)
+      tx: contract.methods.removeLiquidity(dbId, ppmPercent),
+      resolveImmediately: true
     });
 
     (async () => {
