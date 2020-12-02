@@ -63,7 +63,10 @@
               v-for="item2 in item.collapsedData"
               :key="`collapsable-row${item2.id}`"
             >
-              <td v-for="(column, index) in fields" :key="column.id">
+              <td
+                v-for="(column, index) in fields"
+                :key="`collapsable-column${column.id}`"
+              >
                 <div :class="index === 0 ? 'collapsed-indicator' : ''">
                   <slot
                     :name="`cellCollapsed(${column.key})`"
@@ -214,7 +217,7 @@ export default class DataTable extends BaseComponent {
     return array;
   }
 
-  expandedId = null;
+  expandedId: string | number | null = null;
 
   toggleCollapse(id: string | number | null) {
     if (!this.collapsable) return;
