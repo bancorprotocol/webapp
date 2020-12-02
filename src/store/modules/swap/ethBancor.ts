@@ -144,7 +144,8 @@ import {
   highCapPools,
   liquidityMiningEndTime,
   moreStaticRelays,
-  previousPoolFees
+  previousPoolFees,
+  v2Pools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -177,7 +178,8 @@ import {
   first as firstItem,
   bufferTime,
   delay,
-  buffer
+  buffer,
+  share
 } from "rxjs/operators";
 import {
   calculatePositionFees,
@@ -644,6 +646,36 @@ const smartTokenAnchor = (smartToken: Token) => ({
   converterType: PoolType.Traditional
 });
 
+const newRelayToRelayWithBalances = (
+  newRelay: NewRelay
+): RelayWithReserveBalances => ({
+  anchor: {
+    ...newRelay.poolToken,
+    decimals: Number(newRelay.poolToken.decimals),
+    network: "ETH"
+  },
+  contract: newRelay.converterAddress,
+  converterType: newRelay.converterType,
+  fee: ppmToDec(newRelay.fee),
+  id: newRelay.poolToken.contract,
+  isMultiContract: false,
+  network: "ETH",
+  reserveBalances: newRelay.reserves.map(x => ({
+    amount: x.reserveBalance,
+    id: x.contract
+  })),
+  reserves: newRelay.reserves.map(x => ({
+    ...x,
+    reserveWeight: 0.5,
+    network: "ETH",
+    reserveBalance: x.reserveBalance,
+    decimals: Number(x.decimals),
+    symbol: x.symbol,
+    contract: x.contract
+  })),
+  version: String(newRelay.version)
+});
+
 interface UsdValue {
   id: string;
   usdPrice: string;
@@ -731,7 +763,9 @@ const buildReserveFeedsTraditional = (
       .toNumber();
   } else {
     throw new Error(
-      "Cannot determine the price without knowing one of the reserve prices"
+      `Cannot determine the price without knowing one of the reserve prices ${JSON.stringify(
+        knownUsdPrices
+      )}`
     );
   }
 
@@ -900,6 +934,23 @@ interface RawV2Pool {
   }[];
   converterAddress: string;
   anchorAddress: string;
+}
+
+interface NewReserve extends RawAbiToken {
+  reserveBalance: string;
+}
+
+interface NewRelay {
+  reserves: NewReserve[];
+  fee: string;
+  converterAddress: string;
+  converterType: number;
+  version: number;
+  poolToken: {
+    symbol: string;
+    decimals: string;
+    contract: string;
+  };
 }
 
 const calculateMean = (a: string, b: string) =>
@@ -5980,12 +6031,89 @@ export class EthBancorModule
     );
   }
 
+  @action async fetchDynamicRelays(
+    staticRelays: StaticRelay[]
+  ): Promise<NewRelay[]> {
+    const tokenMeta = this.tokenMeta;
+    const reserveTokens = staticRelays.flatMap(relay => relay.reserves);
+    console.log(reserveTokens, "are reserve tokens");
+    const tokensMissing = reserveTokens.filter(
+      token =>
+        !tokenMeta.some(
+          meta =>
+            compareString(meta.contract, token) &&
+            typeof meta.precision !== "undefined"
+        )
+    );
+
+    const cached = differenceWith(reserveTokens, tokensMissing, compareString);
+
+    console.warn(cached, "was the cached tokens...");
+
+    const tokensShape = tokensMissing.map(tokenShape);
+    const relaysShape = staticRelays.map(relay =>
+      dynamicRelayShape(relay.converterAddress, relay.reserves)
+    );
+
+    const [rawTokens, rawRelays] = ((await this.multi({
+      groupsOfShapes: [tokensShape, relaysShape]
+    })) as unknown) as [RawAbiToken[], RawABIDynamicRelay[]];
+
+    const dynamicRelays = staticRelays.map(relay => {
+      try {
+        const hydrated = rawRelays.find(r =>
+          compareString(relay.converterAddress, r.converterAddress)
+        )!;
+
+        const reserveContracts = [
+          [hydrated.reserveOneAddress, hydrated.reserveOne],
+          [hydrated.reserveTwoAddress, hydrated.reserveTwo]
+        ];
+        const reserves = reserveContracts.map(
+          ([reserveContract, reserveBalance]) => {
+            const rawToken = rawTokens.find(t =>
+              compareString(reserveContract, t.contract)
+            );
+            if (rawToken) {
+              return {
+                ...rawToken,
+                reserveBalance
+              } as NewReserve;
+            } else {
+              const meta = findOrThrow(
+                tokenMeta,
+                meta => compareString(reserveContract, meta.contract),
+                "failed to find token in meta or raw token"
+              );
+
+              return {
+                reserveBalance,
+                contract: meta.contract,
+                decimals: String(meta.precision),
+                symbol: meta.symbol
+              } as NewReserve;
+            }
+          }
+        );
+
+        const fee = hydrated.conversionFee;
+        return {
+          ...relay,
+          reserves,
+          fee
+        };
+      } catch (e) {
+        console.log("something went wrong here", e);
+        throw new Error();
+      }
+    });
+    return dynamicRelays;
+  }
+
   @action async init(params?: ModuleParam) {
     if (this.initiated) {
       return this.refresh();
     }
-
-    const timeStart = Date.now();
 
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
@@ -6015,11 +6143,9 @@ export class EthBancorModule
         )
       );
 
-    this.fetchUsdPriceOfBnt();
+    const usdPriceOfBnt$ = from(this.fetchUsdPriceOfBnt()).pipe(shareReplay(1));
 
     console.time("FirstPromise");
-
-    this.fetchUsdPriceOfBnt();
 
     const currentBlock$ = from(web3.eth.getBlockNumber()).pipe(
       map(block => [moment().unix(), block]),
@@ -6159,17 +6285,17 @@ export class EthBancorModule
 
     let bancorApiTokens: TokenPrice[] = [];
 
-    const bareMinimumAnchors$ = combineLatest([anchors$, bancorNetwork$]).pipe(
-      mergeMap(([anchorAddressess, networkContractAddress]) =>
-        this.bareMinimumPools({
-          params,
-          networkContractAddress,
-          anchorAddressess,
-          ...(bancorApiTokens &&
-            bancorApiTokens.length > 0 && { tokenPrices: bancorApiTokens })
-        })
-      )
-    );
+    // const bareMinimumAnchors$ = combineLatest([anchors$, bancorNetwork$]).pipe(
+    //   mergeMap(([anchorAddressess, networkContractAddress]) =>
+    //     this.bareMinimumPools({
+    //       params,
+    //       networkContractAddress,
+    //       anchorAddressess,
+    //       ...(bancorApiTokens &&
+    //         bancorApiTokens.length > 0 && { tokenPrices: bancorApiTokens })
+    //     })
+    //   )
+    // );
 
     const anchorAndConverters$ = combineLatest([
       anchors$,
@@ -6203,17 +6329,25 @@ export class EthBancorModule
     );
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
-      mergeMap(from),
-      tap(x => console.log("from", x))
+      mergeMap(x => from(x))
     ) as Observable<ConverterAndAnchor>;
 
-    const [
-      toLocalLoad$,
-      toRemoteLoad$
-    ] = partitionOb(individualAnchorsAndConverters$, anchorAndConverter =>
-      moreStaticRelays.some(staticRelay =>
-        compareStaticRelayAndSet(staticRelay, anchorAndConverter)
-      )
+    const [v2Pools$, v1Pools$] = partitionOb(
+      individualAnchorsAndConverters$,
+      anchorSet =>
+        v2Pools.some(anchor => compareString(anchor, anchorSet.anchorAddress))
+    );
+
+    v2Pools$
+      .pipe(bufferTime(100), delay(2500))
+      .subscribe(pools => this.addPoolsBulk(pools));
+
+    const [toLocalLoad$, toRemoteLoad$] = partitionOb(
+      v1Pools$,
+      anchorAndConverter =>
+        moreStaticRelays.some(staticRelay =>
+          compareStaticRelayAndSet(staticRelay, anchorAndConverter)
+        )
     );
 
     const staticRelayLocal$ = toLocalLoad$.pipe(
@@ -6225,7 +6359,10 @@ export class EthBancorModule
           "failed to find static relay"
         )
       ),
-      tap(x => console.log(x, "was static relay local emission"))
+      tap({
+        next: x => console.log("going..", x),
+        error: e => console.error("error!", e)
+      })
     );
 
     const staticRelaysRemote$ = toRemoteLoad$.pipe(
@@ -6257,117 +6394,80 @@ export class EthBancorModule
             )?.version || Number(set.relay.version)
         }
       })),
-      map(({ relay, poolToken }) => ({
-        ...relay,
-        poolToken,
-        reserves: [relay.connectorToken1, relay.connectorToken2] as [
-          string,
-          string
-        ],
-        version: Number(relay.version),
-        converterType: determineConverterType(relay.converterType)
-      })),
-      tap(x => console.log("was emitted remote", x))
+      filter(({ relay }) => !!relay.connectorToken2),
+      map(
+        ({ relay, poolToken }) =>
+          ({
+            ...relay,
+            poolToken,
+            reserves: [relay.connectorToken1, relay.connectorToken2] as [
+              string,
+              string
+            ],
+            version: Number(relay.version),
+            converterType: determineConverterType(relay.converterType)
+          } as StaticRelay)
+      )
     );
 
-    const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$);
-
-    // tokenAddressesMissing.map(tokenShape),
-    // verifiedV1Pools.map(v1Pool =>
-    //   reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
-    // ),
+    console.log("once a month energy drink");
+    const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$).pipe(
+      filter(
+        relay => !v2Pools.some(r => compareString(relay.poolToken.contract, r))
+      )
+    );
 
     const dynamicRelayRemote$ = staticRelays$.pipe(
       bufferTime(100),
       filter(staticRelays => staticRelays && staticRelays.length > 0),
-      mergeMap(async staticRelays => {
-        const tokenMeta = this.tokenMeta;
-        const reserveTokens = staticRelays.flatMap(relay => relay.reserves);
-        const tokensMissing = reserveTokens.filter(
-          token =>
-            !tokenMeta.some(
-              meta =>
-                compareString(meta.contract, token) &&
-                typeof meta.precision !== "undefined"
-            )
+      mergeMap(x => this.fetchDynamicRelays(x))
+    );
+
+    const fullRelays$ = dynamicRelayRemote$.pipe(
+      map(relays =>
+        relays.filter(x => x.reserves.every(reserve => reserve.symbol))
+      ),
+      map(relays => relays.map(newRelayToRelayWithBalances))
+    );
+
+    const emittedRelays$ = combineLatest([
+      fullRelays$,
+      usdPriceOfBnt$,
+      networkVersion$
+    ]).pipe(
+      map(([relay, usdPriceOfBnt, currentNetwork]) => {
+        const bntTokenAddress = getNetworkVariables(currentNetwork).bntToken;
+
+        const knownPrices = [
+          ...trustedStables(this.currentNetwork),
+          { id: bntTokenAddress, usdPrice: String(usdPriceOfBnt) }
+        ];
+        const reserveFeeds = buildPossibleReserveFeedsTraditional(
+          relay,
+          knownPrices
         );
-
-        const cached = differenceWith(
-          reserveTokens,
-          tokensMissing,
-          compareString
-        );
-
-        console.warn(cached, "was the cached tokens...");
-
-        const tokensShape = tokensMissing.map(tokenShape);
-        const relaysShape = staticRelays.map(relay =>
-          dynamicRelayShape(relay.converterAddress, relay.reserves)
-        );
-
-        interface NewReserve extends RawAbiToken {
-          reserveBalance: string;
-        }
-
-        const [rawTokens, rawRelays] = ((await this.multi({
-          groupsOfShapes: [tokensShape, relaysShape]
-        })) as unknown) as [RawAbiToken[], RawABIDynamicRelay[]];
-
-        const dynamicRelays = staticRelays.map(relay => {
-          try {
-            const hydrated = rawRelays.find(r =>
-              compareString(relay.converterAddress, r.converterAddress)
-            )!;
-
-            const reserveContracts = [
-              [hydrated.reserveOneAddress, hydrated.reserveOne],
-              [hydrated.reserveTwoAddress, hydrated.reserveTwo]
-            ];
-            const reserves = reserveContracts.map(
-              ([reserveContract, reserveBalance]) => {
-                const rawToken = rawTokens.find(t =>
-                  compareString(reserveContract, t.contract)
-                );
-                if (rawToken) {
-                  return {
-                    ...rawToken,
-                    reserveBalance
-                  } as NewReserve;
-                } else {
-                  const meta = findOrThrow(
-                    tokenMeta,
-                    meta => compareString(reserveContract, meta.contract),
-                    "failed to find token in meta or raw token"
-                  );
-
-                  return {
-                    reserveBalance,
-                    contract: meta.contract,
-                    decimals: String(meta.precision),
-                    symbol: meta.symbol
-                  } as NewReserve;
-                }
-              }
-            );
-
-            const fee = hydrated.conversionFee;
-            return {
-              ...relay,
-              reserves,
-              fee
-            };
-          } catch (e) {
-            console.log("something went wrong here", e);
-            throw new Error();
-          }
-        });
-
-        console.log("should be resolving...", dynamicRelays);
-        return dynamicRelays;
+        return {
+          relay,
+          reserveFeeds
+        };
       })
     );
 
-    dynamicRelayRemote$.subscribe(x => console.log(x, "timeeee"));
+    const finalRelays$ = emittedRelays$.pipe(
+      bufferTime(50),
+      filter(x => x && x.length > 0),
+      map(x => {
+        const allReserveFeeds = x.flatMap(x => x.reserveFeeds);
+        const relays = x.flatMap(x => x.relay);
+        return { allReserveFeeds, relays };
+      }),
+      tap(x =>
+        this.addThePools({ pools: x.relays, reserveFeeds: x.allReserveFeeds })
+      ),
+      share()
+    );
+
+    await finalRelays$.pipe(firstItem()).toPromise();
 
     // dynamicRelayRemote$.subscribe(x => console.log(x, "was the final result?"));
 
@@ -6754,6 +6854,26 @@ export class EthBancorModule
     convertersAndAnchors.forEach(converterAndAnchor =>
       convertersAndAnchors$.next(converterAndAnchor)
     );
+  }
+
+  @action async addThePools({
+    pools,
+    reserveFeeds
+  }: {
+    pools: RelayWithReserveBalances[];
+    reserveFeeds: ReserveFeed[];
+  }) {
+    this.updateRelays(pools);
+    this.updateRelayFeeds(
+      await this.addPossiblePropsFromBancorApi(reserveFeeds)
+    );
+
+    const allTokens = pools.flatMap(tokensInRelay);
+    console.log({ allTokens, pools }, "are all tokens");
+    const contracts = allTokens.map(token => token.contract);
+
+    void this.checkFees(pools);
+    return contracts;
   }
 
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {

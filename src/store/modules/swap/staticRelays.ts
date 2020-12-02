@@ -1,14 +1,18 @@
 import { DryRelay } from "@/api/eos/eosBancorCalc";
 import { compareString } from "@/api/helpers";
 import { Sym } from "eos-common";
-import { omit } from "lodash";
 import moment from "moment";
-import { AbiStaticRelay, StaticRelay } from "./ethBancor";
+import { StaticRelay } from "./ethBancor";
 
 const bntToken = {
   contract: "bntbntbntbnt",
   symbol: "10,BNT"
 };
+
+export const v2Pools = [
+  "0xa88Fd7560efc654d86cF3728785f94a8Bc48BDAe",
+  "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237"
+];
 
 const oldRelays = [
   {
