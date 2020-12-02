@@ -156,7 +156,8 @@ import {
   miningBntReward,
   miningTknReward,
   expandToken,
-  calculateMaxStakes
+  calculateMaxStakes,
+  ppmToDec
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
 import {
@@ -616,9 +617,6 @@ interface RefinedAbiRelay {
   conversionFee: string;
   owner: string;
 }
-
-const ppmToDec = (ppm: number | string): number =>
-  new BigNumber(ppm).dividedBy(oneMillion).toNumber();
 
 const determineConverterType = (
   converterType: string | undefined

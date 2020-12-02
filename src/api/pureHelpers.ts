@@ -5,6 +5,38 @@ const oneMillion = new BigNumber(1000000);
 const zeroIfNegative = (big: BigNumber) =>
   big.isNegative() ? new BigNumber(0) : big;
 
+export const calculateMaxStakesInternal = (
+  tknReserveBalanceWei: string,
+  bntReserveBalanceWei: string,
+  poolTokenSupplyWei: string,
+  poolTokenSystemBalanceWei: string,
+  maxSystemNetworkTokenRatioPpm: string,
+) => {
+  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
+  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
+  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
+
+  const maxSystemNetworkTokenRatioDec = ppmToDec(maxSystemNetworkTokenRatioPpm)
+
+  console.log("www", maxSystemNetworkTokenRatioDec)
+
+  // calculating the systemBNT  from system pool tokens
+  const rate = bntReserveBalance.div(poolTokenSupply);
+  const systemBNT = poolTokenSystemBalance.times(rate);
+
+  // allowed BNT based on ratio cap
+  const maxRatioBnt = zeroIfNegative(
+    new BigNumber(maxSystemNetworkTokenRatioDec)
+      .times(bntReserveBalance)
+      .minus(systemBNT)
+  );
+
+  return {
+    systemBNT,
+    maxRatioBnt,
+  }
+}
+
 export const calculateMaxStakes = (
   tknReserveBalanceWei: string,
   bntReserveBalanceWei: string,
@@ -14,29 +46,24 @@ export const calculateMaxStakes = (
   maxSystemNetworkTokenRatioPpm: string,
   isHighTierPool: boolean
 ) => {
-  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
-  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
-  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
-  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
-  const maxSystemNetworkTokenRatioDec = new BigNumber(
-    maxSystemNetworkTokenRatioPpm
-  ).div(1000000);
 
-  // calculating the systemBNT  from system pool tokens
-  const rate = bntReserveBalance.div(poolTokenSupply);
-  const systemBNT = poolTokenSystemBalance.times(rate);
+  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
+  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
+
+  const {
+    systemBNT,
+    maxRatioBnt,
+  } = calculateMaxStakesInternal(
+    tknReserveBalanceWei,
+    bntReserveBalanceWei,
+    poolTokenSupplyWei,
+    poolTokenSystemBalanceWei,
+    maxSystemNetworkTokenRatioPpm
+  )
 
   // allowed BNT based on limit cap
   const maxLimitBnt = zeroIfNegative(
     new BigNumber(maxSystemNetworkTokenAmount).minus(systemBNT)
-  );
-
-  // allowed BNT based on ratio cap
-  const maxRatioBnt = zeroIfNegative(
-    new BigNumber(bntReserveBalance)
-      .times(maxSystemNetworkTokenRatioDec)
-      .minus(systemBNT)
-      .div(new BigNumber(1).minus(maxSystemNetworkTokenRatioDec))
   );
 
   const lowestAmount = isHighTierPool
@@ -85,7 +112,10 @@ export const calculatePositionFees = (
 };
 
 export const decToPpm = (dec: number | string): string =>
-  new BigNumber(dec).times(oneMillion).toFixed(0);
+  new BigNumber(dec).times(oneMillion).toFixed(0)
+
+export const ppmToDec = (ppm: number | string): number =>
+  new BigNumber(ppm).dividedBy(oneMillion).toNumber();
 
 export const miningBntReward = (protectedBnt: string, highCap: boolean) => {
   const baseNumber = "14000000000000000000000";
