@@ -3,7 +3,8 @@
     <data-table
       v-if="positions.length"
       :fields="fields"
-      :items="positions"
+      :items="tmp"
+      :collapsable="true"
       :filter="search"
       filter-by="stake"
       :filter-function="doFilter"
@@ -34,8 +35,51 @@
           {{ poolName(value.poolId) }}
         </div>
       </template>
+      <template #cellCollapsed(stake)="{ value }">
+        <div>
+          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+        </div>
+        <div
+          v-if="value && value.usdValue !== undefined"
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+        <div
+          v-text="formatDate(value.unixTime).dateTime"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        />
+        <div class="d-flex align-items-center">
+          <pool-logos-overlapped
+            :pool-id="value.poolId"
+            size="20"
+            class="mr-1"
+          />
+          {{ poolName(value.poolId) }}
+        </div>
+      </template>
 
       <template #cell(fullyProtected)="{ value }">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              value && typeof value.amount !== 'undefined'
+                ? `${prettifyNumber(value.amount)} ${value.symbol}`
+                : 'Stale data'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+      <template #cellCollapsed(fullyProtected)="{ value }">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -192,6 +236,79 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
   @Prop() positions!: ViewProtectedLiquidity[];
+
+  get tmp() {
+    const groupArray = (arr: ViewProtectedLiquidity[]) => {
+      const res = arr.reduce(
+        (obj => (acc: any, val: ViewProtectedLiquidity) => {
+          const symbol = val.stake.symbol;
+          const poolId = val.stake.poolId;
+          const id = `${poolId}-${symbol}`;
+          let item = obj.get(id);
+          if (!item) {
+            item = {
+              ...val,
+              collapsedData: [val]
+            };
+
+            const filtered = this.positions.filter(
+              x => x.stake.poolId === poolId && x.stake.symbol === symbol
+            );
+
+            const initialStakeAmount = filtered
+              .map(x => Number(x.stake.amount || 0))
+              .reduce((sum, current) => sum + current);
+            const initialStakeUsd = filtered
+              .map(x => Number(x.stake.usdValue || 0))
+              .reduce((sum, current) => sum + current);
+
+            const protectedValueAmount = filtered
+              .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
+              .reduce((sum, current) => sum + current);
+            const protectedValueUsd = filtered
+              .map(x =>
+                Number(x.fullyProtected ? x.fullyProtected.usdValue : 0)
+              )
+              .reduce((sum, current) => sum + current);
+
+            const protectedAmountAmount = filtered
+              .map(x =>
+                Number(x.protectedAmount ? x.protectedAmount.amount : 0)
+              )
+              .reduce((sum, current) => sum + current);
+            const protectedAmountUsd = filtered
+              .map(x =>
+                Number(x.protectedAmount ? x.protectedAmount.usdValue : 0)
+              )
+              .reduce((sum, current) => sum + current);
+
+            item.stake.amount = initialStakeAmount;
+            item.stake.usdValue = initialStakeUsd;
+            if (item.fullyProtected) {
+              item.fullyProtected.amount = protectedValueAmount;
+              item.fullyProtected.usdValue = protectedValueUsd;
+              item.roi =
+                (protectedValueAmount - initialStakeAmount) /
+                initialStakeAmount;
+            }
+            if (item.protectedAmount) {
+              item.protectedAmount.amount = protectedAmountAmount;
+              item.protectedAmount.usdValue = protectedAmountUsd;
+            }
+
+            obj.set(id, item);
+            acc.push(item);
+          } else item.collapsedData.push(val);
+          return acc;
+        })(new Map()),
+        []
+      );
+      return res;
+    };
+
+    if (this.positions.length > 0) return groupArray(this.positions);
+    else return [];
+  }
 
   poolName(id: string): string {
     return buildPoolName(id);
