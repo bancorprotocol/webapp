@@ -1595,7 +1595,6 @@ export class EthBancorModule
   failedPools: string[] = [];
   currentNetwork: EthNetworks = EthNetworks.Mainnet;
   slippageTolerance = 0;
-  useTraditionalCalls = true;
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
     minDelay: moment.duration("30", "days").asSeconds(),
@@ -1606,10 +1605,6 @@ export class EthBancorModule
     maxSystemNetworkTokenAmount: "",
     maxSystemNetworkTokenRatio: ""
   };
-
-  @mutation setTraditionalCalls(status: boolean) {
-    this.useTraditionalCalls = status;
-  }
 
   @mutation setLiquidityProtectionSettings(
     settings: LiquidityProtectionSettings
@@ -1637,6 +1632,9 @@ export class EthBancorModule
   }
 
   get stats() {
+    const ethToken = this.tokens.find(token =>
+      compareString("ETH", token.symbol)
+    );
     return {
       totalLiquidityDepth: this.tokens.reduce(
         (acc, item) => acc + (item.liqDepth || 0),
@@ -1645,9 +1643,7 @@ export class EthBancorModule
       stakedBntPercent: this.stakedBntPercent,
       nativeTokenPrice: {
         symbol: "ETH",
-        price:
-          this.tokens.find(token => compareString("ETH", token.symbol))!
-            .price || 0
+        price: (ethToken && ethToken.price) || 0
       },
       twentyFourHourTradeCount: this.liquidityHistory.data.length,
       totalVolume24h: this.relays
