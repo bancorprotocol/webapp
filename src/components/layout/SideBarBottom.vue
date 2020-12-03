@@ -119,6 +119,13 @@ export default class SideBarBottom extends Vue {
     filter: invert(0.2) saturate(5) brightness(1);
     color: #0f59d1;
   }
+  &::before {
+    content: none;
+  }
+  &::after {
+    content: none;
+  }
+
 }
 .clicked-link {
   span {

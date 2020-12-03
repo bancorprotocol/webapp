@@ -78,11 +78,17 @@
       </template>
 
       <template #cell(fees)="{ value }">
-        {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+        <div class="text-center">
+          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+        </div>
       </template>
 
       <template #cell(roi)="{ value }">
-        {{ typeof value !== "undefined" ? stringifyPercentage(value) : "N/A" }}
+        <div class="text-center">
+          {{
+            typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
+          }}
+        </div>
       </template>
 
       <template #cell(apr)="{ value }">
@@ -256,20 +262,22 @@ export default class ProtectedTable extends BaseComponent {
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "180px"
       },
-      // {
-      //   id: 4,
-      //   key: "fees",
-      //   label: "Fees",
-      //   tooltip: "Fees your stake has earned since you entered the pool.",
-      //   minWidth: "110px"
-      // },
+      {
+        id: 4,
+        key: "fees",
+        label: "Fees",
+        tooltip: "Fees your stake has earned since you entered the pool.",
+        minWidth: "110px",
+        thClass: "text-center"
+      },
       {
         id: 5,
         key: "roi",
         label: "ROI",
         tooltip:
           "The ROI of your fully protected value vs. your initial stake.",
-        minWidth: "75px"
+        minWidth: "75px",
+        thClass: "text-center"
       },
       {
         id: 6,

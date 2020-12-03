@@ -65,14 +65,14 @@ export const calculatePositionFees = (
   depositedReserveCurrentBalance: string,
   opposingDepositedReserveCurrentBalance: string,
   reserveRate: string
-) => {
+): string => {
   const currentReserveToPoolBalanceRate = new BigNumber(
     depositedReserveCurrentBalance
   ).div(currentPoolTokenSupply);
 
-  const amount1 = new BigNumber(originalPoolTokenAmount).times(
-    currentReserveToPoolBalanceRate
-  );
+  const amount1 = new BigNumber(originalPoolTokenAmount)
+    .times(currentReserveToPoolBalanceRate)
+    .times(2);
   const amount0 = new BigNumber(depositedAmount);
 
   const rate0 = new BigNumber(reserveRate);
@@ -81,9 +81,10 @@ export const calculatePositionFees = (
   );
 
   const rateDiv = rate1.div(rate0);
-  const result = rateDiv.sqrt().times(amount1).minus(amount0).times(-1);
+  const result = rateDiv.sqrt().times(amount1).minus(amount0);
 
-  return result.toFixed(0);
+  if (result.lte(0)) return "0";
+  else return result.toFixed(0);
 };
 
 export const decToPpm = (dec: number | string): string =>

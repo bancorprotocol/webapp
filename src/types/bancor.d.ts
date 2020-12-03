@@ -463,6 +463,8 @@ export interface LiquidityModule {
     totalLiquidityDepth: number;
     nativeTokenPrice: { price: number; symbol: string };
     twentyFourHourTradeCount: number;
+    totalVolume24h: number;
+    bntUsdPrice?: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;

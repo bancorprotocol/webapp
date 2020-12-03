@@ -1075,7 +1075,10 @@ export class EosBancorModule
         symbol: "EOS",
         price: (eos && eos.price) || 0
       },
-      twentyFourHourTradeCount: this.liquidityHistory.data.length
+      twentyFourHourTradeCount: this.liquidityHistory.data.length,
+      totalVolume24h: this.relays
+        .map(x => Number(x.volume || 0))
+        .reduce((sum, current) => sum + current)
     };
   }
 

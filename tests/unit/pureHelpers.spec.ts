@@ -37,12 +37,12 @@ describe("can calculate position fees", () => {
       opposingDepositedReserveCurrentBalance,
       reserveRate
     } = {
-      originalPoolTokenAmount: "1370909146698872748",
-      currentPoolTokenSupply: "11338379267323634752139485",
-      depositedAmount: "3874264344838181",
-      depositedReserveCurrentBalance: "10932903826342227802656",
-      opposingDepositedReserveCurrentBalance: "6847120160277936759163837",
-      reserveRate: "290.61911993101308091657"
+      originalPoolTokenAmount: "500000000000000000",
+      currentPoolTokenSupply: "15576682305422710575136560",
+      depositedAmount: "1340922988163890",
+      depositedReserveCurrentBalance: "15225916667665690655887",
+      opposingDepositedReserveCurrentBalance: "9337353089824759522590240",
+      reserveRate: "322.22513507007347536179"
     };
 
     const res = calculatePositionFees(
@@ -53,7 +53,7 @@ describe("can calculate position fees", () => {
       opposingDepositedReserveCurrentBalance,
       reserveRate
     );
-    expect(res).toBe("1933747839780032");
+    expect(res).toBe("7570785880343");
   });
 });
 

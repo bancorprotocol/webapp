@@ -1236,8 +1236,10 @@ export const buildPoolName = (
   separator: string = "/"
 ): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
-  const symbols = pool.reserves.map(x => x.symbol);
-  return symbols.reverse().join(separator);
+  if (pool) {
+    const symbols = pool.reserves.map(x => x.symbol);
+    return symbols.reverse().join(separator);
+  } else return "N/A";
 };
 
 export const formatUnixTime = (
