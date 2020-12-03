@@ -927,6 +927,7 @@ export interface Relay {
   version: string;
   converterType: PoolType;
   owner: string;
+  stakedBntSupplyPercent?: number;
 }
 
 export interface RelayWithReserveBalances extends Relay {
