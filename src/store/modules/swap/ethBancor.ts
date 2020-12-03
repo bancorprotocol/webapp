@@ -646,6 +646,8 @@ const smartTokenAnchor = (smartToken: Token) => ({
   converterType: PoolType.Traditional
 });
 
+const poolsToAwait = ["0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533"];
+
 const newRelayToRelayWithBalances = (
   newRelay: NewRelay
 ): RelayWithReserveBalances => ({
@@ -656,7 +658,7 @@ const newRelayToRelayWithBalances = (
   },
   contract: newRelay.converterAddress,
   converterType: newRelay.converterType,
-  fee: ppmToDec(newRelay.fee),
+  fee: newRelay.fee,
   id: newRelay.poolToken.contract,
   isMultiContract: false,
   network: "ETH",
@@ -942,7 +944,7 @@ interface NewReserve extends RawAbiToken {
 
 interface NewRelay {
   reserves: NewReserve[];
-  fee: string;
+  fee: number;
   converterAddress: string;
   converterType: number;
   version: number;
@@ -3212,7 +3214,7 @@ export class EthBancorModule
             contract: reserve.contract,
             smartTokenSymbol: poolContainerAddress
           })),
-          fee: relay.fee / 100,
+          fee: relay.fee,
           liqDepth: relay.reserves.reduce(
             (acc, item) => acc + item.reserveFeed!.liqDepth,
             0
@@ -3306,7 +3308,7 @@ export class EthBancorModule
             contract: reserve.contract,
             smartTokenSymbol: relay.anchor.contract
           })),
-          fee: relay.fee / 100,
+          fee: relay.fee,
           liqDepth,
           symbol: tokenReserve.symbol,
           addLiquiditySupported: true,
@@ -5221,6 +5223,7 @@ export class EthBancorModule
       1
     ]);
 
+    console.log(groupsOfShapes, "shapes asked for");
     const res = await multi.all(groupsOfShapes, {
       traditional,
       blockHeight
@@ -5484,7 +5487,7 @@ export class EthBancorModule
                 : undefined
           })),
           version: String(pool.version),
-          fee: Number(pool.conversionFee) / 10000
+          fee: ppmToDec(pool.conversionFee)
         };
       }
     );
@@ -5544,7 +5547,7 @@ export class EthBancorModule
           id: zip.contract
         })),
         contract: converterAddress,
-        fee: Number(polishedHalf.conversionFee) / 10000,
+        fee: ppmToDec(polishedHalf.conversionFee),
         isMultiContract: false,
         network: "ETH",
         version: String(polishedHalf.version),
@@ -5823,7 +5826,7 @@ export class EthBancorModule
       const trades = singleTradeHistoryArr.filter(trade =>
         compareString(trade.data.poolToken!, relay.id)
       );
-      const currentFee = relay.fee / 100;
+      const currentFee = relay.fee;
       const accumulatedFees = trades.reduce(
         (acc, item) => {
           const currentTally = acc.find(balance =>
@@ -5887,7 +5890,6 @@ export class EthBancorModule
       id => allTokens.find(t => compareString(t.id, id))!
     );
 
-    console.log(tradesCollected, "are the trades collected");
     const withUsdValues = tradesCollected.map(trade => ({
       ...trade,
       accumulatedFees: trade.accumulatedFees.map(fee => {
@@ -6095,8 +6097,7 @@ export class EthBancorModule
             }
           }
         );
-
-        const fee = hydrated.conversionFee;
+        const fee = ppmToDec(hydrated.conversionFee);
         return {
           ...relay,
           reserves,
@@ -6358,11 +6359,7 @@ export class EthBancorModule
             compareStaticRelayAndSet(staticRelay, anchorAndConverter),
           "failed to find static relay"
         )
-      ),
-      tap({
-        next: x => console.log("going..", x),
-        error: e => console.error("error!", e)
-      })
+      )
     );
 
     const staticRelaysRemote$ = toRemoteLoad$.pipe(
@@ -6467,53 +6464,17 @@ export class EthBancorModule
       share()
     );
 
-    await finalRelays$.pipe(firstItem()).toPromise();
+    const x = await finalRelays$
+      .pipe(
+        mergeMap(x => from(x.relays)),
+        filter(x =>
+          compareString(x.id, "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533")
+        ),
+        firstItem()
+      )
+      .toPromise();
 
-    // dynamicRelayRemote$.subscribe(x => console.log(x, "was the final result?"));
-
-    // const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
-    // const allConverters = convertersAndAnchors.map(
-    //   item => item.converterAddress
-    // );
-
-    // const [rawRelays, poolAndSmartTokens] = ((await this.multi({
-    //   groupsOfShapes,
-    //   traditional: smallLoad
-    // })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
-
-    // await combineLatest([bareMinimumAnchors$, anchorAndConverters$])
-    //   .pipe(
-    //     mergeMap(([minimumAnchors, anchorsAndConverters]) => {
-    //       const sync = anchorsAndConverters.filter(({ anchorAddress }) =>
-    //         minimumAnchors.some(a => compareString(a, anchorAddress))
-    //       );
-    //       const async = differenceWith(
-    //         anchorsAndConverters,
-    //         sync,
-    //         compareAnchorAndConverter
-    //       );
-
-    //       return this.addPools({ sync, async });
-    //     })
-    //   )
-    //   .toPromise();
-
-    try {
-      this.moduleInitiated();
-
-      if (this.relaysList.length < 1) {
-        console.error("Init resolved with less than 2 relay feeds or 1 relay.");
-      }
-
-      if (this.tokens.length == 0 || this.relays.length == 0) {
-        throw new Error("Failed to load tokens or relays");
-      }
-      console.log("Eth resolving at", Date.now());
-      console.timeEnd("ethResolved");
-    } catch (e) {
-      console.error(`Threw inside ethBancor ${e.message}`);
-      throw new Error(`Threw inside ethBancor ${e.message}`);
-    }
+    console.log(x, "had resolved with...");
   }
 
   @action async addPools({
