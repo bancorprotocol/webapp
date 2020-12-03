@@ -2061,7 +2061,12 @@ export class EthBancorModule
               opposingDepositedReserveCurrentBalance: opposingReserve.weiAmount,
               reserveRate: rate0
             };
-            console.log("asaf", position.poolToken, debugInfo);
+            console.log(
+              "asaf - id:",
+              position.id,
+              new Date(Number(position.timestamp) * 1000),
+              debugInfo
+            );
 
             const shrunk = shrinkToken(feeAmountWei, 18);
 
