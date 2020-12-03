@@ -6331,8 +6331,14 @@ export class EthBancorModule
         })()
       ),
       distinctArrayItem(knownPools, compareAnchorAndConverter),
-      tap(x => console.log(x, "was all", parseInt(String(Date.now() / 1000)))),
-      shareReplay<ConverterAndAnchor[]>(1)
+      tap(x =>
+        console.log(
+          x,
+          "was all emission from anchorAndConverters",
+          parseInt(String(Date.now() / 1000))
+        )
+      ),
+      shareReplay<ConverterAndAnchor[]>(100)
     );
 
     const authenticated$ = of(this.currentUser).pipe(
@@ -6348,7 +6354,29 @@ export class EthBancorModule
     );
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
-      mergeMap(x => from(x))
+      tap(x =>
+        console.log(
+          "before from...",
+          x,
+          x.filter(x =>
+            compareString(
+              x.anchorAddress,
+              "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533"
+            )
+          )
+        )
+      ),
+      mergeMap(x => from(x)),
+      tap(x => {
+        const hasThing = compareString(
+          "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+          x.anchorAddress
+        );
+        if (hasThing) {
+          console.log(x, "came out!");
+        }
+      }),
+      share()
     ) as Observable<ConverterAndAnchor>;
 
     const [v2Pools$, v1Pools$] = partitionOb(
@@ -6425,74 +6453,79 @@ export class EthBancorModule
       )
     );
 
-    console.log("once a month energy drink");
-    const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$).pipe(
-      filter(
-        relay => !v2Pools.some(r => compareString(relay.poolToken.contract, r))
-      )
-    );
+    try {
+      console.log("once a month energy drink");
+      const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$).pipe(
+        filter(
+          relay =>
+            !v2Pools.some(r => compareString(relay.poolToken.contract, r))
+        )
+      );
 
-    const dynamicRelayRemote$ = staticRelays$.pipe(
-      bufferTime(100),
-      filter(staticRelays => staticRelays && staticRelays.length > 0),
-      mergeMap(x => this.fetchDynamicRelays(x))
-    );
+      const dynamicRelayRemote$ = staticRelays$.pipe(
+        bufferTime(100),
+        filter(staticRelays => staticRelays && staticRelays.length > 0),
+        mergeMap(x => this.fetchDynamicRelays(x))
+      );
 
-    const fullRelays$ = dynamicRelayRemote$.pipe(
-      map(relays =>
-        relays.filter(x => x.reserves.every(reserve => reserve.symbol))
-      ),
-      map(relays => relays.map(newRelayToRelayWithBalances))
-    );
-
-    const emittedRelays$ = combineLatest([
-      fullRelays$,
-      usdPriceOfBnt$,
-      networkVersion$
-    ]).pipe(
-      map(([relay, usdPriceOfBnt, currentNetwork]) => {
-        const bntTokenAddress = getNetworkVariables(currentNetwork).bntToken;
-
-        const knownPrices = [
-          ...trustedStables(this.currentNetwork),
-          { id: bntTokenAddress, usdPrice: String(usdPriceOfBnt) }
-        ];
-        const reserveFeeds = buildPossibleReserveFeedsTraditional(
-          relay,
-          knownPrices
-        );
-        return {
-          relay,
-          reserveFeeds
-        };
-      })
-    );
-
-    const finalRelays$ = emittedRelays$.pipe(
-      bufferTime(50),
-      filter(x => x && x.length > 0),
-      map(x => {
-        const allReserveFeeds = x.flatMap(x => x.reserveFeeds);
-        const relays = x.flatMap(x => x.relay);
-        return { allReserveFeeds, relays };
-      }),
-      tap(x =>
-        this.addThePools({ pools: x.relays, reserveFeeds: x.allReserveFeeds })
-      ),
-      share()
-    );
-
-    const x = await finalRelays$
-      .pipe(
-        mergeMap(x => from(x.relays)),
-        filter(x =>
-          compareString(x.id, "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533")
+      const fullRelays$ = dynamicRelayRemote$.pipe(
+        map(relays =>
+          relays.filter(x => x.reserves.every(reserve => reserve.symbol))
         ),
-        firstItem()
-      )
-      .toPromise();
+        map(relays => relays.map(newRelayToRelayWithBalances))
+      );
 
-    console.log(x, "had resolved with...");
+      const emittedRelays$ = combineLatest([
+        fullRelays$,
+        usdPriceOfBnt$,
+        networkVersion$
+      ]).pipe(
+        map(([relay, usdPriceOfBnt, currentNetwork]) => {
+          const bntTokenAddress = getNetworkVariables(currentNetwork).bntToken;
+
+          const knownPrices = [
+            ...trustedStables(this.currentNetwork),
+            { id: bntTokenAddress, usdPrice: String(usdPriceOfBnt) }
+          ];
+          const reserveFeeds = buildPossibleReserveFeedsTraditional(
+            relay,
+            knownPrices
+          );
+          return {
+            relay,
+            reserveFeeds
+          };
+        })
+      );
+
+      const finalRelays$ = emittedRelays$.pipe(
+        bufferTime(50),
+        filter(x => x && x.length > 0),
+        map(x => {
+          const allReserveFeeds = x.flatMap(x => x.reserveFeeds);
+          const relays = x.flatMap(x => x.relay);
+          return { allReserveFeeds, relays };
+        }),
+        tap(x =>
+          this.addThePools({ pools: x.relays, reserveFeeds: x.allReserveFeeds })
+        ),
+        share()
+      );
+
+      const x = await finalRelays$
+        .pipe(
+          mergeMap(x => from(x.relays)),
+          filter(x =>
+            compareString(x.id, "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533")
+          ),
+          firstItem()
+        )
+        .toPromise();
+
+      console.log(x, "had resolved with...");
+    } catch (e) {
+      console.error("thrown in x", e);
+    }
   }
 
   @action async addPools({
