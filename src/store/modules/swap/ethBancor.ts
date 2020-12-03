@@ -1673,7 +1673,6 @@ export class EthBancorModule
       .whitelistedPools()
       .call();
     this.setWhiteListedPools(whiteListedPools);
-    console.log(whiteListedPools, "are white listed pools");
     return whiteListedPools;
   }
 
