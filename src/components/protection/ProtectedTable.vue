@@ -137,6 +137,11 @@
         />
       </template>
 
+      <template #cell(fees)="{ item, value }">
+        <div class="text-center">
+          {{ `${prettifyNumber(value)} ${item.symbol}` }}
+        </div>
+      </template>
       <template #cellCollapsed(fees)="{ value }">
         <div class="text-center">
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
@@ -235,7 +240,8 @@ import {
   compareString,
   defaultTableSort,
   formatUnixTime,
-  prettifyNumber
+  prettifyNumber,
+  stringifyPercentage
 } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
@@ -248,17 +254,18 @@ import BaseComponent from "@/components/BaseComponent.vue";
 
 interface ViewGroupedPositions {
   id: string;
+  poolId: string;
   symbol: string;
   stake: {
-    amount: string;
+    amount: number;
     usdValue: number;
   };
   protectedAmount: {
-    amount: string;
+    amount: number;
     usdValue: number;
   };
   fullyProtected: {
-    amount: string;
+    amount: number;
     usdValue: number;
   };
   fees: number;
@@ -280,6 +287,7 @@ export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
   @Prop() positions!: ViewProtectedLiquidity[];
 
+  stringifyPercentage = stringifyPercentage;
   grouped = true;
 
   get items() {
@@ -293,11 +301,12 @@ export default class ProtectedTable extends BaseComponent {
           const symbol = val.stake.symbol;
           const poolId = val.stake.poolId;
           const id = `${poolId}-${symbol}`;
-          let item = obj.get(id);
+          let item: ViewGroupedPositions = obj.get(id);
           if (!item) {
+            //@ts-ignore
             item = new Object({ stake: "0" });
             item.collapsedData = [];
-            item.id = val.id;
+            item.id = id;
 
             const filtered = this.positions.filter(
               x => x.stake.poolId === poolId && x.stake.symbol === symbol
@@ -329,6 +338,9 @@ export default class ProtectedTable extends BaseComponent {
                 Number(x.protectedAmount ? x.protectedAmount.usdValue : 0)
               )
               .reduce((sum, current) => sum + current);
+            const sumFees = filtered
+              .map(x => Number(x.fees ? x.fees.amount : 0))
+              .reduce((sum, current) => sum + current);
 
             item.poolId = poolId;
             item.symbol = val.stake.symbol;
@@ -343,6 +355,7 @@ export default class ProtectedTable extends BaseComponent {
             };
             item.roi =
               (sumProtectedValueAmount - sumStakeAmount) / sumStakeAmount;
+            item.fees = sumFees;
 
             obj.set(id, item);
             acc.push(item);
@@ -392,11 +405,6 @@ export default class ProtectedTable extends BaseComponent {
 
   formatDate(unixTime: number) {
     return formatUnixTime(unixTime);
-  }
-
-  stringifyPercentage(percentage: number) {
-    if (percentage < 0.0001) return "< 0.01%";
-    else return numeral(percentage).format("0.00%");
   }
 
   prettifyNumber(number: string | number, usd = false): string {
