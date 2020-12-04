@@ -167,9 +167,9 @@ export default class ModalStake extends BaseComponent {
 
   get buttonActive() {
     return (
-        this.stakeValue.isGreaterThan(0) &&
-        this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
-    )
+      this.stakeValue.isGreaterThan(0) &&
+      this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
+    );
   }
 
   get state() {
@@ -225,8 +225,8 @@ export default class ModalStake extends BaseComponent {
     this.step = "stake";
     setTimeout(() => {
       this.stakeInput = "";
-      this.setStakeInput()
-    }, 100)
+      this.setStakeInput();
+    }, 100);
   }
 
   useMax() {
