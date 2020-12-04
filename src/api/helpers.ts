@@ -194,6 +194,12 @@ export const prettifyNumber = (
   }
 };
 
+export const stringifyPercentage = (percentage: number): string => {
+  if (percentage <= 0) return "0.00%";
+  else if (percentage < 0.0001) return "< 0.01%";
+  else return numeral(percentage).format("0.00%");
+};
+
 export const findChangedReserve = (
   amounts: ViewAmount[],
   changedReserveId: string
