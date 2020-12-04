@@ -34,7 +34,7 @@
         No Proposals yet ...
       </h5>
     </div>
-    <data-table
+    <data-table-responsive
       v-else-if="proposals"
       :items="items"
       :fields="fields"
@@ -149,7 +149,7 @@
           />
         </div>
       </template>
-      <template #cell(votes)="{ item }">
+      <template #cell(votes)="{ item }">        
         <div class="pl-3 container-border h-100">
           <div
             v-if="!item.votes.voted && item.end > Date.now()"
@@ -297,7 +297,7 @@
                   :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
                   class="block-rounded btn-sm"
                 >
-                  <span class="font-size-14 font-w500">
+                  <span class="font-size-14 font-w500 text-nowrap">
                     <font-awesome-icon
                       icon="poll"
                       class="text-muted-light mr-1"
@@ -331,7 +331,7 @@
           </li>
         </ul>
       </template>
-    </data-table>
+    </data-table-responsive>
   </div>
 </template>
 
@@ -339,7 +339,7 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import DataTableResponsive, { ViewTableField } from "@/components/common/DataTableResponsive.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
@@ -358,7 +358,7 @@ import { shrinkToken } from "@/api/eth/helpers";
     ContentBlock,
     ProgressBar,
     RemainingTime,
-    DataTable,
+    DataTableResponsive,
     ButtonProgress,
     MainButton,
     ModalNotEnoughTokens
@@ -389,22 +389,23 @@ export default class OpenProposals extends BaseComponent {
         key: "id",
         minWidth: "16px",
         maxWidth: "16px",
+        colRate: 1,
         sortable: false
       },
       {
         id: 2,
         label: "Details",
         key: "name",
-        minWidth: "450px",
-        maxWidth: "500px",
+        minWidth: "340px",
+        colRate: 7,
         sortable: false
       },
       {
         id: 3,
         label: "Vote",
         key: "votes",
-        minWidth: "300px",
-        maxWidth: "300px",
+        minWidth: "190px",        
+        colRate: 4,
         sortable: false
       }
     ];
