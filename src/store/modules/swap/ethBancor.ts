@@ -3309,10 +3309,7 @@ export class EthBancorModule
           whitelisted: false,
           liquidityProtection: false,
           focusAvailable: false,
-          v2: true,
-          ...(relay.stakedBntSupplyPercent && {
-            stakedBntSupplyPercent: relay.stakedBntSupplyPercent
-          })
+          v2: true
         } as ViewRelay;
       });
   }
@@ -3409,9 +3406,6 @@ export class EthBancorModule
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
           ...(feesVsLiquidity && { feesVsLiquidity }),
           ...(volume && { volume }),
-          ...(relay.stakedBntSupplyPercent && {
-            stakedBntSupplyPercent: relay.stakedBntSupplyPercent
-          }),
           aprMiningRewards
         } as ViewRelay;
       });
@@ -6124,18 +6118,6 @@ export class EthBancorModule
     );
   }
 
-  bntSupply: string = "";
-
-  @mutation setBntSupply(weiAmount: string) {
-    this.bntSupply = weiAmount;
-  }
-
-  @action async fetchAndSetBntSupply(bntTokenAddress: string) {
-    const contract = buildTokenContract(bntTokenAddress);
-    const weiSupply = await contract.methods.totalSupply().call();
-    this.setBntSupply(weiSupply);
-  }
-
   @action async init(params?: ModuleParam) {
     console.log(params, "was init param on eth");
     console.time("ethResolved");
@@ -6156,7 +6138,6 @@ export class EthBancorModule
 
     const networkVariables = getNetworkVariables(currentNetwork);
     const testnetActive = currentNetwork == EthNetworks.Ropsten;
-    this.fetchAndSetBntSupply(networkVariables.bntToken);
 
     if (
       params &&
@@ -6834,32 +6815,13 @@ export class EthBancorModule
         reserve => reserve.symbol
       )
     }));
-
-    const bntSupply = this.bntSupply;
-    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
-    const newRelays = updateArray(
-      meshedRelays,
-      relay =>
-        relay.reserves.some(reserve =>
-          compareString(reserve.contract, bntTokenAddress)
-        ),
-      relay => {
-        const relayBalances = relay as RelayWithReserveBalances;
-        const bntReserveBalance = findOrThrow(
-          relayBalances.reserveBalances,
-          reserve => compareString(reserve.id, bntTokenAddress)
-        ).amount;
-        const stakedBntSupplyPercent = new BigNumber(bntReserveBalance)
-          .div(bntSupply)
-          .toNumber();
-        return {
-          ...relay,
-          stakedBntSupplyPercent
-        };
-      }
+    console.log(
+      "vuex given",
+      relays.length,
+      "relays and setting",
+      meshedRelays.length
     );
-
-    this.relaysList = Object.freeze(newRelays);
+    this.relaysList = Object.freeze(meshedRelays);
   }
 
   @mutation wipeTokenBalances() {
