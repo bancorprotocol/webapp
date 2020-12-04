@@ -3,15 +3,34 @@
     <data-table
       v-if="positions.length"
       :fields="fields"
-      :items="positions"
+      :items="groupedPositions"
+      :collapsable="true"
       :filter="search"
       filter-by="stake"
       :filter-function="doFilter"
       :sort-function="customSort"
-      default-sort="currentCoverage"
-      default-order="asc"
+      default-sort="roi"
+      default-order="desc"
     >
-      <template #cell(stake)="{ value }">
+      <template #cell(stake)="{ item, value }">
+        <div>
+          {{ `${prettifyNumber(value.amount)} ${item.symbol}` }}
+        </div>
+        <div
+          v-if="value && value.usdValue !== undefined"
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+        <div class="d-flex align-items-center">
+          <pool-logos-overlapped
+            :pool-id="item.poolId"
+            size="20"
+            class="mr-1"
+          />
+          {{ poolName(item.poolId) }}
+        </div>
+      </template>
+      <template #cellCollapsed(stake)="{ value }">
         <div>
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
@@ -35,7 +54,27 @@
         </div>
       </template>
 
-      <template #cell(fullyProtected)="{ value }">
+      <template #cell(fullyProtected)="{ item, value }">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              value && typeof value.amount !== 'undefined'
+                ? `${prettifyNumber(value.amount)} ${item.symbol}`
+                : 'Stale data'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+      <template #cellCollapsed(fullyProtected)="{ value }">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -56,7 +95,27 @@
         />
       </template>
 
-      <template #cell(protectedAmount)="{ value }">
+      <template #cell(protectedAmount)="{ item, value }">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              value && typeof value.amount !== 'undefined'
+                ? `${prettifyNumber(value.amount)} ${item.symbol}`
+                : 'please refresh'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+      <template #cellCollapsed(protectedAmount)="{ value }">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -77,7 +136,12 @@
         />
       </template>
 
-      <template #cell(fees)="{ value }">
+      <template #cell(fees)="{ item, value }">
+        <div class="text-center">
+          {{ `${prettifyNumber(value)} ${item.symbol}` }}
+        </div>
+      </template>
+      <template #cellCollapsed(fees)="{ value }">
         <div class="text-center">
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
@@ -90,8 +154,15 @@
           }}
         </div>
       </template>
+      <template #cellCollapsed(roi)="{ value }">
+        <div class="text-center">
+          {{
+            typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
+          }}
+        </div>
+      </template>
 
-      <template #cell(apr)="{ value }">
+      <template #cellCollapsed(apr)="{ value }">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{
@@ -110,7 +181,7 @@
         </div>
       </template>
 
-      <template #cell(currentCoverage)="{ item }">
+      <template #cellCollapsed(currentCoverage)="{ item }">
         <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(item.coverageDecPercent) }}
           <div
@@ -144,7 +215,7 @@
         />
       </template>
 
-      <template #cell(actions)="{ item }">
+      <template #cellCollapsed(actions)="{ item }">
         <b-btn
           @click="goToWithdraw(item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -168,7 +239,8 @@ import {
   compareString,
   defaultTableSort,
   formatUnixTime,
-  prettifyNumber
+  prettifyNumber,
+  stringifyPercentage
 } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
@@ -178,6 +250,27 @@ import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+
+interface ViewGroupedPositions {
+  id: string;
+  poolId: string;
+  symbol: string;
+  stake: {
+    amount: number;
+    usdValue: number;
+  };
+  protectedAmount: {
+    amount: number;
+    usdValue: number;
+  };
+  fullyProtected: {
+    amount: number;
+    usdValue: number;
+  };
+  fees: number;
+  roi: number;
+  collapsedData: ViewProtectedLiquidity[];
+}
 
 @Component({
   components: {
@@ -192,6 +285,86 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
   @Prop() positions!: ViewProtectedLiquidity[];
+
+  stringifyPercentage = stringifyPercentage;
+
+  get groupedPositions() {
+    const groupArray = (arr: ViewProtectedLiquidity[]) => {
+      const res: ViewGroupedPositions[] = arr.reduce(
+        (obj => (acc: any, val: ViewProtectedLiquidity) => {
+          const symbol = val.stake.symbol;
+          const poolId = val.stake.poolId;
+          const id = `${poolId}-${symbol}`;
+          let item: ViewGroupedPositions = obj.get(id);
+          if (!item) {
+            //@ts-ignore
+            item = new Object({ stake: "0" });
+            item.collapsedData = [];
+            item.id = id;
+
+            const filtered = this.positions.filter(
+              x => x.stake.poolId === poolId && x.stake.symbol === symbol
+            );
+
+            const sumStakeAmount = filtered
+              .map(x => Number(x.stake.amount || 0))
+              .reduce((sum, current) => sum + current);
+            const sumStakeUsd = filtered
+              .map(x => Number(x.stake.usdValue || 0))
+              .reduce((sum, current) => sum + current);
+
+            const sumProtectedValueAmount = filtered
+              .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
+              .reduce((sum, current) => sum + current);
+            const sumProtectedValueUsd = filtered
+              .map(x =>
+                Number(x.fullyProtected ? x.fullyProtected.usdValue : 0)
+              )
+              .reduce((sum, current) => sum + current);
+
+            const sumProtectedAmount = filtered
+              .map(x =>
+                Number(x.protectedAmount ? x.protectedAmount.amount : 0)
+              )
+              .reduce((sum, current) => sum + current);
+            const sumProtectedAmountUsd = filtered
+              .map(x =>
+                Number(x.protectedAmount ? x.protectedAmount.usdValue : 0)
+              )
+              .reduce((sum, current) => sum + current);
+            const sumFees = filtered
+              .map(x => Number(x.fees ? x.fees.amount : 0))
+              .reduce((sum, current) => sum + current);
+
+            item.poolId = poolId;
+            item.symbol = val.stake.symbol;
+            item.stake = { amount: sumStakeAmount, usdValue: sumStakeUsd };
+            item.fullyProtected = {
+              amount: sumProtectedValueAmount,
+              usdValue: sumProtectedValueUsd
+            };
+            item.protectedAmount = {
+              amount: sumProtectedAmount,
+              usdValue: sumProtectedAmountUsd
+            };
+            item.roi =
+              (sumProtectedValueAmount - sumStakeAmount) / sumStakeAmount;
+            item.fees = sumFees;
+
+            obj.set(id, item);
+            acc.push(item);
+          }
+          item.collapsedData.push(val);
+          return acc;
+        })(new Map()),
+        []
+      );
+      return res;
+    };
+
+    if (this.positions.length > 0) return groupArray(this.positions);
+    else return [];
+  }
 
   poolName(id: string): string {
     return buildPoolName(id);
@@ -226,11 +399,6 @@ export default class ProtectedTable extends BaseComponent {
 
   formatDate(unixTime: number) {
     return formatUnixTime(unixTime);
-  }
-
-  stringifyPercentage(percentage: number) {
-    if (percentage < 0.0001) return "< 0.01%";
-    else return numeral(percentage).format("0.00%");
   }
 
   prettifyNumber(number: string | number, usd = false): string {
@@ -307,24 +475,22 @@ export default class ProtectedTable extends BaseComponent {
     ];
   }
 
-  doFilter(row: ViewProtectedLiquidity, filter: string) {
-    return (row.stake.symbol as string)
-      .toLowerCase()
-      .includes(filter.toLowerCase());
+  doFilter(row: ViewGroupedPositions, filter: string) {
+    return (row.symbol as string).toLowerCase().includes(filter.toLowerCase());
   }
 
-  customSort(row: ViewProtectedLiquidity, sortBy: string) {
+  customSort(row: ViewGroupedPositions, sortBy: string) {
     switch (sortBy) {
       case "stake":
-        return row.stake.unixTime;
+        return row.stake.usdValue;
       case "fullyProtected":
         return row.fullyProtected.usdValue;
       case "protectedAmount":
         return row.protectedAmount.usdValue;
-      case "apr":
-        return row.apr.day;
-      case "currentCoverage":
-        return row.coverageDecPercent;
+      // case "apr":
+      //   return row.apr.day;
+      // case "currentCoverage":
+      //   return row.coverageDecPercent;
       default:
         return defaultTableSort(row, sortBy, true);
     }
