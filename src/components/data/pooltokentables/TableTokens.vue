@@ -48,7 +48,7 @@ import { vxm } from "@/store";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
-import { LiqMiningApr, ViewRelay, ViewToken } from "@/types/bancor";
+import { ViewRelay, ViewToken } from "@/types/bancor";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 import { defaultTableSort, prettifyNumber } from "@/api/helpers";
 

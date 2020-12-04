@@ -49,7 +49,7 @@ import DataTable, {
   Item,
   ViewTableField
 } from "@/components/common/DataTable.vue";
-import { LiquidityHistory, ViewProtectedLiquidity } from "@/types/bancor";
+
 @Component({
   components: { DataTable }
 })
