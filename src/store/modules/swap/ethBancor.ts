@@ -1640,6 +1640,7 @@ export class EthBancorModule
         (acc, item) => acc + (item.liqDepth || 0),
         0
       ),
+      stakedBntPercent: this.stakedBntPercent,
       nativeTokenPrice: {
         symbol: "ETH",
         price: (ethToken && ethToken.price) || 0
@@ -3309,10 +3310,7 @@ export class EthBancorModule
           whitelisted: false,
           liquidityProtection: false,
           focusAvailable: false,
-          v2: true,
-          ...(relay.stakedBntSupplyPercent && {
-            stakedBntSupplyPercent: relay.stakedBntSupplyPercent
-          })
+          v2: true
         } as ViewRelay;
       });
   }
@@ -3409,9 +3407,6 @@ export class EthBancorModule
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
           ...(feesVsLiquidity && { feesVsLiquidity }),
           ...(volume && { volume }),
-          ...(relay.stakedBntSupplyPercent && {
-            stakedBntSupplyPercent: relay.stakedBntSupplyPercent
-          }),
           aprMiningRewards
         } as ViewRelay;
       });
@@ -6837,30 +6832,27 @@ export class EthBancorModule
 
     const bntSupply = this.bntSupply;
     const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
-    const newRelays = updateArray(
-      meshedRelays,
-      relay =>
-        relay.reserves.some(reserve =>
-          compareString(reserve.contract, bntTokenAddress)
-        ),
-      relay => {
+
+    const totalBntInRelays = meshedRelays
+      .filter(relay =>
+        relay.reserves.some(reserve => reserve.contract, bntTokenAddress)
+      )
+      .reduce((acc, relay) => {
         const relayBalances = relay as RelayWithReserveBalances;
         const bntReserveBalance = findOrThrow(
           relayBalances.reserveBalances,
           reserve => compareString(reserve.id, bntTokenAddress)
         ).amount;
-        const stakedBntSupplyPercent = new BigNumber(bntReserveBalance)
-          .div(bntSupply)
-          .toNumber();
-        return {
-          ...relay,
-          stakedBntSupplyPercent
-        };
-      }
-    );
+        return new BigNumber(acc).plus(bntReserveBalance).toString();
+      }, "0");
 
-    this.relaysList = Object.freeze(newRelays);
+    const percent = new BigNumber(totalBntInRelays).div(bntSupply).toNumber();
+
+    this.stakedBntPercent = percent;
+    this.relaysList = Object.freeze(meshedRelays);
   }
+
+  stakedBntPercent: number = 0;
 
   @mutation wipeTokenBalances() {
     this.tokenBalances = [];
