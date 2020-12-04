@@ -41,17 +41,45 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in paginatedItems" :key="item.id">
-          <td v-for="column in fields" :key="column.id">
-            <slot
-              :name="`cell(${column.key})`"
-              :item="item"
-              :value="item[column.key]"
+        <template v-for="item in paginatedItems">
+          <tr
+            @click="toggleCollapse(item.id)"
+            :key="`main-row${item.id}`"
+            class="table-row"
+            :class="trClasses(item.id)"
+          >
+            <td v-for="column in fields" :key="column.id">
+              <slot
+                :name="`cell(${column.key})`"
+                :item="item"
+                :value="item[column.key]"
+              >
+                {{ item[column.key] }}
+              </slot>
+            </td>
+          </tr>
+          <template v-if="expandedId === item.id">
+            <tr
+              v-for="item2 in item.collapsedData"
+              :key="`collapsable-row${item2.id}`"
             >
-              {{ item[column.key] }}
-            </slot>
-          </td>
-        </tr>
+              <td
+                v-for="(column, index) in fields"
+                :key="`collapsable-column${column.id}`"
+              >
+                <div :class="index === 0 ? 'collapsed-indicator' : ''">
+                  <slot
+                    :name="`cellCollapsed(${column.key})`"
+                    :item="item2"
+                    :value="item2[column.key]"
+                  >
+                    {{ item2[column.key] }}
+                  </slot>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </template>
       </tbody>
     </table>
 
@@ -68,7 +96,6 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
-import BigNumber from "bignumber.js";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -85,6 +112,7 @@ export interface ViewTableField {
 export interface Item {
   id: string;
   [key: string]: any;
+  collapsedData?: Item[];
 }
 @Component({
   components: {
@@ -97,6 +125,7 @@ export default class DataTable extends BaseComponent {
   @Prop() filter?: string;
   @Prop() filterBy?: string;
   @Prop() defaultSort?: string;
+  @Prop({ default: false }) collapsable!: boolean;
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
@@ -152,7 +181,7 @@ export default class DataTable extends BaseComponent {
     return sorted;
   }
 
-  get paginatedItems() {
+  get paginatedItems(): Item[] {
     const perPage = this.perPage;
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
@@ -181,6 +210,22 @@ export default class DataTable extends BaseComponent {
     return styles;
   }
 
+  trClasses(id: string | number) {
+    const array: string[] = [];
+    if (this.collapsable) array.push("cursor");
+    if (id === this.expandedId) array.push("table-row-active");
+    return array;
+  }
+
+  expandedId: string | number | null = null;
+
+  toggleCollapse(id: string | number | null) {
+    if (!this.collapsable) return;
+
+    if (this.expandedId === id) this.expandedId = null;
+    else this.expandedId = id;
+  }
+
   getWidthStyle(column: ViewTableField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
@@ -202,4 +247,17 @@ export default class DataTable extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+@import "../../assets/_scss/custom/variables";
+.table-row:hover {
+  background-color: $gray-border;
+}
+.table-row-active {
+  background-color: $gray-border;
+}
+
+.collapsed-indicator {
+  border-left: 2px solid $primary;
+  padding-left: 20px;
+}
+</style>
