@@ -463,6 +463,7 @@ export interface LiquidityModule {
     twentyFourHourTradeCount: number;
     totalVolume24h: number;
     bntUsdPrice?: number;
+    stakedBntPercent?: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;
