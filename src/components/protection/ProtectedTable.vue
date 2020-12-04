@@ -1,10 +1,9 @@
 <template>
   <div id="protected-table">
-    <b-btn @click="grouped = !grouped">toggle grouped</b-btn>
     <data-table
       v-if="positions.length"
       :fields="fields"
-      :items="items"
+      :items="groupedPositions"
       :collapsable="true"
       :filter="search"
       filter-by="stake"
@@ -288,11 +287,6 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
-  grouped = true;
-
-  get items() {
-    return this.grouped ? this.groupedPositions : this.positions;
-  }
 
   get groupedPositions() {
     const groupArray = (arr: ViewProtectedLiquidity[]) => {
