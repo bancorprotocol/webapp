@@ -140,7 +140,8 @@ import {
   liquidityMiningEndTime,
   PreviousPoolFee,
   previousPoolFees,
-  priorityEthPools
+  priorityEthPools,
+  secondRoundLiquidityMiningEndTime
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -6485,6 +6486,11 @@ export class EthBancorModule
       };
     });
 
+    const secondRoundPools = [
+      "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8",
+      "0x6b181c478b315be3f9e99c57ce926436c32e17a7"
+    ];
+
     const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
       const [bntReserve, tknReserve] = sortAlongSide(
         calculated.reserves,
@@ -6496,9 +6502,17 @@ export class EthBancorModule
         reserve => compareString(reserve.contract, tknReserve.contract),
         "failed to find reserve"
       );
+
+      const isSecondRound = secondRoundPools.some(anchor =>
+        compareString(anchor, calculated.anchorAddress)
+      );
+      const endTime = isSecondRound
+        ? secondRoundLiquidityMiningEndTime
+        : liquidityMiningEndTime;
+
       return {
         poolId: calculated.anchorAddress,
-        endTime: liquidityMiningEndTime,
+        endTime,
         rewards: [
           {
             address: bntReserve.contract,
