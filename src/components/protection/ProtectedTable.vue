@@ -1,38 +1,34 @@
 <template>
   <div id="protected-table">
+    <b-btn @click="grouped = !grouped">toggle grouped</b-btn>
     <data-table
       v-if="positions.length"
       :fields="fields"
-      :items="tmp"
+      :items="items"
       :collapsable="true"
       :filter="search"
       filter-by="stake"
       :filter-function="doFilter"
       :sort-function="customSort"
-      default-sort="currentCoverage"
-      default-order="asc"
+      default-sort="roi"
+      default-order="desc"
     >
-      <template #cell(stake)="{ value }">
+      <template #cell(stake)="{ item, value }">
         <div>
-          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+          {{ `${prettifyNumber(value.amount)} ${item.symbol}` }}
         </div>
         <div
           v-if="value && value.usdValue !== undefined"
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
-        <div
-          v-text="formatDate(value.unixTime).dateTime"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
         <div class="d-flex align-items-center">
           <pool-logos-overlapped
-            :pool-id="value.poolId"
+            :pool-id="item.poolId"
             size="20"
             class="mr-1"
           />
-          {{ poolName(value.poolId) }}
+          {{ poolName(item.poolId) }}
         </div>
       </template>
       <template #cellCollapsed(stake)="{ value }">
@@ -59,12 +55,12 @@
         </div>
       </template>
 
-      <template #cell(fullyProtected)="{ value }">
+      <template #cell(fullyProtected)="{ item, value }">
         <div class="d-flex align-items-start">
           <span
             v-text="
               value && typeof value.amount !== 'undefined'
-                ? `${prettifyNumber(value.amount)} ${value.symbol}`
+                ? `${prettifyNumber(value.amount)} ${item.symbol}`
                 : 'Stale data'
             "
           />
@@ -100,7 +96,27 @@
         />
       </template>
 
-      <template #cell(protectedAmount)="{ value }">
+      <template #cell(protectedAmount)="{ item, value }">
+        <div class="d-flex align-items-start">
+          <span
+            v-text="
+              value && typeof value.amount !== 'undefined'
+                ? `${prettifyNumber(value.amount)} ${item.symbol}`
+                : 'please refresh'
+            "
+          />
+        </div>
+        <span
+          v-if="
+            value &&
+            value.usdValue !== undefined &&
+            typeof value.amount !== 'undefined'
+          "
+          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+          class="font-size-12 font-w400 text-primary"
+        />
+      </template>
+      <template #cellCollapsed(protectedAmount)="{ value }">
         <div class="d-flex align-items-start">
           <span
             v-text="
@@ -121,7 +137,7 @@
         />
       </template>
 
-      <template #cell(fees)="{ value }">
+      <template #cellCollapsed(fees)="{ value }">
         <div class="text-center">
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
@@ -134,8 +150,15 @@
           }}
         </div>
       </template>
+      <template #cellCollapsed(roi)="{ value }">
+        <div class="text-center">
+          {{
+            typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
+          }}
+        </div>
+      </template>
 
-      <template #cell(apr)="{ value }">
+      <template #cellCollapsed(apr)="{ value }">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
           {{
@@ -154,7 +177,7 @@
         </div>
       </template>
 
-      <template #cell(currentCoverage)="{ item }">
+      <template #cellCollapsed(currentCoverage)="{ item }">
         <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(item.coverageDecPercent) }}
           <div
@@ -188,7 +211,7 @@
         />
       </template>
 
-      <template #cell(actions)="{ item }">
+      <template #cellCollapsed(actions)="{ item }">
         <b-btn
           @click="goToWithdraw(item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -223,6 +246,26 @@ import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
+interface ViewGroupedPositions {
+  id: string;
+  symbol: string;
+  stake: {
+    amount: string;
+    usdValue: number;
+  };
+  protectedAmount: {
+    amount: string;
+    usdValue: number;
+  };
+  fullyProtected: {
+    amount: string;
+    usdValue: number;
+  };
+  fees: number;
+  roi: number;
+  collapsedData: ViewProtectedLiquidity[];
+}
+
 @Component({
   components: {
     DataTable,
@@ -237,68 +280,74 @@ export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
   @Prop() positions!: ViewProtectedLiquidity[];
 
-  get tmp() {
+  grouped = true;
+
+  get items() {
+    return this.grouped ? this.groupedPositions : this.positions;
+  }
+
+  get groupedPositions() {
     const groupArray = (arr: ViewProtectedLiquidity[]) => {
-      const res = arr.reduce(
+      const res: ViewGroupedPositions[] = arr.reduce(
         (obj => (acc: any, val: ViewProtectedLiquidity) => {
           const symbol = val.stake.symbol;
           const poolId = val.stake.poolId;
           const id = `${poolId}-${symbol}`;
           let item = obj.get(id);
           if (!item) {
-            item = {
-              ...val,
-              collapsedData: [val]
-            };
+            item = new Object({ stake: "0" });
+            item.collapsedData = [];
+            item.id = val.id;
 
             const filtered = this.positions.filter(
               x => x.stake.poolId === poolId && x.stake.symbol === symbol
             );
 
-            const initialStakeAmount = filtered
+            const sumStakeAmount = filtered
               .map(x => Number(x.stake.amount || 0))
               .reduce((sum, current) => sum + current);
-            const initialStakeUsd = filtered
+            const sumStakeUsd = filtered
               .map(x => Number(x.stake.usdValue || 0))
               .reduce((sum, current) => sum + current);
 
-            const protectedValueAmount = filtered
+            const sumProtectedValueAmount = filtered
               .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
               .reduce((sum, current) => sum + current);
-            const protectedValueUsd = filtered
+            const sumProtectedValueUsd = filtered
               .map(x =>
                 Number(x.fullyProtected ? x.fullyProtected.usdValue : 0)
               )
               .reduce((sum, current) => sum + current);
 
-            const protectedAmountAmount = filtered
+            const sumProtectedAmount = filtered
               .map(x =>
                 Number(x.protectedAmount ? x.protectedAmount.amount : 0)
               )
               .reduce((sum, current) => sum + current);
-            const protectedAmountUsd = filtered
+            const sumProtectedAmountUsd = filtered
               .map(x =>
                 Number(x.protectedAmount ? x.protectedAmount.usdValue : 0)
               )
               .reduce((sum, current) => sum + current);
 
-            item.stake.amount = initialStakeAmount;
-            item.stake.usdValue = initialStakeUsd;
-            if (item.fullyProtected) {
-              item.fullyProtected.amount = protectedValueAmount;
-              item.fullyProtected.usdValue = protectedValueUsd;
-              item.roi =
-                (protectedValueAmount - initialStakeAmount) /
-                initialStakeAmount;
-            }
-            if (item.protectedAmount) {
-              item.protectedAmount.amount = protectedAmountAmount;
-              item.protectedAmount.usdValue = protectedAmountUsd;
-            }
+            item.poolId = poolId;
+            item.symbol = val.stake.symbol;
+            item.stake = { amount: sumStakeAmount, usdValue: sumStakeUsd };
+            item.fullyProtected = {
+              amount: sumProtectedValueAmount,
+              usdValue: sumProtectedValueUsd
+            };
+            item.protectedAmount = {
+              amount: sumProtectedAmount,
+              usdValue: sumProtectedAmountUsd
+            };
+            item.roi =
+              (sumProtectedValueAmount - sumStakeAmount) / sumStakeAmount;
 
             obj.set(id, item);
             acc.push(item);
-          } else item.collapsedData.push(val);
+          }
+          item.collapsedData.push(val);
           return acc;
         })(new Map()),
         []
@@ -424,24 +473,22 @@ export default class ProtectedTable extends BaseComponent {
     ];
   }
 
-  doFilter(row: ViewProtectedLiquidity, filter: string) {
-    return (row.stake.symbol as string)
-      .toLowerCase()
-      .includes(filter.toLowerCase());
+  doFilter(row: ViewGroupedPositions, filter: string) {
+    return (row.symbol as string).toLowerCase().includes(filter.toLowerCase());
   }
 
-  customSort(row: ViewProtectedLiquidity, sortBy: string) {
+  customSort(row: ViewGroupedPositions, sortBy: string) {
     switch (sortBy) {
       case "stake":
-        return row.stake.unixTime;
+        return row.stake.usdValue;
       case "fullyProtected":
         return row.fullyProtected.usdValue;
       case "protectedAmount":
         return row.protectedAmount.usdValue;
-      case "apr":
-        return row.apr.day;
-      case "currentCoverage":
-        return row.coverageDecPercent;
+      // case "apr":
+      //   return row.apr.day;
+      // case "currentCoverage":
+      //   return row.coverageDecPercent;
       default:
         return defaultTableSort(row, sortBy, true);
     }
