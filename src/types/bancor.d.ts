@@ -291,6 +291,7 @@ export interface ViewRelay {
   apr?: string;
   volume?: string;
   aprMiningRewards?: PoolLiqMiningApr;
+  stakedBntSupplyPercent?: number;
 }
 
 export interface ContractMethods<T> extends Contract {
@@ -462,6 +463,7 @@ export interface LiquidityModule {
     twentyFourHourTradeCount: number;
     totalVolume24h: number;
     bntUsdPrice?: number;
+    stakedBntPercent?: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;
