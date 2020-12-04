@@ -6839,11 +6839,17 @@ export class EthBancorModule
       )
       .reduce((acc, relay) => {
         const relayBalances = relay as RelayWithReserveBalances;
-        const bntReserveBalance = findOrThrow(
-          relayBalances.reserveBalances,
-          reserve => compareString(reserve.id, bntTokenAddress)
-        ).amount;
-        return new BigNumber(acc).plus(bntReserveBalance).toString();
+        // TODO: find a better solution @HEAD
+        try {
+          const bntReserveBalance = findOrThrow(
+            relayBalances.reserveBalances,
+            reserve => compareString(reserve.id, bntTokenAddress)
+          ).amount;
+          return new BigNumber(acc).plus(bntReserveBalance).toString();
+        } catch {
+
+        }
+        return acc
       }, "0");
 
     const percent = new BigNumber(totalBntInRelays).div(bntSupply).toNumber();
