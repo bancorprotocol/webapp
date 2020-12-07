@@ -28,6 +28,7 @@
             class="mr-1"
           />
           {{ poolName(item.poolId) }}
+          <div v-if="item.collapsedData.length" class="grouped-pos-icon">+</div>
         </div>
       </template>
       <template #cellCollapsed(stake)="{ value }">
@@ -40,6 +41,7 @@
           class="font-size-12 font-w400 text-primary"
         />
         <div
+          v-if="false"
           v-text="formatDate(value.unixTime).dateTime"
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -199,6 +201,42 @@
         </div>
       </template>
 
+      <template #cell(currentCoverage)="{ item }">
+        <div class="d-flex flex-column font-size-12 font-w600">
+          <span v-if="item.collapsedData.length" class="font-w500">
+            Earliest position vesting time
+          </span>
+          {{ stringifyPercentage(item.coverageDecPercent) }}
+          <div
+            v-if="!insuranceStarted(item.insuranceStart)"
+            class="d-flex justify-content-between align-items-center text-danger"
+          >
+            <div>
+              Cliff:
+              <countdown-timer :date-unix="item.insuranceStart" />
+            </div>
+            <font-awesome-icon
+              icon="info-circle"
+              :id="'popover-cliff-' + item.id"
+            />
+            <b-popover
+              :target="'popover-cliff-' + item.id"
+              triggers="hover"
+              placement="bottom"
+            >
+              Impermanent loss protection starts vesting immediately when you
+              deposit. But you must be in the pool until the cliff is reached
+              before the protection can be utilized.
+            </b-popover>
+          </div>
+        </div>
+
+        <remaining-time2
+          :from="item.stake.unixTime * 1000"
+          :to="item.fullCoverage * 1000"
+          class="mt-1"
+        />
+      </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
         <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(item.coverageDecPercent) }}
@@ -233,6 +271,16 @@
         />
       </template>
 
+      <template #cell(actions)="{ item }">
+        <b-btn
+          v-if="!item.collapsedData.length"
+          @click="goToWithdraw(item.id)"
+          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+        >
+          Withdraw
+        </b-btn>
+        <div v-else class="text-center">Group</div>
+      </template>
       <template #cellCollapsed(actions)="{ item }">
         <b-btn
           @click="goToWithdraw(item.id)"
@@ -275,6 +323,7 @@ interface ViewGroupedPositions {
   stake: {
     amount: number;
     usdValue: number;
+    unixTime: number;
   };
   protectedAmount: {
     amount: number;
@@ -291,6 +340,9 @@ interface ViewGroupedPositions {
   };
   fees: number;
   roi: number;
+  insuranceStart: number;
+  coverageDecPercent: number;
+  fullCoverage: number;
   collapsedData: ViewProtectedLiquidity[];
 }
 
@@ -327,6 +379,9 @@ export default class ProtectedTable extends BaseComponent {
             item.collapsedData = [];
             item.id = id;
             item.apr = val.apr;
+            item.insuranceStart = val.insuranceStart;
+            item.coverageDecPercent = val.coverageDecPercent;
+            item.fullCoverage = val.fullCoverage;
 
             const sumStakeAmount = filtered
               .map(x => Number(x.stake.amount || 0))
@@ -360,7 +415,11 @@ export default class ProtectedTable extends BaseComponent {
 
             item.poolId = poolId;
             item.symbol = val.stake.symbol;
-            item.stake = { amount: sumStakeAmount, usdValue: sumStakeUsd };
+            item.stake = {
+              amount: sumStakeAmount,
+              usdValue: sumStakeUsd,
+              unixTime: val.stake.unixTime
+            };
             item.fullyProtected = {
               amount: sumProtectedValueAmount,
               usdValue: sumProtectedValueUsd
@@ -375,6 +434,12 @@ export default class ProtectedTable extends BaseComponent {
 
             obj.set(id, item);
             acc.push(item);
+          }
+          if (item.insuranceStart > val.insuranceStart) {
+            item.insuranceStart = val.insuranceStart;
+            item.coverageDecPercent = val.coverageDecPercent;
+            item.fullCoverage = val.fullCoverage;
+            item.stake.unixTime = val.stake.unixTime;
           }
           if (filtered.length > 1) item.collapsedData.push(val);
           return acc;
@@ -521,6 +586,15 @@ export default class ProtectedTable extends BaseComponent {
 </script>
 
 <style lang="scss">
+@import "src/assets/_scss/custom/variables";
+
+.grouped-pos-icon {
+  border-radius: 8px;
+  border: 1px solid $primary;
+  color: $primary;
+  padding: 0 5px;
+  margin-left: 5px;
+}
 #protected-table {
   table {
     // display: block;
