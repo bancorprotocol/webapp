@@ -219,7 +219,6 @@
         <b-btn
           @click="goToWithdraw(item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-          class="table-button"
         >
           Withdraw
         </b-btn>
@@ -417,18 +416,18 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 2,
         key: "fullyProtected",
-        label: "Protected Value",
+        label: "Protected",
         tooltip:
           "Amount of tokens you can withdraw with 100% protection + fees",
-        minWidth: "185px"
+        minWidth: "160px"
       },
       {
         id: 3,
         key: "protectedAmount",
-        label: "Claimable Value",
+        label: "Claimable",
         tooltip:
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
-        minWidth: "180px"
+        minWidth: "160px"
       },
       {
         id: 4,
@@ -454,7 +453,7 @@ export default class ProtectedTable extends BaseComponent {
         tooltip:
           "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
         sortable: true,
-        minWidth: "100px"
+        minWidth: "115px"
       },
       {
         id: 7,
@@ -469,8 +468,8 @@ export default class ProtectedTable extends BaseComponent {
         key: "actions",
         label: "",
         sortable: false,
-        minWidth: "160px",
-        maxWidth: "160px"
+        minWidth: "130px",
+        maxWidth: "130px"
       }
     ];
   }
