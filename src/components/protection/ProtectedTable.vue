@@ -162,6 +162,24 @@
         </div>
       </template>
 
+      <template #cell(apr)="{ value }">
+        <div class="d-flex align-items-center">
+          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
+          {{
+            typeof value.day !== "undefined"
+              ? stringifyPercentage(value.day)
+              : "N/A"
+          }}
+        </div>
+        <div class="d-flex align-items-center my-1">
+          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+          {{
+            typeof value.week !== "undefined"
+              ? stringifyPercentage(value.week)
+              : "N/A"
+          }}
+        </div>
+      </template>
       <template #cellCollapsed(apr)="{ value }">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
@@ -219,7 +237,6 @@
         <b-btn
           @click="goToWithdraw(item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-          class="table-button"
         >
           Withdraw
         </b-btn>
@@ -267,6 +284,11 @@ interface ViewGroupedPositions {
     amount: number;
     usdValue: number;
   };
+  apr: {
+    day: number;
+    week: number;
+    // month: number;
+  };
   fees: number;
   roi: number;
   collapsedData: ViewProtectedLiquidity[];
@@ -295,16 +317,16 @@ export default class ProtectedTable extends BaseComponent {
           const symbol = val.stake.symbol;
           const poolId = val.stake.poolId;
           const id = `${poolId}-${symbol}`;
+          const filtered = this.positions.filter(
+            x => x.stake.poolId === poolId && x.stake.symbol === symbol
+          );
           let item: ViewGroupedPositions = obj.get(id);
           if (!item) {
             //@ts-ignore
             item = new Object({ stake: "0" });
             item.collapsedData = [];
             item.id = id;
-
-            const filtered = this.positions.filter(
-              x => x.stake.poolId === poolId && x.stake.symbol === symbol
-            );
+            item.apr = val.apr;
 
             const sumStakeAmount = filtered
               .map(x => Number(x.stake.amount || 0))
@@ -354,7 +376,7 @@ export default class ProtectedTable extends BaseComponent {
             obj.set(id, item);
             acc.push(item);
           }
-          item.collapsedData.push(val);
+          if (filtered.length > 1) item.collapsedData.push(val);
           return acc;
         })(new Map()),
         []
@@ -412,23 +434,23 @@ export default class ProtectedTable extends BaseComponent {
         key: "stake",
         label: "Initial Stake",
         tooltip: "Amount of tokens you originally staked in the pool.",
-        minWidth: "160px"
+        minWidth: "170px"
       },
       {
         id: 2,
         key: "fullyProtected",
-        label: "Protected Value",
+        label: "Protected",
         tooltip:
           "Amount of tokens you can withdraw with 100% protection + fees",
-        minWidth: "185px"
+        minWidth: "160px"
       },
       {
         id: 3,
         key: "protectedAmount",
-        label: "Claimable Value",
+        label: "Claimable",
         tooltip:
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
-        minWidth: "180px"
+        minWidth: "160px"
       },
       {
         id: 4,
@@ -454,7 +476,7 @@ export default class ProtectedTable extends BaseComponent {
         tooltip:
           "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
         sortable: true,
-        minWidth: "100px"
+        minWidth: "115px"
       },
       {
         id: 7,
@@ -469,8 +491,8 @@ export default class ProtectedTable extends BaseComponent {
         key: "actions",
         label: "",
         sortable: false,
-        minWidth: "160px",
-        maxWidth: "160px"
+        minWidth: "130px",
+        maxWidth: "130px"
       }
     ];
   }
@@ -487,8 +509,8 @@ export default class ProtectedTable extends BaseComponent {
         return row.fullyProtected.usdValue;
       case "protectedAmount":
         return row.protectedAmount.usdValue;
-      // case "apr":
-      //   return row.apr.day;
+      case "apr":
+        return row.apr.day;
       // case "currentCoverage":
       //   return row.coverageDecPercent;
       default:
