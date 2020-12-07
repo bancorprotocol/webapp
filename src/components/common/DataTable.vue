@@ -43,10 +43,10 @@
       <tbody>
         <template v-for="item in paginatedItems">
           <tr
-            @click="toggleCollapse(item.id)"
+            @click="toggleCollapse(item)"
             :key="`main-row${item.id}`"
             class="table-row"
-            :class="trClasses(item.id)"
+            :class="trClasses(item)"
           >
             <td v-for="column in fields" :key="column.id">
               <slot
@@ -210,20 +210,26 @@ export default class DataTable extends BaseComponent {
     return styles;
   }
 
-  trClasses(id: string | number) {
+  trClasses(item: Item) {
     const array: string[] = [];
-    if (this.collapsable) array.push("cursor");
-    if (id === this.expandedId) array.push("table-row-active");
+    if (this.collapsable && item.collapsedData && item.collapsedData.length)
+      array.push("cursor");
+    if (item.id === this.expandedId) array.push("table-row-active");
     return array;
   }
 
   expandedId: string | number | null = null;
 
-  toggleCollapse(id: string | number | null) {
-    if (!this.collapsable) return;
+  toggleCollapse(item: Item) {
+    if (
+      !this.collapsable ||
+      !item.collapsedData ||
+      item.collapsedData.length === 0
+    )
+      return;
 
-    if (this.expandedId === id) this.expandedId = null;
-    else this.expandedId = id;
+    if (this.expandedId === item.id) this.expandedId = null;
+    else this.expandedId = item.id;
   }
 
   getWidthStyle(column: ViewTableField) {
