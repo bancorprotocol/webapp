@@ -72,6 +72,11 @@
   color: $text-color-dark !important;
 }
 
+.text-red {
+  color: $text-error-dark !important;
+  font-weight: 700 !important;
+}
+
 .text-muted-light {
   color: $text-muted-light !important;
 }
