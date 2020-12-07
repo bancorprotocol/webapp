@@ -58,6 +58,7 @@
       />
       <label-content-split
         label="Price Impact"
+        :isAlert="overSlippageLimit"
         :value="
           slippage !== null && slippage !== undefined
             ? numeral(this.slippage).format('0.0000%')
@@ -317,6 +318,13 @@ export default class SwapAction extends BaseComponent {
 
   get balance2() {
     return vxm.bancor.token(this.token2.id).balance ?? "0";
+  }
+
+  get overSlippageLimit() {
+    if(this.slippage !== null && this.slippage !== undefined && this.slippage >= 0.03) {
+      return true;
+    }    
+    return false;
   }
 
   @Watch("$route.query")
