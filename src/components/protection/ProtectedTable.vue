@@ -28,6 +28,7 @@
             class="mr-1"
           />
           {{ poolName(item.poolId) }}
+          <div v-if="item.collapsedData.length" class="grouped-pos-icon">+</div>
         </div>
       </template>
       <template #cellCollapsed(stake)="{ value }">
@@ -40,6 +41,7 @@
           class="font-size-12 font-w400 text-primary"
         />
         <div
+          v-if="false"
           v-text="formatDate(value.unixTime).dateTime"
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -277,12 +279,7 @@
         >
           Withdraw
         </b-btn>
-        <b-btn
-          v-else
-          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-        >
-          Open Group
-        </b-btn>
+        <div v-else class="text-center">Group</div>
       </template>
       <template #cellCollapsed(actions)="{ item }">
         <b-btn
@@ -589,6 +586,15 @@ export default class ProtectedTable extends BaseComponent {
 </script>
 
 <style lang="scss">
+@import "src/assets/_scss/custom/variables";
+
+.grouped-pos-icon {
+  border-radius: 8px;
+  border: 1px solid $primary;
+  color: $primary;
+  padding: 0 5px;
+  margin-left: 5px;
+}
 #protected-table {
   table {
     // display: block;
