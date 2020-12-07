@@ -24,7 +24,14 @@ export default class PoolLogosOverlapped extends Vue {
     const pool = vxm.bancor.relay(this.poolId);
     const fallbackLogo =
       "https://ropsten.etherscan.io/images/main/empty-token.png";
-    if (pool && pool.id && pool.reserves && pool.reserves.length >= 2)
+    if (
+      pool &&
+      pool.id &&
+      pool.reserves &&
+      pool.reserves.length >= 2 &&
+      pool.reserves[0].id &&
+      pool.reserves[1].id
+    )
       return pool;
     else
       return {
