@@ -5725,7 +5725,11 @@ export const moreStaticRelays: StaticRelay[] = [
   }
 ];
 export const previousPoolFees: PreviousPoolFee[] = [];
-export const liquidityMiningEndTime = moment("YYYY-MM-DD HH:mm Z").unix();
+
+export const liquidityMiningEndTime = moment(
+  "2021-02-08 20:15 +0000",
+  "YYYY-MM-DD HH:mm Z"
+).unix();
 
 export const secondRoundLiquidityMiningEndTime = moment(
   "2021-02-25 18:05 +0000",
