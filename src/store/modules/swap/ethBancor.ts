@@ -1637,10 +1637,11 @@ export class EthBancorModule
       compareString("ETH", token.symbol)
     );
     return {
-      totalLiquidityDepth: this.tokens.reduce(
-        (acc, item) => acc + (item.liqDepth || 0),
-        0
-      ),
+      totalLiquidityDepth: this.relays
+        .map(x => Number(x.liqDepth || 0))
+        .reduce((sum, current) => sum + current),
+      totalPoolCount: this.relays.length,
+      totalTokenCount: this.tokens.length,
       stakedBntPercent: this.stakedBntPercent,
       nativeTokenPrice: {
         symbol: "ETH",

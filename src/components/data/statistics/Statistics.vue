@@ -34,6 +34,20 @@
       />
     </b-col>
 
+    <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+      <statistics-data-block
+        title="Pool Count"
+        :value="stats.totalPoolCount.toString()"
+      />
+    </b-col>
+
+    <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+      <statistics-data-block
+        title="Token Count"
+        :value="stats.totalTokenCount.toString()"
+      />
+    </b-col>
+
     <!--    <b-col
       cols="6"
       lg="3"
