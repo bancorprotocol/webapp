@@ -125,7 +125,6 @@ export default class SideBarBottom extends Vue {
   &::after {
     content: none;
   }
-
 }
 .clicked-link {
   span {

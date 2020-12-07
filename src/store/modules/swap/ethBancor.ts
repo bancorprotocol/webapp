@@ -145,7 +145,8 @@ import {
   liquidityMiningEndTime,
   moreStaticRelays,
   previousPoolFees,
-  v2Pools
+  v2Pools,
+  secondRoundLiquidityMiningEndTime
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -1527,7 +1528,6 @@ export class EthBancorModule
   failedPools: string[] = [];
   currentNetwork: EthNetworks = EthNetworks.Mainnet;
   slippageTolerance = 0;
-  useTraditionalCalls = true;
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
     minDelay: moment.duration("30", "days").asSeconds(),
@@ -1538,10 +1538,6 @@ export class EthBancorModule
     maxSystemNetworkTokenAmount: "",
     maxSystemNetworkTokenRatio: ""
   };
-
-  @mutation setTraditionalCalls(status: boolean) {
-    this.useTraditionalCalls = status;
-  }
 
   @mutation setLiquidityProtectionSettings(
     settings: LiquidityProtectionSettings
@@ -1572,16 +1568,18 @@ export class EthBancorModule
   }
 
   get stats() {
+    const ethToken = this.tokens.find(token =>
+      compareString("ETH", token.symbol)
+    );
     return {
       totalLiquidityDepth: this.tokens.reduce(
         (acc, item) => acc + (item.liqDepth || 0),
         0
       ),
+      stakedBntPercent: this.stakedBntPercent,
       nativeTokenPrice: {
         symbol: "ETH",
-        price:
-          this.tokens.find(token => compareString("ETH", token.symbol))!
-            .price || 0
+        price: (ethToken && ethToken.price) || 0
       },
       twentyFourHourTradeCount: this.liquidityHistory.data.length,
       totalVolume24h: this.relays
@@ -1610,6 +1608,7 @@ export class EthBancorModule
     const whiteListedPools = await liquidityProtection.methods
       .whitelistedPools()
       .call();
+    this.setWhiteListedPools(whiteListedPools);
     return whiteListedPools;
   }
 
@@ -6129,6 +6128,18 @@ export class EthBancorModule
     return dynamicRelays;
   }
 
+  bntSupply: string = "";
+
+  @mutation setBntSupply(weiAmount: string) {
+    this.bntSupply = weiAmount;
+  }
+
+  @action async fetchAndSetBntSupply(bntTokenAddress: string) {
+    const contract = buildTokenContract(bntTokenAddress);
+    const weiSupply = await contract.methods.totalSupply().call();
+    this.setBntSupply(weiSupply);
+  }
+
   @action async init(params?: ModuleParam) {
     if (this.initiated) {
       return this.refresh();
@@ -6179,6 +6190,10 @@ export class EthBancorModule
     currentBlock$
       .pipe(firstItem())
       .subscribe(([unixTime, block]) => currentBlockTwo$.next(block));
+
+    networkVars$.subscribe(networkVariables =>
+      this.fetchAndSetBntSupply(networkVariables.bntToken)
+    );
 
     interface DataCache<T> {
       allEmissions: T[];
@@ -6667,6 +6682,11 @@ export class EthBancorModule
       };
     });
 
+    const secondRoundPools = [
+      "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8",
+      "0x6b181c478b315be3f9e99c57ce926436c32e17a7"
+    ];
+
     const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
       const [bntReserve, tknReserve] = sortAlongSide(
         calculated.reserves,
@@ -6678,9 +6698,17 @@ export class EthBancorModule
         reserve => compareString(reserve.contract, tknReserve.contract),
         "failed to find reserve"
       );
+
+      const isSecondRound = secondRoundPools.some(anchor =>
+        compareString(anchor, calculated.anchorAddress)
+      );
+      const endTime = isSecondRound
+        ? secondRoundLiquidityMiningEndTime
+        : liquidityMiningEndTime;
+
       return {
         poolId: calculated.anchorAddress,
-        endTime: liquidityMiningEndTime,
+        endTime,
         rewards: [
           {
             address: bntReserve.contract,
@@ -7045,14 +7073,30 @@ export class EthBancorModule
         reserve => reserve.symbol
       )
     }));
-    console.log(
-      "vuex given",
-      relays.length,
-      "relays and setting",
-      meshedRelays.length
-    );
+
+    const bntSupply = this.bntSupply;
+    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
+
+    const totalBntInRelays = meshedRelays
+      .filter(relay =>
+        relay.reserves.some(reserve => reserve.contract, bntTokenAddress)
+      )
+      .reduce((acc, relay) => {
+        const relayBalances = relay as RelayWithReserveBalances;
+        const bntReserveBalance =
+          relayBalances.reserveBalances?.find(reserve =>
+            compareString(reserve.id, bntTokenAddress)
+          )?.amount || "0";
+        return new BigNumber(acc).plus(bntReserveBalance).toString();
+      }, "0");
+
+    const percent = new BigNumber(totalBntInRelays).div(bntSupply).toNumber();
+
+    this.stakedBntPercent = percent;
     this.relaysList = Object.freeze(meshedRelays);
   }
+
+  stakedBntPercent: number = 0;
 
   @mutation wipeTokenBalances() {
     this.tokenBalances = [];

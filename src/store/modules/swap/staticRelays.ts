@@ -1600,25 +1600,11 @@ export const knownV2Anchors = [
   "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237"
 ];
 
-export const previousPoolFees: PreviousPoolFee[] = [];
 export interface PreviousPoolFee {
   oldDecFee: number;
   blockNumber: number;
   id: string;
 }
-
-export const findPreviousPoolFee = (
-  previousPoolFees: PreviousPoolFee[],
-  blockNumber: number,
-  relayId: string
-) => {
-  const previousFee = previousPoolFees.find(
-    poolFee =>
-      compareString(relayId, poolFee.id) && blockNumber < poolFee.blockNumber
-  );
-  const res = previousFee && previousFee.oldDecFee;
-  return res;
-};
 
 export const moreStaticRelays: StaticRelay[] = [
   {
@@ -5738,9 +5724,11 @@ export const moreStaticRelays: StaticRelay[] = [
     ]
   }
 ];
+export const previousPoolFees: PreviousPoolFee[] = [];
+export const liquidityMiningEndTime = moment("YYYY-MM-DD HH:mm Z").unix();
 
-export const liquidityMiningEndTime = moment(
-  "2021-02-08 20:15 +0000",
+export const secondRoundLiquidityMiningEndTime = moment(
+  "2021-02-25 18:05 +0000",
   "YYYY-MM-DD HH:mm Z"
 ).unix();
 
@@ -5752,3 +5740,16 @@ export const highCapPools = [
   "0xE5Df055773Bf9710053923599504831c7DBdD697",
   "0x04D0231162b4784b706908c787CE32bD075db9b7"
 ];
+
+export const findPreviousPoolFee = (
+  previousPoolFees: PreviousPoolFee[],
+  blockNumber: number,
+  relayId: string
+) => {
+  const previousFee = previousPoolFees.find(
+    poolFee =>
+      compareString(relayId, poolFee.id) && blockNumber < poolFee.blockNumber
+  );
+  const res = previousFee && previousFee.oldDecFee;
+  return res;
+};

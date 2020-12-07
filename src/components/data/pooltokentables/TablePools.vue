@@ -73,11 +73,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import {
-  LiqMiningApr,
-  ViewProtectedLiquidity,
-  ViewRelay
-} from "@/types/bancor";
+import { LiqMiningApr, ViewRelay } from "@/types/bancor";
 import { defaultTableSort, formatPercent, prettifyNumber } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
