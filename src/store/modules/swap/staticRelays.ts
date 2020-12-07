@@ -403,6 +403,11 @@ export const liquidityMiningEndTime = moment(
   "YYYY-MM-DD HH:mm Z"
 ).unix();
 
+export const secondRoundLiquidityMiningEndTime = moment(
+  "2021-02-25 18:05 +0000",
+  "YYYY-MM-DD HH:mm Z"
+).unix();
+
 export const highCapPools = [
   "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
   "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec",

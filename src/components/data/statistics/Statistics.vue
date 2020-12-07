@@ -27,6 +27,13 @@
       <statistics-data-block title="Volume (24hrs)" :value="volume24h" />
     </b-col>
 
+    <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
+      <statistics-data-block
+        title="Total BNT Staked"
+        :value="lockedVsCirculatingBnt"
+      />
+    </b-col>
+
     <!--    <b-col
       cols="6"
       lg="3"
@@ -46,14 +53,21 @@ import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import numeral from "numeral";
-import { prettifyNumber } from "@/api/helpers";
+import { prettifyNumber, stringifyPercentage } from "@/api/helpers";
 
 @Component({
   components: { StatisticsDataBlock }
 })
 export default class Statistics extends Vue {
+  stringifyPercentage = stringifyPercentage;
+
   get liquidityDepth() {
     return prettifyNumber(this.stats.totalLiquidityDepth, true);
+  }
+
+  get lockedVsCirculatingBnt() {
+    const percentageStaked = this.stats.stakedBntPercent;
+    return percentageStaked ? stringifyPercentage(percentageStaked) : null;
   }
 
   get bntPriceUsd() {
