@@ -6,7 +6,7 @@
           <th
             @click="setSortBy(column)"
             v-for="column in fields"
-            :key="column.id"
+            :key="`head-column-${randomNumber()}-${column.id}`"
             scope="col"
             :class="getThClass(column)"
             :style="getWidthStyle(column)"
@@ -44,11 +44,14 @@
         <template v-for="item in paginatedItems">
           <tr
             @click="toggleCollapse(item)"
-            :key="`main-row${item.id}`"
+            :key="`main-row-${randomNumber()}-${item.id}`"
             class="table-row"
             :class="trClasses(item)"
           >
-            <td v-for="column in fields" :key="column.id">
+            <td
+              v-for="column in fields"
+              :key="`main-column-${randomNumber()}-${column.id}`"
+            >
               <slot
                 :name="`cell(${column.key})`"
                 :item="item"
@@ -61,11 +64,11 @@
           <template v-if="expandedId === item.id">
             <tr
               v-for="item2 in item.collapsedData"
-              :key="`collapsable-row${item2.id}`"
+              :key="`collapsable-row-${randomNumber()}-${item2.id}`"
             >
               <td
                 v-for="(column, index) in fields"
-                :key="`collapsable-column${column.id}`"
+                :key="`collapsable-column-${randomNumber()}-${column.id}`"
               >
                 <div :class="index === 0 ? 'collapsed-indicator' : ''">
                   <slot
@@ -230,6 +233,10 @@ export default class DataTable extends BaseComponent {
 
     if (this.expandedId === item.id) this.expandedId = null;
     else this.expandedId = item.id;
+  }
+
+  randomNumber() {
+    return Math.floor(Math.random() * 1000000);
   }
 
   getWidthStyle(column: ViewTableField) {
