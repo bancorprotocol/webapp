@@ -43,7 +43,7 @@
     </table>
     <b-container class="table-body">
       <b-row v-for="item in paginatedItems" :key="item.id">
-        <b-col v-for="column in fields" :key="column.id" class="colb my-auto" cols="12" :lg="column.colRate" :style="getWidthStyle(column)">
+        <b-col v-for="column in fields" :key="column.id" class="colb my-auto" cols="12" :lg="column.colRate!=0 ? column.colRate : ''" :style="getWidthStyle(column)">
           <slot
             :name="`cell(${column.key})`"
             :item="item"
@@ -79,6 +79,7 @@ export interface ViewTableField {
   tooltip?: string;
   minWidth?: string;
   maxWidth?: string;
+  colAuto?: boolean;
   colRate?: number;
   thClass?: string;
 }
@@ -91,7 +92,7 @@ export interface Item {
     TablePagination
   }
 })
-export default class DataTable extends BaseComponent {
+export default class LayoutProposals extends BaseComponent {
   @Prop() fields!: ViewTableField[];
   @Prop() items!: Item[];
   @Prop() filter?: string;

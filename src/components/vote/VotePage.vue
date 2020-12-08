@@ -1,9 +1,9 @@
 <template>
   <b-row v-if="loaded">
-    <b-col class="col-12 col-sm-3 col-lg-2">
+    <b-col class="col-12" sm="3" lg="2">
       <stake />
     </b-col>
-    <b-col class="col-12 col-sm-9 col-lg-10">
+    <b-col class="col-12" sm="9" lg="10">
       <proposals />
     </b-col>
   </b-row>
