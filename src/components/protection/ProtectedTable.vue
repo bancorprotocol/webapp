@@ -9,7 +9,7 @@
       filter-by="stake"
       :filter-function="doFilter"
       :sort-function="customSort"
-      default-sort="roi"
+      default-sort="stake"
       default-order="desc"
     >
       <template #cell(stake)="{ item, value }">
@@ -458,15 +458,15 @@ export default class ProtectedTable extends BaseComponent {
   customSort(row: ViewGroupedPositions, sortBy: string) {
     switch (sortBy) {
       case "stake":
-        return row.stake.usdValue;
+        return row.stake.unixTime;
       case "fullyProtected":
         return row.fullyProtected.usdValue;
       case "protectedAmount":
         return row.protectedAmount.usdValue;
       case "apr":
         return row.apr.day;
-      // case "currentCoverage":
-      //   return row.coverageDecPercent;
+      case "currentCoverage":
+        return row.coverageDecPercent;
       default:
         return defaultTableSort(row, sortBy, true);
     }

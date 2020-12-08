@@ -1,6 +1,6 @@
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import BigNumber from "bignumber.js";
-import { refund } from "vue-gtag"
+import sort from "fast-sort";
 
 const oneMillion = new BigNumber(1000000);
 
@@ -196,7 +196,12 @@ export const groupPositionsArray = (
         item.fullCoverage = val.fullCoverage;
         item.stake.unixTime = val.stake.unixTime;
       }
-      if (filtered.length > 1) item.collapsedData.push(val);
+      if (filtered.length > 1) {
+        item.collapsedData.push(val);
+        item.collapsedData = sort(item.collapsedData).desc(
+          (p: ViewProtectedLiquidity) => p.stake.unixTime
+        );
+      }
       return acc;
     })(new Map()),
     []
