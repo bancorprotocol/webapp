@@ -85,7 +85,7 @@ export const calculatePositionFees = (
   else return result.toFixed(0);
 };
 
-export const groupArray = (
+export const groupPositionsArray = (
   arr: ViewProtectedLiquidity[]
 ): ViewGroupedPositions[] => {
   return arr.reduce(

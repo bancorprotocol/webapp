@@ -308,8 +308,7 @@ import {
   prettifyNumber,
   stringifyPercentage
 } from "@/api/helpers";
-import { groupArray } from "@/api/pureHelpers";
-import numeral from "numeral";
+import { groupPositionsArray } from "@/api/pureHelpers";
 import moment from "moment";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
@@ -333,9 +332,10 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
+  prettifyNumber = prettifyNumber;
 
   get groupedPositions() {
-    if (this.positions.length > 0) return groupArray(this.positions);
+    if (this.positions.length > 0) return groupPositionsArray(this.positions);
     else return [];
   }
 
@@ -379,10 +379,6 @@ export default class ProtectedTable extends BaseComponent {
 
   formatDate(unixTime: number) {
     return formatUnixTime(unixTime);
-  }
-
-  prettifyNumber(number: string | number, usd = false): string {
-    return prettifyNumber(number, usd);
   }
 
   get fields(): ViewTableField[] {
