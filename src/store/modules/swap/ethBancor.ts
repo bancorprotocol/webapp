@@ -146,7 +146,8 @@ import {
   moreStaticRelays,
   previousPoolFees,
   v2Pools,
-  secondRoundLiquidityMiningEndTime
+  secondRoundLiquidityMiningEndTime,
+  knownV2Anchors
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -6205,7 +6206,6 @@ export class EthBancorModule
       comparator?: (a: T, b: T) => boolean
     ) => (source: Observable<T[]>) =>
       source.pipe(
-        startWith(initialValue),
         scan(
           (acc, item) => {
             const difference = differenceWith(
@@ -6213,15 +6213,17 @@ export class EthBancorModule
               acc.allEmissions,
               comparator || isEqual
             );
+            console.log(acc, "acc process", item, "going out is..", difference);
             return {
-              allEmissions: [...acc.allEmissions, ...item],
+              allEmissions: [...acc.allEmissions, ...difference],
               newData: difference
             };
           },
-          { allEmissions: [], newData: [] } as DataCache<T>
+          { allEmissions: initialValue, newData: [] } as DataCache<T>
         ),
         filter(dataCache => dataCache.newData.length > 0),
-        pluck("newData")
+        pluck("newData"),
+        startWith(initialValue)
       );
 
     const contractAddresses$ = networkVars$.pipe(
@@ -6331,6 +6333,8 @@ export class EthBancorModule
     //   )
     // );
 
+    const ethAnchor = "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533";
+
     const anchorAndConverters$ = combineLatest([
       anchors$,
       bancorConverterRegistry$
@@ -6342,7 +6346,15 @@ export class EthBancorModule
             converterRegistryAddress,
             web3
           });
-          return zipAnchorAndConverters(anchorAddresses, converters);
+          const anchorsAndConverters = zipAnchorAndConverters(
+            anchorAddresses,
+            converters
+          );
+          const includesEth = anchorsAndConverters.some(anchor =>
+            compareString(anchor.anchorAddress, ethAnchor)
+          );
+          console.log("web request", anchorAddresses, { includesEth });
+          return anchorsAndConverters;
         })()
       ),
       distinctArrayItem(knownPools, compareAnchorAndConverter),
@@ -6353,7 +6365,7 @@ export class EthBancorModule
           parseInt(String(Date.now() / 1000))
         )
       ),
-      shareReplay<ConverterAndAnchor[]>(100)
+      shareReplay<ConverterAndAnchor[]>(3000)
     );
 
     const authenticated$ = of(this.currentUser).pipe(
@@ -6369,11 +6381,17 @@ export class EthBancorModule
     );
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
-      mergeMap(x => from(x)),
-      tap(x => {
-        console.log(x, "going out indiv");
+      tap(x => console.log("coming in.......", x)),
+      mergeMap(x => {
+        console.log("coming in...2", x);
+        return from(x);
       }),
-      shareReplay(2000)
+      tap(x => {
+        const includesEth = compareString(x.anchorAddress, ethAnchor);
+        if (includesEth) {
+          console.log(x, "going out indiv", includesEth);
+        }
+      })
     ) as Observable<ConverterAndAnchor>;
 
     const [v2Pools$, v1Pools$] = partitionOb(
@@ -6395,7 +6413,13 @@ export class EthBancorModule
     );
 
     const staticRelayLocal$ = toLocalLoad$.pipe(
-      tap(x => console.log("static relay in...", x)),
+      tap(x => {
+        const hasEth = compareString(x.anchorAddress, ethAnchor);
+        console.log("static relay in...", x);
+        if (hasEth) {
+          console.log("pushing in eth", x);
+        }
+      }),
       map(anchorAndConverter =>
         findOrThrow(
           moreStaticRelays,
@@ -6404,7 +6428,12 @@ export class EthBancorModule
           "failed to find static relay"
         )
       ),
-      tap(x => console.log("static relay out...", x))
+      tap(x => {
+        if (compareString(x.poolToken.contract, ethAnchor)) {
+          console.log("pushing out eth", x);
+        }
+        console.log("static relay local out", x);
+      })
     );
 
     const staticRelaysRemote$ = toRemoteLoad$.pipe(
@@ -6436,6 +6465,10 @@ export class EthBancorModule
             )?.version || Number(set.relay.version)
         }
       })),
+      tap(x => {
+        const hasEth = compareString(x.poolToken.contract, ethAnchor);
+        console.log(hasEth, "hasEth");
+      }),
       filter(({ relay }) => !!relay.connectorToken2),
       map(
         ({ relay, poolToken }) =>
@@ -6450,12 +6483,18 @@ export class EthBancorModule
             converterType: determineConverterType(relay.converterType)
           } as StaticRelay)
       )
-    );
+    ) as Observable<StaticRelay>;
 
     try {
       console.log("once a month energy drink");
       const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$).pipe(
-        tap(x => console.log(x, "out out out")),
+        tap(x => {
+          console.log(x, "out out out");
+          const hasEth = compareString(x.poolToken.contract, ethAnchor);
+          if (hasEth) {
+            console.log("derp", x);
+          }
+        }),
         filter(
           relay =>
             true ||
@@ -6498,7 +6537,8 @@ export class EthBancorModule
             relay,
             reserveFeeds
           };
-        })
+        }),
+        tap(x => console.log("more..", x))
       );
 
       const finalRelays$ = emittedRelays$.pipe(
@@ -6509,9 +6549,13 @@ export class EthBancorModule
           const relays = x.flatMap(x => x.relay);
           return { allReserveFeeds, relays };
         }),
-        tap(x =>
-          this.addThePools({ pools: x.relays, reserveFeeds: x.allReserveFeeds })
-        ),
+        tap(x => {
+          console.log(x, "actually getting set");
+          this.addThePools({
+            pools: x.relays,
+            reserveFeeds: x.allReserveFeeds
+          });
+        }),
         share()
       );
 
