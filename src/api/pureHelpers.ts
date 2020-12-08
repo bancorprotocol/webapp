@@ -1,3 +1,4 @@
+import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import BigNumber from "bignumber.js";
 
 const oneMillion = new BigNumber(1000000);
@@ -82,6 +83,85 @@ export const calculatePositionFees = (
 
   if (result.lte(0)) return "0";
   else return result.toFixed(0);
+};
+
+export const groupArray = (arr: ViewProtectedLiquidity[]) => {
+  const res: ViewGroupedPositions[] = arr.reduce(
+    (obj => (acc: any, val: ViewProtectedLiquidity) => {
+      const symbol = val.stake.symbol;
+      const poolId = val.stake.poolId;
+      const id = `${poolId}-${symbol}`;
+      const filtered = arr.filter(
+        x => x.stake.poolId === poolId && x.stake.symbol === symbol
+      );
+      let item: ViewGroupedPositions = obj.get(id);
+      if (!item) {
+        //@ts-ignore
+        item = new Object({ stake: "0" });
+        item.collapsedData = [];
+        item.id = id;
+        item.apr = val.apr;
+        item.insuranceStart = val.insuranceStart;
+        item.coverageDecPercent = val.coverageDecPercent;
+        item.fullCoverage = val.fullCoverage;
+
+        const sumStakeAmount = filtered
+          .map(x => Number(x.stake.amount || 0))
+          .reduce((sum, current) => sum + current);
+        const sumStakeUsd = filtered
+          .map(x => Number(x.stake.usdValue || 0))
+          .reduce((sum, current) => sum + current);
+
+        const sumProtectedValueAmount = filtered
+          .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
+          .reduce((sum, current) => sum + current);
+        const sumProtectedValueUsd = filtered
+          .map(x => Number(x.fullyProtected ? x.fullyProtected.usdValue : 0))
+          .reduce((sum, current) => sum + current);
+
+        const sumProtectedAmount = filtered
+          .map(x => Number(x.protectedAmount ? x.protectedAmount.amount : 0))
+          .reduce((sum, current) => sum + current);
+        const sumProtectedAmountUsd = filtered
+          .map(x => Number(x.protectedAmount ? x.protectedAmount.usdValue : 0))
+          .reduce((sum, current) => sum + current);
+        const sumFees = filtered
+          .map(x => Number(x.fees ? x.fees.amount : 0))
+          .reduce((sum, current) => sum + current);
+
+        item.poolId = poolId;
+        item.symbol = val.stake.symbol;
+        item.stake = {
+          amount: sumStakeAmount,
+          usdValue: sumStakeUsd,
+          unixTime: val.stake.unixTime
+        };
+        item.fullyProtected = {
+          amount: sumProtectedValueAmount,
+          usdValue: sumProtectedValueUsd
+        };
+        item.protectedAmount = {
+          amount: sumProtectedAmount,
+          usdValue: sumProtectedAmountUsd
+        };
+        item.roi = (sumProtectedValueAmount - sumStakeAmount) / sumStakeAmount;
+        item.fees = sumFees;
+
+        obj.set(id, item);
+        acc.push(item);
+      }
+      if (item.insuranceStart > val.insuranceStart) {
+        item.insuranceStart = val.insuranceStart;
+        item.coverageDecPercent = val.coverageDecPercent;
+        item.fullCoverage = val.fullCoverage;
+        item.stake.unixTime = val.stake.unixTime;
+      }
+      if (filtered.length > 1) item.collapsedData.push(val);
+      return acc;
+    })(new Map()),
+    []
+  );
+  return res;
 };
 
 export const decToPpm = (dec: number | string): string =>

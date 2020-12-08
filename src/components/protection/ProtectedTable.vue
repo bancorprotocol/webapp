@@ -28,6 +28,7 @@
             class="mr-1"
           />
           {{ poolName(item.poolId) }}
+          <div v-if="item.collapsedData.length" class="grouped-pos-icon">+</div>
         </div>
       </template>
       <template #cellCollapsed(stake)="{ value }">
@@ -40,6 +41,7 @@
           class="font-size-12 font-w400 text-primary"
         />
         <div
+          v-if="false"
           v-text="formatDate(value.unixTime).dateTime"
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -162,6 +164,24 @@
         </div>
       </template>
 
+      <template #cell(apr)="{ value }">
+        <div class="d-flex align-items-center">
+          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
+          {{
+            typeof value.day !== "undefined"
+              ? stringifyPercentage(value.day)
+              : "N/A"
+          }}
+        </div>
+        <div class="d-flex align-items-center my-1">
+          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+          {{
+            typeof value.week !== "undefined"
+              ? stringifyPercentage(value.week)
+              : "N/A"
+          }}
+        </div>
+      </template>
       <template #cellCollapsed(apr)="{ value }">
         <div class="d-flex align-items-center">
           <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
@@ -181,6 +201,42 @@
         </div>
       </template>
 
+      <template #cell(currentCoverage)="{ item }">
+        <div class="d-flex flex-column font-size-12 font-w600">
+          <span v-if="item.collapsedData.length" class="font-w500">
+            Earliest position vesting time
+          </span>
+          {{ stringifyPercentage(item.coverageDecPercent) }}
+          <div
+            v-if="!insuranceStarted(item.insuranceStart)"
+            class="d-flex justify-content-between align-items-center text-danger"
+          >
+            <div>
+              Cliff:
+              <countdown-timer :date-unix="item.insuranceStart" />
+            </div>
+            <font-awesome-icon
+              icon="info-circle"
+              :id="'popover-cliff-' + item.id"
+            />
+            <b-popover
+              :target="'popover-cliff-' + item.id"
+              triggers="hover"
+              placement="bottom"
+            >
+              Impermanent loss protection starts vesting immediately when you
+              deposit. But you must be in the pool until the cliff is reached
+              before the protection can be utilized.
+            </b-popover>
+          </div>
+        </div>
+
+        <remaining-time2
+          :from="item.stake.unixTime * 1000"
+          :to="item.fullCoverage * 1000"
+          class="mt-1"
+        />
+      </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
         <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(item.coverageDecPercent) }}
@@ -215,11 +271,20 @@
         />
       </template>
 
+      <template #cell(actions)="{ item }">
+        <b-btn
+          v-if="!item.collapsedData.length"
+          @click="goToWithdraw(item.id)"
+          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+        >
+          Withdraw
+        </b-btn>
+        <div v-else class="text-center">Group</div>
+      </template>
       <template #cellCollapsed(actions)="{ item }">
         <b-btn
           @click="goToWithdraw(item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-          class="table-button"
         >
           Withdraw
         </b-btn>
@@ -238,39 +303,20 @@ import {
   buildPoolName,
   compareString,
   defaultTableSort,
+  findOrThrow,
   formatUnixTime,
   prettifyNumber,
   stringifyPercentage
 } from "@/api/helpers";
+import { groupArray } from "@/api/pureHelpers";
 import numeral from "numeral";
 import moment from "moment";
-import { ViewProtectedLiquidity } from "@/types/bancor";
+import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-
-interface ViewGroupedPositions {
-  id: string;
-  poolId: string;
-  symbol: string;
-  stake: {
-    amount: number;
-    usdValue: number;
-  };
-  protectedAmount: {
-    amount: number;
-    usdValue: number;
-  };
-  fullyProtected: {
-    amount: number;
-    usdValue: number;
-  };
-  fees: number;
-  roi: number;
-  collapsedData: ViewProtectedLiquidity[];
-}
 
 @Component({
   components: {
@@ -289,79 +335,6 @@ export default class ProtectedTable extends BaseComponent {
   stringifyPercentage = stringifyPercentage;
 
   get groupedPositions() {
-    const groupArray = (arr: ViewProtectedLiquidity[]) => {
-      const res: ViewGroupedPositions[] = arr.reduce(
-        (obj => (acc: any, val: ViewProtectedLiquidity) => {
-          const symbol = val.stake.symbol;
-          const poolId = val.stake.poolId;
-          const id = `${poolId}-${symbol}`;
-          let item: ViewGroupedPositions = obj.get(id);
-          if (!item) {
-            //@ts-ignore
-            item = new Object({ stake: "0" });
-            item.collapsedData = [];
-            item.id = id;
-
-            const filtered = this.positions.filter(
-              x => x.stake.poolId === poolId && x.stake.symbol === symbol
-            );
-
-            const sumStakeAmount = filtered
-              .map(x => Number(x.stake.amount || 0))
-              .reduce((sum, current) => sum + current);
-            const sumStakeUsd = filtered
-              .map(x => Number(x.stake.usdValue || 0))
-              .reduce((sum, current) => sum + current);
-
-            const sumProtectedValueAmount = filtered
-              .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
-              .reduce((sum, current) => sum + current);
-            const sumProtectedValueUsd = filtered
-              .map(x =>
-                Number(x.fullyProtected ? x.fullyProtected.usdValue : 0)
-              )
-              .reduce((sum, current) => sum + current);
-
-            const sumProtectedAmount = filtered
-              .map(x =>
-                Number(x.protectedAmount ? x.protectedAmount.amount : 0)
-              )
-              .reduce((sum, current) => sum + current);
-            const sumProtectedAmountUsd = filtered
-              .map(x =>
-                Number(x.protectedAmount ? x.protectedAmount.usdValue : 0)
-              )
-              .reduce((sum, current) => sum + current);
-            const sumFees = filtered
-              .map(x => Number(x.fees ? x.fees.amount : 0))
-              .reduce((sum, current) => sum + current);
-
-            item.poolId = poolId;
-            item.symbol = val.stake.symbol;
-            item.stake = { amount: sumStakeAmount, usdValue: sumStakeUsd };
-            item.fullyProtected = {
-              amount: sumProtectedValueAmount,
-              usdValue: sumProtectedValueUsd
-            };
-            item.protectedAmount = {
-              amount: sumProtectedAmount,
-              usdValue: sumProtectedAmountUsd
-            };
-            item.roi =
-              (sumProtectedValueAmount - sumStakeAmount) / sumStakeAmount;
-            item.fees = sumFees;
-
-            obj.set(id, item);
-            acc.push(item);
-          }
-          item.collapsedData.push(val);
-          return acc;
-        })(new Map()),
-        []
-      );
-      return res;
-    };
-
     if (this.positions.length > 0) return groupArray(this.positions);
     else return [];
   }
@@ -371,7 +344,7 @@ export default class ProtectedTable extends BaseComponent {
   }
 
   insuranceStarted(unixTime: number) {
-    return unixTime < Date.now() / 1000;
+    return unixTime < moment().unix();
   }
 
   formatEndTime(fullCoverageSeconds: number) {
@@ -387,7 +360,14 @@ export default class ProtectedTable extends BaseComponent {
   }
 
   goToWithdraw(id: string) {
-    const position = this.positions.find(pos => compareString(pos.id, id))!;
+    const positions = this.positions;
+    const position = findOrThrow(
+      positions,
+      pos => compareString(pos.id, id),
+      `failed to find position of ID ${id} from position ids ${positions
+        .map(position => position.id)
+        .join(" ")}`
+    );
     const routeName = position.single
       ? "WithdrawProtectionSingle"
       : "WithdrawProtectionDouble";
@@ -412,23 +392,23 @@ export default class ProtectedTable extends BaseComponent {
         key: "stake",
         label: "Initial Stake",
         tooltip: "Amount of tokens you originally staked in the pool.",
-        minWidth: "160px"
+        minWidth: "170px"
       },
       {
         id: 2,
         key: "fullyProtected",
-        label: "Protected Value",
+        label: "Protected",
         tooltip:
           "Amount of tokens you can withdraw with 100% protection + fees",
-        minWidth: "185px"
+        minWidth: "160px"
       },
       {
         id: 3,
         key: "protectedAmount",
-        label: "Claimable Value",
+        label: "Claimable",
         tooltip:
           "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
-        minWidth: "180px"
+        minWidth: "160px"
       },
       {
         id: 4,
@@ -454,7 +434,7 @@ export default class ProtectedTable extends BaseComponent {
         tooltip:
           "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
         sortable: true,
-        minWidth: "100px"
+        minWidth: "115px"
       },
       {
         id: 7,
@@ -469,8 +449,8 @@ export default class ProtectedTable extends BaseComponent {
         key: "actions",
         label: "",
         sortable: false,
-        minWidth: "160px",
-        maxWidth: "160px"
+        minWidth: "130px",
+        maxWidth: "130px"
       }
     ];
   }
@@ -487,8 +467,8 @@ export default class ProtectedTable extends BaseComponent {
         return row.fullyProtected.usdValue;
       case "protectedAmount":
         return row.protectedAmount.usdValue;
-      // case "apr":
-      //   return row.apr.day;
+      case "apr":
+        return row.apr.day;
       // case "currentCoverage":
       //   return row.coverageDecPercent;
       default:
@@ -499,6 +479,15 @@ export default class ProtectedTable extends BaseComponent {
 </script>
 
 <style lang="scss">
+@import "src/assets/_scss/custom/variables";
+
+.grouped-pos-icon {
+  border-radius: 8px;
+  border: 1px solid $primary;
+  color: $primary;
+  padding: 0 5px;
+  margin-left: 5px;
+}
 #protected-table {
   table {
     // display: block;

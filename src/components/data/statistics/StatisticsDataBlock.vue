@@ -29,7 +29,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 @Component
 export default class StatisticsDataBlock extends BaseComponent {
   @Prop(String) title!: string;
-  @Prop(String) value!: string;
+  @Prop(String) value!: string | number;
   @Prop(Number) percentage?: number;
 }
 </script>

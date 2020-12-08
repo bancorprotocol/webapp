@@ -56,7 +56,9 @@ export const getWeb3 = (
   let wssProvider = providerCache[web3Url];
 
   if (!wssProvider) {
-    wssProvider = new Web3.providers.WebsocketProvider(web3Url);
+    wssProvider = new Web3.providers.WebsocketProvider(web3Url, {
+      timeout: 100 * 1000
+    });
     providerCache[web3Url] = wssProvider;
   }
 
