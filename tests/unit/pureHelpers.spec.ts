@@ -331,41 +331,6 @@ describe("calculate grouped positions for protected table", () => {
       {
         collapsedData: [
           {
-            id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
-            whitelisted: true,
-            givenVBnt: "0.999999999999999999",
-            single: true,
-            apr: {
-              day: 0.02117,
-              week: 0.03276
-            },
-            insuranceStart: 1605109590,
-            fullCoverage: 1611157590,
-            stake: {
-              amount: "0.999999999999999999",
-              symbol: "BNT",
-              poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-              unixTime: 1602517590,
-              usdValue: 0.99741083
-            },
-            fullyProtected: {
-              amount: "1.005877144022078272",
-              symbol: "BNT",
-              usdValue: 1.0032727570970905
-            },
-            protectedAmount: {
-              amount: "0.988304322300486270",
-              symbol: "BNT",
-              usdValue: 0.9857454343983155
-            },
-            coverageDecPercent: 0.5692694444444445,
-            fees: {
-              amount: "0.006127116288703279",
-              symbol: "BNT"
-            },
-            roi: 0.005877144022078273
-          },
-          {
             id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:939",
             whitelisted: true,
             givenVBnt: "1.000000000000000000",
@@ -399,6 +364,41 @@ describe("calculate grouped positions for protected table", () => {
               symbol: "BNT"
             },
             roi: 0.002608722329711269
+          },
+          {
+            id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
+            whitelisted: true,
+            givenVBnt: "0.999999999999999999",
+            single: true,
+            apr: {
+              day: 0.02117,
+              week: 0.03276
+            },
+            insuranceStart: 1605109590,
+            fullCoverage: 1611157590,
+            stake: {
+              amount: "0.999999999999999999",
+              symbol: "BNT",
+              poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+              unixTime: 1602517590,
+              usdValue: 0.99741083
+            },
+            fullyProtected: {
+              amount: "1.005877144022078272",
+              symbol: "BNT",
+              usdValue: 1.0032727570970905
+            },
+            protectedAmount: {
+              amount: "0.988304322300486270",
+              symbol: "BNT",
+              usdValue: 0.9857454343983155
+            },
+            coverageDecPercent: 0.5692694444444445,
+            fees: {
+              amount: "0.006127116288703279",
+              symbol: "BNT"
+            },
+            roi: 0.005877144022078273
           }
         ],
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533-BNT",
