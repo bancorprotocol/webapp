@@ -6369,29 +6369,11 @@ export class EthBancorModule
     );
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
-      tap(x =>
-        console.log(
-          "before from...",
-          x,
-          x.filter(x =>
-            compareString(
-              x.anchorAddress,
-              "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533"
-            )
-          )
-        )
-      ),
       mergeMap(x => from(x)),
       tap(x => {
-        const hasThing = compareString(
-          "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-          x.anchorAddress
-        );
-        if (hasThing) {
-          console.log(x, "came out!");
-        }
+        console.log(x, "going out indiv");
       }),
-      share()
+      shareReplay(2000)
     ) as Observable<ConverterAndAnchor>;
 
     const [v2Pools$, v1Pools$] = partitionOb(
@@ -6405,7 +6387,7 @@ export class EthBancorModule
       .subscribe(pools => this.addPoolsBulk(pools));
 
     const [toLocalLoad$, toRemoteLoad$] = partitionOb(
-      v1Pools$,
+      v1Pools$.pipe(tap(x => console.count("goinginindiv"))),
       anchorAndConverter =>
         moreStaticRelays.some(staticRelay =>
           compareStaticRelayAndSet(staticRelay, anchorAndConverter)
@@ -6413,6 +6395,7 @@ export class EthBancorModule
     );
 
     const staticRelayLocal$ = toLocalLoad$.pipe(
+      tap(x => console.log("static relay in...", x)),
       map(anchorAndConverter =>
         findOrThrow(
           moreStaticRelays,
@@ -6420,7 +6403,8 @@ export class EthBancorModule
             compareStaticRelayAndSet(staticRelay, anchorAndConverter),
           "failed to find static relay"
         )
-      )
+      ),
+      tap(x => console.log("static relay out...", x))
     );
 
     const staticRelaysRemote$ = toRemoteLoad$.pipe(
@@ -6471,8 +6455,10 @@ export class EthBancorModule
     try {
       console.log("once a month energy drink");
       const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$).pipe(
+        tap(x => console.log(x, "out out out")),
         filter(
           relay =>
+            true ||
             !v2Pools.some(r => compareString(relay.poolToken.contract, r))
         )
       );
@@ -6480,7 +6466,9 @@ export class EthBancorModule
       const dynamicRelayRemote$ = staticRelays$.pipe(
         bufferTime(100),
         filter(staticRelays => staticRelays && staticRelays.length > 0),
-        mergeMap(x => this.fetchDynamicRelays(x))
+        tap(x => console.log("going out for remote loading", x)),
+        mergeMap(x => this.fetchDynamicRelays(x)),
+        share()
       );
 
       const fullRelays$ = dynamicRelayRemote$.pipe(
