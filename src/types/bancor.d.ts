@@ -735,7 +735,7 @@ export interface Service {
 export interface TokenReward {
   amount: string;
   symbol: string;
-  usdValue?: string;
+  usdValue?: string | number;
 }
 export interface ViewProtectedLiquidity {
   id: string;
