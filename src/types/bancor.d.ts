@@ -274,6 +274,7 @@ export interface ViewReserve {
 
 export interface ViewGroupedPositions {
   id: string;
+  positionId: string;
   poolId: string;
   symbol: string;
   stake: {
