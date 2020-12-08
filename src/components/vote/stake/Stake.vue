@@ -66,7 +66,7 @@
           :active="true"
           :large="true"
           :block="true"
-          class="font-size-14 mb-3"
+          class="font-size-14 mb-3 text-nowrap"
         />
         <modal-stake v-model="stakeModal" />
 
@@ -77,7 +77,7 @@
             :active="false"
             :large="true"
             :block="true"
-            class="font-size-14 mb-3"
+            class="font-size-14 mb-3 text-nowrap"
           />
           <modal-unstake v-model="unstakeModal" />
         </div>
@@ -250,7 +250,7 @@ export default class Stake extends BaseComponent {
 
 <style lang="scss">
 #vote-stake {
-  min-width: 148px;
+  min-width: 9rem;
 }
 
 #vote-stake .open-icon {
