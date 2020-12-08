@@ -303,6 +303,7 @@ import {
   buildPoolName,
   compareString,
   defaultTableSort,
+  findOrThrow,
   formatUnixTime,
   prettifyNumber,
   stringifyPercentage
@@ -474,7 +475,14 @@ export default class ProtectedTable extends BaseComponent {
   }
 
   goToWithdraw(id: string) {
-    const position = this.positions.find(pos => compareString(pos.id, id))!;
+    const positions = this.positions;
+    const position = findOrThrow(
+      positions,
+      pos => compareString(pos.id, id),
+      `failed to find position of ID ${id} from position ids ${positions
+        .map(position => position.id)
+        .join(" ")}`
+    );
     const routeName = position.single
       ? "WithdrawProtectionSingle"
       : "WithdrawProtectionDouble";
