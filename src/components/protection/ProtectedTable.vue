@@ -459,7 +459,7 @@ export default class ProtectedTable extends BaseComponent {
   }
 
   insuranceStarted(unixTime: number) {
-    return unixTime < Date.now() / 1000;
+    return unixTime < moment().unix();
   }
 
   formatEndTime(fullCoverageSeconds: number) {
