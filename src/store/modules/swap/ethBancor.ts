@@ -6251,19 +6251,9 @@ export class EthBancorModule
       this.setRegisteredAnchorAddresses(registeredAnchorAddresses);
 
       console.time("ThirdPromise");
-      const [
-        anchorAndConvertersMatched,
-        bareMinimumAnchorAddresses
-      ] = await Promise.all([
-        this.add(registeredAnchorAddresses),
-        this.bareMinimumPools({
-          params,
-          networkContractAddress: contractAddresses.BancorNetwork,
-          anchorAddressess: registeredAnchorAddresses,
-          ...(bancorApiTokens &&
-            bancorApiTokens.length > 0 && { tokenPrices: bancorApiTokens })
-        })
-      ]);
+      const anchorAndConvertersMatched = await this.add(
+        registeredAnchorAddresses
+      );
       console.timeEnd("ThirdPromise");
 
       const blackListedAnchors = ["0x7Ef1fEDb73BD089eC1010bABA26Ca162DFa08144"];
@@ -6272,57 +6262,12 @@ export class EthBancorModule
         notBlackListed(blackListedAnchors)
       );
 
-      const requiredAnchors = bareMinimumAnchorAddresses.map(anchor =>
-        findOrThrow(
-          passedAnchorAndConvertersMatched,
-          item => compareString(item.anchorAddress, anchor),
-          "failed to find required anchors"
-        )
-      );
-
-      const priorityAnchors = await this.poolsByPriority({
-        anchorAddressess: passedAnchorAndConvertersMatched.map(
-          x => x.anchorAddress
-        ),
-        tokenPrices: bancorApiTokens
-      });
-
-      const initialLoad = uniqWith(
-        [...requiredAnchors],
-        compareAnchorAndConverter
-      );
-
-      const remainingLoad = sortAlongSide(
-        differenceWith(
-          passedAnchorAndConvertersMatched,
-          initialLoad,
-          compareAnchorAndConverter
-        ),
-        anchor => anchor.anchorAddress,
-        priorityAnchors
-      );
-
       console.timeEnd("timeToGetToInitialBulk");
 
-      const linkV2Anchor = "0xC42a9e06cEBF12AE96b11f8BAE9aCC3d6b016237";
-
-      const linkPool = anchorAndConvertersMatched.find(anchor =>
-        compareString(anchor.anchorAddress, linkV2Anchor)
-      );
-      if (linkPool) {
-        const alreadyExisting = initialLoad.find(anchor =>
-          compareString(anchor.anchorAddress, linkV2Anchor)
-        );
-        if (!alreadyExisting) {
-          initialLoad.push(linkPool);
-        }
-      }
-
-      const res = await this.addPools({
-        sync: initialLoad,
-        async: remainingLoad
+      await this.addPools({
+        sync: passedAnchorAndConvertersMatched,
+        async: []
       });
-      console.log(res, "was res with initial pull of", initialLoad);
       console.timeEnd("initialPools");
 
       this.moduleInitiated();
