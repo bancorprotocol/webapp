@@ -130,32 +130,8 @@ describe("calculate max stakes are as expected", () => {
     const bntReserve = expandToken("549542.316191026070027217", 18);
     const poolTokenSupply = expandToken("2988.7630212873065", 18);
     const systemBalance = expandToken("1430.881844360983306284", 18);
-    const systemAmount = expandToken(500000, 18)
 
-    const { maxAllowedTknWei, maxAllowedBntWei } = calculateMaxStakes(
-      yfiReserve,
-      bntReserve,
-      poolTokenSupply,
-      systemBalance,
-      systemAmount,
-      "500000",
-      false
-    );
-
-    const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
-    expect(numberRes).toBeCloseTo(0.96982720119);
-
-    const numberResBnt = Number(shrinkToken(maxAllowedBntWei, 18));
-    expect(numberResBnt).toBeCloseTo(11675.6509095);
-  });
-
-  test("results are as expected from #621", () => {
-    const yfiReserve = expandToken("22.823617377346322429", 18);
-    const bntReserve = expandToken("549542.316191026070027217", 18);
-    const poolTokenSupply = expandToken("2988.7630212873065", 18);
-    const systemBalance = expandToken("1430.881844360983306284", 18);
-
-    const { maxRatioBnt, systemBNT } = calculateMaxStakesInternal(
+    const { rate, systemBNT, maxRatioBnt, maxRatioTkn } = calculateMaxStakesInternal(
       yfiReserve,
       bntReserve,
       poolTokenSupply,
@@ -163,31 +139,36 @@ describe("calculate max stakes are as expected", () => {
       "500000"
     );
 
-    console.log(systemBNT)
+    const numberResRate = Number(rate.toString());
+    expect(numberResRate).toBeCloseTo(183.869484558);
 
-    const numberRes = Number(shrinkToken(maxRatioBnt.toString(), 18));
-    expect(numberRes).toBeCloseTo(11675.6509095);
+    const numberSystemBNT = Number(shrinkToken(systemBNT.toString(), 18));
+    expect(numberSystemBNT).toBeCloseTo(263095.507186);
+
+    const numberResBnt = Number(shrinkToken(maxRatioBnt.toString(), 18));
+    expect(numberResBnt).toBeCloseTo(23351.301819);
+
+    const numberResYfi = Number(shrinkToken(maxRatioTkn.toString(), 18));
+    expect(numberResYfi).toBeCloseTo(0.96982720119);
   });
 
-  xtest("results are as expected from #621 2", () => {
+  test("results are as expected from #621 2", () => {
     const poolTokenSupply = expandToken("459753.978704086465437837", 18);
-    const xxxReserve = expandToken("406199.305995522538513417", 18);
+    const xxxBalance = expandToken("406199.305995522538513417", 18);
     const bntReserve = expandToken("877074.144617658202500557", 18);
     const systemBalance = expandToken("229366.326332824650763918", 18);
-    const systemAmount = expandToken(50000, 18)
 
-    const { maxAllowedTknWei } = calculateMaxStakes(
-      xxxReserve,
+    const { maxRatioTkn } = calculateMaxStakesInternal(
+      xxxBalance,
       bntReserve,
       poolTokenSupply,
       systemBalance,
-      systemAmount,
-      "5000000",
-      false
+      "5000000"
     );
 
-    const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
-    expect(numberRes).toBeCloseTo(0);
+    console.log(maxRatioTkn.toString())
+    const numberRes = Number(shrinkToken(maxRatioTkn.toString(), 18));
+    expect(numberRes).toBeCloseTo(-405296.066118);
   });
 
   xtest("results are as expected from #621 3", () => {
@@ -204,7 +185,7 @@ describe("calculate max stakes are as expected", () => {
       systemBalance,
       systemAmount,
       "5000000",
-      false
+      true
     );
 
     const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
@@ -216,20 +197,17 @@ describe("calculate max stakes are as expected", () => {
     const xxxReserve = expandToken("406199.305995522538513417", 18);
     const bntReserve = expandToken("877074.144617658202500557", 18);
     const systemBalance = expandToken("229366.326332824650763918", 18);
-    const systemAmount = expandToken(5000000000, 18)
 
-    const { maxAllowedTknWei } = calculateMaxStakes(
+    const { maxRatioBnt } = calculateMaxStakesInternal(
       xxxReserve,
       bntReserve,
       poolTokenSupply,
       systemBalance,
-      systemAmount,
-      "5000000",
-      false
+      "5000000"
     );
 
-    const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
-    expect(numberRes).toBeCloseTo(0);
+    const numberRes = Number(shrinkToken(maxRatioBnt.toString(), 18));
+    expect(numberRes).toBeCloseTo(-875123.849944);
   });
 
   xtest("results are as expected from #621 5", () => {
@@ -237,19 +215,16 @@ describe("calculate max stakes are as expected", () => {
     const yifiReserve = expandToken("25.23247380420303708", 18);
     const bntReserve = expandToken("647758.396109747717331815", 18);
     const systemBalance = expandToken("1641.951046786342390985", 18);
-    const systemAmount = expandToken(500000, 18)
 
-    const { maxAllowedTknWei } = calculateMaxStakes(
+    const { maxRatioBnt } = calculateMaxStakesInternal(
       yifiReserve,
       bntReserve,
       poolTokenSupply,
       systemBalance,
-      systemAmount,
-      "5000000",
-      false
+      "5000000"
     );
 
-    const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
-    expect(numberRes).toBeCloseTo(24156.7390998);
+    const numberMaxRatioBnt = Number(shrinkToken(maxRatioBnt.toString(), 18));
+    expect(numberMaxRatioBnt).toBeCloseTo(24156.7390998);
   });
 });

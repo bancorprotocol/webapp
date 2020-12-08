@@ -1,5 +1,6 @@
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import BigNumber from "bignumber.js";
+import { refund } from "vue-gtag"
 
 const oneMillion = new BigNumber(1000000);
 
@@ -15,26 +16,38 @@ export const calculateMaxStakesInternal = (
 ) => {
   const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
   const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
+  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
   const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
-
   const maxSystemNetworkTokenRatioDec = ppmToDec(maxSystemNetworkTokenRatioPpm)
-
-  console.log("www", maxSystemNetworkTokenRatioDec)
 
   // calculating the systemBNT  from system pool tokens
   const rate = bntReserveBalance.div(poolTokenSupply);
+  console.log(rate.toString(), bntReserveBalance.toString(), poolTokenSupply.toString());
+
   const systemBNT = poolTokenSystemBalance.times(rate);
 
   // allowed BNT based on ratio cap
-  const maxRatioBnt = zeroIfNegative(
-    new BigNumber(maxSystemNetworkTokenRatioDec)
-      .times(bntReserveBalance)
+  const maxRatioBnt =
+    bntReserveBalance.multipliedBy(new BigNumber(maxSystemNetworkTokenRatioDec))
       .minus(systemBNT)
-  );
+      .dividedBy(new BigNumber(1).minus(maxSystemNetworkTokenRatioDec))
+
+  const tknReserveRatio = tknReserveBalance.dividedBy(bntReserveBalance)
+  const maxRatioTkn = maxRatioBnt.multipliedBy(
+    tknReserveRatio
+  )
+
+  console.log(
+    "maxRatioBnt", maxRatioBnt.toString(),
+    "tknReserveRatio", tknReserveRatio.toString(),
+    "systemBNT", systemBNT.toString()
+  )
 
   return {
+    rate,
     systemBNT,
     maxRatioBnt,
+    maxRatioTkn
   }
 }
 
@@ -47,13 +60,10 @@ export const calculateMaxStakes = (
   maxSystemNetworkTokenRatioPpm: string,
   isHighTierPool: boolean
 ) => {
-
-  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
-  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
-
   const {
     systemBNT,
     maxRatioBnt,
+    maxRatioTkn
   } = calculateMaxStakesInternal(
     tknReserveBalanceWei,
     bntReserveBalanceWei,
@@ -72,7 +82,7 @@ export const calculateMaxStakes = (
     : BigNumber.min(maxLimitBnt, maxRatioBnt);
 
   const maxAllowedBntInTkn = lowestAmount.times(
-    tknReserveBalance.div(bntReserveBalance)
+    zeroIfNegative(maxRatioTkn)
   );
 
   const maxAllowedBnt = systemBNT;
