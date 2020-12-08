@@ -298,20 +298,7 @@ export class BancorModule extends VuexModule.With({
 
   @action async getUsdPrice() {
     try {
-      const reverse = (promise: any) =>
-        new Promise((resolve, reject) =>
-          Promise.resolve(promise).then(reject, resolve)
-        );
-      const any = (arr: any[]) => reverse(Promise.all(arr.map(reverse)));
-      const res = await any([
-        fetchBinanceUsdPriceOfBnt(),
-        new Promise(resolve => {
-          wait(500).then(() =>
-            resolve(fetchUsdPriceOfBntViaRelay(undefined, web3))
-          );
-        })
-      ]);
-      const usdPrice = res as number;
+      const usdPrice = await fetchBinanceUsdPriceOfBnt();
       this.setUsdPriceOfBnt({
         price: usdPrice,
         lastChecked: new Date().getTime()
