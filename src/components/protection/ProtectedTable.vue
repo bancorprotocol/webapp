@@ -308,44 +308,15 @@ import {
   prettifyNumber,
   stringifyPercentage
 } from "@/api/helpers";
+import { groupArray } from "@/api/pureHelpers";
 import numeral from "numeral";
 import moment from "moment";
-import { ViewProtectedLiquidity } from "@/types/bancor";
+import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-
-interface ViewGroupedPositions {
-  id: string;
-  poolId: string;
-  symbol: string;
-  stake: {
-    amount: number;
-    usdValue: number;
-    unixTime: number;
-  };
-  protectedAmount: {
-    amount: number;
-    usdValue: number;
-  };
-  fullyProtected: {
-    amount: number;
-    usdValue: number;
-  };
-  apr: {
-    day: number;
-    week: number;
-    // month: number;
-  };
-  fees: number;
-  roi: number;
-  insuranceStart: number;
-  coverageDecPercent: number;
-  fullCoverage: number;
-  collapsedData: ViewProtectedLiquidity[];
-}
 
 @Component({
   components: {
@@ -364,92 +335,6 @@ export default class ProtectedTable extends BaseComponent {
   stringifyPercentage = stringifyPercentage;
 
   get groupedPositions() {
-    const groupArray = (arr: ViewProtectedLiquidity[]) => {
-      const res: ViewGroupedPositions[] = arr.reduce(
-        (obj => (acc: any, val: ViewProtectedLiquidity) => {
-          const symbol = val.stake.symbol;
-          const poolId = val.stake.poolId;
-          const id = `${poolId}-${symbol}`;
-          const filtered = this.positions.filter(
-            x => x.stake.poolId === poolId && x.stake.symbol === symbol
-          );
-          let item: ViewGroupedPositions = obj.get(id);
-          if (!item) {
-            //@ts-ignore
-            item = new Object({ stake: "0" });
-            item.collapsedData = [];
-            item.id = id;
-            item.apr = val.apr;
-            item.insuranceStart = val.insuranceStart;
-            item.coverageDecPercent = val.coverageDecPercent;
-            item.fullCoverage = val.fullCoverage;
-
-            const sumStakeAmount = filtered
-              .map(x => Number(x.stake.amount || 0))
-              .reduce((sum, current) => sum + current);
-            const sumStakeUsd = filtered
-              .map(x => Number(x.stake.usdValue || 0))
-              .reduce((sum, current) => sum + current);
-
-            const sumProtectedValueAmount = filtered
-              .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
-              .reduce((sum, current) => sum + current);
-            const sumProtectedValueUsd = filtered
-              .map(x =>
-                Number(x.fullyProtected ? x.fullyProtected.usdValue : 0)
-              )
-              .reduce((sum, current) => sum + current);
-
-            const sumProtectedAmount = filtered
-              .map(x =>
-                Number(x.protectedAmount ? x.protectedAmount.amount : 0)
-              )
-              .reduce((sum, current) => sum + current);
-            const sumProtectedAmountUsd = filtered
-              .map(x =>
-                Number(x.protectedAmount ? x.protectedAmount.usdValue : 0)
-              )
-              .reduce((sum, current) => sum + current);
-            const sumFees = filtered
-              .map(x => Number(x.fees ? x.fees.amount : 0))
-              .reduce((sum, current) => sum + current);
-
-            item.poolId = poolId;
-            item.symbol = val.stake.symbol;
-            item.stake = {
-              amount: sumStakeAmount,
-              usdValue: sumStakeUsd,
-              unixTime: val.stake.unixTime
-            };
-            item.fullyProtected = {
-              amount: sumProtectedValueAmount,
-              usdValue: sumProtectedValueUsd
-            };
-            item.protectedAmount = {
-              amount: sumProtectedAmount,
-              usdValue: sumProtectedAmountUsd
-            };
-            item.roi =
-              (sumProtectedValueAmount - sumStakeAmount) / sumStakeAmount;
-            item.fees = sumFees;
-
-            obj.set(id, item);
-            acc.push(item);
-          }
-          if (item.insuranceStart > val.insuranceStart) {
-            item.insuranceStart = val.insuranceStart;
-            item.coverageDecPercent = val.coverageDecPercent;
-            item.fullCoverage = val.fullCoverage;
-            item.stake.unixTime = val.stake.unixTime;
-          }
-          if (filtered.length > 1) item.collapsedData.push(val);
-          return acc;
-        })(new Map()),
-        []
-      );
-      return res;
-    };
-
     if (this.positions.length > 0) return groupArray(this.positions);
     else return [];
   }
