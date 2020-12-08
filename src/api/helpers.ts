@@ -284,21 +284,6 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
   return Number(res.data.price);
 };
 
-export const fetchUsdPriceOfBntViaRelay = async (
-  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
-  w3: Web3
-): Promise<number> => {
-  const contract = buildConverterContract(relayContractAddress, w3);
-  const res = await contract.methods
-    .getReturn(
-      "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-      "0x309627af60F0926daa6041B8279484312f2bf060",
-      "1000000000000000000"
-    )
-    .call();
-  return Number(shrinkToken(res["0"], 18));
-};
-
 export const updateArray = <T>(
   arr: T[],
   conditioner: (element: T) => boolean,
