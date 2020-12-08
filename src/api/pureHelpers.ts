@@ -85,9 +85,11 @@ export const calculatePositionFees = (
   else return result.toFixed(0);
 };
 
-export const groupArray = (arr: ViewProtectedLiquidity[]) => {
-  const res: ViewGroupedPositions[] = arr.reduce(
-    (obj => (acc: any, val: ViewProtectedLiquidity) => {
+export const groupArray = (
+  arr: ViewProtectedLiquidity[]
+): ViewGroupedPositions[] => {
+  return arr.reduce(
+    (obj => (acc: ViewGroupedPositions[], val: ViewProtectedLiquidity) => {
       const symbol = val.stake.symbol;
       const poolId = val.stake.poolId;
       const id = `${poolId}-${symbol}`;
@@ -97,9 +99,12 @@ export const groupArray = (arr: ViewProtectedLiquidity[]) => {
       let item: ViewGroupedPositions = obj.get(id);
       if (!item) {
         //@ts-ignore
-        item = new Object({ stake: "0" });
+        item = new Object({});
         item.collapsedData = [];
         item.id = id;
+        item.positionId = val.id;
+        item.poolId = poolId;
+        item.symbol = symbol;
         item.apr = val.apr;
         item.insuranceStart = val.insuranceStart;
         item.coverageDecPercent = val.coverageDecPercent;
@@ -129,8 +134,6 @@ export const groupArray = (arr: ViewProtectedLiquidity[]) => {
           .map(x => Number(x.fees ? x.fees.amount : 0))
           .reduce((sum, current) => sum + current);
 
-        item.poolId = poolId;
-        item.symbol = val.stake.symbol;
         item.stake = {
           amount: sumStakeAmount,
           usdValue: sumStakeUsd,
@@ -161,7 +164,6 @@ export const groupArray = (arr: ViewProtectedLiquidity[]) => {
     })(new Map()),
     []
   );
-  return res;
 };
 
 export const decToPpm = (dec: number | string): string =>

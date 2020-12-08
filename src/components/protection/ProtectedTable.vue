@@ -274,7 +274,7 @@
       <template #cell(actions)="{ item }">
         <b-btn
           v-if="!item.collapsedData.length"
-          @click="goToWithdraw(item.id)"
+          @click="goToWithdraw(item.positionId)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
         >
           Withdraw
