@@ -200,6 +200,7 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   }
   &--unlock &__desc {
     padding-top: 4px;
+    font-size: 0.9vw;
   }
 }
 </style>
