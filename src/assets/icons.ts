@@ -27,6 +27,8 @@ import { faShieldAlt } from "@fortawesome/free-solid-svg-icons/faShieldAlt";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
+import { faChevronUp } from "@fortawesome/free-solid-svg-icons/faChevronUp";
+import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
 import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 
@@ -59,6 +61,8 @@ export const fas = [
   faThumbsUp,
   faTimes,
   faTimesCircle,
+  faChevronUp,
+  faChevronDown,
   faChevronLeft,
   faPoll
 ];
