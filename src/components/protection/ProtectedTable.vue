@@ -9,7 +9,7 @@
       filter-by="stake"
       :filter-function="doFilter"
       :sort-function="customSort"
-      default-sort="roi"
+      default-sort="stake"
       default-order="desc"
     >
       <template #cell(stake)="{ item, value }">
@@ -274,7 +274,7 @@
       <template #cell(actions)="{ item }">
         <b-btn
           v-if="!item.collapsedData.length"
-          @click="goToWithdraw(item.id)"
+          @click="goToWithdraw(item.positionId)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
         >
           Withdraw
@@ -308,8 +308,7 @@ import {
   prettifyNumber,
   stringifyPercentage
 } from "@/api/helpers";
-import { groupArray } from "@/api/pureHelpers";
-import numeral from "numeral";
+import { groupPositionsArray } from "@/api/pureHelpers";
 import moment from "moment";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
@@ -333,9 +332,10 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
+  prettifyNumber = prettifyNumber;
 
   get groupedPositions() {
-    if (this.positions.length > 0) return groupArray(this.positions);
+    if (this.positions.length > 0) return groupPositionsArray(this.positions);
     else return [];
   }
 
@@ -379,10 +379,6 @@ export default class ProtectedTable extends BaseComponent {
 
   formatDate(unixTime: number) {
     return formatUnixTime(unixTime);
-  }
-
-  prettifyNumber(number: string | number, usd = false): string {
-    return prettifyNumber(number, usd);
   }
 
   get fields(): ViewTableField[] {
@@ -462,15 +458,15 @@ export default class ProtectedTable extends BaseComponent {
   customSort(row: ViewGroupedPositions, sortBy: string) {
     switch (sortBy) {
       case "stake":
-        return row.stake.usdValue;
+        return row.stake.unixTime;
       case "fullyProtected":
         return row.fullyProtected.usdValue;
       case "protectedAmount":
         return row.protectedAmount.usdValue;
       case "apr":
         return row.apr.day;
-      // case "currentCoverage":
-      //   return row.coverageDecPercent;
+      case "currentCoverage":
+        return row.coverageDecPercent;
       default:
         return defaultTableSort(row, sortBy, true);
     }
