@@ -121,7 +121,8 @@ import {
   buildConverterContract,
   buildTokenContract,
   buildLiquidityProtectionContract,
-  buildLiquidityProtectionStoreContract
+  buildLiquidityProtectionStoreContract,
+  buildLiquidityProtectionSettingsContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -141,7 +142,8 @@ import {
   PreviousPoolFee,
   previousPoolFees,
   priorityEthPools,
-  secondRoundLiquidityMiningEndTime
+  secondRoundLiquidityMiningEndTime,
+  highTierPools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -156,8 +158,7 @@ import {
   decToPpm,
   miningBntReward,
   miningTknReward,
-  expandToken,
-  calculateMaxStakes
+  expandToken
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
 import {
@@ -968,13 +969,17 @@ const v2PoolBalanceShape = (
 const liquidityProtectionShape = (contractAddress: string, w3: Web3) => {
   const contract = buildLiquidityProtectionContract(contractAddress, w3);
   return {
+    govToken: contract.methods.govToken()
+  };
+};
+
+const liquidityProtectionSettingsShape = (contractAddress: string, w3: Web3) => {
+  const contract = buildLiquidityProtectionSettingsContract(contractAddress, w3);
+  return {
     minProtectionDelay: contract.methods.minProtectionDelay(),
     maxProtectionDelay: contract.methods.maxProtectionDelay(),
     lockDuration: contract.methods.lockDuration(),
     networkToken: contract.methods.networkToken(),
-    govToken: contract.methods.govToken(),
-    maxSystemNetworkTokenAmount: contract.methods.maxSystemNetworkTokenAmount(),
-    maxSystemNetworkTokenRatio: contract.methods.maxSystemNetworkTokenRatio()
   };
 };
 
@@ -1391,6 +1396,7 @@ interface RegisteredContracts {
   BancorConverterRegistry: string;
   LiquidityProtection: string;
   LiquidityProtectionStore: string;
+  LiquidityProtectionSettings: string;
 }
 
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
@@ -1559,8 +1565,6 @@ interface LiquidityProtectionSettings {
   lockedDelay: number;
   govToken: string;
   networkToken: string;
-  maxSystemNetworkTokenAmount: string;
-  maxSystemNetworkTokenRatio: string;
 }
 
 interface RawLiquidityProtectionSettings {
@@ -1569,8 +1573,6 @@ interface RawLiquidityProtectionSettings {
   lockDuration: string;
   govToken: string;
   networkToken: string;
-  maxSystemNetworkTokenAmount: string;
-  maxSystemNetworkTokenRatio: string;
 }
 
 export class EthBancorModule
@@ -1590,7 +1592,8 @@ export class EthBancorModule
     BancorNetwork: "",
     BancorConverterRegistry: "",
     LiquidityProtection: "",
-    LiquidityProtectionStore: ""
+    LiquidityProtectionStore: "",
+    LiquidityProtectionSettings: ""
   };
   initiated: boolean = false;
   failedPools: string[] = [];
@@ -1602,9 +1605,7 @@ export class EthBancorModule
     maxDelay: moment.duration("100", "days").asSeconds(),
     lockedDelay: moment.duration("24", "hours").asSeconds(),
     networkToken: "",
-    govToken: "",
-    maxSystemNetworkTokenAmount: "",
-    maxSystemNetworkTokenRatio: ""
+    govToken: ""
   };
 
   @mutation setLiquidityProtectionSettings(
@@ -1613,19 +1614,27 @@ export class EthBancorModule
     this.liquidityProtectionSettings = settings;
   }
 
-  @action async fetchLiquidityProtectionSettings(contractAddress: string) {
+  @action async fetchLiquidityProtectionSettings({
+     settingsContractAddress,
+     protectionContractAddress
+   }: {
+    settingsContractAddress: string,
+    protectionContractAddress: string
+  }) {
     const [[settings]] = ((await this.multi({
-      groupsOfShapes: [[liquidityProtectionShape(contractAddress, w3)]]
+      groupsOfShapes: [[liquidityProtectionSettingsShape(settingsContractAddress, w3)]]
+    })) as unknown) as [RawLiquidityProtectionSettings][];
+
+    const [[protection]] = ((await this.multi({
+      groupsOfShapes: [[liquidityProtectionShape(protectionContractAddress, w3)]]
     })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const newSettings = {
       minDelay: Number(settings.minProtectionDelay),
       maxDelay: Number(settings.maxProtectionDelay),
       lockedDelay: Number(settings.lockDuration),
-      govToken: settings.govToken,
-      networkToken: settings.networkToken,
-      maxSystemNetworkTokenRatio: settings.maxSystemNetworkTokenRatio,
-      maxSystemNetworkTokenAmount: settings.maxSystemNetworkTokenAmount
+      govToken: protection.govToken,
+      networkToken: settings.networkToken
     } as LiquidityProtectionSettings;
     this.setLiquidityProtectionSettings(newSettings);
     this.fetchAndSetTokenBalances([newSettings.govToken]);
@@ -1745,12 +1754,14 @@ export class EthBancorModule
   }
 
   @action async fetchAndSetHighTierPools(liquidityProtectionContract: string) {
+    /*
     const lpContract = buildLiquidityProtectionContract(
       liquidityProtectionContract || this.contracts.LiquidityProtection,
       w3
     );
 
     const highTierPools = await lpContract.methods.highTierPools().call();
+    */
 
     this.setHighTierPools(highTierPools);
   }
@@ -3777,36 +3788,32 @@ export class EthBancorModule
       reserve => reserve.weiAmount
     );
 
-    const maxStakes = calculateMaxStakes(
-      tknReserveBalance,
-      bntReserveBalance,
-      balances.smartTokenSupplyWei,
-      poolTokenBalance,
-      this.liquidityProtectionSettings.maxSystemNetworkTokenAmount,
-      this.liquidityProtectionSettings.maxSystemNetworkTokenRatio,
-      isHighTierPool
-    );
+    // todo use new limit query methods
+    const maxStakes = {
+        maxAllowedBntWei: "0",
+        maxAllowedTknWei: "0"
+    }
 
     return { maxStakes, bntReserve, tknReserve };
   }
 
   @action async getMaxStakesView({ poolId }: { poolId: string }) {
-    const maxStakes = await this.getMaxStakes({ poolId });
+    const { maxStakes, bntReserve, tknReserve } = await this.getMaxStakes({poolId});
 
     return [
       {
         amount: shrinkToken(
-          maxStakes.maxStakes.maxAllowedBntWei,
-          maxStakes.bntReserve.decimals
+          maxStakes.maxAllowedBntWei,
+          bntReserve.decimals
         ),
-        token: maxStakes.bntReserve.symbol
+        token: bntReserve.symbol
       },
       {
         amount: shrinkToken(
-          maxStakes.maxStakes.maxAllowedTknWei,
-          maxStakes.tknReserve.decimals
+          maxStakes.maxAllowedTknWei,
+          tknReserve.decimals
         ),
-        token: maxStakes.tknReserve.symbol
+        token: tknReserve.symbol
       }
     ];
   }
@@ -4998,7 +5005,8 @@ export class EthBancorModule
       BancorNetwork: asciiToHex("BancorNetwork"),
       BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
       LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
-      LiquidityProtection: asciiToHex("LiquidityProtection")
+      LiquidityProtection: asciiToHex("LiquidityProtection"),
+      LiquidityProtectionSettings: asciiToHex("LiquidityProtectionSettings")
     };
 
     const registryContract = new w3.eth.Contract(
@@ -6221,9 +6229,10 @@ export class EthBancorModule
 
       void this.fetchAndSetHighTierPools(contractAddresses.LiquidityProtection);
 
-      this.fetchLiquidityProtectionSettings(
-        contractAddresses.LiquidityProtection
-      );
+      this.fetchLiquidityProtectionSettings({
+        settingsContractAddress: contractAddresses.LiquidityProtectionSettings,
+        protectionContractAddress: contractAddresses.LiquidityProtection
+      });
       this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.currentUser) {
         this.fetchProtectionPositions({
