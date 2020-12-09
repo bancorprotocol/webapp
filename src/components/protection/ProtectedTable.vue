@@ -12,7 +12,7 @@
       default-sort="stake"
       default-order="desc"
     >
-      <template #cell(stake)="{ item, value }">
+      <template #cell(stake)="{ item, value, isCollapsable }">
         <div>
           {{ `${prettifyNumber(value.amount)} ${item.symbol}` }}
         </div>
@@ -28,7 +28,7 @@
             class="mr-1"
           />
           {{ poolName(item.poolId) }}
-          <div v-if="item.collapsedData.length" class="grouped-pos-icon">+</div>
+          <div v-if="isCollapsable" class="grouped-pos-icon">+</div>
         </div>
       </template>
       <template #cellCollapsed(stake)="{ value }">
@@ -271,22 +271,58 @@
         />
       </template>
 
-      <template #cell(actions)="{ item }">
+      <template #cell(actions)="{ item, isCollapsable, isExpanded }">
         <b-btn
-          v-if="!item.collapsedData.length"
+          v-if="!isCollapsable"
           @click="goToWithdraw(item.positionId)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+          class="d-flex align-items-center justify-content-center"
+          style="width: 41px; height: 41px"
         >
-          Withdraw
+          <svg
+            width="13"
+            height="16"
+            viewBox="0 0 13 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10.5693 6.01098L7.17391 2.94093V11.6756C7.17391 12.1511 6.74329 12.5405 6.21739 12.5405C5.6915 12.5405 5.26087 12.1511 5.26087 11.6756V2.94093L1.86546 6.01098C1.48247 6.35728 0.884639 6.35728 0.502604 6.01098C0.119613 5.66469 0.119613 5.12415 0.502604 4.77872L5.52434 0.238184C5.73919 0.0650422 5.97831 0 6.21744 0C6.45657 0 6.6957 0.0861492 6.8872 0.259286L11.9089 4.79983C12.2919 5.14612 12.2919 5.68666 11.9089 6.03209C11.5502 6.35641 10.9523 6.35642 10.5693 6.01098ZM0.956522 16C0.430626 16 0 15.6106 0 15.1351C0 14.6596 0.430626 14.2703 0.956522 14.2703H11.4783C12.0042 14.2703 12.4348 14.6596 12.4348 15.1351C12.4348 15.6106 12.0042 16 11.4783 16H0.956522Z"
+              :fill="darkMode ? '#ffffff' : '#0A2540'"
+            />
+          </svg>
         </b-btn>
-        <div v-else class="text-center">Group</div>
+        <div v-else>
+          <b-btn
+            :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+            class="d-flex align-items-center justify-content-center"
+            style="width: 41px; height: 41px"
+          >
+            <font-awesome-icon
+              :icon="isExpanded ? 'chevron-up' : 'chevron-down'"
+            />
+          </b-btn>
+        </div>
       </template>
       <template #cellCollapsed(actions)="{ item }">
         <b-btn
           @click="goToWithdraw(item.id)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+          class="d-flex align-items-center justify-content-center"
+          style="width: 41px; height: 41px"
         >
-          Withdraw
+          <svg
+            width="13"
+            height="16"
+            viewBox="0 0 13 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M10.5693 6.01098L7.17391 2.94093V11.6756C7.17391 12.1511 6.74329 12.5405 6.21739 12.5405C5.6915 12.5405 5.26087 12.1511 5.26087 11.6756V2.94093L1.86546 6.01098C1.48247 6.35728 0.884639 6.35728 0.502604 6.01098C0.119613 5.66469 0.119613 5.12415 0.502604 4.77872L5.52434 0.238184C5.73919 0.0650422 5.97831 0 6.21744 0C6.45657 0 6.6957 0.0861492 6.8872 0.259286L11.9089 4.79983C12.2919 5.14612 12.2919 5.68666 11.9089 6.03209C11.5502 6.35641 10.9523 6.35642 10.5693 6.01098ZM0.956522 16C0.430626 16 0 15.6106 0 15.1351C0 14.6596 0.430626 14.2703 0.956522 14.2703H11.4783C12.0042 14.2703 12.4348 14.6596 12.4348 15.1351C12.4348 15.6106 12.0042 16 11.4783 16H0.956522Z"
+              :fill="darkMode ? '#ffffff' : '#0A2540'"
+            />
+          </svg>
         </b-btn>
       </template>
     </data-table>
@@ -445,8 +481,8 @@ export default class ProtectedTable extends BaseComponent {
         key: "actions",
         label: "",
         sortable: false,
-        minWidth: "130px",
-        maxWidth: "130px"
+        minWidth: "70px",
+        maxWidth: "70px"
       }
     ];
   }
@@ -478,7 +514,7 @@ export default class ProtectedTable extends BaseComponent {
 @import "src/assets/_scss/custom/variables";
 
 .grouped-pos-icon {
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid $primary;
   color: $primary;
   padding: 0 5px;
