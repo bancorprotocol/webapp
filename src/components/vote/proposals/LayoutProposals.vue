@@ -43,7 +43,7 @@
     </table>
     <b-container class="table-body">
       <b-row v-for="item in paginatedItems" :key="item.id">
-        <b-col v-for="column in fields" :key="column.id" class="colb my-auto" cols="12" :lg="column.colRate" :style="getWidthStyle(column)">
+        <b-col v-for="column in fields" :key="column.id" class="colb my-auto" :class="darkMode ? 'text-body-dark' : 'text-muted-light'" cols="12" :lg="column.colRate!=0 ? column.colRate : ''" :style="getWidthStyle(column)">
           <slot
             :name="`cell(${column.key})`"
             :item="item"
@@ -79,6 +79,7 @@ export interface ViewTableField {
   tooltip?: string;
   minWidth?: string;
   maxWidth?: string;
+  colAuto?: boolean;
   colRate?: number;
   thClass?: string;
 }
@@ -91,7 +92,7 @@ export interface Item {
     TablePagination
   }
 })
-export default class DataTable extends BaseComponent {
+export default class LayoutProposals extends BaseComponent {
   @Prop() fields!: ViewTableField[];
   @Prop() items!: Item[];
   @Prop() filter?: string;
@@ -173,6 +174,7 @@ export default class DataTable extends BaseComponent {
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)
       styleString = styleString + "min-width: " + column.minWidth + ";";    
+      styleString += "padding-right: 10px; padding-left: 10px;";
     return styleString;
   }
   isHtmlTooltip(key: string) {
