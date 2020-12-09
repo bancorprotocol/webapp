@@ -102,6 +102,31 @@ export default class SideBarBottom extends Vue {
       margin-bottom: 2px;
     }
   }
+
+  .clicked-link-dark {
+    span {
+      color: #fff !important;
+    }
+    img {
+      filter: invert(0.2) saturate(5) brightness(1);
+      color: #0f59d1;
+    }
+    &::before {
+      content: none;
+    }
+    &::after {
+      content: none;
+    }
+  }
+  .clicked-link {
+    span {
+      color: #0f59d1 !important;
+    }
+    img {
+      filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg) brightness(0.7);
+      color: #0f59d1;
+    }
+  }
 }
 .side-bar-dark {
   background-color: #0a2540;
@@ -109,30 +134,6 @@ export default class SideBarBottom extends Vue {
 .side-bar-link-dark {
   span {
     color: #aaa !important;
-  }
-}
-.clicked-link-dark {
-  span {
-    color: #fff !important;
-  }
-  img {
-    filter: invert(0.2) saturate(5) brightness(1);
-    color: #0f59d1;
-  }
-  &::before {
-    content: none;
-  }
-  &::after {
-    content: none;
-  }
-}
-.clicked-link {
-  span {
-    color: #0f59d1 !important;
-  }
-  img {
-    filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg) brightness(0.7);
-    color: #0f59d1;
   }
 }
 </style>
