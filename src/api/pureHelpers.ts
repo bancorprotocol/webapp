@@ -26,11 +26,19 @@ export const calculateMaxStakesInternal = (
 
   const systemBNT = poolTokenSystemBalance.times(rate);
 
+  /*
+    (
+      (647,758.396109747717331815 * 0.5) -
+      (1641.951046786342390985 * 647,758.396109747717331815 / 3411.112092474850883773)
+    ) / (1 - 0.5)
+   */
+  const fa = new BigNumber(1).minus(maxSystemNetworkTokenRatioDec)
+  const fu = poolTokenSystemBalance.multipliedBy(tknReserveBalance).dividedBy(poolTokenSupply)
+  const bla = (bntReserveBalance.multipliedBy(new BigNumber(maxSystemNetworkTokenRatioDec)))
+    .minus(fu)
+
   // allowed BNT based on ratio cap
-  const maxRatioBnt =
-    bntReserveBalance.multipliedBy(new BigNumber(maxSystemNetworkTokenRatioDec))
-      .minus(systemBNT)
-      .dividedBy(new BigNumber(1).minus(maxSystemNetworkTokenRatioDec))
+  const maxRatioBnt = bla.dividedBy(fa)
 
   const tknReserveRatio = tknReserveBalance.dividedBy(bntReserveBalance)
   const maxRatioTkn = maxRatioBnt.multipliedBy(

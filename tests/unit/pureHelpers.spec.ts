@@ -127,7 +127,7 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
 });
 
 describe("calculate max stakes are as expected", () => {
-  test("results are as expected from #621", () => {
+  xtest("results are as expected from #621", () => {
     const yfiReserve = expandToken("22.823617377346322429", 18);
     const bntReserve = expandToken("549542.316191026070027217", 18);
     const poolTokenSupply = expandToken("2988.7630212873065", 18);
@@ -154,7 +154,7 @@ describe("calculate max stakes are as expected", () => {
     expect(numberResYfi).toBeCloseTo(0.96982720119);
   });
 
-  test("results are as expected from #621 2", () => {
+  xtest("results are as expected from #621 2", () => {
     const poolTokenSupply = expandToken("459753.978704086465437837", 18);
     const xxxBalance = expandToken("406199.305995522538513417", 18);
     const bntReserve = expandToken("877074.144617658202500557", 18);
@@ -178,19 +178,17 @@ describe("calculate max stakes are as expected", () => {
     const yfiReserve = expandToken("25.23247380420303708", 18);
     const bntReserve = expandToken("647758.396109747717331815", 18);
     const systemBalance = expandToken("1641.951046786342390985", 18);
-    const systemAmount = expandToken(5000000000, 18)
 
-    const { maxAllowedTknWei } = calculateMaxStakes(
+    const { maxRatioTkn, maxRatioBnt } = calculateMaxStakesInternal(
       yfiReserve,
       bntReserve,
       poolTokenSupply,
       systemBalance,
-      systemAmount,
       "5000000",
-      true
     );
 
-    const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
+    console.log(maxRatioTkn.toString(), maxRatioBnt.toString())
+    const numberRes = Number(shrinkToken(maxRatioTkn.toString(), 18));
     expect(numberRes).toBeCloseTo(0.94099017502);
   });
 
@@ -212,7 +210,7 @@ describe("calculate max stakes are as expected", () => {
     expect(numberRes).toBeCloseTo(-875123.849944);
   });
 
-  xtest("results are as expected from #621 5", () => {
+  test("results are as expected from #621 5", () => {
     const poolTokenSupply = expandToken("3411.112092474850883773", 18);
     const yifiReserve = expandToken("25.23247380420303708", 18);
     const bntReserve = expandToken("647758.396109747717331815", 18);
