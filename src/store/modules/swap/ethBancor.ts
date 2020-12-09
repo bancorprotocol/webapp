@@ -6054,7 +6054,18 @@ export class EthBancorModule
   @action async fetchDynamicRelays(
     staticRelays: StaticRelay[]
   ): Promise<NewRelay[]> {
-    const tokenMeta = this.tokenMeta;
+    const tokenMeta: TokenMeta[] = [
+      ...this.tokenMeta,
+      {
+        contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        id: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        precision: 18,
+        name: "Ether",
+        symbol: "ETH",
+        image:
+          "https://storage.googleapis.com/bancor-prod-file-store/images/communities/aea83e97-13a3-4fe7-b682-b2a82299cdf2.png"
+      }
+    ];
     const reserveTokens = staticRelays.flatMap(relay => relay.reserves);
     console.log(reserveTokens, "are reserve tokens");
     const tokensMissing = reserveTokens.filter(
@@ -6467,7 +6478,7 @@ export class EthBancorModule
       })),
       tap(x => {
         const hasEth = compareString(x.poolToken.contract, ethAnchor);
-        console.log(hasEth, "hasEth");
+        console.log(hasEth, "hasEth", x);
       }),
       filter(({ relay }) => !!relay.connectorToken2),
       map(
@@ -6503,18 +6514,69 @@ export class EthBancorModule
       );
 
       const dynamicRelayRemote$ = staticRelays$.pipe(
+        tap(x => {
+          const hasEth = compareString(x.poolToken.contract, ethAnchor);
+          if (hasEth) {
+            console.log("and again!...");
+          }
+        }),
         bufferTime(100),
         filter(staticRelays => staticRelays && staticRelays.length > 0),
-        tap(x => console.log("going out for remote loading", x)),
+        tap(x => {
+          console.log("going out for remote loading", x);
+          const hasEth = x.some(q =>
+            compareString(q.poolToken.contract, ethAnchor)
+          );
+          if (hasEth) {
+            console.log("eth is in the house");
+          }
+        }),
         mergeMap(x => this.fetchDynamicRelays(x)),
         share()
       );
 
+      const filterAndWarn = <T>(
+        arr: T[],
+        conditioner: (item: T) => boolean,
+        reason?: string
+      ): T[] => {
+        const [passed, dropped] = partition(arr, conditioner);
+        if (dropped.length > 0) {
+          console.warn(
+            "Dropped",
+            dropped,
+            "items from array",
+            reason ? `because ${reason}` : ""
+          );
+        }
+        return passed;
+      };
+
       const fullRelays$ = dynamicRelayRemote$.pipe(
+        tap(relays => {
+          const hasEth = relays.some(relay =>
+            compareString(relay.poolToken.contract, ethAnchor)
+          );
+          console.log("full Relays have eth", hasEth);
+        }),
         map(relays =>
-          relays.filter(x => x.reserves.every(reserve => reserve.symbol))
+          filterAndWarn(relays, x =>
+            x.reserves.every(reserve => reserve.symbol)
+          )
         ),
-        map(relays => relays.map(newRelayToRelayWithBalances))
+        tap(relays => {
+          const hasEth = relays.some(relay =>
+            compareString(relay.poolToken.contract, ethAnchor)
+          );
+          console.log("full Relays have eth past the filter!", hasEth);
+        }),
+        map(relays => relays.map(newRelayToRelayWithBalances)),
+        tap(relays => {
+          const hasEth = relays.some(relay =>
+            compareString(relay.id, ethAnchor)
+          );
+          console.log("full Relays have eth past the map!", hasEth);
+        })
       );
 
       const emittedRelays$ = combineLatest([
