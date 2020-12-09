@@ -65,8 +65,8 @@
           label="Stake Tokens"
           :active="true"
           :large="true"
-          :block="true"
-          class="font-size-14 mb-3 text-nowrap"
+          :block="true"          
+          class="font-size-14 mb-3"
         />
         <modal-stake v-model="stakeModal" />
 
@@ -77,7 +77,7 @@
             :active="false"
             :large="true"
             :block="true"
-            class="font-size-14 mb-3 text-nowrap"
+            class="font-size-14 mb-3"
           />
           <modal-unstake v-model="unstakeModal" />
         </div>
