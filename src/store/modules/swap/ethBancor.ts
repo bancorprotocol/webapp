@@ -210,6 +210,1644 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 
+const q: RawAbiToken[] = [
+  {
+    decimals: 18,
+    symbol: "ETHBNT",
+    contract: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533"
+  },
+  {
+    decimals: 18,
+    symbol: "LINKBNT",
+    contract: "0x04D0231162b4784b706908c787CE32bD075db9b7"
+  },
+  {
+    decimals: 18,
+    symbol: "USDTBNT",
+    contract: "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306"
+  },
+  {
+    decimals: 18,
+    symbol: "DAIBNT",
+    contract: "0xE5Df055773Bf9710053923599504831c7DBdD697"
+  },
+  {
+    decimals: 18,
+    symbol: "USDCBNT",
+    contract: "0x874d8dE5b26c9D9f6aA8d7bab283F9A9c6f777f4"
+  },
+  {
+    decimals: 18,
+    symbol: "WBTC",
+    contract: "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec"
+  },
+  {
+    decimals: 18,
+    symbol: "OCEANBNT",
+    contract: "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5"
+  },
+  {
+    decimals: 18,
+    symbol: "YFIBNT",
+    contract: "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8"
+  },
+  {
+    decimals: 18,
+    symbol: "RENBNT",
+    contract: "0x6b181C478b315bE3f9E99c57CE926436c32e17a7"
+  },
+  {
+    decimals: 18,
+    symbol: "renBTCBNT",
+    contract: "0xb479b102bF135bdC666d6916172422CbaD9E977f"
+  },
+  {
+    decimals: 18,
+    symbol: "OMGBNT",
+    contract: "0x99eBD396Ce7AA095412a4Cd1A0C959D6Fd67B340"
+  },
+  {
+    decimals: 18,
+    symbol: "BATBNT",
+    contract: "0x131da075a2832549128e93AcC2b54174045232Cf"
+  },
+  {
+    decimals: 18,
+    symbol: "ENJBNT",
+    contract: "0xf3aD2cBc4276eb4B0fb627Af0059CfcE094E20a1"
+  },
+  {
+    decimals: 18,
+    symbol: "JRTBNT",
+    contract: "0x069D653038DB2F9d84e9620Be140B3D404a40258"
+  },
+  {
+    decimals: 18,
+    symbol: "ANTBNT",
+    contract: "0x0c485BffD5df019F66927B2C32360159884D4409"
+  },
+  {
+    decimals: 18,
+    symbol: "RPLBNT",
+    contract: "0xB9fe4BD869a132137B668054ea48C897c0654ee4"
+  },
+  {
+    decimals: 18,
+    symbol: "MANABNT",
+    contract: "0x79d83B390cF0EDF86B9EFbE47B556Cc6e20926aC"
+  },
+  {
+    decimals: 18,
+    symbol: "GNOBNT",
+    contract: "0xd7eB9DB184DA9f099B84e2F86b1da1Fe6b305B3d"
+  },
+  {
+    decimals: 18,
+    symbol: "KNCBNT",
+    contract: "0x248AFFf1aa83cF860198ddeE14b5b3E8eDb46d47"
+  },
+  {
+    decimals: 18,
+    symbol: "RSRBNT",
+    contract: "0x7d402c5CF587D4dEC6761C51E0aA903956495851"
+  },
+  {
+    decimals: 18,
+    symbol: "BNBBNT",
+    contract: "0xE6b31fB3f29fbde1b92794B0867A315Ff605A324"
+  },
+  {
+    decimals: 18,
+    symbol: "NMRBNT",
+    contract: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44"
+  },
+  {
+    decimals: 18,
+    symbol: "TKNBNT",
+    contract: "0x497Ec0D6Ba2080f0ed7ecf7a79a2A907401b3239"
+  },
+  {
+    decimals: 18,
+    symbol: "MKRBNT",
+    contract: "0xf553E6eA4CE2F7dEEcbe7837E27931850eC15faB"
+  },
+  {
+    decimals: 18,
+    symbol: "EURSBNT",
+    contract: "0xFC0e04Eae452c163883AAAd4Ac1AE091Cc87FEf3"
+  },
+  {
+    decimals: 18,
+    symbol: "POWRBNT",
+    contract: "0x168D7Bbf38E17941173a352f1352DF91a7771dF3"
+  },
+  {
+    decimals: 18,
+    symbol: "ELFBNT",
+    contract: "0x0F2318565f1996CB1eD2F88e172135791BC1FcBf"
+  },
+  {
+    decimals: 18,
+    symbol: "RCNBNT",
+    contract: "0xf7b9fa01098f22527Db205Ff9BB6FdF7C7D9F1C5"
+  },
+  {
+    decimals: 18,
+    symbol: "MDTBNT",
+    contract: "0xbAb15d72731Ea7031B10324806E7AaD8448896D5"
+  },
+  {
+    decimals: 18,
+    symbol: "MADBNT",
+    contract: "0x014186b1a2d675fc1e303A3d62B574C3270A38e0"
+  },
+  {
+    decimals: 18,
+    symbol: "CHERRYBNT",
+    contract: "0xED8562cf805936AFdd2A405e7ACe80f78efc4Ed5"
+  },
+  {
+    decimals: 18,
+    symbol: "AMPLBNT",
+    contract: "0x0e2145A23f7810431Ba0f2e19676530b3F1Fb0EC"
+  },
+  {
+    decimals: 18,
+    symbol: "REQBNT",
+    contract: "0xccB5E3Ba5356D57001976092795626ac3b87Ad4e"
+  },
+  {
+    decimals: 18,
+    symbol: "VIBBNT",
+    contract: "0x2948BD241243Bb6924A0b2f368233DDa525AAB05"
+  },
+  {
+    decimals: 18,
+    symbol: "ALEPHBNT",
+    contract: "0x3b8c8147325C378cfe10f7b8c3aB1683D300dF27"
+  },
+  {
+    decimals: 18,
+    symbol: "STAKEBNT",
+    contract: "0x5062743A788D271FA247C3dA7Cd5af73Fd687BA8"
+  },
+  {
+    decimals: 18,
+    symbol: "GTOBNT",
+    contract: "0xc4938292EA2d3085fFFc11C46B87CA068a83BE01"
+  },
+  {
+    decimals: 18,
+    symbol: "REMBNT",
+    contract: "0xaB5ae72d95d3A02796c87F8079b1E180507dF54f"
+  },
+  {
+    decimals: 18,
+    symbol: "MRPHBNT",
+    contract: "0x4B51AcC819591c885DbA0F06d98A07b432E6D6B4"
+  },
+  {
+    decimals: 18,
+    symbol: "EWTB",
+    contract: "0x178c820f862B14f316509ec36b13123DA19A6054"
+  },
+  {
+    decimals: 18,
+    symbol: "EWTBBNT",
+    contract: "0x66948fEFCcc464c714574a884c0458981Cbd944C"
+  },
+  {
+    decimals: 18,
+    symbol: "SNTBNT",
+    contract: "0xa3b3c5a8b22C044D5f2d372f628245E2106D310D"
+  },
+  {
+    decimals: 18,
+    symbol: "POABNT",
+    contract: "0x564c07255AFe5050D82c8816F78dA13f2B17ac6D"
+  },
+  {
+    decimals: 18,
+    symbol: "DATABNT",
+    contract: "0xdD8a17169aa94E548602096EB9C9d44216cE8a37"
+  },
+  {
+    decimals: 18,
+    symbol: "MTLBNT",
+    contract: "0x60Be88DD72f03C91FB22EEF7Af24C2e99Db58530"
+  },
+  {
+    decimals: 18,
+    symbol: "MFTBNT",
+    contract: "0x4319f9130848544afB97e92cb3Ea9fdb4b0A0B2a"
+  },
+  {
+    decimals: 18,
+    symbol: "REALBNT",
+    contract: "0xE9ADced9da076D9dADA35F5b99970fDd58B1440D"
+  },
+  {
+    decimals: 18,
+    symbol: "SANBNT",
+    contract: "0xd6A6c879Ad8c01D0C8d5bF1C85829814b954DBBF"
+  },
+  {
+    decimals: 18,
+    symbol: "AUCBNT",
+    contract: "0x164A1229F4826C9dd70Ee3D9f4f3d7B68a172153"
+  },
+  {
+    decimals: 18,
+    symbol: "AGRIBNT",
+    contract: "0xEab935f35693c3218b927436E63564018E92034f"
+  },
+  {
+    decimals: 18,
+    symbol: "MFGBNT",
+    contract: "0xb3b2861a093B7FB19352bD62CD8EFC314e0641a7"
+  },
+  {
+    decimals: 18,
+    symbol: "RVTBNT",
+    contract: "0x5039f60594Ffa3f1a5ACbe85E1eBe12Dc8Da7c5c"
+  },
+  {
+    decimals: 18,
+    symbol: "PLRBNT",
+    contract: "0x2843F6c3b14e698e3D7562584959C61274F93328"
+  },
+  {
+    decimals: 18,
+    symbol: "XBPBNT",
+    contract: "0xbb83a9Fe991BAA72F412F39af254EEbbfdc910BA"
+  },
+  {
+    decimals: 18,
+    symbol: "SRNBNT",
+    contract: "0xd2Deb679ed81238CaeF8E0c32257092cEcc8888b"
+  },
+  {
+    decimals: 18,
+    symbol: "MYBBNT",
+    contract: "0xf22FB05aC032fcAf3273f50aF8db2753888Bdd48"
+  },
+  {
+    decimals: 18,
+    symbol: "ABXBNT",
+    contract: "0x275a1a2Dad3075bEb96AF4f7fD93ade99bB0151f"
+  },
+  {
+    decimals: 18,
+    symbol: "CEEKBNT",
+    contract: "0x2F2ad6954d99Ea14fA145B9AB0fb6BA5Ac32c0Ee"
+  },
+  {
+    decimals: 18,
+    symbol: "LDCBNT",
+    contract: "0xB79C3a1a2d50CC99459F3a21D709bCEC86656e97"
+  },
+  {
+    decimals: 18,
+    symbol: "AMNBNT",
+    contract: "0x0f9Be347378a37CED33A13AE061175AF07CC9868"
+  },
+  {
+    decimals: 18,
+    symbol: "LRCBNT",
+    contract: "0xF5A203E16ab9B850b27f1F00C37352b6b7A28339"
+  },
+  {
+    decimals: 18,
+    symbol: "X8XBNT",
+    contract: "0xAe0ceCc84bC1DDefe13C6e5B2E9D311927e45eD8"
+  },
+  {
+    decimals: 18,
+    symbol: "VEEBNT",
+    contract: "0xc9c3A465380bFaaC486C89ff7d5F60CC275D4E08"
+  },
+  {
+    decimals: 18,
+    symbol: "LOCIBNT",
+    contract: "0x6feb9Be6c40A12276cFa6DAFbD119ea62532daaB"
+  },
+  {
+    decimals: 18,
+    symbol: "MTABNT",
+    contract: "0x3035529E7aE11A3660134c9C875F4faa6514d042"
+  },
+  {
+    decimals: 18,
+    symbol: "INSTAR",
+    contract: "0xC803B2B2c3BA24C0C934AEB3Ba508A4dD6853F1b"
+  },
+  {
+    decimals: 18,
+    symbol: "USDQBNT",
+    contract: "0x9921f8F53EE185a6BFD5d9D8935107934D0B07DA"
+  },
+  {
+    decimals: 18,
+    symbol: "WAXBNT",
+    contract: "0x67563E7A0F13642068F6F999e48c690107A4571F"
+  },
+  {
+    decimals: 18,
+    symbol: "XNKBNT",
+    contract: "0x1B4D8c62DdF6947616a5FCda4Ca40A8715d2a4cb"
+  },
+  {
+    decimals: 18,
+    symbol: "SCLBNT",
+    contract: "0xFcEb45cF070B277fedE520c5539ae204Bc1D493E"
+  },
+  {
+    decimals: 18,
+    symbol: "UPBNT",
+    contract: "0xd4c810fdcA379831078267f3402845E5205Aa0e1"
+  },
+  {
+    decimals: 18,
+    symbol: "AIDBNT",
+    contract: "0xe3BF775Ec5f4F4dFCbb21194B22be1217b815b1d"
+  },
+  {
+    decimals: 18,
+    symbol: "RST100",
+    contract: "0x86D17e2eF332293391303F188F6a467dc0D1fd0d"
+  },
+  {
+    decimals: 18,
+    symbol: "RSTBNT",
+    contract: "0x43d3a0712eD544b26d85c9eaf841008369bAB5d1"
+  },
+  {
+    decimals: 18,
+    symbol: "EMCOBNT",
+    contract: "0x2E8d4EF4Cce1a5235311307b45EBEcF31eE7CA88"
+  },
+  {
+    decimals: 18,
+    symbol: "BZRXBNT",
+    contract: "0xE39c4Ae17C0d44e923B784794B3Ea419c04F02FA"
+  },
+  {
+    decimals: 18,
+    symbol: "FTXBNT",
+    contract: "0x4d849DaD08A4061bE102DBCA2CE2718A9a0b635a"
+  },
+  {
+    decimals: 18,
+    symbol: "WANDBNT",
+    contract: "0x6a46f6DC570A1304a23f771c26b1802DFfcDAB0D"
+  },
+  {
+    decimals: 18,
+    symbol: "USDB / BNT",
+    contract: "0xd1146B08e8104EeDBa44a73B7bda1d102c6ceDC9"
+  },
+  {
+    decimals: 18,
+    symbol: "TRBBNT",
+    contract: "0x58239b5529198E0ad76975Bab0842367A4Cc7D5b"
+  },
+  {
+    decimals: 18,
+    symbol: "INDBNT",
+    contract: "0x32423158e8FBD2839E085626F8a98D86b2766De8"
+  },
+  {
+    decimals: 18,
+    symbol: "DTRCBNT",
+    contract: "0x1F593cDC35D7f0B0495dA16B631d28DE5AE25a07"
+  },
+  {
+    decimals: 18,
+    symbol: "DRTBNT",
+    contract: "0x904c7051D12aCE7d0107ada8702C0C759cad1672"
+  },
+  {
+    decimals: 18,
+    symbol: "UPTBNT",
+    contract: "0x5a602561342F74D161E64796613D7528Dd0993C1"
+  },
+  {
+    decimals: 18,
+    symbol: "ZIPTBNT",
+    contract: "0xC4a01182ab1e502a1C1d17024e4924573CE001CC"
+  },
+  {
+    decimals: 18,
+    symbol: "COTBNT",
+    contract: "0x19dB077A54dEa3fD4CBCd9d31D4dB297562CbD94"
+  },
+  {
+    decimals: 18,
+    symbol: "BETRBNT",
+    contract: "0x679F601F0deb53c2dB0C8C26369FDcba5fD753CF"
+  },
+  {
+    decimals: 18,
+    symbol: "JRTUSDB",
+    contract: "0x4827e558e642861Cd7a1C8f011b2B4661F8d51fa"
+  },
+  {
+    decimals: 18,
+    symbol: "SPDBNT",
+    contract: "0xb2F40825d32b658d39e4F73bB34D33BA628e8B76"
+  },
+  {
+    decimals: 18,
+    symbol: "MRGBNT",
+    contract: "0x25Bf8913D6296a69C7B43BC781614992cb218935"
+  },
+  {
+    decimals: 18,
+    symbol: "TAASBNT",
+    contract: "0xAE201360282C885bf3F2616A3145D1344a1e43c0"
+  },
+  {
+    decimals: 18,
+    symbol: "MLNBNT",
+    contract: "0xff2CCF332A2d6CD645f93c19690104B99943b13D"
+  },
+  {
+    decimals: 18,
+    symbol: "SXLBNT",
+    contract: "0x3364ccAedE016F4C433B326d96bE1A2eafA60bdD"
+  },
+  {
+    decimals: 18,
+    symbol: "ELETBNT",
+    contract: "0x334C36Be5b1EaF0C4b61dDEa202c9f6Dc2640FE5"
+  },
+  {
+    decimals: 18,
+    symbol: "API3",
+    contract: "0x0b38210ea11411557c13457D4dA7dC6ea731B88a"
+  },
+  {
+    decimals: 18,
+    symbol: "API3BNT",
+    contract: "0x70f416734C92c3ADE6Fdc9D065A1E8756d1d98E7"
+  },
+  {
+    decimals: 18,
+    symbol: "METUSDB",
+    contract: "0x7F8c53072d9B809A108b1A9D677Bcc3B7B3F844e"
+  },
+  {
+    decimals: 18,
+    symbol: "CVTBNT",
+    contract: "0x737Ac585809C0F64Ee09d7B8050d195d14f14c55"
+  },
+  {
+    decimals: 18,
+    symbol: "REFBNT",
+    contract: "0xB67FA7330154878cF1Fd8F4b20bf1C19F68a3926"
+  },
+  {
+    decimals: 18,
+    symbol: "QDAOBNT",
+    contract: "0x19683E94943E6b348D8AFB98C128B9b549B400DF"
+  },
+  {
+    decimals: 18,
+    symbol: "BOXXBNT",
+    contract: "0x849D49911cEF804bdB1FEC58150B8EabAB119796"
+  },
+  {
+    decimals: 18,
+    symbol: "GRIDBNT",
+    contract: "0xDdde5DBa82B92DAF339fBB4cF1ec4d1CEC503075"
+  },
+  {
+    decimals: 18,
+    symbol: "PEG",
+    contract: "0x8Ae56a6850a7cbeaC3c3Ab2cB311e7620167eAC8"
+  },
+  {
+    decimals: 18,
+    symbol: "PEGUSDB",
+    contract: "0xE421EA0DB7A0B5bebB4b9b258D864a68546c0881"
+  },
+  {
+    decimals: 18,
+    symbol: "EFOODBNT",
+    contract: "0xf34484286be88613ad8399fe40f93506125be139"
+  },
+  {
+    decimals: 18,
+    symbol: "XPATBNT",
+    contract: "0xEe769CE6B4E2C2A079c5f67081225Af7C89F874C"
+  },
+  {
+    decimals: 18,
+    symbol: "TNSBNT",
+    contract: "0x5cf2f6387c4F551316e1E422aCf1025a539825c3"
+  },
+  {
+    decimals: 18,
+    symbol: "DAIBNT",
+    contract: "0xee01b3AB5F6728adc137Be101d99c678938E6E72"
+  },
+  {
+    decimals: 18,
+    symbol: "HEDGBNT",
+    contract: "0x654Ee2EAf2082c5483f2212ba7b6701F334a159f"
+  },
+  {
+    decimals: 18,
+    symbol: "PEG:USD",
+    contract: "0xd758b77BCC792AFD58857E1d5C610aE649FDEE6b"
+  },
+  {
+    decimals: 18,
+    symbol: "USDB:PEGUSD",
+    contract: "0x846f7a6dE1eFbd7617760eBe1B89aa8CA2094025"
+  },
+  {
+    decimals: 18,
+    symbol: "RBLXBNT",
+    contract: "0x78AcF38ec85A9E4B2B88961b9D4BffbA04FdbA59"
+  },
+  {
+    decimals: 18,
+    symbol: "renZECBNT",
+    contract: "0x986D522a4f9fd0b4158A88657a06A552f83C3e27"
+  },
+  {
+    decimals: 18,
+    symbol: "SRMBNT",
+    contract: "0x6cfd8b295D64d84178ad7447a5Bb4488bC846005"
+  },
+  {
+    decimals: 18,
+    symbol: "CELBNT",
+    contract: "0xA31BF9E52B92ABF37D1d126ad2D9a6d0Ce9637f0"
+  },
+  {
+    decimals: 18,
+    symbol: "CATBNT",
+    contract: "0xB3c55930368D71F643C3775869aFC73f6c5237b2"
+  },
+  {
+    decimals: 18,
+    symbol: "FTTBNT",
+    contract: "0x140d47AeA2f10FfF26de4150971e600A2e010A81"
+  },
+  {
+    decimals: 18,
+    symbol: "WLKBNT",
+    contract: "0xd387CDAF85429b455f0F716D51Be33db2FC00463"
+  },
+  {
+    decimals: 18,
+    symbol: "DXDBNT",
+    contract: "0xB3aF30c0c1a9673E14c9B0C56eCd4cBBeB0F6c48"
+  },
+  {
+    decimals: 18,
+    symbol: "MNTPBNT",
+    contract: "0x8DA321aB610cD24fB2bcCe191F423Dae7c327ca9"
+  },
+  {
+    decimals: 18,
+    symbol: "INVOXBNT",
+    contract: "0xD86f489a495426B1847dBd4b5D85f4832E6D7225"
+  },
+  {
+    decimals: 18,
+    symbol: "EXO",
+    contract: "0xE58E751abA3B9406367B5F3CbC39c2Fa9B519789"
+  },
+  {
+    decimals: 18,
+    symbol: "EXOBNT",
+    contract: "0xa8E7117ac5d76fC147B71524780327AA218B5612"
+  },
+  {
+    decimals: 18,
+    symbol: "XRTBNT",
+    contract: "0x111252C5A7fb75d541071753bd1fAAf367d0321F"
+  },
+  {
+    decimals: 18,
+    symbol: "MATICBNT",
+    contract: "0x8151E0Fbbc10Af5b0F16B413dB0747169e9687d9"
+  },
+  {
+    decimals: 18,
+    symbol: "SVDBNT",
+    contract: "0x8DCF1cA9f4716ef8e86A29f224237540f3c7ABad"
+  },
+  {
+    decimals: 18,
+    symbol: "JRT90BNT10",
+    contract: "0xE274C0cCf7B0bC1eF29FFf9AD5eC98E9B5c45e84"
+  },
+  {
+    decimals: 18,
+    symbol: "wNXMBNT",
+    contract: "0x75aB5e15129BBBEcB5C5Fdb71d1ff7D5dA97d56c"
+  },
+  {
+    decimals: 18,
+    symbol: "AIXBNT",
+    contract: "0xA415cD56C694bd7402d14560D18Bb19A28F77617"
+  },
+  {
+    decimals: 18,
+    symbol: "EVO",
+    contract: "0xefBd6D7deF37ffae990503EcdB1291B2f7E38788"
+  },
+  {
+    decimals: 18,
+    symbol: "EVOBNT",
+    contract: "0xBB8436eaf49888641Df27e4E1DfFbd4851788209"
+  },
+  {
+    decimals: 18,
+    symbol: "STACBNT",
+    contract: "0x258D1210e9E242FDc0Ecfa3b039A51a945CD0D0a"
+  },
+  {
+    decimals: 18,
+    symbol: "BANDBNT",
+    contract: "0x44Fa59B2F044367f9F027b7694fD3BacbF22c3d5"
+  },
+  {
+    decimals: 18,
+    symbol: "GRIGUSDB",
+    contract: "0x1F6e51ce0533A075fDd602FbD6159763aCaB579b"
+  },
+  {
+    decimals: 18,
+    symbol: "JNTR/e",
+    contract: "0x2f005Cc29267f3B57E643B01575ec81789947142"
+  },
+  {
+    decimals: 18,
+    symbol: "WISHBNT",
+    contract: "0x1C9Df905571B22214Fa5FB10ad99ebe327f199C5"
+  },
+  {
+    decimals: 18,
+    symbol: "FLIXXBNT",
+    contract: "0x2d5aDD875442023eC83718Bb03D866c9F4C6E8cE"
+  },
+  {
+    decimals: 18,
+    symbol: "LKSC",
+    contract: "0xfC4A2Cd574bdcC385173f03A6a52cC3B853BB9d4"
+  },
+  {
+    decimals: 18,
+    symbol: "LKSCBNT",
+    contract: "0x500f3e107A6d62bb15394892a22495ACF71D007F"
+  },
+  {
+    decimals: 18,
+    symbol: "NEXOUSDB",
+    contract: "0x515d562496C43487eb2DDce1a2A7721148D44E36"
+  },
+  {
+    decimals: 18,
+    symbol: "ZRXUSDB",
+    contract: "0x1a3c6768e200482F5f47D1BE77B7255aBCAe4Fe2"
+  },
+  {
+    decimals: 18,
+    symbol: "ACPT",
+    contract: "0xcAd2d4C4469fF09aB24d02A63BCeDfCD44bE0645"
+  },
+  {
+    decimals: 18,
+    symbol: "ACPTBNT",
+    contract: "0x9E7749E446572842C7c0E1B76b673e9D1332db11"
+  },
+  {
+    decimals: 18,
+    symbol: "ANKBNT",
+    contract: "0x437F7d93540094Da58F337644ba7D6E5Ad823564"
+  },
+  {
+    decimals: 18,
+    symbol: "ETHUSDB",
+    contract: "0x482c31355F4f7966fFcD38eC5c9635ACAe5F4D4F"
+  },
+  {
+    decimals: 18,
+    symbol: "ATSBNT",
+    contract: "0x1D75ebc72f4805e9C9918B36A8969b2e3847c9FB"
+  },
+  {
+    decimals: 18,
+    symbol: "PRTLBNT",
+    contract: "0x2788C2dB0fBdbaee39Fa010D325d55e7e4527e0d"
+  },
+  {
+    decimals: 18,
+    symbol: "C20BNT",
+    contract: "0x1EF9e0ac29b3813528FbfdAdf5118AB63e4be015"
+  },
+  {
+    decimals: 18,
+    symbol: "pBTCBNT",
+    contract: "0xEEF7551e59b34F431D71C7593249F61D5c52ce65"
+  },
+  {
+    decimals: 18,
+    symbol: "MLNUSDB",
+    contract: "0x0D6777BFc95b284eA9246c889E99903641129D72"
+  },
+  {
+    decimals: 18,
+    symbol: "YHTS",
+    contract: "0xcf33Eb02227255c45F595727Dbb24cE16afc36A2"
+  },
+  {
+    decimals: 18,
+    symbol: "YHTSBNT",
+    contract: "0x04A3030c94Fb2dBE2b898d8cBf6Fd1c656FA69dd"
+  },
+  {
+    decimals: 18,
+    symbol: "pBTCUSDB",
+    contract: "0x6B09B01c19E4bD573eae4e235ee47CBD51dF3B6E"
+  },
+  {
+    decimals: 18,
+    symbol: "UBTBNT",
+    contract: "0x290bd3a8F785a8dB30a0F6Baf9B88863b831747F"
+  },
+  {
+    decimals: 18,
+    symbol: "LOOMUSDB",
+    contract: "0xc32BF4a12542E897BADbFf2B61e56c82eAe73d69"
+  },
+  {
+    decimals: 18,
+    symbol: "BNTGRG",
+    contract: "0x0Dc4320ba50b7E05FC73b4531C59aCB46c5A7dD6"
+  },
+  {
+    decimals: 18,
+    symbol: "BAXBNT",
+    contract: "0xA9DE5935aE3eae8a7F943C9329940EDA160267f4"
+  },
+  {
+    decimals: 18,
+    symbol: "RLCBNT",
+    contract: "0x9003411Ac4073C2D9f37af71d00E373B72Cbe9E2"
+  },
+  {
+    decimals: 18,
+    symbol: "DAIUSDB",
+    contract: "0xcb913ED43e43cc7Cec1D77243bA381615101E7E4"
+  },
+  {
+    decimals: 18,
+    symbol: "REPUXBNT",
+    contract: "0x28291d74Bca9dE7cb6948A8E699651ed93832c50"
+  },
+  {
+    decimals: 4,
+    symbol: "AUTO",
+    contract: "0x0Ed55F31EE2F9875A738C6496842b0E6519D7833"
+  },
+  {
+    decimals: 18,
+    symbol: "AUTOBNT",
+    contract: "0x0B21617eD9b15fd901e0b36b8eDF9d68aDc11Ad5"
+  },
+  {
+    decimals: 18,
+    symbol: "TBXBNT",
+    contract: "0xE844E4EF529CB1A507D47206bEeF65a921B07287"
+  },
+  {
+    decimals: 18,
+    symbol: "SNXUSDB",
+    contract: "0x28271853E950bE371B050F3f93aA0146225bF374"
+  },
+  {
+    decimals: 18,
+    symbol: "DRGNBNT",
+    contract: "0xa7774F9386E1653645E1A08fb7Aae525B4DeDb24"
+  },
+  {
+    decimals: 18,
+    symbol: "ENJUSDB",
+    contract: "0x42529f410f0a72599Fff2c67DD2a63CFfBcc3f91"
+  },
+  {
+    decimals: 18,
+    symbol: "CAP",
+    contract: "0x43044f861ec040DB59A7e324c40507adDb673142"
+  },
+  {
+    decimals: 18,
+    symbol: "BNTCAP",
+    contract: "0x5afD005056d4b47EBFE31f4B4d33FD8C9Abf1817"
+  },
+  {
+    decimals: 18,
+    symbol: "BFZ",
+    contract: "0xCFABaFF3bb057ba878f43ce027c9266D2F900561"
+  },
+  {
+    decimals: 18,
+    symbol: "BFZBNT",
+    contract: "0x6f8BeaDF9eCd851be239b616149aF3E69D49ce11"
+  },
+  {
+    decimals: 18,
+    symbol: "TBC",
+    contract: "0x627974847450C45b60B3Fe3598f4e6E4cf945B9a"
+  },
+  {
+    decimals: 18,
+    symbol: "TBCUSDB",
+    contract: "0x323e4d8097B0A58aB8210AC6efCC4a89285cFc6B"
+  },
+  {
+    decimals: 18,
+    symbol: "KINBNT",
+    contract: "0x26b5748F9253363f95e37767e9ed7986877A4B1b"
+  },
+  {
+    decimals: 18,
+    symbol: "ALBT",
+    contract: "0x00a8b738E453fFd858a7edf03bcCfe20412f0Eb0"
+  },
+  {
+    decimals: 18,
+    symbol: "ALBTUSDT",
+    contract: "0x01697e379E6B2dA6A6D052BAa09F98488433e167"
+  },
+  {
+    decimals: 18,
+    symbol: "PKGBNT",
+    contract: "0xE729024679C29c2660E05727ECAfd3D8792b8111"
+  },
+  {
+    decimals: 18,
+    symbol: "MDZA",
+    contract: "0x0eCDd783dc7bF820614044B51862ED29714d2BA5"
+  },
+  {
+    decimals: 18,
+    symbol: "MDZAUSDB",
+    contract: "0x7651021390129c9c2672f47292C31b33f63EE5Cc"
+  },
+  {
+    decimals: 18,
+    symbol: "LOCBNT",
+    contract: "0x38838B895cbf02048455Fb7f649D97C564fC18a8"
+  },
+  {
+    decimals: 4,
+    symbol: "MORPH",
+    contract: "0x2Ef27BF41236bD859a95209e17a43Fbd26851f92"
+  },
+  {
+    decimals: 18,
+    symbol: "MORPHBNT",
+    contract: "0xB2Ea67533290fAd84e3fe2E1Fb68D21Ca062d7fc"
+  },
+  {
+    decimals: 18,
+    symbol: "AGSBNT",
+    contract: "0x653F1FFC243D7B6F4ca65Df9520A80D0113dA3d6"
+  },
+  {
+    decimals: 18,
+    symbol: "USDTUSDB",
+    contract: "0xF2ff22976B973d6bcC17a7dC93B719162ADA2045"
+  },
+  {
+    decimals: 18,
+    symbol: "TBCBNT",
+    contract: "0x536545f6B120C2fD099370334097b35bB2403BC3"
+  },
+  {
+    decimals: 18,
+    symbol: "OMGUSDB",
+    contract: "0xAeBfeA5ce20af9fA2c65fb62863b31A90b7e056b"
+  },
+  {
+    decimals: 18,
+    symbol: "REAL",
+    contract: "0x6b4389Afb3e243A65668B7311fA9Ef092A8a3B64"
+  },
+  {
+    decimals: 18,
+    symbol: "REAL",
+    contract: "0xdbcaE67ECBA9DAAC61B1167cc8108B63BF8d59A2"
+  },
+  {
+    decimals: 3,
+    symbol: "EMIT",
+    contract: "0xb5f278Ee11811eFEC0692EC61b1e9f9984f2de11"
+  },
+  {
+    decimals: 18,
+    symbol: "EMIT1USDB",
+    contract: "0x37Be876EF051eB8EDdD0745107c5222D8CA8EC60"
+  },
+  {
+    decimals: 4,
+    symbol: "BUFFGATE",
+    contract: "0x0B244e01B1B0C9a959b3b0Bc19E3852395319876"
+  },
+  {
+    decimals: 18,
+    symbol: "BUFFGATEUSDB",
+    contract: "0x37382ca45EFc45bd1A53649Ab98D3Fa337e56A2F"
+  },
+  {
+    decimals: 18,
+    symbol: "STORMBNT",
+    contract: "0xCad4da66E00FDeCaBeC137a24E12Af8eDF303a1d"
+  },
+  {
+    decimals: 8,
+    symbol: "MPT",
+    contract: "0x2cC1bE643e0882fB096f7f96d2b6Ca079ad5270c"
+  },
+  {
+    decimals: 18,
+    symbol: "MPTBNT",
+    contract: "0xb47Bd84C954Fa597B40fe41D4e116fb0eF2468bb"
+  },
+  {
+    decimals: 8,
+    symbol: "CGT",
+    contract: "0xF5238462E7235c7B62811567E63Dd17d12C2EAA0"
+  },
+  {
+    decimals: 18,
+    symbol: "CGTBNT",
+    contract: "0x9ceE7038Fc154D92d009c2Dd8ac083b557495713"
+  },
+  {
+    decimals: 18,
+    symbol: "BBOBNT",
+    contract: "0x980B4118dAb781829DF80D7912d70B059a280DAd"
+  },
+  {
+    decimals: 18,
+    symbol: "EVEDBNT",
+    contract: "0x5E761d4529ae69996cb42E09707f9D1D29F047d6"
+  },
+  {
+    decimals: 18,
+    symbol: "EST",
+    contract: "0x0Efc2390C79C47452898a234a27F2b9C39A7a725"
+  },
+  {
+    decimals: 18,
+    symbol: "ESTBNT",
+    contract: "0xd16a3A892695ec9a47EFFdD5247980a8d2be3fF2"
+  },
+  {
+    decimals: 18,
+    symbol: "CRTS",
+    contract: "0x825a64810e3EE35bD64c940140eA91a609608ABE"
+  },
+  {
+    decimals: 18,
+    symbol: "CRTSBNT",
+    contract: "0x0F92330EAaBa84CB54b068F4331Cc40Dd2A98236"
+  },
+  {
+    decimals: 18,
+    symbol: "CBIX7",
+    contract: "0xCf8f9555D55CE45a3A33a81D6eF99a2a2E71Dee2"
+  },
+  {
+    decimals: 18,
+    symbol: "CBIX7USDB",
+    contract: "0xE35a57AC913144AEf6a4b179634D343466DE3Cc3"
+  },
+  {
+    decimals: 18,
+    symbol: "DZARUSDB",
+    contract: "0x7484867773Bc6f3110f710577d36A3605DBa59DF"
+  },
+  {
+    decimals: 18,
+    symbol: "ESZBNT",
+    contract: "0xA2020e324C365D05e87cf25552E6e6734260b089"
+  },
+  {
+    decimals: 18,
+    symbol: "STONK",
+    contract: "0xb60Fde5D798236fBF1e2697B2A0645380921FccF"
+  },
+  {
+    decimals: 18,
+    symbol: "STONKBNT",
+    contract: "0xc570Bae3772b618a981c4A5AaD51bc3e222E7A3B"
+  },
+  {
+    decimals: 18,
+    symbol: "WINGSBNT",
+    contract: "0xA6Ab3c8aE51962f4582db841dE6b0A092041461e"
+  },
+  {
+    decimals: 18,
+    symbol: "RDNBNT",
+    contract: "0x11223Ed5D5846603C4EfC7c451FD8EB596d592cF"
+  },
+  {
+    decimals: 0,
+    symbol: "FCO",
+    contract: "0x4cbdaea41E4C864477E1430a896d9E3Bac11f593"
+  },
+  {
+    decimals: 18,
+    symbol: "FCOUSDB",
+    contract: "0x94A2aAA374A8F2D52dad24330C8a0Ec2934700ae"
+  },
+  {
+    decimals: 18,
+    symbol: "GESBNT",
+    contract: "0x5972CED550248B17c9F674639D33E5446b6ad95A"
+  },
+  {
+    decimals: 18,
+    symbol: "ACD",
+    contract: "0xEa6d4D7B36C00B3611dE0B0e1982B12E9e736c66"
+  },
+  {
+    decimals: 18,
+    symbol: "ACDBNT",
+    contract: "0x075561230DB23aa3B86ABE8AFE8bbc4eCDdf1C5A"
+  },
+  {
+    decimals: 18,
+    symbol: "BUSDUSDB",
+    contract: "0xE94C892f90ABea59F3dd1D7d8c34aC9d7312F18A"
+  },
+  {
+    decimals: 18,
+    symbol: "GLDR",
+    contract: "0xF2BA4AFcBE22F0e626d67D8f31E96428706282e9"
+  },
+  {
+    decimals: 18,
+    symbol: "GLDRBNT",
+    contract: "0xb2aFA773c749F988B82CAb56284d0F1b01c7E2dC"
+  },
+  {
+    decimals: 18,
+    symbol: "FXCBNT",
+    contract: "0xb93Cc8642f5e8644423Aa7305da96FFF75708228"
+  },
+  {
+    decimals: 4,
+    symbol: "MGT",
+    contract: "0xA207Ef81C35848A60A732005A42fAe0BA89A9bE2"
+  },
+  {
+    decimals: 18,
+    symbol: "MGTBNT",
+    contract: "0x0bA204702F102aD3B0156164754e8af18C24C49C"
+  },
+  {
+    decimals: 18,
+    symbol: "HOTEL",
+    contract: "0xf8A2ED21fEa517665b35aC824387bf9b41c71919"
+  },
+  {
+    decimals: 18,
+    symbol: "HOTELBNT",
+    contract: "0x1344381f0e93a2A1Ab0BFd2fE209a9BD01343933"
+  },
+  {
+    decimals: 18,
+    symbol: "ONGBNT",
+    contract: "0x8104E7ce81FaB39c42e34Cd9d8B654135261Fae8"
+  },
+  {
+    decimals: 18,
+    symbol: "KNCUSDB",
+    contract: "0xD69AE1D715d7451646107D43777139B0a42d7c63"
+  },
+  {
+    decimals: 8,
+    symbol: "4XB",
+    contract: "0xA3AC41Fde5f3a569fa79E81fFe6734ee8097Ce9d"
+  },
+  {
+    decimals: 8,
+    symbol: "4XBBNT",
+    contract: "0xd8aB826b6D69f5E4Fa1325A5236491a309FBFF4f"
+  },
+  {
+    decimals: 18,
+    symbol: "BATUSDB",
+    contract: "0x7FfE011B93e06FA14CE5A6E00320937652664366"
+  },
+  {
+    decimals: 18,
+    symbol: "MKRUSDB",
+    contract: "0x29dF79CB535f1fe82cA65d52cB8B5EE82D7E98a6"
+  },
+  {
+    decimals: 18,
+    symbol: "TRSTBNT",
+    contract: "0x064432E84F05094E3eD746A35ab9B7aB865fDa5C"
+  },
+  {
+    decimals: 18,
+    symbol: "sUSDUSDB",
+    contract: "0x9B6678c766003aD69A15f795f433C0F62c10D4d5"
+  },
+  {
+    decimals: 18,
+    symbol: "NMRUSDB",
+    contract: "0xEfec901ff0a33d0eF4f8068CDd8b28Fdc40aa556"
+  },
+  {
+    decimals: 18,
+    symbol: "DANBNT",
+    contract: "0xa06cFAB8B584c91Df1aBee6e8503486AB4e23F40"
+  },
+  {
+    decimals: 18,
+    symbol: "KEYBNT",
+    contract: "0xa7e21e7584fc6fDf6Fa978a5d4981352B0260954"
+  },
+  {
+    decimals: 18,
+    symbol: "XIOUSDB",
+    contract: "0x18D8001D1Da44fE96f442f5980e08D2Ab4e19594"
+  },
+  {
+    decimals: 18,
+    symbol: "REPUSDB",
+    contract: "0xAb0C9850BaACF24eFA368b57C2822Ce73b60794c"
+  },
+  {
+    decimals: 18,
+    symbol: "USDCUSDB",
+    contract: "0x71c414DaCe65ABff9351E215d25f17F675241c0A"
+  },
+  {
+    decimals: 18,
+    symbol: "TUSDUSDB",
+    contract: "0x06cd5923593a359111cDec66E74c62E831C8aEab"
+  },
+  {
+    decimals: 18,
+    symbol: "SYB7",
+    contract: "0x86A49f08Ab6531A3E0e814c75F36de661B986Ca1"
+  },
+  {
+    decimals: 18,
+    symbol: "SYB7BNT",
+    contract: "0xDC610F8eecE47E9F91209C77C8674C40d2d8E17F"
+  },
+  {
+    decimals: 18,
+    symbol: "TSTST",
+    contract: "0x10ef8f03cd0F3D7Bc14A04ba2C173414aA8C5E7E"
+  },
+  {
+    decimals: 18,
+    symbol: "FKXBNT",
+    contract: "0x80c222E38fb57F0710aF21128535096D90503285"
+  },
+  {
+    decimals: 18,
+    symbol: "RLCUSDB",
+    contract: "0x6534d2A69c2C7774DF42A55A1678bD008984B324"
+  },
+  {
+    decimals: 6,
+    symbol: "POWRUSDB",
+    contract: "0x8bb91B280A39A9e9D8505B9a5BC792CCb3B9779E"
+  },
+  {
+    decimals: 18,
+    symbol: "AIONBNT",
+    contract: "0x73fa2B855be96AB3C73f375B8Ec777226eFA3845"
+  },
+  {
+    decimals: 18,
+    symbol: "NPXSBNT",
+    contract: "0x5a4deB5704C1891dF3575d3EecF9471DA7F61Fa4"
+  },
+  {
+    decimals: 18,
+    symbol: "SIGBNT",
+    contract: "0x09953e3e5C6Be303D8D83Ccb672d241abc9BEe29"
+  },
+  {
+    decimals: 18,
+    symbol: "FTH",
+    contract: "0xB414F8Ec2D14c64f37B1559CBE43746284514596"
+  },
+  {
+    decimals: 18,
+    symbol: "FTHBNT",
+    contract: "0x3A946bb329f78CCBc75d836136De3a472Bdf5499"
+  },
+  {
+    decimals: 18,
+    symbol: "MGTBNT",
+    contract: "0x6F60D44A0d6fB95E037A099F8642f949c959a363"
+  },
+  {
+    decimals: 18,
+    symbol: "CEEKUSDB",
+    contract: "0x27b099CF19227Ef7488D60a441d7eA2CC7FDDb25"
+  },
+  {
+    decimals: 18,
+    symbol: "SHPBNT",
+    contract: "0x6e0E0B9aB5f8e5F5F2DE4D34FfE46668FFB37476"
+  },
+  {
+    decimals: 18,
+    symbol: "HOTBNT",
+    contract: "0x0Ac0e122D09cC4DA4A96Cc2731D2b7cc1f8b025a"
+  },
+  {
+    decimals: 18,
+    symbol: "EDGBNT",
+    contract: "0xf95dd0Fc6DF64b2F149aFA9219579e0f850BCD4D"
+  },
+  {
+    decimals: 18,
+    symbol: "CLNBNT",
+    contract: "0xEB027349398De19D925DefC15c4302fE92FC69f9"
+  },
+  {
+    decimals: 18,
+    symbol: "XZAR",
+    contract: "0x48f07301E9E29c3C38a80ae8d9ae771F224f1054"
+  },
+  {
+    decimals: 18,
+    symbol: "XZARBNT",
+    contract: "0xdB7B2616210Bd0068D914eEB7E31aFD2Da517444"
+  },
+  {
+    decimals: 18,
+    symbol: "WEBBNT",
+    contract: "0x5094841D5eE018a5E29E23055aFC263093f95a3E"
+  },
+  {
+    decimals: 18,
+    symbol: "UMABNT",
+    contract: "0x9Ca631b980DeC1eEba001BBfaC8da5A9e7d744fF"
+  },
+  {
+    decimals: 18,
+    symbol: "TOMOEBNT",
+    contract: "0x0dc75ECCcF5B784b793686e614C2E9dCdda63738"
+  },
+  {
+    decimals: 18,
+    symbol: "UNIBNT",
+    contract: "0x8b3082e273E4B923830c637a203c1C1D963cA307"
+  },
+  {
+    decimals: 18,
+    symbol: "LENDBNT",
+    contract: "0x020F8aCf2Dea7Ad1CF8413431e427F684181C6BA"
+  },
+  {
+    decimals: 18,
+    symbol: "BUFFGATEBNT",
+    contract: "0x2d35087923194400d329EE74b45CBc77b7d573Ff"
+  },
+  {
+    decimals: 18,
+    symbol: "BNTFTT",
+    contract: "0xD9c195c9E1C49e86C7A0F0E29627CB8F8523A7fb"
+  },
+  {
+    decimals: 18,
+    symbol: "AAVE",
+    contract: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"
+  },
+  {
+    decimals: 18,
+    symbol: "AAVEBNT",
+    contract: "0x6c84F4ccC916ACf792538f1293b286b540906A2a"
+  },
+  {
+    decimals: 18,
+    symbol: "BNTvBNT",
+    contract: "0xBA04e539da9e7a6491A6c6ae38D9750226a3D36b"
+  },
+  {
+    decimals: 18,
+    symbol: "XTRD",
+    contract: "0x9c794f933b4DD8B49031A79b0f924D68BEF43992"
+  },
+  {
+    decimals: 18,
+    symbol: "XTRD",
+    contract: "0x295F136eB8c8D1429a77A2B5E0851AA035c8297C"
+  },
+  {
+    decimals: 18,
+    symbol: "KP3R",
+    contract: "0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44"
+  },
+  {
+    decimals: 18,
+    symbol: "KP3R",
+    contract: "0x9a88524DBc8C0F1CB67c6F6a695098d5BFCA4476"
+  },
+  {
+    decimals: 18,
+    symbol: "SVCS",
+    contract: "0x9CEc686ba6f07D6135B2091140c795166Ef5b761"
+  },
+  {
+    decimals: 18,
+    symbol: "SVCS",
+    contract: "0xd7a4f41626fF2a52f58de1eB5Df6F79F05E5977F"
+  },
+  {
+    decimals: 18,
+    symbol: "BUSDBNT",
+    contract: "0x7b86306D72103Ccd5405DF9dBFf4B794C46EBbC9"
+  },
+  {
+    decimals: 18,
+    symbol: "COMPBNT",
+    contract: "0xB4c5BC0d1d41F3440c580A0F52B6641E4A913Df4"
+  },
+  {
+    decimals: 18,
+    symbol: "CROBNT",
+    contract: "0x8e7970eca4be7F186A5D7acdc8dcF778EA26Ee9b"
+  },
+  {
+    decimals: 18,
+    symbol: "CRVBNT",
+    contract: "0xe783E81cf1b5bf475aDB76e41a2AB996c6e2ae50"
+  },
+  {
+    decimals: 18,
+    symbol: "ZRXBNT",
+    contract: "0xa09B58ECeFA3a5d3736Ba9E2E002ca566Adf08eb"
+  },
+  {
+    decimals: 18,
+    symbol: "GUSDBNT",
+    contract: "0x5A576922849dF442f1Dc0c3bA7b3c345EdB2bd44"
+  },
+  {
+    decimals: 18,
+    symbol: "QNTBNT",
+    contract: "0xD6bF84B5D6F4d1288C39f2486688e949B1423E62"
+  },
+  {
+    decimals: 18,
+    symbol: "RARI",
+    contract: "0xFca59Cd816aB1eaD66534D82bc21E7515cE441CF"
+  },
+  {
+    decimals: 18,
+    symbol: "RARIBNT",
+    contract: "0xb5faf55A4bD812a918c68F629A00d8F9750a2C4d"
+  },
+  {
+    decimals: 18,
+    symbol: "sBTCBNT",
+    contract: "0x63bc130401dc9f7F70203B01D1875d0D2779dc96"
+  },
+  {
+    decimals: 18,
+    symbol: "SNXBNT",
+    contract: "0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde"
+  },
+  {
+    decimals: 18,
+    symbol: "sUSDBNT",
+    contract: "0xd2C9F2A62f9a1e80cD76392c02491212a2230cF4"
+  },
+  {
+    decimals: 18,
+    symbol: "SUSHIBNT",
+    contract: "0xB2145C7f9249d79197fe3cB87333187eB4FC1Eec"
+  },
+  {
+    decimals: 18,
+    symbol: "SXPBNT",
+    contract: "0xa301Ad444e72F11590e3712bBb7aD0aC959b90C2"
+  },
+  {
+    decimals: 6,
+    symbol: "ICT",
+    contract: "0x2d71983E810B9e95258966B9c164C4d61a829bA9"
+  },
+  {
+    decimals: 18,
+    symbol: "ICTBNT",
+    contract: "0xb381D21c09BaC7278b6802193167A2a01127b976"
+  },
+  {
+    decimals: 8,
+    symbol: "DCX",
+    contract: "0x199c3DdedB0e91dB3897039AF27c23286269F088"
+  },
+  {
+    decimals: 18,
+    symbol: "DCXUSDB",
+    contract: "0x50eA977Abd2e622241d5074fa15B97eB823B3ED5"
+  },
+  {
+    decimals: 2,
+    symbol: "STC",
+    contract: "0xb8B7791b1A445FB1e202683a0a329504772e0E52"
+  },
+  {
+    decimals: 18,
+    symbol: "STCUSDB",
+    contract: "0x9DB9CcFC66e5caCdEf842c2F04fCD7d31C3fA137"
+  },
+  {
+    decimals: 18,
+    symbol: "FOURUSDB",
+    contract: "0x23736A2c9728C309039831c245754E19cEd07546"
+  },
+  {
+    decimals: 18,
+    symbol: "ONTO",
+    contract: "0xCB0aD5f479812edD6e2cED1cfE621bF39D7E9158"
+  },
+  {
+    decimals: 18,
+    symbol: "ONTOBNT",
+    contract: "0x992EcEA6bEf983168Fcb264C8b2C9A15E274e02F"
+  },
+  {
+    decimals: 8,
+    symbol: "ECC",
+    contract: "0xD5bF66fF3Dab4c74Ac6014fd2181Bd3aD1bBaF32"
+  },
+  {
+    decimals: 18,
+    symbol: "ECCUSDT",
+    contract: "0xc83300a16de6518Dd0Be5ad656F3d6f197A30692"
+  },
+  {
+    decimals: 18,
+    symbol: "YFM",
+    contract: "0xa665FED1b0C9dA00e91ca582f77dF36E325048c5"
+  },
+  {
+    decimals: 18,
+    symbol: "YFMBNT",
+    contract: "0x7a553617592d5b67Ef4D8B9aa67aa2A539463900"
+  },
+  {
+    decimals: 18,
+    symbol: "MITxUSDB",
+    contract: "0x7482326Eb7E44Aec1269C052B9B1aF26606b0B90"
+  },
+  {
+    decimals: 18,
+    symbol: "BALBNT",
+    contract: "0x3E22d87977dA52Accef2Af9Eb50f76bd31b7b6B1"
+  },
+  {
+    decimals: 18,
+    symbol: "COMM",
+    contract: "0xc7DeB5543CfA97b0Af2841418f53B8E554Ff566A"
+  },
+  {
+    decimals: 18,
+    symbol: "COMMBNT",
+    contract: "0xb83546551C9d4F6D7873804a7352FA930404260d"
+  },
+  {
+    decimals: 18,
+    symbol: "CHZBNT",
+    contract: "0x34902D61c3f8D8809A8a2481C36DC514BEBA5cE8"
+  },
+  {
+    decimals: 18,
+    symbol: "cUSDBNT",
+    contract: "0xF0F9bbd5eBc79d7cAD9d35564Ef45aDcD802611e"
+  },
+  {
+    decimals: 18,
+    symbol: "BLY",
+    contract: "0xf8aD7dFe656188A23e89da09506Adf7ad9290D5d"
+  },
+  {
+    decimals: 18,
+    symbol: "BLYBNT",
+    contract: "0x782E07B7Bbf908135D083c4f65459f8F1549a415"
+  },
+  {
+    decimals: 6,
+    symbol: "BTZC",
+    contract: "0x80640db285Cc63496bdd8c1980A7f4526A4D477F"
+  },
+  {
+    decimals: 18,
+    symbol: "BTZCUSDB",
+    contract: "0x488E99fbCF49BFfC94cCae3B8eaCDd2Bd9aC981C"
+  },
+  {
+    decimals: 18,
+    symbol: "WBTCpBTC",
+    contract: "0xFA3Bba432c0499c091F821aEB22FC36c4F8c78e3"
+  },
+  {
+    decimals: 18,
+    symbol: "HYBNT",
+    contract: "0x31633C7c4f3FD374d187da5c19BBdb41DBdDdc86"
+  },
+  {
+    decimals: 18,
+    symbol: "SNXUSDB",
+    contract: "0xdf4971E3F52f5828C72A0512d560F54bFB2B2692"
+  },
+  {
+    decimals: 18,
+    symbol: "BNC",
+    contract: "0xbe5b336eF62D1626940363Cf34bE079e0AB89F20"
+  },
+  {
+    decimals: 18,
+    symbol: "BNCBNT",
+    contract: "0xEc7558322f0DF8719c805b39583b6Fd5ca6c9E30"
+  },
+  {
+    decimals: 18,
+    symbol: "BNTQASH",
+    contract: "0xbC5fe988433B97cDB1a578531c5380e8EC3242b1"
+  },
+  {
+    decimals: 18,
+    symbol: "CBLT",
+    contract: "0x29a99c126596c0Dc96b02A88a9EAab44EcCf511e"
+  },
+  {
+    decimals: 18,
+    symbol: "CBLTBNT",
+    contract: "0x7694298e99aedC4E37F855A8661B47d505Ce1b37"
+  },
+  {
+    decimals: 18,
+    symbol: "CMCTBNT",
+    contract: "0xb5b0E0642d35D7Cab64CDa6EcF87Fd842cB5c58d"
+  },
+  {
+    decimals: 18,
+    symbol: "PEG:USD",
+    contract: "0xa485bD50228440797Abb4d4595161d7546811160"
+  },
+  {
+    decimals: 18,
+    symbol: "BNT-USD",
+    contract: "0x607108c46bCE4cF6f86698E9B46E3270A734FeFe"
+  },
+  {
+    decimals: 18,
+    symbol: "SWRV",
+    contract: "0xB8BAa0e4287890a5F79863aB62b7F175ceCbD433"
+  },
+  {
+    decimals: 18,
+    symbol: "BNTSWRV",
+    contract: "0x07009A1F62dd238c7167e4D9BC3C5b28B6Fe5a96"
+  },
+  {
+    decimals: 18,
+    symbol: "STMBNT",
+    contract: "0x452821f74Ab9d38EDD3145C59280aC1bCBCe9B81"
+  },
+  {
+    decimals: 18,
+    symbol: "BCSBNT",
+    contract: "0xD3aD4c39A12B48164068Fef8F86eF5836A9eF303"
+  },
+  {
+    decimals: 18,
+    symbol: "USDB/CAT",
+    contract: "0xc9CEadb2d3bCeB198C1361c6a60892E95B1ABf60"
+  },
+  {
+    decimals: 18,
+    symbol: "J8TBNT",
+    contract: "0x8E00BacD7d8265d8F3f9d5B4fbd7F6B0B0c46f36"
+  }
+].map(x => ({ ...x, decimals: String(x.decimals) }));
+
 const currentBlockTwo$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
 const bufferToggle$ = new Subject();
@@ -1035,22 +2673,17 @@ export interface AbiDynamicRelay {
   fee: string;
 }
 
-export interface StaticRelay {
-  converterAddress: string;
-  converterType: number;
-  version: number;
-  reserves: string[];
-  poolToken: {
-    symbol: string;
-    decimals: string;
-    contract: string;
-  };
-}
-
 interface RawAbiToken {
   contract: string;
   symbol: string;
   decimals: string;
+}
+export interface StaticRelay {
+  converterAddress: string;
+  converterType: number;
+  version: number;
+  reserves: RawAbiToken[];
+  poolToken: RawAbiToken;
 }
 
 const prioritiseV2Pools = (a: ViewRelay, b: ViewRelay) => {
@@ -6066,7 +7699,10 @@ export class EthBancorModule
           "https://storage.googleapis.com/bancor-prod-file-store/images/communities/aea83e97-13a3-4fe7-b682-b2a82299cdf2.png"
       }
     ];
-    const reserveTokens = staticRelays.flatMap(relay => relay.reserves);
+    const reserveTokens = uniqWith(
+      staticRelays.flatMap(relay => relay.reserves),
+      compareString
+    );
     console.log(reserveTokens, "are reserve tokens");
     const tokensMissing = reserveTokens.filter(
       token =>
@@ -6074,12 +7710,12 @@ export class EthBancorModule
           meta =>
             compareString(meta.contract, token) &&
             typeof meta.precision !== "undefined"
-        )
+        ) || q.some(x => compareString(x.contract, token))
     );
 
     const cached = differenceWith(reserveTokens, tokensMissing, compareString);
 
-    console.warn(cached, "was the cached tokens...");
+    console.warn(tokensMissing, "was the missing tokens...", tokenMeta.length);
 
     const tokensShape = tokensMissing.map(tokenShape);
     const relaysShape = staticRelays.map(relay =>
@@ -6105,11 +7741,19 @@ export class EthBancorModule
             const rawToken = rawTokens.find(t =>
               compareString(reserveContract, t.contract)
             );
+            const qToken = q.find(x =>
+              compareString(x.contract, reserveContract)
+            );
             if (rawToken) {
               return {
                 ...rawToken,
                 reserveBalance
               } as NewReserve;
+            } else if (qToken) {
+              return {
+                ...qToken,
+                reserveBalance
+              };
             } else {
               const meta = findOrThrow(
                 tokenMeta,
@@ -6166,7 +7810,10 @@ export class EthBancorModule
       shareReplay(1)
     );
 
-    networkVersion$.pipe(switchMap(getTokenMeta)).subscribe(this.setTokenMeta);
+    const tokenMeta$ = networkVersion$.pipe(switchMap(getTokenMeta), share());
+
+    tokenMeta$.subscribe(this.setTokenMeta);
+
     this.warmEthApi()
       .then(tokens => {
         bancorApiTokens = tokens;
