@@ -58,7 +58,7 @@
       />
       <label-content-split
         label="Price Impact"
-        :isAlert="overSlippageLimit"
+        :is-alert="overSlippageLimit"
         :value="
           slippage !== null && slippage !== undefined
             ? numeral(this.slippage).format('0.0000%')
@@ -321,9 +321,13 @@ export default class SwapAction extends BaseComponent {
   }
 
   get overSlippageLimit() {
-    if(this.slippage !== null && this.slippage !== undefined && this.slippage >= 0.03) {
+    if (
+      this.slippage !== null &&
+      this.slippage !== undefined &&
+      this.slippage >= 0.03
+    ) {
       return true;
-    }    
+    }
     return false;
   }
 

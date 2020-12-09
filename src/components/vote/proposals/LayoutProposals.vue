@@ -39,11 +39,19 @@
             />
           </th>
         </tr>
-      </thead>      
+      </thead>
     </table>
     <b-container class="table-body">
       <b-row v-for="item in paginatedItems" :key="item.id">
-        <b-col v-for="column in fields" :key="column.id" class="colb my-auto" :class="darkMode ? 'text-body-dark' : 'text-muted-light'" cols="12" :lg="column.colRate!=0 ? column.colRate : ''" :style="getWidthStyle(column)">
+        <b-col
+          v-for="column in fields"
+          :key="column.id"
+          class="colb my-auto"
+          :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+          cols="12"
+          :lg="column.colRate != 0 ? column.colRate : ''"
+          :style="getWidthStyle(column)"
+        >
           <slot
             :name="`cell(${column.key})`"
             :item="item"
@@ -173,8 +181,8 @@ export default class LayoutProposals extends BaseComponent {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)
-      styleString = styleString + "min-width: " + column.minWidth + ";";    
-      styleString += "padding-right: 10px; padding-left: 10px;";
+      styleString = styleString + "min-width: " + column.minWidth + ";";
+    styleString += "padding-right: 10px; padding-left: 10px;";
     return styleString;
   }
   isHtmlTooltip(key: string) {
@@ -193,7 +201,7 @@ export default class LayoutProposals extends BaseComponent {
 .table-header-light {
   font-size: 14px;
   font-weight: 500;
-  padding: .75rem;
+  padding: 0.75rem;
   text-transform: uppercase;
 }
 .table-body {
@@ -204,9 +212,9 @@ export default class LayoutProposals extends BaseComponent {
   display: table-cell;
   font-size: 14px;
   font-weight: 500;
-  padding: .75rem 0.3rem;
+  padding: 0.75rem 0.3rem;
   color: #0a2540;
-  vertical-align: middle!important;
+  vertical-align: middle !important;
   margin-right: -15px;
 }
 </style>

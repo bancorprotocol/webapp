@@ -339,7 +339,9 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import LayoutProposals, { ViewTableField } from "@/components/vote/proposals/LayoutProposals.vue";
+import LayoutProposals, {
+  ViewTableField
+} from "@/components/vote/proposals/LayoutProposals.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
@@ -613,7 +615,7 @@ export default class OpenProposals extends BaseComponent {
   background: #de4a5c;
   position: relative;
   color: #ffffff;
-  font-size: .65rem;
+  font-size: 0.65rem;
 
   &__progress {
     background: #3ec8c8;
@@ -650,7 +652,7 @@ export default class OpenProposals extends BaseComponent {
 }
 
 .btn-breakdown {
-  font-size: .75rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 

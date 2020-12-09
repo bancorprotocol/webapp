@@ -123,7 +123,8 @@ export default class SideBarBottom extends Vue {
       color: #0f59d1 !important;
     }
     img {
-      filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg) brightness(0.7);
+      filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg)
+        brightness(0.7);
       color: #0f59d1;
     }
   }
