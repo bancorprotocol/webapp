@@ -56,6 +56,8 @@
                 :name="`cell(${column.key})`"
                 :item="item"
                 :value="item[column.key]"
+                :isCollapsable="item.collapsedData && item.collapsedData.length"
+                :isExpanded="expandedId === item.id"
               >
                 {{ item[column.key] }}
               </slot>
