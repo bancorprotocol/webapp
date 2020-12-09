@@ -204,6 +204,10 @@
   &.btn-outline-gray-dark {
     color: $text-color-dark !important;
   }
+
+  &.btn-outline-gray-dark:hover {
+    color: $text-color-light !important;
+  }
 }
 
 .modal .modal-content {
