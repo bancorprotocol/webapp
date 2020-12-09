@@ -60,12 +60,12 @@ export const getWeb3 = (
       timeout: 100 * 1000,
       clientConfig: {
         keepalive: true,
-        keepaliveInterval: 60000,
+        keepaliveInterval: 60000
       },
       reconnect: {
         auto: true,
         delay: 15000,
-        onTimeout: true,
+        onTimeout: true
       }
     });
     providerCache[web3Url] = wssProvider;
