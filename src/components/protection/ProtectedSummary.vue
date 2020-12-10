@@ -72,7 +72,7 @@ export default class ProtectedSummary extends BaseComponent {
         .map(x => Number(x.protectedAmount.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      const roi = (protectedValue - initialStake) / initialStake;
+      // const roi = (protectedValue - initialStake) / initialStake;
 
       return [
         { key: "Initial Stake", value: prettifyNumber(initialStake, true) },
