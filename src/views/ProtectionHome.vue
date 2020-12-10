@@ -9,15 +9,6 @@
           >
             Liquidity Protection
           </span>
-          <div class="float-right">
-            <b-btn
-              variant="primary"
-              style="width: 132px"
-              :to="{ name: 'AddProtectionHome' }"
-            >
-              Stake
-            </b-btn>
-          </div>
         </div>
 
         <p

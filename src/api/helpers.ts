@@ -652,6 +652,9 @@ export const getLogs = async (
 
 const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet, false);
 const APP_NAME = "Bancor Swap";
+const FORTMATIC_KEY = process.env.VUE_APP_FORTMATIC;
+const PORTIS_KEY = process.env.VUE_APP_PORTIS;
+const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 
 const wallets = [
   { walletName: "metamask", preferred: true },
@@ -671,7 +674,37 @@ const wallets = [
   { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },
-  { walletName: "hyperpay" }
+  { walletName: "hyperpay" },
+  {
+    walletName: "trezor",
+    appUrl: "https://www.bancor.network",
+    email: "services@bancor.network",
+    rpcUrl: RPC_URL
+  },
+  {
+    walletName: "fortmatic",
+    apiKey: FORTMATIC_KEY,
+    preferred: true
+  },
+  {
+    walletName: "portis",
+    apiKey: PORTIS_KEY,
+    preferred: true,
+    label: "Login with Email"
+  },
+  {
+    walletName: "squarelink",
+    apiKey: SQUARELINK_KEY
+  },
+  { walletName: "authereum" },
+  {
+    walletName: "walletConnect",
+    preferred: true,
+    rpc: {
+      [EthNetworks.Mainnet]: RPC_URL
+    }
+  },
+  { walletName: "wallet.io", rpcUrl: RPC_URL }
 ];
 
 export const onboard = Onboard({

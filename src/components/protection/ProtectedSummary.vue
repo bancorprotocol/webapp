@@ -21,7 +21,7 @@
         v-for="(item, index) in summarizedPositions"
         :key="item.key"
         cols="6"
-        lg="3"
+        lg="4"
         xl="2"
         class="d-flex flex-column align-items-center mt-3 mt-xl-0"
         :class="getItemStyleClass(index)"
@@ -84,7 +84,8 @@ export default class ProtectedSummary extends BaseComponent {
           key: "Claimable Value",
           value: prettifyNumber(claimableValue, true)
         },
-        { key: "ROI", value: this.stringifyPercentage(roi) }
+        { key: "", value: "" }
+        // { key: "ROI", value: this.stringifyPercentage(roi) }
       ];
     }
   }
