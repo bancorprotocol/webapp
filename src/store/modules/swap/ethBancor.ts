@@ -1024,12 +1024,14 @@ interface V2Response {
   pools: (RelayWithReserveBalances | ChainLinkRelay)[];
 }
 
+/*
 const compareAnchorAndConverter = (
   a: ConverterAndAnchor,
   b: ConverterAndAnchor
 ) =>
   compareString(a.anchorAddress, b.anchorAddress) &&
   compareString(a.converterAddress, b.converterAddress);
+*/
 
 interface RawAbiRelay {
   connectorToken1: string;
@@ -6216,12 +6218,8 @@ export class EthBancorModule
     }
 
     try {
-      let bancorApiTokens: TokenPrice[] = [];
-
       this.warmEthApi()
-        .then(tokens => {
-          bancorApiTokens = tokens;
-        })
+        .then(() => {})
         .catch(() => {});
 
       fetchSmartTokens()
