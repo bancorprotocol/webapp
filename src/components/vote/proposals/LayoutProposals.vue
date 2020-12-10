@@ -1,46 +1,39 @@
 <template>
-  <div class="table-responsive">
-    <table :class="darkMode ? 'dark-table' : 'table'">
-      <thead>
-        <tr :class="darkMode ? 'table-header-dark' : 'table-header-light'">
-          <th
-            @click="setSortBy(column)"
-            v-for="column in fields"
-            :key="column.id"
-            scope="col"
-            :class="getThClass(column)"
-            :style="getWidthStyle(column)"
-          >
-            <slot :name="`head(${column.key})`">
-              {{ column.label }}
-            </slot>
+  <div>
+    <b-container class="vote-head" :class="darkMode ? 'vote-head-dark' : 'vote-head-light'">
+      <b-row>
+        <b-col v-for="column in fields" :key="column.id" :style="getWidthStyle(column)" cols="12"
+          :lg="column.colRate != 0 ? column.colRate : ''"
+          class="colb my-auto">
+          <slot :name="`head(${column.key})`">
+            {{ column.label }}
+          </slot>
 
-            <template v-if="column.tooltip || isHtmlTooltip(column.key)">
-              <font-awesome-icon
-                :id="`tooltip-column-${column.id}`"
-                icon="info-circle"
-                class="mr-1"
-              />
-              <b-popover
-                :target="`tooltip-column-${column.id}`"
-                triggers="hover"
-                placement="bottom"
-              >
-                <slot :name="`tooltip(${column.key})`">
-                  {{ column.tooltip }}
-                </slot>
-              </b-popover>
-            </template>
-
+          <template v-if="column.tooltip || isHtmlTooltip(column.key)">
             <font-awesome-icon
-              v-if="column.key === sortBy"
-              :icon="descOrder ? 'caret-down' : 'caret-up'"
-              :class="darkMode ? 'text-white' : 'text-primary'"
+              :id="`tooltip-column-${column.id}`"
+              icon="info-circle"
+              class="mr-1"
             />
-          </th>
-        </tr>
-      </thead>
-    </table>
+            <b-popover
+              :target="`tooltip-column-${column.id}`"
+              triggers="hover"
+              placement="bottom"
+            >
+              <slot :name="`tooltip(${column.key})`">
+                {{ column.tooltip }}
+              </slot>
+            </b-popover>
+          </template>
+
+          <font-awesome-icon
+            v-if="column.key === sortBy"
+            :icon="descOrder ? 'caret-down' : 'caret-up'"
+            :class="darkMode ? 'text-white' : 'text-primary'"
+          />
+        </b-col>
+      </b-row>
+    </b-container>
     <b-container class="table-body">
       <b-row v-for="item in paginatedItems" :key="item.id">
         <b-col
@@ -76,7 +69,6 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
-import BigNumber from "bignumber.js";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 export interface ViewTableField {
@@ -88,8 +80,7 @@ export interface ViewTableField {
   minWidth?: string;
   maxWidth?: string;
   colAuto?: boolean;
-  colRate?: number;
-  thClass?: string;
+  colRate?: number;  
 }
 export interface Item {
   id: string;
@@ -157,26 +148,7 @@ export default class LayoutProposals extends BaseComponent {
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
     return this.sortedItems.slice(startIndex, endIndex);
-  }
-  isColumnSort(column: ViewTableField) {
-    return column.sortable === undefined || column.sortable;
-  }
-  setSortBy(column: ViewTableField) {
-    if (this.isColumnSort(column)) {
-      if (this.sortBy === column.key) this.descOrder = !this.descOrder;
-      else this.sortBy = column.key;
-    } else return;
-  }
-  getThClass(column: ViewTableField) {
-    const styles = [];
-    if (column.thClass) {
-      styles.push(column.thClass);
-    }
-    if (this.isColumnSort(column)) {
-      styles.push("cursor");
-    }
-    return styles;
-  }
+  }  
   getWidthStyle(column: ViewTableField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
@@ -198,23 +170,40 @@ export default class LayoutProposals extends BaseComponent {
 </script>
 
 <style lang="scss">
-.table-header-light {
-  font-size: 14px;
+.vote-head {
+  font-size: 12px;
   font-weight: 500;
   padding: 0.75rem;
   text-transform: uppercase;
+
+  &-light {
+    background-color: #f7f9fc;  
+  }
+
+  &-dark {
+    background-color: #1f3a55;
+  }
+
+  .colb {
+    padding: 0.1rem 0.3rem;
+    vertical-align: middle !important;
+    margin-right: -15px;
+  }
 }
+
 .table-body {
   display: table;
   vertical-align: middle;
+
+  .colb {
+    display: table-cell;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0.75rem 0.3rem;
+    color: #0a2540;
+    vertical-align: middle !important;
+    margin-right: -15px;
+  }
 }
-.table-body .colb {
-  display: table-cell;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 0.75rem 0.3rem;
-  color: #0a2540;
-  vertical-align: middle !important;
-  margin-right: -15px;
-}
+
 </style>

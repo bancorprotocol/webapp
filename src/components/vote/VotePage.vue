@@ -58,17 +58,4 @@ export default class VotePage extends BaseComponent {
 </script>
 
 <style lang="scss" scoped>
-/* tricky fix for media query */
-@media screen and (min-width: 992px) and (max-width: 1130px) {
-  .col-lg-2 {
-    -webkit-box-flex: 0;
-    flex: 0 0 25%;
-    max-width: 25%;
-  }
-  .col-lg-10 {
-    -webkit-box-flex: 0;
-    flex: 0 0 75%;
-    max-width: 75%;
-  }
-}
 </style>
