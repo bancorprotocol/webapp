@@ -19,15 +19,9 @@ import {
   LiquidityModule
 } from "@/types/bancor";
 import { vxm, store } from "@/store";
-import {
-  compareString,
-  fetchUsdPriceOfBntViaRelay,
-  updateArray
-} from "@/api/helpers";
+import { compareString, updateArray } from "@/api/helpers";
 import { fetchBinanceUsdPriceOfBnt } from "@/api/helpers";
-import wait from "waait";
 import { defaultModule } from "@/router";
-import { web3 } from "@/api/web3";
 
 interface BntPrice {
   price: null | number;
