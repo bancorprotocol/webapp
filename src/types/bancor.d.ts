@@ -272,6 +272,37 @@ export interface ViewReserve {
   reserveWeight: number;
 }
 
+export interface ViewGroupedPositions {
+  id: string;
+  positionId: string;
+  poolId: string;
+  symbol: string;
+  stake: {
+    amount: number;
+    usdValue: number;
+    unixTime: number;
+  };
+  protectedAmount: {
+    amount: number;
+    usdValue: number;
+  };
+  fullyProtected: {
+    amount: number;
+    usdValue: number;
+  };
+  apr: {
+    day: number;
+    week: number;
+    // month: number;
+  };
+  fees: number;
+  roi: number;
+  insuranceStart: number;
+  coverageDecPercent: number;
+  fullCoverage: number;
+  collapsedData: ViewProtectedLiquidity[];
+}
+
 export interface ViewRelay {
   id: string;
   symbol: string;
@@ -464,6 +495,8 @@ export interface LiquidityModule {
     totalVolume24h: number;
     bntUsdPrice?: number;
     stakedBntPercent?: number;
+    totalPoolCount?: number;
+    totalTokenCount?: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;
@@ -702,7 +735,7 @@ export interface Service {
 export interface TokenReward {
   amount: string;
   symbol: string;
-  usdValue?: string;
+  usdValue?: string | number;
 }
 export interface ViewProtectedLiquidity {
   id: string;

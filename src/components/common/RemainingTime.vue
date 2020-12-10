@@ -183,13 +183,14 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   }
   &--unlock &__content {
     position: relative;
-    color: $text-muted-light;
-    display: flex;
-    align-items: center;
+    color: $text-muted-light;    
+    display: inline-block;
+    align-items: center;    
+    margin: 2px;
   }
   &--unlock &__progress-text {
     padding-right: 8px;
-    font-size: .9vw;
+    font-size: 0.9vw;
     color: $primary;
     font-weight: 600;
     white-space: nowrap;
@@ -200,6 +201,7 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   }
   &--unlock &__desc {
     padding-top: 4px;
+    font-size: 0.9vw;
   }
 }
 </style>

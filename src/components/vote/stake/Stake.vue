@@ -249,6 +249,10 @@ export default class Stake extends BaseComponent {
 </script>
 
 <style lang="scss">
+#vote-stake {
+  min-width: 115px;
+}
+
 #vote-stake .open-icon {
   position: absolute;
   right: 30px;

@@ -162,9 +162,9 @@ export default class ModalUnstake extends BaseComponent {
 
   get buttonActive() {
     return (
-        this.unstakeValue.isGreaterThan(0) &&
-        this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
-    )
+      this.unstakeValue.isGreaterThan(0) &&
+      this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
+    );
   }
 
   get state() {
@@ -227,8 +227,8 @@ export default class ModalUnstake extends BaseComponent {
     this.step = "unstake";
     setTimeout(() => {
       this.unstakeInput = "";
-      this.setUnstakeInput()
-    }, 100)
+      this.setUnstakeInput();
+    }, 100);
   }
 
   @Watch("step")

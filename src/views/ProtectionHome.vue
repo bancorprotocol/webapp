@@ -9,14 +9,6 @@
           >
             Liquidity Protection
           </span>
-
-          <b-btn
-            variant="primary"
-            style="width: 132px"
-            class="float-right"
-            :to="{ name: 'AddProtectionHome' }"
-            >Stake</b-btn
-          >
         </div>
 
         <p
@@ -28,14 +20,14 @@
           transactions.
         </p>
       </b-col>
-      <b-col v-if="false" cols="12">
+      <b-col cols="12">
         <ProtectedSummary v-if="positions.length" :positions="positions" />
       </b-col>
       <b-col cols="12">
         <content-block
           :px0="true"
           :shadow-light="true"
-          title="Protected"
+          :title="positions.length ? 'My Protected Positions' : 'Protected'"
           :search.sync="searchProtected"
         >
           <div v-if="loading" class="d-flex justify-content-center my-3">
@@ -45,11 +37,18 @@
               label="Loading..."
             />
           </div>
-          <ProtectedTable
-            v-else
-            :positions="positions"
-            :search="searchProtected"
-          />
+          <div v-else>
+            <ProtectedTableOld
+              v-if="!groupedPositions"
+              :positions="positions"
+              :search="searchProtected"
+            />
+            <ProtectedTable
+              v-else
+              :positions="positions"
+              :search="searchProtected"
+            />
+          </div>
         </content-block>
       </b-col>
     </b-row>
@@ -89,9 +88,11 @@ import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
+import ProtectedTableOld from "@/components/protection/ProtectedTableOld.vue";
 
 @Component({
   components: {
+    ProtectedTableOld,
     ProtectedSummary,
     Claim,
     ContentBlock,
@@ -101,6 +102,8 @@ import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
+
+  groupedPositions = true;
 
   get positions(): ViewProtectedLiquidity[] {
     return vxm.ethBancor.protectedPositions;
