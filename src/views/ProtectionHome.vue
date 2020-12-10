@@ -29,14 +29,14 @@
           transactions.
         </p>
       </b-col>
-      <b-col v-if="false" cols="12">
+      <b-col cols="12">
         <ProtectedSummary v-if="positions.length" :positions="positions" />
       </b-col>
       <b-col cols="12">
         <content-block
           :px0="true"
           :shadow-light="true"
-          title="Protected"
+          :title="positions.length ? 'My Protected Positions' : 'Protected'"
           :search.sync="searchProtected"
         >
           <div v-if="loading" class="d-flex justify-content-center my-3">

@@ -56,6 +56,8 @@
                 :name="`cell(${column.key})`"
                 :item="item"
                 :value="item[column.key]"
+                :isCollapsable="item.collapsedData && item.collapsedData.length"
+                :isExpanded="expandedId === item.id"
               >
                 {{ item[column.key] }}
               </slot>
@@ -262,11 +264,23 @@ export default class DataTable extends BaseComponent {
 
 <style lang="scss">
 @import "../../assets/_scss/custom/variables";
-.table-row:hover {
-  background-color: $gray-border;
+
+.table {
+  .table-row:hover {
+    background-color: $gray-border;
+  }
+  .table-row-active {
+    background-color: $gray-border;
+  }
 }
-.table-row-active {
-  background-color: $gray-border;
+
+.dark-table {
+  .table-row:hover {
+    background-color: $modal-backdrop-bg;
+  }
+  .table-row-active {
+    background-color: $modal-backdrop-bg;
+  }
 }
 
 .collapsed-indicator {

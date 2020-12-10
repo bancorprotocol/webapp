@@ -274,6 +274,7 @@ export interface ViewReserve {
 
 export interface ViewGroupedPositions {
   id: string;
+  positionId: string;
   poolId: string;
   symbol: string;
   stake: {
@@ -734,7 +735,7 @@ export interface Service {
 export interface TokenReward {
   amount: string;
   symbol: string;
-  usdValue?: string;
+  usdValue?: string | number;
 }
 export interface ViewProtectedLiquidity {
   id: string;

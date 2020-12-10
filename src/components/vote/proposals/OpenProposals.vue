@@ -34,7 +34,7 @@
         No Proposals yet ...
       </h5>
     </div>
-    <data-table-responsive
+    <layout-proposals
       v-else-if="proposals"
       :items="items"
       :fields="fields"
@@ -140,7 +140,7 @@
           </b-col>
         </b-row>
 
-        <div class="pt-2">
+        <div class="pt-2 px-1">
           <remaining-time
             type="warn"
             :show-seconds="true"
@@ -297,7 +297,7 @@
                   :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
                   class="block-rounded btn-sm"
                 >
-                  <span class="font-size-14 font-w500 text-nowrap">
+                  <span class="btn-breakdown">
                     <font-awesome-icon
                       icon="poll"
                       class="text-muted-light mr-1"
@@ -331,7 +331,7 @@
           </li>
         </ul>
       </template>
-    </data-table-responsive>
+    </layout-proposals>
   </div>
 </template>
 
@@ -339,7 +339,9 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import DataTableResponsive, { ViewTableField } from "@/components/common/DataTableResponsive.vue";
+import LayoutProposals, {
+  ViewTableField
+} from "@/components/vote/proposals/LayoutProposals.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
@@ -358,7 +360,7 @@ import { shrinkToken } from "@/api/eth/helpers";
     ContentBlock,
     ProgressBar,
     RemainingTime,
-    DataTableResponsive,
+    LayoutProposals,
     ButtonProgress,
     MainButton,
     ModalNotEnoughTokens
@@ -389,6 +391,7 @@ export default class OpenProposals extends BaseComponent {
         key: "id",
         minWidth: "16px",
         maxWidth: "16px",
+        colAuto: true,
         colRate: 1,
         sortable: false
       },
@@ -396,7 +399,8 @@ export default class OpenProposals extends BaseComponent {
         id: 2,
         label: "Details",
         key: "name",
-        minWidth: "340px",
+        minWidth: "380px",
+        colAuto: false,
         colRate: 7,
         sortable: false
       },
@@ -404,7 +408,8 @@ export default class OpenProposals extends BaseComponent {
         id: 3,
         label: "Vote",
         key: "votes",
-        minWidth: "190px",
+        minWidth: "200px",
+        colAuto: false,
         colRate: 4,
         sortable: false
       }
@@ -610,7 +615,7 @@ export default class OpenProposals extends BaseComponent {
   background: #de4a5c;
   position: relative;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 0.65rem;
 
   &__progress {
     background: #3ec8c8;
@@ -644,6 +649,11 @@ export default class OpenProposals extends BaseComponent {
   &--against {
     color: #de4a5c;
   }
+}
+
+.btn-breakdown {
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .tiny-text {

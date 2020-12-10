@@ -1,9 +1,9 @@
 <template>
   <b-row v-if="loaded">
-    <b-col class="col-12 col-sm-3 col-lg-2">
+    <b-col class="col-12" sm="3" lg="2">
       <stake />
     </b-col>
-    <b-col class="col-12 col-sm-9 col-lg-10">
+    <b-col class="col-12" sm="9" lg="10">
       <proposals />
     </b-col>
   </b-row>
@@ -57,4 +57,18 @@ export default class VotePage extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+/* tricky fix for media query */
+@media screen and (min-width: 992px) and (max-width: 1130px) {
+  .col-lg-2 {
+    -webkit-box-flex: 0;
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+  .col-lg-10 {
+    -webkit-box-flex: 0;
+    flex: 0 0 75%;
+    max-width: 75%;
+  }
+}
+</style>

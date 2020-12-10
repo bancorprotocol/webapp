@@ -1,5 +1,6 @@
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import BigNumber from "bignumber.js";
+import sort from "fast-sort";
 
 const oneMillion = new BigNumber(1000000);
 
@@ -85,9 +86,11 @@ export const calculatePositionFees = (
   else return result.toFixed(0);
 };
 
-export const groupArray = (arr: ViewProtectedLiquidity[]) => {
-  const res: ViewGroupedPositions[] = arr.reduce(
-    (obj => (acc: any, val: ViewProtectedLiquidity) => {
+export const groupPositionsArray = (
+  arr: ViewProtectedLiquidity[]
+): ViewGroupedPositions[] => {
+  return arr.reduce(
+    (obj => (acc: ViewGroupedPositions[], val: ViewProtectedLiquidity) => {
       const symbol = val.stake.symbol;
       const poolId = val.stake.poolId;
       const id = `${poolId}-${symbol}`;
@@ -97,9 +100,12 @@ export const groupArray = (arr: ViewProtectedLiquidity[]) => {
       let item: ViewGroupedPositions = obj.get(id);
       if (!item) {
         //@ts-ignore
-        item = new Object({ stake: "0" });
+        item = new Object({});
         item.collapsedData = [];
         item.id = id;
+        item.positionId = val.id;
+        item.poolId = poolId;
+        item.symbol = symbol;
         item.apr = val.apr;
         item.insuranceStart = val.insuranceStart;
         item.coverageDecPercent = val.coverageDecPercent;
@@ -129,8 +135,6 @@ export const groupArray = (arr: ViewProtectedLiquidity[]) => {
           .map(x => Number(x.fees ? x.fees.amount : 0))
           .reduce((sum, current) => sum + current);
 
-        item.poolId = poolId;
-        item.symbol = val.stake.symbol;
         item.stake = {
           amount: sumStakeAmount,
           usdValue: sumStakeUsd,
@@ -156,12 +160,16 @@ export const groupArray = (arr: ViewProtectedLiquidity[]) => {
         item.fullCoverage = val.fullCoverage;
         item.stake.unixTime = val.stake.unixTime;
       }
-      if (filtered.length > 1) item.collapsedData.push(val);
+      if (filtered.length > 1) {
+        item.collapsedData.push(val);
+        item.collapsedData = sort(item.collapsedData).desc(
+          (p: ViewProtectedLiquidity) => p.stake.unixTime
+        );
+      }
       return acc;
     })(new Map()),
     []
   );
-  return res;
 };
 
 export const decToPpm = (dec: number | string): string =>
