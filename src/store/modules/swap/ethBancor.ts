@@ -631,6 +631,8 @@ const determineConverterType = (
     return PoolType.Traditional;
   } else if (Number(converterType) == 1) {
     return PoolType.Traditional;
+  } else if (Number(converterType) == 3) {
+    return PoolType.Traditional;
   } else if (Number(converterType) == 2) {
     return PoolType.ChainLink;
   } else if (Number(converterType) == 0) {
