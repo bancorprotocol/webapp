@@ -291,7 +291,6 @@ export const buildLiquidityProtectionContract = (
   store: () => CallReturn<string>;
   govToken: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
-  averageRateMaxDeviation: () => CallReturn<string>;
   protectLiquidity: (
     anchor: string,
     poolTokenWei: string
@@ -333,4 +332,6 @@ export const buildLiquidityProtectionSettingsContract = (
   defaultNetworkTokenMintingLimit: () => CallReturn<string>;
   minNetworkTokenLiquidityForMinting: () => CallReturn<string>;
   networkTokensMinted: () => CallReturn<string>;
+  networkTokenMintingLimits: (poolId: string) => CallReturn<string>;
+  averageRateMaxDeviation: () => CallReturn<string>;
 }> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);
