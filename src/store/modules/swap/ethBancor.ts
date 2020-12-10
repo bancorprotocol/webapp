@@ -636,7 +636,7 @@ const determineConverterType = (
   } else if (Number(converterType) == 0) {
     return PoolType.Liquid;
   }
-  throw new Error("Failed to determine the converter type");
+  throw new Error(`Failed to determine the converter type "${converterType}"`);
 };
 
 const getHistoricFees = async (
@@ -1568,7 +1568,7 @@ interface LiquidityProtectionSettings {
   lockedDelay: number;
   govToken: string;
   networkToken: string;
-  defaultNetworkTokenMintingLimit: number
+  defaultNetworkTokenMintingLimit: string
 }
 
 interface RawLiquidityProtectionSettings {
@@ -1611,7 +1611,7 @@ export class EthBancorModule
     lockedDelay: moment.duration("24", "hours").asSeconds(),
     networkToken: "",
     govToken: "",
-    defaultNetworkTokenMintingLimit: 0
+    defaultNetworkTokenMintingLimit: "0"
   };
 
   @mutation setLiquidityProtectionSettings(
@@ -1641,7 +1641,7 @@ export class EthBancorModule
       lockedDelay: Number(settings.lockDuration),
       govToken: protection.govToken,
       networkToken: settings.networkToken,
-      defaultNetworkTokenMintingLimit: new BigNumber(settings.defaultNetworkTokenMintingLimit).toNumber()
+      defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
     } as LiquidityProtectionSettings;
     this.setLiquidityProtectionSettings(newSettings);
     this.fetchAndSetTokenBalances([newSettings.govToken]);
@@ -3779,10 +3779,14 @@ export class EthBancorModule
   }
 
   @action async getMaxStakes({ poolId }: { poolId: string}) {
-    const [balances, poolTokenBalance, isHighTierPool] = await Promise.all([
+    const contract = await buildLiquidityProtectionSettingsContract(this.contracts.LiquidityProtectionSettings, w3)
+
+    const [balances, poolTokenBalance, isHighTierPool, limitWei, mintedWei] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
       this.fetchSystemBalance(poolId),
-      this.isHighTierPool(poolId)
+      this.isHighTierPool(poolId),
+      contract.methods.networkTokenMintingLimits(poolId).call(),
+      contract.methods.networkTokensMinted(poolId).call()
     ]);
 
     const [bntReserve, tknReserve] = sortAlongSide(
@@ -3795,26 +3799,32 @@ export class EthBancorModule
       reserve => reserve.weiAmount
     );
 
-    const contract = await buildLiquidityProtectionSettingsContract(this.contracts.LiquidityProtectionSettings, w3)
+    const limitOrDefault = new BigNumber(limitWei !== "0" ? limitWei: this.liquidityProtectionSettings.defaultNetworkTokenMintingLimit)
+    const limit = limitOrDefault.dividedBy(10 ** bntReserve.decimals);
+    const canMintWei = limitOrDefault.minus(mintedWei);
+    const tknLimit = new BigNumber(bntReserveBalance)
+      .dividedBy(new BigNumber(tknReserveBalance))
+      .multipliedBy(limitOrDefault)
 
-    const [bntLimit, tknLimit, limit] = await Promise.all([
-      contract.methods.networkTokenMintingLimits(bntReserve.contract).call(),
-      contract.methods.networkTokenMintingLimits(tknReserve.contract).call(),
-      contract.methods.networkTokenMintingLimits(poolId).call()
-    ])
+    console.log(
+      "limits",
+      "bntReserveBalance", bntReserveBalance,
+      "tknReserveBalance", tknReserveBalance,
+      "limitOrDefault", limitOrDefault.toString(),
+    )
 
     console.log(
       "limits", poolId, 
-      "bntLimit", bntLimit, 
-      "tknLimit", tknLimit,
-      "limit", limit,
-      this.liquidityProtectionSettings.defaultNetworkTokenMintingLimit
+      "limit", limit.toNumber(),
+      "mintedWei", mintedWei,
+      "canMintWei", canMintWei.toString(),
+      "tknLimit", tknLimit.toNumber()
     )
 
     // todo use new limit query methods
     const maxStakes = {
-        maxAllowedBntWei: "0",
-        maxAllowedTknWei: "0"
+        maxAllowedBntWei: canMintWei.toString(),
+        maxAllowedTknWei: tknLimit.toString()
     }
 
     return { maxStakes, bntReserve, tknReserve };
