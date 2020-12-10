@@ -1,4 +1,8 @@
-import { StaticRelay } from "@/store/modules/swap/ethBancor";
+import {
+  ABIDynamicRelay,
+  RawABIDynamicRelay,
+  StaticRelay
+} from "@/store/modules/swap/ethBancor";
 import { ConverterAndAnchor } from "@/types/bancor";
 import BigNumber from "bignumber.js";
 import { compareString } from "./helpers";
@@ -165,4 +169,32 @@ export const calculatePriceDeviationTooHigh = (
   );
 
   return priceDeviationTooHigh;
+};
+
+export const reserveContractsInStatic = (relay: StaticRelay) =>
+  relay.reserves.map(reserve => reserve.contract);
+
+export const parseRawDynamic = (
+  rawDynamicRelay: RawABIDynamicRelay
+): ABIDynamicRelay => {
+  const {
+    reserveOneAddress,
+    reserveOne,
+    reserveTwoAddress,
+    reserveTwo
+  } = rawDynamicRelay;
+  const reserves = [
+    [reserveOneAddress, reserveOne],
+    [reserveTwoAddress, reserveTwo]
+  ].map(([reserveAddress, reserveBalance]) => ({
+    reserveAddress,
+    reserveBalance
+  }));
+
+  return {
+    connectorTokenCount: rawDynamicRelay.connectorTokenCount,
+    conversionFee: rawDynamicRelay.conversionFee,
+    converterAddress: rawDynamicRelay.converterAddress,
+    reserves
+  };
 };

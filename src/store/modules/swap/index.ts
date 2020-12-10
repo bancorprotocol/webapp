@@ -21,10 +21,10 @@ import {
 import { vxm, store } from "@/store";
 import {
   compareString,
-  fetchUsdPriceOfBntViaRelay,
-  updateArray
+  updateArray,
+  cryptoComparePrices,
+  fetchUsdPriceOfBntViaRelay
 } from "@/api/helpers";
-import { fetchBinanceUsdPriceOfBnt } from "@/api/helpers";
 import wait from "waait";
 import { defaultModule } from "@/router";
 import { web3 } from "@/api/web3";
@@ -298,25 +298,19 @@ export class BancorModule extends VuexModule.With({
 
   @action async getUsdPrice() {
     try {
-      const reverse = (promise: any) =>
-        new Promise((resolve, reject) =>
-          Promise.resolve(promise).then(reject, resolve)
-        );
-      const any = (arr: any[]) => reverse(Promise.all(arr.map(reverse)));
-      const res = await any([
-        fetchBinanceUsdPriceOfBnt(),
-        new Promise(resolve => {
-          wait(500).then(() =>
-            resolve(fetchUsdPriceOfBntViaRelay(undefined, web3))
-          );
-        })
-      ]);
-      const usdPrice = res as number;
+      console.time("binanceWaitingTime");
+      const usdPrices = await cryptoComparePrices();
+      console.timeEnd("binanceWaitingTime");
+
+      console.time("relayWaitingTime");
+      const bntPriceViaRelay = await fetchUsdPriceOfBntViaRelay(web3);
+      console.timeEnd("relayWaitingTime");
+      console.log(bntPriceViaRelay, "miles", usdPrices.BNT.USD);
       this.setUsdPriceOfBnt({
-        price: usdPrice,
-        lastChecked: new Date().getTime()
+        price: usdPrices.BNT.USD,
+        lastChecked: Date.now()
       });
-      return usdPrice;
+      return usdPrices.BNT.USD;
     } catch (e) {
       throw new Error(
         `Failed to find USD Price of BNT from External API & Relay ${e.message}`

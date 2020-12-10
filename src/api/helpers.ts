@@ -277,6 +277,21 @@ export const compareString = (stringOne: string, stringTwo: string) => {
   return stringOne.toLowerCase() == stringTwo.toLowerCase();
 };
 
+const cryptoComparekey = process.env.VUE_APP_CRYPTO_COMPARE;
+
+export interface UsdPrices {
+  BNT: { USD: number };
+  ETH: { USD: number };
+}
+
+export const cryptoComparePrices = async () => {
+  const res = await axios.get<UsdPrices>(
+    "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BNT,ETH&tsyms=USD",
+    { headers: { authorization: `Apikey ${cryptoComparekey}` } }
+  );
+  return res.data;
+};
+
 export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
   const res = await axios.get<{ mins: number; price: string }>(
     "https://api.binance.com/api/v3/avgPrice?symbol=BNTUSDT"
@@ -285,8 +300,8 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 };
 
 export const fetchUsdPriceOfBntViaRelay = async (
-  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
-  w3: Web3
+  w3: Web3,
+  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C"
 ): Promise<number> => {
   const contract = buildConverterContract(relayContractAddress, w3);
   const res = await contract.methods
