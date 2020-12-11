@@ -199,10 +199,6 @@ export default class ModalVoteDetails extends BaseComponent {
     return `${this.etherscanUrl}address/${account}`;
   }
 
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
-
   @Emit("hide")
   onHide() {
     console.log("fa");
