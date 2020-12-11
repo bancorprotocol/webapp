@@ -167,8 +167,7 @@ import {
   buildPoolName,
   compareString,
   defaultTableSort,
-  formatUnixTime,
-  prettifyNumber
+  formatUnixTime
 } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
@@ -226,9 +225,7 @@ export default class ProtectedTableOld extends BaseComponent {
     if (percentage < 0.0001) return "< 0.01%";
     else return numeral(percentage).format("0.00%");
   }
-  prettifyNumber(number: string | number, usd = false): string {
-    return prettifyNumber(number, usd);
-  }
+
   get fields(): ViewTableField[] {
     return [
       {

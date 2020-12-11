@@ -41,7 +41,6 @@
 <script lang="ts">
 import { Component, Prop, Emit } from "vue-property-decorator";
 import moment from "moment";
-import { prettifyNumber } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
@@ -81,10 +80,6 @@ export default class ClaimBnt extends BaseComponent {
 
   get textMutedClass() {
     return this.darkMode ? "text-muted-dark" : "text-muted-light";
-  }
-
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
   }
 
   created() {

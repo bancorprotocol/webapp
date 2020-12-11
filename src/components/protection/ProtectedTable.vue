@@ -373,7 +373,6 @@ import {
   defaultTableSort,
   findOrThrow,
   formatUnixTime,
-  prettifyNumber,
   stringifyPercentage
 } from "@/api/helpers";
 import { groupPositionsArray } from "@/api/pureHelpers";
@@ -400,7 +399,6 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
-  prettifyNumber = prettifyNumber;
 
   get groupedPositions() {
     if (this.positions.length > 0) return groupPositionsArray(this.positions);

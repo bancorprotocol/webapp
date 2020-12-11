@@ -346,7 +346,7 @@ import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import MainButton from "@/components/common/Button.vue";
-import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
@@ -418,10 +418,6 @@ export default class OpenProposals extends BaseComponent {
 
   shrinkToken(amount: string): string {
     return shrinkToken(amount, this.decimals);
-  }
-
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
   }
 
   getVotePercent(proposal: Proposal) {

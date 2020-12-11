@@ -38,26 +38,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import {
-  defaultTableSort,
-  prettifyNumber,
-  shortenEthAddress
-} from "@/api/helpers";
+import { Component, Prop } from "vue-property-decorator";
+import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
 import moment from "moment";
 import DataTable, {
   Item,
   ViewTableField
 } from "@/components/common/DataTable.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { DataTable }
 })
-export default class TableTransactions extends Vue {
+export default class TableTransactions extends BaseComponent {
   @Prop() filter!: string;
   @Prop({ default: [] }) items!: Item[];
 
-  prettifyNumber = prettifyNumber;
   shortenEthAddress = shortenEthAddress;
   moment = moment;
 

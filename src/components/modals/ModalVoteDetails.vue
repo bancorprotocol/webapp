@@ -98,8 +98,7 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue, Prop, Emit, VModel } from "vue-property-decorator";
-import { prettifyNumber } from "@/api/helpers";
+import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
 import {
   Proposal,
@@ -109,6 +108,7 @@ import {
 import BigNumber from "bignumber.js";
 import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
 import { shrinkToken } from "@/api/eth/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -116,7 +116,7 @@ import { shrinkToken } from "@/api/eth/helpers";
     DataTable
   }
 })
-export default class ModalVoteDetails extends Vue {
+export default class ModalVoteDetails extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
   @Prop() proposal!: Proposal;
 
@@ -192,7 +192,7 @@ export default class ModalVoteDetails extends Vue {
   }
 
   formatNumber(num: string) {
-    return prettifyNumber(shrinkToken(num, this.decimals));
+    return this.prettifyNumber(shrinkToken(num, this.decimals));
   }
 
   getEtherscanUrl(account: string) {
