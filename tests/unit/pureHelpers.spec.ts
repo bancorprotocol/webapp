@@ -4,7 +4,8 @@ import {
   expandToken,
   miningBntReward,
   miningTknReward,
-  groupPositionsArray
+  groupPositionsArray,
+  calculateLimits
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
@@ -494,5 +495,35 @@ describe("calculate grouped positions for protected table", () => {
       }
     ];
     expect(grouped).toEqual(result);
+  });
+});
+
+describe("calculateLimits", () => {
+  test("calculate proper limits", () => {
+    const {tknLimitWei, bntLimitWei} = calculateLimits(
+      "50000000000000000000000",
+      "10000000000000000000000",
+      "26554714837518616832230",
+      "16725525059808512049638",
+      "27688994896013371337745",
+    )
+
+    BigNumber.set({EXPONENTIAL_AT: 25});
+    expect(tknLimitWei.toString()).toEqual("14091303511029347830352.446699142448")
+    expect(bntLimitWei.toString()).toEqual("23445285162481383167770")
+  });
+
+  test("calculate proper limits when falling back to default", () => {
+    const {tknLimitWei, bntLimitWei} = calculateLimits(
+      "0",
+      "50000000000000000000000",
+      "26554714837518616832230",
+      "16725525059808512049638",
+      "27688994896013371337745",
+    )
+
+    BigNumber.set({EXPONENTIAL_AT: 25});
+    expect(tknLimitWei.toString()).toEqual("14091303511093450905210.3732723421191114934815")
+    expect(bntLimitWei.toString()).toEqual("23445285162481383167770")
   });
 });

@@ -158,7 +158,8 @@ import {
   decToPpm,
   miningBntReward,
   miningTknReward,
-  expandToken
+  expandToken,
+  calculateLimits
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
 import {
@@ -975,8 +976,14 @@ const liquidityProtectionShape = (contractAddress: string, w3: Web3) => {
   };
 };
 
-const liquidityProtectionSettingsShape = (contractAddress: string, w3: Web3) => {
-  const contract = buildLiquidityProtectionSettingsContract(contractAddress, w3);
+const liquidityProtectionSettingsShape = (
+  contractAddress: string,
+  w3: Web3
+) => {
+  const contract = buildLiquidityProtectionSettingsContract(
+    contractAddress,
+    w3
+  );
   return {
     minProtectionDelay: contract.methods.minProtectionDelay(),
     maxProtectionDelay: contract.methods.maxProtectionDelay(),
@@ -1570,7 +1577,7 @@ interface LiquidityProtectionSettings {
   lockedDelay: number;
   govToken: string;
   networkToken: string;
-  defaultNetworkTokenMintingLimit: string
+  defaultNetworkTokenMintingLimit: string;
 }
 
 interface RawLiquidityProtectionSettings {
@@ -1623,18 +1630,22 @@ export class EthBancorModule
   }
 
   @action async fetchLiquidityProtectionSettings({
-     settingsContractAddress,
-     protectionContractAddress
-   }: {
-    settingsContractAddress: string,
-    protectionContractAddress: string
+    settingsContractAddress,
+    protectionContractAddress
+  }: {
+    settingsContractAddress: string;
+    protectionContractAddress: string;
   }) {
     const [[settings]] = ((await this.multi({
-      groupsOfShapes: [[liquidityProtectionSettingsShape(settingsContractAddress, w3)]]
+      groupsOfShapes: [
+        [liquidityProtectionSettingsShape(settingsContractAddress, w3)]
+      ]
     })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const [[protection]] = ((await this.multi({
-      groupsOfShapes: [[liquidityProtectionShape(protectionContractAddress, w3)]]
+      groupsOfShapes: [
+        [liquidityProtectionShape(protectionContractAddress, w3)]
+      ]
     })) as unknown) as [RawLiquidityProtectionSettings][];
 
     const newSettings = {
@@ -3780,10 +3791,19 @@ export class EthBancorModule
     );
   }
 
-  @action async getMaxStakes({ poolId }: { poolId: string}) {
-    const contract = await buildLiquidityProtectionSettingsContract(this.contracts.LiquidityProtectionSettings, w3)
+  @action async getMaxStakes({ poolId }: { poolId: string }) {
+    const contract = await buildLiquidityProtectionSettingsContract(
+      this.contracts.LiquidityProtectionSettings,
+      w3
+    );
 
-    const [balances, poolTokenBalance, isHighTierPool, limitWei, mintedWei] = await Promise.all([
+    const [
+      balances,
+      poolTokenBalance,
+      isHighTierPool,
+      poolLimitWei,
+      mintedWei
+    ] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
       this.fetchSystemBalance(poolId),
       this.isHighTierPool(poolId),
@@ -3801,53 +3821,36 @@ export class EthBancorModule
       reserve => reserve.weiAmount
     );
 
-    const limitOrDefault = new BigNumber(limitWei !== "0" ? limitWei: this.liquidityProtectionSettings.defaultNetworkTokenMintingLimit)
-    const limit = limitOrDefault.dividedBy(10 ** bntReserve.decimals);
-    const canMintWei = limitOrDefault.minus(mintedWei);
-    const tknLimit = new BigNumber(bntReserveBalance)
-      .dividedBy(new BigNumber(tknReserveBalance))
-      .multipliedBy(limitOrDefault)
+    const defaultLimitWei = this.liquidityProtectionSettings
+      .defaultNetworkTokenMintingLimit;
+    const { bntLimitWei, tknLimitWei } = calculateLimits(
+      poolLimitWei,
+      defaultLimitWei,
+      mintedWei,
+      tknReserveBalance,
+      bntReserveBalance
+    );
 
-    console.log(
-      "limits",
-      "bntReserveBalance", bntReserveBalance,
-      "tknReserveBalance", tknReserveBalance,
-      "limitOrDefault", limitOrDefault.toString(),
-    )
-
-    console.log(
-      "limits", poolId, 
-      "limit", limit.toNumber(),
-      "mintedWei", mintedWei,
-      "canMintWei", canMintWei.toString(),
-      "tknLimit", tknLimit.toNumber()
-    )
-
-    // todo use new limit query methods
     const maxStakes = {
-        maxAllowedBntWei: canMintWei.toString(),
-        maxAllowedTknWei: tknLimit.toString()
-    }
+      maxAllowedBntWei: bntLimitWei.toString(),
+      maxAllowedTknWei: tknLimitWei.toString()
+    };
 
     return { maxStakes, bntReserve, tknReserve };
   }
 
   @action async getMaxStakesView({ poolId }: { poolId: string }) {
-    const { maxStakes, bntReserve, tknReserve } = await this.getMaxStakes({poolId});
+    const { maxStakes, bntReserve, tknReserve } = await this.getMaxStakes({
+      poolId
+    });
 
     return [
       {
-        amount: shrinkToken(
-          maxStakes.maxAllowedBntWei,
-          bntReserve.decimals
-        ),
+        amount: shrinkToken(maxStakes.maxAllowedBntWei, bntReserve.decimals),
         token: bntReserve.symbol
       },
       {
-        amount: shrinkToken(
-          maxStakes.maxAllowedTknWei,
-          tknReserve.decimals
-        ),
+        amount: shrinkToken(maxStakes.maxAllowedTknWei, tknReserve.decimals),
         token: tknReserve.symbol
       }
     ];
