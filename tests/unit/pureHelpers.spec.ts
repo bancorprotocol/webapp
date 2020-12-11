@@ -509,7 +509,7 @@ describe("calculateLimits", () => {
     )
 
     BigNumber.set({EXPONENTIAL_AT: 25});
-    expect(tknLimitWei.toString()).toEqual("14091303511029347830352.446699142448")
+    expect(tknLimitWei.toString()).toEqual("14091303511093450905210.3732723421191114934815")
     expect(bntLimitWei.toString()).toEqual("23445285162481383167770")
   });
 
