@@ -41,18 +41,16 @@
 import { Component, Prop } from "vue-property-decorator";
 import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
 import moment from "moment";
-import DataTable, {
-  Item,
-  ViewTableField
-} from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { TableItem, ViewTableField } from "@/types/bancor";
+import DataTable from "@/components/common/DataTable.vue";
 
 @Component({
   components: { DataTable }
 })
 export default class TableTransactions extends BaseComponent {
   @Prop() filter!: string;
-  @Prop({ default: [] }) items!: Item[];
+  @Prop({ default: [] }) items!: TableItem[];
 
   shortenEthAddress = shortenEthAddress;
   moment = moment;

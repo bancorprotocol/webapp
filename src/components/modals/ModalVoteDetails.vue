@@ -106,9 +106,10 @@ import {
   Votes
 } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import DataTable from "@/components/common/DataTable.vue";
 import { shrinkToken } from "@/api/eth/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ViewTableField } from "@/types/bancor";
 
 @Component({
   components: {

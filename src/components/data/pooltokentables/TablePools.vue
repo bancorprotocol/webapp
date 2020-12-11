@@ -73,11 +73,10 @@
 import { Component, Prop } from "vue-property-decorator";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { LiqMiningApr, ViewRelay } from "@/types/bancor";
+import { LiqMiningApr, ViewRelay, ViewTableField } from "@/types/bancor";
 import { defaultTableSort, formatPercent } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
-import { ViewTableField } from "@/components/common/DataTable.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 

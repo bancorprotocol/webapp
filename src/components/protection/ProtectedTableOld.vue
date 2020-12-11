@@ -171,11 +171,11 @@ import {
 } from "@/api/helpers";
 import numeral from "numeral";
 import moment from "moment";
-import { ViewProtectedLiquidity } from "@/types/bancor";
+import { ViewProtectedLiquidity, ViewTableField } from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
