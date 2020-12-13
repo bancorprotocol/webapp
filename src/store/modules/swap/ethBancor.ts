@@ -1636,6 +1636,13 @@ export class EthBancorModule
     const ethToken = this.tokens.find(token =>
       compareString("ETH", token.symbol)
     );
+    const totalVolume24h = this.relays
+      .filter(
+        x => x && !x.v2 && x.volume !== undefined && !isNaN(Number(x.volume))
+      )
+      .map(x => new BigNumber(x.volume || 0))
+      .reduce((sum, current) => sum.plus(current));
+
     return {
       totalLiquidityDepth: this.relays
         .map(x => Number(x.liqDepth || 0))
@@ -1648,9 +1655,7 @@ export class EthBancorModule
         price: (ethToken && ethToken.price) || 0
       },
       twentyFourHourTradeCount: this.liquidityHistory.data.length,
-      totalVolume24h: this.relays
-        .map(x => Number(x.volume || 0))
-        .reduce((sum, current) => sum + current),
+      totalVolume24h: Number(totalVolume24h),
       bntUsdPrice: this.bntUsdPrice
     };
   }
