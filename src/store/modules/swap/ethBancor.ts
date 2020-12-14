@@ -2823,23 +2823,6 @@ export class EthBancorModule
     throw new Error("Failed to find new address in decent time");
   }
 
-  @action async fetchNewSmartContractAddressFromHash(
-    hash: string
-  ): Promise<string> {
-    const interval = 1000;
-    const attempts = 10;
-
-    for (let i = 0; i < attempts; i++) {
-      const info = await web3.eth.getTransactionReceipt(hash);
-      console.log(info, "was info");
-      if (info) {
-        return info.contractAddress!;
-      }
-      await wait(interval);
-    }
-    throw new Error("Failed to find new address in decent time");
-  }
-
   @mutation resetData() {
     this.relaysList = [];
     this.tokenBalances = [];
