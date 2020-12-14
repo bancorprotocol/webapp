@@ -199,16 +199,16 @@ export const calculateLimits = (
   const limitOrDefault = new BigNumber(
     poolLimitWei !== "0" ? poolLimitWei : defaultLimitWei
   );
-  const bntLimitWei = limitOrDefault.minus(mintedWei);
+  const tknDelta = limitOrDefault.minus(mintedWei);
   const bntRate = new BigNumber(tknReserveBalance).dividedBy(
     new BigNumber(bntReserveBalance)
   );
 
-  let tknLimitWei = bntRate.multipliedBy(bntLimitWei);
+  let tknLimitWei = bntRate.multipliedBy(tknDelta);
 
   // add some buffer to avoid tx fails
   tknLimitWei = tknLimitWei.multipliedBy(
-    new BigNumber("99.5").dividedBy("100")
+    new BigNumber("99.9").dividedBy("100")
   );
 
   console.log(
@@ -219,11 +219,11 @@ export const calculateLimits = (
     mintedWei.toString(),
     "bntRate",
     bntRate.toString(),
-    "bntLimitWei",
-    bntLimitWei.toString(),
+    "tknDelta",
+    tknDelta.toString(),
     "tknLimitWei",
     tknLimitWei.toString()
   );
 
-  return { bntLimitWei, tknLimitWei };
+  return { bntLimitWei: mintedWei, tknLimitWei };
 };

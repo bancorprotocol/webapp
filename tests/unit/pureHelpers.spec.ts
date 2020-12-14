@@ -509,8 +509,8 @@ describe("calculateLimits", () => {
     )
 
     BigNumber.set({EXPONENTIAL_AT: 25});
-    expect(tknLimitWei.toString()).toEqual("14091303511093450905210.3732723421191114934815")
-    expect(bntLimitWei.toString()).toEqual("23445285162481383167770")
+    expect(tknLimitWei.toString()).toEqual("14147951967419454727944.8873357485195903336563")
+    expect(bntLimitWei.toString()).toEqual("26554714837518616832230")
   });
 
   test("calculate proper limits when falling back to default", () => {
@@ -523,7 +523,7 @@ describe("calculateLimits", () => {
     )
 
     BigNumber.set({EXPONENTIAL_AT: 25});
-    expect(tknLimitWei.toString()).toEqual("14091303511093450905210.3732723421191114934815")
-    expect(bntLimitWei.toString()).toEqual("23445285162481383167770")
+    expect(tknLimitWei.toString()).toEqual("14147951967419454727944.8873357485195903336563")
+    expect(bntLimitWei.toString()).toEqual("26554714837518616832230")
   });
 });
