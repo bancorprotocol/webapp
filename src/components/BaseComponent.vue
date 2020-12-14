@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { State, Getter } from "vuex-class";
-import { prettifyNumber } from "@/api/helpers";
+import { prettifyNumber } from "@/api/pureHelpers";
 
 @Component
 export default class BaseComponent extends Vue {
