@@ -399,7 +399,7 @@ export default class OpenProposals extends BaseComponent {
         id: 2,
         label: "Details",
         key: "name",
-        minWidth: "380px",
+        // minWidth: "380px",
         colAuto: false,
         colRate: 7,
         sortable: false

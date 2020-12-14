@@ -184,8 +184,9 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   &--unlock &__content {
     position: relative;
     color: $text-muted-light;
-    display: flex;
+    display: inline-block;
     align-items: center;
+    margin: 2px;
   }
   &--unlock &__progress-text {
     padding-right: 8px;
