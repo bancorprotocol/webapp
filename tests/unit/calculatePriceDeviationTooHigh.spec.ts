@@ -1,4 +1,4 @@
-import {calculatePriceDeviationTooHigh, decToPpm} from "@/api/pureHelpers";
+import { calculatePriceDeviationTooHigh, decToPpm } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
 
 describe("calculatePriceDeviationTooHigh", () => {
@@ -48,7 +48,9 @@ describe("calculatePriceDeviationTooHigh", () => {
     expect(
       calculatePriceDeviationTooHigh(
         // avg rate
-        new BigNumber("667846830199023568299961991561").dividedBy("332153169800976431700038008439"),
+        new BigNumber("667846830199023568299961991561").dividedBy(
+          "332153169800976431700038008439"
+        ),
         // primary
         new BigNumber("1372226728883507693672"),
         // secondary
@@ -62,7 +64,9 @@ describe("calculatePriceDeviationTooHigh", () => {
     expect(
       calculatePriceDeviationTooHigh(
         // avg rate
-        new BigNumber("1852751787227484151863").dividedBy("2102158801567418598785"),
+        new BigNumber("1852751787227484151863").dividedBy(
+          "2102158801567418598785"
+        ),
         // primary
         new BigNumber("2102158801567418598785"),
         // secondary

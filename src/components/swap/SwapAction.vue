@@ -58,6 +58,7 @@
       />
       <label-content-split
         label="Price Impact"
+        tooltip="The difference between market price and estimated price due to trade size"
         :is-alert="overSlippageLimit"
         :value="
           slippage !== null && slippage !== undefined
