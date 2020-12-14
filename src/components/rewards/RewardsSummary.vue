@@ -35,7 +35,7 @@
         :class="getItemStyleClass(index)"
       >
         <div class="font-size-14 font-w600">
-          {{ prettifyNumber(item.bnt) }}
+          {{ prettifyNumber(item.bnt) }} BNT
         </div>
         <div class="font-size-12 font-w500 text-primary">
           (~{{ prettifyNumber(item.usd, true) }})
@@ -93,7 +93,7 @@ export default class RewardsSummary extends BaseComponent {
   stringifyPercentage = stringifyPercentage;
   prettifyNumber = prettifyNumber;
 
-  title = "BNT Rewards";
+  title = "Rewards";
 
   get summarizedRewards(): ViewRewardsSummaryItem[] {
     return [
