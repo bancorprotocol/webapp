@@ -1408,7 +1408,6 @@ interface RegisteredContracts {
   BancorConverterRegistry: string;
   LiquidityProtection: string;
   LiquidityProtectionStore: string;
-  LiquidityProtectionSettings: string;
 }
 
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
@@ -1572,6 +1571,7 @@ const VuexModule = createModule({
 });
 
 interface LiquidityProtectionSettings {
+  contract: string;
   minDelay: number;
   maxDelay: number;
   lockedDelay: number;
@@ -1606,8 +1606,7 @@ export class EthBancorModule
     BancorNetwork: "",
     BancorConverterRegistry: "",
     LiquidityProtection: "",
-    LiquidityProtectionStore: "",
-    LiquidityProtectionSettings: ""
+    LiquidityProtectionStore: ""
   };
   initiated: boolean = false;
   failedPools: string[] = [];
@@ -1615,6 +1614,7 @@ export class EthBancorModule
   slippageTolerance = 0;
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
+    contract: "",
     minDelay: moment.duration("30", "days").asSeconds(),
     maxDelay: moment.duration("100", "days").asSeconds(),
     lockedDelay: moment.duration("24", "hours").asSeconds(),
@@ -1647,6 +1647,7 @@ export class EthBancorModule
     ];
 
     const newSettings = {
+      contract: settingsContractAddress,
       minDelay: Number(settings.minProtectionDelay),
       maxDelay: Number(settings.maxProtectionDelay),
       lockedDelay: Number(settings.lockDuration),
@@ -1654,8 +1655,7 @@ export class EthBancorModule
       networkToken: settings.networkToken,
       defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
     } as LiquidityProtectionSettings;
-    this.setLiquidityProtectionSettings(newSettings);
-    this.fetchAndSetTokenBalances([newSettings.govToken]);
+
     return newSettings;
   }
 
@@ -2656,7 +2656,7 @@ export class EthBancorModule
 
     const converter = buildV28ConverterContract(relay.contract, w3);
     const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
-      this.contracts.LiquidityProtectionSettings,
+      this.liquidityProtectionSettings.contract,
       w3
     );
 
@@ -3779,15 +3779,11 @@ export class EthBancorModule
 
   @action async getMaxStakes({ poolId }: { poolId: string }) {
     const contract = await buildLiquidityProtectionSettingsContract(
-      this.contracts.LiquidityProtectionSettings,
+      this.liquidityProtectionSettings.contract,
       w3
     );
 
-    const [
-      balances,
-      poolLimitWei,
-      mintedWei
-    ] = await Promise.all([
+    const [balances, poolLimitWei, mintedWei] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
       contract.methods.networkTokenMintingLimits(poolId).call(),
       contract.methods.networkTokensMinted(poolId).call()
@@ -5025,8 +5021,7 @@ export class EthBancorModule
       BancorNetwork: asciiToHex("BancorNetwork"),
       BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
       LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
-      LiquidityProtection: asciiToHex("LiquidityProtection"),
-      LiquidityProtectionSettings: asciiToHex("LiquidityProtectionSettings")
+      LiquidityProtection: asciiToHex("LiquidityProtection")
     };
 
     const registryContract = new w3.eth.Contract(
@@ -6183,6 +6178,31 @@ export class EthBancorModule
     this.setBntSupply(weiSupply);
   }
 
+  @action async fetchLiquidityProtectionSettingsContract(
+    liquidityProtectionContract: string
+  ): Promise<string> {
+    const contract = buildLiquidityProtectionContract(
+      liquidityProtectionContract
+    );
+    return contract.methods.settings().call();
+  }
+
+  @action async fetchAndSetLiquidityProtectionSettings(
+    protectionContractAddress: string
+  ) {
+    const settingsContractAddress = await this.fetchLiquidityProtectionSettingsContract(
+      protectionContractAddress
+    );
+
+    const newSettings = await this.fetchLiquidityProtectionSettings({
+      settingsContractAddress,
+      protectionContractAddress
+    });
+
+    this.setLiquidityProtectionSettings(newSettings);
+    this.fetchAndSetTokenBalances([newSettings.govToken]);
+  }
+
   @action async init(params?: ModuleParam) {
     console.log(params, "was init param on eth");
     console.time("ethResolved");
@@ -6245,10 +6265,6 @@ export class EthBancorModule
 
       void this.fetchAndSetHighTierPools(contractAddresses.LiquidityProtection);
 
-      this.fetchLiquidityProtectionSettings({
-        settingsContractAddress: contractAddresses.LiquidityProtectionSettings,
-        protectionContractAddress: contractAddresses.LiquidityProtection
-      });
       this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.currentUser) {
         this.fetchProtectionPositions({

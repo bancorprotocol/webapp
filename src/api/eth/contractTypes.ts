@@ -318,6 +318,7 @@ export const buildLiquidityProtectionContract = (
     reserveRateN: string,
     reserveRateD: string
   ) => CallReturn<string>;
+  settings: () => CallReturn<string>;
 }> => buildContract(ABILiquidityProtection, contractAddress, web3);
 
 export const buildLiquidityProtectionSettingsContract = (
