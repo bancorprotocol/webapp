@@ -61,6 +61,11 @@
             {{ item[column.key] }}
           </slot>
         </b-col>
+
+        <div
+          class="divider"
+          :class="darkMode ? 'divider-dark' : 'divider-light'"
+        />
       </b-row>
     </b-container>
 
@@ -213,6 +218,19 @@ export default class LayoutProposals extends BaseComponent {
     color: #0a2540;
     vertical-align: middle !important;
     margin-right: -15px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+
+    &-light {
+      background: #e6ebf2;
+    }
+
+    &-dark {
+      background: #1f3a55;
+    }
   }
 }
 </style>

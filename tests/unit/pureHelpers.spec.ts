@@ -4,9 +4,9 @@ import {
   expandToken,
   miningBntReward,
   miningTknReward,
-  calculateMaxStakes,
+  prettifyNumber,
   groupPositionsArray,
-  prettifyNumber
+  calculateLimits
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
@@ -123,28 +123,6 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
 
     const res = expandToken(amount, precision);
     expect(res).toBe("9999999999999999999");
-  });
-});
-
-describe("calculate max stakes are as expected", () => {
-  test("results are as expected from #621", () => {
-    const yfiReserve = expandToken("22.823617377346322429", 18);
-    const bntReserve = expandToken("549542.316191026070027217", 18);
-    const poolTokenSupply = expandToken("2988.7630212873065", 18);
-    const systemBalance = expandToken("1430.881844360983306284", 18);
-
-    const { maxAllowedTknWei } = calculateMaxStakes(
-      yfiReserve,
-      bntReserve,
-      poolTokenSupply,
-      systemBalance,
-      expandToken(5000000, 18),
-      "500000",
-      false
-    );
-
-    const numberRes = Number(shrinkToken(maxAllowedTknWei, 18));
-    expect(numberRes).toBeCloseTo(0.96982720119);
   });
 });
 
@@ -630,5 +608,39 @@ describe("Prettify Numbers", () => {
     ];
 
     expect(resultNumbers).toEqual(expectedNumbers);
+  });
+});
+
+describe("calculateLimits", () => {
+  test("calculate proper limits", () => {
+    const { tknLimitWei, bntLimitWei } = calculateLimits(
+      "50000000000000000000000",
+      "10000000000000000000000",
+      "26554714837518616832230",
+      "16725525059808512049638",
+      "27688994896013371337745"
+    );
+
+    BigNumber.set({ EXPONENTIAL_AT: 25 });
+    expect(tknLimitWei.toString()).toEqual(
+      "14147951967419454727944.8873357485195903336563"
+    );
+    expect(bntLimitWei.toString()).toEqual("26554714837518616832230");
+  });
+
+  test("calculate proper limits when falling back to default", () => {
+    const { tknLimitWei, bntLimitWei } = calculateLimits(
+      "0",
+      "50000000000000000000000",
+      "26554714837518616832230",
+      "16725525059808512049638",
+      "27688994896013371337745"
+    );
+
+    BigNumber.set({ EXPONENTIAL_AT: 25 });
+    expect(tknLimitWei.toString()).toEqual(
+      "14147951967419454727944.8873357485195903336563"
+    );
+    expect(bntLimitWei.toString()).toEqual("26554714837518616832230");
   });
 });

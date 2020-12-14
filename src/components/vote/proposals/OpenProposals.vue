@@ -150,7 +150,7 @@
         </div>
       </template>
       <template #cell(votes)="{ item }">
-        <div class="pl-3 container-border h-100">
+        <div class="pl-lg-3 container-border h-100">
           <div
             v-if="!item.votes.voted && item.end > Date.now()"
             class="d-flex align-items-center mb-2"
@@ -523,7 +523,9 @@ export default class OpenProposals extends BaseComponent {
 }
 
 .container-border {
-  border-left: 1px solid $gray-border;
+  @media (min-width: 992px) {
+    border-left: 1px solid $gray-border;
+  }
 }
 
 @mixin vote-bg() {

@@ -38,16 +38,7 @@
             />
           </div>
           <div v-else>
-            <ProtectedTableOld
-              v-if="!groupedPositions"
-              :positions="positions"
-              :search="searchProtected"
-            />
-            <ProtectedTable
-              v-else
-              :positions="positions"
-              :search="searchProtected"
-            />
+            <ProtectedTable :positions="positions" :search="searchProtected" />
           </div>
         </content-block>
       </b-col>
@@ -88,11 +79,9 @@ import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
-import ProtectedTableOld from "@/components/protection/ProtectedTableOld.vue";
 
 @Component({
   components: {
-    ProtectedTableOld,
     ProtectedSummary,
     Claim,
     ContentBlock,
@@ -102,8 +91,6 @@ import ProtectedTableOld from "@/components/protection/ProtectedTableOld.vue";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
-
-  groupedPositions = true;
 
   get positions(): ViewProtectedLiquidity[] {
     return vxm.ethBancor.protectedPositions;
