@@ -29,9 +29,15 @@
           transactions.
         </p>
       </b-col>
+
       <b-col cols="12">
         <ProtectedSummary v-if="positions.length" :positions="positions" />
       </b-col>
+
+      <b-col cols="12">
+        <RewardsSummary :positions="positions" />
+      </b-col>
+
       <b-col cols="12">
         <content-block
           :px0="true"
@@ -98,9 +104,11 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 import ProtectedTableOld from "@/components/protection/ProtectedTableOld.vue";
+import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 
 @Component({
   components: {
+    RewardsSummary,
     ProtectedTableOld,
     ProtectedSummary,
     Claim,
