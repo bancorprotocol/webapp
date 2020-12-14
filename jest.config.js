@@ -14,7 +14,11 @@ module.exports = {
   // },
   // transformIgnorePatterns: ['node_modules']
 
+  moduleNameMapper: {
+    "/api/helper(.*)": "<rootDir>/tests/unit/__mocks__/helpersMock.ts"
+  },
+
   transformIgnorePatterns: [
-    "/node_modules/(?!(eos-transit-lynx-provider|eos-transit-ledger-provider))"
+    "/node_modules/(?!(eos-transit-lynx-provider|eos-transit-ledger-provider))"    
   ]
 };
