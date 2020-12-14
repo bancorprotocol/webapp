@@ -18,7 +18,6 @@ import { Component, Prop, Emit } from "vue-property-decorator";
 import { PoolTokenPosition, ViewRelay, ViewReserve } from "@/types/bancor";
 import { vxm } from "@/store";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { prettifyNumber } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
@@ -35,7 +34,7 @@ export default class SelectPoolRow extends BaseComponent {
     const balance = this.showTokenBalance
       ? this.tokenBalance
       : this.smartTokenBalance;
-    return balance ? prettifyNumber(balance) : "";
+    return balance ? this.prettifyNumber(balance) : "";
   }
 
   get smartTokenBalance() {

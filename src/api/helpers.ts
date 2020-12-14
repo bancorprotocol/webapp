@@ -17,7 +17,8 @@ import {
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken
+  ViewToken,
+  TableItem
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -30,7 +31,6 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import moment from "moment";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
-import { Item } from "@/components/common/DataTable.vue";
 
 export enum PositionType {
   single,
@@ -171,24 +171,6 @@ export const formatNumber = (num: number | string, size: number = 4) => {
     return `< ${replaceLastChar(reduced, "1")}`;
   }
   return reduced;
-};
-
-export const prettifyNumber = (
-  num: number | string | BigNumber,
-  usd = false
-): string => {
-  const bigNum = new BigNumber(num);
-  if (usd) {
-    if (bigNum.lte(0)) return "$0.00";
-    else if (bigNum.lt(0.01)) return "< $0.01";
-    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
-    else return numeral(bigNum).format("$0,0.00");
-  } else {
-    if (bigNum.lte(0)) return "0";
-    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
-    else if (bigNum.lt(0.000001)) return "< 0.000001";
-    else return numeral(bigNum).format("0.[000000]");
-  }
 };
 
 export const stringifyPercentage = (percentage: number): string => {
@@ -1275,7 +1257,7 @@ export const formatUnixTime = (
 };
 
 export const defaultTableSort = (
-  row: Item,
+  row: TableItem,
   sortBy: string,
   sortZero: boolean = false
 ) => {

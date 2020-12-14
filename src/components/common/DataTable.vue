@@ -103,22 +103,8 @@ import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { TableItem, ViewTableField } from "@/types/bancor";
 
-export interface ViewTableField {
-  id: number;
-  label: string;
-  key: string;
-  sortable?: boolean;
-  tooltip?: string;
-  minWidth?: string;
-  maxWidth?: string;
-  thClass?: string;
-}
-export interface Item {
-  id: string;
-  [key: string]: any;
-  collapsedData?: Item[];
-}
 @Component({
   components: {
     TablePagination
@@ -126,7 +112,7 @@ export interface Item {
 })
 export default class DataTable extends BaseComponent {
   @Prop() fields!: ViewTableField[];
-  @Prop() items!: Item[];
+  @Prop() items!: TableItem[];
   @Prop() filter?: string;
   @Prop() filterBy?: string;
   @Prop() defaultSort?: string;
@@ -176,9 +162,11 @@ export default class DataTable extends BaseComponent {
 
     if (!sortBy) sorted = filtered;
     else if (sortFunction !== undefined) {
-      sorted = sort(filtered)[orderBy]((t: Item) => sortFunction(t, sortBy));
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
+        sortFunction(t, sortBy)
+      );
     } else {
-      sorted = sort(filtered)[orderBy]((t: Item) =>
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
         defaultTableSort(t, sortBy)
       );
     }
@@ -186,7 +174,7 @@ export default class DataTable extends BaseComponent {
     return sorted;
   }
 
-  get paginatedItems(): Item[] {
+  get paginatedItems(): TableItem[] {
     const perPage = this.perPage;
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
@@ -215,7 +203,7 @@ export default class DataTable extends BaseComponent {
     return styles;
   }
 
-  trClasses(item: Item) {
+  trClasses(item: TableItem) {
     const array: string[] = [];
     if (this.collapsable && item.collapsedData && item.collapsedData.length)
       array.push("cursor");
@@ -225,7 +213,7 @@ export default class DataTable extends BaseComponent {
 
   expandedId: string | number | null = null;
 
-  toggleCollapse(item: Item) {
+  toggleCollapse(item: TableItem) {
     if (
       !this.collapsable ||
       !item.collapsedData ||

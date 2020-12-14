@@ -137,7 +137,6 @@
 <script lang="ts">
 import { vxm } from "@/store/";
 import { Component, Watch, VModel } from "vue-property-decorator";
-import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -153,8 +152,6 @@ export default class ModalUnstake extends BaseComponent {
   currentStake: BigNumber = new BigNumber(0);
   unstakeInput: string = "";
   unstakeValue: BigNumber = new BigNumber(0);
-
-  prettifyNumber = prettifyNumber;
 
   step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";
