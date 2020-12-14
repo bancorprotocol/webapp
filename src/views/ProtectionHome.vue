@@ -35,7 +35,7 @@
       </b-col>
 
       <b-col cols="12">
-        <RewardsSummary :positions="positions" />
+        <RewardsSummary v-if="positions.length" :positions="positions" />
       </b-col>
 
       <b-col cols="12">
