@@ -191,7 +191,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
-import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import {
   ipfsViewUrl,
   Proposal
@@ -254,10 +254,6 @@ export default class DoneProposals extends BaseComponent {
         maxWidth: "10px"
       }
     ];
-  }
-
-  prettifyNumber(num: string | number) {
-    return prettifyNumber(num);
   }
 
   getIPFSUrl(hash: string) {

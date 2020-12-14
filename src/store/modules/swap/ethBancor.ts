@@ -6268,6 +6268,7 @@ export class EthBancorModule
       this.fetchAndSetLiquidityProtectionSettings(
         contractAddresses.LiquidityProtection
       );
+
       this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.currentUser) {
         this.fetchProtectionPositions({

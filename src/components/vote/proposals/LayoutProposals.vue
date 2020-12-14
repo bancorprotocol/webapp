@@ -84,6 +84,7 @@ import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+
 export interface ViewTableField {
   id: number;
   label: string;
@@ -99,6 +100,7 @@ export interface Item {
   id: string;
   [key: string]: any;
 }
+
 @Component({
   components: {
     TablePagination
