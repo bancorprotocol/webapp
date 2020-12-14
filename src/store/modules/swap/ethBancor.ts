@@ -3780,14 +3780,10 @@ export class EthBancorModule
 
     const [
       balances,
-      poolTokenBalance,
-      isHighTierPool,
       poolLimitWei,
       mintedWei
     ] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
-      this.fetchSystemBalance(poolId),
-      this.isHighTierPool(poolId),
       contract.methods.networkTokenMintingLimits(poolId).call(),
       contract.methods.networkTokensMinted(poolId).call()
     ]);
