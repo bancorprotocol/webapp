@@ -6,8 +6,6 @@
         variant="white"
         class="block-rounded"
         size="sm"
-        v-b-tooltip.hover
-        :title="loginTooltip"
       >
         <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
         <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
@@ -23,7 +21,7 @@ import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
-import { shortenEthAddress } from "@/api/helpers";
+import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
@@ -43,12 +41,6 @@ export default class Navigation extends BaseComponent {
     if (account) {
       vxm.bancor.refreshBalances();
     }
-  }
-
-  get loginTooltip() {
-    return this.currentNetwork == "eth" && this.currentUser
-      ? "Logout via wallet"
-      : "";
   }
 
   get loginStatus() {
@@ -100,7 +92,7 @@ export default class Navigation extends BaseComponent {
 
   async loginActionEth() {
     if (vxm.ethWallet.currentUser) {
-      // Cannot logout of MetaMask
+      onboard.walletReset();
     } else {
       await vxm.ethWallet.connect();
     }
@@ -108,7 +100,7 @@ export default class Navigation extends BaseComponent {
 
   async loginAction() {
     const wallet = this.selectedWallet;
-    if (wallet == "eos") await this.loginActionEos();
+    if (wallet === "eos") await this.loginActionEos();
     else await this.loginActionEth();
   }
 }
