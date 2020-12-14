@@ -1,10 +1,18 @@
 <template>
   <div>
-    <b-container class="vote-head" :class="darkMode ? 'vote-head-dark' : 'vote-head-light'">
+    <b-container
+      class="vote-head"
+      :class="darkMode ? 'vote-head-dark' : 'vote-head-light'"
+    >
       <b-row>
-        <b-col v-for="column in fields" :key="column.id" :style="getWidthStyle(column)" cols="12"
+        <b-col
+          v-for="column in fields"
+          :key="column.id"
+          :style="getWidthStyle(column)"
+          cols="12"
           :lg="column.colRate != 0 ? column.colRate : ''"
-          class="colb my-auto">
+          class="colb my-auto"
+        >
           <slot :name="`head(${column.key})`">
             {{ column.label }}
           </slot>
@@ -53,6 +61,11 @@
             {{ item[column.key] }}
           </slot>
         </b-col>
+
+        <div
+          class="divider"
+          :class="darkMode ? 'divider-dark' : 'divider-light'"
+        />
       </b-row>
     </b-container>
 
@@ -80,7 +93,7 @@ export interface ViewTableField {
   minWidth?: string;
   maxWidth?: string;
   colAuto?: boolean;
-  colRate?: number;  
+  colRate?: number;
 }
 export interface Item {
   id: string;
@@ -148,7 +161,7 @@ export default class LayoutProposals extends BaseComponent {
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
     return this.sortedItems.slice(startIndex, endIndex);
-  }  
+  }
   getWidthStyle(column: ViewTableField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
@@ -177,7 +190,7 @@ export default class LayoutProposals extends BaseComponent {
   text-transform: uppercase;
 
   &-light {
-    background-color: #f7f9fc;  
+    background-color: #f7f9fc;
   }
 
   &-dark {
@@ -204,6 +217,18 @@ export default class LayoutProposals extends BaseComponent {
     vertical-align: middle !important;
     margin-right: -15px;
   }
-}
 
+  .divider {
+    width: 100%;
+    height: 1px;
+
+    &-light {
+      background: #e6ebf2;
+    }
+
+    &-dark {
+      background: #1f3a55;
+    }
+  }
+}
 </style>

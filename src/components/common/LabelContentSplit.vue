@@ -12,6 +12,7 @@
         id="popover-target"
         icon="info-circle"
         class="ml-1"
+        :class="isAlert ? 'text-red' : ''"
       />
       <b-popover
         v-if="tooltip"
