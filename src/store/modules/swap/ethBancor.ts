@@ -1636,17 +1636,15 @@ export class EthBancorModule
     settingsContractAddress: string;
     protectionContractAddress: string;
   }) {
-    const [[settings]] = ((await this.multi({
+    const [[settings], [protection]] = ((await this.multi({
       groupsOfShapes: [
-        [liquidityProtectionSettingsShape(settingsContractAddress, w3)]
-      ]
-    })) as unknown) as [RawLiquidityProtectionSettings][];
-
-    const [[protection]] = ((await this.multi({
-      groupsOfShapes: [
+        [liquidityProtectionSettingsShape(settingsContractAddress, w3)],
         [liquidityProtectionShape(protectionContractAddress, w3)]
       ]
-    })) as unknown) as [RawLiquidityProtectionSettings][];
+    })) as [unknown, unknown]) as [
+      RawLiquidityProtectionSettings[],
+      { govToken: string }[]
+    ];
 
     const newSettings = {
       minDelay: Number(settings.minProtectionDelay),
