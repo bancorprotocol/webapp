@@ -194,7 +194,8 @@ import {
   calculateMaxStakes,
   calculatePriceDeviationTooHigh,
   reserveContractsInStatic,
-  parseRawDynamic
+  parseRawDynamic,
+  filterAndWarn
 } from "@/api/pureHelpers";
 import {
   dualPoolRoiShape,
@@ -6507,15 +6508,7 @@ export class EthBancorModule
     ) as Observable<StaticRelay>;
 
     try {
-      console.log("once a month energy drink");
       const staticRelays$ = merge(staticRelayLocal$, staticRelaysRemote$).pipe(
-        tap(x => {
-          console.log(x, "out out out");
-          const hasEth = compareString(x.poolToken.contract, ethAnchor);
-          if (hasEth) {
-            console.log("derp", x);
-          }
-        }),
         filter(
           relay =>
             true ||
@@ -6524,69 +6517,19 @@ export class EthBancorModule
       );
 
       const dynamicRelayRemote$ = staticRelays$.pipe(
-        tap(x => {
-          const hasEth = compareString(x.poolToken.contract, ethAnchor);
-          if (hasEth) {
-            console.log("and again!...");
-          }
-        }),
         bufferTime(100),
         filter(staticRelays => staticRelays && staticRelays.length > 0),
-        tap(x => {
-          console.log("going out for remote loading", x);
-          const hasEth = x.some(q =>
-            compareString(q.poolToken.contract, ethAnchor)
-          );
-          if (hasEth) {
-            console.log("eth is in the house");
-          }
-        }),
         mergeMap(x => this.fetchDynamicRelays(x)),
         share()
       );
 
-      const filterAndWarn = <T>(
-        arr: T[],
-        conditioner: (item: T) => boolean,
-        reason?: string
-      ): T[] => {
-        const [passed, dropped] = partition(arr, conditioner);
-        if (dropped.length > 0) {
-          console.warn(
-            "Dropped",
-            dropped,
-            "items from array",
-            reason ? `because ${reason}` : ""
-          );
-        }
-        return passed;
-      };
-
       const fullRelays$ = dynamicRelayRemote$.pipe(
-        tap(relays => {
-          const hasEth = relays.some(relay =>
-            compareString(relay.poolToken.contract, ethAnchor)
-          );
-          console.log("full Relays have eth", hasEth);
-        }),
         map(relays =>
           filterAndWarn(relays, x =>
             x.reserves.every(reserve => reserve.symbol)
           )
         ),
-        tap(relays => {
-          const hasEth = relays.some(relay =>
-            compareString(relay.poolToken.contract, ethAnchor)
-          );
-          console.log("full Relays have eth past the filter!", hasEth);
-        }),
-        map(relays => relays.map(newRelayToRelayWithBalances)),
-        tap(relays => {
-          const hasEth = relays.some(relay =>
-            compareString(relay.id, ethAnchor)
-          );
-          console.log("full Relays have eth past the map!", hasEth);
-        })
+        map(relays => relays.map(newRelayToRelayWithBalances))
       );
 
       const emittedRelays$ = combineLatest([
@@ -6594,7 +6537,6 @@ export class EthBancorModule
         usdPriceOfBnt$,
         networkVersion$
       ]).pipe(
-        tap(_ => console.log("started the process at", Date.now())),
         map(([relay, usdPriceOfBnt, currentNetwork]) => {
           const bntTokenAddress = getNetworkVariables(currentNetwork).bntToken;
 
@@ -6610,8 +6552,7 @@ export class EthBancorModule
             relay,
             reserveFeeds
           };
-        }),
-        tap(x => console.log(x, "taking it out"))
+        })
       );
 
       const finalRelays$ = emittedRelays$.pipe(
@@ -6623,7 +6564,6 @@ export class EthBancorModule
           return { allReserveFeeds, relays };
         }),
         tap(x => {
-          console.log(x, "actually getting set");
           this.addThePools({
             pools: x.relays,
             reserveFeeds: x.allReserveFeeds

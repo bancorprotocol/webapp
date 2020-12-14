@@ -5,6 +5,7 @@ import {
 } from "@/store/modules/swap/ethBancor";
 import { ConverterAndAnchor } from "@/types/bancor";
 import BigNumber from "bignumber.js";
+import { partition } from "lodash";
 import { compareString } from "./helpers";
 
 const oneMillion = new BigNumber(1000000);
@@ -197,4 +198,21 @@ export const parseRawDynamic = (
     converterAddress: rawDynamicRelay.converterAddress,
     reserves
   };
+};
+
+export const filterAndWarn = <T>(
+  arr: T[],
+  conditioner: (item: T) => boolean,
+  reason?: string
+): T[] => {
+  const [passed, dropped] = partition(arr, conditioner);
+  if (dropped.length > 0) {
+    console.warn(
+      "Dropped",
+      dropped,
+      "items from array",
+      reason ? `because ${reason}` : ""
+    );
+  }
+  return passed;
 };
