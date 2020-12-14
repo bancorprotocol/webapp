@@ -21,11 +21,8 @@ import {
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
-import {
-  buildConverterContract,
-  buildLiquidityProtectionStoreContract
-} from "./eth/contractTypes";
-import { removeLeadingZeros, shrinkToken } from "./eth/helpers";
+import { buildLiquidityProtectionStoreContract } from "./eth/contractTypes";
+import { removeLeadingZeros } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
