@@ -6265,6 +6265,10 @@ export class EthBancorModule
 
       void this.fetchAndSetHighTierPools(contractAddresses.LiquidityProtection);
 
+      this.fetchAndSetLiquidityProtectionSettings(
+        contractAddresses.LiquidityProtection
+      );
+
       this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.currentUser) {
         this.fetchProtectionPositions({
@@ -6470,28 +6474,36 @@ export class EthBancorModule
       const poolBalances = findOrThrow(highTierPools, p =>
         compareString(pool.anchorAddress, p.id)
       );
+
+      const networkToken =
+        this.liquidityProtectionSettings.networkToken ||
+        "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
+
       const [
         bntProtectedReserve,
         tknProtectedReserve
       ] = sortAlongSide(pool.reserves, reserve => reserve.contract, [
-        this.liquidityProtectionSettings.networkToken
+        networkToken
       ]);
       const [
         bntReserve,
         tknReserve
       ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
-        this.liquidityProtectionSettings.networkToken
+        networkToken
       ]);
+
+      const bntReward = miningBntReward(bntProtectedReserve.amount, isHighCap);
+      const tknReward = miningTknReward(
+        tknReserve.amount,
+        bntReserve.amount,
+        tknProtectedReserve.amount,
+        isHighCap
+      );
 
       return {
         ...pool,
-        bntReward: miningBntReward(bntProtectedReserve.amount, isHighCap),
-        tknReward: miningTknReward(
-          tknReserve.amount,
-          bntReserve.amount,
-          tknProtectedReserve.amount,
-          isHighCap
-        )
+        bntReward,
+        tknReward
       };
     });
 
