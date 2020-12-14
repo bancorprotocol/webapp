@@ -1,6 +1,5 @@
 <template>
   <ContentBlock
-    v-if="true"
     :no-header="true"
     :shadow-light="true"
     :px0="true"
@@ -71,52 +70,6 @@
       </b-col>
     </b-row>
   </ContentBlock>
-  <div
-    v-else
-    :id="darkMode ? 'protected-summary-dark' : 'protected-summary'"
-    class="rounded p-3 mb-3"
-    :class="darkMode ? 'text-dark' : 'text-light'"
-  >
-    <div class="d-flex justify-content-between align-items-center d-xl-none">
-      <span>Rewards</span>
-      <b-btn
-        variant="primary"
-        :to="{ name: 'AddProtectionHome' }"
-        style="width: 132px"
-        >Stake</b-btn
-      >
-    </div>
-    <b-row>
-      <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
-        <div class="font-size-16 font-w600">My Stake</div>
-      </b-col>
-      <b-col
-        v-for="(item, index) in summarizedPositions"
-        :key="item.key"
-        cols="6"
-        lg="3"
-        xl="2"
-        class="d-flex flex-column align-items-center mt-3 mt-xl-0"
-        :class="getItemStyleClass(index)"
-      >
-        <div class="font-size-14 font-w600 text-primary">{{ item.value }}</div>
-        <div class="text-uppercase font-size-10 font-w500">{{ item.key }}</div>
-      </b-col>
-      <b-col
-        md="6"
-        lg="3"
-        xl="2"
-        class="d-none d-xl-flex align-items-center justify-content-end"
-      >
-        <b-btn
-          variant="primary"
-          style="width: 132px"
-          :to="{ name: 'AddProtectionHome' }"
-          >Stake</b-btn
-        >
-      </b-col>
-    </b-row>
-  </div>
 </template>
 
 <script lang="ts">
