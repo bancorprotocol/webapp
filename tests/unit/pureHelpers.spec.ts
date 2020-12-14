@@ -590,7 +590,7 @@ describe("Prettify Numbers", () => {
 
     const resultNumbers: string[] = numbers.map(n => prettifyNumber(n, true));
     const expectedNumbers: string[] = [
-      "$0",
+      "$0.00",
       "< $0.01",
       "$1.12",
       "$1.10",
@@ -619,7 +619,7 @@ describe("Prettify Numbers", () => {
       prettifyNumber(n, true)
     );
     const expectedNumbers: string[] = [
-      "$0",
+      "$0.00",
       "< $0.01",
       "$1.12",
       "$1.10",

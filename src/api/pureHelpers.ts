@@ -240,54 +240,72 @@ export const calculatePriceDeviationTooHigh = (
   return priceDeviationTooHigh;
 };
 
-export const prettifyNumber = (num: number | string, usd = false): string => {
-  const roundDown = (num: number, places: number): number => {
-    const string = num.toString();
-    const number = string.split(".")[0];
-    const decimals = string.split(".")[1];
-    if (!decimals || !places) return Number(number);
-    else {
-      const result = number + "." + decimals.substr(0, places);
-      return Number(result);
-    }
-  };
-
-  const addCommaSeparator = (num: number, per = 3) => {
-    const string = num.toString();
-    const number = string.split(".")[0];
-    const decimal = string.split(".")[1];
-    let aComma = "";
-    if (number.length > per) {
-      let j = 0;
-      for (let i = number.length - 1; i >= 0; i--) {
-        aComma = number.charAt(i) + aComma;
-        j++;
-        if (j == per && i != 0) {
-          aComma = "," + aComma;
-          j = 0;
-        }
-      }
-    } else {
-      aComma = number;
-    }
-    return aComma + (decimal ? `.${decimal}` : "");
-  };
-
-  const number = Number(num);
-  if (isNaN(number)) return "N/A";
-
-  let result = 0;
+export const prettifyNumber = (
+  num: number | string | BigNumber,
+  usd = false
+): string => {
+  const bigNum = new BigNumber(num);
   if (usd) {
-    if (number === 0) return "$0";
-    else if (number < 0.01) return "< $0.01";
-    else if (number >= 100) result = Number(number.toFixed(0));
-    else result = Number(number.toFixed(2));
-    return "$" + addCommaSeparator(result);
+    if (bigNum.lte(0)) return "$0.00";
+    else if (bigNum.lt(0.01)) return "< $0.01";
+    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
+    else return numeral(bigNum).format("$0,0.00");
   } else {
-    if (number === 0) return "0";
-    else if (number < 0.000001) return "< 0.000001";
-    else if (number >= 2) result = Number(number.toFixed(2));
-    else result = Number(number.toFixed(6));
-    return addCommaSeparator(result);
+    if (bigNum.lte(0)) return "0";
+    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
+    else if (bigNum.lt(0.000001)) return "< 0.000001";
+    else return numeral(bigNum).format("0.[000000]");
   }
 };
+
+// export const prettifyNumber = (num: number | string, usd = false): string => {
+//   const roundDown = (num: number, places: number): number => {
+//     const string = num.toString();
+//     const number = string.split(".")[0];
+//     const decimals = string.split(".")[1];
+//     if (!decimals || !places) return Number(number);
+//     else {
+//       const result = number + "." + decimals.substr(0, places);
+//       return Number(result);
+//     }
+//   };
+//
+//   const addCommaSeparator = (num: number, per = 3) => {
+//     const string = num.toString();
+//     const number = string.split(".")[0];
+//     const decimal = string.split(".")[1];
+//     let aComma = "";
+//     if (number.length > per) {
+//       let j = 0;
+//       for (let i = number.length - 1; i >= 0; i--) {
+//         aComma = number.charAt(i) + aComma;
+//         j++;
+//         if (j == per && i != 0) {
+//           aComma = "," + aComma;
+//           j = 0;
+//         }
+//       }
+//     } else {
+//       aComma = number;
+//     }
+//     return aComma + (decimal ? `.${decimal}` : "");
+//   };
+//
+//   const number = Number(num);
+//   if (isNaN(number)) return "N/A";
+//
+//   let result = 0;
+//   if (usd) {
+//     if (number === 0) return "$0";
+//     else if (number < 0.01) return "< $0.01";
+//     else if (number >= 100) result = Number(number.toFixed(0));
+//     else result = Number(number.toFixed(2));
+//     return "$" + addCommaSeparator(result);
+//   } else {
+//     if (number === 0) return "0";
+//     else if (number < 0.000001) return "< 0.000001";
+//     else if (number >= 2) result = Number(number.toFixed(2));
+//     else result = Number(number.toFixed(6));
+//     return addCommaSeparator(result);
+//   }
+// };
