@@ -5,7 +5,8 @@ import {
   miningBntReward,
   miningTknReward,
   calculateMaxStakes,
-  groupPositionsArray
+  groupPositionsArray,
+  prettifyNumber
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
@@ -517,5 +518,117 @@ describe("calculate grouped positions for protected table", () => {
       }
     ];
     expect(grouped).toEqual(result);
+  });
+});
+
+describe("Prettify Numbers", () => {
+  test("convert numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbers: number[] = [
+      0,
+      0.000000000000000001,
+      1.123456789000000001,
+      1.100000000000000001,
+      1.999999999999999999,
+      2.999999999999999999,
+      100.123400000000000001,
+      123456789.123456789000000001
+    ];
+
+    const resultNumbers: string[] = numbers.map(n => prettifyNumber(n));
+    const expectedNumbers: string[] = [
+      "0",
+      "< 0.000001",
+      "1.123457",
+      "1.1",
+      "2",
+      "3",
+      "100.12",
+      "123,456,789.12"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
+  });
+
+  test("convert string numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbersStrings: string[] = [
+      "0",
+      "0.000000000000000001",
+      "1.123456789000000001",
+      "1.100000000000000001",
+      "1.999999999999999999",
+      "2.999999999999999999",
+      "100.123400000000000001",
+      "123456789.123456789000000001"
+    ];
+
+    const resultNumbers: string[] = numbersStrings.map(n => prettifyNumber(n));
+    const expectedNumbers: string[] = [
+      "0",
+      "< 0.000001",
+      "1.123457",
+      "1.1",
+      "2",
+      "3",
+      "100.12",
+      "123,456,789.12"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
+  });
+
+  test("convert usd value numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbers: number[] = [
+      0,
+      0.000000000000000001,
+      1.123456789000000001,
+      1.100000000000000001,
+      1.999999999999999999,
+      2.999999999999999999,
+      100.123400000000000001,
+      123456789.123456789000000001
+    ];
+
+    const resultNumbers: string[] = numbers.map(n => prettifyNumber(n, true));
+    const expectedNumbers: string[] = [
+      "$0",
+      "< $0.01",
+      "$1.12",
+      "$1.10",
+      "$2.00",
+      "$3.00",
+      "$100",
+      "$123,456,789"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
+  });
+
+  test("convert usd value string numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbersStrings: string[] = [
+      "0",
+      "0.000000000000000001",
+      "1.123456789000000001",
+      "1.100000000000000001",
+      "1.999999999999999999",
+      "2.999999999999999999",
+      "100.123400000000000001",
+      "123456789.123456789000000001"
+    ];
+
+    const resultNumbers: string[] = numbersStrings.map(n =>
+      prettifyNumber(n, true)
+    );
+    const expectedNumbers: string[] = [
+      "$0",
+      "< $0.01",
+      "$1.12",
+      "$1.10",
+      "$2.00",
+      "$3.00",
+      "$100",
+      "$123,456,789"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
   });
 });
