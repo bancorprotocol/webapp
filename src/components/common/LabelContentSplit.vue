@@ -12,6 +12,7 @@
         id="popover-target"
         icon="info-circle"
         class="ml-1"
+        :class="isAlert ? 'text-red' : ''"
       />
       <b-popover
         v-if="tooltip"
@@ -26,7 +27,7 @@
     <span
       v-if="!loading"
       class="font-size-12 font-w600"
-      :class="darkMode ? 'text-dark' : 'text-light'"
+      :class="isAlert ? 'text-red' : darkMode ? 'text-dark' : 'text-light'"
     >
       <slot>{{ value }}</slot>
     </span>
@@ -50,6 +51,7 @@ export default class LabelContentSplit extends BaseComponent {
   @Prop() value?: string;
   @Prop({ default: false }) loading?: boolean;
   @Prop({ default: "" }) tooltip?: string;
+  @Prop({ default: false }) isAlert?: boolean;
 }
 </script>
 

@@ -34,7 +34,7 @@
         No Proposals yet ...
       </h5>
     </div>
-    <data-table
+    <layout-proposals
       v-else-if="proposals"
       :items="items"
       :fields="fields"
@@ -140,7 +140,7 @@
           </b-col>
         </b-row>
 
-        <div class="pt-2">
+        <div class="pt-2 px-1">
           <remaining-time
             type="warn"
             :show-seconds="true"
@@ -150,7 +150,7 @@
         </div>
       </template>
       <template #cell(votes)="{ item }">
-        <div class="pl-3 container-border h-100">
+        <div class="pl-lg-3 container-border h-100">
           <div
             v-if="!item.votes.voted && item.end > Date.now()"
             class="d-flex align-items-center mb-2"
@@ -297,7 +297,7 @@
                   :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
                   class="block-rounded btn-sm"
                 >
-                  <span class="font-size-14 font-w500">
+                  <span class="btn-breakdown">
                     <font-awesome-icon
                       icon="poll"
                       class="text-muted-light mr-1"
@@ -331,7 +331,7 @@
           </li>
         </ul>
       </template>
-    </data-table>
+    </layout-proposals>
   </div>
 </template>
 
@@ -339,12 +339,14 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import LayoutProposals, {
+  ViewTableField
+} from "@/components/vote/proposals/LayoutProposals.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import MainButton from "@/components/common/Button.vue";
-import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
@@ -358,7 +360,7 @@ import { shrinkToken } from "@/api/eth/helpers";
     ContentBlock,
     ProgressBar,
     RemainingTime,
-    DataTable,
+    LayoutProposals,
     ButtonProgress,
     MainButton,
     ModalNotEnoughTokens
@@ -389,22 +391,26 @@ export default class OpenProposals extends BaseComponent {
         key: "id",
         minWidth: "16px",
         maxWidth: "16px",
+        colAuto: true,
+        colRate: 1,
         sortable: false
       },
       {
         id: 2,
         label: "Details",
         key: "name",
-        minWidth: "450px",
-        maxWidth: "500px",
+        // minWidth: "380px",
+        colAuto: false,
+        colRate: 7,
         sortable: false
       },
       {
         id: 3,
         label: "Vote",
         key: "votes",
-        minWidth: "300px",
-        maxWidth: "300px",
+        minWidth: "200px",
+        colAuto: false,
+        colRate: 4,
         sortable: false
       }
     ];
@@ -412,10 +418,6 @@ export default class OpenProposals extends BaseComponent {
 
   shrinkToken(amount: string): string {
     return shrinkToken(amount, this.decimals);
-  }
-
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
   }
 
   getVotePercent(proposal: Proposal) {
@@ -521,7 +523,9 @@ export default class OpenProposals extends BaseComponent {
 }
 
 .container-border {
-  border-left: 1px solid $gray-border;
+  @media (min-width: 992px) {
+    border-left: 1px solid $gray-border;
+  }
 }
 
 @mixin vote-bg() {
@@ -609,7 +613,7 @@ export default class OpenProposals extends BaseComponent {
   background: #de4a5c;
   position: relative;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 0.65rem;
 
   &__progress {
     background: #3ec8c8;
@@ -643,6 +647,11 @@ export default class OpenProposals extends BaseComponent {
   &--against {
     color: #de4a5c;
   }
+}
+
+.btn-breakdown {
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .tiny-text {

@@ -6,7 +6,7 @@
           <th
             @click="setSortBy(column)"
             v-for="column in fields"
-            :key="column.id"
+            :key="`head-column-${randomNumber()}-${column.id}`"
             scope="col"
             :class="getThClass(column)"
             :style="getWidthStyle(column)"
@@ -43,16 +43,21 @@
       <tbody>
         <template v-for="item in paginatedItems">
           <tr
-            @click="toggleCollapse(item.id)"
-            :key="`main-row${item.id}`"
+            @click="toggleCollapse(item)"
+            :key="`main-row-${randomNumber()}-${item.id}`"
             class="table-row"
-            :class="trClasses(item.id)"
+            :class="trClasses(item)"
           >
-            <td v-for="column in fields" :key="column.id">
+            <td
+              v-for="column in fields"
+              :key="`main-column-${randomNumber()}-${column.id}`"
+            >
               <slot
                 :name="`cell(${column.key})`"
                 :item="item"
                 :value="item[column.key]"
+                :isCollapsable="item.collapsedData && item.collapsedData.length"
+                :isExpanded="expandedId === item.id"
               >
                 {{ item[column.key] }}
               </slot>
@@ -61,11 +66,11 @@
           <template v-if="expandedId === item.id">
             <tr
               v-for="item2 in item.collapsedData"
-              :key="`collapsable-row${item2.id}`"
+              :key="`collapsable-row-${randomNumber()}-${item2.id}`"
             >
               <td
                 v-for="(column, index) in fields"
-                :key="`collapsable-column${column.id}`"
+                :key="`collapsable-column-${randomNumber()}-${column.id}`"
               >
                 <div :class="index === 0 ? 'collapsed-indicator' : ''">
                   <slot
@@ -98,22 +103,8 @@ import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { TableItem, ViewTableField } from "@/types/bancor";
 
-export interface ViewTableField {
-  id: number;
-  label: string;
-  key: string;
-  sortable?: boolean;
-  tooltip?: string;
-  minWidth?: string;
-  maxWidth?: string;
-  thClass?: string;
-}
-export interface Item {
-  id: string;
-  [key: string]: any;
-  collapsedData?: Item[];
-}
 @Component({
   components: {
     TablePagination
@@ -121,7 +112,7 @@ export interface Item {
 })
 export default class DataTable extends BaseComponent {
   @Prop() fields!: ViewTableField[];
-  @Prop() items!: Item[];
+  @Prop() items!: TableItem[];
   @Prop() filter?: string;
   @Prop() filterBy?: string;
   @Prop() defaultSort?: string;
@@ -171,9 +162,11 @@ export default class DataTable extends BaseComponent {
 
     if (!sortBy) sorted = filtered;
     else if (sortFunction !== undefined) {
-      sorted = sort(filtered)[orderBy]((t: Item) => sortFunction(t, sortBy));
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
+        sortFunction(t, sortBy)
+      );
     } else {
-      sorted = sort(filtered)[orderBy]((t: Item) =>
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
         defaultTableSort(t, sortBy)
       );
     }
@@ -181,7 +174,7 @@ export default class DataTable extends BaseComponent {
     return sorted;
   }
 
-  get paginatedItems(): Item[] {
+  get paginatedItems(): TableItem[] {
     const perPage = this.perPage;
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
@@ -210,20 +203,30 @@ export default class DataTable extends BaseComponent {
     return styles;
   }
 
-  trClasses(id: string | number) {
+  trClasses(item: TableItem) {
     const array: string[] = [];
-    if (this.collapsable) array.push("cursor");
-    if (id === this.expandedId) array.push("table-row-active");
+    if (this.collapsable && item.collapsedData && item.collapsedData.length)
+      array.push("cursor");
+    if (item.id === this.expandedId) array.push("table-row-active");
     return array;
   }
 
   expandedId: string | number | null = null;
 
-  toggleCollapse(id: string | number | null) {
-    if (!this.collapsable) return;
+  toggleCollapse(item: TableItem) {
+    if (
+      !this.collapsable ||
+      !item.collapsedData ||
+      item.collapsedData.length === 0
+    )
+      return;
 
-    if (this.expandedId === id) this.expandedId = null;
-    else this.expandedId = id;
+    if (this.expandedId === item.id) this.expandedId = null;
+    else this.expandedId = item.id;
+  }
+
+  randomNumber() {
+    return Math.floor(Math.random() * 1000000);
   }
 
   getWidthStyle(column: ViewTableField) {
@@ -249,11 +252,23 @@ export default class DataTable extends BaseComponent {
 
 <style lang="scss">
 @import "../../assets/_scss/custom/variables";
-.table-row:hover {
-  background-color: $gray-border;
+
+.table {
+  .table-row:hover {
+    background-color: $gray-border;
+  }
+  .table-row-active {
+    background-color: $gray-border;
+  }
 }
-.table-row-active {
-  background-color: $gray-border;
+
+.dark-table {
+  .table-row:hover {
+    background-color: $modal-backdrop-bg;
+  }
+  .table-row-active {
+    background-color: $modal-backdrop-bg;
+  }
 }
 
 .collapsed-indicator {

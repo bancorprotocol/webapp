@@ -109,12 +109,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import {
-  formatUnixTime,
-  formatNumber,
-  buildPoolName,
-  prettifyNumber
-} from "@/api/helpers";
+import { formatUnixTime, formatNumber, buildPoolName } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -165,8 +160,6 @@ export default class AddProtectionSingle extends BaseComponent {
   selectedTokenIndex = 0;
 
   private interval: any;
-
-  prettifyNumber = prettifyNumber;
 
   @Watch("token")
   async onTokenChange() {

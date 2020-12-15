@@ -17,7 +17,8 @@ import {
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken
+  ViewToken,
+  TableItem
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -33,7 +34,6 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import moment from "moment";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
-import { Item } from "@/components/common/DataTable.vue";
 
 export enum PositionType {
   single,
@@ -174,24 +174,6 @@ export const formatNumber = (num: number | string, size: number = 4) => {
     return `< ${replaceLastChar(reduced, "1")}`;
   }
   return reduced;
-};
-
-export const prettifyNumber = (
-  num: number | string | BigNumber,
-  usd = false
-): string => {
-  const bigNum = new BigNumber(num);
-  if (usd) {
-    if (bigNum.lte(0)) return "$0.00";
-    else if (bigNum.lt(0.01)) return "< $0.01";
-    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
-    else return numeral(bigNum).format("$0,0.00");
-  } else {
-    if (bigNum.lte(0)) return "0";
-    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
-    else if (bigNum.lt(0.000001)) return "< 0.000001";
-    else return numeral(bigNum).format("0.[000000]");
-  }
 };
 
 export const stringifyPercentage = (percentage: number): string => {
@@ -667,6 +649,9 @@ export const getLogs = async (
 
 const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet, false);
 const APP_NAME = "Bancor Swap";
+const FORTMATIC_KEY = process.env.VUE_APP_FORTMATIC;
+const PORTIS_KEY = process.env.VUE_APP_PORTIS;
+const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 
 const wallets = [
   { walletName: "metamask", preferred: true },
@@ -686,7 +671,37 @@ const wallets = [
   { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },
-  { walletName: "hyperpay" }
+  { walletName: "hyperpay" },
+  {
+    walletName: "trezor",
+    appUrl: "https://www.bancor.network",
+    email: "services@bancor.network",
+    rpcUrl: RPC_URL
+  },
+  {
+    walletName: "fortmatic",
+    apiKey: FORTMATIC_KEY,
+    preferred: true
+  },
+  {
+    walletName: "portis",
+    apiKey: PORTIS_KEY,
+    preferred: true,
+    label: "Login with Email"
+  },
+  {
+    walletName: "squarelink",
+    apiKey: SQUARELINK_KEY
+  },
+  { walletName: "authereum" },
+  {
+    walletName: "walletConnect",
+    preferred: true,
+    rpc: {
+      [EthNetworks.Mainnet]: RPC_URL
+    }
+  },
+  { walletName: "wallet.io", rpcUrl: RPC_URL }
 ];
 
 export const onboard = Onboard({
@@ -1274,7 +1289,7 @@ export const formatUnixTime = (
 };
 
 export const defaultTableSort = (
-  row: Item,
+  row: TableItem,
   sortBy: string,
   sortZero: boolean = false
 ) => {

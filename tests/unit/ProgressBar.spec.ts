@@ -1,4 +1,4 @@
-import {mount, createLocalVue} from "@vue/test-utils";
+import { mount, createLocalVue } from "@vue/test-utils";
 import TestProgressBar from "@/components/deprecated/TestProgressBar.vue";
 import Vuex from "vuex";
 

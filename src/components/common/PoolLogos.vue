@@ -57,7 +57,8 @@ export default class PoolLogos extends BaseComponent {
   }
 
   get poolName() {
-    return buildPoolName(this.pool!.id);
+    if (this.pool && this.pool.id) return buildPoolName(this.pool.id);
+    else return "N/A";
   }
 }
 </script>

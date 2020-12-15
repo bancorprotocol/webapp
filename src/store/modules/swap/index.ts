@@ -22,12 +22,9 @@ import { vxm, store } from "@/store";
 import {
   compareString,
   updateArray,
-  cryptoComparePrices,
-  fetchUsdPriceOfBntViaRelay
+  fetchBinanceUsdPriceOfBnt
 } from "@/api/helpers";
-import wait from "waait";
 import { defaultModule } from "@/router";
-import { web3 } from "@/api/web3";
 
 interface BntPrice {
   price: null | number;
@@ -298,19 +295,12 @@ export class BancorModule extends VuexModule.With({
 
   @action async getUsdPrice() {
     try {
-      console.time("binanceWaitingTime");
-      const usdPrices = await cryptoComparePrices();
-      console.timeEnd("binanceWaitingTime");
-
-      console.time("relayWaitingTime");
-      const bntPriceViaRelay = await fetchUsdPriceOfBntViaRelay(web3);
-      console.timeEnd("relayWaitingTime");
-      console.log(bntPriceViaRelay, "miles", usdPrices.BNT.USD);
+      const usdPrice = await fetchBinanceUsdPriceOfBnt();
       this.setUsdPriceOfBnt({
-        price: usdPrices.BNT.USD,
+        price: usdPrice,
         lastChecked: Date.now()
       });
-      return usdPrices.BNT.USD;
+      return usdPrice;
     } catch (e) {
       throw new Error(
         `Failed to find USD Price of BNT from External API & Relay ${e.message}`

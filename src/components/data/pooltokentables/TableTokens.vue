@@ -43,14 +43,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
-import { ViewRelay, ViewToken } from "@/types/bancor";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
-import { defaultTableSort, prettifyNumber } from "@/api/helpers";
+import { ViewRelay, ViewTableField, ViewToken } from "@/types/bancor";
+import DataTable from "@/components/common/DataTable.vue";
+import { defaultTableSort } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -60,10 +61,8 @@ import { defaultTableSort, prettifyNumber } from "@/api/helpers";
     ActionButtons
   }
 })
-export default class TableTokens extends Vue {
+export default class TableTokens extends BaseComponent {
   @Prop() filter!: string;
-
-  prettifyNumber = prettifyNumber;
 
   fields: ViewTableField[] = [
     ...(this.isEth

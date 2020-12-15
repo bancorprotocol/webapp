@@ -96,7 +96,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
 import MainButton from "@/components/common/Button.vue";
-import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
 import TablePools from "@/components/data/pooltokentables/TablePools.vue";
@@ -144,7 +144,7 @@ export default class DataDetailsToken extends BaseComponent {
   }
 
   get liqDepth() {
-    return prettifyNumber(this.token.liqDepth ?? 0, true);
+    return this.prettifyNumber(this.token.liqDepth ?? 0, true);
   }
 
   get shortAddress() {
