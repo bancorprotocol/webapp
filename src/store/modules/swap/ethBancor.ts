@@ -213,7 +213,7 @@ const bufferedAnchorsAndConverters$ = convertersAndAnchors$.pipe(
 combineLatest([currentBlock$, bufferedAnchorsAndConverters$])
   .pipe(
     concatMap(([currentBlock, converterAndAnchor]) => {
-      const blockYesterday = rewindBlocksByDays(currentBlock, 1);
+      const blockYesterday = rewindBlocksByDays(currentBlock, 0.98);
       const { converterAddress, anchorAddress } = converterAndAnchor;
       return getHistoricFees(
         w3,
@@ -646,32 +646,38 @@ const getHistoricFees = async (
   w3: Web3,
   id: string,
   converterAddress: string,
-  blockHoursAgo: number
+  fromBlock: number
 ): Promise<PreviousPoolFee[]> => {
-  let previousPoolFees: PreviousPoolFee[] = [];
-
   const contract = buildV28ConverterContract(converterAddress, w3);
   const options = {
-    fromBlock: 0,
+    fromBlock,
     toBlock: "latest"
   };
 
   try {
     const events = await contract.getPastEvents("ConversionFeeUpdate", options);
 
-    previousPoolFees = events
-      .filter(event => event.blockNumber >= blockHoursAgo)
-      .map(event => ({
-        id,
-        oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
-        blockNumber: event.blockNumber
-      }));
+    const previousPoolFees = events
+      .filter(event => event.blockNumber >= fromBlock)
+      .map(
+        (event): PreviousPoolFee => ({
+          id,
+          oldDecFee: ppmToDec(event.returnValues["_prevFee"]),
+          blockNumber: event.blockNumber
+        })
+      );
+
     return previousPoolFees;
   } catch (err) {
-    console.error(err);
+    console.error(
+      "Failed fetching pool fees for converterer",
+      converterAddress,
+      err,
+      "from block",
+      fromBlock
+    );
+    return [];
   }
-
-  return previousPoolFees;
 };
 
 const blockNumberHoursAgo = async (hours: number, w3: Web3) => {
@@ -2367,7 +2373,6 @@ export class EthBancorModule
 
   @mutation updateHistoricPoolFees(newFees: PreviousPoolFee[]) {
     const currentFees = this.previousPoolFeesArr;
-    console.log("historical fees", newFees);
     this.previousPoolFeesArr = [...currentFees, ...newFees];
   }
 
