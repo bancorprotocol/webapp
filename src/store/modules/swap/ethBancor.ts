@@ -1720,26 +1720,6 @@ export class EthBancorModule
     };
   }
 
-  highTierPoolsArr: string[] = [];
-
-  @mutation setHighTierPools(highTierPools: string[]) {
-    console.log("high tier pools", highTierPools);
-    this.highTierPoolsArr = highTierPools;
-  }
-
-  @action async fetchAndSetHighTierPools(liquidityProtectionContract: string) {
-    /*
-    const lpContract = buildLiquidityProtectionContract(
-      liquidityProtectionContract || this.contracts.LiquidityProtection,
-      w3
-    );
-
-    const highTierPools = await lpContract.methods.highTierPools().call();
-    */
-
-    this.setHighTierPools(highTierPools);
-  }
-
   protectedPositionsArr: ProtectedLiquidityCalculated[] = [];
 
   @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
