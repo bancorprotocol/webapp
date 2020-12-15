@@ -184,15 +184,15 @@ export const dynamicRelayShape = (
   reserves: string[]
 ) => {
   const contract = buildConverterContract(contractAddress);
-  const [reserveOne, reserveTwo] = reserves;
+  const [reserveOneAddress, reserveTwoAddress] = reserves;
   return {
     converterAddress: ORIGIN_ADDRESS,
-    reserveOneAddress: reserveOne,
-    reserveTwoAddress: reserveTwo,
+    reserveOneAddress,
+    reserveTwoAddress,
     conversionFee: contract.methods.conversionFee(),
     connectorTokenCount: contract.methods.connectorTokenCount(),
-    reserveOne: contract.methods.getConnectorBalance(reserveOne),
-    reserveTwo: contract.methods.getConnectorBalance(reserveTwo)
+    reserveOne: contract.methods.getConnectorBalance(reserveOneAddress),
+    reserveTwo: contract.methods.getConnectorBalance(reserveTwoAddress)
   };
 };
 
@@ -227,24 +227,5 @@ export const v2PoolBalanceShape = (
     reserveOneStakedBalance: contract.methods.reserveStakedBalance(reserveOne),
     reserveTwoStakedBalance: contract.methods.reserveStakedBalance(reserveTwo),
     effectiveReserveWeights: contract.methods.effectiveReserveWeights()
-  };
-};
-
-export const liquidityProtectionShape = (
-  contractAddress: string,
-  network: EthNetworks
-) => {
-  const contract = buildLiquidityProtectionContract(
-    contractAddress,
-    getWeb3(network)
-  );
-  return {
-    minProtectionDelay: contract.methods.minProtectionDelay(),
-    maxProtectionDelay: contract.methods.maxProtectionDelay(),
-    lockDuration: contract.methods.lockDuration(),
-    networkToken: contract.methods.networkToken(),
-    govToken: contract.methods.govToken(),
-    maxSystemNetworkTokenAmount: contract.methods.maxSystemNetworkTokenAmount(),
-    maxSystemNetworkTokenRatio: contract.methods.maxSystemNetworkTokenRatio()
   };
 };
