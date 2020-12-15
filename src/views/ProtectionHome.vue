@@ -9,15 +9,6 @@
           >
             Liquidity Protection
           </span>
-          <div class="float-right">
-            <b-btn
-              variant="primary"
-              style="width: 132px"
-              :to="{ name: 'AddProtectionHome' }"
-            >
-              Stake
-            </b-btn>
-          </div>
         </div>
 
         <p
@@ -53,16 +44,7 @@
             />
           </div>
           <div v-else>
-            <ProtectedTableOld
-              v-if="!groupedPositions"
-              :positions="positions"
-              :search="searchProtected"
-            />
-            <ProtectedTable
-              v-else
-              :positions="positions"
-              :search="searchProtected"
-            />
+            <ProtectedTable :positions="positions" :search="searchProtected" />
           </div>
         </content-block>
       </b-col>
@@ -103,13 +85,11 @@ import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
-import ProtectedTableOld from "@/components/protection/ProtectedTableOld.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 
 @Component({
   components: {
     RewardsSummary,
-    ProtectedTableOld,
     ProtectedSummary,
     Claim,
     ContentBlock,
@@ -119,8 +99,6 @@ import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
-
-  groupedPositions = true;
 
   get positions(): ViewProtectedLiquidity[] {
     return vxm.ethBancor.protectedPositions;

@@ -1,61 +1,12 @@
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import BigNumber from "bignumber.js";
 import sort from "fast-sort";
+import numeral from "numeral";
 
 const oneMillion = new BigNumber(1000000);
 
 const zeroIfNegative = (big: BigNumber) =>
   big.isNegative() ? new BigNumber(0) : big;
-
-export const calculateMaxStakes = (
-  tknReserveBalanceWei: string,
-  bntReserveBalanceWei: string,
-  poolTokenSupplyWei: string,
-  poolTokenSystemBalanceWei: string,
-  maxSystemNetworkTokenAmount: string,
-  maxSystemNetworkTokenRatioPpm: string,
-  isHighTierPool: boolean
-) => {
-  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
-  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
-  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
-  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
-  const maxSystemNetworkTokenRatioDec = new BigNumber(
-    maxSystemNetworkTokenRatioPpm
-  ).div(1000000);
-
-  // calculating the systemBNT  from system pool tokens
-  const rate = bntReserveBalance.div(poolTokenSupply);
-  const systemBNT = poolTokenSystemBalance.times(rate);
-
-  // allowed BNT based on limit cap
-  const maxLimitBnt = zeroIfNegative(
-    new BigNumber(maxSystemNetworkTokenAmount).minus(systemBNT)
-  );
-
-  // allowed BNT based on ratio cap
-  const maxRatioBnt = zeroIfNegative(
-    new BigNumber(bntReserveBalance)
-      .times(maxSystemNetworkTokenRatioDec)
-      .minus(systemBNT)
-      .div(new BigNumber(1).minus(maxSystemNetworkTokenRatioDec))
-  );
-
-  const lowestAmount = isHighTierPool
-    ? maxLimitBnt
-    : BigNumber.min(maxLimitBnt, maxRatioBnt);
-
-  const maxAllowedBntInTkn = lowestAmount.times(
-    tknReserveBalance.div(bntReserveBalance)
-  );
-
-  const maxAllowedBnt = systemBNT;
-
-  return {
-    maxAllowedBntWei: maxAllowedBnt.toString(),
-    maxAllowedTknWei: maxAllowedBntInTkn.toString()
-  };
-};
 
 export const calculatePositionFees = (
   originalPoolTokenAmount: string,
@@ -237,4 +188,113 @@ export const calculatePriceDeviationTooHigh = (
   );
 
   return priceDeviationTooHigh;
+};
+
+export const prettifyNumber = (
+  num: number | string | BigNumber,
+  usd = false
+): string => {
+  const bigNum = new BigNumber(num);
+  if (usd) {
+    if (bigNum.lte(0)) return "$0.00";
+    else if (bigNum.lt(0.01)) return "< $0.01";
+    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
+    else return numeral(bigNum).format("$0,0.00");
+  } else {
+    if (bigNum.lte(0)) return "0";
+    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
+    else if (bigNum.lt(0.000001)) return "< 0.000001";
+    else return numeral(bigNum).format("0.[000000]");
+  }
+};
+
+// export const prettifyNumber = (num: number | string, usd = false): string => {
+//   const roundDown = (num: number, places: number): number => {
+//     const string = num.toString();
+//     const number = string.split(".")[0];
+//     const decimals = string.split(".")[1];
+//     if (!decimals || !places) return Number(number);
+//     else {
+//       const result = number + "." + decimals.substr(0, places);
+//       return Number(result);
+//     }
+//   };
+//
+//   const addCommaSeparator = (num: number, per = 3) => {
+//     const string = num.toString();
+//     const number = string.split(".")[0];
+//     const decimal = string.split(".")[1];
+//     let aComma = "";
+//     if (number.length > per) {
+//       let j = 0;
+//       for (let i = number.length - 1; i >= 0; i--) {
+//         aComma = number.charAt(i) + aComma;
+//         j++;
+//         if (j == per && i != 0) {
+//           aComma = "," + aComma;
+//           j = 0;
+//         }
+//       }
+//     } else {
+//       aComma = number;
+//     }
+//     return aComma + (decimal ? `.${decimal}` : "");
+//   };
+//
+//   const number = Number(num);
+//   if (isNaN(number)) return "N/A";
+//
+//   let result = 0;
+//   if (usd) {
+//     if (number === 0) return "$0";
+//     else if (number < 0.01) return "< $0.01";
+//     else if (number >= 100) result = Number(number.toFixed(0));
+//     else result = Number(number.toFixed(2));
+//     return "$" + addCommaSeparator(result);
+//   } else {
+//     if (number === 0) return "0";
+//     else if (number < 0.000001) return "< 0.000001";
+//     else if (number >= 2) result = Number(number.toFixed(2));
+//     else result = Number(number.toFixed(6));
+//     return addCommaSeparator(result);
+//   }
+// };
+
+export const calculateLimits = (
+  poolLimitWei: string,
+  defaultLimitWei: string,
+  mintedWei: string,
+  tknReserveBalance: string,
+  bntReserveBalance: string
+) => {
+  const limitOrDefault = new BigNumber(
+    poolLimitWei !== "0" ? poolLimitWei : defaultLimitWei
+  );
+  const tknDelta = limitOrDefault.minus(mintedWei);
+  const bntRate = new BigNumber(tknReserveBalance).dividedBy(
+    new BigNumber(bntReserveBalance)
+  );
+
+  let tknLimitWei = bntRate.multipliedBy(tknDelta);
+
+  // add some buffer to avoid tx fails
+  tknLimitWei = tknLimitWei.multipliedBy(
+    new BigNumber("99.9").dividedBy("100")
+  );
+
+  console.log(
+    "limits",
+    "limitOrDefault",
+    limitOrDefault.toString(),
+    "mintedWei",
+    mintedWei.toString(),
+    "bntRate",
+    bntRate.toString(),
+    "tknDelta",
+    tknDelta.toString(),
+    "tknLimitWei",
+    tknLimitWei.toString()
+  );
+
+  return { bntLimitWei: mintedWei, tknLimitWei };
 };

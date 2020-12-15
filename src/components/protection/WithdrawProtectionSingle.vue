@@ -96,7 +96,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { compareString, findOrThrow, prettifyNumber } from "@/api/helpers";
+import { compareString, findOrThrow } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
@@ -166,7 +166,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   get vBntWarning() {
     return this.position.givenVBnt && !this.sufficientVBnt
-      ? `Insufficient vBNT balance, you must hold ${prettifyNumber(
+      ? `Insufficient vBNT balance, you must hold ${this.prettifyNumber(
           Number(this.position.givenVBnt!) * (Number(this.percentage) / 100)
         )} vBNT before withdrawing position.`
       : "";
@@ -217,10 +217,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       this.setDefault();
       this.modal = false;
     }
-  }
-
-  prettifyNumber(amount: string | number, usd = false) {
-    return prettifyNumber(amount, usd);
   }
 
   setDefault() {

@@ -8,6 +8,7 @@ import {
   ABIConverterRegistry,
   ABIConverterV28,
   ABILiquidityProtection,
+  ABILiquidityProtectionSettings,
   ABILiquidityProtectionStore,
   ABIMultiCallContract,
   ABINetworkContract,
@@ -288,17 +289,8 @@ export const buildLiquidityProtectionContract = (
   web3?: Web3
 ): ContractMethods<{
   store: () => CallReturn<string>;
-  networkToken: () => CallReturn<string>;
   govToken: () => CallReturn<string>;
-  minProtectionDelay: () => CallReturn<string>;
-  maxProtectionDelay: () => CallReturn<string>;
-  maxSystemNetworkTokenAmount: () => CallReturn<string>;
-  maxSystemNetworkTokenRatio: () => CallReturn<string>;
-  lockDuration: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
-  isHighTierPool: (anchor: string) => CallReturn<boolean>;
-  highTierPools: () => CallReturn<string[]>;
-  averageRateMaxDeviation: () => CallReturn<string>;
   protectLiquidity: (
     anchor: string,
     poolTokenWei: string
@@ -326,4 +318,21 @@ export const buildLiquidityProtectionContract = (
     reserveRateN: string,
     reserveRateD: string
   ) => CallReturn<string>;
+  settings: () => CallReturn<string>;
 }> => buildContract(ABILiquidityProtection, contractAddress, web3);
+
+export const buildLiquidityProtectionSettingsContract = (
+  contractAddress: string,
+  web3?: Web3
+): ContractMethods<{
+  minProtectionDelay: () => CallReturn<string>;
+  lockDuration: () => CallReturn<string>;
+  networkToken: () => CallReturn<string>;
+  maxProtectionDelay: () => CallReturn<string>;
+  maxSystemNetworkTokenRatio: () => CallReturn<string>;
+  defaultNetworkTokenMintingLimit: () => CallReturn<string>;
+  minNetworkTokenLiquidityForMinting: () => CallReturn<string>;
+  networkTokensMinted: (poolId: string) => CallReturn<string>;
+  networkTokenMintingLimits: (poolId: string) => CallReturn<string>;
+  averageRateMaxDeviation: () => CallReturn<string>;
+}> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);

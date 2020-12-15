@@ -4,29 +4,29 @@ import Vuex from "vuex";
 import numeral from "numeral";
 
 describe("LabelContentSplit.vue", () => {
-  let state: any;  
+  let state: any;
   let store: any;
 
   const localVue = createLocalVue();
-  localVue.use(Vuex);  
+  localVue.use(Vuex);
 
   beforeEach(() => {
     state = {
-      darkMode: false,      
-    }    
+      darkMode: false
+    };
     store = new Vuex.Store({
       modules: {
         general: {
           namespaced: true,
-          state          
+          state
         }
       }
     });
-  })
+  });
 
   it("renders props when passed", () => {
     const label = "Price Impact";
-    const value = numeral(0.03).format('0.0000%');
+    const value = numeral(0.03).format("0.0000%");
     const wrapper = shallowMount(LabelContentSplit, {
       propsData: { label, value },
       store,
@@ -43,30 +43,29 @@ describe("LabelContentSplit.vue", () => {
       store,
       localVue
     });
-    expect(wrapper.find('#popover-target').exists()).toBe(true);
+    expect(wrapper.find("#popover-target").exists()).toBe(true);
     expect(wrapper.text()).toMatch(tooltip);
   });
 
   it("should not displays value while loading", () => {
-    const value = numeral(0.03).format('0.0000%');
+    const value = numeral(0.03).format("0.0000%");
     const wrapper = shallowMount(LabelContentSplit, {
       propsData: { value, loading: true },
       store,
       localVue
-    });    
+    });
     expect(wrapper.text()).not.toMatch(value);
-  })
+  });
 
   it("displays red text when isAlert prop has passed", () => {
-    const value = numeral(0.03).format('0.0000%');
+    const value = numeral(0.03).format("0.0000%");
     const wrapper = shallowMount(LabelContentSplit, {
       propsData: { value, isAlert: true },
       store,
       localVue
     });
-    const span = wrapper.findAll('span').at(1);
+    const span = wrapper.findAll("span").at(1);
     expect(span.text()).toBe(value);
-    expect(span.element.classList.contains('text-red')).toBe(true);    
-  })
-
+    expect(span.element.classList.contains("text-red")).toBe(true);
+  });
 });

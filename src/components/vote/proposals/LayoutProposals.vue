@@ -1,10 +1,18 @@
 <template>
   <div>
-    <b-container class="vote-head" :class="darkMode ? 'vote-head-dark' : 'vote-head-light'">
+    <b-container
+      class="vote-head"
+      :class="darkMode ? 'vote-head-dark' : 'vote-head-light'"
+    >
       <b-row>
-        <b-col v-for="column in fields" :key="column.id" :style="getWidthStyle(column)" cols="12"
+        <b-col
+          v-for="column in fields"
+          :key="column.id"
+          :style="getWidthStyle(column)"
+          cols="12"
           :lg="column.colRate != 0 ? column.colRate : ''"
-          class="colb my-auto">
+          class="colb my-auto"
+        >
           <slot :name="`head(${column.key})`">
             {{ column.label }}
           </slot>
@@ -53,6 +61,11 @@
             {{ item[column.key] }}
           </slot>
         </b-col>
+
+        <div
+          class="divider"
+          :class="darkMode ? 'divider-dark' : 'divider-light'"
+        />
       </b-row>
     </b-container>
 
@@ -71,29 +84,16 @@ import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
-export interface ViewTableField {
-  id: number;
-  label: string;
-  key: string;
-  sortable?: boolean;
-  tooltip?: string;
-  minWidth?: string;
-  maxWidth?: string;
-  colAuto?: boolean;
-  colRate?: number;  
-}
-export interface Item {
-  id: string;
-  [key: string]: any;
-}
+import { TableItem, ViewProposalsField } from "@/types/bancor";
+
 @Component({
   components: {
     TablePagination
   }
 })
 export default class LayoutProposals extends BaseComponent {
-  @Prop() fields!: ViewTableField[];
-  @Prop() items!: Item[];
+  @Prop() fields!: ViewProposalsField[];
+  @Prop() items!: TableItem[];
   @Prop() filter?: string;
   @Prop() filterBy?: string;
   @Prop() defaultSort?: string;
@@ -135,9 +135,11 @@ export default class LayoutProposals extends BaseComponent {
     const orderBy = this.descOrder ? "desc" : "asc";
     if (!sortBy) sorted = filtered;
     else if (sortFunction !== undefined) {
-      sorted = sort(filtered)[orderBy]((t: Item) => sortFunction(t, sortBy));
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
+        sortFunction(t, sortBy)
+      );
     } else {
-      sorted = sort(filtered)[orderBy]((t: Item) =>
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
         defaultTableSort(t, sortBy)
       );
     }
@@ -148,8 +150,8 @@ export default class LayoutProposals extends BaseComponent {
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
     return this.sortedItems.slice(startIndex, endIndex);
-  }  
-  getWidthStyle(column: ViewTableField) {
+  }
+  getWidthStyle(column: ViewProposalsField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)
@@ -177,7 +179,7 @@ export default class LayoutProposals extends BaseComponent {
   text-transform: uppercase;
 
   &-light {
-    background-color: #f7f9fc;  
+    background-color: #f7f9fc;
   }
 
   &-dark {
@@ -204,6 +206,18 @@ export default class LayoutProposals extends BaseComponent {
     vertical-align: middle !important;
     margin-right: -15px;
   }
-}
 
+  .divider {
+    width: 100%;
+    height: 1px;
+
+    &-light {
+      background: #e6ebf2;
+    }
+
+    &-dark {
+      background: #1f3a55;
+    }
+  }
+}
 </style>

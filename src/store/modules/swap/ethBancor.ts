@@ -121,7 +121,8 @@ import {
   buildConverterContract,
   buildTokenContract,
   buildLiquidityProtectionContract,
-  buildLiquidityProtectionStoreContract
+  buildLiquidityProtectionStoreContract,
+  buildLiquidityProtectionSettingsContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -141,7 +142,8 @@ import {
   PreviousPoolFee,
   previousPoolFees,
   priorityEthPools,
-  secondRoundLiquidityMiningEndTime
+  secondRoundLiquidityMiningEndTime,
+  highTierPools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -157,7 +159,7 @@ import {
   miningBntReward,
   miningTknReward,
   expandToken,
-  calculateMaxStakes
+  calculateLimits
 } from "@/api/pureHelpers";
 import { Subject, combineLatest } from "rxjs";
 import {
@@ -630,12 +632,14 @@ const determineConverterType = (
     return PoolType.Traditional;
   } else if (Number(converterType) == 1) {
     return PoolType.Traditional;
+  } else if (Number(converterType) == 3) {
+    return PoolType.Traditional;
   } else if (Number(converterType) == 2) {
     return PoolType.ChainLink;
   } else if (Number(converterType) == 0) {
     return PoolType.Liquid;
   }
-  throw new Error("Failed to determine the converter type");
+  throw new Error(`Failed to determine the converter type "${converterType}"`);
 };
 
 const getHistoricFees = async (
@@ -968,13 +972,24 @@ const v2PoolBalanceShape = (
 const liquidityProtectionShape = (contractAddress: string, w3: Web3) => {
   const contract = buildLiquidityProtectionContract(contractAddress, w3);
   return {
+    govToken: contract.methods.govToken()
+  };
+};
+
+const liquidityProtectionSettingsShape = (
+  contractAddress: string,
+  w3: Web3
+) => {
+  const contract = buildLiquidityProtectionSettingsContract(
+    contractAddress,
+    w3
+  );
+  return {
     minProtectionDelay: contract.methods.minProtectionDelay(),
     maxProtectionDelay: contract.methods.maxProtectionDelay(),
     lockDuration: contract.methods.lockDuration(),
     networkToken: contract.methods.networkToken(),
-    govToken: contract.methods.govToken(),
-    maxSystemNetworkTokenAmount: contract.methods.maxSystemNetworkTokenAmount(),
-    maxSystemNetworkTokenRatio: contract.methods.maxSystemNetworkTokenRatio()
+    defaultNetworkTokenMintingLimit: contract.methods.defaultNetworkTokenMintingLimit()
   };
 };
 
@@ -1018,12 +1033,14 @@ interface V2Response {
   pools: (RelayWithReserveBalances | ChainLinkRelay)[];
 }
 
+/*
 const compareAnchorAndConverter = (
   a: ConverterAndAnchor,
   b: ConverterAndAnchor
 ) =>
   compareString(a.anchorAddress, b.anchorAddress) &&
   compareString(a.converterAddress, b.converterAddress);
+*/
 
 interface RawAbiRelay {
   connectorToken1: string;
@@ -1554,13 +1571,13 @@ const VuexModule = createModule({
 });
 
 interface LiquidityProtectionSettings {
+  contract: string;
   minDelay: number;
   maxDelay: number;
   lockedDelay: number;
   govToken: string;
   networkToken: string;
-  maxSystemNetworkTokenAmount: string;
-  maxSystemNetworkTokenRatio: string;
+  defaultNetworkTokenMintingLimit: string;
 }
 
 interface RawLiquidityProtectionSettings {
@@ -1569,8 +1586,7 @@ interface RawLiquidityProtectionSettings {
   lockDuration: string;
   govToken: string;
   networkToken: string;
-  maxSystemNetworkTokenAmount: string;
-  maxSystemNetworkTokenRatio: string;
+  defaultNetworkTokenMintingLimit: string;
 }
 
 export class EthBancorModule
@@ -1598,13 +1614,13 @@ export class EthBancorModule
   slippageTolerance = 0;
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
+    contract: "",
     minDelay: moment.duration("30", "days").asSeconds(),
     maxDelay: moment.duration("100", "days").asSeconds(),
     lockedDelay: moment.duration("24", "hours").asSeconds(),
     networkToken: "",
     govToken: "",
-    maxSystemNetworkTokenAmount: "",
-    maxSystemNetworkTokenRatio: ""
+    defaultNetworkTokenMintingLimit: "0"
   };
 
   @mutation setLiquidityProtectionSettings(
@@ -1613,22 +1629,33 @@ export class EthBancorModule
     this.liquidityProtectionSettings = settings;
   }
 
-  @action async fetchLiquidityProtectionSettings(contractAddress: string) {
-    const [[settings]] = ((await this.multi({
-      groupsOfShapes: [[liquidityProtectionShape(contractAddress, w3)]]
-    })) as unknown) as [RawLiquidityProtectionSettings][];
+  @action async fetchLiquidityProtectionSettings({
+    settingsContractAddress,
+    protectionContractAddress
+  }: {
+    settingsContractAddress: string;
+    protectionContractAddress: string;
+  }) {
+    const [[settings], [protection]] = ((await this.multi({
+      groupsOfShapes: [
+        [liquidityProtectionSettingsShape(settingsContractAddress, w3)],
+        [liquidityProtectionShape(protectionContractAddress, w3)]
+      ]
+    })) as [unknown, unknown]) as [
+      RawLiquidityProtectionSettings[],
+      { govToken: string }[]
+    ];
 
     const newSettings = {
+      contract: settingsContractAddress,
       minDelay: Number(settings.minProtectionDelay),
       maxDelay: Number(settings.maxProtectionDelay),
       lockedDelay: Number(settings.lockDuration),
-      govToken: settings.govToken,
+      govToken: protection.govToken,
       networkToken: settings.networkToken,
-      maxSystemNetworkTokenRatio: settings.maxSystemNetworkTokenRatio,
-      maxSystemNetworkTokenAmount: settings.maxSystemNetworkTokenAmount
+      defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
     } as LiquidityProtectionSettings;
-    this.setLiquidityProtectionSettings(newSettings);
-    this.fetchAndSetTokenBalances([newSettings.govToken]);
+
     return newSettings;
   }
 
@@ -1636,6 +1663,13 @@ export class EthBancorModule
     const ethToken = this.tokens.find(token =>
       compareString("ETH", token.symbol)
     );
+    const totalVolume24h = this.relays
+      .filter(
+        x => x && !x.v2 && x.volume !== undefined && !isNaN(Number(x.volume))
+      )
+      .map(x => new BigNumber(x.volume || 0))
+      .reduce((sum, current) => sum.plus(current));
+
     return {
       totalLiquidityDepth: this.relays
         .map(x => Number(x.liqDepth || 0))
@@ -1648,9 +1682,7 @@ export class EthBancorModule
         price: (ethToken && ethToken.price) || 0
       },
       twentyFourHourTradeCount: this.liquidityHistory.data.length,
-      totalVolume24h: this.relays
-        .map(x => Number(x.volume || 0))
-        .reduce((sum, current) => sum + current),
+      totalVolume24h: Number(totalVolume24h),
       bntUsdPrice: this.bntUsdPrice
     };
   }
@@ -1745,12 +1777,14 @@ export class EthBancorModule
   }
 
   @action async fetchAndSetHighTierPools(liquidityProtectionContract: string) {
+    /*
     const lpContract = buildLiquidityProtectionContract(
       liquidityProtectionContract || this.contracts.LiquidityProtection,
       w3
     );
 
     const highTierPools = await lpContract.methods.highTierPools().call();
+    */
 
     this.setHighTierPools(highTierPools);
   }
@@ -2621,8 +2655,8 @@ export class EthBancorModule
     const relay = await this.relayById(relayId);
 
     const converter = buildV28ConverterContract(relay.contract, w3);
-    const liquidityProtection = buildLiquidityProtectionContract(
-      this.contracts.LiquidityProtection,
+    const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
+      this.liquidityProtectionSettings.contract,
       w3
     );
 
@@ -2633,7 +2667,7 @@ export class EthBancorModule
       secondaryReserveBalanceResult
     ] = await Promise.all([
       converter.methods.recentAverageRate(selectedTokenAddress).call(),
-      liquidityProtection.methods.averageRateMaxDeviation().call(),
+      liquidityProtectionSettings.methods.averageRateMaxDeviation().call(),
       converter.methods
         .reserveBalance(
           // the selected token
@@ -2786,23 +2820,6 @@ export class EthBancorModule
       const info = await web3.eth.getTransactionReceipt(hash);
       if (info) {
         return removeLeadingZeros(info.logs[0].address);
-      }
-      await wait(interval);
-    }
-    throw new Error("Failed to find new address in decent time");
-  }
-
-  @action async fetchNewSmartContractAddressFromHash(
-    hash: string
-  ): Promise<string> {
-    const interval = 1000;
-    const attempts = 10;
-
-    for (let i = 0; i < attempts; i++) {
-      const info = await web3.eth.getTransactionReceipt(hash);
-      console.log(info, "was info");
-      if (info) {
-        return info.contractAddress!;
       }
       await wait(interval);
     }
@@ -3761,10 +3778,15 @@ export class EthBancorModule
   }
 
   @action async getMaxStakes({ poolId }: { poolId: string }) {
-    const [balances, poolTokenBalance, isHighTierPool] = await Promise.all([
+    const contract = await buildLiquidityProtectionSettingsContract(
+      this.liquidityProtectionSettings.contract,
+      w3
+    );
+
+    const [balances, poolLimitWei, mintedWei] = await Promise.all([
       this.fetchRelayBalances({ poolId }),
-      this.fetchSystemBalance(poolId),
-      this.isHighTierPool(poolId)
+      contract.methods.networkTokenMintingLimits(poolId).call(),
+      contract.methods.networkTokensMinted(poolId).call()
     ]);
 
     const [bntReserve, tknReserve] = sortAlongSide(
@@ -3777,36 +3799,37 @@ export class EthBancorModule
       reserve => reserve.weiAmount
     );
 
-    const maxStakes = calculateMaxStakes(
+    const defaultLimitWei = this.liquidityProtectionSettings
+      .defaultNetworkTokenMintingLimit;
+    const { bntLimitWei, tknLimitWei } = calculateLimits(
+      poolLimitWei,
+      defaultLimitWei,
+      mintedWei,
       tknReserveBalance,
-      bntReserveBalance,
-      balances.smartTokenSupplyWei,
-      poolTokenBalance,
-      this.liquidityProtectionSettings.maxSystemNetworkTokenAmount,
-      this.liquidityProtectionSettings.maxSystemNetworkTokenRatio,
-      isHighTierPool
+      bntReserveBalance
     );
+
+    const maxStakes = {
+      maxAllowedBntWei: bntLimitWei.toString(),
+      maxAllowedTknWei: tknLimitWei.toString()
+    };
 
     return { maxStakes, bntReserve, tknReserve };
   }
 
   @action async getMaxStakesView({ poolId }: { poolId: string }) {
-    const maxStakes = await this.getMaxStakes({ poolId });
+    const { maxStakes, bntReserve, tknReserve } = await this.getMaxStakes({
+      poolId
+    });
 
     return [
       {
-        amount: shrinkToken(
-          maxStakes.maxStakes.maxAllowedBntWei,
-          maxStakes.bntReserve.decimals
-        ),
-        token: maxStakes.bntReserve.symbol
+        amount: shrinkToken(maxStakes.maxAllowedBntWei, bntReserve.decimals),
+        token: bntReserve.symbol
       },
       {
-        amount: shrinkToken(
-          maxStakes.maxStakes.maxAllowedTknWei,
-          maxStakes.tknReserve.decimals
-        ),
-        token: maxStakes.tknReserve.symbol
+        amount: shrinkToken(maxStakes.maxAllowedTknWei, tknReserve.decimals),
+        token: tknReserve.symbol
       }
     ];
   }
@@ -6155,6 +6178,31 @@ export class EthBancorModule
     this.setBntSupply(weiSupply);
   }
 
+  @action async fetchLiquidityProtectionSettingsContract(
+    liquidityProtectionContract: string
+  ): Promise<string> {
+    const contract = buildLiquidityProtectionContract(
+      liquidityProtectionContract
+    );
+    return contract.methods.settings().call();
+  }
+
+  @action async fetchAndSetLiquidityProtectionSettings(
+    protectionContractAddress: string
+  ) {
+    const settingsContractAddress = await this.fetchLiquidityProtectionSettingsContract(
+      protectionContractAddress
+    );
+
+    const newSettings = await this.fetchLiquidityProtectionSettings({
+      settingsContractAddress,
+      protectionContractAddress
+    });
+
+    this.setLiquidityProtectionSettings(newSettings);
+    this.fetchAndSetTokenBalances([newSettings.govToken]);
+  }
+
   @action async init(params?: ModuleParam) {
     console.log(params, "was init param on eth");
     console.time("ethResolved");
@@ -6187,12 +6235,8 @@ export class EthBancorModule
     }
 
     try {
-      let bancorApiTokens: TokenPrice[] = [];
-
       this.warmEthApi()
-        .then(tokens => {
-          bancorApiTokens = tokens;
-        })
+        .then(() => {})
         .catch(() => {});
 
       fetchSmartTokens()
@@ -6221,9 +6265,10 @@ export class EthBancorModule
 
       void this.fetchAndSetHighTierPools(contractAddresses.LiquidityProtection);
 
-      this.fetchLiquidityProtectionSettings(
+      this.fetchAndSetLiquidityProtectionSettings(
         contractAddresses.LiquidityProtection
       );
+
       this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
       if (this.currentUser) {
         this.fetchProtectionPositions({
@@ -6429,28 +6474,36 @@ export class EthBancorModule
       const poolBalances = findOrThrow(highTierPools, p =>
         compareString(pool.anchorAddress, p.id)
       );
+
+      const networkToken =
+        this.liquidityProtectionSettings.networkToken ||
+        "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
+
       const [
         bntProtectedReserve,
         tknProtectedReserve
       ] = sortAlongSide(pool.reserves, reserve => reserve.contract, [
-        this.liquidityProtectionSettings.networkToken
+        networkToken
       ]);
       const [
         bntReserve,
         tknReserve
       ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
-        this.liquidityProtectionSettings.networkToken
+        networkToken
       ]);
+
+      const bntReward = miningBntReward(bntProtectedReserve.amount, isHighCap);
+      const tknReward = miningTknReward(
+        tknReserve.amount,
+        bntReserve.amount,
+        tknProtectedReserve.amount,
+        isHighCap
+      );
 
       return {
         ...pool,
-        bntReward: miningBntReward(bntProtectedReserve.amount, isHighCap),
-        tknReward: miningTknReward(
-          tknReserve.amount,
-          bntReserve.amount,
-          tknProtectedReserve.amount,
-          isHighCap
-        )
+        bntReward,
+        tknReward
       };
     });
 

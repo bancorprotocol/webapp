@@ -782,3 +782,31 @@ export interface LiqMiningApr {
   amount: string;
   reward?: number;
 }
+
+export interface ViewTableField {
+  id: number;
+  label: string;
+  key: string;
+  sortable?: boolean;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  thClass?: string;
+}
+
+export interface TableItem {
+  id: string;
+  [key: string]: any;
+  collapsedData?: TableItem[];
+}
+
+export interface ViewProposalsField {
+  id: number;
+  label: string;
+  key: string;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  colAuto?: boolean;
+  colRate?: number;
+}
