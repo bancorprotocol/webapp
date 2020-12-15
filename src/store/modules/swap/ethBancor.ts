@@ -6242,7 +6242,6 @@ export class EthBancorModule
       ),
       filter(x => x.emitted !== null),
       pluck("emitted"),
-      tap(_ => console.log("usd price out at", Date.now())),
       shareReplay(1)
     );
 
@@ -6413,13 +6412,6 @@ export class EthBancorModule
         })()
       ),
       distinctArrayItem(knownPools, compareAnchorAndConverter),
-      tap(x =>
-        console.log(
-          x,
-          "was all emission from anchorAndConverters",
-          parseInt(String(Date.now() / 1000))
-        )
-      ),
       shareReplay<ConverterAndAnchor[]>(3000)
     );
 
@@ -6436,17 +6428,10 @@ export class EthBancorModule
     );
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
-      tap(x => console.log("coming in.......", x)),
       mergeMap(x => {
         console.log("coming in...2", x);
         return from(x);
       }),
-      tap(x => {
-        const includesEth = compareString(x.anchorAddress, ethAnchor);
-        if (includesEth) {
-          console.log(x, "going out indiv", includesEth);
-        }
-      })
     ) as Observable<ConverterAndAnchor>;
 
     const [v2Pools$, v1Pools$] = partitionOb(
@@ -6460,7 +6445,7 @@ export class EthBancorModule
       .subscribe(pools => this.addPoolsBulk(pools));
 
     const [toLocalLoad$, toRemoteLoad$] = partitionOb(
-      v1Pools$.pipe(tap(x => console.count("goinginindiv"))),
+      v1Pools$,
       anchorAndConverter =>
         moreStaticRelays.some(staticRelay =>
           compareStaticRelayAndSet(staticRelay, anchorAndConverter)
@@ -6468,13 +6453,6 @@ export class EthBancorModule
     );
 
     const staticRelayLocal$ = toLocalLoad$.pipe(
-      tap(x => {
-        const hasEth = compareString(x.anchorAddress, ethAnchor);
-        console.log("static relay in...", x);
-        if (hasEth) {
-          console.log("pushing in eth", x);
-        }
-      }),
       map(anchorAndConverter =>
         findOrThrow(
           moreStaticRelays,
@@ -6483,12 +6461,6 @@ export class EthBancorModule
           "failed to find static relay"
         )
       ),
-      tap(x => {
-        if (compareString(x.poolToken.contract, ethAnchor)) {
-          console.log("pushing out eth", x);
-        }
-        console.log("static relay local out", x);
-      })
     );
 
     const staticRelaysRemote$ = toRemoteLoad$.pipe(
@@ -6520,10 +6492,6 @@ export class EthBancorModule
             )?.version || Number(set.relay.version)
         }
       })),
-      tap(x => {
-        const hasEth = compareString(x.poolToken.contract, ethAnchor);
-        console.log(hasEth, "hasEth", x);
-      }),
       filter(({ relay }) => !!relay.connectorToken2),
       map(
         ({ relay, poolToken }) =>
@@ -6619,7 +6587,7 @@ export class EthBancorModule
         )
         .subscribe(x => console.log("got the aprs!", x));
 
-      const x = await finalRelays$
+      await finalRelays$
         .pipe(
           mergeMap(x => from(x.relays)),
           filter(x =>
@@ -6630,7 +6598,6 @@ export class EthBancorModule
         .toPromise();
       this.setLoadingPools(false)
 
-      console.log(x, "had resolved with...");
     } catch (e) {
       console.error("thrown in x", e);
     }
