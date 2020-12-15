@@ -63,15 +63,11 @@
         "
         style="flex-grow: 1"
       >
-        <keep-alive>
-          <router-view name="Nav" />
-        </keep-alive>
+        <router-view name="Nav" />
         <b-container fluid="xl" class="pt-1">
           <b-row class="d-flex justify-content-center">
             <b-col cols="12" style="max-width: 460px">
-              <keep-alive>
-                <router-view name="Hero"></router-view>
-              </keep-alive>
+              <router-view name="Hero"></router-view>
             </b-col>
           </b-row>
         </b-container>
