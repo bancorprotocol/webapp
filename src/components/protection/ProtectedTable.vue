@@ -373,16 +373,19 @@ import {
   defaultTableSort,
   findOrThrow,
   formatUnixTime,
-  prettifyNumber,
   stringifyPercentage
 } from "@/api/helpers";
 import { groupPositionsArray } from "@/api/pureHelpers";
 import moment from "moment";
-import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
+import {
+  ViewGroupedPositions,
+  ViewProtectedLiquidity,
+  ViewTableField
+} from "@/types/bancor";
 import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
@@ -400,7 +403,6 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
-  prettifyNumber = prettifyNumber;
 
   get groupedPositions() {
     if (this.positions.length > 0) return groupPositionsArray(this.positions);

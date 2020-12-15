@@ -142,7 +142,6 @@
 <script lang="ts">
 import { vxm } from "@/store/";
 import { Component, Watch, VModel } from "vue-property-decorator";
-import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -162,8 +161,6 @@ export default class ModalStake extends BaseComponent {
   symbol: string = "";
   etherscanUrl: string = "";
   maxLock: number = 0;
-
-  prettifyNumber = prettifyNumber;
 
   get buttonActive() {
     return (

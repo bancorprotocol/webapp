@@ -84,29 +84,16 @@ import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
-export interface ViewTableField {
-  id: number;
-  label: string;
-  key: string;
-  sortable?: boolean;
-  tooltip?: string;
-  minWidth?: string;
-  maxWidth?: string;
-  colAuto?: boolean;
-  colRate?: number;
-}
-export interface Item {
-  id: string;
-  [key: string]: any;
-}
+import { TableItem, ViewProposalsField } from "@/types/bancor";
+
 @Component({
   components: {
     TablePagination
   }
 })
 export default class LayoutProposals extends BaseComponent {
-  @Prop() fields!: ViewTableField[];
-  @Prop() items!: Item[];
+  @Prop() fields!: ViewProposalsField[];
+  @Prop() items!: TableItem[];
   @Prop() filter?: string;
   @Prop() filterBy?: string;
   @Prop() defaultSort?: string;
@@ -148,9 +135,11 @@ export default class LayoutProposals extends BaseComponent {
     const orderBy = this.descOrder ? "desc" : "asc";
     if (!sortBy) sorted = filtered;
     else if (sortFunction !== undefined) {
-      sorted = sort(filtered)[orderBy]((t: Item) => sortFunction(t, sortBy));
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
+        sortFunction(t, sortBy)
+      );
     } else {
-      sorted = sort(filtered)[orderBy]((t: Item) =>
+      sorted = sort(filtered)[orderBy]((t: TableItem) =>
         defaultTableSort(t, sortBy)
       );
     }
@@ -162,7 +151,7 @@ export default class LayoutProposals extends BaseComponent {
     const startIndex = endIndex - perPage;
     return this.sortedItems.slice(startIndex, endIndex);
   }
-  getWidthStyle(column: ViewTableField) {
+  getWidthStyle(column: ViewProposalsField) {
     let styleString = "";
     if (column.maxWidth) styleString = "width: " + column.maxWidth + ";";
     if (column.minWidth)

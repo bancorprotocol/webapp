@@ -49,7 +49,6 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
-import { prettifyNumber } from "@/api/helpers";
 import numeral from "numeral";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -75,14 +74,17 @@ export default class ProtectedSummary extends BaseComponent {
       // const roi = (protectedValue - initialStake) / initialStake;
 
       return [
-        { key: "Initial Stake", value: prettifyNumber(initialStake, true) },
+        {
+          key: "Initial Stake",
+          value: this.prettifyNumber(initialStake, true)
+        },
         {
           key: "Protected Value",
-          value: prettifyNumber(protectedValue, true)
+          value: this.prettifyNumber(protectedValue, true)
         },
         {
           key: "Claimable Value",
-          value: prettifyNumber(claimableValue, true)
+          value: this.prettifyNumber(claimableValue, true)
         },
         { key: "", value: "" }
         // { key: "ROI", value: this.stringifyPercentage(roi) }

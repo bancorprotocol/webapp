@@ -85,13 +85,11 @@ import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
-import ProtectedTableOld from "@/components/protection/ProtectedTableOld.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 
 @Component({
   components: {
     RewardsSummary,
-    ProtectedTableOld,
     ProtectedSummary,
     Claim,
     ContentBlock,

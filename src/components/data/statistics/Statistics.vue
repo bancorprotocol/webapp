@@ -63,20 +63,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import numeral from "numeral";
-import { prettifyNumber, stringifyPercentage } from "@/api/helpers";
+import { stringifyPercentage } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { StatisticsDataBlock }
 })
-export default class Statistics extends Vue {
+export default class Statistics extends BaseComponent {
   stringifyPercentage = stringifyPercentage;
 
   get liquidityDepth() {
-    return prettifyNumber(this.stats.totalLiquidityDepth, true);
+    return this.prettifyNumber(this.stats.totalLiquidityDepth, true);
   }
 
   get lockedVsCirculatingBnt() {
@@ -86,11 +87,11 @@ export default class Statistics extends Vue {
 
   get bntPriceUsd() {
     const price = this.stats.bntUsdPrice;
-    return price ? prettifyNumber(price, true) : "N/A";
+    return price ? this.prettifyNumber(price, true) : "N/A";
   }
 
   get volume24h() {
-    return prettifyNumber(this.stats.totalVolume24h, true);
+    return this.prettifyNumber(this.stats.totalVolume24h, true);
   }
 
   get nativeTokenLabel() {
