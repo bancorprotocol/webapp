@@ -7,7 +7,7 @@
           class="font-size-20 font-w600 mt-3 d-flex align-items-center"
           :class="[darkMode ? 'text-dark' : 'text-light']"
         >
-          <span class="mr-2">{{ poolName }} Pool</span>
+          <span class="mr-2">{{ pool.name }} Pool</span>
           <version-badge :version="poolVersion" />
         </div>
       </b-col>
@@ -44,7 +44,7 @@
 
         <content-block title="Pool Information" :shadow-light="true">
           <div class="my-3">
-            <label-content-split label="Pool Name" :value="poolName" />
+            <label-content-split label="Pool Name" :value="pool.name" />
             <label-content-split
               label="Pool Address"
               :value="shortAddress"
@@ -101,7 +101,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
 import MainButton from "@/components/common/Button.vue";
-import { buildPoolName, formatNumber, shortenEthAddress } from "@/api/helpers";
+import { formatNumber, shortenEthAddress } from "@/api/helpers";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import VersionBadge from "@/components/common/VersionBadge.vue";
 import numeral from "numeral";
@@ -170,10 +170,6 @@ export default class DataPool extends BaseComponent {
 
   get transactions() {
     return "????????";
-  }
-
-  get poolName() {
-    return buildPoolName(this.pool.id);
   }
 
   get totalPoolWeight() {

@@ -305,6 +305,7 @@ export interface ViewGroupedPositions {
 
 export interface ViewRelay {
   id: string;
+  name: string;
   symbol: string;
   liqDepth: number;
   reserves: ViewReserve[];

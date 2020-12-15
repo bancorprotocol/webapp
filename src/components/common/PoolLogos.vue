@@ -34,7 +34,6 @@
 import { Component, Prop, Emit } from "vue-property-decorator";
 import { ViewRelay, ViewToken } from "@/types/bancor";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
-import { buildPoolName } from "@/api/helpers";
 import VersionBadge from "@/components/common/VersionBadge.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -53,12 +52,7 @@ export default class PoolLogos extends BaseComponent {
   click() {}
 
   get baseLabel() {
-    return `${this.label ? `${this.label} ` : ""}${this.poolName}`;
-  }
-
-  get poolName() {
-    if (this.pool && this.pool.id) return buildPoolName(this.pool.id);
-    else return "N/A";
+    return `${this.label ? `${this.label} ` : ""}${this.pool?.name || "N/A"}`;
   }
 }
 </script>
