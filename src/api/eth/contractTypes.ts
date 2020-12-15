@@ -13,6 +13,7 @@ import {
   ABIMultiCallContract,
   ABINetworkContract,
   ABISmartToken,
+  ABIStakingRewardsDistribution,
   ABIV2Converter,
   V2PoolsTokenContainer
 } from "@/api/eth/ethAbis";
@@ -336,3 +337,12 @@ export const buildLiquidityProtectionSettingsContract = (
   networkTokenMintingLimits: (poolId: string) => CallReturn<string>;
   averageRateMaxDeviation: () => CallReturn<string>;
 }> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);
+
+export const buildABIStakingRewardsDistributionContract = (
+  contractAddress: string,
+  web3?: Web3
+): ContractMethods<{
+  stakeRewards: (rewardIds: string[], poolTokenAddress: string) => ContractSendMethod;
+  claimRewards: (rewardIds: string[]) => ContractSendMethod;
+  claimedPositionRewards: (rewardIds: string[]) => ContractSendMethod;
+}> => buildContract(ABIStakingRewardsDistribution, contractAddress, web3);
