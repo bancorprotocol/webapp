@@ -122,7 +122,8 @@ import {
   buildTokenContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract,
-  buildLiquidityProtectionSettingsContract
+  buildLiquidityProtectionSettingsContract,
+  buildStakingRewardsDistributionContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -1408,6 +1409,7 @@ interface RegisteredContracts {
   BancorConverterRegistry: string;
   LiquidityProtection: string;
   LiquidityProtectionStore: string;
+  StakingRewardsDistribution: string;
 }
 
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
@@ -1606,7 +1608,8 @@ export class EthBancorModule
     BancorNetwork: "",
     BancorConverterRegistry: "",
     LiquidityProtection: "",
-    LiquidityProtectionStore: ""
+    LiquidityProtectionStore: "",
+    StakingRewardsDistribution: ""
   };
   initiated: boolean = false;
   failedPools: string[] = [];
@@ -5021,7 +5024,8 @@ export class EthBancorModule
       BancorNetwork: asciiToHex("BancorNetwork"),
       BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
       LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
-      LiquidityProtection: asciiToHex("LiquidityProtection")
+      LiquidityProtection: asciiToHex("LiquidityProtection"),
+      StakingRewardsDistribution: asciiToHex("StakingRewardsDistribution")
     };
 
     const registryContract = new w3.eth.Contract(
@@ -7402,5 +7406,31 @@ export class EthBancorModule
     return {
       amount: shrinkToken(result, fromTokenDecimals)
     };
+  }
+
+  @action async claimRewards({ rewardIds }: { rewardIds: string[] }) {
+    const contract = buildStakingRewardsDistributionContract(
+      this.contracts.StakingRewardsDistribution
+    );
+
+    await contract.methods
+      .claimRewards(rewardIds)
+      .send({ from: this.currentUser });
+  }
+
+  @action async stakeRewards({
+    rewardIds,
+    poolId
+  }: {
+    rewardIds: string[];
+    poolId: string;
+  }) {
+    const contract = buildStakingRewardsDistributionContract(
+      this.contracts.StakingRewardsDistribution
+    );
+
+    await contract.methods
+      .stakeRewards(rewardIds, poolId)
+      .send({ from: this.currentUser });
   }
 }

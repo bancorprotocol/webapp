@@ -338,11 +338,14 @@ export const buildLiquidityProtectionSettingsContract = (
   averageRateMaxDeviation: () => CallReturn<string>;
 }> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);
 
-export const buildABIStakingRewardsDistributionContract = (
+export const buildStakingRewardsDistributionContract = (
   contractAddress: string,
   web3?: Web3
 ): ContractMethods<{
-  stakeRewards: (rewardIds: string[], poolTokenAddress: string) => ContractSendMethod;
+  stakeRewards: (
+    rewardIds: string[],
+    poolTokenAddress: string
+  ) => ContractSendMethod;
   claimRewards: (rewardIds: string[]) => ContractSendMethod;
-  claimedPositionRewards: (rewardIds: string[]) => ContractSendMethod;
+  claimedPositionRewards: (positionIds: string[]) => ContractSendMethod;
 }> => buildContract(ABIStakingRewardsDistribution, contractAddress, web3);
