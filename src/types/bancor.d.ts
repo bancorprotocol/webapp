@@ -799,3 +799,14 @@ export interface TableItem {
   [key: string]: any;
   collapsedData?: TableItem[];
 }
+
+export interface ViewProposalsField {
+  id: number;
+  label: string;
+  key: string;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  colAuto?: boolean;
+  colRate?: number;
+}
