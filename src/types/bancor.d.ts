@@ -420,6 +420,7 @@ export interface ViewRemoveEvent {
 }
 
 export interface ViewLiquidityEvent<T> {
+  id: string;
   valueTransmitted: number;
   txHash: string;
   txLink: string;

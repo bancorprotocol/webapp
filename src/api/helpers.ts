@@ -337,6 +337,7 @@ export interface DecodedEvent<T> {
   blockNumber: string;
   txHash: string;
   data: T;
+  id: string;
 }
 
 export interface DecodedTimedEvent<T> extends DecodedEvent<T> {
@@ -379,6 +380,7 @@ const decodeRemoveLiquidity = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
+    id: txHash,
     txHash,
     blockNumber,
     data: {
@@ -409,6 +411,7 @@ const decodeAddLiquidityEvent = (
   const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
+    id: txHash,
     blockNumber,
     txHash,
     data: {
@@ -444,6 +447,7 @@ const decodeConversionEvent = (
   const res = {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       from: {
         address: removeLeadingZeros(fromAddress),
@@ -482,6 +486,7 @@ const decodeNetworkConversionEvent = (
   return {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       poolToken: removeLeadingZeros(poolToken),
       from: {
