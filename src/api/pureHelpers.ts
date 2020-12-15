@@ -12,6 +12,7 @@ import BigNumber from "bignumber.js";
 import { partition } from "lodash";
 import { compareString } from "./helpers";
 import sort from "fast-sort";
+import numeral from "numeral";
 
 const oneMillion = new BigNumber(1000000);
 
