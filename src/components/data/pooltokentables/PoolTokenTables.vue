@@ -17,11 +17,11 @@
       ></b-spinner>
     </div>
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-      <b-tab title="Tokens" active>
-        <table-tokens :filter="search" />
-      </b-tab>
-      <b-tab title="Pools">
+      <b-tab title="Pools" active>
         <table-pools :filter="search" :items="poolItems" />
+      </b-tab>
+      <b-tab title="Tokens">
+        <table-tokens :filter="search" />
       </b-tab>
     </b-tabs>
   </div>
