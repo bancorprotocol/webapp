@@ -6306,11 +6306,6 @@ export class EthBancorModule
           )
         );
 
-        // Grab ids, and see if there is any duplicates
-        const ids = events.singleTraades.map(x => x.id);
-        const duplicates = duplicateWith(ids, compareString);
-        console.log({ duplicates }, "are duplicates");
-
         this.setLiquidityHistory({
           joinedTradeEvents: withDates,
           singleTrades: events.singleTraades
