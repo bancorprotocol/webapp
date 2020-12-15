@@ -24,6 +24,8 @@ import WithdrawProtectionSingle from "@/components/protection/WithdrawProtection
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
 import VotePage from "@/components/vote/VotePage.vue";
+import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
+import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 
 Vue.use(Router);
 
@@ -68,7 +70,7 @@ export const router = new Router({
       name: "Root",
       redirect: () => {
         const preferredService = localStorage.getItem(PREFERRED_SERVICE);
-        const subdomain = detectSubdomain() || "data";
+        const subdomain = detectSubdomain() || "swap";
         if (preferredService) {
           const foundService = services.find(
             service => service.namespace == preferredService
@@ -206,6 +208,16 @@ export const router = new Router({
           path: "withdraw/double/:id",
           name: "WithdrawProtectionDouble",
           component: WithdrawProtectionDouble
+        },
+        {
+          path: "rewards/restake/:id",
+          name: "RewardsRestake",
+          component: RestakeRewards
+        },
+        {
+          path: "rewards/withdraw",
+          name: "RewardsWithdraw",
+          component: WithdrawRewards
         }
       ]
     },
