@@ -3697,12 +3697,6 @@ export class EthBancorModule
     return contract.methods.systemBalance(tokenAddress).call();
   }
 
-  @action async isHighTierPool(anchor: string): Promise<boolean> {
-    return this.highTierPoolsArr.some(anchorId =>
-      compareString(anchor, anchorId)
-    );
-  }
-
   @action async getMaxStakes({ poolId }: { poolId: string }) {
     const contract = await buildLiquidityProtectionSettingsContract(
       this.liquidityProtectionSettings.contract,
