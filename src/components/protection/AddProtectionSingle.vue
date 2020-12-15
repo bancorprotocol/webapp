@@ -172,6 +172,7 @@ export default class AddProtectionSingle extends BaseComponent {
     this.selectedTokenIndex = this.pool.reserves.findIndex(
       reserve => reserve.id == x
     );
+    this.amountChanged(this.amount);
   }
 
   get token() {
@@ -259,7 +260,7 @@ export default class AddProtectionSingle extends BaseComponent {
       this.modal = false;
       this.$router.push({ name: "LiqProtection" });
       return;
-    } else if (this.error) {
+    } else if (this.error || this.inputError) {
       this.modal = false;
       this.setDefault();
       return;
