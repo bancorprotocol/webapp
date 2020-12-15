@@ -68,7 +68,7 @@ export const router = new Router({
       name: "Root",
       redirect: () => {
         const preferredService = localStorage.getItem(PREFERRED_SERVICE);
-        const subdomain = detectSubdomain() || "swap";
+        const subdomain = detectSubdomain() || "data";
         if (preferredService) {
           const foundService = services.find(
             service => service.namespace == preferredService

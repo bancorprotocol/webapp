@@ -36,20 +36,20 @@ export default class SideBar extends BaseComponent {
   selectedLink = "swap";
   links: ViewSideBarLink[] = [
     {
-      route: "Swap",
-      key: "swap",
-      label: "Swap",
-      newTab: false,
-      hideMobile: false,
-      svgName: "swap"
-    },
-    {
       route: "DataSummary",
       key: "data",
       label: "Data",
       newTab: false,
       hideMobile: false,
       svgName: "data"
+    },
+    {
+      route: "Swap",
+      key: "swap",
+      label: "Swap",
+      newTab: false,
+      hideMobile: false,
+      svgName: "swap"
     },
     {
       route: "LiqProtection",
