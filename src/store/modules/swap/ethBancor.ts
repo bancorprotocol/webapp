@@ -6605,6 +6605,20 @@ export class EthBancorModule
         share()
       );
 
+      const highTierPools$ = of(highTierPools);
+
+      combineLatest([highTierPools$, finalRelays$, liquidityProtectionStore$])
+        .pipe(
+          mergeMap(([highTierPools, relays, protectionStoreAddress]) => {
+            return this.addLiqMiningAprsToPools({
+              highTierPoolAnchors: highTierPools,
+              relays: relays.relays,
+              protectionStoreAddress
+            });
+          })
+        )
+        .subscribe(x => console.log("got the aprs!", x));
+
       const x = await finalRelays$
         .pipe(
           mergeMap(x => from(x.relays)),
@@ -6614,6 +6628,7 @@ export class EthBancorModule
           firstItem()
         )
         .toPromise();
+      this.setLoadingPools(false)
 
       console.log(x, "had resolved with...");
     } catch (e) {
@@ -6621,72 +6636,22 @@ export class EthBancorModule
     }
   }
 
-  @action async addPools({
-    sync,
-    async
+  @action async addLiqMiningAprsToPools({
+    highTierPoolAnchors,
+    protectionStoreAddress,
+    relays
   }: {
-    sync: ConverterAndAnchor[];
-    async: ConverterAndAnchor[];
+    highTierPoolAnchors: string[];
+    relays: RelayWithReserveBalances[];
+    protectionStoreAddress: string;
   }) {
-    const passedAsyncPools = async.filter(notBadRelay);
-    const passedSyncPools = sync.filter(notBadRelay);
-
-    const longToLoadConverters = [
-      "0xfb64059D18BbfDc5EEdCc6e65C9F09de8ccAf5b6",
-      "0xB485A5F793B1DEadA32783F99Fdccce9f28aB9a2",
-      "0x444Bd9a308Bd2137208ABBcc3efF679A90d7A553",
-      "0x5C8c7Ef16DaC7596C280E70C6905432F7470965E",
-      "0x40c7998B5d94e00Cd675eDB3eFf4888404f6385F",
-      "0x0429e43f488D2D24BB608EFbb0Ee3e646D61dE71",
-      "0x7FF01DB7ae23b97B15Bc06f49C45d6e3d84df46f",
-      "0x16ff969cC3A4AE925D9C0A2851e2386d61E75954",
-      "0x72eC2FF62Eda1D5E9AcD6c4f6a016F0998ba1cB0",
-      "0xcAf6Eb14c3A20B157439904a88F00a8bE929c887"
-    ];
-
-    const [slowLoadAnchorSets, quickLoadAnchorSet] = partition(
-      passedAsyncPools,
-      anchorSet =>
-        longToLoadConverters.some(converter =>
-          compareString(converter, anchorSet.converterAddress)
-        )
+    const highTierPools = relays.filter(relay =>
+      highTierPoolAnchors.some(anchor => compareString(relay.id, anchor))
     );
 
-    const quickChunks = chunk(quickLoadAnchorSet, 100);
+    if (highTierPools.length == 0) return;
 
-    const allASyncChunks = [...quickChunks, slowLoadAnchorSets];
-
-    return new Promise(resolve => {
-      this.doThing([passedSyncPools]).then(resolve);
-      this.doThing(allASyncChunks);
-    });
-  }
-
-  @action async doThing(allASyncChunks: ConverterAndAnchor[][]) {
-    const tokenAddresses = await Promise.all(
-      allASyncChunks.map(this.addPoolsBulk)
-    );
-    const uniqueTokenAddreses = uniqWith(
-      tokenAddresses
-        .filter(Boolean)
-        .filter(x => Array.isArray(x) && x.length > 0)
-        .flat(1) as string[],
-      compareString
-    );
-    if (this.currentUser) {
-      this.fetchAndSetTokenBalances(uniqueTokenAddreses);
-    }
-    this.addAprsToPools();
-    this.addLiqMiningAprsToPools();
-  }
-
-  @action async addLiqMiningAprsToPools() {
-    const existing = this.relaysList;
-    const highTierPools = existing.filter(relay =>
-      this.highTierPoolsArr.some(htp => compareString(relay.id, htp))
-    ) as RelayWithReserveBalances[];
-
-    const storeAddress = this.contracts.LiquidityProtectionStore;
+    const storeAddress = protectionStoreAddress;
 
     const protectedShapes = highTierPools.map(pool => {
       const [reserveOne, reserveTwo] = pool.reserves;
@@ -6721,12 +6686,6 @@ export class EthBancorModule
         }
       ]
     }));
-
-    console.log(
-      protectedReserves,
-      "are the protected reserves",
-      zippedProtectedReserves
-    );
 
     const res = zippedProtectedReserves.map(pool => {
       const isHighCap = highCapPools.some(anchor =>
