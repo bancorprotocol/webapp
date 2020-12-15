@@ -1081,6 +1081,14 @@ interface RawAbiToken {
   symbol: string;
   decimals: string;
 }
+
+export interface HalfStaticRelay {
+  converterAddress: string;
+  converterType: number;
+  version: number;
+  reserves: string[];
+  poolToken: RawAbiToken;
+}
 export interface StaticRelay {
   converterAddress: string;
   converterType: number;
@@ -6168,6 +6176,52 @@ export class EthBancorModule
     this.fetchAndSetTokenBalances([newSettings.govToken]);
   }
 
+  @action async fetchTokens(tokenContracts: string[]): Promise<RawAbiToken[]> {
+    const tokenShapes = tokenContracts.map(tokenShape);
+    const [res] = await this.multi({ groupsOfShapes: [tokenShapes] });
+    return res as RawAbiToken[];
+  }
+
+  @action async halfRelayToFullStatic(
+    relays: HalfStaticRelay[]
+  ): Promise<StaticRelay[]> {
+    const cachedTokens = uniqWith(
+      moreStaticRelays.flatMap(relay => relay.reserves),
+      (a, b) => compareString(a.contract, b.contract)
+    );
+
+    const tokenContractsRequired = uniqWith(
+      relays.flatMap(relay => relay.reserves),
+      compareString
+    );
+
+    const [alreadyCovered, notCovered] = partition(
+      tokenContractsRequired,
+      contract =>
+        cachedTokens.some(token => compareString(token.contract, contract))
+    );
+
+    const fetchedTokens = await this.fetchTokens(notCovered);
+    const alreadyCoveredTokens = alreadyCovered.map(
+      contract =>
+        cachedTokens.find(token => compareString(contract, token.contract))!
+    );
+
+    const tokensRequired = [...fetchedTokens, ...alreadyCoveredTokens];
+
+    return relays.map(
+      (relay): StaticRelay => ({
+        ...relay,
+        reserves: relay.reserves.map(
+          reserve =>
+            tokensRequired.find(token =>
+              compareString(reserve, token.contract)
+            )!
+        )
+      })
+    );
+  }
+
   @action async init(params?: ModuleParam) {
     if (this.initiated) {
       return this.refresh();
@@ -6431,7 +6485,7 @@ export class EthBancorModule
       mergeMap(x => {
         console.log("coming in...2", x);
         return from(x);
-      }),
+      })
     ) as Observable<ConverterAndAnchor>;
 
     const [v2Pools$, v1Pools$] = partitionOb(
@@ -6460,7 +6514,7 @@ export class EthBancorModule
             compareStaticRelayAndSet(staticRelay, anchorAndConverter),
           "failed to find static relay"
         )
-      ),
+      )
     );
 
     const staticRelaysRemote$ = toRemoteLoad$.pipe(
@@ -6494,18 +6548,20 @@ export class EthBancorModule
       })),
       filter(({ relay }) => !!relay.connectorToken2),
       map(
-        ({ relay, poolToken }) =>
-          ({
-            ...relay,
-            poolToken,
-            reserves: [relay.connectorToken1, relay.connectorToken2] as [
-              string,
-              string
-            ],
-            version: Number(relay.version),
-            converterType: determineConverterType(relay.converterType)
-          } as StaticRelay)
-      )
+        ({ relay, poolToken }): HalfStaticRelay => ({
+          ...relay,
+          poolToken,
+          reserves: [relay.connectorToken1, relay.connectorToken2] as [
+            string,
+            string
+          ],
+          version: Number(relay.version),
+          converterType: determineConverterType(relay.converterType)
+        })
+      ),
+      bufferTime<HalfStaticRelay>(50),
+      mergeMap(relays => this.halfRelayToFullStatic(relays)),
+      mergeMap(relays => from(relays))
     ) as Observable<StaticRelay>;
 
     try {
@@ -6596,8 +6652,7 @@ export class EthBancorModule
           firstItem()
         )
         .toPromise();
-      this.setLoadingPools(false)
-
+      this.setLoadingPools(false);
     } catch (e) {
       console.error("thrown in x", e);
     }
