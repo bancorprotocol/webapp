@@ -82,7 +82,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
-import { stringifyPercentage, prettifyNumber } from "@/api/helpers";
+import { stringifyPercentage } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
@@ -100,7 +100,6 @@ interface ViewRewardsSummaryItem {
 export default class RewardsSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
   stringifyPercentage = stringifyPercentage;
-  prettifyNumber = prettifyNumber;
 
   title = "Rewards";
   modal = false;
