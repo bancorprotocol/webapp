@@ -1668,7 +1668,7 @@ export class EthBancorModule
         x => x && !x.v2 && x.volume !== undefined && !isNaN(Number(x.volume))
       )
       .map(x => new BigNumber(x.volume || 0))
-      .reduce((sum, current) => sum.plus(current));
+      .reduce((sum, current) => sum.plus(current), new BigNumber(0));
 
     return {
       totalLiquidityDepth: this.relays
@@ -1682,7 +1682,7 @@ export class EthBancorModule
         price: (ethToken && ethToken.price) || 0
       },
       twentyFourHourTradeCount: this.liquidityHistory.data.length,
-      totalVolume24h: Number(totalVolume24h),
+      totalVolume24h: totalVolume24h.toNumber(),
       bntUsdPrice: this.bntUsdPrice
     };
   }
