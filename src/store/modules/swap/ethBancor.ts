@@ -31,7 +31,6 @@ import {
   ViewRemoveEvent,
   ViewAddEvent,
   ViewAmountWithMeta,
-  FocusPoolRes,
   ProtectedLiquidityCalculated,
   ProtectLiquidityParams,
   OnUpdate,
@@ -3328,15 +3327,12 @@ export class EthBancorModule
           removeLiquiditySupported: true,
           whitelisted: false,
           liquidityProtection: false,
-          focusAvailable: false,
           v2: true
         } as ViewRelay;
       });
   }
 
   get traditionalRelays(): ViewRelay[] {
-    const availableHistories = this.availableHistories;
-
     const aprs = this.poolAprs;
     const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
     const whiteListedPools = this.whiteListedPools;
@@ -3348,11 +3344,6 @@ export class EthBancorModule
       )
       .map(relay => {
         const [, tokenReserve] = relay.reserves;
-
-        const smartTokenSymbol = relay.anchor.symbol;
-        const hasHistory = availableHistories.some(history =>
-          compareString(smartTokenSymbol, history)
-        );
 
         let liqDepth = relay.reserves.reduce(
           (acc, item) => acc + item.reserveFeed!.liqDepth,
@@ -3420,7 +3411,6 @@ export class EthBancorModule
           removeLiquiditySupported: true,
           liquidityProtection,
           whitelisted,
-          focusAvailable: hasHistory,
           v2: false,
           ...(apr && { apr: apr.oneWeekApr }),
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
@@ -5227,10 +5217,6 @@ export class EthBancorModule
     }
   }
 
-  @mutation setAvailableHistories(smartTokenNames: string[]) {
-    this.availableHistories = smartTokenNames;
-  }
-
   @action async refresh() {
     console.log("refresh called on eth bancor, doing nothing");
   }
@@ -6247,14 +6233,6 @@ export class EthBancorModule
         .then(() => {})
         .catch(() => {});
 
-      fetchSmartTokens()
-        .then(availableSmartTokenHistories =>
-          this.setAvailableHistories(
-            availableSmartTokenHistories.map(history => history.id)
-          )
-        )
-        .catch(() => {});
-
       getTokenMeta(currentNetwork).then(this.setTokenMeta);
       this.fetchUsdPriceOfBnt();
 
@@ -6925,21 +6903,6 @@ export class EthBancorModule
     } else {
       Sentry.configureScope(scope => scope.setUser(null));
     }
-  }
-
-  @action async focusPool(id: string): Promise<FocusPoolRes> {
-    const pool = await this.relayById(id);
-    const converterAddress = pool.contract;
-    const yesterday = await blockNumberHoursAgo(24, w3);
-
-    const res = await this.pullConverterEvents({
-      converterAddress,
-      network: this.currentNetwork,
-      fromBlock: yesterday.blockHoursAgo
-    });
-    console.log(res, "was returned from focus pool");
-
-    return res;
   }
 
   @action async focusSymbol(id: string) {

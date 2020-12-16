@@ -312,7 +312,6 @@ export interface ViewRelay {
   owner: string;
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
-  focusAvailable?: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;
   v2: boolean;
@@ -472,12 +471,6 @@ export interface ReserveFeed {
 interface LiquidityHistory {
   loading: boolean;
   data: ViewLiquidityEvent<ViewTradeEvent>[];
-}
-
-export interface FocusPoolRes {
-  conversionEvents: ViewLiquidityEvent<ViewTradeEvent>[];
-  addEvents: ViewLiquidityEvent<ViewAddEvent>[];
-  removeEvents: ViewLiquidityEvent<ViewRemoveEvent>[];
 }
 
 export interface LiquidityModule {

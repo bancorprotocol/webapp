@@ -1142,7 +1142,6 @@ export class EosBancorModule
           liqDepth: relayFeed && relayFeed.liqDepth,
           addLiquiditySupported: relay.isMultiContract,
           removeLiquiditySupported: true,
-          focusAvailable: false,
           v2: false,
           liquidityProtection: false,
           whitelisted: false,
