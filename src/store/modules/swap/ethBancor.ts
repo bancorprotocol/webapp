@@ -415,6 +415,7 @@ const addLiquidityEventToView = (
 
   return {
     account,
+    id: firstItem.txHash,
     type: "add",
     accountLink: createBlockExplorerAccountLink(account),
     data: {
@@ -454,6 +455,7 @@ const removeLiquidityEventToView = (
   const account = firstItem.data.trader;
 
   return {
+    id: firstItem.txHash,
     account,
     type: "remove",
     accountLink: createBlockExplorerAccountLink(account),
@@ -501,6 +503,7 @@ const conversionEventToViewTradeEvent = (
   );
 
   return {
+    id: conversion.id,
     txLink: createBlockExplorerTxLink(conversion.txHash),
     accountLink: createBlockExplorerAccountLink(conversion.data.trader),
     valueTransmitted: new BigNumber(fromAmountDec)
