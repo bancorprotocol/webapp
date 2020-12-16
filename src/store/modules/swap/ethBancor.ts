@@ -405,36 +405,6 @@ const estimateBlockTimeUnix = (
   return knownBlockNumberTime - timeGap;
 };
 
-const addLiquidityEventToView = (
-  addLiquidity: DecodedTimedEvent<AddLiquidityEvent>[],
-  tokens: ViewToken[],
-  createBlockExplorerTxLink: (hash: string) => string,
-  createBlockExplorerAccountLink: (account: string) => string
-): ViewLiquidityEvent<ViewAddEvent> => {
-  const firstItem = first(addLiquidity)!;
-  const account = firstItem.data.trader;
-
-  return {
-    account,
-    id: firstItem.txHash,
-    type: "add",
-    accountLink: createBlockExplorerAccountLink(account),
-    data: {
-      tokensAdded: addLiquidity.map(event => {
-        const token = findOrThrow(tokens, token =>
-          compareString(token.contract, event.data.tokenAdded)
-        );
-        const decAmount = shrinkToken(event.data.amount, token.precision);
-        return viewTokenToViewAmountWithMeta(decAmount, token);
-      })
-    },
-    txHash: firstItem.txHash,
-    txLink: createBlockExplorerTxLink(firstItem.txHash),
-    unixTime: firstItem.blockTime,
-    valueTransmitted: 0
-  };
-};
-
 const viewTokenToViewAmountWithMeta = (
   amount: string,
   token: ViewToken
@@ -445,36 +415,6 @@ const viewTokenToViewAmountWithMeta = (
   logo: token.logo,
   symbol: token.symbol
 });
-
-const removeLiquidityEventToView = (
-  removeLiquidity: DecodedTimedEvent<RemoveLiquidityEvent>[],
-  tokens: ViewToken[],
-  createBlockExplorerTxLink: (hash: string) => string,
-  createBlockExplorerAccountLink: (account: string) => string
-): ViewLiquidityEvent<ViewRemoveEvent> => {
-  const firstItem = first(removeLiquidity)!;
-  const account = firstItem.data.trader;
-
-  return {
-    id: firstItem.txHash,
-    account,
-    type: "remove",
-    accountLink: createBlockExplorerAccountLink(account),
-    data: {
-      tokensRemoved: removeLiquidity.map(event => {
-        const token = findOrThrow(tokens, token =>
-          compareString(token.id, event.data.tokenRemoved)
-        );
-        const decAmount = shrinkToken(event.data.amount, token.precision);
-        return viewTokenToViewAmountWithMeta(decAmount, token);
-      })
-    },
-    txHash: firstItem.txHash,
-    txLink: createBlockExplorerTxLink(firstItem.txHash),
-    unixTime: firstItem.blockTime,
-    valueTransmitted: 0
-  };
-};
 
 const conversionEventToViewTradeEvent = (
   conversion: DecodedTimedEvent<ConversionEventDecoded>,
