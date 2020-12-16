@@ -48,13 +48,7 @@ export default class SelectPoolRow extends BaseComponent {
   }
 
   get positions(): PoolTokenPosition[] {
-    return vxm.bancor.poolTokenPositions.filter((x: PoolTokenPosition) =>
-      this.getPoolLabel(x.relay.reserves)
-    );
-  }
-
-  getPoolLabel(reserves: ViewReserve[]) {
-    return `${reserves[0].symbol}/${reserves[1].symbol}`;
+    return vxm.bancor.poolTokenPositions;
   }
 }
 </script>
