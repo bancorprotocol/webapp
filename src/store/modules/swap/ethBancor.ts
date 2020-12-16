@@ -3306,15 +3306,18 @@ export class EthBancorModule
 
         const { poolContainerAddress } = relay.anchor;
 
-        const reserves = relay.reserves.map(reserve => ({
-          reserveWeight: reserve.reserveWeight,
-          id: reserve.contract,
-          reserveId: poolContainerAddress + reserve.contract,
-          logo: [reserve.meta!.logo],
-          symbol: reserve.symbol,
-          contract: reserve.contract,
-          smartTokenSymbol: poolContainerAddress
-        } as ViewReserve))
+        const reserves = relay.reserves.map(
+          reserve =>
+            ({
+              reserveWeight: reserve.reserveWeight,
+              id: reserve.contract,
+              reserveId: poolContainerAddress + reserve.contract,
+              logo: [reserve.meta!.logo],
+              symbol: reserve.symbol,
+              contract: reserve.contract,
+              smartTokenSymbol: poolContainerAddress
+            } as ViewReserve)
+        );
 
         return {
           id: poolContainerAddress,
@@ -3396,15 +3399,18 @@ export class EthBancorModule
           compareString(apr.poolId, relay.id)
         );
 
-        const reserves = relay.reserves.map(reserve => ({
-          id: reserve.contract,
-          reserveWeight: reserve.reserveWeight,
-          reserveId: relay.anchor.contract + reserve.contract,
-          logo: [reserve.meta!.logo],
-          symbol: reserve.symbol,
-          contract: reserve.contract,
-          smartTokenSymbol: relay.anchor.contract
-        } as ViewReserve))
+        const reserves = relay.reserves.map(
+          reserve =>
+            ({
+              id: reserve.contract,
+              reserveWeight: reserve.reserveWeight,
+              reserveId: relay.anchor.contract + reserve.contract,
+              logo: [reserve.meta!.logo],
+              symbol: reserve.symbol,
+              contract: reserve.contract,
+              smartTokenSymbol: relay.anchor.contract
+            } as ViewReserve)
+        );
 
         return {
           id: relay.anchor.contract,
