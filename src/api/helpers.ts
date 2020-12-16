@@ -17,7 +17,9 @@ import {
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken
+  ViewToken,
+  TableItem,
+  ViewReserve
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -30,7 +32,6 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import moment from "moment";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
-import { Item } from "@/components/common/DataTable.vue";
 
 export enum PositionType {
   single,
@@ -171,24 +172,6 @@ export const formatNumber = (num: number | string, size: number = 4) => {
     return `< ${replaceLastChar(reduced, "1")}`;
   }
   return reduced;
-};
-
-export const prettifyNumber = (
-  num: number | string | BigNumber,
-  usd = false
-): string => {
-  const bigNum = new BigNumber(num);
-  if (usd) {
-    if (bigNum.lte(0)) return "$0.00";
-    else if (bigNum.lt(0.01)) return "< $0.01";
-    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
-    else return numeral(bigNum).format("$0,0.00");
-  } else {
-    if (bigNum.lte(0)) return "0";
-    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
-    else if (bigNum.lt(0.000001)) return "< 0.000001";
-    else return numeral(bigNum).format("0.[000000]");
-  }
 };
 
 export const stringifyPercentage = (percentage: number): string => {
@@ -355,6 +338,7 @@ export interface DecodedEvent<T> {
   blockNumber: string;
   txHash: string;
   data: T;
+  id: string;
 }
 
 export interface DecodedTimedEvent<T> extends DecodedEvent<T> {
@@ -397,6 +381,7 @@ const decodeRemoveLiquidity = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
+    id: txHash,
     txHash,
     blockNumber,
     data: {
@@ -427,6 +412,7 @@ const decodeAddLiquidityEvent = (
   const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
+    id: txHash,
     blockNumber,
     txHash,
     data: {
@@ -462,6 +448,7 @@ const decodeConversionEvent = (
   const res = {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       from: {
         address: removeLeadingZeros(fromAddress),
@@ -500,6 +487,7 @@ const decodeNetworkConversionEvent = (
   return {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       poolToken: removeLeadingZeros(poolToken),
       from: {
@@ -1253,15 +1241,19 @@ export const getCountryCode = async (): Promise<string> => {
   }
 };
 
-export const buildPoolName = (
-  poolId: string,
-  separator: string = "/"
-): string => {
+export const buildPoolName = (poolId: string): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   if (pool) {
-    const symbols = pool.reserves.map(x => x.symbol);
-    return symbols.reverse().join(separator);
+    return buildPoolNameFromReserves(pool.reserves);
   } else return "N/A";
+};
+
+export const buildPoolNameFromReserves = (
+  reserves: ViewReserve[],
+  separator: string = "/"
+): string => {
+  const symbols = reserves.map(x => x.symbol);
+  return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (
@@ -1275,7 +1267,7 @@ export const formatUnixTime = (
 };
 
 export const defaultTableSort = (
-  row: Item,
+  row: TableItem,
   sortBy: string,
   sortZero: boolean = false
 ) => {

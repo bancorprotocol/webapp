@@ -339,14 +339,13 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import LayoutProposals, {
-  ViewTableField
-} from "@/components/vote/proposals/LayoutProposals.vue";
+import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
+import { ViewProposalsField } from "@/types/bancor";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import MainButton from "@/components/common/Button.vue";
-import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
@@ -382,7 +381,7 @@ export default class OpenProposals extends BaseComponent {
     return this.proposals ? this.proposals.slice() : [];
   }
 
-  get fields(): ViewTableField[] {
+  get fields(): ViewProposalsField[] {
     console.log("proposals", this.proposals);
     return [
       {
@@ -392,8 +391,7 @@ export default class OpenProposals extends BaseComponent {
         minWidth: "16px",
         maxWidth: "16px",
         colAuto: true,
-        colRate: 1,
-        sortable: false
+        colRate: 1
       },
       {
         id: 2,
@@ -401,8 +399,7 @@ export default class OpenProposals extends BaseComponent {
         key: "name",
         // minWidth: "380px",
         colAuto: false,
-        colRate: 7,
-        sortable: false
+        colRate: 7
       },
       {
         id: 3,
@@ -410,18 +407,13 @@ export default class OpenProposals extends BaseComponent {
         key: "votes",
         minWidth: "200px",
         colAuto: false,
-        colRate: 4,
-        sortable: false
+        colRate: 4
       }
     ];
   }
 
   shrinkToken(amount: string): string {
     return shrinkToken(amount, this.decimals);
-  }
-
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
   }
 
   getVotePercent(proposal: Proposal) {

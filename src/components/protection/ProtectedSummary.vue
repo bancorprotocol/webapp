@@ -1,11 +1,11 @@
 <template>
   <div
     :id="darkMode ? 'protected-summary-dark' : 'protected-summary'"
-    class="rounded p-3 mb-3"
+    class="rounded p-3 mb-3 block-shadow-light"
     :class="darkMode ? 'text-dark' : 'text-light'"
   >
     <div class="d-flex justify-content-between align-items-center d-xl-none">
-      <span>My Stake</span>
+      <span class="font-size-16 font-w500">My Stake</span>
       <b-btn
         variant="primary"
         :to="{ name: 'AddProtectionHome' }"
@@ -15,7 +15,7 @@
     </div>
     <b-row>
       <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
-        <div class="font-size-16 font-w600">My Stake</div>
+        <div class="font-size-16 font-w500">My Stake</div>
       </b-col>
       <b-col
         v-for="(item, index) in summarizedPositions"
@@ -37,7 +37,7 @@
       >
         <b-btn
           variant="primary"
-          style="width: 132px"
+          class="btn-block"
           :to="{ name: 'AddProtectionHome' }"
           >Stake</b-btn
         >
@@ -49,7 +49,6 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
-import { prettifyNumber } from "@/api/helpers";
 import numeral from "numeral";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -75,14 +74,17 @@ export default class ProtectedSummary extends BaseComponent {
       // const roi = (protectedValue - initialStake) / initialStake;
 
       return [
-        { key: "Initial Stake", value: prettifyNumber(initialStake, true) },
+        {
+          key: "Initial Stake",
+          value: this.prettifyNumber(initialStake, true)
+        },
         {
           key: "Protected Value",
-          value: prettifyNumber(protectedValue, true)
+          value: this.prettifyNumber(protectedValue, true)
         },
         {
           key: "Claimable Value",
-          value: prettifyNumber(claimableValue, true)
+          value: this.prettifyNumber(claimableValue, true)
         },
         { key: "", value: "" }
         // { key: "ROI", value: this.stringifyPercentage(roi) }

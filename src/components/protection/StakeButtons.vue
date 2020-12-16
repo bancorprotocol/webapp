@@ -48,7 +48,6 @@ import { Component, Prop, Emit } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import { vxm } from "@/store";
-import { prettifyNumber } from "@/api/helpers";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -113,7 +112,7 @@ export default class StakeButtons extends BaseComponent {
         poolId: this.poolId
       });
       this.maxStakes = result.map(x => {
-        return `${prettifyNumber(x.amount)} ${x.token}`;
+        return `${this.prettifyNumber(x.amount)} ${x.token}`;
       });
     } catch (e) {
       console.log(e);

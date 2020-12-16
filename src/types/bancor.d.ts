@@ -305,6 +305,7 @@ export interface ViewGroupedPositions {
 
 export interface ViewRelay {
   id: string;
+  name: string;
   symbol: string;
   liqDepth: number;
   reserves: ViewReserve[];
@@ -312,7 +313,6 @@ export interface ViewRelay {
   owner: string;
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
-  focusAvailable?: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;
   v2: boolean;
@@ -420,6 +420,7 @@ export interface ViewRemoveEvent {
 }
 
 export interface ViewLiquidityEvent<T> {
+  id: string;
   valueTransmitted: number;
   txHash: string;
   txLink: string;
@@ -473,12 +474,6 @@ interface LiquidityHistory {
   data: ViewLiquidityEvent<ViewTradeEvent>[];
 }
 
-export interface FocusPoolRes {
-  conversionEvents: ViewLiquidityEvent<ViewTradeEvent>[];
-  addEvents: ViewLiquidityEvent<ViewAddEvent>[];
-  removeEvents: ViewLiquidityEvent<ViewRemoveEvent>[];
-}
-
 export interface LiquidityModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly primaryReserveChoices: (secondaryChoiceId: string) => ModalChoice[];
@@ -500,7 +495,6 @@ export interface LiquidityModule {
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;
-  focusPool: (poolId: string) => Promise<FocusPoolRes | void>;
   loadMorePools: () => Promise<void>;
   calculateOpposingDeposit: (
     opposingDeposit: OpposingLiquidParams
@@ -781,4 +775,32 @@ export interface LiqMiningApr {
   address: string;
   amount: string;
   reward?: number;
+}
+
+export interface ViewTableField {
+  id: number;
+  label: string;
+  key: string;
+  sortable?: boolean;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  thClass?: string;
+}
+
+export interface TableItem {
+  id: string;
+  [key: string]: any;
+  collapsedData?: TableItem[];
+}
+
+export interface ViewProposalsField {
+  id: number;
+  label: string;
+  key: string;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  colAuto?: boolean;
+  colRate?: number;
 }

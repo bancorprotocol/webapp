@@ -109,12 +109,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import {
-  formatUnixTime,
-  formatNumber,
-  buildPoolName,
-  prettifyNumber
-} from "@/api/helpers";
+import { formatUnixTime, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -166,8 +161,6 @@ export default class AddProtectionSingle extends BaseComponent {
 
   private interval: any;
 
-  prettifyNumber = prettifyNumber;
-
   @Watch("token")
   async onTokenChange() {
     await this.loadMaxStakes();
@@ -198,10 +191,6 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
-  }
-
-  get poolName() {
-    return buildPoolName(this.pool.id);
   }
 
   get isWhitelisted() {

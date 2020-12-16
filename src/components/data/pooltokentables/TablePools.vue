@@ -70,27 +70,26 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { LiqMiningApr, ViewRelay } from "@/types/bancor";
-import { defaultTableSort, formatPercent, prettifyNumber } from "@/api/helpers";
+import { LiqMiningApr, ViewRelay, ViewTableField } from "@/types/bancor";
+import { defaultTableSort, formatPercent } from "@/api/helpers";
 import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
-import { ViewTableField } from "@/components/common/DataTable.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { CountdownTimer, DataTable, PoolLogos, ActionButtons }
 })
-export default class TablePools extends Vue {
+export default class TablePools extends BaseComponent {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
 
   formatPercent(percentage: string | number) {
     return new BigNumber(percentage).gte(0) ? formatPercent(percentage) : "N/A";
   }
-  prettifyNumber = prettifyNumber;
 
   get aprsExist() {
     return this.items.some(pool => pool.apr);

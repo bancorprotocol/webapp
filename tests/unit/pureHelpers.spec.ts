@@ -4,6 +4,7 @@ import {
   expandToken,
   miningBntReward,
   miningTknReward,
+  prettifyNumber,
   groupPositionsArray,
   calculateLimits
 } from "@/api/pureHelpers";
@@ -498,32 +499,148 @@ describe("calculate grouped positions for protected table", () => {
   });
 });
 
+describe("Prettify Numbers", () => {
+  test("convert numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbers: number[] = [
+      0,
+      0.000000000000000001,
+      1.123456789000000001,
+      1.100000000000000001,
+      1.999999999999999999,
+      2.999999999999999999,
+      100.123400000000000001,
+      123456789.123456789000000001
+    ];
+
+    const resultNumbers: string[] = numbers.map(n => prettifyNumber(n));
+    const expectedNumbers: string[] = [
+      "0",
+      "< 0.000001",
+      "1.123457",
+      "1.1",
+      "2",
+      "3",
+      "100.12",
+      "123,456,789.12"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
+  });
+
+  test("convert string numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbersStrings: string[] = [
+      "0",
+      "0.000000000000000001",
+      "1.123456789000000001",
+      "1.100000000000000001",
+      "1.999999999999999999",
+      "2.999999999999999999",
+      "100.123400000000000001",
+      "123456789.123456789000000001"
+    ];
+
+    const resultNumbers: string[] = numbersStrings.map(n => prettifyNumber(n));
+    const expectedNumbers: string[] = [
+      "0",
+      "< 0.000001",
+      "1.123457",
+      "1.1",
+      "2",
+      "3",
+      "100.12",
+      "123,456,789.12"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
+  });
+
+  test("convert usd value numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbers: number[] = [
+      0,
+      0.000000000000000001,
+      1.123456789000000001,
+      1.100000000000000001,
+      1.999999999999999999,
+      2.999999999999999999,
+      100.123400000000000001,
+      123456789.123456789000000001
+    ];
+
+    const resultNumbers: string[] = numbers.map(n => prettifyNumber(n, true));
+    const expectedNumbers: string[] = [
+      "$0.00",
+      "< $0.01",
+      "$1.12",
+      "$1.10",
+      "$2.00",
+      "$3.00",
+      "$100",
+      "$123,456,789"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
+  });
+
+  test("convert usd value string numbers to strings with comma separator and pre-defined decimal precision", () => {
+    const numbersStrings: string[] = [
+      "0",
+      "0.000000000000000001",
+      "1.123456789000000001",
+      "1.100000000000000001",
+      "1.999999999999999999",
+      "2.999999999999999999",
+      "100.123400000000000001",
+      "123456789.123456789000000001"
+    ];
+
+    const resultNumbers: string[] = numbersStrings.map(n =>
+      prettifyNumber(n, true)
+    );
+    const expectedNumbers: string[] = [
+      "$0.00",
+      "< $0.01",
+      "$1.12",
+      "$1.10",
+      "$2.00",
+      "$3.00",
+      "$100",
+      "$123,456,789"
+    ];
+
+    expect(resultNumbers).toEqual(expectedNumbers);
+  });
+});
+
 describe("calculateLimits", () => {
   test("calculate proper limits", () => {
-    const {tknLimitWei, bntLimitWei} = calculateLimits(
+    const { tknLimitWei, bntLimitWei } = calculateLimits(
       "50000000000000000000000",
       "10000000000000000000000",
       "26554714837518616832230",
       "16725525059808512049638",
-      "27688994896013371337745",
-    )
+      "27688994896013371337745"
+    );
 
-    BigNumber.set({EXPONENTIAL_AT: 25});
-    expect(tknLimitWei.toString()).toEqual("14147951967419454727944.8873357485195903336563")
-    expect(bntLimitWei.toString()).toEqual("26554714837518616832230")
+    BigNumber.set({ EXPONENTIAL_AT: 25 });
+    expect(tknLimitWei.toString()).toEqual(
+      "14147951967419454727944.8873357485195903336563"
+    );
+    expect(bntLimitWei.toString()).toEqual("26554714837518616832230");
   });
 
   test("calculate proper limits when falling back to default", () => {
-    const {tknLimitWei, bntLimitWei} = calculateLimits(
+    const { tknLimitWei, bntLimitWei } = calculateLimits(
       "0",
       "50000000000000000000000",
       "26554714837518616832230",
       "16725525059808512049638",
-      "27688994896013371337745",
-    )
+      "27688994896013371337745"
+    );
 
-    BigNumber.set({EXPONENTIAL_AT: 25});
-    expect(tknLimitWei.toString()).toEqual("14147951967419454727944.8873357485195903336563")
-    expect(bntLimitWei.toString()).toEqual("26554714837518616832230")
+    BigNumber.set({ EXPONENTIAL_AT: 25 });
+    expect(tknLimitWei.toString()).toEqual(
+      "14147951967419454727944.8873357485195903336563"
+    );
+    expect(bntLimitWei.toString()).toEqual("26554714837518616832230");
   });
 });
