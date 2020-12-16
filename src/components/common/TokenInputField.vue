@@ -6,7 +6,7 @@
         v-if="currentUser"
         class="font-size-12 font-w500 cursor"
       >
-        {{ formattedBalance }}
+        Balance: ~{{ prettifyNumber(balance) }}
         {{ usdValue ? usdValue : "" }}
       </span>
     </label-content-split>
@@ -122,12 +122,6 @@ export default class TokenInputField extends BaseComponent {
   }
 
   modal = false;
-
-  get formattedBalance() {
-    const balanceInput = this.balance;
-    if (new BigNumber(balanceInput).isNaN()) return "";
-    return `Balance: ${formatNumber(parseFloat(balanceInput), 6).toString()}`;
-  }
 
   isNumber(evt: any) {
     evt = evt ? evt : window.event;
