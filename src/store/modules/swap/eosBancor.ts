@@ -653,8 +653,6 @@ export class EosBancorModule
     }
   }
 
-  @action async focusPool() {}
-
   get wallet() {
     return "eos";
   }

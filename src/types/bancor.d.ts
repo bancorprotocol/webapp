@@ -494,7 +494,6 @@ export interface LiquidityModule {
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;
-  focusPool: (poolId: string) => Promise<FocusPoolRes | void>;
   loadMorePools: () => Promise<void>;
   calculateOpposingDeposit: (
     opposingDeposit: OpposingLiquidParams
