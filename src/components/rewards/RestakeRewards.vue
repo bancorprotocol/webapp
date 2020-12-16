@@ -1,7 +1,5 @@
 <template>
-  <div>
-    restake placeholder
-  </div>
+  <div>restake placeholder</div>
 </template>
 
 <script lang="ts">

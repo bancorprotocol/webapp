@@ -68,7 +68,6 @@ import {
   getLogs,
   DecodedEvent,
   ConversionEventDecoded,
-  getConverterLogs,
   DecodedTimedEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
@@ -133,7 +132,7 @@ import {
   removeLeadingZeros
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
-import { getSmartTokenHistory, fetchSmartTokens } from "@/api/eth/zumZoom";
+import { getSmartTokenHistory } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {

@@ -1,7 +1,5 @@
 <template>
-  <div>
-    withdraw placeholder
-  </div>
+  <div>withdraw placeholder</div>
 </template>
 
 <script lang="ts">

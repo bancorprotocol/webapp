@@ -638,7 +638,7 @@ export class EosBancorModule
   }
 
   get currentUser() {
-    return vxm.wallet.currentUser
+    return vxm.wallet.currentUser;
   }
 
   @action async onAuthChange(currentUser: string | false) {
@@ -1130,13 +1130,16 @@ export class EosBancorModule
           reserve => reserve.symbol
         );
 
-        const reserves = sortedReserves.map((reserve: AgnosticToken) => ({
-          ...reserve,
-          reserveWeight: 0.5,
-          reserveId: relay.id + reserve.id,
-          logo: [this.token(reserve.id).logo],
-          ...(reserve.amount && { balance: reserve.amount })
-        } as ViewReserve))
+        const reserves = sortedReserves.map(
+          (reserve: AgnosticToken) =>
+            ({
+              ...reserve,
+              reserveWeight: 0.5,
+              reserveId: relay.id + reserve.id,
+              logo: [this.token(reserve.id).logo],
+              ...(reserve.amount && { balance: reserve.amount })
+            } as ViewReserve)
+        );
 
         return {
           ...relay,

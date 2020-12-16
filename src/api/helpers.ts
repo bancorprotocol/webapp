@@ -1241,11 +1241,9 @@ export const getCountryCode = async (): Promise<string> => {
   }
 };
 
-export const buildPoolName = (
-  poolId: string
-): string => {
+export const buildPoolName = (poolId: string): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
-  if(pool) {
+  if (pool) {
     return buildPoolNameFromReserves(pool.reserves);
   } else return "N/A";
 };
@@ -1254,8 +1252,8 @@ export const buildPoolNameFromReserves = (
   reserves: ViewReserve[],
   separator: string = "/"
 ): string => {
-    const symbols = reserves.map(x => x.symbol);
-    return symbols.reverse().join(separator);
+  const symbols = reserves.map(x => x.symbol);
+  return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (
