@@ -30,7 +30,8 @@ import {
   TxResponse,
   DFuseTrade,
   ViewTradeEvent,
-  ViewLiquidityEvent
+  ViewLiquidityEvent,
+  ViewReserve
 } from "@/types/bancor";
 import { bancorApi, ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -53,7 +54,8 @@ import {
   assetToDecNumberString,
   decNumberStringToAsset,
   findChangedReserve,
-  StringPool
+  StringPool,
+  buildPoolNameFromReserves
 } from "@/api/helpers";
 import {
   Sym as Symbol,
@@ -636,8 +638,7 @@ export class EosBancorModule
   }
 
   get currentUser() {
-    // @ts-ignore
-    return this.$store.rootGetters[`${this.wallet}Wallet/currentUser`];
+    return vxm.wallet.currentUser
   }
 
   @action async onAuthChange(currentUser: string | false) {
@@ -1129,6 +1130,14 @@ export class EosBancorModule
           reserve => reserve.symbol
         );
 
+        const reserves = sortedReserves.map((reserve: AgnosticToken) => ({
+          ...reserve,
+          reserveWeight: 0.5,
+          reserveId: relay.id + reserve.id,
+          logo: [this.token(reserve.id).logo],
+          ...(reserve.amount && { balance: reserve.amount })
+        } as ViewReserve))
+
         return {
           ...relay,
           version: relay.isMultiContract ? 2 : 1,
@@ -1136,6 +1145,7 @@ export class EosBancorModule
             contract: relay.smartToken.contract,
             symbol: relay.smartToken.symbol
           }),
+          name: buildPoolNameFromReserves(reserves),
           symbol: sortedReserves[1].symbol,
           liqDepth: relayFeed && relayFeed.liqDepth,
           addLiquiditySupported: relay.isMultiContract,
@@ -1143,14 +1153,8 @@ export class EosBancorModule
           v2: false,
           liquidityProtection: false,
           whitelisted: false,
-          reserves: sortedReserves.map((reserve: AgnosticToken) => ({
-            ...reserve,
-            reserveWeight: 0.5,
-            reserveId: relay.id + reserve.id,
-            logo: [this.token(reserve.id).logo],
-            ...(reserve.amount && { balance: reserve.amount })
-          }))
-        };
+          reserves
+        } as ViewRelay;
       });
   }
 
@@ -1848,7 +1852,7 @@ export class EosBancorModule
             if (failedDueToBadCalculation) {
               const { fundAmount, addLiquidityActions } = state;
               const backupFundAction = multiContractAction.fund(
-                vxm.wallet.currentUser,
+                this.currentUser,
                 number_to_asset(
                   Number(fundAmount) * 0.96,
                   new Symbol(relay.smartToken.symbol, 4)

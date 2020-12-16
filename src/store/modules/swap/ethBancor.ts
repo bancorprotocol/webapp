@@ -40,7 +40,8 @@ import {
   ViewAmountDetail,
   WeiExtendedAsset,
   PoolLiqMiningApr,
-  ProtectedLiquidity
+  ProtectedLiquidity,
+  ViewReserve
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -74,7 +75,8 @@ import {
   traverseLockedBalances,
   LockedBalance,
   rewindBlocksByDays,
-  calculateProgressLevel
+  calculateProgressLevel,
+  buildPoolNameFromReserves
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import {
@@ -3304,18 +3306,21 @@ export class EthBancorModule
 
         const { poolContainerAddress } = relay.anchor;
 
+        const reserves = relay.reserves.map(reserve => ({
+          reserveWeight: reserve.reserveWeight,
+          id: reserve.contract,
+          reserveId: poolContainerAddress + reserve.contract,
+          logo: [reserve.meta!.logo],
+          symbol: reserve.symbol,
+          contract: reserve.contract,
+          smartTokenSymbol: poolContainerAddress
+        } as ViewReserve))
+
         return {
           id: poolContainerAddress,
+          name: buildPoolNameFromReserves(reserves),
           version: Number(relay.version),
-          reserves: relay.reserves.map(reserve => ({
-            reserveWeight: reserve.reserveWeight,
-            id: reserve.contract,
-            reserveId: poolContainerAddress + reserve.contract,
-            logo: [reserve.meta!.logo],
-            symbol: reserve.symbol,
-            contract: reserve.contract,
-            smartTokenSymbol: poolContainerAddress
-          })),
+          reserves,
           fee: relay.fee / 100,
           liqDepth: relay.reserves.reduce(
             (acc, item) => acc + item.reserveFeed!.liqDepth,
@@ -3391,18 +3396,21 @@ export class EthBancorModule
           compareString(apr.poolId, relay.id)
         );
 
+        const reserves = relay.reserves.map(reserve => ({
+          id: reserve.contract,
+          reserveWeight: reserve.reserveWeight,
+          reserveId: relay.anchor.contract + reserve.contract,
+          logo: [reserve.meta!.logo],
+          symbol: reserve.symbol,
+          contract: reserve.contract,
+          smartTokenSymbol: relay.anchor.contract
+        } as ViewReserve))
+
         return {
           id: relay.anchor.contract,
+          name: buildPoolNameFromReserves(reserves),
           version: Number(relay.version),
-          reserves: relay.reserves.map(reserve => ({
-            id: reserve.contract,
-            reserveWeight: reserve.reserveWeight,
-            reserveId: relay.anchor.contract + reserve.contract,
-            logo: [reserve.meta!.logo],
-            symbol: reserve.symbol,
-            contract: reserve.contract,
-            smartTokenSymbol: relay.anchor.contract
-          })),
+          reserves,
           fee: relay.fee / 100,
           liqDepth,
           owner: relay.owner,
