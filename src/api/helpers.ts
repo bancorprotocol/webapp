@@ -18,7 +18,8 @@ import {
   ViewAmount,
   ViewRelay,
   ViewToken,
-  TableItem
+  TableItem,
+  ViewReserve
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -1241,14 +1242,20 @@ export const getCountryCode = async (): Promise<string> => {
 };
 
 export const buildPoolName = (
-  poolId: string,
-  separator: string = "/"
+  poolId: string
 ): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
-  if (pool) {
-    const symbols = pool.reserves.map(x => x.symbol);
-    return symbols.reverse().join(separator);
+  if(pool) {
+    return buildPoolNameFromReserves(pool.reserves);
   } else return "N/A";
+};
+
+export const buildPoolNameFromReserves = (
+  reserves: ViewReserve[],
+  separator: string = "/"
+): string => {
+    const symbols = reserves.map(x => x.symbol);
+    return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (

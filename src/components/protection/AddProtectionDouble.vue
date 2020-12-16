@@ -42,7 +42,7 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ `${formatNumber(amount)} ${poolName}` }}
+            {{ `${formatNumber(amount)} ${pool.name}` }}
           </span>
         </b-col>
         <b-col v-if="false" cols="12">
@@ -85,7 +85,6 @@ import {
   compareString,
   formatUnixTime,
   formatNumber,
-  buildPoolName
 } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
@@ -125,10 +124,6 @@ export default class AddProtectionDouble extends BaseComponent {
 
   get pools() {
     return vxm.bancor.relays.filter(x => x.liquidityProtection);
-  }
-
-  get poolName() {
-    return buildPoolName(this.pool.id);
   }
 
   get balance() {
