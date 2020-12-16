@@ -47,7 +47,7 @@ export default class Navigation extends BaseComponent {
   }
 
   get showAlert() {
-    return !vxm.ethBancor.isCurrentMainnet;
+    return !vxm.ethBancor.isSupportedNetwork;
   }
 
   created() {

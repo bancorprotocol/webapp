@@ -2352,8 +2352,8 @@ export class EthBancorModule
     this.setTolerance(tolerance);
   }
 
-  get isCurrentMainnet() {
-    return this.currentNetwork == EthNetworks.Mainnet
+  get isSupportedNetwork() {
+    return this.currentNetwork == EthNetworks.Mainnet;
   }
 
   @mutation setNetwork(network: EthNetworks) {
