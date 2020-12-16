@@ -8,7 +8,7 @@
         fade
         :show="showAlert"
       >
-        <font-awesome-icon            
+        <font-awesome-icon
           icon="exclamation-triangle"
           class="text-danger ml-1 mr-1"
           size="1x"
@@ -47,7 +47,7 @@ export default class Navigation extends BaseComponent {
   }
 
   get showAlert() {
-    return !vxm.ethBancor.isCurrentMainnet
+    return !vxm.ethBancor.isCurrentMainnet;
   }
 
   created() {
@@ -140,7 +140,7 @@ export default class Navigation extends BaseComponent {
     padding: 7px;
     padding-right: 15px;
     color: #ff4e37;
-    font-size: .7rem;
+    font-size: 0.7rem;
 
     .close {
       width: 25px;
