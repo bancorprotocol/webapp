@@ -18,7 +18,8 @@ import {
   ViewAmount,
   ViewRelay,
   ViewToken,
-  TableItem
+  TableItem,
+  ViewReserve
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -337,6 +338,7 @@ export interface DecodedEvent<T> {
   blockNumber: string;
   txHash: string;
   data: T;
+  id: string;
 }
 
 export interface DecodedTimedEvent<T> extends DecodedEvent<T> {
@@ -379,6 +381,7 @@ const decodeRemoveLiquidity = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
+    id: txHash,
     txHash,
     blockNumber,
     data: {
@@ -409,6 +412,7 @@ const decodeAddLiquidityEvent = (
   const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
+    id: txHash,
     blockNumber,
     txHash,
     data: {
@@ -444,6 +448,7 @@ const decodeConversionEvent = (
   const res = {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       from: {
         address: removeLeadingZeros(fromAddress),
@@ -482,6 +487,7 @@ const decodeNetworkConversionEvent = (
   return {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       poolToken: removeLeadingZeros(poolToken),
       from: {
@@ -1235,15 +1241,19 @@ export const getCountryCode = async (): Promise<string> => {
   }
 };
 
-export const buildPoolName = (
-  poolId: string,
-  separator: string = "/"
-): string => {
+export const buildPoolName = (poolId: string): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   if (pool) {
-    const symbols = pool.reserves.map(x => x.symbol);
-    return symbols.reverse().join(separator);
+    return buildPoolNameFromReserves(pool.reserves);
   } else return "N/A";
+};
+
+export const buildPoolNameFromReserves = (
+  reserves: ViewReserve[],
+  separator: string = "/"
+): string => {
+  const symbols = reserves.map(x => x.symbol);
+  return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (
