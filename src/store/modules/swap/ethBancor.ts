@@ -6986,20 +6986,6 @@ export class EthBancorModule
     }
   }
 
-  @action async mintEthErcIfRequired(decString: string) {
-    const contract = buildTokenContract(ethErc20WrapperContract, w3);
-    const currentBalance = await contract.methods
-      .balanceOf(this.currentUser)
-      .call();
-
-    const currentBalanceDec = shrinkToken(currentBalance, 18);
-
-    const mintingRequired = new BigNumber(decString).gt(currentBalanceDec);
-    if (mintingRequired) {
-      return this.mintEthErc(decString);
-    }
-  }
-
   @action async tokenById(id: string) {
     return findOrThrow(
       this.tokens,
