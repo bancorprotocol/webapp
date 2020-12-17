@@ -3286,10 +3286,10 @@ export class EthBancorModule
           id: relay.anchor.contract,
           name: buildPoolNameFromReserves(reserves),
           version: Number(relay.version),
+          reserves,
           fee: relay.fee / 100,
           liqDepth,
           symbol: tokenReserve.symbol,
-          reserves,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
           liquidityProtection,
@@ -3297,9 +3297,10 @@ export class EthBancorModule
           v2: false,
           ...(apr && { apr: apr.oneWeekApr }),
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
+          ...(feesVsLiquidity && { feesVsLiquidity }),
           ...(volume && { volume }),
           aprMiningRewards
-        };
+        } as ViewRelay;
       });
   }
 
