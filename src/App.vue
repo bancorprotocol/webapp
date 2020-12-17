@@ -47,11 +47,7 @@
       darkMode ? 'bg-body-dark text-body-dark' : 'bg-body-light text-body-light'
     "
   >
-    <div
-      class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
-    >
-      This interface is in beta. Use it at your own risk.
-    </div>
+    <NetworkAlert />
     <div name="MainLayout" class="main-layout">
       <side-bar />
       <main
@@ -87,9 +83,11 @@ import SideBar from "@/components/layout/SideBar.vue";
 import { vxm } from "@/store/";
 import wait from "waait";
 import BaseComponent from "@/components/BaseComponent.vue";
+import NetworkAlert from "@/components/layout/NetworkAlert.vue";
 
 @Component({
   components: {
+    NetworkAlert,
     ModalLogin,
     SideBar
   }
