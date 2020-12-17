@@ -5075,26 +5075,6 @@ export class EthBancorModule
     });
   }
 
-  @action async loadMoreTokens(tokenIds?: string[]) {
-    if (tokenIds && tokenIds.length > 0) {
-      const anchorAddresses = await Promise.all(
-        tokenIds.map(id => this.relaysContainingToken(id))
-      );
-      const anchorAddressesNotLoaded = anchorAddresses
-        .flat(1)
-        .filter(
-          anchorAddress =>
-            !this.relaysList.some(relay =>
-              compareString(relay.id, anchorAddress)
-            )
-        );
-      const convertersAndAnchors = await this.add(anchorAddressesNotLoaded);
-      await this.addPoolsV2(convertersAndAnchors);
-    } else {
-      await this.loadMorePools();
-    }
-  }
-
   @action async refresh() {
     console.log("refresh called on eth bancor, doing nothing");
   }
@@ -6466,7 +6446,6 @@ export class EthBancorModule
           firstItem()
         )
         .toPromise();
-      this.setLoadingPools(false);
     } catch (e) {
       console.error("thrown in x", e);
     }
@@ -6807,8 +6786,6 @@ export class EthBancorModule
     );
     if (!convertersAndAnchors || convertersAndAnchors.length == 0) return;
 
-    this.setLoadingPools(true);
-
     const { pools, reserveFeeds } = await this.addPoolsV2(convertersAndAnchors);
 
     const allPools = [...pools];
@@ -7014,9 +6991,6 @@ export class EthBancorModule
     this.fetchTokenBalances([id]);
 
     const tokenTracked = this.tokens.find(token => compareString(token.id, id));
-    if (!tokenTracked) {
-      this.loadMoreTokens([id]);
-    }
   }
 
   @action async refreshBalances(symbols?: BaseToken[]) {

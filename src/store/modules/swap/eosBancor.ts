@@ -1350,8 +1350,6 @@ export class EosBancorModule
     });
   }
 
-  @action async loadMoreTokens() {}
-
   liquidityHistoryArr: DFuseTrade[] = [];
   liquidityHistoryLoading: boolean = true;
   liquidityHistoryError: string = "";

@@ -323,10 +323,6 @@ export class BancorModule extends VuexModule.With({
     this.usdPriceOfBnt = usdPriceOfBnt;
   }
 
-  @action async loadMoreTokens(tokenIds?: string[]) {
-    return this.dispatcher(["loadMoreTokens", tokenIds]);
-  }
-
   @action async fetchHistoryData(relayId: string): Promise<HistoryRow[]> {
     return this.dispatcher(["fetchHistoryData", relayId]);
   }

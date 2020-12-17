@@ -445,7 +445,6 @@ export interface TradingModule {
   focusSymbol: (symbolName: string) => Promise<void>;
   getReturn: (propose: ProposedFromTransaction) => Promise<ConvertReturn>;
   getCost: (propose: ProposedToTransaction) => Promise<ConvertReturn>;
-  loadMoreTokens: (tokenIds?: string[]) => Promise<void>;
 }
 
 export interface UserPoolBalances {
