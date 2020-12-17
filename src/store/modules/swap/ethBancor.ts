@@ -6099,35 +6099,6 @@ export class EthBancorModule
       this.fetchAndSetBntSupply(networkVariables.bntToken)
     );
 
-    interface DataCache<T> {
-      allEmissions: T[];
-      newData: T[];
-    }
-
-    const distinctArrayItem = <T>(
-      initialValue: T[],
-      comparator?: (a: T, b: T) => boolean
-    ) => (source: Observable<T[]>) =>
-      source.pipe(
-        scan(
-          (acc, item) => {
-            const difference = differenceWith(
-              item,
-              acc.allEmissions,
-              comparator || isEqual
-            );
-            return {
-              allEmissions: [...acc.allEmissions, ...difference],
-              newData: difference
-            };
-          },
-          { allEmissions: initialValue, newData: [] } as DataCache<T>
-        ),
-        filter(dataCache => dataCache.newData.length > 0),
-        pluck("newData"),
-        startWith(initialValue)
-      );
-
     const contractAddresses$ = networkVars$.pipe(
       switchMap(networkVariables =>
         this.fetchContractAddresses(networkVariables.contractRegistry)
@@ -6974,10 +6945,9 @@ export class EthBancorModule
   }
 
   @action async focusSymbol(id: string) {
-    if (!this.currentUser) return;
-    this.fetchTokenBalances([id]);
-
-    const tokenTracked = this.tokens.find(token => compareString(token.id, id));
+    if (this.currentUser) {
+      this.fetchTokenBalances([id]);
+    }
   }
 
   @action async refreshBalances(symbols?: BaseToken[]) {
