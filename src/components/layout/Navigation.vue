@@ -3,7 +3,6 @@
     <div id="navigation-top" class="d-flex justify-content-end">
       <b-alert
         class="alert-network"
-        variant="danger"
         dismissible
         fade
         :show="showAlert"
@@ -135,10 +134,12 @@ export default class Navigation extends BaseComponent {
   .alert-network {
     width: 420px;
     background: #fff;
-    border: 1px solid #ff4e37;
+    border: 1px solid #ff4e37 !important;
     border-radius: 8px;
     padding: 7px;
     padding-right: 15px;
+    box-shadow: none;
+    margin-bottom: 0px;
     color: #ff4e37;
     font-size: 0.7rem;
 
