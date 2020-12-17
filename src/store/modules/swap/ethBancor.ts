@@ -4963,7 +4963,7 @@ export class EthBancorModule
 
   @action async fetchContractAddresses(contractRegistry: string) {
     if (!contractRegistry || !web3.utils.isAddress(contractRegistry))
-      throw new Error("Must pass valid address");
+      throw new Error("Must pass valid address");    
 
     const hardCodedBytes: RegisteredContracts = {
       BancorNetwork: asciiToHex("BancorNetwork"),
@@ -4980,6 +4980,9 @@ export class EthBancorModule
     const arr = toPairs(hardCodedBytes) as [string, string][];
 
     try {
+      console.log('contract promises Start...!')
+      console.time('FetchContract')
+
       const contractAddresses = await Promise.all(
         arr.map(
           async ([label, ascii]) =>
@@ -4989,6 +4992,8 @@ export class EthBancorModule
             ]
         )
       );
+
+      console.timeEnd('FetchContract')
 
       const object = (fromPairs(
         contractAddresses
