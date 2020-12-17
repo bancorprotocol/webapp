@@ -109,7 +109,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { formatUnixTime, formatNumber, buildPoolName } from "@/api/helpers";
+import { formatUnixTime, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -172,6 +172,7 @@ export default class AddProtectionSingle extends BaseComponent {
     this.selectedTokenIndex = this.pool.reserves.findIndex(
       reserve => reserve.id == x
     );
+    this.amountChanged(this.amount);
   }
 
   get token() {
@@ -190,10 +191,6 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
-  }
-
-  get poolName() {
-    return buildPoolName(this.pool.id);
   }
 
   get isWhitelisted() {
@@ -259,7 +256,7 @@ export default class AddProtectionSingle extends BaseComponent {
       this.modal = false;
       this.$router.push({ name: "LiqProtection" });
       return;
-    } else if (this.error) {
+    } else if (this.error || this.inputError) {
       this.modal = false;
       this.setDefault();
       return;

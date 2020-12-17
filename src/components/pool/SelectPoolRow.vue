@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { Component, Prop, Emit } from "vue-property-decorator";
-import { PoolTokenPosition, ViewRelay, ViewReserve } from "@/types/bancor";
+import { PoolTokenPosition, ViewRelay } from "@/types/bancor";
 import { vxm } from "@/store";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -48,13 +48,7 @@ export default class SelectPoolRow extends BaseComponent {
   }
 
   get positions(): PoolTokenPosition[] {
-    return vxm.bancor.poolTokenPositions.filter((x: PoolTokenPosition) =>
-      this.getPoolLabel(x.relay.reserves)
-    );
-  }
-
-  getPoolLabel(reserves: ViewReserve[]) {
-    return `${reserves[0].symbol}/${reserves[1].symbol}`;
+    return vxm.bancor.poolTokenPositions;
   }
 }
 </script>

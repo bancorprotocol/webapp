@@ -8,9 +8,7 @@ import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
-import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
-import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
 import ProtectionHome from "@/views/ProtectionHome.vue";
 import AddProtectionHome from "@/views/AddProtectionHome.vue";
 import ProtectionActions from "@/components/protection/ProtectionActions.vue";
@@ -24,6 +22,8 @@ import WithdrawProtectionSingle from "@/components/protection/WithdrawProtection
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
 import VotePage from "@/components/vote/VotePage.vue";
+import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
+import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 
 Vue.use(Router);
 
@@ -206,6 +206,16 @@ export const router = new Router({
           path: "withdraw/double/:id",
           name: "WithdrawProtectionDouble",
           component: WithdrawProtectionDouble
+        },
+        {
+          path: "rewards/restake/:id",
+          name: "RewardsRestake",
+          component: RestakeRewards
+        },
+        {
+          path: "rewards/withdraw",
+          name: "RewardsWithdraw",
+          component: WithdrawRewards
         }
       ]
     },
@@ -234,24 +244,6 @@ export const router = new Router({
           path: "",
           name: "DataSummary",
           component: DataSummary,
-          meta: {
-            feature: "Data"
-          }
-        },
-        {
-          path: "token/:id",
-          name: "DetailsToken",
-          redirect: "/404",
-          component: DataDetailsToken,
-          meta: {
-            feature: "Data"
-          }
-        },
-        {
-          path: "pool/:id",
-          name: "DetailsPool",
-          redirect: "/404",
-          component: DataDetailsPool,
           meta: {
             feature: "Data"
           }

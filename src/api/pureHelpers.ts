@@ -16,9 +16,6 @@ import numeral from "numeral";
 
 const oneMillion = new BigNumber(1000000);
 
-const zeroIfNegative = (big: BigNumber) =>
-  big.isNegative() ? new BigNumber(0) : big;
-
 export const calculatePositionFees = (
   originalPoolTokenAmount: string,
   currentPoolTokenSupply: string,
