@@ -1,6 +1,6 @@
 import Vue from "vue";
 import * as Sentry from "@sentry/browser";
-import { Vue as VueIntegration } from "@sentry/integrations";
+import * as VueIntegration from "@sentry/vue";
 import { Integrations } from "@sentry/tracing";
 import App from "./App.vue";
 import { router } from "./router";
