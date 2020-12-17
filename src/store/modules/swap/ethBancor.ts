@@ -867,7 +867,7 @@ const buildReserveFeedsChainlink = (
   return result;
 };
 
-const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
+export const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
 const relayShape = (converterAddress: string) => {

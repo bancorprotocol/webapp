@@ -15,6 +15,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor"
+import { defaultImage } from "@/store/modules/swap/ethBancor"
 
 @Component
 export default class PoolLogosOverlapped extends Vue {
@@ -23,7 +24,23 @@ export default class PoolLogosOverlapped extends Vue {
   @Prop({ default: "32" }) size!: "16" | "20" | "32" | "48" | "96" | "128";
 
   get loadedPool() {
-    return this.pool ? this.pool : vxm.bancor.relay(this.poolId);
+    const pool = this.pool ? this.pool : vxm.bancor.relay(this.poolId);
+    if (
+      pool &&
+      pool.id &&
+      pool.reserves &&
+      pool.reserves.length >= 2 &&
+      pool.reserves[0].id &&
+      pool.reserves[1].id
+    )
+      return pool;
+    else
+      return {
+        reserves: [
+          { id: 1, logo: defaultImage },
+          { id: 2, logo: defaultImage }
+        ]
+      };
   }
 
   styleClasses(index: number) {
