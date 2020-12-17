@@ -6256,9 +6256,10 @@ export class EthBancorModule
 
     combineLatest([
       authenticated$,
-      liquidityProtectionStore$
-    ]).subscribe(([_, storeAddress]) =>
-      this.fetchProtectionPositions({ storeAddress })
+      liquidityProtectionStore$,
+      currentBlock$
+    ]).subscribe(([_, storeAddress, [unixTime, blockNumberNow]]) =>
+      this.fetchProtectionPositions({ storeAddress, blockNumberNow })
     );
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
