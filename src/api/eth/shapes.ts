@@ -6,7 +6,8 @@ import {
   buildConverterContract,
   buildTokenContract,
   buildLiquidityProtectionContract,
-  buildLiquidityProtectionStoreContract
+  buildLiquidityProtectionStoreContract,
+  buildLiquidityProtectionSettingsContract
 } from "@/api/eth/contractTypes";
 import { EthNetworks } from "@/api/web3";
 import { compareString } from "../helpers";
@@ -14,8 +15,44 @@ import { getWeb3 } from "../web3";
 import BigNumber from "bignumber.js";
 import { knownV2Anchors } from "@/store/modules/swap/staticRelays";
 import { TokenWei } from "@/types/bancor";
+import Web3 from "web3";
 
 const ORIGIN_ADDRESS = DataTypes.originAddress;
+
+export const protectedPositionShape = (
+  storeAddress: string,
+  protectionId: string
+) => {
+  const contract = buildLiquidityProtectionStoreContract(storeAddress);
+  return {
+    positionId: protectionId,
+    position: contract.methods.protectedLiquidity(protectionId)
+  };
+};
+
+export const liquidityProtectionShape = (contractAddress: string, w3: Web3) => {
+  const contract = buildLiquidityProtectionContract(contractAddress, w3);
+  return {
+    govToken: contract.methods.govToken()
+  };
+};
+
+export const liquidityProtectionSettingsShape = (
+  contractAddress: string,
+  w3: Web3
+) => {
+  const contract = buildLiquidityProtectionSettingsContract(
+    contractAddress,
+    w3
+  );
+  return {
+    minProtectionDelay: contract.methods.minProtectionDelay(),
+    maxProtectionDelay: contract.methods.maxProtectionDelay(),
+    lockDuration: contract.methods.lockDuration(),
+    networkToken: contract.methods.networkToken(),
+    defaultNetworkTokenMintingLimit: contract.methods.defaultNetworkTokenMintingLimit()
+  };
+};
 
 export const protectedReservesShape = (
   storeAddress: string,
