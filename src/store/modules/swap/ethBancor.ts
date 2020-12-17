@@ -5073,14 +5073,6 @@ export class EthBancorModule
     console.log("refresh called on eth bancor, doing nothing");
   }
 
-  @mutation setRegisteredAnchorAddresses(addresses: string[]) {
-    this.registeredAnchorAddresses = addresses;
-  }
-
-  @mutation setConvertibleTokenAddresses(addresses: string[]) {
-    this.convertibleTokenAddresses = addresses;
-  }
-
   @action async conversionPathFromNetworkContract({
     from,
     to,
