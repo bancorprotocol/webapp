@@ -6329,14 +6329,14 @@ export class EthBancorModule
       combineLatest([highTierPools$, finalRelays$, liquidityProtectionStore$])
         .pipe(
           mergeMap(([highTierPools, relays, protectionStoreAddress]) => {
-            return this.addLiqMiningAprsToPools({
+            return this.fetchPooLiqMiningApr({
               highTierPoolAnchors: highTierPools,
               relays: relays.relays,
               protectionStoreAddress
             });
           })
         )
-        .subscribe(x => console.log("got the aprs!", x));
+        .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
       await finalRelays$
         .pipe(
@@ -6352,7 +6352,7 @@ export class EthBancorModule
     }
   }
 
-  @action async addLiqMiningAprsToPools({
+  @action async fetchPooLiqMiningApr({
     highTierPoolAnchors,
     protectionStoreAddress,
     relays
@@ -6360,12 +6360,12 @@ export class EthBancorModule
     highTierPoolAnchors: string[];
     relays: RelayWithReserveBalances[];
     protectionStoreAddress: string;
-  }) {
+  }): Promise<PoolLiqMiningApr[]> {
     const highTierPools = relays.filter(relay =>
       highTierPoolAnchors.some(anchor => compareString(relay.id, anchor))
     );
 
-    if (highTierPools.length == 0) return;
+    if (highTierPools.length == 0) return [];
 
     const storeAddress = protectionStoreAddress;
 
@@ -6487,12 +6487,13 @@ export class EthBancorModule
       };
     });
 
-    this.updateLiqMiningApr(liqMiningApr);
+    return liqMiningApr;
   }
 
   poolLiqMiningAprs: PoolLiqMiningApr[] = [];
 
   @mutation updateLiqMiningApr(liqMiningApr: PoolLiqMiningApr[]) {
+    if (liqMiningApr.length == 0) return;
     const existing = this.poolLiqMiningAprs;
     const withoutOld = existing.filter(
       apr => !liqMiningApr.some(a => compareString(a.poolId, apr.poolId))
