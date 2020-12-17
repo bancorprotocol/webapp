@@ -54,19 +54,19 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
-
 import OpenProposals from "@/components/vote/proposals/OpenProposals.vue";
 import DoneProposals from "@/components/vote/proposals/DoneProposals.vue";
 import AddProposal from "@/components/vote/proposals/AddProposal.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ContentBlock,
     ProgressBar,

@@ -13,7 +13,6 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { ViewRelay } from "@/types/bancor";
@@ -21,8 +20,9 @@ import PoolActionsAddV1 from "@/components/pool/PoolActionsAddV1.vue";
 import PoolActionsAddV2 from "@/components/pool/PoolActionsAddV2.vue";
 import PoolActionsRemoveV1 from "@/components/pool/PoolActionsRemoveV1.vue";
 import PoolActionsRemoveV2 from "@/components/pool/PoolActionsRemoveV2.vue";
+import { Options, Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     PoolActionsRemoveV2,
     PoolActionsRemoveV1,

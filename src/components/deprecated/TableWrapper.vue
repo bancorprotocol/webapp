@@ -44,10 +44,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class TableWrapper extends BaseComponent {
   @Prop() primarykey?: string;
   @Prop() items!: any[];

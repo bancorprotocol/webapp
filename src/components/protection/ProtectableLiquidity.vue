@@ -45,15 +45,15 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import CollapsableBlock from "@/components/common/CollapsableBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     CollapsableBlock,
     PoolLogosOverlapped,

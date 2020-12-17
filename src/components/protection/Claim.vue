@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import { vxm } from "@/store";
@@ -48,8 +48,9 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import { TxResponse } from "@/types/bancor";
+import { Options, Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ActionModalStatus,
     ModalBase,

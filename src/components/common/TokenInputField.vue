@@ -75,7 +75,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit, VModel } from "vue-property-decorator";
+import { Prop, Emit, VModel } from "vue-property-decorator";
 import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -85,8 +85,9 @@ import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     AlertBlock,
     PoolLogos,

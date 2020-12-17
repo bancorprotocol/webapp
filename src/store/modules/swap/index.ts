@@ -32,7 +32,7 @@ const VuexModule = createModule({
   strict: false
 });
 
-interface RootParam {
+export interface RootParam {
   initialModuleParam?: ModuleParam;
   initialChain?: string;
 }

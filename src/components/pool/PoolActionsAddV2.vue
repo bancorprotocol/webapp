@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewAmount, ViewRelay, ViewReserve } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -91,8 +91,9 @@ import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     AlertBlock,
     RateShareBlock,

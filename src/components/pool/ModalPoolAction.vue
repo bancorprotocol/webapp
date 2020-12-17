@@ -97,7 +97,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, VModel } from "vue-property-decorator";
+import { Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import {
   LiquidityParams,
@@ -114,8 +114,9 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import numeral from "numeral";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ActionModalStatus,
     AdvancedBlockItem,

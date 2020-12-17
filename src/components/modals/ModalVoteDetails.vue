@@ -98,7 +98,7 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Prop, Emit, VModel } from "vue-property-decorator";
+import { Prop, Emit, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
 import {
   Proposal,
@@ -110,8 +110,9 @@ import DataTable from "@/components/common/DataTable.vue";
 import { shrinkToken } from "@/api/eth/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewTableField } from "@/types/bancor";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     MainButton,
     DataTable

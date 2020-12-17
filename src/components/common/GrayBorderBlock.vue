@@ -7,10 +7,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class GrayBorderBlock extends BaseComponent {
   @Prop({ default: false }) grayBg!: boolean;
 

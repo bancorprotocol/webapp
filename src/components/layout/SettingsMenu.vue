@@ -79,11 +79,13 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-@Component({
+import { Options } from "vue-class-component/dist/vue-class-component"
+
+@Options({
   components: { SlippageTolerance }
 })
 export default class SettingsMenu extends BaseComponent {

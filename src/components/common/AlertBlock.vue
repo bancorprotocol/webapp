@@ -15,10 +15,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit } from "vue-property-decorator";
+import { Prop, Emit } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class AlertBlock extends BaseComponent {
   @Prop({ default: "info" }) variant!: "info" | "error" | "warning";
   @Prop() title?: string;

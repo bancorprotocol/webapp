@@ -12,10 +12,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component
 export default class PoolLogosOverlapped extends Vue {
   @Prop() poolId!: string;
   @Prop({ default: "32" }) size!: "16" | "20" | "32" | "48" | "96" | "128";

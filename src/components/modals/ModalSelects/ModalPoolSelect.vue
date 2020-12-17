@@ -17,13 +17,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, VModel } from "vue-property-decorator";
+import { Emit, Prop, VModel } from "vue-property-decorator";
 import { ViewRelay } from "@/types/bancor";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { ModalSelect, SelectPoolRow }
 })
 export default class ModalPoolSelect extends BaseComponent {

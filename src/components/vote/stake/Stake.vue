@@ -137,7 +137,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { EthAddress } from "@/types/bancor";
@@ -150,8 +150,9 @@ import ModalUnstake from "@/components/modals/ModalUnstake.vue";
 import BigNumber from "bignumber.js";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ContentBlock,
     MainButton,

@@ -63,14 +63,14 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import numeral from "numeral";
 import { stringifyPercentage } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { StatisticsDataBlock }
 })
 export default class Statistics extends BaseComponent {

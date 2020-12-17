@@ -807,7 +807,7 @@ const buildPossibleReserveFeedsTraditional = (
   );
   const hasLearntNewPrices = learntPrices.length > initialKnownPrices.length;
   return hasLearntNewPrices
-    ? buildPossibleReserveFeedsTraditional(v1Pools, learntPrices)
+    ? buildPossibleReserveFeedsTraditional(v1Pools, learntPrices as UsdValue[])
     : flatReserveFeeds;
 };
 
@@ -4000,7 +4000,7 @@ export class EthBancorModule
     );
     const addedBalances = [...updatedBalances, ...balancesToAdd];
 
-    this.tokenBalances = addedBalances;
+    this.tokenBalances = addedBalances as Balance[];
   }
 
   @action async relayById(relayId: string) {

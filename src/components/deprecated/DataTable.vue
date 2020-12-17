@@ -25,15 +25,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch, VModel } from "vue-property-decorator";
+import { Prop, Watch, VModel } from "vue-property-decorator";
 import TableHeader, {
   ViewTableFields
 } from "@/components/common/TableHeader.vue";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     TableHeader,
     TablePagination

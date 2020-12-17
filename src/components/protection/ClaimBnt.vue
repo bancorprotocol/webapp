@@ -39,11 +39,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit } from "vue-property-decorator";
+import { Prop, Emit } from "vue-property-decorator";
 import moment from "moment";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class ClaimBnt extends BaseComponent {
   @Prop() item!: any;
 

@@ -23,10 +23,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class StatisticsDataBlock extends BaseComponent {
   @Prop(String) title!: string;
   @Prop(String) value!: string | number;

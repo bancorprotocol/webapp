@@ -8,10 +8,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Vue, Prop } from "vue-property-decorator";
 import { State, Getter, Mutation, Action } from "vuex-class";
 
-@Component
 export default class TestProgressBar extends Vue {
   @Prop() type?: "warn" | "error" | "info";
   @Prop() percentage?: number;

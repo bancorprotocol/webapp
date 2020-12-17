@@ -35,11 +35,11 @@
   >
     <template
       v-for="proposal in proposals"
+      :key="'r1-' + proposal.id"
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <tr
-        :key="'r1-' + proposal.id"
         class="align-rows-cells cursor"
         @click="() => openProposal(proposal)"
       >
@@ -185,7 +185,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -197,8 +197,9 @@ import {
   Proposal
 } from "@/store/modules/governance/ethGovernance";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ContentBlock,
     DataTable,

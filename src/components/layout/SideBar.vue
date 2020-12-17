@@ -16,10 +16,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
 export interface ViewSideBarLink {
   route: string;
@@ -29,7 +30,8 @@ export interface ViewSideBarLink {
   hideMobile: boolean;
   svgName: string;
 }
-@Component({
+
+@Options({
   components: { SideBarBottom, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {

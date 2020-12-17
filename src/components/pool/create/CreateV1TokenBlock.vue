@@ -19,7 +19,6 @@
 
 <script lang="ts">
 import {
-  Component,
   Emit,
   Prop,
   PropSync,
@@ -30,8 +29,9 @@ import SelectTokenBlock from "@/components/common/SelectTokenBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import { ViewToken } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     PercentageSlider,
     GrayBorderBlock,

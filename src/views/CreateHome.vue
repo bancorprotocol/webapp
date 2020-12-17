@@ -92,7 +92,6 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
@@ -111,6 +110,7 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
 export interface CreateStep1 {
   token: ViewToken | null;
@@ -124,7 +124,7 @@ export interface CreateStep2 {
   poolFee: string;
 }
 
-@Component({
+@Options({
   components: {
     AdvancedBlockItem,
     GrayBorderBlock,

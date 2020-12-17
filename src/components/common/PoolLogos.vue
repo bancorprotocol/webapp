@@ -1,4 +1,4 @@
-<template>
+<template functional>
   <span @click="click">
     <div
       v-if="pool"
@@ -31,13 +31,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit } from "vue-property-decorator";
+import { Prop, Emit } from "vue-property-decorator";
 import { ViewRelay, ViewToken } from "@/types/bancor";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import VersionBadge from "@/components/common/VersionBadge.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { VersionBadge, PoolLogosOverlapped }
 })
 export default class PoolLogos extends BaseComponent {

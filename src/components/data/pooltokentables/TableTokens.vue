@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -52,8 +52,9 @@ import { ViewRelay, ViewTableField, ViewToken } from "@/types/bancor";
 import DataTable from "@/components/common/DataTable.vue";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     DataTable,
     ColouredPercentage,

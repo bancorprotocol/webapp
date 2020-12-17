@@ -3,9 +3,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
+import { Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component
 export default class CountdownTimer extends Vue {
   @Prop() dateUnix!: number;
   @Prop({ default: "Countdown ended" }) msgCountdownEnded!: string;

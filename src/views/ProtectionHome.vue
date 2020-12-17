@@ -77,7 +77,6 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ProtectedTable from "@/components/protection/ProtectedTable.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
@@ -86,8 +85,9 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     RewardsSummary,
     ProtectedSummary,

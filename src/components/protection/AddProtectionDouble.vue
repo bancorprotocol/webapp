@@ -74,7 +74,6 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -89,8 +88,9 @@ import moment from "moment";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ActionModalStatus,
     PoolLogos,
@@ -104,7 +104,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 })
 export default class AddProtectionDouble extends BaseComponent {
   get pool(): ViewRelay {
-    const [poolId] = this.$route.params.id.split(":");
+    const [poolId] = (this.$route.params.id as string).split(":");
     return vxm.bancor.relay(poolId);
   }
 

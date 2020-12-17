@@ -17,14 +17,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { BancorMenu, SettingsMenu }
 })
 export default class Navigation extends BaseComponent {

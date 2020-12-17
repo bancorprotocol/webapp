@@ -28,11 +28,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;

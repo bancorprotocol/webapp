@@ -5,24 +5,24 @@ import { Integrations } from "@sentry/tracing";
 import App from "./App.vue";
 import { router } from "./router";
 import { store, vxm } from "./store/";
-// import i18n from "./i18n";
 import BootstrapVue from "bootstrap-vue";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import "@/assets/_scss/main.scss";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas, fab } from "@/assets/icons";
-
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
 import { firebase } from "@firebase/app";
 import "@firebase/analytics";
-import VueGtag from "vue-gtag";
+import VueGtag from "vue-gtag-next";
 
 const appVersion = JSON.parse(
   unescape(escape(JSON.stringify(require("../package.json"))))
 ).version;
 
+// todo fix sentry on vue 3
+/*
 const isDev = process.env.NODE_ENV == "development";
 !isDev &&
   Sentry.init({
@@ -44,6 +44,16 @@ const isDev = process.env.NODE_ENV == "development";
     sampleRate: 0.1,
     tracesSampleRate: 0.1
   });
+*/
+
+const app = Vue.createApp({
+  router,
+  store,
+  // i18n,
+  render: (h: any) => h(App)
+})
+
+app.use(router);
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4yWnTGa6qj6dR1RLW6Clod0iMn4niflU",
@@ -58,7 +68,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-Vue.use(
+app.use(
   VueGtag,
   {
     config: { id: "UA-174155472-1" }
@@ -66,17 +76,15 @@ Vue.use(
   router
 );
 
-Vue.use(BootstrapVue);
+app.use(BootstrapVue);
 
 library.add(...fas, ...fab);
 
-Vue.component("FontAwesomeIcon", FontAwesomeIcon);
-
-Vue.config.productionTip = false;
+app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 sync(store, router, { moduleName: "routeModule" });
 
-Vue.mixin({
+app.mixin({
   methods: {
     promptAuth: async function () {
       const currentUser = this.$store.getters["wallet/currentUser"];
@@ -91,9 +99,4 @@ Vue.mixin({
   }
 });
 
-new Vue({
-  router,
-  store,
-  // i18n,
-  render: h => h(App)
-}).$mount("#app");
+app.mount("#app");

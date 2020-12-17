@@ -114,7 +114,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolActionsHeader from "@/components/pool/PoolActionsHeader.vue";
@@ -132,8 +132,9 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import BigNumber from "bignumber.js";
 import ProtectableLiquidity from "@/components/pool/protection/ProtectableLiquidity.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ProtectableLiquidity,
     PoolLogos,

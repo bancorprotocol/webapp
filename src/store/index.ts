@@ -1,4 +1,3 @@
-import Vue from "vue";
 import Vuex from "vuex";
 
 import { createProxy, extractVuexModule } from "vuex-class-component";
@@ -12,8 +11,6 @@ import { WalletModule } from "./modules/wallet/index";
 import { NetworkModule } from "./modules/network/index";
 import { EosNetworkModule } from "./modules/network/eosNetwork";
 import { EthereumGovernance } from "./modules/governance/ethGovernance";
-
-Vue.use(Vuex);
 
 export const store = new Vuex.Store({
   modules: {

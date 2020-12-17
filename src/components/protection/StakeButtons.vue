@@ -44,14 +44,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit } from "vue-property-decorator";
+import { Prop, Emit } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import { vxm } from "@/store";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { LabelContentSplit, GrayBorderBlock, MainButton }
 })
 export default class StakeButtons extends BaseComponent {
@@ -64,7 +65,7 @@ export default class StakeButtons extends BaseComponent {
   private interval: any;
 
   get poolId(): string | null {
-    return this.$route.params.id ?? null;
+    return this.$route.params.id as string ?? null;
   }
 
   get stakeOptions() {

@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Prop, PropSync } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewTableFields {
@@ -45,7 +45,6 @@ export interface ViewTableFields {
   maxWidth?: string;
 }
 
-@Component
 export default class TableHeader extends BaseComponent {
   @Prop() fields!: ViewTableFields[];
   @PropSync("sortBy", { type: String }) sortByKey!: string;

@@ -13,10 +13,9 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Emit } from "vue-property-decorator";
+import { Prop, Emit } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class MainButton extends BaseComponent {
   @Prop({ default: "" }) label!: string;
   @Prop({ default: false }) active!: boolean;

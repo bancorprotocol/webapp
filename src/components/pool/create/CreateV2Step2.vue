@@ -5,9 +5,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component
 export default class CreateV2Step2 extends Vue {}
 </script>
 <style lang="scss"></style>

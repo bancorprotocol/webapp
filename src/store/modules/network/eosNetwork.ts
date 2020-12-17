@@ -259,6 +259,6 @@ export class EosNetworkModule
       [...tokens.map(pickBalanceReturn), ...this.tokenBalances],
       compareToken
     );
-    this.tokenBalances = toSet;
+    this.tokenBalances = toSet as TokenBalanceReturn[];
   }
 }

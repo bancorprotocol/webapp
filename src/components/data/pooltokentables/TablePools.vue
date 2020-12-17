@@ -25,8 +25,9 @@
 
     <template #cell(aprMiningRewards)="{ value }">
       <div v-if="value && value.rewards">
-        <template v-for="reward in value.rewards">
-          <div :key="reward.address" class="font-size-12">
+        <template v-for="reward in value.rewards"
+                  :key="reward.address">
+          <div class="font-size-12">
             {{
               `${reward.symbol} ${
                 reward.reward ? formatPercent(reward.reward) : "N/A"
@@ -70,7 +71,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { LiqMiningApr, ViewRelay, ViewTableField } from "@/types/bancor";
@@ -79,8 +80,9 @@ import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { CountdownTimer, DataTable, PoolLogos, ActionButtons }
 })
 export default class TablePools extends BaseComponent {

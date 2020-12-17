@@ -104,7 +104,7 @@
 </template>
 
 <script lang="ts">
-import { Component, VModel } from "vue-property-decorator";
+import { VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
@@ -114,8 +114,9 @@ import { isAddress } from "web3-utils";
 import { formatNumber } from "@/api/helpers";
 import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     MultiInputField,
     ContentBlock,

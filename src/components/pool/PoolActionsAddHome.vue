@@ -43,7 +43,6 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";
@@ -53,8 +52,9 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import StakeButtons from "@/components/protection/StakeButtons.vue";
+import { Options, Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     StakeButtons,
     GrayBorderBlock,

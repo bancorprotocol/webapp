@@ -336,7 +336,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
@@ -352,8 +352,9 @@ import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ModalVoteDetails from "@/components/modals/ModalVoteDetails.vue";
 import { shrinkToken } from "@/api/eth/helpers";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ModalVoteDetails,
     ContentBlock,

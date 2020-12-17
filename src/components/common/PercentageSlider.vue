@@ -28,12 +28,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, VModel } from "vue-property-decorator";
+import { Prop, VModel } from "vue-property-decorator";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { LabelContentSplit, MainButton }
 })
 export default class PercentageSlider extends BaseComponent {

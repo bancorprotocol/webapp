@@ -13,12 +13,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import SubNavigation from "@/components/layout/SubNavigation.vue";
 import SwapAction from "@/components/swap/SwapAction.vue";
+import { Options, Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     SwapAction,
     SubNavigation,

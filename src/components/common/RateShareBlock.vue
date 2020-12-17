@@ -35,9 +35,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
 interface Item {
   label: string;
@@ -45,7 +46,7 @@ interface Item {
   id: string;
 }
 
-@Component({
+@Options({
   components: { LabelContentSplit }
 })
 export default class RateShareBlock extends BaseComponent {

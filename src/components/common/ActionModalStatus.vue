@@ -53,11 +53,10 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { TxResponse } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class ActionModalStatus extends BaseComponent {
   @Prop() error?: string;
   @Prop() success?: TxResponse | null;

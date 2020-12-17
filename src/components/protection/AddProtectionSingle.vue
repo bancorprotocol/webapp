@@ -102,7 +102,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -118,8 +118,9 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ModalPoolSelect,
     ActionModalStatus,
@@ -134,7 +135,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 })
 export default class AddProtectionSingle extends BaseComponent {
   get pool(): ViewRelay {
-    const [poolId] = this.$route.params.id.split(":");
+    const [poolId] = (this.$route.params.id as string).split(":");
     return vxm.bancor.relay(poolId);
   }
 

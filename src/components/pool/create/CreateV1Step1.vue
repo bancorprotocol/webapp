@@ -30,13 +30,14 @@
 </template>
 
 <script lang="ts">
-import { Component, VModel } from "vue-property-decorator";
+import { VModel } from "vue-property-decorator";
 import CreateV1TokenBlock from "./CreateV1TokenBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import { CreateStep1 } from "@/views/CreateHome.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     CreateV1TokenBlock,
     AlertBlock

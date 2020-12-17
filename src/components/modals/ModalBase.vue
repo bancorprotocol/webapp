@@ -46,11 +46,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, VModel } from "vue-property-decorator";
+import { Prop, PropSync, VModel } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { MultiInputField }
 })
 export default class ModalBase extends BaseComponent {

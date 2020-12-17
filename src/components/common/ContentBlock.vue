@@ -57,12 +57,13 @@
   </div>
 </template>
 <script lang="ts">
-import { Component, Prop, PropSync, Emit } from "vue-property-decorator";
+import { Prop, PropSync, Emit } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import VersionBadge from "@/components/common/VersionBadge.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { VersionBadge, MultiInputField }
 })
 export default class ContentBlock extends BaseComponent {

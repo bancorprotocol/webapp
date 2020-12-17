@@ -14,13 +14,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Emit } from "vue-property-decorator";
+import { Prop, Emit } from "vue-property-decorator";
 import { PoolTokenPosition, ViewRelay } from "@/types/bancor";
 import { vxm } from "@/store";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { PoolLogos }
 })
 export default class SelectPoolRow extends BaseComponent {

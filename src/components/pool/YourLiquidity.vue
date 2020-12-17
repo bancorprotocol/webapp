@@ -89,7 +89,6 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { PoolTokenPosition, ViewReserve } from "@/types/bancor";
@@ -99,8 +98,9 @@ import MultiInputField from "@/components/common/MultiInputField.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     PoolLogos,
     GrayBorderBlock,

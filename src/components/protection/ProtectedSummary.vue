@@ -47,12 +47,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import {  Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import numeral from "numeral";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class ProtectedSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
 

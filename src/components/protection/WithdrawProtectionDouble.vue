@@ -62,7 +62,6 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { TxResponse } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -77,8 +76,9 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     LogoAmountSymbol,
     ActionModalStatus,
@@ -127,14 +127,14 @@ export default class WithdrawProtectionDouble extends BaseComponent {
     const positions = vxm.ethBancor.protectedPositions;
     console.log(positions, "x");
     const pos = findOrThrow(positions, position =>
-      compareString(position.id, this.$route.params.id)
+      compareString(position.id, this.$route.params.id as string)
     );
     console.log(pos, "is the selected pos", this.pool, "is the pass pool");
     return pos;
   }
 
   get poolIds() {
-    const [poolId, first, second] = this.$route.params.id.split(":");
+    const [poolId, first, second] = (this.$route.params.id as string).split(":");
     return {
       poolId,
       first,

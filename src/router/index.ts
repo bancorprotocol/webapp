@@ -1,5 +1,4 @@
-import Vue from "vue";
-import Router, { Route } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import Data from "@/views/Data.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import Navigation from "@/components/layout/Navigation.vue";
@@ -25,8 +24,6 @@ import VotePage from "@/components/vote/VotePage.vue";
 import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 
-Vue.use(Router);
-
 const detectSubdomain = () => {
   const hostname = window.location.hostname;
   const splitted = hostname.split(".");
@@ -44,16 +41,15 @@ const detectSubdomain = () => {
 export const defaultModule = "eth";
 const PREFERRED_SERVICE = "preferredService";
 
-export const router = new Router({
-  mode: "history",
-  base: process.env.BASE_URL,
+export const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {
     return new Promise(resolve => {
       setTimeout(() => {
         if (savedPosition) {
           resolve(savedPosition);
         } else {
-          resolve({ x: 0, y: 0 });
+          resolve(false);
         }
       }, 500);
     });
@@ -272,7 +268,7 @@ export const router = new Router({
     {
       path: "/:service",
       props: true,
-      redirect: (to: Route) => {
+      redirect: (to) => {
         const foundService = services.find(
           service => service.namespace == to.params.service
         );

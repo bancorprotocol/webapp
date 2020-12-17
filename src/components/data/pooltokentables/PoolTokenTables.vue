@@ -28,14 +28,14 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import TablePools from "@/components/data/pooltokentables/TablePools.vue";
 import TableTokens from "@/components/data/pooltokentables/TableTokens.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     TableTokens,
     TablePools,

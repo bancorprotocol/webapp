@@ -9,9 +9,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, VModel } from "vue-property-decorator";
+import { Prop, VModel } from "vue-property-decorator";
+import { Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component
 export default class BancorCheckbox extends Vue {
   @VModel({ type: Boolean }) localValue!: boolean;
   @Prop() label!: string;

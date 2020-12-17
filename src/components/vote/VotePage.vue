@@ -26,13 +26,13 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import Stake from "@/components/vote/stake/Stake.vue";
 import Proposals from "@/components/vote/proposals/Proposals.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     Stake,
     Proposals

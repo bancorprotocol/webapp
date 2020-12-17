@@ -37,10 +37,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Prop, PropSync } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class TablePagination extends BaseComponent {
   @PropSync("currentPage", { type: Number }) current!: number;
   @Prop() rowCount!: number;

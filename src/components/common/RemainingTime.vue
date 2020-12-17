@@ -16,10 +16,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class RemainingTime extends BaseComponent {
   @Prop() from?: number;
   @Prop() to?: number;

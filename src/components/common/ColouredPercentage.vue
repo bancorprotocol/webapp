@@ -15,11 +15,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import numeral from "numeral";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class ColouredPercentage extends BaseComponent {
   @Prop() percentage!: number | null;
 

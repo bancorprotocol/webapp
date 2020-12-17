@@ -90,7 +90,7 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -102,8 +102,9 @@ import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     SlippageTolerance,
     ModalSwapAction,

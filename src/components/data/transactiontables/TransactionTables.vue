@@ -18,13 +18,13 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     TableTransactions,
     MultiInputField

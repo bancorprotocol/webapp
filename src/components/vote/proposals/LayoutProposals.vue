@@ -79,14 +79,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TableItem, ViewProposalsField } from "@/types/bancor";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     TablePagination
   }

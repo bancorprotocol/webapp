@@ -114,7 +114,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -124,8 +124,9 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     ModalPoolAction,
     LabelContentSplit,

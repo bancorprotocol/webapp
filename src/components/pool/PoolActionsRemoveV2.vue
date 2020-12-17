@@ -116,7 +116,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -130,6 +130,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -139,7 +140,7 @@ interface PoolTokenUI {
   logo: string[];
 }
 
-@Component({
+@Options({
   components: {
     ModalPoolSelect,
     PercentageSlider,

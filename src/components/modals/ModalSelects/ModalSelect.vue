@@ -60,7 +60,6 @@
 
 <script lang="ts">
 import {
-  Component,
   Prop,
   Emit,
   PropSync,
@@ -70,8 +69,9 @@ import { vxm } from "@/store";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MainButton from "@/components/common/Button.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { ModalBase, MainButton }
 })
 export default class ModalSelect extends BaseComponent {

@@ -28,15 +28,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, VModel } from "vue-property-decorator";
+import { Emit, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 import { ViewToken } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { ModalTokenSelect, PoolLogos, GrayBorderBlock }
 })
 export default class SelectTokenBlock extends BaseComponent {

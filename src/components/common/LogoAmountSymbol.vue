@@ -17,11 +17,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-@Component({
+import { Options } from "vue-class-component/dist/vue-class-component"
+
+@Options({
   components: { PoolLogosOverlapped }
 })
 export default class LogoAmountSymbol extends BaseComponent {

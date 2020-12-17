@@ -38,14 +38,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
 import moment from "moment";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TableItem, ViewTableField } from "@/types/bancor";
 import DataTable from "@/components/common/DataTable.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { DataTable }
 })
 export default class TableTransactions extends BaseComponent {

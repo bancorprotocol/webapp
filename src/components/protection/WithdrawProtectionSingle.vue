@@ -88,7 +88,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -102,8 +102,9 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     LogoAmountSymbol,
     ActionModalStatus,
@@ -158,7 +159,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   get position() {
     const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
-      compareString(position.id, this.$route.params.id)
+      compareString(position.id, this.$route.params.id as string)
     );
     console.log(pos, "is the selected pos");
     return pos;
@@ -193,7 +194,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     this.setDefault();
     this.modal = true;
     this.txBusy = true;
-    const [poolId, first, second] = this.$route.params.id.split(":");
+    const [poolId, first, second] = (this.$route.params.id as string).split(":");
     console.log({ poolId, first, second });
     try {
       const txRes = await vxm.ethBancor.removeProtection({

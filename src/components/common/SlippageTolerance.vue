@@ -28,11 +28,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class SlippageTolerance extends BaseComponent {
   options = [0.1, 0.5, 1];
 

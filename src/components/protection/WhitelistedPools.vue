@@ -5,10 +5,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component
 export default class WhitelistedPools extends Vue {
   get relays() {
     return vxm.ethBancor.relays.filter(x => x.whitelisted);

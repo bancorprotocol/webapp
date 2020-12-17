@@ -19,14 +19,14 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Statistics from "@/components/data/statistics/Statistics.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
 import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     TransactionTables,
     PoolTokenTables,

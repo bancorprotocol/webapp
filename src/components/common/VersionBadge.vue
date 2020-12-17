@@ -7,10 +7,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component
 export default class VersionBadge extends BaseComponent {
   @Prop() version!: 1 | 2;
 

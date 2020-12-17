@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { ViewRelay, ViewAmount } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
@@ -50,8 +50,9 @@ import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     RateShareBlock,
     ModalPoolAction,

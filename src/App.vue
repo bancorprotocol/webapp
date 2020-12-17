@@ -81,14 +81,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
 import SideBar from "@/components/layout/SideBar.vue";
 import { vxm } from "@/store/";
 import wait from "waait";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
+import { RootParam } from "@/store/modules/swap"
 
-@Component({
+@Options({
   components: {
     ModalLogin,
     SideBar
@@ -124,7 +126,7 @@ export default class App extends BaseComponent {
           [trade ? "tradeQuery" : "poolQuery"]: trade ? this.$route.query : pool
         }
       })
-    };
+    } as RootParam;
 
     console.log({ service, feature, query, initParams, paramsSatisfied });
     try {

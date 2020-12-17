@@ -364,7 +364,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import {
@@ -387,8 +387,9 @@ import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { Options } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: {
     DataTable,
     RemainingTime2,

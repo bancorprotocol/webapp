@@ -119,7 +119,6 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { WalletProvider } from "eos-transit";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -137,7 +136,6 @@ const isMobileCompatible = (mobileCompatibleIds: string[]) => (
   provider: WalletProvider
 ): boolean => mobileCompatibleIds.some(id => provider.id == id);
 
-@Component
 export default class ModalLogin extends BaseComponent {
   loading = false;
   error: any = false;

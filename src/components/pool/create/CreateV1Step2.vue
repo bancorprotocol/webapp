@@ -38,11 +38,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, VModel } from "vue-property-decorator";
+import { VModel } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import { CreateStep2 } from "@/views/CreateHome.vue";
+import { Options, Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component({
+@Options({
   components: { MultiInputField }
 })
 export default class CreateV1Step2 extends Vue {

@@ -28,10 +28,10 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, Emit } from "vue-property-decorator";
+import { Prop, Emit } from "vue-property-decorator";
 import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
+import { Vue } from "vue-class-component/dist/vue-class-component"
 
-@Component
 export default class SideBarBottom extends Vue {
   @Prop() data!: any;
   @Prop() darkMode!: boolean;

@@ -80,13 +80,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import { stringifyPercentage } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { vxm } from "@/store";
+import { Options } from "vue-class-component/dist/vue-class-component"
+
 interface ViewRewardsSummaryItem {
   id: number;
   label: string;
@@ -94,7 +96,7 @@ interface ViewRewardsSummaryItem {
   usd: number;
 }
 
-@Component({
+@Options({
   components: { ModalPoolSelect, ContentBlock }
 })
 export default class RewardsSummary extends BaseComponent {
