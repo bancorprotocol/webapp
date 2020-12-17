@@ -50,7 +50,7 @@
     <div
       class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
     >
-      This interface is in beta. Use it at your own risk..
+      This interface is in beta. Use it at your own risk.
     </div>
     <div name="MainLayout" class="main-layout">
       <side-bar />
