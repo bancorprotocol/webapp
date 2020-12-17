@@ -1452,7 +1452,7 @@ export class EthBancorModule
   implements TradingModule, LiquidityModule, CreatePoolModule, HistoryModule {
   registeredAnchorAddresses: string[] = [];
   convertibleTokenAddresses: string[] = [];
-  loadingPools: boolean = true;
+  loadingPools: boolean = false;
 
   bancorApiTokens: TokenPrice[] = [];
   relaysList: readonly Relay[] = [];
