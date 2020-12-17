@@ -146,7 +146,8 @@ import {
   previousPoolFees,
   v2Pools,
   secondRoundLiquidityMiningEndTime,
-  highTierPools
+  highTierPools,
+  compareStaticRelay
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -193,7 +194,8 @@ import {
   reserveContractsInStatic,
   parseRawDynamic,
   filterAndWarn,
-  calculateLimits
+  calculateLimits,
+  staticToConverterAndAnchor
 } from "@/api/pureHelpers";
 import { distinctArrayItem } from "@/api/observables";
 import {
@@ -6854,6 +6856,43 @@ export class EthBancorModule
 
     this.stakedBntPercent = percent;
     this.relaysList = Object.freeze(meshedRelays);
+
+    const staticRelays: StaticRelay[] = meshedRelays
+      .filter(x => x.converterType == PoolType.Traditional)
+      .map(relay => {
+        const x = relay as TraditionalRelay;
+
+        const poolToken = {
+          symbol: x.anchor.symbol,
+          decimals: String(x.anchor.decimals),
+          contract: x.anchor.contract
+        };
+        return {
+          converterAddress: x.contract,
+          reserves: x.reserves.map(reserve => ({
+            contract: reserve.contract,
+            decimals: String(reserve.decimals),
+            symbol: reserve.symbol
+          })),
+          converterType: x.converterType,
+          poolToken,
+          version: Number(x.version)
+        };
+      });
+
+    const convertersAndAnchors: ConverterAndAnchor[] = staticRelays.map(
+      staticToConverterAndAnchor
+    );
+
+    const differences = differenceWith(
+      moreStaticRelays,
+      staticRelays,
+      compareStaticRelay
+    );
+    console.log(
+      { convertersAndAnchors, staticRelays, differences },
+      "is the latest cacheable data"
+    );
   }
 
   stakedBntPercent: number = 0;

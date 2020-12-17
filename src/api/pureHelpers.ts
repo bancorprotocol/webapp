@@ -182,6 +182,13 @@ export const expandToken = (amount: string | number, precision: number) => {
   return inWei;
 };
 
+export const staticToConverterAndAnchor = (
+  staticRelay: StaticRelay
+): ConverterAndAnchor => ({
+  converterAddress: staticRelay.converterAddress,
+  anchorAddress: staticRelay.poolToken.contract
+});
+
 export const calculatePriceDeviationTooHigh = (
   averageRate: BigNumber,
   primaryReserveBalance: BigNumber,
