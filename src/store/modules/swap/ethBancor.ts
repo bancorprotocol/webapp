@@ -5053,14 +5053,8 @@ export class EthBancorModule
     return contract.methods.reserveStakedBalance(reserveTokenAddress).call();
   }
 
-  @action async fetchV2ConverterReserveWeights(converterAddress: string) {
-    const contract = buildV2Converter(converterAddress, w3);
-    const weights = await contract.methods.effectiveReserveWeights().call();
-    return [weights["0"], weights["1"]];
-  }
-
   get loadingTokens() {
-    return this.loadingPools;
+    return this.relaysList.length < 290;
   }
 
   get moreTokensAvailable() {
