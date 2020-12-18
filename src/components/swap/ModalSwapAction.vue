@@ -2,7 +2,7 @@
   <modal-base v-model="show" @input="setDefault" title="Confirm Token Swap">
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)">
-        <b-col cols="12">
+        <b-col cols="12" class="text-center">
           <div>
             <div
               class="font-size-24 font-w600 mr-2"
