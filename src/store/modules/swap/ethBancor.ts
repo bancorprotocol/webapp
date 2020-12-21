@@ -867,7 +867,8 @@ const buildReserveFeedsChainlink = (
   return result;
 };
 
-export const defaultImage = "https://ropsten.etherscan.io/images/main/empty-token.png";
+export const defaultImage =
+  "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
 
 const relayShape = (converterAddress: string) => {
@@ -1640,17 +1641,15 @@ export class EthBancorModule
   }
 
   @action async fetchWhiteListedV1Pools(
-    liquidityProtectionStoreAddress?: string
+    liquidityProtectionSettingsAddress: string
   ) {
-    const contractAddress =
-      liquidityProtectionStoreAddress ||
-      this.contracts.LiquidityProtectionStore;
-    const liquidityProtection = buildLiquidityProtectionStoreContract(
+    const contractAddress = liquidityProtectionSettingsAddress;
+    const liquidityProtection = buildLiquidityProtectionSettingsContract(
       contractAddress,
       w3
     );
     const whiteListedPools = await liquidityProtection.methods
-      .whitelistedPools()
+      .poolWhitelist()
       .call();
     this.setWhiteListedPools(whiteListedPools);
     return whiteListedPools;
@@ -6092,7 +6091,11 @@ export class EthBancorModule
         contractAddresses.LiquidityProtection
       );
 
-      this.fetchWhiteListedV1Pools(contractAddresses.LiquidityProtectionStore);
+      const settingsContractAddress = await this.fetchLiquidityProtectionSettingsContract(
+        contractAddresses.LiquidityProtection
+      );
+
+      this.fetchWhiteListedV1Pools(settingsContractAddress);
       if (this.currentUser) {
         this.fetchProtectionPositions({
           storeAddress: contractAddresses.LiquidityProtectionStore,
