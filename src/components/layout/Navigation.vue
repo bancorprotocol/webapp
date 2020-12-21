@@ -1,19 +1,6 @@
 <template>
   <div class="container-xl px-0">
     <div id="navigation-top" class="d-flex justify-content-end">
-      <b-alert
-        class="alert-network"
-        dismissible
-        fade
-        :show="showAlert"
-      >
-        <font-awesome-icon
-          icon="exclamation-triangle"
-          class="text-danger ml-1 mr-1"
-          size="1x"
-        />
-        Unsupported Network. Switch to mainnet network to use the app!
-      </b-alert>
       <b-btn
         @click="loginAction"
         variant="white"
@@ -43,10 +30,6 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class Navigation extends BaseComponent {
   get selectedWallet() {
     return vxm.wallet.currentWallet;
-  }
-
-  get showAlert() {
-    return !vxm.ethBancor.isSupportedNetwork;
   }
 
   created() {
@@ -129,25 +112,6 @@ export default class Navigation extends BaseComponent {
 
   & > * {
     margin-left: 0.75rem;
-  }
-
-  .alert-network {
-    width: 420px;
-    background: #fff;
-    border: 1px solid #ff4e37 !important;
-    border-radius: 8px;
-    padding: 7px;
-    padding-right: 15px;
-    box-shadow: none;
-    margin-bottom: 0px;
-    color: #ff4e37;
-    font-size: 0.7rem;
-
-    .close {
-      width: 25px;
-      margin-left: 10px;
-      line-height: 6px;
-    }
   }
 }
 </style>
