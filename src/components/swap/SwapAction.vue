@@ -348,7 +348,7 @@ export default class SwapAction extends BaseComponent {
     await this.calculateRate();
   }
 
-  async created() {
+  async mounted() {
     if (this.$route.query.to && this.$route.query.from)
       await this.onTokenChange(this.$route.query);
     else {
