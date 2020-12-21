@@ -189,12 +189,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     } else return true;
   }
 
-  // get vBntBalance() {
-  //   const balance = vxm.ethBancor.tokenBalance(
-  //     vxm.ethBancor.liquidityProtectionSettings.govToken
-  //   );
-  //   return balance ? balance.balance : "0";
-  // }
   vBntBalance: BigNumber | null = null;
   async loadVBntBalance() {
     this.vBntBalance = this.currentUser
