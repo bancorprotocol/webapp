@@ -381,7 +381,7 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
-  async created() {
+  async mounted() {
     await this.loadMaxStakes();
     await this.loadRecentAverageRate();
     this.interval = setInterval(async () => {

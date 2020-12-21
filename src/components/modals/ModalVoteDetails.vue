@@ -171,6 +171,7 @@ export default class ModalVoteDetails extends BaseComponent {
   getVoters() {
     return this.proposal.voters.map((v: Voter, index: number) => {
       return {
+        id: `${v.account}-${index}`,
         index: index + 1,
         ...v,
         percentOfTotal: this.calculatePercentOfTotal(
