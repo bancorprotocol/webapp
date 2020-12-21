@@ -57,7 +57,7 @@
         class="mb-2"
       >
         <span @click="inverseRate = !inverseRate" class="cursor">
-          {{ rate }} <font-awesome-icon icon="sync" class="text-muted" />
+          {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
         </span>
       </label-content-split>
       <label-content-split
