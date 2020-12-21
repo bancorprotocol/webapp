@@ -355,20 +355,25 @@ export class EthereumGovernance extends VuexModule.With({
     account: EthAddress;
     executor: EthAddress;
     hash: string;
-  }): Promise<boolean> {
+  }): Promise<string> {
     if (!executor || !hash || !account)
       throw new Error("Cannot propose without executor and hash");
 
     const txContract = buildGovernanceContract(
       await this.getGovernanceContractAddress()
     );
-    await txContract.methods.propose(executor, hash).send({
-      from: account
+
+    return new Promise((resolve, reject) => {
+      let txHash: string;
+      txContract.methods.propose(executor, hash).send({
+        from: account
+      }).on("transactionHash", (hash: string) => {
+        txHash = hash;
+        this.setLastTransaction(Date.now());
+        resolve(txHash)
+      })
+      .on("error", (error: any) => reject(error));
     });
-
-    this.setLastTransaction(Date.now());
-
-    return true;
   }
 
   @action async voteFor({
