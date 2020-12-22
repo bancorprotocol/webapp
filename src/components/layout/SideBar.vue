@@ -3,13 +3,13 @@
     <side-bar-left
       class="d-none d-md-flex"
       :dark-mode="darkMode"
-      :data="dataObject"
+      :links="links"
       @linkClicked="navigateToRoute"
     />
     <side-bar-bottom
       class="d-md-none"
       :dark-mode="darkMode"
-      :data="dataObject"
+      :links="links"
       @linkClicked="navigateToRoute"
     />
   </div>
@@ -33,7 +33,6 @@ export interface ViewSideBarLink {
   components: { SideBarBottom, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {
-  selectedLink = "swap";
   links: ViewSideBarLink[] = [
     {
       route: "DataSummary",
@@ -93,16 +92,6 @@ export default class SideBar extends BaseComponent {
     }
   ];
 
-  get dataObject() {
-    return {
-      selectedLink: this.selectedLink,
-      links: this.links
-    };
-  }
-  async created() {
-    this.onRouteChange();
-  }
-
   openNewTab(url: string) {
     window.open(url, "_blank");
   }
@@ -110,19 +99,9 @@ export default class SideBar extends BaseComponent {
   navigateToRoute(link: ViewSideBarLink) {
     if (!link.newTab) {
       this.$router.push({ name: link.route });
-      this.selectedLink = link.route;
     } else {
       this.openNewTab(link.route);
     }
-  }
-
-  @Watch("$route")
-  async onRouteChange() {
-    const path = this.$route.fullPath;
-    if (path.includes("swap")) this.selectedLink = "swap";
-    if (path.includes("pool")) this.selectedLink = "swap";
-    if (path.includes("data")) this.selectedLink = "data";
-    if (path.includes("protection")) this.selectedLink = "liquidity";
   }
 }
 </script>

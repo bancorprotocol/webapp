@@ -3,7 +3,7 @@
     <div class="side-bar-links">
       <div
         @click="linkClicked(link)"
-        v-for="link in data.links.filter(l => !l.hideMobile)"
+        v-for="link in links.filter(l => !l.hideMobile)"
         :key="link.key"
         :to="{ name: link.route }"
         class="side-bar-link"
@@ -33,7 +33,7 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarBottom extends Vue {
-  @Prop() data!: any;
+  @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
   isRouteActive(key: string): boolean {
