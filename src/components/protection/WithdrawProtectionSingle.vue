@@ -165,14 +165,21 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   get vBntWarning() {
-    return this.position.givenVBnt && !this.sufficientVBnt
-      ? `Insufficient vBNT balance, you must hold ${this.prettifyNumber(
-          Number(this.position.givenVBnt!) * (Number(this.percentage) / 100)
-        )} vBNT before withdrawing position.`
-      : "";
+    const givenVBnt =
+      Number(this.position.givenVBnt!) * (Number(this.percentage) / 100);
+
+    if (this.position.givenVBnt && !this.sufficientVBnt) {
+      const missingVBnt = givenVBnt - Number(this.vBntBalance);
+      return `Insufficient vBNT balance, you must hold ${this.prettifyNumber(
+        givenVBnt
+      )} vBNT before withdrawing this position. You are missing ${this.prettifyNumber(
+        missingVBnt
+      )} vBNT.`;
+    } else return "";
   }
 
   get sufficientVBnt() {
+    if (this.vBntBalance === null) return true;
     if (this.position.givenVBnt) {
       const decPercent = new BigNumber(this.percentage).div(100);
       const proposedWithdraw = new BigNumber(this.position.givenVBnt).times(
@@ -182,11 +189,13 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     } else return true;
   }
 
-  get vBntBalance() {
-    const balance = vxm.ethBancor.tokenBalance(
-      vxm.ethBancor.liquidityProtectionSettings.govToken
-    );
-    return balance ? balance.balance : "0";
+  vBntBalance: BigNumber | null = null;
+  async loadVBntBalance() {
+    this.vBntBalance = this.currentUser
+      ? await vxm.ethGovernance.getBalance({
+          account: this.currentUser
+        })
+      : new BigNumber(0);
   }
 
   async initAction() {
@@ -240,6 +249,19 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   created() {
     this.onPercentUpdate(this.percentage);
+  }
+
+  private interval: any;
+
+  async mounted() {
+    await this.loadVBntBalance();
+    this.interval = setInterval(async () => {
+      await this.loadVBntBalance();
+    }, 10000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 
   get modalConfirmButton() {
