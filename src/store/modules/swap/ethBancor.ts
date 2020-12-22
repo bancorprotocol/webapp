@@ -1964,7 +1964,7 @@ export class EthBancorModule
               })
             );
           } catch (e) {
-            console.log(e, "error doing rois");
+            console.error(e, "error doing rois");
           }
         })(),
         Promise.all(
@@ -3410,22 +3410,28 @@ export class EthBancorModule
 
     const requestAtParticularBlock = typeof blockHeight !== undefined;
 
-    const [reserveBalances, smartTokenSupplyWei] = await Promise.all([
-      Promise.all(
-        reserves.map(reserve =>
-          fetchReserveBalance(
-            converterContract,
-            reserve.contract,
-            version,
-            blockHeight
+    let [reserveBalances, smartTokenSupplyWei] = [reserves.map(() => "0"), "0"];
+
+    try {
+      [reserveBalances, smartTokenSupplyWei] = await Promise.all([
+        Promise.all(
+          reserves.map(reserve =>
+            fetchReserveBalance(
+              converterContract,
+              reserve.contract,
+              version,
+              blockHeight
+            )
           )
-        )
-      ),
-      requestAtParticularBlock
-        ? // @ts-ignore
-          smartTokenContract.methods.totalSupply().call(null, blockHeight)
-        : smartTokenContract.methods.totalSupply().call()
-    ]);
+        ),
+        requestAtParticularBlock
+          ? // @ts-ignore
+            smartTokenContract.methods.totalSupply().call(null, blockHeight)
+          : smartTokenContract.methods.totalSupply().call()
+      ]);
+    } catch (err) {
+      console.error(`fetchRelayBalances failed ${err.message} for ${poolId}`);
+    }
 
     return {
       reserves: reserves.map((reserve, index) => ({
