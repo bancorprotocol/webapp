@@ -62,7 +62,7 @@ export default class PoolHome extends BaseComponent {
     const whitelisted = vxm.bancor.relay(id).whitelisted;
     if (whitelisted) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id }
       });
     } else {
