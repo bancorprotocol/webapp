@@ -44,7 +44,7 @@
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
-import { ViewProtectedLiquidity, ViewRelay } from "@/types/bancor";
+import { ViewProtectedLiquidity } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { stringifyPercentage } from "@/api/helpers";
@@ -57,7 +57,12 @@ export default class ProtectedSummary extends BaseComponent {
   modal = false;
 
   get pools() {
-    return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
+    return vxm.bancor.relays.filter(
+      pool =>
+        pool.liquidityProtection &&
+        pool.bntReserveBalance &&
+        Number(pool.bntReserveBalance) > 1000
+    );
   }
 
   get summarizedPositions() {
@@ -102,22 +107,7 @@ export default class ProtectedSummary extends BaseComponent {
 
   selectPool(id: string) {
     this.modal = false;
-    const pool: ViewRelay = vxm.bancor.relay(id);
-    if (!pool) {
-      return;
-    }
-    if (
-      pool.whitelisted &&
-      pool.bntReserveBalance &&
-      Number(pool.bntReserveBalance) > 1000
-    ) {
-      this.$router.push({ name: "AddProtectionSingle", params: { id } });
-    } else {
-      this.$router.push({
-        name: "PoolAction",
-        params: { poolAction: "add", account: id }
-      });
-    }
+    this.$router.push({ name: "AddProtectionSingle", params: { id } });
   }
 
   stringifyPercentage = stringifyPercentage;
