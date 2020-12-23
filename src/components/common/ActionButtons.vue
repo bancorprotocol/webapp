@@ -39,7 +39,12 @@ export default class ActionButtons extends BaseComponent {
   @Prop({ default: false }) small!: boolean;
 
   goToPool() {
-    if (this.pool!.whitelisted) {
+    if (
+      this.pool &&
+      this.pool.whitelisted &&
+      this.pool.bntReserveBalance &&
+      Number(this.pool.bntReserveBalance) > 1000
+    ) {
       this.$router.push({
         name: "AddProtectionSingle",
         params: { id: this.pool!.id }
