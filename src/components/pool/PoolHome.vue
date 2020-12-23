@@ -41,6 +41,7 @@ import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ViewRelay } from "@/types/bancor";
 
 @Component({
   components: {
@@ -59,10 +60,18 @@ export default class PoolHome extends BaseComponent {
   }
 
   selectPool(id: string) {
-    const whitelisted = vxm.bancor.relay(id).whitelisted;
-    if (whitelisted) {
+    const pool: ViewRelay = vxm.bancor.relay(id);
+    if (!pool) {
+      this.modal = false;
+      return;
+    }
+    if (
+      pool.whitelisted &&
+      pool.bntReserveBalance &&
+      Number(pool.bntReserveBalance) > 1000
+    ) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id }
       });
     } else {
