@@ -41,7 +41,7 @@ export default class ActionButtons extends BaseComponent {
   goToPool() {
     if (this.pool!.whitelisted) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id: this.pool!.id }
       });
     } else {
