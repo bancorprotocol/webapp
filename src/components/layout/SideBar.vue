@@ -6,18 +6,36 @@
       :links="links"
       @linkClicked="navigateToRoute"
     />
-    <side-bar-bottom
+    <div class="d-md-none">
+      <b-btn
+        v-b-toggle.sidebar-m
+        variant="white"
+        class="block-rounded ml-3 mt-3"
+        size="sm"
+      >
+        <font-awesome-icon icon="bars" />
+      </b-btn>
+      <b-sidebar id="sidebar-m" shadow backdrop no-header no-header-close>
+        <side-bar-common
+          :dark-mode="darkMode"
+          :links="links"
+          @linkClicked="navigateToRoute"
+        />
+      </b-sidebar>
+    </div>
+    <!-- <side-bar-bottom
       class="d-md-none"
       :dark-mode="darkMode"
       :links="links"
       @linkClicked="navigateToRoute"
-    />
+    /> -->
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Watch } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
+import SideBarCommon from "@/components/layout/SideBarCommon.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -30,7 +48,7 @@ export interface ViewSideBarLink {
   svgName: string;
 }
 @Component({
-  components: { SideBarBottom, SideBarLeft }
+  components: { SideBarCommon, SideBarBottom, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {
   links: ViewSideBarLink[] = [
