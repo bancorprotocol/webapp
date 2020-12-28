@@ -56,7 +56,10 @@ export default class ProtectedSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
 
   modal = false;
-  minNetworkTokenLiquidityforMinting: BigNumber | null = null
+
+  get minNetworkTokenLiquidityforMinting() {
+    return vxm.minting.minNetworkTokenLiquidityforMinting
+  }
 
   get pools() {
     const limit = this.minNetworkTokenLiquidityforMinting
@@ -120,10 +123,6 @@ export default class ProtectedSummary extends BaseComponent {
     if (pos === 1) return "text-center";
     else if (pos < this.summarizedPositions.length) return "text-center";
     else return "text-center";
-  }
-
-  async mounted() {
-   this.minNetworkTokenLiquidityforMinting = await vxm.minting.fetchMinLiqForMinting()
   }
 }
 </script>

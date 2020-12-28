@@ -55,10 +55,13 @@ import BigNumber from "bignumber.js";
 })
 export default class PoolHome extends BaseComponent {
   modal = false;
-  minNetworkTokenLiquidityforMinting: BigNumber | null = null
 
   get pools() {
     return vxm.bancor.relays;
+  }
+
+  get minNetworkTokenLiquidityforMinting() {
+    return vxm.minting.minNetworkTokenLiquidityforMinting
   }
 
   selectPool(id: string) {
@@ -85,10 +88,6 @@ export default class PoolHome extends BaseComponent {
     }
 
     this.modal = false;
-  }
-
-  async mounted() {
-    this.minNetworkTokenLiquidityforMinting = await vxm.minting.fetchMinLiqForMinting()
   }
 }
 </script>

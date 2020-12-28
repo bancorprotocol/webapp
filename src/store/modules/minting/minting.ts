@@ -13,10 +13,7 @@ export class MintingModule extends VuexModule.With({
 }) {
   public minNetworkTokenLiquidityforMinting: BigNumber | null = null;
 
-  @action async fetchMinLiqForMinting(): Promise<BigNumber> {
-    if (this.minNetworkTokenLiquidityforMinting !== null)
-      return this.minNetworkTokenLiquidityforMinting;
-
+  @action async fetchMinLiqForMinting() {
     const contract = await buildLiquidityProtectionSettingsContract(
       vxm.ethBancor.liquidityProtectionSettings.contract,
       web3
@@ -29,6 +26,5 @@ export class MintingModule extends VuexModule.With({
     this.minNetworkTokenLiquidityforMinting = new BigNumber(
       shrinkToken(result, 18)
     );
-    return this.minNetworkTokenLiquidityforMinting;
   }
 }

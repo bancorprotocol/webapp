@@ -6197,6 +6197,7 @@ export class EthBancorModule
       // @ts-ignore
       console.log("Eth resolving at", new Date() / 1);
       console.timeEnd("ethResolved");
+      await vxm.minting.fetchMinLiqForMinting();
     } catch (e) {
       console.error(`Threw inside ethBancor ${e.message}`);
       throw new Error(`Threw inside ethBancor ${e.message}`);

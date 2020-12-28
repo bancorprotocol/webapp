@@ -39,7 +39,10 @@ export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
   @Prop({ default: false }) small!: boolean;
-  minNetworkTokenLiquidityforMinting: BigNumber | null = null
+
+  get minNetworkTokenLiquidityforMinting() {
+    return vxm.minting.minNetworkTokenLiquidityforMinting
+  }
 
   goToPool() {
     const limit = this.minNetworkTokenLiquidityforMinting
@@ -74,10 +77,6 @@ export default class ActionButtons extends BaseComponent {
     if (this.pool) return this.pool.reserves[1].id;
     else if (this.token) return this.token.id;
     else return null;
-  }
-
-  async mounted() {
-    this.minNetworkTokenLiquidityforMinting = await vxm.minting.fetchMinLiqForMinting()
   }
 }
 </script>
