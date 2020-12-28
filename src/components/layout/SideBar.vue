@@ -10,10 +10,10 @@
       <b-btn
         v-b-toggle.sidebar-m
         variant="white"
-        class="block-rounded ml-3 mt-3"
+        class="btn-toggle block-rounded"
         size="sm"
       >
-        <font-awesome-icon icon="bars" />
+        <font-awesome-icon icon="chevron-circle-right" />
       </b-btn>
       <b-sidebar id="sidebar-m" shadow backdrop no-header no-header-close>
         <side-bar-common
@@ -124,4 +124,11 @@ export default class SideBar extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+  .btn-toggle {
+    position: absolute;
+    top: 60px;
+    left: 15px;
+    z-index: 999;
+  }
+</style>
