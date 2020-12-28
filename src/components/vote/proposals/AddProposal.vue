@@ -105,7 +105,8 @@
     </div>
 
     <action-modal-status
-      v-if="txBusy || success"
+      v-if="txBusy || error || success"
+      :error="error"
       :success="success"
     />
   </b-modal>
@@ -142,7 +143,8 @@ export default class AddProposal extends BaseComponent {
   contractAddress: string = "";
   description: string = "";
   name: string = "";
-  error: boolean = false;
+  error: string = "";
+  inputError: boolean = false;
   maxLock: number = 0;
   proposalMinimum: number = 0;
   symbol: string = "";
@@ -180,12 +182,12 @@ export default class AddProposal extends BaseComponent {
   }
 
   onAddressInput(input: string) {
-    this.error = !isAddress(input);
+    this.inputError = !isAddress(input);
   }
 
   get hasError() {
     return (
-      this.error ||
+      this.inputError ||
       this.discourseUrl.length === 0 ||
       this.githubUrl.length === 0 ||
       this.description.length === 0 ||
@@ -214,6 +216,7 @@ export default class AddProposal extends BaseComponent {
 
     try {
       this.txBusy = true;
+      this.error = "";
       // store in ipfs!
       const hash = await vxm.ethGovernance.storeInIPFS({
         proposalMetaData
@@ -230,9 +233,9 @@ export default class AddProposal extends BaseComponent {
         blockExplorerLink: await vxm.ethBancor.createExplorerLink(hash)
       }
 
-      this.initData();
+      this.setDefault();
     } catch (e) {
-      this.onHide();
+      this.error = e.message;
     } finally {
       this.txBusy = false;
     }
@@ -253,7 +256,7 @@ export default class AddProposal extends BaseComponent {
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 
-  initData() {
+  setDefault() {
     this.description = '';
     this.name = '';
     this.discourseUrl = '';
@@ -263,6 +266,7 @@ export default class AddProposal extends BaseComponent {
 
   onHide() {
     this.show = false;
+    this.error = "";
     this.success = null;
   }
 }
