@@ -49,19 +49,22 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { stringifyPercentage } from "@/api/helpers";
 import { vxm } from "@/store";
+import BigNumber from "bignumber.js";
 
 @Component({ components: { ModalPoolSelect } })
 export default class ProtectedSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
 
   modal = false;
+  minNetworkTokenLiquidityforMinting: BigNumber | null = null
 
   get pools() {
+    const limit = this.minNetworkTokenLiquidityforMinting
     return vxm.bancor.relays.filter(
       pool =>
         pool.liquidityProtection &&
         pool.bntReserveBalance &&
-        Number(pool.bntReserveBalance) > 1000
+        limit !== null && limit.lt(pool.bntReserveBalance)
     );
   }
 
@@ -117,6 +120,10 @@ export default class ProtectedSummary extends BaseComponent {
     if (pos === 1) return "text-center";
     else if (pos < this.summarizedPositions.length) return "text-center";
     else return "text-center";
+  }
+
+  async mounted() {
+   this.minNetworkTokenLiquidityforMinting = await vxm.minting.fetchMinLiqForMinting()
   }
 }
 </script>
