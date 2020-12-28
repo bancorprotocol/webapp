@@ -30,7 +30,7 @@
       </div>
     </template>
 
-    <div v-if="!(txBusy || success || error)" class="w-100">
+    <div v-if="!(txBusy || success)" class="w-100">
 
       <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
         New proposal requires you to hold at least {{ proposalMinimumFormatted }}
@@ -97,10 +97,10 @@
 
       <main-button
         @click="propose"
-        label="Propose"
+        :label="proposeButton"
         :large="true"
         :active="true"
-        :disabled="this.hasError"
+        :disabled="this.hasError || txBusy"
       />
     </div>
 
@@ -148,6 +148,16 @@ export default class AddProposal extends BaseComponent {
   symbol: string = "";
   txBusy = false;
   success: TxResponse | null = null;
+
+  get proposeButton() {
+    return this.error
+      ? "Try Again"
+      : this.success
+      ? "Close"
+      : this.txBusy
+      ? "processing ..."
+      : "Propose";
+  }
 
   get proposalMinimumFormatted() {
     return formatNumber(this.proposalMinimum, 2);
@@ -220,9 +230,9 @@ export default class AddProposal extends BaseComponent {
         blockExplorerLink: await vxm.ethBancor.createExplorerLink(hash)
       }
 
-      // this.onHide();
+      this.initData();
     } catch (e) {
-      this.error = true;
+      this.onHide();
     } finally {
       this.txBusy = false;
     }
@@ -241,6 +251,14 @@ export default class AddProposal extends BaseComponent {
     await this.updateMaxLock();
     this.proposalMinimum = await vxm.ethGovernance.getNewProposalMinimum();
     this.symbol = await vxm.ethGovernance.getSymbol();
+  }
+
+  initData() {
+    this.description = '';
+    this.name = '';
+    this.discourseUrl = '';
+    this.githubUrl = '';
+    this.contractAddress = '';
   }
 
   onHide() {
