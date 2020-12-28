@@ -6,12 +6,9 @@
   >
     <div class="d-flex justify-content-between align-items-center d-xl-none">
       <span class="font-size-16 font-w500">My Stake</span>
-      <b-btn
-        variant="primary"
-        :to="{ name: 'AddProtectionHome' }"
-        style="width: 132px"
-        >Stake</b-btn
-      >
+      <b-btn variant="primary" @click="openModal" style="width: 132px">
+        Stake
+      </b-btn>
     </div>
     <b-row>
       <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
@@ -35,26 +32,38 @@
         xl="2"
         class="d-none d-xl-flex align-items-center justify-content-end"
       >
-        <b-btn
-          variant="primary"
-          class="btn-block"
-          :to="{ name: 'AddProtectionHome' }"
-          >Stake</b-btn
-        >
+        <b-btn variant="primary" class="btn-block" @click="openModal">
+          Stake
+        </b-btn>
       </b-col>
     </b-row>
+
+    <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
-import numeral from "numeral";
 import BaseComponent from "@/components/BaseComponent.vue";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import { stringifyPercentage } from "@/api/helpers";
+import { vxm } from "@/store";
 
-@Component
+@Component({ components: { ModalPoolSelect } })
 export default class ProtectedSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
+
+  modal = false;
+
+  get pools() {
+    return vxm.bancor.relays.filter(
+      pool =>
+        pool.liquidityProtection &&
+        pool.bntReserveBalance &&
+        Number(pool.bntReserveBalance) > 1000
+    );
+  }
 
   get summarizedPositions() {
     if (!this.positions.length) return [];
@@ -92,10 +101,16 @@ export default class ProtectedSummary extends BaseComponent {
     }
   }
 
-  stringifyPercentage(percentage: number) {
-    if (percentage < 0.0001) return "< 0.01%";
-    else return numeral(percentage).format("0.00%");
+  openModal() {
+    this.modal = true;
   }
+
+  selectPool(id: string) {
+    this.modal = false;
+    this.$router.push({ name: "AddProtectionSingle", params: { id } });
+  }
+
+  stringifyPercentage = stringifyPercentage;
 
   getItemStyleClass(index: number) {
     const pos = index + 1;

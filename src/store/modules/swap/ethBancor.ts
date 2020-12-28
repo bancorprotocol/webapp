@@ -1964,7 +1964,7 @@ export class EthBancorModule
               })
             );
           } catch (e) {
-            console.log(e, "error doing rois");
+            console.error(e, "error doing rois");
           }
         })(),
         Promise.all(
@@ -3258,6 +3258,14 @@ export class EthBancorModule
             } as ViewReserve)
         );
 
+        const bntTokenAddress = getNetworkVariables(this.currentNetwork)
+          .bntToken;
+        const relayBalances = relay as RelayWithReserveBalances;
+        const bntReserveBalance =
+          relayBalances.reserveBalances?.find(reserve =>
+            compareString(reserve.id, bntTokenAddress)
+          )?.amount || "0";
+
         return {
           id: poolContainerAddress,
           name: buildPoolNameFromReserves(reserves),
@@ -3274,6 +3282,7 @@ export class EthBancorModule
           removeLiquiditySupported: true,
           whitelisted: false,
           liquidityProtection: false,
+          bntReserveBalance: shrinkToken(bntReserveBalance, 18),
           v2: true
         } as ViewRelay;
       });
@@ -3351,6 +3360,14 @@ export class EthBancorModule
             } as ViewReserve)
         );
 
+        const bntTokenAddress = getNetworkVariables(this.currentNetwork)
+          .bntToken;
+        const relayBalances = relay as RelayWithReserveBalances;
+        const bntReserveBalance =
+          relayBalances.reserveBalances?.find(reserve =>
+            compareString(reserve.id, bntTokenAddress)
+          )?.amount || "0";
+
         return {
           id: relay.anchor.contract,
           name: buildPoolNameFromReserves(reserves),
@@ -3364,6 +3381,7 @@ export class EthBancorModule
           removeLiquiditySupported: true,
           liquidityProtection,
           whitelisted,
+          bntReserveBalance: shrinkToken(bntReserveBalance, 18),
           v2: false,
           ...(apr && { apr: apr.oneWeekApr }),
           ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
@@ -3410,22 +3428,28 @@ export class EthBancorModule
 
     const requestAtParticularBlock = typeof blockHeight !== undefined;
 
-    const [reserveBalances, smartTokenSupplyWei] = await Promise.all([
-      Promise.all(
-        reserves.map(reserve =>
-          fetchReserveBalance(
-            converterContract,
-            reserve.contract,
-            version,
-            blockHeight
+    let [reserveBalances, smartTokenSupplyWei] = [reserves.map(() => "0"), "0"];
+
+    try {
+      [reserveBalances, smartTokenSupplyWei] = await Promise.all([
+        Promise.all(
+          reserves.map(reserve =>
+            fetchReserveBalance(
+              converterContract,
+              reserve.contract,
+              version,
+              blockHeight
+            )
           )
-        )
-      ),
-      requestAtParticularBlock
-        ? // @ts-ignore
-          smartTokenContract.methods.totalSupply().call(null, blockHeight)
-        : smartTokenContract.methods.totalSupply().call()
-    ]);
+        ),
+        requestAtParticularBlock
+          ? // @ts-ignore
+            smartTokenContract.methods.totalSupply().call(null, blockHeight)
+          : smartTokenContract.methods.totalSupply().call()
+      ]);
+    } catch (err) {
+      console.error(`fetchRelayBalances failed ${err.message} for ${poolId}`);
+    }
 
     return {
       reserves: reserves.map((reserve, index) => ({
