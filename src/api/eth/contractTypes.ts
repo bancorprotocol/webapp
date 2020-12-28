@@ -260,7 +260,6 @@ export const buildLiquidityProtectionStoreContract = (
   contractAddress: string,
   web3?: Web3
 ): ContractMethods<{
-  whitelistedPools(): CallReturn<string[]>;
   lockedBalanceCount(owner: string): CallReturn<string>;
   lockedBalance(
     owner: string,
@@ -325,6 +324,7 @@ export const buildLiquidityProtectionSettingsContract = (
   contractAddress: string,
   web3?: Web3
 ): ContractMethods<{
+  poolWhitelist(): CallReturn<string[]>;
   minProtectionDelay: () => CallReturn<string>;
   lockDuration: () => CallReturn<string>;
   networkToken: () => CallReturn<string>;

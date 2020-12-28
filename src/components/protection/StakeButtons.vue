@@ -121,7 +121,7 @@ export default class StakeButtons extends BaseComponent {
     }
   }
 
-  async created() {
+  async mounted() {
     await this.loadMaxStakes();
     this.interval = setInterval(async () => {
       await this.loadMaxStakes();

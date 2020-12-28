@@ -1,5 +1,37 @@
 <template>
   <div class="mt-3">
+    <alert-block
+      title="Learn what it means to add liquidity to a pool:"
+      class="my-3"
+    >
+      <ol class="m-0 pl-3">
+        <li>
+          <a
+            href="https://blog.bancor.network/how-to-stake-liquidity-earn-fees-on-bancor-bff8369274a1"
+            target="_blank"
+          >
+            How do I make money by providing liquidity?
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://blog.bancor.network/beginners-guide-to-getting-rekt-by-impermanent-loss-7c9510cb2f22"
+            target="_blank"
+          >
+            What is impermanent loss?
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://bankless.substack.com/p/how-to-protect-yourself-from-impermanent"
+            target="_blank"
+          >
+            How does Bancor protect me from impermanent loss?
+          </a>
+        </li>
+      </ol>
+    </alert-block>
+
     <label-content-split label="Stake in Pool" class="my-3">
       <pool-logos
         :pool="pool"
@@ -299,9 +331,7 @@ export default class AddProtectionSingle extends BaseComponent {
         this.opposingToken!.symbol
       } liquidity should be staked to allow for ${
         this.token.symbol
-      } single-sided staking. Alternatively, provide dual-sided liquidity (${
-        this.opposingToken!.symbol
-      }+${this.token.symbol})`;
+      } single-sided staking.`;
 
       if (res.error) {
         this.preTxError =
@@ -381,7 +411,7 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
-  async created() {
+  async mounted() {
     await this.loadMaxStakes();
     await this.loadRecentAverageRate();
     this.interval = setInterval(async () => {
