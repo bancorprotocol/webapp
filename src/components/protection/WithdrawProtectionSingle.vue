@@ -19,6 +19,7 @@
     <alert-block
       v-if="priceDeviationTooHigh && !inputError"
       variant="error"
+      class="mb-3"
       msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds."
     />
 
