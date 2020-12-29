@@ -19,7 +19,7 @@
     <alert-block
       v-if="priceDeviationTooHigh && !inputError"
       variant="error"
-      msg="Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds."
+      msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds."
     />
 
     <alert-block
