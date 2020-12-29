@@ -31,6 +31,8 @@
 import { Component, Prop } from "vue-property-decorator";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
+import BigNumber from "bignumber.js";
+import {vxm} from "@/store";
 
 @Component
 export default class ActionButtons extends BaseComponent {
@@ -38,12 +40,17 @@ export default class ActionButtons extends BaseComponent {
   @Prop() token?: ViewToken;
   @Prop({ default: false }) small!: boolean;
 
+  get minNetworkTokenLiquidityforMinting() {
+    return vxm.minting.minNetworkTokenLiquidityforMinting
+  }
+
   goToPool() {
+    const limit = this.minNetworkTokenLiquidityforMinting
     if (
       this.pool &&
       this.pool.whitelisted &&
       this.pool.bntReserveBalance &&
-      Number(this.pool.bntReserveBalance) > 1000
+      limit !== null && limit.lt(this.pool.bntReserveBalance)
     ) {
       this.$router.push({
         name: "AddProtectionSingle",
