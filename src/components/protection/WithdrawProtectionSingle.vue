@@ -199,6 +199,11 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   vBntBalance: BigNumber | null = null;
+
+  get isVoteLoaded() {
+    return vxm.ethGovernance.isLoaded;
+  }
+
   async loadVBntBalance() {
     this.vBntBalance = this.currentUser
       ? await vxm.ethGovernance.getBalance({
@@ -275,6 +280,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   private interval: any;
 
   async mounted() {
+    if (!this.isVoteLoaded) await vxm.ethGovernance.init();
     await this.onPercentUpdate(this.percentage);
     await this.loadVBntBalance();
     this.interval = setInterval(async () => {
