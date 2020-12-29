@@ -37,6 +37,13 @@
       :show-buttons="true"
     />
 
+    <alert-block
+      v-if="inputError"
+      variant="error"
+      :msg="inputError"
+      class="mt-3"
+    />
+
     <div class="d-flex justify-content-center mb-3">
       <font-awesome-icon icon="arrow-down" class="mt-3" />
     </div>
@@ -250,9 +257,11 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   async onPercentUpdate(newPercent: string) {
     console.log(newPercent, "is the new percent");
+    const percentage = Number(this.percentage) / 100;
+    if (!percentage) return;
     const res = await vxm.ethBancor.calculateSingleWithdraw({
       id: this.position.id,
-      decPercent: Number(this.percentage) / 100
+      decPercent: percentage
     });
     await this.loadRecentAverageRate();
 
@@ -275,6 +284,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       relayId: this.pool.id,
       selectedTokenAddress: this.tokenContract
     });
+    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
   }
 
   private interval: any;
