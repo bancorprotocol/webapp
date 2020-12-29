@@ -6,7 +6,7 @@
       :links="links"
       @linkClicked="navigateToRoute"
     />
-    <div class="d-md-none">
+    <!-- <div class="d-md-none">
       <b-btn
         v-b-toggle.sidebar-m
         variant="white"
@@ -22,13 +22,13 @@
           @linkClicked="navigateToRoute"
         />
       </b-sidebar>
-    </div>
-    <!-- <side-bar-bottom
+    </div> -->
+    <side-bar-bottom
       class="d-md-none"
       :dark-mode="darkMode"
       :links="links"
       @linkClicked="navigateToRoute"
-    /> -->
+    />
   </div>
 </template>
 
@@ -89,7 +89,7 @@ export default class SideBar extends BaseComponent {
       key: "vote",
       label: "Vote",
       newTab: false,
-      hideMobile: false,
+      hideMobile: true,
       svgName: "vote"
     },
     {

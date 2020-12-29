@@ -23,6 +23,13 @@
         />
         <span>{{ link.label }}</span>
       </div>
+      <div
+        @click="moreClicked(link)"
+        :class="darkMode ? 'side-bar-link-dark' : 'side-bar-link'"
+      >
+        <span>More</span>
+        <font-awesome-icon icon="chevron-circle-right" class="ml-2" />
+      </div>
     </div>
   </div>
 </template>
