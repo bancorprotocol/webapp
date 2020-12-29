@@ -84,7 +84,7 @@
 
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split label="Space Available" :loading="loadingMaxStakes">
-        <span @click="amount = maxStakeAmount" class="cursor">{{
+        <span @click="setAmount" class="cursor">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
         }}</span>
       </label-content-split>
@@ -409,6 +409,10 @@ export default class AddProtectionSingle extends BaseComponent {
     } finally {
       this.loadingMaxStakes = false;
     }
+  }
+
+  setAmount() {
+    this.amount = (parseFloat(this.maxStakeAmount) > 0) ? this.maxStakeAmount : '0';
   }
 
   async mounted() {
