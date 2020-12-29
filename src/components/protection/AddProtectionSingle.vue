@@ -249,6 +249,7 @@ export default class AddProtectionSingle extends BaseComponent {
   get disableActionButton() {
     if (!this.amount) return true;
     else if (this.priceDeviationTooHigh) return true;
+    else if (this.loadingMaxStakes) return true;
     else return this.inputError ? true : false;
   }
 
@@ -412,7 +413,8 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   setAmount() {
-    this.amount = (parseFloat(this.maxStakeAmount) > 0) ? this.maxStakeAmount : '0';
+    this.amount =
+      parseFloat(this.maxStakeAmount) > 0 ? this.maxStakeAmount : "0";
   }
 
   async mounted() {
