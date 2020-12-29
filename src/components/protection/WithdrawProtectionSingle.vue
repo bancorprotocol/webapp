@@ -122,8 +122,9 @@ import BaseComponent from "@/components/BaseComponent.vue";
   }
 })
 export default class WithdrawProtectionSingle extends BaseComponent {
-  @Prop() pool!: ViewRelay;
-
+  get pool(): ViewRelay {
+    return vxm.bancor.relay(this.position.stake.poolId);
+  }
   percentage: string = "50";
 
   modal = false;
@@ -243,12 +244,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   async onPercentUpdate(newPercent: string) {
-    await this.loadRecentAverageRate();
     console.log(newPercent, "is the new percent");
     const res = await vxm.ethBancor.calculateSingleWithdraw({
       id: this.position.id,
       decPercent: Number(this.percentage) / 100
     });
+    await this.loadRecentAverageRate();
 
     this.expectedValue = res.expectedValue;
     this.outputs = res.outputs;
@@ -271,13 +272,10 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     });
   }
 
-  created() {
-    this.onPercentUpdate(this.percentage);
-  }
-
   private interval: any;
 
   async mounted() {
+    await this.onPercentUpdate(this.percentage);
     await this.loadVBntBalance();
     this.interval = setInterval(async () => {
       await this.loadVBntBalance();
