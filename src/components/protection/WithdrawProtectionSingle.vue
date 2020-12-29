@@ -17,6 +17,12 @@
     />
 
     <alert-block
+      v-if="priceDeviationTooHigh && !inputError"
+      variant="error"
+      msg="Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds."
+    />
+
+    <alert-block
       v-if="warning"
       variant="warning"
       title="Important"
@@ -126,6 +132,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   error = "";
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
+  priceDeviationTooHigh: boolean = false;
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
@@ -136,6 +143,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   get disableActionButton() {
     if (this.vBntWarning) return true;
     else if (parseFloat(this.percentage) === 0) return true;
+    else if (this.priceDeviationTooHigh) return true;
     else return this.inputError ? true : false;
   }
 
@@ -235,6 +243,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   async onPercentUpdate(newPercent: string) {
+    await this.loadRecentAverageRate();
     console.log(newPercent, "is the new percent");
     const res = await vxm.ethBancor.calculateSingleWithdraw({
       id: this.position.id,
@@ -247,6 +256,21 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     console.log(res, "was the res");
   }
 
+  get tokenContract() {
+    const reserve = this.pool.reserves.find(
+      x => x.symbol === this.position.stake.symbol
+    );
+    if (reserve) return reserve.contract;
+    else return "";
+  }
+
+  async loadRecentAverageRate() {
+    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
+      relayId: this.pool.id,
+      selectedTokenAddress: this.tokenContract
+    });
+  }
+
   created() {
     this.onPercentUpdate(this.percentage);
   }
@@ -257,6 +281,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     await this.loadVBntBalance();
     this.interval = setInterval(async () => {
       await this.loadVBntBalance();
+      await this.loadRecentAverageRate();
     }, 10000);
   }
 
