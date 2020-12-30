@@ -30,7 +30,7 @@
       </div>
     </template>
 
-    <div v-if="!(txBusy || success)" class="w-100">
+    <div v-if="!(txBusy || success || error)" class="w-100">
 
       <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
         New proposal requires you to hold at least {{ proposalMinimumFormatted }}
@@ -94,20 +94,20 @@
         label="Github URL"
       />
       <div class="pt-3" />
-
-      <main-button
-        @click="propose"
-        :label="proposeButton"
-        :large="true"
-        :active="true"
-        :disabled="this.hasError || txBusy"
-      />
     </div>
 
     <action-modal-status
       v-if="txBusy || error || success"
       :error="error"
       :success="success"
+    />
+
+    <main-button
+      @click="propose"
+      :label="proposeButton"
+      :large="true"
+      :active="true"
+      :disabled="!success && (this.hasError || txBusy)"
     />
   </b-modal>
 </template>
@@ -197,6 +197,12 @@ export default class AddProposal extends BaseComponent {
   }
 
   async propose() {
+    if (this.success) {
+      this.setDefault();
+      this.onHide();
+      return;
+    }
+
     if (this.hasError) {
       return;
     }
