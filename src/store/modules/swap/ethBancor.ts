@@ -3754,58 +3754,48 @@ export class EthBancorModule
   }
 
   @action async getMaxStakes({ poolId }: { poolId: string }) {
-    const contract = await buildLiquidityProtectionSettingsContract(
-      this.liquidityProtectionSettings.contract,
+    const contract = await buildLiquidityProtectionContract(
+      this.contracts.LiquidityProtection,
       w3
     );
 
-    const [balances, poolLimitWei, mintedWei] = await Promise.all([
-      this.fetchRelayBalances({ poolId }),
-      contract.methods.networkTokenMintingLimits(poolId).call(),
-      contract.methods.networkTokensMinted(poolId).call()
-    ]);
-
-    const [bntReserve, tknReserve] = sortAlongSide(
-      balances.reserves,
-      reserve => reserve.contract,
-      [this.liquidityProtectionSettings.networkToken]
-    );
-
-    const [bntReserveBalance, tknReserveBalance] = [bntReserve, tknReserve].map(
-      reserve => reserve.weiAmount
-    );
-
-    const defaultLimitWei = this.liquidityProtectionSettings
-      .defaultNetworkTokenMintingLimit;
-    const { bntLimitWei, tknLimitWei } = calculateLimits(
-      poolLimitWei,
-      defaultLimitWei,
-      mintedWei,
-      tknReserveBalance,
-      bntReserveBalance
-    );
+    const result = await contract.methods.poolAvailableSpace(poolId).call();
 
     const maxStakes = {
-      maxAllowedBntWei: bntLimitWei.toString(),
-      maxAllowedTknWei: tknLimitWei.toString()
+      maxAllowedBntWei: result["1"].toString(),
+      maxAllowedTknWei: result["0"].toString()
     };
 
-    return { maxStakes, bntReserve, tknReserve };
+    return { maxStakes };
   }
 
   @action async getMaxStakesView({ poolId }: { poolId: string }) {
-    const { maxStakes, bntReserve, tknReserve } = await this.getMaxStakes({
+    const { maxStakes } = await this.getMaxStakes({
       poolId
     });
 
+    const pool = this.relay(poolId);
+
+    const bntTknArr = pool.reserves.map(r => {
+      return {
+        contract: r.contract,
+        symbol: r.symbol,
+        decimals: this.token(r.id).precision
+      };
+    });
+
+    const [bnt, tkn] = sortAlongSide(bntTknArr, item => item.contract, [
+      this.liquidityProtectionSettings.networkToken
+    ]);
+
     return [
       {
-        amount: shrinkToken(maxStakes.maxAllowedBntWei, bntReserve.decimals),
-        token: bntReserve.symbol
+        amount: shrinkToken(maxStakes.maxAllowedBntWei, bnt.decimals),
+        token: bnt.symbol
       },
       {
-        amount: shrinkToken(maxStakes.maxAllowedTknWei, tknReserve.decimals),
-        token: tknReserve.symbol
+        amount: shrinkToken(maxStakes.maxAllowedTknWei, tkn.decimals),
+        token: tkn.symbol
       }
     ];
   }
