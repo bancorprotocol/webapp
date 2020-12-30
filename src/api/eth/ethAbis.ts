@@ -309,6 +309,75 @@ export const ABILiquidityProtection: AbiItem[] = [
   },
   {
     inputs: [],
+    name: "acceptStoreOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "_poolAnchor",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "_reserveToken",
+        type: "address"
+      },
+      { internalType: "uint256", name: "_amount", type: "uint256" }
+    ],
+    name: "addLiquidity",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "payable",
+    type: "function"
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "_owner", type: "address" },
+      {
+        internalType: "contract IConverterAnchor",
+        name: "_poolAnchor",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "_reserveToken",
+        type: "address"
+      },
+      { internalType: "uint256", name: "_amount", type: "uint256" }
+    ],
+    name: "addLiquidityFor",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "payable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "_poolAnchor",
+        type: "address"
+      }
+    ],
+    name: "baseTokenAvailableSpace",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "_startIndex", type: "uint256" },
+      { internalType: "uint256", name: "_endIndex", type: "uint256" }
+    ],
+    name: "claimBalance",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
     name: "govToken",
     outputs: [
       { internalType: "contract IERC20Token", name: "", type: "address" }
@@ -344,6 +413,19 @@ export const ABILiquidityProtection: AbiItem[] = [
     type: "function"
   },
   {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "_poolAnchor",
+        type: "address"
+      }
+    ],
+    name: "networkTokenAvailableSpace",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
     inputs: [],
     name: "networkTokenGovernance",
     outputs: [
@@ -363,6 +445,70 @@ export const ABILiquidityProtection: AbiItem[] = [
     inputs: [],
     name: "owner",
     outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "_poolAnchor",
+        type: "address"
+      }
+    ],
+    name: "poolAvailableSpace",
+    outputs: [
+      { internalType: "uint256", name: "", type: "uint256" },
+      { internalType: "uint256", name: "", type: "uint256" }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "_poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "_reserveToken",
+        type: "address"
+      },
+      { internalType: "uint256", name: "_reserveAmount", type: "uint256" },
+      { internalType: "uint256", name: "_poolRateN", type: "uint256" },
+      { internalType: "uint256", name: "_poolRateD", type: "uint256" },
+      { internalType: "uint256", name: "_reserveRateN", type: "uint256" },
+      { internalType: "uint256", name: "_reserveRateD", type: "uint256" }
+    ],
+    name: "poolROI",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "_id", type: "uint256" },
+      { internalType: "uint32", name: "_portion", type: "uint32" }
+    ],
+    name: "removeLiquidity",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "_id", type: "uint256" },
+      { internalType: "uint32", name: "_portion", type: "uint32" },
+      { internalType: "uint256", name: "_removeTimestamp", type: "uint256" }
+    ],
+    name: "removeLiquidityReturn",
+    outputs: [
+      { internalType: "uint256", name: "", type: "uint256" },
+      { internalType: "uint256", name: "", type: "uint256" },
+      { internalType: "uint256", name: "", type: "uint256" }
+    ],
     stateMutability: "view",
     type: "function"
   },
@@ -402,134 +548,6 @@ export const ABILiquidityProtection: AbiItem[] = [
   {
     inputs: [{ internalType: "address", name: "_newOwner", type: "address" }],
     name: "transferStoreOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "acceptStoreOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_id1", type: "uint256" },
-      { internalType: "uint256", name: "_id2", type: "uint256" }
-    ],
-    name: "unprotectLiquidity",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "_owner", type: "address" },
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      },
-      {
-        internalType: "contract IERC20Token",
-        name: "_reserveToken",
-        type: "address"
-      },
-      { internalType: "uint256", name: "_amount", type: "uint256" }
-    ],
-    name: "addLiquidityFor",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "payable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_id", type: "uint256" },
-      { internalType: "uint32", name: "_portion", type: "uint32" },
-      { internalType: "uint256", name: "_removeTimestamp", type: "uint256" }
-    ],
-    name: "removeLiquidityReturn",
-    outputs: [
-      { internalType: "uint256", name: "", type: "uint256" },
-      { internalType: "uint256", name: "", type: "uint256" },
-      { internalType: "uint256", name: "", type: "uint256" }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_startIndex", type: "uint256" },
-      { internalType: "uint256", name: "_endIndex", type: "uint256" }
-    ],
-    name: "claimBalance",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IDSToken",
-        name: "_poolToken",
-        type: "address"
-      },
-      {
-        internalType: "contract IERC20Token",
-        name: "_reserveToken",
-        type: "address"
-      },
-      { internalType: "uint256", name: "_reserveAmount", type: "uint256" },
-      { internalType: "uint256", name: "_poolRateN", type: "uint256" },
-      { internalType: "uint256", name: "_poolRateD", type: "uint256" },
-      { internalType: "uint256", name: "_reserveRateN", type: "uint256" },
-      { internalType: "uint256", name: "_reserveRateD", type: "uint256" }
-    ],
-    name: "poolROI",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      },
-      { internalType: "uint256", name: "_amount", type: "uint256" }
-    ],
-    name: "protectLiquidity",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      },
-      {
-        internalType: "contract IERC20Token",
-        name: "_reserveToken",
-        type: "address"
-      },
-      { internalType: "uint256", name: "_amount", type: "uint256" }
-    ],
-    name: "addLiquidity",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "payable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_id", type: "uint256" },
-      { internalType: "uint32", name: "_portion", type: "uint32" }
-    ],
-    name: "removeLiquidity",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
