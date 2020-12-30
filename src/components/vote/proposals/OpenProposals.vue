@@ -88,25 +88,25 @@
         <b-row>
           <b-col cols="6">
             <b-row class="pb-1">
-              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
+              <b-col class="font-size-12 text-muted-light" cols="4">
                 Vote Start
               </b-col>
-              <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
+              <b-col class="font-size-12 font-w500 text-nowrap" cols="4">
                 {{ formatDate(item.start) }}
-              </b-col>
-              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
-                {{ formatTime(item.start) }}
+                <span class="text-muted-light pl-1">
+                  {{ formatTime(item.start) }}
+                </span>
               </b-col>
             </b-row>
             <b-row>
-              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
+              <b-col class="font-size-12 text-muted-light" cols="4">
                 Vote End
               </b-col>
-              <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
+              <b-col class="font-size-12 font-w500 text-nowrap" cols="4">
                 {{ formatDate(item.end) }}
-              </b-col>
-              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
-                {{ formatTime(item.end) }}
+                <span class="text-muted-light pl-1">
+                  {{ formatTime(item.end) }}
+                </span>
               </b-col>
             </b-row>
           </b-col>
