@@ -23,8 +23,10 @@
         />
         <span>{{ link.label }}</span>
       </div>
+
       <div
         @click="moreClicked(link)"
+        class="btn-more"
         :class="darkMode ? 'side-bar-link-dark' : 'side-bar-link'"
       >
         <span>More</span>
@@ -59,6 +61,11 @@ export default class SideBarBottom extends Vue {
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
+  }
+
+  @Emit("moreClicked")
+  moreClicked() {
+    return true;
   }
 }
 </script>
@@ -134,6 +141,9 @@ export default class SideBarBottom extends Vue {
         brightness(0.7);
       color: #0f59d1;
     }
+  }
+  .btn-more {
+    cursor: pointer;
   }
 }
 .side-bar-dark {

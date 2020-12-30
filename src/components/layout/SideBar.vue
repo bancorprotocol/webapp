@@ -6,37 +6,27 @@
       :links="links"
       @linkClicked="navigateToRoute"
     />
-    <!-- <div class="d-md-none">
-      <b-btn
-        v-b-toggle.sidebar-m
-        variant="white"
-        class="btn-toggle block-rounded"
-        size="sm"
-      >
-        <font-awesome-icon icon="chevron-circle-right" />
-      </b-btn>
-      <b-sidebar id="sidebar-m" shadow backdrop no-header no-header-close>
-        <side-bar-common
-          :dark-mode="darkMode"
-          :links="links"
-          @linkClicked="navigateToRoute"
-        />
-      </b-sidebar>
-    </div> -->
     <side-bar-bottom
       class="d-md-none"
       :dark-mode="darkMode"
       :links="links"
       @linkClicked="navigateToRoute"
+      @moreClicked="showMore = !showMore"
     />
+
+    <div v-if="showMore" class="sidebar-more">
+      <side-bar-bottom-more
+        :dark-mode="darkMode"
+        :links="links" />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Watch } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
-import SideBarCommon from "@/components/layout/SideBarCommon.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
+import SideBarBottomMore from "@/components/layout/SideBarBottomMore.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewSideBarLink {
@@ -48,9 +38,10 @@ export interface ViewSideBarLink {
   svgName: string;
 }
 @Component({
-  components: { SideBarCommon, SideBarBottom, SideBarLeft }
+  components: { SideBarBottom, SideBarBottomMore, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {
+  showMore: boolean = false;
   links: ViewSideBarLink[] = [
     {
       route: "DataSummary",
@@ -130,5 +121,12 @@ export default class SideBar extends BaseComponent {
     top: 60px;
     left: 15px;
     z-index: 999;
+  }
+
+  .sidebar-more {
+    position: absolute;
+    right: 10px;
+    bottom: 60px;
+    z-index: 300;
   }
 </style>
