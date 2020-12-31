@@ -413,6 +413,11 @@ export const thirdRoundLiquidityMiningEndTime = moment(
   "YYYY-MM-DD HH:mm Z"
 ).unix();
 
+export const fourthRoundLiquidityMiningEndTime = moment(
+  "2021-03-25 09:00 +0000",
+  "YYYY-MM-DD HH:mm Z"
+).unix();
+
 export const highCapPools = [
   "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
   "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec",
@@ -448,6 +453,7 @@ export const highTierPools = [
   "0x6b181C478b315bE3f9E99c57CE926436c32e17a7",
   "0xb479b102bF135bdC666d6916172422CbaD9E977f",
   "0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde",
+  "0x6c84f4ccc916acf792538f1293b286b540906a2a",
   // Ropsten
   "0x6DC51c45f409385Fc99a1c7B316D7fab15d66474",
   "0x1aCE5DD13Ba14CA42695A905526f2ec366720b13"
