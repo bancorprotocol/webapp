@@ -141,7 +141,8 @@ import {
   priorityEthPools,
   secondRoundLiquidityMiningEndTime,
   highTierPools,
-  thirdRoundLiquidityMiningEndTime
+  thirdRoundLiquidityMiningEndTime,
+  fourthRoundLiquidityMiningEndTime
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -6356,6 +6357,8 @@ export class EthBancorModule
 
     const thirdRoundPools = ["0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde"];
 
+    const fourthRoundPools = ["0x6c84f4ccc916acf792538f1293b286b540906a2a"];
+
     const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
       const [bntReserve, tknReserve] = sortAlongSide(
         calculated.reserves,
@@ -6376,10 +6379,16 @@ export class EthBancorModule
         compareString(anchor, calculated.anchorAddress)
       );
 
+      const isFourthRound = fourthRoundPools.some(anchor =>
+        compareString(anchor, calculated.anchorAddress)
+      );
+
       const endTime = isSecondRound
         ? secondRoundLiquidityMiningEndTime
         : isThirdRound
         ? thirdRoundLiquidityMiningEndTime
+        : isFourthRound
+        ? fourthRoundLiquidityMiningEndTime
         : liquidityMiningEndTime;
 
       return {
