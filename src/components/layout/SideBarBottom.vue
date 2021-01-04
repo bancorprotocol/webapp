@@ -30,7 +30,7 @@
         :class="darkMode ? 'side-bar-link-dark' : 'side-bar-link'"
       >
         <span>More</span>
-        <font-awesome-icon icon="chevron-circle-right" class="ml-2" />
+        <font-awesome-icon icon="chevron-circle-right" class="ml-1" />
       </div>
     </div>
   </div>
@@ -144,6 +144,10 @@ export default class SideBarBottom extends Vue {
   }
   .btn-more {
     cursor: pointer;
+
+    span {
+      font-size: 14px;
+    }
   }
 }
 .side-bar-dark {

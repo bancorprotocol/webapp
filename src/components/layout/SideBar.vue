@@ -17,7 +17,8 @@
     <div v-if="showMore" class="sidebar-more">
       <side-bar-bottom-more
         :dark-mode="darkMode"
-        :links="links" />
+        :links="links"
+        @linkClicked="navigateToRoute" />
     </div>
   </div>
 </template>
@@ -106,6 +107,7 @@ export default class SideBar extends BaseComponent {
   }
 
   navigateToRoute(link: ViewSideBarLink) {
+    this.showMore = false;
     if (!link.newTab) {
       this.$router.push({ name: link.route });
     } else {
