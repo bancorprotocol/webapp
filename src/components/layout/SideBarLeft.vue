@@ -1,6 +1,11 @@
 <template>
-  <div class="side-bar" :class="darkMode ? 'side-bar-dark' : ''">
-    <b-navbar-brand class="pb-1 brand-icon">
+  <div class="side-bar" :class="classSideBar()">
+    <div class="btn-toggle d-flex">
+      <font-awesome-icon @click="toggleView"
+        variant="white"
+        class="block-rounded ml-auto m-1" icon="chevron-circle-right" fixed-width />
+    </div>
+    <b-navbar-brand class="pb-1 brand-icon" v-if="!showMinimize">
       <router-link :to="{ name: 'Data' }">
         <img
           v-if="darkMode"
@@ -38,11 +43,11 @@
           class="side-bar-link-icon"
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
-        <span>{{ link.label }}</span>
+        <span v-if="!showMinimize">{{ link.label }}</span>
       </div>
     </div>
     <div class="middle-space" />
-    <p class="tm-text">© Bancor 2020</p>
+    <p class="tm-text" v-if="!showMinimize">© Bancor 2020</p>
   </div>
 </template>
 
@@ -52,6 +57,7 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarLeft extends Vue {
+  showMinimize: boolean = false;
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
@@ -68,9 +74,24 @@ export default class SideBarLeft extends Vue {
     } else return false;
   }
 
+  classSideBar(): string {
+    let classNames = '';
+    if (this.darkMode) {
+      classNames += 'side-bar-dark';
+    }
+    if (this.showMinimize) {
+      classNames += ' side-bar-minimize';
+    }
+    return classNames;
+  }
+
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
+  }
+
+  toggleView() {
+    this.showMinimize = !this.showMinimize;
   }
 }
 </script>
@@ -171,6 +192,13 @@ export default class SideBarLeft extends Vue {
       box-shadow: 0 -11px 0 0 #f8f9fd;
     }
   }
+  .btn-toggle {
+    cursor: pointer;
+  }
+}
+.side-bar-minimize {
+  min-width: 60px;
+  width: 60px !important;
 }
 .side-bar-link-dark {
   span {
