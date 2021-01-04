@@ -6956,6 +6956,31 @@ export class EthBancorModule
     };
   }
 
+  @action async nullApprovalRequired({
+    tokenAddress,
+    spenderAddress,
+    currentApprovedBalance
+  }: {
+    tokenAddress: string;
+    spenderAddress: string;
+    currentApprovedBalance: string;
+  }): Promise<boolean> {
+    const ridiculousGasAmount = 70000;
+
+    const tokenContract = buildTokenContract(tokenAddress);
+    const newApprovedBalance = new BigNumber(currentApprovedBalance)
+      .plus(1)
+      .toFixed(0);
+
+    const estimatedGasCost = await tokenContract.methods
+      .approve(spenderAddress, newApprovedBalance)
+      .estimateGas();
+
+    const approvalWouldThrow = estimatedGasCost > ridiculousGasAmount;
+    console.log({ approvalWouldThrow, estimatedGasCost });
+    return approvalWouldThrow;
+  }
+
   @action async triggerApprovalIfRequired({
     owner,
     spender,
@@ -6985,12 +7010,20 @@ export class EthBancorModule
       compareString(tokenAddress, contract)
     );
 
-    const nullingTxRequired =
+    const nullingTxMayBeRequired =
       fromWei(currentApprovedBalance) !== "0" && !isNoNullingTokenContract;
-    if (nullingTxRequired) {
-      await this.approveTokenWithdrawals([
-        { approvedAddress: spender, amount: toWei("0"), tokenAddress }
-      ]);
+    if (nullingTxMayBeRequired) {
+      const nullingTxRequired = await this.nullApprovalRequired({
+        tokenAddress,
+        spenderAddress: spender,
+        currentApprovedBalance
+      });
+
+      if (nullingTxRequired) {
+        await this.approveTokenWithdrawals([
+          { approvedAddress: spender, amount: toWei("0"), tokenAddress }
+        ]);
+      }
     }
 
     return this.approveTokenWithdrawals([
