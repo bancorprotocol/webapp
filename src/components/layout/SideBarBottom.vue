@@ -27,7 +27,7 @@
       <div
         @click="moreClicked(link)"
         class="btn-more"
-        :class="darkMode ? 'side-bar-link-dark' : 'side-bar-link'"
+        :class="darkMode ? 'side-bar-link-dark': ''"
       >
         <span>More</span>
         <font-awesome-icon icon="chevron-circle-right" class="ml-1" />
