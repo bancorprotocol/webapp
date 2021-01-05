@@ -44,6 +44,10 @@
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
         <span v-if="!showMinimize">{{ link.label }}</span>
+        <font-awesome-icon
+          v-if="!showMinimize && link.newTab"
+          variant="white"
+          class="icon-newtab block-rounded ml-auto" icon="external-link-alt" fixed-width />
       </div>
     </div>
     <div class="middle-space" />
@@ -126,6 +130,13 @@ export default class SideBarLeft extends Vue {
   }
   .side-bar-links {
     margin-top: 28px;
+
+    .icon-newtab {
+      font-size: 13px;
+      position: absolute;
+      right: 10px;
+      top: 15px;
+    }
   }
   .side-bar-link {
     padding-left: 25px;
