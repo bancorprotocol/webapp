@@ -1,6 +1,6 @@
 <template>
   <div class="side-bar" :class="classSideBar()">
-    <div class="btn-toggle d-flex">
+    <div class="btn-toggle d-flex" v-if="showMinimize">
       <font-awesome-icon @click="toggleView"
         variant="white"
         class="block-rounded ml-auto m-1" icon="chevron-circle-right" fixed-width />
@@ -92,6 +92,17 @@ export default class SideBarLeft extends Vue {
 
   toggleView() {
     this.showMinimize = !this.showMinimize;
+  }
+
+  mounted() {
+    const mql = window.matchMedia('(max-width: 1190px)');
+    mql.addEventListener('change', e => {
+      if (e.matches) {
+        this.showMinimize = true;
+      } else {
+        this.showMinimize = false;
+      }
+    });
   }
 }
 </script>
