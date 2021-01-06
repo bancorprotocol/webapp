@@ -3,7 +3,7 @@
     <div class="side-bar-links">
       <div
         @click="linkClicked(link)"
-        v-for="link in links.filter(l => !l.hideMobile)"
+        v-for="link in links"
         :key="link.key"
         :to="{ name: link.route }"
         class="side-bar-link"
@@ -21,17 +21,17 @@
           class="side-bar-link-icon"
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
-        <span>{{ link.label }}</span>
+        <div>{{ link.label }}</div>
       </div>
 
-      <div
+      <!-- <div
         @click="moreClicked(link)"
         class="btn-more"
         :class="darkMode ? 'side-bar-link-dark': ''"
       >
         <span>More</span>
         <font-awesome-icon icon="chevron-circle-right" class="ml-1" />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -85,18 +85,20 @@ export default class SideBarBottom extends Vue {
     height: 56px;
     align-items: center;
     margin-top: 0px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
   }
 
   .side-bar-link {
     padding-left: 0px;
-    display: flex;
-    flex-direction: column;
-    span {
+    display: inline-block;
+    width: 100px;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    div {
       height: 40px;
-      display: inline-flex;
       font-family: Inter;
       font-weight: 500;
       font-stretch: normal;
@@ -111,8 +113,7 @@ export default class SideBarBottom extends Vue {
       align-self: center;
       width: 24px;
       height: 24px;
-      margin-right: 0px;
-      margin-top: 22px;
+      margin-top: 10px;
       margin-bottom: 2px;
     }
   }
