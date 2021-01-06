@@ -6935,23 +6935,6 @@ export class EthBancorModule
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
 
-    try {
-      const estimate = await networkContract.methods
-        .convertByPath(
-          ethPath,
-          fromWei,
-          await this.weiMinusSlippageTolerance(expectedReturnWei),
-          zeroAddress,
-          zeroAddress,
-          0
-        )
-        .estimateGas();
-
-      console.log(estimate, "is the estimate");
-    } catch (e) {
-      console.log(e, "error is the estimate");
-    }
-
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
         ethPath,
