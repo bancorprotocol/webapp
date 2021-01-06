@@ -18,12 +18,12 @@ export class MintingModule extends VuexModule.With({
       web3
     );
 
-    const settingsContract = await contract.methods
+    const result = await contract.methods
       .minNetworkTokenLiquidityForMinting()
       .call();
 
     this.minNetworkTokenLiquidityforMinting = new BigNumber(
-      shrinkToken(settingsContract, 18)
+      shrinkToken(result, 18)
     );
   }
 }
