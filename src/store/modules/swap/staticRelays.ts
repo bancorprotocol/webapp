@@ -415,6 +415,842 @@ export const compareStaticRelay = (a: StaticRelay, b: StaticRelay) =>
 
 export const moreStaticRelays: StaticRelay[] = [
   {
+    converterAddress: "0x60c8FD9B56f602246081Ce7CD74aC1b6F46d4C14",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xA15C7Ebe1f07CaF6bFF097D8a589fb8AC49Ae5B3",
+        decimals: "18",
+        symbol: "NPXS"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "NPXSBNT",
+      decimals: "18",
+      contract: "0x5a4deB5704C1891dF3575d3EecF9471DA7F61Fa4"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xd3D6a957b09587F07eBd6449210fe2038076Ee83",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xdB25f211AB05b1c97D595516F45794528a807ad8",
+        decimals: "2",
+        symbol: "EURS"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "EURSBNT",
+      decimals: "18",
+      contract: "0xFC0e04Eae452c163883AAAd4Ac1AE091Cc87FEf3"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xD4f0154af767495C7913B59350902EFE58b8410D",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44",
+        decimals: "18",
+        symbol: "KP3R"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "KP3R",
+      decimals: "18",
+      contract: "0x9a88524DBc8C0F1CB67c6F6a695098d5BFCA4476"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x934b49574d8daC9753054F8FE57feFBD5D9c968b",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+        decimals: "8",
+        symbol: "WBTC"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "WBTC",
+      decimals: "18",
+      contract: "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xdF6753B614196aa8b5476fc37BDF1FDd840Ef87b",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x0d438F3b5175Bebc262bF23753C1E53d03432bDE",
+        decimals: "18",
+        symbol: "wNXM"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "wNXMBNT",
+      decimals: "18",
+      contract: "0x75aB5e15129BBBEcB5C5Fdb71d1ff7D5dA97d56c"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xe22B3FF36024F4AcfE6aC1a2480EE139433eF4c1",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5",
+        decimals: "18",
+        symbol: "TRB"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "TRBBNT",
+      decimals: "18",
+      contract: "0x58239b5529198E0ad76975Bab0842367A4Cc7D5b"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x225A6313E0d13d0f8C87A661ddC6923B53D0509a",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        decimals: "6",
+        symbol: "USDT"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "USDTBNT",
+      decimals: "18",
+      contract: "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x56312147A6297BeAb6DE7Ed316886A124b699197",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xba100000625a3754423978a60c9317c58a424e3D",
+        decimals: "18",
+        symbol: "BAL"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "BALBNT",
+      decimals: "18",
+      contract: "0x3E22d87977dA52Accef2Af9Eb50f76bd31b7b6B1"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x088c23d3C655204C9935ea0911e2Ac2807BB1710",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
+        decimals: "18",
+        symbol: "BUSD"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "BUSDBNT",
+      decimals: "18",
+      contract: "0x7b86306D72103Ccd5405DF9dBFf4B794C46EBbC9"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x56c118A37D06E32a4C9DAd23b4F26F01D6A3e19f",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xaaAEBE6Fe48E54f431b0C390CfaF0b017d09D42d",
+        decimals: "4",
+        symbol: "CEL"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "CELBNT",
+      decimals: "18",
+      contract: "0xA31BF9E52B92ABF37D1d126ad2D9a6d0Ce9637f0"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x29b2470E39952B76A4852F8cA83B719658b73E10",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x4eCB692B0fEDeCD7B486b4c99044392784877E8C",
+        decimals: "4",
+        symbol: "CHERRY"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "CHERRYBNT",
+      decimals: "18",
+      contract: "0xED8562cf805936AFdd2A405e7ACe80f78efc4Ed5"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xd3D6C4154A9A7a288aBEef956a34b52685a69E86",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xc00e94Cb662C3520282E6f5717214004A7f26888",
+        decimals: "18",
+        symbol: "COMP"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "COMPBNT",
+      decimals: "18",
+      contract: "0xB4c5BC0d1d41F3440c580A0F52B6641E4A913Df4"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x286198D27244011E6095E2c55342c0914192B62c",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b",
+        decimals: "8",
+        symbol: "CRO"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "CROBNT",
+      decimals: "18",
+      contract: "0x8e7970eca4be7F186A5D7acdc8dcF778EA26Ee9b"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xadFB1D3F50aC92aB67dF58040DfBDe6B2F411ABa",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xD533a949740bb3306d119CC777fa900bA034cd52",
+        decimals: "18",
+        symbol: "CRV"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "CRVBNT",
+      decimals: "18",
+      contract: "0xe783E81cf1b5bf475aDB76e41a2AB996c6e2ae50"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x610548295d1A53A48A00B5232d1b7F1Aa748ac8A",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xa1d65E8fB6e87b60FECCBc582F7f97804B725521",
+        decimals: "18",
+        symbol: "DXD"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "DXDBNT",
+      decimals: "18",
+      contract: "0xB3aF30c0c1a9673E14c9B0C56eCd4cBBeB0F6c48"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x34a9661072c2db1c9E7256A45320626981F72aD5",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x178c820f862B14f316509ec36b13123DA19A6054",
+        decimals: "18",
+        symbol: "EWTB"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "EWTBBNT",
+      decimals: "18",
+      contract: "0x66948fEFCcc464c714574a884c0458981Cbd944C"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x6C870E8E5979d277B163CaD8F8bFee215f99dB24",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
+        decimals: "18",
+        symbol: "ZRX"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "ZRXBNT",
+      decimals: "18",
+      contract: "0xa09B58ECeFA3a5d3736Ba9E2E002ca566Adf08eb"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x038cd9e60dADe4FE7E4eC8905EE71BaB9Bd78778",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
+        decimals: "2",
+        symbol: "GUSD"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "GUSDBNT",
+      decimals: "18",
+      contract: "0x5A576922849dF442f1Dc0c3bA7b3c345EdB2bd44"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x0A92DF821509DB21BccbA4d53867E573DB7fb1B8",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x4a220E6096B25EADb88358cb44068A3248254675",
+        decimals: "18",
+        symbol: "QNT"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "QNTBNT",
+      decimals: "18",
+      contract: "0xD6bF84B5D6F4d1288C39f2486688e949B1423E62"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x2C1f93e8d6fD6c0dE9537ca5523945c034F747cD",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD",
+        decimals: "18",
+        symbol: "LRC"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "LRCBNT",
+      decimals: "18",
+      contract: "0xF5A203E16ab9B850b27f1F00C37352b6b7A28339"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x587D316479c669eBaFdc19FE61bD815Bee5A9115",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xec67005c4E498Ec7f55E092bd1d35cbC47C91892",
+        decimals: "18",
+        symbol: "MLN"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "MLNBNT",
+      decimals: "18",
+      contract: "0xff2CCF332A2d6CD645f93c19690104B99943b13D"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x9B3b449257DDF33C96f4C4072FF707F06112f190",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xa3BeD4E1c75D00fa6f4E5E6922DB7261B5E9AcD2",
+        decimals: "18",
+        symbol: "MTA"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "MTABNT",
+      decimals: "18",
+      contract: "0x3035529E7aE11A3660134c9C875F4faa6514d042"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x1d9d70233427EcB3167a302D67Ba0Ae3435Cc87a",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x967da4048cD07aB37855c090aAF366e4ce1b9F48",
+        decimals: "18",
+        symbol: "OCEAN"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "OCEANBNT",
+      decimals: "18",
+      contract: "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xEDC0612754bE676ac568fD2215175a2b5E5462D9",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xFca59Cd816aB1eaD66534D82bc21E7515cE441CF",
+        decimals: "18",
+        symbol: "RARI"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "RARIBNT",
+      decimals: "18",
+      contract: "0xb5faf55A4bD812a918c68F629A00d8F9750a2C4d"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xc035d88e6ee710027801422c300c4990Da29dB36",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x8762db106B2c2A0bccB3A80d1Ed41273552616E8",
+        decimals: "18",
+        symbol: "RSR"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "RSRBNT",
+      decimals: "18",
+      contract: "0x7d402c5CF587D4dEC6761C51E0aA903956495851"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xD2797888d86421B2847579bc219AdcBa90cBba3c",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xfE18be6b3Bd88A2D2A7f928d00292E7a9963CfC6",
+        decimals: "18",
+        symbol: "sBTC"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "sBTCBNT",
+      decimals: "18",
+      contract: "0x63bc130401dc9f7F70203B01D1875d0D2779dc96"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x83a06A518Acc8cc841B0D7833f9c2f85Fc2D2D2a",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F",
+        decimals: "18",
+        symbol: "SNX"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "SNXBNT",
+      decimals: "18",
+      contract: "0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xab56B87B9288a9a236EF38e762Eb324Dbe5E49f8",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x0Ae055097C6d159879521C384F1D2123D1f195e6",
+        decimals: "18",
+        symbol: "STAKE"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "STAKEBNT",
+      decimals: "18",
+      contract: "0x5062743A788D271FA247C3dA7Cd5af73Fd687BA8"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xEb73deA31126eC00201858B26d35f5E40902fc5c",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2",
+        decimals: "18",
+        symbol: "SUSHI"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "SUSHIBNT",
+      decimals: "18",
+      contract: "0xB2145C7f9249d79197fe3cB87333187eB4FC1Eec"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x5A38C32e62E9688d402f2f73b86188bB765CB19B",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x8CE9137d39326AD0cD6491fb5CC0CbA0e089b6A9",
+        decimals: "18",
+        symbol: "SXP"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "SXPBNT",
+      decimals: "18",
+      contract: "0xa301Ad444e72F11590e3712bBb7aD0aC959b90C2"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xDC9DF032dEFCC9F072526594537a8C8596980bf4",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828",
+        decimals: "18",
+        symbol: "UMA"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "UMABNT",
+      decimals: "18",
+      contract: "0x9Ca631b980DeC1eEba001BBfaC8da5A9e7d744fF"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xDcebe37807A82A3b6443Ef2fFC112a6676FABbF7",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x05D3606d5c81EB9b7B18530995eC9B29da05FaBa",
+        decimals: "18",
+        symbol: "TOMOE"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "TOMOEBNT",
+      decimals: "18",
+      contract: "0x0dc75ECCcF5B784b793686e614C2E9dCdda63738"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0xc1956f06ffA45A47423aCF4A3422Dc2203645Ba4",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+        decimals: "18",
+        symbol: "UNI"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "UNIBNT",
+      decimals: "18",
+      contract: "0x8b3082e273E4B923830c637a203c1C1D963cA307"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x9C4Ea0BF80C4768314c4F631AC84E274B32385FE",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
+        decimals: "18",
+        symbol: "YFI"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "YFIBNT",
+      decimals: "18",
+      contract: "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x8cDF3D2355c2E725952b8A46f047a61496a12185",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xc944E90C64B2c07662A292be6244BDf05Cda44a7",
+        decimals: "18",
+        symbol: "GRT"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "BNTGRT",
+      decimals: "18",
+      contract: "0x7F6D555de5baa78946fF2985fdE2dd0535F0f9cB"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x44360fB15A2f17715E5052cF5994b23978081d9e",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        decimals: "6",
+        symbol: "USDC"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "USDCBNT",
+      decimals: "18",
+      contract: "0x874d8dE5b26c9D9f6aA8d7bab283F9A9c6f777f4"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x5bEdB6E03fA9aA4A5a35152dab8336bC57376b90",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
+        decimals: "18",
+        symbol: "AAVE"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "AAVEBNT",
+      decimals: "18",
+      contract: "0x6c84F4ccC916ACf792538f1293b286b540906A2a"
+    },
+    version: 44
+  },
+  {
+    converterAddress: "0x99bb376E227ac410e0386915d738f8088E43F0E2",
+    reserves: [
+      {
+        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        decimals: "18",
+        symbol: "BNT"
+      },
+      {
+        contract: "0xb0DBa4BD6b6C4fC9A1263D8C19A57A6BdD740A52",
+        decimals: "18",
+        symbol: "EILN"
+      }
+    ],
+    converterType: 1,
+    poolToken: {
+      symbol: "BNTEILN",
+      decimals: "18",
+      contract: "0x570d60550580D07B3D9C88afFd7eC2AacDb14EA2"
+    },
+    version: 44
+  },
+  {
     converterAddress: "0xa54a53c9215096Ac2C566Fa9a2C71b6dcE69f3d5",
     reserves: [
       {
@@ -1449,28 +2285,6 @@ export const moreStaticRelays: StaticRelay[] = [
     version: 42
   },
   {
-    converterAddress: "0xb9545CEf125158796817654605D75a212AD51660",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44",
-        decimals: "18",
-        symbol: "KP3R"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "KP3R",
-      decimals: "18",
-      contract: "0x9a88524DBc8C0F1CB67c6F6a695098d5BFCA4476"
-    },
-    version: 42
-  },
-  {
     converterAddress: "0x1bC0300e8943dFC2622A254652Aa40d8659DB24e",
     reserves: [
       {
@@ -2173,28 +2987,6 @@ export const moreStaticRelays: StaticRelay[] = [
       contract: "0xb3b2861a093B7FB19352bD62CD8EFC314e0641a7"
     },
     version: 25
-  },
-  {
-    converterAddress: "0xE3c7239BCcEe98B85a7D7Bc364490440067Afabf",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xA15C7Ebe1f07CaF6bFF097D8a589fb8AC49Ae5B3",
-        decimals: "18",
-        symbol: "NPXS"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "NPXSBNT",
-      decimals: "18",
-      contract: "0x5a4deB5704C1891dF3575d3EecF9471DA7F61Fa4"
-    },
-    version: 42
   },
   {
     converterAddress: "0x4D6DE557092f9742606e226860d6718281C9D241",
@@ -2989,28 +3781,6 @@ export const moreStaticRelays: StaticRelay[] = [
     version: 32
   },
   {
-    converterAddress: "0x0D86A7A059f316F81FcEF32495aAe41Cd0C80511",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xdB25f211AB05b1c97D595516F45794528a807ad8",
-        decimals: "2",
-        symbol: "EURS"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "EURSBNT",
-      decimals: "18",
-      contract: "0xFC0e04Eae452c163883AAAd4Ac1AE091Cc87FEf3"
-    },
-    version: 32
-  },
-  {
     converterAddress: "0x248b13d6d10C4102f72e79C04f87228aCe67fd3D",
     reserves: [
       {
@@ -3317,28 +4087,6 @@ export const moreStaticRelays: StaticRelay[] = [
       contract: "0x3364ccAedE016F4C433B326d96bE1A2eafA60bdD"
     },
     version: 0
-  },
-  {
-    converterAddress: "0xD4c2BD3c4203A16266eced70a3F8cb4999a73E8f",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-        decimals: "8",
-        symbol: "WBTC"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "WBTC",
-      decimals: "18",
-      contract: "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec"
-    },
-    version: 41
   },
   {
     converterAddress: "0xb61b3FE730Fb58936f06239feA2FEEd5B3256F50",
@@ -5057,28 +5805,6 @@ export const moreStaticRelays: StaticRelay[] = [
     version: 23
   },
   {
-    converterAddress: "0x4571c9937B2CB289c099C4e8daED68827D69f3A2",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5",
-        decimals: "18",
-        symbol: "TRB"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "TRBBNT",
-      decimals: "18",
-      contract: "0x58239b5529198E0ad76975Bab0842367A4Cc7D5b"
-    },
-    version: 41
-  },
-  {
     converterAddress: "0xa239EA1E43fCeAb1246eD819c88AC714B3c466aE",
     reserves: [
       {
@@ -5717,28 +6443,6 @@ export const moreStaticRelays: StaticRelay[] = [
     version: 31
   },
   {
-    converterAddress: "0xA2C1dE568B70BC8b3565F1240D43b6949Bfe183A",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-        decimals: "6",
-        symbol: "USDT"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "USDTBNT",
-      decimals: "18",
-      contract: "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306"
-    },
-    version: 42
-  },
-  {
     converterAddress: "0x39e5AAE547752c1239b4738e75cDF705c25adeA6",
     reserves: [
       {
@@ -5981,468 +6685,6 @@ export const moreStaticRelays: StaticRelay[] = [
     version: 40
   },
   {
-    converterAddress: "0x15C6aC6Fc9d4179D9b799e709C1AfD726bA97418",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xba100000625a3754423978a60c9317c58a424e3D",
-        decimals: "18",
-        symbol: "BAL"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "BALBNT",
-      decimals: "18",
-      contract: "0x3E22d87977dA52Accef2Af9Eb50f76bd31b7b6B1"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x485e61D9549b65AbDb1EAbD15Cc30A1aB00f6cAF",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
-        decimals: "18",
-        symbol: "BUSD"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "BUSDBNT",
-      decimals: "18",
-      contract: "0x7b86306D72103Ccd5405DF9dBFf4B794C46EBbC9"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x70B4a71Ad893C2E775Cecd8855E7c6F95fB5af21",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xaaAEBE6Fe48E54f431b0C390CfaF0b017d09D42d",
-        decimals: "4",
-        symbol: "CEL"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "CELBNT",
-      decimals: "18",
-      contract: "0xA31BF9E52B92ABF37D1d126ad2D9a6d0Ce9637f0"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x303D1F3ff37A878d4023702be8d70a82A49D74Eb",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x4eCB692B0fEDeCD7B486b4c99044392784877E8C",
-        decimals: "4",
-        symbol: "CHERRY"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "CHERRYBNT",
-      decimals: "18",
-      contract: "0xED8562cf805936AFdd2A405e7ACe80f78efc4Ed5"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x7deb97229DBF5aaC741C62b36E8dde9F541F9CC1",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xc00e94Cb662C3520282E6f5717214004A7f26888",
-        decimals: "18",
-        symbol: "COMP"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "COMPBNT",
-      decimals: "18",
-      contract: "0xB4c5BC0d1d41F3440c580A0F52B6641E4A913Df4"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x40280D2A19a52E064DF1Cc68F8d4f77856FD6A71",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b",
-        decimals: "8",
-        symbol: "CRO"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "CROBNT",
-      decimals: "18",
-      contract: "0x8e7970eca4be7F186A5D7acdc8dcF778EA26Ee9b"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xcD4B9ef178394B92b90cFD076FDf8C024461ca13",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xD533a949740bb3306d119CC777fa900bA034cd52",
-        decimals: "18",
-        symbol: "CRV"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "CRVBNT",
-      decimals: "18",
-      contract: "0xe783E81cf1b5bf475aDB76e41a2AB996c6e2ae50"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xAe46E888aF6318aED82FE715b1b98b78F74e7b65",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xa1d65E8fB6e87b60FECCBc582F7f97804B725521",
-        decimals: "18",
-        symbol: "DXD"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "DXDBNT",
-      decimals: "18",
-      contract: "0xB3aF30c0c1a9673E14c9B0C56eCd4cBBeB0F6c48"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xBDfFd4Fa6Fd5C8D3B9AbD81C9f7b71681A96763e",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x178c820f862B14f316509ec36b13123DA19A6054",
-        decimals: "18",
-        symbol: "EWTB"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "EWTBBNT",
-      decimals: "18",
-      contract: "0x66948fEFCcc464c714574a884c0458981Cbd944C"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xEcC601451e84Ea5eFb61e60A3e4e7BbC56E69b79",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
-        decimals: "18",
-        symbol: "ZRX"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "ZRXBNT",
-      decimals: "18",
-      contract: "0xa09B58ECeFA3a5d3736Ba9E2E002ca566Adf08eb"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x17A0edF4E67ED4C7FF3A3D06E0aAF7f38A3537D6",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
-        decimals: "2",
-        symbol: "GUSD"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "GUSDBNT",
-      decimals: "18",
-      contract: "0x5A576922849dF442f1Dc0c3bA7b3c345EdB2bd44"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x834d0Af9a86431F3a366f20320c332E95E822E1a",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x4a220E6096B25EADb88358cb44068A3248254675",
-        decimals: "18",
-        symbol: "QNT"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "QNTBNT",
-      decimals: "18",
-      contract: "0xD6bF84B5D6F4d1288C39f2486688e949B1423E62"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xcCD95D042C598fB4AD544dF2b47D6C749d99A83a",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD",
-        decimals: "18",
-        symbol: "LRC"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "LRCBNT",
-      decimals: "18",
-      contract: "0xF5A203E16ab9B850b27f1F00C37352b6b7A28339"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xa8BaE685a9213a27bC82ef782d1ba40964497dB1",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xec67005c4E498Ec7f55E092bd1d35cbC47C91892",
-        decimals: "18",
-        symbol: "MLN"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "MLNBNT",
-      decimals: "18",
-      contract: "0xff2CCF332A2d6CD645f93c19690104B99943b13D"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x1051f6DD42407908372Ba241206EBD33091b1BC5",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xa3BeD4E1c75D00fa6f4E5E6922DB7261B5E9AcD2",
-        decimals: "18",
-        symbol: "MTA"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "MTABNT",
-      decimals: "18",
-      contract: "0x3035529E7aE11A3660134c9C875F4faa6514d042"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xE9275ab4689B15C4E00de8F9c5e03e00358FC7Ab",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x967da4048cD07aB37855c090aAF366e4ce1b9F48",
-        decimals: "18",
-        symbol: "OCEAN"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "OCEANBNT",
-      decimals: "18",
-      contract: "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x9d614e61Fda55cdd10d6e73C333E23E41E2B37e2",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xFca59Cd816aB1eaD66534D82bc21E7515cE441CF",
-        decimals: "18",
-        symbol: "RARI"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "RARIBNT",
-      decimals: "18",
-      contract: "0xb5faf55A4bD812a918c68F629A00d8F9750a2C4d"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x7beDCB884146D1D8422E4cE56E7CeE62799A9f84",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x8762db106B2c2A0bccB3A80d1Ed41273552616E8",
-        decimals: "18",
-        symbol: "RSR"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "RSRBNT",
-      decimals: "18",
-      contract: "0x7d402c5CF587D4dEC6761C51E0aA903956495851"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xb39c206ec37B1aBCE8602c4f5EaafA99D3c10DDD",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xfE18be6b3Bd88A2D2A7f928d00292E7a9963CfC6",
-        decimals: "18",
-        symbol: "sBTC"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "sBTCBNT",
-      decimals: "18",
-      contract: "0x63bc130401dc9f7F70203B01D1875d0D2779dc96"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0xB2E1f4E30ceF322ac7a8E612AE2217ED00F7962A",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F",
-        decimals: "18",
-        symbol: "SNX"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "SNXBNT",
-      decimals: "18",
-      contract: "0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x8D30d8184F0469C8a28a753fBf52CadeCE748110",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x0Ae055097C6d159879521C384F1D2123D1f195e6",
-        decimals: "18",
-        symbol: "STAKE"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "STAKEBNT",
-      decimals: "18",
-      contract: "0x5062743A788D271FA247C3dA7Cd5af73Fd687BA8"
-    },
-    version: 41
-  },
-  {
     converterAddress: "0xa60B057673809956ae3cA9A0E0bc246efD4F8339",
     reserves: [
       {
@@ -6465,160 +6707,6 @@ export const moreStaticRelays: StaticRelay[] = [
     version: 41
   },
   {
-    converterAddress: "0x5820FdDC9Ae2a2b1F8cabdBF7266e0B36DB4E45A",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2",
-        decimals: "18",
-        symbol: "SUSHI"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "SUSHIBNT",
-      decimals: "18",
-      contract: "0xB2145C7f9249d79197fe3cB87333187eB4FC1Eec"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x68eAe22C00Aa8D67ddeD72186354b773dDA03077",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x8CE9137d39326AD0cD6491fb5CC0CbA0e089b6A9",
-        decimals: "18",
-        symbol: "SXP"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "SXPBNT",
-      decimals: "18",
-      contract: "0xa301Ad444e72F11590e3712bBb7aD0aC959b90C2"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x2dF5692aCc1E0Fec909870D05789B65C9B10b9a1",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828",
-        decimals: "18",
-        symbol: "UMA"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "UMABNT",
-      decimals: "18",
-      contract: "0x9Ca631b980DeC1eEba001BBfaC8da5A9e7d744fF"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x868a85285901f4a818CE2e094f2852087c502161",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x05D3606d5c81EB9b7B18530995eC9B29da05FaBa",
-        decimals: "18",
-        symbol: "TOMOE"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "TOMOEBNT",
-      decimals: "18",
-      contract: "0x0dc75ECCcF5B784b793686e614C2E9dCdda63738"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x37cDEC400afaaD77278fbc34876e083B520B2D7a",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-        decimals: "18",
-        symbol: "UNI"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "UNIBNT",
-      decimals: "18",
-      contract: "0x8b3082e273E4B923830c637a203c1C1D963cA307"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x99049F92Fb57a54E77be1e45E0E6b9Eb2fc5A2EB",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x0d438F3b5175Bebc262bF23753C1E53d03432bDE",
-        decimals: "18",
-        symbol: "wNXM"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "wNXMBNT",
-      decimals: "18",
-      contract: "0x75aB5e15129BBBEcB5C5Fdb71d1ff7D5dA97d56c"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x9258Af079065857C01466CebDCFA2CFB6AA4983C",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e",
-        decimals: "18",
-        symbol: "YFI"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "YFIBNT",
-      decimals: "18",
-      contract: "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8"
-    },
-    version: 41
-  },
-  {
     converterAddress: "0xD10591e2b47667AD9E543f780d5105E54Cc7C9D9",
     reserves: [
       {
@@ -6637,28 +6725,6 @@ export const moreStaticRelays: StaticRelay[] = [
       symbol: "LENDBNT",
       decimals: "18",
       contract: "0x020F8aCf2Dea7Ad1CF8413431e427F684181C6BA"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x228F9EE87413a1BE69ef780eef2302b680d4863d",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        decimals: "6",
-        symbol: "USDC"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "USDCBNT",
-      decimals: "18",
-      contract: "0x874d8dE5b26c9D9f6aA8d7bab283F9A9c6f777f4"
     },
     version: 41
   },
@@ -6725,28 +6791,6 @@ export const moreStaticRelays: StaticRelay[] = [
       symbol: "BNTFTT",
       decimals: "18",
       contract: "0xD9c195c9E1C49e86C7A0F0E29627CB8F8523A7fb"
-    },
-    version: 41
-  },
-  {
-    converterAddress: "0x52056B47F604216cf99782788922460F4E8E8c71",
-    reserves: [
-      {
-        contract: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
-        decimals: "18",
-        symbol: "BNT"
-      },
-      {
-        contract: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
-        decimals: "18",
-        symbol: "AAVE"
-      }
-    ],
-    converterType: 1,
-    poolToken: {
-      symbol: "AAVEBNT",
-      decimals: "18",
-      contract: "0x6c84F4ccC916ACf792538f1293b286b540906A2a"
     },
     version: 41
   },

@@ -1565,7 +1565,6 @@ export class EthBancorModule
     const whiteListedPools = await liquidityProtection.methods
       .poolWhitelist()
       .call();
-    this.setWhiteListedPools(whiteListedPools);
     return whiteListedPools;
   }
 
@@ -6096,14 +6095,17 @@ export class EthBancorModule
       shareReplay(1)
     );
 
-
     const settingsContractAddress$ = liquidityProtection$.pipe(
-      switchMap(protectionAddress => this.fetchLiquidityProtectionSettingsContract(protectionAddress)),
+      switchMap(protectionAddress =>
+        this.fetchLiquidityProtectionSettingsContract(protectionAddress)
+      ),
       distinctUntilChanged(compareString),
       share()
     );
 
-    settingsContractAddress$.subscribe(settingsContract => vxm.minting.fetchMinLiqForMinting(settingsContract));
+    settingsContractAddress$.subscribe(settingsContract =>
+      vxm.minting.fetchMinLiqForMinting(settingsContract)
+    );
 
     const bancorConverterRegistry$ = contractAddresses$.pipe(
       pluck("BancorConverterRegistry"),
@@ -6159,7 +6161,7 @@ export class EthBancorModule
       .pipe(switchMap(this.fetchAndSetLiquidityProtectionSettings))
       .subscribe(() => {});
 
-    liquidityProtectionStore$
+    settingsContractAddress$
       .pipe(switchMap(this.fetchWhiteListedV1Pools))
       .subscribe(this.setWhiteListedPools);
 
