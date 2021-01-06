@@ -3,6 +3,7 @@ import { buildLiquidityProtectionSettingsContract } from "@/api/eth/contractType
 import { web3 } from "@/api/web3";
 import { shrinkToken } from "@/api/eth/helpers";
 import BigNumber from "bignumber.js";
+
 const VuexModule = createModule({
   strict: false
 });
