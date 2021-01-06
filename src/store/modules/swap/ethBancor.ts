@@ -172,6 +172,7 @@ import {
   delay
 } from "rxjs/operators";
 import Web3 from "web3";
+import { nullApprovals } from "@/api/eth/nullApprovals";
 
 const currentBlock$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
@@ -6934,23 +6935,6 @@ export class EthBancorModule
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
 
-    try {
-      const estimate = await networkContract.methods
-        .convertByPath(
-          ethPath,
-          fromWei,
-          await this.weiMinusSlippageTolerance(expectedReturnWei),
-          zeroAddress,
-          zeroAddress,
-          0
-        )
-        .estimateGas();
-
-      console.log(estimate, "is the estimate");
-    } catch (e) {
-      console.log(e, "error is the estimate");
-    }
-
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
         ethPath,
@@ -6990,29 +6974,40 @@ export class EthBancorModule
       tokenAddress
     });
 
-    const noNullingTokenContracts = [this.liquidityProtectionSettings.govToken];
-
     const sufficientBalanceAlreadyApproved = new BigNumber(
       currentApprovedBalance
     ).isGreaterThanOrEqualTo(amount);
 
     if (sufficientBalanceAlreadyApproved) return;
 
-    const isNoNullingTokenContract = noNullingTokenContracts.some(contract =>
+    const isNullApprovalTokenContract = nullApprovals.some(contract =>
       compareString(tokenAddress, contract)
     );
 
     const nullingTxRequired =
-      fromWei(currentApprovedBalance) !== "0" && !isNoNullingTokenContract;
+      fromWei(currentApprovedBalance) !== "0" && isNullApprovalTokenContract;
+
     if (nullingTxRequired) {
       await this.approveTokenWithdrawals([
         { approvedAddress: spender, amount: toWei("0"), tokenAddress }
       ]);
     }
 
-    return this.approveTokenWithdrawals([
-      { approvedAddress: spender, amount, tokenAddress }
-    ]);
+    try {
+      await this.approveTokenWithdrawals([
+        { approvedAddress: spender, amount, tokenAddress }
+      ]);
+    } catch (e) {
+      const isTxDenial = (e.message as string).toLowerCase().includes("denied");
+      if (!isTxDenial) {
+        nullApprovals.push(tokenAddress);
+        console.error(
+          "Approval had failed, forcing a zero approval in case required",
+          e.message
+        );
+      }
+      throw new Error(e.message);
+    }
   }
 
   @action async getReturnByPath({
