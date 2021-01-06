@@ -126,7 +126,7 @@ export default class TablePools extends BaseComponent {
         label: "Rewards",
         key: "aprMiningRewards",
         tooltip:
-          "Estimated APR based on the maximum (2x multiplier) weekly BNT Liquidity Mining rewards. Counter indicates time until 12-week rewards cycle concludes. Rewards are pending governance.",
+          "Estimated APR based on the maximum (2x multiplier) weekly BNT Liquidity Mining rewards. Counter indicates time until 12-week rewards cycle concludes.",
         minWidth: "150px"
       },
       {

@@ -17,6 +17,13 @@
     />
 
     <alert-block
+      v-if="priceDeviationTooHigh && !inputError"
+      variant="error"
+      class="mb-3"
+      msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds."
+    />
+
+    <alert-block
       v-if="warning"
       variant="warning"
       title="Important"
@@ -29,6 +36,13 @@
       v-model="percentage"
       @input="onPercentUpdate"
       :show-buttons="true"
+    />
+
+    <alert-block
+      v-if="inputError"
+      variant="error"
+      :msg="inputError"
+      class="mt-3"
     />
 
     <div class="d-flex justify-content-center mb-3">
@@ -116,8 +130,9 @@ import BaseComponent from "@/components/BaseComponent.vue";
   }
 })
 export default class WithdrawProtectionSingle extends BaseComponent {
-  @Prop() pool!: ViewRelay;
-
+  get pool(): ViewRelay {
+    return vxm.bancor.relay(this.position.stake.poolId);
+  }
   percentage: string = "50";
 
   modal = false;
@@ -126,6 +141,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   error = "";
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
+  priceDeviationTooHigh: boolean = false;
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
@@ -136,6 +152,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   get disableActionButton() {
     if (this.vBntWarning) return true;
     else if (parseFloat(this.percentage) === 0) return true;
+    else if (this.priceDeviationTooHigh) return true;
     else return this.inputError ? true : false;
   }
 
@@ -165,14 +182,21 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   get vBntWarning() {
-    return this.position.givenVBnt && !this.sufficientVBnt
-      ? `Insufficient vBNT balance, you must hold ${this.prettifyNumber(
-          Number(this.position.givenVBnt!) * (Number(this.percentage) / 100)
-        )} vBNT before withdrawing position.`
-      : "";
+    const givenVBnt =
+      Number(this.position.givenVBnt!) * (Number(this.percentage) / 100);
+
+    if (this.position.givenVBnt && !this.sufficientVBnt) {
+      const missingVBnt = givenVBnt - Number(this.vBntBalance);
+      return `Insufficient vBNT balance, you must hold ${this.prettifyNumber(
+        givenVBnt
+      )} vBNT before withdrawing this position. You are missing ${this.prettifyNumber(
+        missingVBnt
+      )} vBNT.`;
+    } else return "";
   }
 
   get sufficientVBnt() {
+    if (this.vBntBalance === null) return true;
     if (this.position.givenVBnt) {
       const decPercent = new BigNumber(this.percentage).div(100);
       const proposedWithdraw = new BigNumber(this.position.givenVBnt).times(
@@ -182,11 +206,18 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     } else return true;
   }
 
-  get vBntBalance() {
-    const balance = vxm.ethBancor.tokenBalance(
-      vxm.ethBancor.liquidityProtectionSettings.govToken
-    );
-    return balance ? balance.balance : "0";
+  vBntBalance: BigNumber | null = null;
+
+  get isVoteLoaded() {
+    return vxm.ethGovernance.isLoaded;
+  }
+
+  async loadVBntBalance() {
+    this.vBntBalance = this.currentUser
+      ? await vxm.ethGovernance.getBalance({
+          account: this.currentUser
+        })
+      : new BigNumber(0);
   }
 
   async initAction() {
@@ -227,10 +258,13 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   async onPercentUpdate(newPercent: string) {
     console.log(newPercent, "is the new percent");
+    const percentage = Number(this.percentage) / 100;
+    if (!percentage) return;
     const res = await vxm.ethBancor.calculateSingleWithdraw({
       id: this.position.id,
-      decPercent: Number(this.percentage) / 100
+      decPercent: percentage
     });
+    await this.loadRecentAverageRate();
 
     this.expectedValue = res.expectedValue;
     this.outputs = res.outputs;
@@ -238,8 +272,36 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     console.log(res, "was the res");
   }
 
-  created() {
-    this.onPercentUpdate(this.percentage);
+  get tokenContract() {
+    const reserve = this.pool.reserves.find(
+      x => x.symbol === this.position.stake.symbol
+    );
+    if (reserve) return reserve.contract;
+    else return "";
+  }
+
+  async loadRecentAverageRate() {
+    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
+      relayId: this.pool.id,
+      selectedTokenAddress: this.tokenContract
+    });
+    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
+  }
+
+  private interval: any;
+
+  async mounted() {
+    if (!this.isVoteLoaded) await vxm.ethGovernance.init();
+    await this.onPercentUpdate(this.percentage);
+    await this.loadVBntBalance();
+    this.interval = setInterval(async () => {
+      await this.loadVBntBalance();
+      await this.loadRecentAverageRate();
+    }, 10000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 
   get modalConfirmButton() {

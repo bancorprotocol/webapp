@@ -326,6 +326,7 @@ export interface ViewRelay {
   volume?: string;
   aprMiningRewards?: PoolLiqMiningApr;
   stakedBntSupplyPercent?: number;
+  bntReserveBalance?: string;
 }
 
 export interface ContractMethods<T> extends Contract {

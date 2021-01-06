@@ -41,6 +41,8 @@ import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ViewRelay } from "@/types/bancor";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -58,11 +60,24 @@ export default class PoolHome extends BaseComponent {
     return vxm.bancor.relays;
   }
 
+  get minNetworkTokenLiquidityforMinting() {
+    return vxm.minting.minNetworkTokenLiquidityforMinting
+  }
+
   selectPool(id: string) {
-    const whitelisted = vxm.bancor.relay(id).whitelisted;
-    if (whitelisted) {
+    const limit = this.minNetworkTokenLiquidityforMinting
+    const pool: ViewRelay = vxm.bancor.relay(id);
+    if (!pool) {
+      this.modal = false;
+      return;
+    }
+    if (
+      pool.whitelisted &&
+      pool.bntReserveBalance &&
+      limit !== null && limit.lt(pool.bntReserveBalance)
+    ) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id }
       });
     } else {
