@@ -119,7 +119,8 @@ import {
   buildTokenContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract,
-  buildLiquidityProtectionSettingsContract
+  buildLiquidityProtectionSettingsContract,
+  buildHardCodedContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -4983,7 +4984,7 @@ export class EthBancorModule
 
   @action async fetchContractAddresses(contractRegistry: string) {
     if (!contractRegistry || !web3.utils.isAddress(contractRegistry))
-      throw new Error("Must pass valid address");
+      throw new Error("Must pass valid address");    
 
     const hardCodedBytes: RegisteredContracts = {
       BancorNetwork: asciiToHex("BancorNetwork"),
@@ -4992,27 +4993,30 @@ export class EthBancorModule
       LiquidityProtection: asciiToHex("LiquidityProtection")
     };
 
-    const registryContract = new w3.eth.Contract(
-      ABIContractRegistry,
-      contractRegistry
-    );
+    const hardCodedShape = (contractAddress: string, label: string, ascii: string) => {
+      const contract = buildHardCodedContract(contractAddress);
+      return {
+        [label]: contract.methods.addressOf(ascii)
+      };
+    };
 
-    const arr = toPairs(hardCodedBytes) as [string, string][];
+    const arrBytes = toPairs(hardCodedBytes) as [string, string][];
 
     try {
-      const contractAddresses = await Promise.all(
-        arr.map(
-          async ([label, ascii]) =>
-            [label, await registryContract.methods.addressOf(ascii).call()] as [
-              string,
-              string
-            ]
-        )
-      );
+      console.log('contract promises Start...!')
+      console.time('HardcodedMulti')
 
-      const object = (fromPairs(
-        contractAddresses
-      ) as unknown) as RegisteredContracts;
+      const hardCodedShapes = arrBytes.map(([label, ascii]) =>
+        hardCodedShape(contractRegistry, label, ascii)
+      );
+      const [contractAddresses] = await this.multi({
+        groupsOfShapes: [hardCodedShapes]
+      });
+
+      console.timeEnd('HardcodedMulti')
+
+      const object = Object.assign({}, ...contractAddresses)
+
       this.setContractAddresses(object);
       return object;
     } catch (e) {
