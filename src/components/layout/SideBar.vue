@@ -62,7 +62,7 @@ export default class SideBar extends BaseComponent {
     },
     {
       route: "LiqProtection",
-      key: "liquidity",
+      key: "protection",
       label: "Protection",
       newTab: false,
       hideMobile: false,

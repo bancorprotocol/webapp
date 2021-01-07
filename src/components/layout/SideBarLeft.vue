@@ -1,5 +1,10 @@
 <template>
   <div class="side-bar" :class="classSideBar()" @mouseover="mouseoverSidebar" @mouseleave="mouseoutSidebar">
+    <!-- <div class="btn-toggle d-flex" v-if="showMinimize">
+      <font-awesome-icon @click="toggleView"
+        variant="white"
+        class="block-rounded ml-auto m-1" icon="chevron-circle-right" fixed-width />
+    </div> -->
     <b-navbar-brand class="pb-1 brand-icon" v-if="!showMinimize">
       <router-link :to="{ name: 'Data' }">
         <img
@@ -62,16 +67,7 @@ export default class SideBarLeft extends Vue {
   @Prop() darkMode!: boolean;
 
   isRouteActive(key: string): boolean {
-    const fullPath = this.$route.fullPath;
-    if (fullPath.includes("swap") || fullPath.includes("pool")) {
-      return key === "swap";
-    } else if (fullPath.includes("data")) {
-      return key === "data";
-    } else if (fullPath.includes("protection")) {
-      return key === "liquidity";
-    } else if (fullPath.includes("vote")) {
-      return key === "vote";
-    } else return false;
+    return this.$route.matched.some((m: { meta: { key: string; }; }) => m.meta.key === key)
   }
 
   classSideBar(): string {
