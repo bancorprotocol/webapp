@@ -1068,7 +1068,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
     more: boolean;
   } = await rpc.get_table_rows({
     code: contractName,
-    table: "converter.v2",
+    table: "converters",
     scope: contractName,
     limit: 99
   });
