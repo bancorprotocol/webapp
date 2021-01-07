@@ -1,10 +1,5 @@
 <template>
-  <div class="side-bar" :class="classSideBar()">
-    <div class="btn-toggle d-flex" v-if="showMinimize">
-      <font-awesome-icon @click="toggleView"
-        variant="white"
-        class="block-rounded ml-auto m-1" icon="chevron-circle-right" fixed-width />
-    </div>
+  <div class="side-bar" :class="classSideBar()" @mouseover="mouseoverSidebar" @mouseleave="mouseoutSidebar">
     <b-navbar-brand class="pb-1 brand-icon" v-if="!showMinimize">
       <router-link :to="{ name: 'Data' }">
         <img
@@ -43,7 +38,7 @@
           class="side-bar-link-icon"
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
-        <span v-if="!showMinimize">{{ link.label }}</span>
+        <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
         <font-awesome-icon
           v-if="!showMinimize && link.newTab"
           variant="white"
@@ -62,6 +57,7 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 @Component
 export default class SideBarLeft extends Vue {
   showMinimize: boolean = false;
+  visibleLabel: boolean = true;
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
@@ -89,6 +85,30 @@ export default class SideBarLeft extends Vue {
     return classNames;
   }
 
+  mouseoverSidebar() {
+    if (this.showMinimize) {
+      this.toggleView();
+      this.showLabel(true);
+    }
+  }
+
+  mouseoutSidebar() {
+    if (!this.showMinimize) {
+      this.toggleView();
+      this.showLabel(false);
+    }
+  }
+
+  showLabel(visible: boolean) {
+    if (visible) {
+      setTimeout(() => {
+        this.visibleLabel = true;
+      }, 250)
+    } else {
+      this.visibleLabel = false;
+    }
+  }
+
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
@@ -103,8 +123,10 @@ export default class SideBarLeft extends Vue {
     mql.addEventListener('change', e => {
       if (e.matches) {
         this.showMinimize = true;
+        this.showLabel(false);
       } else {
         this.showMinimize = false;
+        this.showLabel(true);
       }
     });
   }
@@ -117,10 +139,17 @@ export default class SideBarLeft extends Vue {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  min-width: 230px;
+  width: 230px;
   background-color: #e6ebf2;
   height: 100%;
   z-index: 10;
+
+  -moz-transition: width .35s;
+  -ms-transition: width .35s;
+  -o-transition: width .35s;
+  -webkit-transition: width .35s;
+  transition: width .35s ease-in-out;
+
   .brand-icon {
     margin-top: 18px;
     margin-left: 25px;
