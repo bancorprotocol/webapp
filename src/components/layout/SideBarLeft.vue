@@ -1,5 +1,10 @@
 <template>
-  <div class="side-bar" :class="classSideBar()" @mouseover="mouseoverSidebar" @mouseleave="mouseoutSidebar">
+  <div
+    class="side-bar"
+    :class="classSideBar()"
+    @mouseover="mouseoverSidebar"
+    @mouseleave="mouseoutSidebar"
+  >
     <!-- <div class="btn-toggle d-flex" v-if="showMinimize">
       <font-awesome-icon @click="toggleView"
         variant="white"
@@ -29,7 +34,7 @@
         :to="{ name: link.route }"
         class="side-bar-link"
         :class="[
-          isRouteActive(link.key)
+          link.active
             ? darkMode
               ? 'clicked-link-dark'
               : 'clicked-link'
@@ -47,7 +52,10 @@
         <font-awesome-icon
           v-if="!showMinimize && link.newTab"
           variant="white"
-          class="icon-newtab block-rounded ml-auto" icon="external-link-alt" fixed-width />
+          class="icon-newtab block-rounded ml-auto"
+          icon="external-link-alt"
+          fixed-width
+        />
       </div>
     </div>
     <div class="middle-space" />
@@ -66,17 +74,13 @@ export default class SideBarLeft extends Vue {
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
-  isRouteActive(key: string): boolean {
-    return this.$route.matched.some((m: { meta: { key: string; }; }) => m.meta.key === key)
-  }
-
   classSideBar(): string {
-    let classNames = '';
+    let classNames = "";
     if (this.darkMode) {
-      classNames += 'side-bar-dark';
+      classNames += "side-bar-dark";
     }
     if (this.showMinimize) {
-      classNames += ' side-bar-minimize';
+      classNames += " side-bar-minimize";
     }
     return classNames;
   }
@@ -99,7 +103,7 @@ export default class SideBarLeft extends Vue {
     if (visible) {
       setTimeout(() => {
         this.visibleLabel = true;
-      }, 250)
+      }, 250);
     } else {
       this.visibleLabel = false;
     }
@@ -115,8 +119,8 @@ export default class SideBarLeft extends Vue {
   }
 
   mounted() {
-    const mql = window.matchMedia('(max-width: 1190px)');
-    mql.addEventListener('change', e => {
+    const mql = window.matchMedia("(max-width: 1190px)");
+    mql.addEventListener("change", e => {
       if (e.matches) {
         this.showMinimize = true;
         this.showLabel(false);
@@ -140,11 +144,11 @@ export default class SideBarLeft extends Vue {
   height: 100%;
   z-index: 10;
 
-  -moz-transition: width .35s;
-  -ms-transition: width .35s;
-  -o-transition: width .35s;
-  -webkit-transition: width .35s;
-  transition: width .35s ease-in-out;
+  -moz-transition: width 0.35s;
+  -ms-transition: width 0.35s;
+  -o-transition: width 0.35s;
+  -webkit-transition: width 0.35s;
+  transition: width 0.35s ease-in-out;
 
   .brand-icon {
     margin-top: 18px;

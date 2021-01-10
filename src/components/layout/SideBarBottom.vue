@@ -46,7 +46,9 @@ export default class SideBarBottom extends Vue {
   @Prop() darkMode!: boolean;
 
   isRouteActive(key: string): boolean {
-    return this.$route.matched.some((m: { meta: { key: string; }; }) => m.meta.key === key)
+    return this.$route.matched.some(
+      (m: { meta: { key: string } }) => m.meta.key === key
+    );
   }
 
   @Emit("linkClicked")
