@@ -4,6 +4,7 @@ import { CallReturn } from "eth-multicall";
 import {
   ABIBancorGovernance,
   ABIContainerContract,
+  ABIContractRegistry,
   ABIConverter,
   ABIConverterRegistry,
   ABIConverterV28,
@@ -339,3 +340,9 @@ export const buildLiquidityProtectionSettingsContract = (
   networkTokenMintingLimits: (poolId: string) => CallReturn<string>;
   averageRateMaxDeviation: () => CallReturn<string>;
 }> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);
+
+export const buildAddressLookupContract = (
+  contractAddress: string
+): ContractMethods<{
+  addressOf: (ascii: string) => CallReturn<string>;
+}> => buildContract(ABIContractRegistry, contractAddress);

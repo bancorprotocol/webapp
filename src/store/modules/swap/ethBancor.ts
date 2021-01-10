@@ -119,7 +119,8 @@ import {
   buildTokenContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract,
-  buildLiquidityProtectionSettingsContract
+  buildLiquidityProtectionSettingsContract,
+  buildAddressLookupContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -4981,7 +4982,9 @@ export class EthBancorModule
     }
   }
 
-  @action async fetchContractAddresses(contractRegistry: string) {
+  @action async fetchContractAddresses(
+    contractRegistry: string
+  ): Promise<RegisteredContracts> {
     if (!contractRegistry || !web3.utils.isAddress(contractRegistry))
       throw new Error("Must pass valid address");
 
@@ -4992,29 +4995,34 @@ export class EthBancorModule
       LiquidityProtection: asciiToHex("LiquidityProtection")
     };
 
-    const registryContract = new w3.eth.Contract(
-      ABIContractRegistry,
-      contractRegistry
-    );
+    const hardCodedShape = (
+      contractAddress: string,
+      label: string,
+      ascii: string
+    ) => {
+      const contract = buildAddressLookupContract(contractAddress);
+      return {
+        [label]: contract.methods.addressOf(ascii)
+      };
+    };
 
-    const arr = toPairs(hardCodedBytes) as [string, string][];
+    const arrBytes = toPairs(hardCodedBytes) as [string, string][];
 
     try {
-      const contractAddresses = await Promise.all(
-        arr.map(
-          async ([label, ascii]) =>
-            [label, await registryContract.methods.addressOf(ascii).call()] as [
-              string,
-              string
-            ]
-        )
+      const hardCodedShapes = arrBytes.map(([label, ascii]) =>
+        hardCodedShape(contractRegistry, label, ascii)
       );
+      const [contractAddresses] = await this.multi({
+        groupsOfShapes: [hardCodedShapes]
+      });
 
-      const object = (fromPairs(
-        contractAddresses
-      ) as unknown) as RegisteredContracts;
-      this.setContractAddresses(object);
-      return object;
+      const registeredContracts = Object.assign(
+        {},
+        ...contractAddresses
+      ) as RegisteredContracts;
+
+      this.setContractAddresses(registeredContracts);
+      return registeredContracts;
     } catch (e) {
       console.error(
         `Failed fetching ETH contract addresses ${e.message} Contract Registry: ${contractRegistry}`
