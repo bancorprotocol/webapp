@@ -341,7 +341,7 @@ export const buildLiquidityProtectionSettingsContract = (
   averageRateMaxDeviation: () => CallReturn<string>;
 }> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);
 
-export const buildHardCodedContract = (
+export const buildAddressLookupContract = (
   contractAddress: string
 ): ContractMethods<{
   addressOf: (ascii: string) => CallReturn<string>;
