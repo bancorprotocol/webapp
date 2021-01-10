@@ -1350,8 +1350,6 @@ export class EosBancorModule
     });
   }
 
-  @action async loadMoreTokens() {}
-
   liquidityHistoryArr: DFuseTrade[] = [];
   liquidityHistoryLoading: boolean = true;
   liquidityHistoryError: string = "";
@@ -1573,6 +1571,7 @@ export class EosBancorModule
 
       this.setInitialised(true);
       this.setLoadingPools(false);
+      console.log("EOS resolving at", Date.now());
       console.timeEnd("eosResolved");
     } catch (e) {
       throw new Error(`Threw inside eosBancor: ${e.message}`);
