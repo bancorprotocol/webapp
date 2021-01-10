@@ -3,15 +3,23 @@
     <side-bar-left
       class="d-none d-md-flex"
       :dark-mode="darkMode"
-      :data="dataObject"
+      :links="links"
       @linkClicked="navigateToRoute"
     />
     <side-bar-bottom
       class="d-md-none"
       :dark-mode="darkMode"
-      :data="dataObject"
+      :links="links"
       @linkClicked="navigateToRoute"
+      @moreClicked="showMore = !showMore"
     />
+
+    <div v-if="showMore" class="sidebar-more">
+      <side-bar-bottom-more
+        :dark-mode="darkMode"
+        :links="links"
+        @linkClicked="navigateToRoute" />
+    </div>
   </div>
 </template>
 
@@ -19,6 +27,7 @@
 import { Component, Watch } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
+import SideBarBottomMore from "@/components/layout/SideBarBottomMore.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewSideBarLink {
@@ -30,10 +39,10 @@ export interface ViewSideBarLink {
   svgName: string;
 }
 @Component({
-  components: { SideBarBottom, SideBarLeft }
+  components: { SideBarBottom, SideBarBottomMore, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {
-  selectedLink = "swap";
+  showMore: boolean = false;
   links: ViewSideBarLink[] = [
     {
       route: "DataSummary",
@@ -53,7 +62,7 @@ export default class SideBar extends BaseComponent {
     },
     {
       route: "LiqProtection",
-      key: "liquidity",
+      key: "protection",
       label: "Protection",
       newTab: false,
       hideMobile: false,
@@ -72,7 +81,7 @@ export default class SideBar extends BaseComponent {
       key: "vote",
       label: "Vote",
       newTab: false,
-      hideMobile: false,
+      hideMobile: true,
       svgName: "vote"
     },
     {
@@ -93,38 +102,33 @@ export default class SideBar extends BaseComponent {
     }
   ];
 
-  get dataObject() {
-    return {
-      selectedLink: this.selectedLink,
-      links: this.links
-    };
-  }
-  async created() {
-    this.onRouteChange();
-  }
-
   openNewTab(url: string) {
     window.open(url, "_blank");
   }
 
   navigateToRoute(link: ViewSideBarLink) {
+    this.showMore = false;
     if (!link.newTab) {
       this.$router.push({ name: link.route });
-      this.selectedLink = link.route;
     } else {
       this.openNewTab(link.route);
     }
   }
-
-  @Watch("$route")
-  async onRouteChange() {
-    const path = this.$route.fullPath;
-    if (path.includes("swap")) this.selectedLink = "swap";
-    if (path.includes("pool")) this.selectedLink = "swap";
-    if (path.includes("data")) this.selectedLink = "data";
-    if (path.includes("protection")) this.selectedLink = "liquidity";
-  }
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+  .btn-toggle {
+    position: absolute;
+    top: 60px;
+    left: 15px;
+    z-index: 999;
+  }
+
+  .sidebar-more {
+    position: absolute;
+    right: 10px;
+    bottom: 60px;
+    z-index: 300;
+  }
+</style>

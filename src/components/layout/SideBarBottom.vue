@@ -3,7 +3,7 @@
     <div class="side-bar-links">
       <div
         @click="linkClicked(link)"
-        v-for="link in data.links.filter(l => !l.hideMobile)"
+        v-for="link in links"
         :key="link.key"
         :to="{ name: link.route }"
         class="side-bar-link"
@@ -21,8 +21,17 @@
           class="side-bar-link-icon"
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
-        <span>{{ link.label }}</span>
+        <div>{{ link.label }}</div>
       </div>
+
+      <!-- <div
+        @click="moreClicked(link)"
+        class="btn-more"
+        :class="darkMode ? 'side-bar-link-dark': ''"
+      >
+        <span>More</span>
+        <font-awesome-icon icon="chevron-circle-right" class="ml-1" />
+      </div> -->
     </div>
   </div>
 </template>
@@ -33,25 +42,21 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarBottom extends Vue {
-  @Prop() data!: any;
+  @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
   isRouteActive(key: string): boolean {
-    const fullPath = this.$route.fullPath;
-    if (fullPath.includes("swap") || fullPath.includes("pool")) {
-      return key === "swap";
-    } else if (fullPath.includes("data")) {
-      return key === "data";
-    } else if (fullPath.includes("protection")) {
-      return key === "liquidity";
-    } else if (fullPath.includes("vote")) {
-      return key === "vote";
-    } else return false;
+    return this.$route.matched.some((m: { meta: { key: string; }; }) => m.meta.key === key)
   }
 
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
+  }
+
+  @Emit("moreClicked")
+  moreClicked() {
+    return true;
   }
 }
 </script>
@@ -71,18 +76,20 @@ export default class SideBarBottom extends Vue {
     height: 56px;
     align-items: center;
     margin-top: 0px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
   }
 
   .side-bar-link {
     padding-left: 0px;
-    display: flex;
-    flex-direction: column;
-    span {
+    display: inline-block;
+    width: 100px;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    div {
       height: 40px;
-      display: inline-flex;
       font-family: Inter;
       font-weight: 500;
       font-stretch: normal;
@@ -97,8 +104,7 @@ export default class SideBarBottom extends Vue {
       align-self: center;
       width: 24px;
       height: 24px;
-      margin-right: 0px;
-      margin-top: 22px;
+      margin-top: 10px;
       margin-bottom: 2px;
     }
   }
@@ -126,6 +132,13 @@ export default class SideBarBottom extends Vue {
       filter: invert(0.6) sepia(1) saturate(5) hue-rotate(195deg)
         brightness(0.7);
       color: #0f59d1;
+    }
+  }
+  .btn-more {
+    cursor: pointer;
+
+    span {
+      font-size: 14px;
     }
   }
 }
