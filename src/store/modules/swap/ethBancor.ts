@@ -6082,9 +6082,9 @@ export class EthBancorModule
       ),
       startWith({
         BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
-        BancorConverterRegistry: "0xeB53781A5a0819375d04251A615e3a039f296Ca9",
+        BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
         LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-        LiquidityProtection: "0x53F36c56eCD4FB145989710Fa3E3Cc28AE4aCE88"
+        LiquidityProtection: "0xc9D9dc719C49edfc6bf9e0F0400Fc341cE93C298"
       } as RegisteredContracts),
       distinctUntilChanged<RegisteredContracts>(isEqual),
       shareReplay(1)
