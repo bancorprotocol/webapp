@@ -5929,22 +5929,6 @@ export class EthBancorModule
     return contract.methods.settings().call();
   }
 
-  @action async fetchAndSetLiquidityProtectionSettings(
-    protectionContractAddress: string
-  ): Promise<LiquidityProtectionSettings> {
-    const settingsContractAddress = await this.fetchLiquidityProtectionSettingsContract(
-      protectionContractAddress
-    );
-
-    const newSettings = await this.fetchLiquidityProtectionSettings({
-      settingsContractAddress,
-      protectionContractAddress
-    });
-
-    this.fetchAndSetTokenBalances([newSettings.govToken]);
-    return newSettings;
-  }
-
   @action async fetchTokens(tokenContracts: string[]): Promise<RawAbiToken[]> {
     const tokenShapes = tokenContracts.map(tokenShape);
     const [res] = await this.multi({ groupsOfShapes: [tokenShapes] });
@@ -6164,10 +6148,6 @@ export class EthBancorModule
       )
       .subscribe(this.setLiquidityHistory);
 
-    liquidityProtection$
-      .pipe(switchMap(this.fetchAndSetLiquidityProtectionSettings))
-      .subscribe(() => {});
-
     combineLatest([liquidityProtection$, settingsContractAddress$])
       .pipe(
         switchMap(([protectionContractAddress, settingsContractAddress]) =>
@@ -6177,7 +6157,10 @@ export class EthBancorModule
           })
         )
       )
-      .subscribe(settings => this.setLiquidityProtectionSettings(settings));
+      .subscribe(settings => {
+        this.setLiquidityProtectionSettings(settings);
+        this.fetchAndSetTokenBalances([settings.govToken]);
+      });
 
     settingsContractAddress$
       .pipe(switchMap(this.fetchWhiteListedV1Pools))
