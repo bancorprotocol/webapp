@@ -75,14 +75,14 @@ export default class SideBarLeft extends Vue {
   @Prop() darkMode!: boolean;
 
   classSideBar(): string {
-    let classNames = "";
+    const classNames: string[] = [];
     if (this.darkMode) {
-      classNames += "side-bar-dark";
+      classNames.push("side-bar-dark");
     }
     if (this.showMinimize) {
-      classNames += " side-bar-minimize";
+      classNames.push("side-bar-minimize");
     }
-    return classNames;
+    return classNames.join(" ");
   }
 
   mouseoverSidebar() {
