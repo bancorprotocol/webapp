@@ -2492,8 +2492,6 @@ export class EthBancorModule
     relayId: string;
     selectedTokenAddress: string;
   }): Promise<boolean> {
-    let priceDeviationTooHigh = false;
-
     const relay = await this.relayById(relayId);
 
     const converter = buildV28ConverterContract(relay.contract, w3);
@@ -2503,6 +2501,13 @@ export class EthBancorModule
     );
 
     const [
+      primaryReserveContract,
+      secondaryReserveContract
+    ] = sortAlongSide(relay.reserves, reserve => reserve.contract, [
+      selectedTokenAddress
+    ]).map(x => x.contract);
+
+    const [
       recentAverageRateResult,
       averageRateMaxDeviationResult,
       primaryReserveBalanceResult,
@@ -2510,31 +2515,15 @@ export class EthBancorModule
     ] = await Promise.all([
       converter.methods.recentAverageRate(selectedTokenAddress).call(),
       liquidityProtectionSettings.methods.averageRateMaxDeviation().call(),
-      converter.methods
-        .reserveBalance(
-          // the selected token
-          relay.reserves.find(r =>
-            compareString(r.contract, selectedTokenAddress)
-          )!.contract
-        )
-        .call(),
-      converter.methods
-        .reserveBalance(
-          // the other token
-          relay.reserves.find(
-            r => !compareString(r.contract, selectedTokenAddress)
-          )!.contract
-        )
-        .call()
+      converter.methods.reserveBalance(primaryReserveContract).call(),
+      converter.methods.reserveBalance(secondaryReserveContract).call()
     ]);
 
     const averageRate = new BigNumber(recentAverageRateResult["1"]).dividedBy(
       recentAverageRateResult["0"]
     );
 
-    console.log("averageRate", averageRate);
-
-    priceDeviationTooHigh = calculatePriceDeviationTooHigh(
+    const priceDeviationTooHigh = calculatePriceDeviationTooHigh(
       averageRate,
       new BigNumber(primaryReserveBalanceResult),
       new BigNumber(secondaryReserveBalanceResult),
