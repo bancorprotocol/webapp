@@ -1,6 +1,16 @@
 <template>
-  <div class="side-bar" :class="darkMode ? 'side-bar-dark' : ''">
-    <b-navbar-brand class="pb-1 brand-icon">
+  <div
+    class="side-bar"
+    :class="classSideBar()"
+    @mouseover="mouseoverSidebar"
+    @mouseleave="mouseoutSidebar"
+  >
+    <!-- <div class="btn-toggle d-flex" v-if="showMinimize">
+      <font-awesome-icon @click="toggleView"
+        variant="white"
+        class="block-rounded ml-auto m-1" icon="chevron-circle-right" fixed-width />
+    </div> -->
+    <b-navbar-brand class="pb-1 brand-icon" v-if="!showMinimize">
       <router-link :to="{ name: 'Data' }">
         <img
           v-if="darkMode"
@@ -19,12 +29,12 @@
     <div class="side-bar-links">
       <div
         @click="linkClicked(link)"
-        v-for="link in data.links"
+        v-for="link in links"
         :key="link.key"
         :to="{ name: link.route }"
         class="side-bar-link"
         :class="[
-          isRouteActive(link.key)
+          link.active
             ? darkMode
               ? 'clicked-link-dark'
               : 'clicked-link'
@@ -38,11 +48,18 @@
           class="side-bar-link-icon"
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
-        <span>{{ link.label }}</span>
+        <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
+        <font-awesome-icon
+          v-if="!showMinimize && link.newTab"
+          variant="white"
+          class="icon-newtab block-rounded ml-auto"
+          icon="external-link-alt"
+          fixed-width
+        />
       </div>
     </div>
     <div class="middle-space" />
-    <p class="tm-text">© Bancor 2020</p>
+    <p class="tm-text" v-if="!showMinimize">© Bancor 2020</p>
   </div>
 </template>
 
@@ -52,25 +69,66 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarLeft extends Vue {
-  @Prop() data!: any;
+  showMinimize: boolean = false;
+  visibleLabel: boolean = true;
+  @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
-  isRouteActive(key: string): boolean {
-    const fullPath = this.$route.fullPath;
-    if (fullPath.includes("swap") || fullPath.includes("pool")) {
-      return key === "swap";
-    } else if (fullPath.includes("data")) {
-      return key === "data";
-    } else if (fullPath.includes("protection")) {
-      return key === "liquidity";
-    } else if (fullPath.includes("vote")) {
-      return key === "vote";
-    } else return false;
+  classSideBar(): string {
+    const classNames: string[] = [];
+    if (this.darkMode) {
+      classNames.push("side-bar-dark");
+    }
+    if (this.showMinimize) {
+      classNames.push("side-bar-minimize");
+    }
+    return classNames.join(" ");
+  }
+
+  mouseoverSidebar() {
+    if (this.showMinimize) {
+      this.toggleView();
+      this.showLabel(true);
+    }
+  }
+
+  mouseoutSidebar() {
+    if (!this.showMinimize) {
+      this.toggleView();
+      this.showLabel(false);
+    }
+  }
+
+  showLabel(visible: boolean) {
+    if (visible) {
+      setTimeout(() => {
+        this.visibleLabel = true;
+      }, 250);
+    } else {
+      this.visibleLabel = false;
+    }
   }
 
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
+  }
+
+  toggleView() {
+    this.showMinimize = !this.showMinimize;
+  }
+
+  mounted() {
+    const mql = window.matchMedia("(max-width: 1190px)");
+    mql.addEventListener("change", e => {
+      if (e.matches) {
+        this.showMinimize = true;
+        this.showLabel(false);
+      } else {
+        this.showMinimize = false;
+        this.showLabel(true);
+      }
+    });
   }
 }
 </script>
@@ -81,10 +139,17 @@ export default class SideBarLeft extends Vue {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  min-width: 230px;
+  width: 230px;
   background-color: #e6ebf2;
   height: 100%;
   z-index: 10;
+
+  -moz-transition: width 0.35s;
+  -ms-transition: width 0.35s;
+  -o-transition: width 0.35s;
+  -webkit-transition: width 0.35s;
+  transition: width 0.35s ease-in-out;
+
   .brand-icon {
     margin-top: 18px;
     margin-left: 25px;
@@ -94,6 +159,13 @@ export default class SideBarLeft extends Vue {
   }
   .side-bar-links {
     margin-top: 28px;
+
+    .icon-newtab {
+      font-size: 13px;
+      position: absolute;
+      right: 10px;
+      top: 15px;
+    }
   }
   .side-bar-link {
     padding-left: 25px;
@@ -171,6 +243,13 @@ export default class SideBarLeft extends Vue {
       box-shadow: 0 -11px 0 0 #f8f9fd;
     }
   }
+  .btn-toggle {
+    cursor: pointer;
+  }
+}
+.side-bar-minimize {
+  min-width: 60px;
+  width: 60px !important;
 }
 .side-bar-link-dark {
   span {

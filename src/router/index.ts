@@ -115,6 +115,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -127,6 +128,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -139,6 +141,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -151,6 +154,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -162,12 +166,16 @@ export const router = new Router({
         default: ProtectionHome
       },
       meta: {
+        key: "protection",
         feature: "Protection"
       }
     },
     {
       path: "/:service/protection/whitelistedpools",
       name: "WhitelistedPools",
+      meta: {
+        key: "protection"
+      },
       components: {
         Nav: Navigation,
         default: WhitelistedPools
@@ -181,6 +189,9 @@ export const router = new Router({
         Hero: ProtectionActions
       },
       props: true,
+      meta: {
+        key: "protection"
+      },
       children: [
         {
           path: "",
@@ -228,6 +239,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Trade"
       }
     },
@@ -245,6 +257,7 @@ export const router = new Router({
           name: "DataSummary",
           component: DataSummary,
           meta: {
+            key: "data",
             feature: "Data"
           }
         }
@@ -264,6 +277,7 @@ export const router = new Router({
           name: "VotePage",
           component: VotePage,
           meta: {
+            key: "vote",
             feature: "Vote"
           }
         }
