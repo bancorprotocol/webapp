@@ -5031,14 +5031,6 @@ export class EthBancorModule
     return this.morePoolsAvailable;
   }
 
-  @action async relaysContainingToken(tokenId: string): Promise<string[]> {
-    return getConvertibleTokenAnchors({
-      converterRegistryAddress: this.contracts.BancorConverterRegistry,
-      tokenAddress: tokenId,
-      web3: w3
-    });
-  }
-
   @action async refresh() {
     console.log("refresh called on eth bancor, doing nothing");
   }
