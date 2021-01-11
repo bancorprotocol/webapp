@@ -144,13 +144,14 @@ export default class SideBarLeft extends Vue {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  min-width: 230px;
+  // min-width: 230px;
   height: 100%;
   z-index: 10;
 
   .bancor-icon-wrapper {
-    width: 100%;
-    height: 80px;
+    position: absolute;
+    width: 230px;
+    height: 70px;
     background-color: #e6ebf2;
   }
 
@@ -158,6 +159,7 @@ export default class SideBarLeft extends Vue {
     width: 230px;
     height: 100%;
     background-color: #e6ebf2;
+    margin-top: 70px;
 
     -moz-transition: width 0.25s;
     -ms-transition: width 0.25s;
