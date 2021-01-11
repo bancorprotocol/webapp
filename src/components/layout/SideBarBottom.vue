@@ -1,6 +1,6 @@
 <template>
   <div class="bottom-bar" :class="darkMode ? 'side-bar-dark' : ''">
-    <div class="side-bar-links">
+    <div class="side-bar-links" ref="barRef" @scroll="handleScroll">
       <div
         @click="linkClicked(link)"
         v-for="link in links"
@@ -33,6 +33,16 @@
         <font-awesome-icon icon="chevron-circle-right" class="ml-1" />
       </div> -->
     </div>
+    <div class="arrow-backdoor-left" v-show="visibleArrowLeft">
+      <font-awesome-icon
+        variant="white"
+        class="block-rounded mt-3" icon="angle-double-left" fixed-width />
+    </div>
+    <div class="arrow-backdoor-right" v-show="visibleArrowRight">
+      <font-awesome-icon
+        variant="white"
+        class="block-rounded mr-3" icon="angle-double-right" fixed-width />
+    </div>
   </div>
 </template>
 
@@ -44,6 +54,13 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 export default class SideBarBottom extends Vue {
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
+
+  visibleArrowLeft: boolean = false;
+  visibleArrowRight: boolean = true;
+
+  $refs!: {
+    barRef: HTMLElement
+  }
 
   isRouteActive(key: string): boolean {
     return this.$route.matched.some(
@@ -60,6 +77,20 @@ export default class SideBarBottom extends Vue {
   moreClicked() {
     return true;
   }
+
+  handleScroll (e: any) {
+    const scrollEnd = this.$refs.barRef.scrollWidth - this.$refs.barRef.clientWidth;
+    const scrollPos = this.$refs.barRef.scrollLeft;
+
+    if (scrollPos === 0) {
+      this.visibleArrowLeft = false;
+    } else if (scrollPos === scrollEnd) {
+      this.visibleArrowRight = false;
+    } else {
+      this.visibleArrowLeft = true;
+      this.visibleArrowRight = true;
+    }
+  }
 }
 </script>
 
@@ -73,6 +104,7 @@ export default class SideBarBottom extends Vue {
   height: 56px;
   background-color: white;
   border-top: 1px solid #e6ebf2;
+
   .side-bar-links {
     width: 100%;
     height: 56px;
@@ -142,6 +174,24 @@ export default class SideBarBottom extends Vue {
     span {
       font-size: 14px;
     }
+  }
+  .arrow-backdoor-left {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 16px;
+    height: 100%;
+    line-height: 60px;
+    background: rgba($color: #fff, $alpha: 0.3)
+  }
+  .arrow-backdoor-right {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    width: 16px;
+    height: 100%;
+    line-height: 60px;
+    background: rgba($color: #fff, $alpha: 0.3)
   }
 }
 .side-bar-dark {
