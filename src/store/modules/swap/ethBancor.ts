@@ -220,7 +220,7 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
-import { getWelcomeData } from "@/api/eth/bancorApi";
+import { getWelcomeData, WelcomeData } from "@/api/eth/bancorApi";
 
 const currentBlockTwo$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
@@ -3169,6 +3169,8 @@ export class EthBancorModule
   }
 
   get traditionalRelays(): ViewRelay[] {
+    if (!this.apiData) return [];
+
     const aprs = this.poolAprs;
     const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
     const whiteListedPools = this.whiteListedPools;
@@ -3251,7 +3253,6 @@ export class EthBancorModule
         return {
           id: relay.anchor.contract,
           name: buildPoolNameFromReserves(reserves),
-          version: Number(relay.version),
           reserves,
           fee: relay.fee,
           liqDepth,
@@ -5616,7 +5617,7 @@ export class EthBancorModule
       .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
   }
 
-  get previousPoolFees() {
+  get previousPoolFees(): PreviousPoolFee[] {
     return [...this.previousPoolFeesArr, ...previousPoolFees];
   }
 
@@ -5759,7 +5760,10 @@ export class EthBancorModule
     return accumulatedFee;
   }
 
-  get liquidityHistory() {
+  get liquidityHistory(): {
+    loading: boolean;
+    data: ViewLiquidityEvent<ViewTradeEvent>[];
+  } {
     const liquidityEvents = this.liquidityHistoryArr;
     const knownTokens = this.tokens;
     if (liquidityEvents.length == 0 || knownTokens.length == 0) {
@@ -5965,13 +5969,19 @@ export class EthBancorModule
     );
   }
 
+  apiData: WelcomeData | undefined = undefined;
+
+  @mutation setApiData(data: WelcomeData) {
+    this.apiData = data;
+    console.log(data, "data is here!");
+  }
+
   @action async init() {
     if (this.initiated) {
       return this.refresh();
     }
 
-    const data = await getWelcomeData();
-    console.log("data is here!", data);
+    from(getWelcomeData()).subscribe(data => this.setApiData(data));
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
     const networkVersion$ = from(web3.eth.getChainId()).pipe(
