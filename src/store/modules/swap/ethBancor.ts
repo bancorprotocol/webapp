@@ -220,6 +220,7 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
+import { getWelcomeData } from "@/api/eth/bancorApi";
 
 const currentBlockTwo$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
@@ -5969,6 +5970,8 @@ export class EthBancorModule
       return this.refresh();
     }
 
+    const data = await getWelcomeData();
+    console.log("data is here!", data);
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
     const networkVersion$ = from(web3.eth.getChainId()).pipe(
