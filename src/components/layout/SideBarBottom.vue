@@ -23,26 +23,9 @@
         />
         <div>{{ link.label }}</div>
       </div>
-
-      <!-- <div
-        @click="moreClicked(link)"
-        class="btn-more"
-        :class="darkMode ? 'side-bar-link-dark': ''"
-      >
-        <span>More</span>
-        <font-awesome-icon icon="chevron-circle-right" class="ml-1" />
-      </div> -->
     </div>
-    <div class="arrow-backdoor-left" v-show="visibleArrowLeft">
-      <font-awesome-icon
-        variant="white"
-        class="block-rounded mt-3" icon="angle-double-left" fixed-width />
-    </div>
-    <div class="arrow-backdoor-right" v-show="visibleArrowRight">
-      <font-awesome-icon
-        variant="white"
-        class="block-rounded mr-3" icon="angle-double-right" fixed-width />
-    </div>
+    <div class="blur-backdoor-left" v-show="visibleBlurLeft"></div>
+    <div class="blur-backdoor-right" v-show="visibleBlurRight"></div>
   </div>
 </template>
 
@@ -55,8 +38,8 @@ export default class SideBarBottom extends Vue {
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
-  visibleArrowLeft: boolean = false;
-  visibleArrowRight: boolean = true;
+  visibleBlurLeft: boolean = false;
+  visibleBlurRight: boolean = true;
 
   $refs!: {
     barRef: HTMLElement
@@ -83,12 +66,12 @@ export default class SideBarBottom extends Vue {
     const scrollPos = this.$refs.barRef.scrollLeft;
 
     if (scrollPos === 0) {
-      this.visibleArrowLeft = false;
+      this.visibleBlurLeft = false;
     } else if (scrollPos === scrollEnd) {
-      this.visibleArrowRight = false;
+      this.visibleBlurRight = false;
     } else {
-      this.visibleArrowLeft = true;
-      this.visibleArrowRight = true;
+      this.visibleBlurLeft = true;
+      this.visibleBlurRight = true;
     }
   }
 }
@@ -175,27 +158,34 @@ export default class SideBarBottom extends Vue {
       font-size: 14px;
     }
   }
-  .arrow-backdoor-left {
+  .blur-backdoor-left {
     position: absolute;
     left: 0px;
     bottom: 0px;
-    width: 16px;
+    width: 20px;
     height: 100%;
     line-height: 60px;
-    background: rgba($color: #fff, $alpha: 0.3)
+    background: linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0.4));
+    filter: blur(2px);
   }
-  .arrow-backdoor-right {
+  .blur-backdoor-right {
     position: absolute;
     right: 0px;
     bottom: 0px;
-    width: 16px;
+    width: 20px;
     height: 100%;
     line-height: 60px;
-    background: rgba($color: #fff, $alpha: 0.3)
+    background: linear-gradient(to right, rgba(255,255,255,0.4), rgba(255,255,255,1));
+    filter: blur(2px);
   }
 }
 .side-bar-dark {
-  background-color: #0a2540;
+  .blur-backdoor-left {
+    background: linear-gradient(to right, rgba(28, 52, 78, 1), rgba(28, 52, 78, 0.7));
+  }
+  .blur-backdoor-right {
+    background: linear-gradient(to right,rgba(28, 52, 78, 0.7), rgba(28, 52, 78, 1));
+  }
 }
 .side-bar-link-dark {
   span {
