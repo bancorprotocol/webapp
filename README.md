@@ -17,11 +17,11 @@ Daily standups
 #### Weekday work times
 
 |                 | City                                                                |
-| --------------- | ------------------------------------------------------------------- |
-| John Williamson | [Brisbane](https://www.timeanddate.com/worldclock/australia/)       |
-| Jan Langheimer  | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg) |
-| Sebastian       | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg) |
-| Will            | [Seoul](https://www.timeanddate.com/worldclock/south-korea/seoul)   |
+| ---------------- | ------------------------------------------------------------------- |
+| John Williamson  | [Brisbane](https://www.timeanddate.com/worldclock/australia/)       |
+| Jan Langheimer   | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg) |
+| Sebastian Gerske | [Braunschweig](https://www.timeanddate.com/worldclock/germany/braunschweig) |
+| Will             | [Seoul](https://www.timeanddate.com/worldclock/south-korea/seoul)   |
 
 ### Git Strategy
 
