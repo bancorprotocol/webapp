@@ -220,7 +220,7 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
-import { getWelcomeData, WelcomeData } from "@/api/eth/bancorApi";
+import { getWelcomeData, NewPool, WelcomeData } from "@/api/eth/bancorApi";
 
 const currentBlockTwo$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
@@ -3027,6 +3027,11 @@ export class EthBancorModule
           relay.reserves.every(reserve => reserve.reserveWeight == 0.5) &&
           Number(relay.version) >= 41;
 
+        // relay versions
+        // relay reserver balances
+        //
+        // User APRs
+
         return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
           const balance = this.tokenBalance(reserve.contract);
@@ -3158,6 +3163,7 @@ export class EthBancorModule
             0
           ),
           symbol: tokenReserve.symbol,
+          addProtectionSupported: false,
           addLiquiditySupported: true,
           removeLiquiditySupported: true,
           whitelisted: false,
@@ -3175,101 +3181,93 @@ export class EthBancorModule
     const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
     const whiteListedPools = this.whiteListedPools;
     const previousRelayBalances = this.previousRelayBalances;
+    const limit = vxm.minting.minNetworkTokenLiquidityforMinting;
+    console.log(limit && limit.toString(), "is the limit");
 
-    return (this.relaysList.filter(isTraditional) as TraditionalRelay[])
-      .filter(relay =>
-        relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
-      )
-      .map(relay => {
-        const [, tokenReserve] = relay.reserves;
+    return this.newPools.map(relay => {
+      const liqDepth = Number(relay.liquidity.usd);
 
-        let liqDepth = relay.reserves.reduce(
-          (acc, item) => acc + item.reserveFeed!.liqDepth,
-          0
-        );
+      const whitelisted = whiteListedPools.some(whitelistedAnchor =>
+        compareString(whitelistedAnchor, relay.pool_dlt_id)
+      );
 
-        if (Number.isNaN(liqDepth)) {
-          liqDepth = 0;
-        }
+      const liquidityProtection =
+        relay.reserveTokens.some(reserve =>
+          compareString(
+            reserve.contract,
+            this.liquidityProtectionSettings.networkToken
+          )
+        ) &&
+        relay.reserveTokens.length == 2 &&
+        relay.reserveTokens.every(reserve => reserve.reserveWeight == 0.5) &&
+        whitelisted;
 
-        const whitelisted = whiteListedPools.some(whitelistedAnchor =>
-          compareString(whitelistedAnchor, relay.anchor.contract)
-        );
+      const bntReserve = relay.reserves.find(reserve =>
+        compareString(
+          reserve.address,
+          this.liquidityProtectionSettings.networkToken || ""
+        )
+      );
+      const addProtectionSupported =
+        liquidityProtection &&
+        bntReserve &&
+        limit &&
+        limit.isLessThan(bntReserve.balance);
 
-        const liquidityProtection =
-          relay.reserves.some(reserve =>
-            compareString(
-              reserve.contract,
-              this.liquidityProtectionSettings.networkToken
-            )
-          ) &&
-          relay.reserves.length == 2 &&
-          relay.reserves.every(reserve => reserve.reserveWeight == 0.5) &&
-          Number(relay.version) >= 41 &&
-          whitelisted;
+      const apr = aprs.find(apr =>
+        compareString(apr.poolId, relay.pool_dlt_id)
+      );
 
-        const apr = aprs.find(apr =>
-          compareString(apr.poolId, relay.anchor.contract)
-        );
+      const feesGenerated = previousRelayBalances.find(r =>
+        compareString(r.relay.id, relay.pool_dlt_id)
+      );
 
-        const feesGenerated = previousRelayBalances.find(r =>
-          compareString(r.relay.id, relay.id)
-        );
+      const feesVsLiquidity =
+        feesGenerated &&
+        new BigNumber(feesGenerated.totalFees)
+          .times(365)
+          .div(liqDepth)
+          .toString();
 
-        const feesVsLiquidity =
-          feesGenerated &&
-          new BigNumber(feesGenerated.totalFees)
-            .times(365)
-            .div(liqDepth)
-            .toString();
+      const volume = feesGenerated && feesGenerated.totalVolume;
 
-        const volume = feesGenerated && feesGenerated.totalVolume;
+      const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
+        compareString(apr.poolId, relay.pool_dlt_id)
+      );
 
-        const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
-          compareString(apr.poolId, relay.id)
-        );
+      const reserves = relay.reserveTokens.map(
+        reserve =>
+          ({
+            id: reserve.contract,
+            reserveWeight: reserve.reserveWeight,
+            reserveId: relay.pool_dlt_id + reserve.contract,
+            logo: [reserve.image],
+            symbol: reserve.symbol,
+            contract: reserve.contract,
+            smartTokenSymbol: reserve.symbol
+          } as ViewReserve)
+      );
 
-        const reserves = relay.reserves.map(
-          reserve =>
-            ({
-              id: reserve.contract,
-              reserveWeight: reserve.reserveWeight,
-              reserveId: relay.anchor.contract + reserve.contract,
-              logo: [reserve.meta!.logo],
-              symbol: reserve.symbol,
-              contract: reserve.contract,
-              smartTokenSymbol: relay.anchor.contract
-            } as ViewReserve)
-        );
-
-        const bntTokenAddress = getNetworkVariables(this.currentNetwork)
-          .bntToken;
-        const relayBalances = relay as RelayWithReserveBalances;
-        const bntReserveBalance =
-          relayBalances.reserveBalances?.find(reserve =>
-            compareString(reserve.id, bntTokenAddress)
-          )?.amount || "0";
-
-        return {
-          id: relay.anchor.contract,
-          name: buildPoolNameFromReserves(reserves),
-          reserves,
-          fee: relay.fee,
-          liqDepth,
-          symbol: tokenReserve.symbol,
-          addLiquiditySupported: true,
-          removeLiquiditySupported: true,
-          liquidityProtection,
-          whitelisted,
-          bntReserveBalance: shrinkToken(bntReserveBalance, 18),
-          v2: false,
-          ...(apr && { apr: apr.oneWeekApr }),
-          ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
-          ...(feesVsLiquidity && { feesVsLiquidity }),
-          ...(volume && { volume }),
-          aprMiningRewards
-        } as ViewRelay;
-      });
+      return {
+        id: relay.pool_dlt_id,
+        name: buildPoolNameFromReserves(reserves),
+        reserves,
+        addProtectionSupported,
+        fee: relay.decFee,
+        liqDepth,
+        symbol: relay.name,
+        addLiquiditySupported: true,
+        removeLiquiditySupported: true,
+        liquidityProtection,
+        whitelisted,
+        v2: false,
+        ...(apr && { apr: apr.oneWeekApr }),
+        ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
+        ...(feesVsLiquidity && { feesVsLiquidity }),
+        ...(volume && { volume }),
+        aprMiningRewards
+      } as ViewRelay;
+    });
   }
 
   @action async getGeometricMean(amounts: string[]) {
@@ -5962,10 +5960,27 @@ export class EthBancorModule
   }
 
   apiData: WelcomeData | undefined = undefined;
+  newPools: NewPool[] = [];
 
   @mutation setApiData(data: WelcomeData) {
     this.apiData = data;
     console.log(data, "data is here!");
+  }
+
+  @mutation updatePools(pools: NewPool[]) {
+    this.newPools = pools;
+
+    const existingPools = this.newPools;
+    const poolsNotBeingUpdated = existingPools.filter(
+      pool => !pools.some(p => compareString(p.pool_dlt_id, pool.pool_dlt_id))
+    );
+    this.newPools = filterAndWarn(
+      [...pools, ...poolsNotBeingUpdated],
+      pool =>
+        pool.reserves.every(reserve => typeof reserve.address == "string") &&
+        pool.reserves.length == 2,
+      "lost a pool..."
+    );
   }
 
   @action async init() {
@@ -5973,7 +5988,10 @@ export class EthBancorModule
       return this.refresh();
     }
 
-    from(getWelcomeData()).subscribe(data => this.setApiData(data));
+    const apiData$ = from(getWelcomeData()).pipe(share());
+
+    apiData$.subscribe(data => this.setApiData(data));
+
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
     const networkVersion$ = from(web3.eth.getChainId()).pipe(
@@ -5989,49 +6007,9 @@ export class EthBancorModule
 
     this.warmEthApi();
 
-    interface Rank<T = any> {
-      priority: number;
-      response: T;
-    }
-    const binanceUsdPrice = async (): Promise<Rank> => {
-      const response = await this.fetchUsdPriceOfBnt();
-      return {
-        priority: 5,
-        response
-      };
-    };
-    const relayUsdPrice = async (): Promise<Rank> => {
-      const response = await fetchUsdPriceOfBntViaRelay(web3);
-      return {
-        priority: 10,
-        response
-      };
-    };
-    const usdPriceOfBnt$ = merge(binanceUsdPrice(), relayUsdPrice()).pipe(
-      scan(
-        (acc, item) => {
-          if (acc.emitted == null) {
-            return {
-              bestEmitted: item.priority,
-              emitted: item.response
-            };
-          } else if (item.priority < acc.bestEmitted) {
-            return {
-              bestEmitted: item.priority,
-              emitted: item.response
-            };
-          } else {
-            return {
-              bestEmitted: acc.bestEmitted,
-              emitted: null
-            };
-          }
-        },
-        { bestEmitted: -1, emitted: null }
-      ),
-      filter(x => x.emitted !== null),
-      pluck("emitted"),
-      shareReplay(1)
+    const usdPriceOfBnt$ = apiData$.pipe(
+      map(x => Number(x.bnt_price.usd)),
+      distinctUntilChanged()
     );
 
     console.time("FirstPromise");
@@ -6217,7 +6195,7 @@ export class EthBancorModule
         v2Pools.some(anchor => compareString(anchor, anchorSet.anchorAddress))
     );
     v2Pools$
-      .pipe(bufferTime(100), delay(2500))
+      .pipe(bufferTime(100))
       .subscribe(pools => this.addPoolsBulk(pools));
 
     const [toLocalLoad$, toRemoteLoad$] = partitionOb(
@@ -6365,13 +6343,39 @@ export class EthBancorModule
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
-      await finalRelays$
+      await combineLatest([apiData$, tokenMeta$])
         .pipe(
-          mergeMap(x => from(x.relays)),
-          filter(x =>
-            compareString(x.id, "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533")
-          ),
-          firstItem()
+          mergeMap(([apiData, tokenMeta]) => {
+            const pools = apiData.pools;
+
+            const betterPools = pools
+              .map(pool => {
+                const reserveTokens = pool.reserves
+                  .map(reserve => ({
+                    ...tokenMeta.find(meta =>
+                      compareString(meta.contract, reserve.address)
+                    )!,
+                    reserveWeight: ppmToDec(reserve.weight),
+                    decBalance: reserve.balance
+                  }))
+                  .filter(pool => pool.contract);
+                const decFee = ppmToDec(pool.fee);
+                return {
+                  ...pool,
+                  decFee,
+                  reserveTokens
+                };
+              })
+              .filter(pool => pool.reserveTokens.length == 2) as NewPool[];
+
+            return betterPools;
+          }),
+          bufferTime(50),
+          tap(pools => {
+            if (pools.length > 0) {
+              this.updatePools(pools);
+            }
+          })
         )
         .toPromise();
     } catch (e) {

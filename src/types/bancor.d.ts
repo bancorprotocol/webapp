@@ -314,6 +314,7 @@ export interface ViewRelay {
   liqDepth: number;
   fee: number;
   reserves: ViewReserve[];
+  addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
   liquidityProtection: boolean;
@@ -325,7 +326,6 @@ export interface ViewRelay {
   volume?: string;
   aprMiningRewards?: PoolLiqMiningApr;
   stakedBntSupplyPercent?: number;
-  bntReserveBalance?: string;
 }
 
 export interface ContractMethods<T> extends Contract {

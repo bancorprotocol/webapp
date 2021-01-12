@@ -60,22 +60,13 @@ export default class PoolHome extends BaseComponent {
     return vxm.bancor.relays;
   }
 
-  get minNetworkTokenLiquidityforMinting() {
-    return vxm.minting.minNetworkTokenLiquidityforMinting
-  }
-
   selectPool(id: string) {
-    const limit = this.minNetworkTokenLiquidityforMinting
     const pool: ViewRelay = vxm.bancor.relay(id);
     if (!pool) {
       this.modal = false;
       return;
     }
-    if (
-      pool.whitelisted &&
-      pool.bntReserveBalance &&
-      limit !== null && limit.lt(pool.bntReserveBalance)
-    ) {
+    if (pool.addProtectionSupported) {
       this.$router.push({
         name: "AddProtectionSingle",
         params: { id }
