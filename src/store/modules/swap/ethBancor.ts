@@ -75,7 +75,6 @@ import {
   LockedBalance,
   rewindBlocksByDays,
   calculateProgressLevel,
-  fetchUsdPriceOfBntViaRelay,
   buildPoolNameFromReserves
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
@@ -3005,6 +3004,30 @@ export class EthBancorModule
     console.time("tokens");
 
     const whitelistedPools = this.whiteListedPools;
+    if (!this.apiData) {
+      return [];
+    }
+    const tokensWithWhiteListedStatus = this.newPools.flatMap(pool => {
+      const whitelisted = whitelistedPools.some(anchor =>
+        compareString(anchor, pool.pool_dlt_id)
+      );
+
+      const liquidityProtection =
+        whitelisted &&
+        pool.reserves.some(reserve =>
+          compareString(
+            reserve.address,
+            this.liquidityProtectionSettings.networkToken
+          )
+        ) &&
+        pool.reserves.length == 2 &&
+        pool.reserves.every(reserve => reserve.weight == decToPpm(0.5));
+
+      return pool.reserves.map(reserve => ({
+        ...reserve,
+        liquidityProtection
+      }));
+    });
 
     const ret = this.relaysList
       .filter(relay =>
@@ -3027,10 +3050,14 @@ export class EthBancorModule
           relay.reserves.every(reserve => reserve.reserveWeight == 0.5) &&
           Number(relay.version) >= 41;
 
-        // relay versions
-        // relay reserver balances
-        //
+        // pool versions
+        // token precisions
+        // track pool token supply
         // User APRs
+
+        // use observable again to create
+        // tokens with the meta data included
+        // merge together so this isn't done on the getter level
 
         return relay.reserves.map(reserve => {
           const { logo, name } = reserve.meta!;
@@ -6194,9 +6221,7 @@ export class EthBancorModule
       anchorSet =>
         v2Pools.some(anchor => compareString(anchor, anchorSet.anchorAddress))
     );
-    v2Pools$
-      .pipe(bufferTime(100))
-      .subscribe(pools => this.addPoolsBulk(pools));
+    v2Pools$.pipe(bufferTime(100)).subscribe(pools => this.addPoolsBulk(pools));
 
     const [toLocalLoad$, toRemoteLoad$] = partitionOb(
       v1Pools$,
