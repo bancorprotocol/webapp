@@ -4,11 +4,28 @@
     class="rounded p-3 mb-3 block-shadow-light"
     :class="darkMode ? 'text-dark' : 'text-light'"
   >
-    <div class="d-flex justify-content-between align-items-center d-xl-none">
+    <div
+      class="d-flex justify-content-between align-items-center d-xl-none"
+      id="popover-target"
+    >
       <span class="font-size-16 font-w500">My Stake</span>
-      <b-btn variant="primary" @click="openModal" style="width: 132px">
+      <b-btn
+        variant="primary"
+        @click="openModal"
+        style="width: 132px"
+        :disabled="stakeMaintenanceMode"
+      >
         Stake
       </b-btn>
+      <b-popover
+        v-if="stakeMaintenanceMode"
+        target="popover-target"
+        triggers="hover"
+        placement="bottom"
+      >
+        The site is undergoing maintenance and this option is not currently
+        available
+      </b-popover>
     </div>
     <b-row>
       <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
@@ -31,10 +48,25 @@
         lg="3"
         xl="2"
         class="d-none d-xl-flex align-items-center justify-content-end"
+        id="popover-target"
       >
-        <b-btn variant="primary" class="btn-block" @click="openModal">
+        <b-btn
+          variant="primary"
+          class="btn-block"
+          @click="openModal"
+          :disabled="stakeMaintenanceMode"
+        >
           Stake
         </b-btn>
+        <b-popover
+          v-if="stakeMaintenanceMode"
+          target="popover-target"
+          triggers="hover"
+          placement="bottom"
+        >
+          The site is undergoing maintenance and this option is not currently
+          available
+        </b-popover>
       </b-col>
     </b-row>
 
@@ -59,6 +91,10 @@ export default class ProtectedSummary extends BaseComponent {
 
   get minNetworkTokenLiquidityforMinting() {
     return vxm.minting.minNetworkTokenLiquidityforMinting;
+  }
+
+  get stakeMaintenanceMode() {
+    return vxm.bancor.stakeMaintenanceMode;
   }
 
   get pools() {

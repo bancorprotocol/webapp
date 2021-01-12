@@ -75,6 +75,8 @@ export class BancorModule extends VuexModule.With({
     error: false
   }));
 
+  stakeMaintenanceMode: boolean = true;
+
   slippageTolerance = 0.05;
 
   @mutation setTolerance(tolerance: number) {

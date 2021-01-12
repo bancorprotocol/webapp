@@ -303,13 +303,17 @@
         />
       </template>
 
-      <template #cell(actions)="{ item, isCollapsable, isExpanded }">
+      <template
+        #cell(actions)="{ item, isCollapsable, isExpanded }"
+        id="popover-target"
+      >
         <b-btn
           v-if="!isCollapsable"
           @click="goToWithdraw(item.positionId)"
           :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
           class="d-flex align-items-center justify-content-center"
           style="width: 41px; height: 41px"
+          :disabled="stakeMaintenanceMode"
         >
           <svg
             width="13"
@@ -323,6 +327,15 @@
               :fill="darkMode ? '#ffffff' : '#0A2540'"
             />
           </svg>
+          <b-popover
+            v-if="stakeMaintenanceMode"
+            target="popover-target"
+            triggers="hover"
+            placement="bottom"
+          >
+            The site is undergoing maintenance and this option is not currently
+            available
+          </b-popover>
         </b-btn>
         <div v-else>
           <b-btn
@@ -387,6 +400,7 @@ import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { vxm } from "@/store";
 
 @Component({
   components: {
@@ -407,6 +421,10 @@ export default class ProtectedTable extends BaseComponent {
   get groupedPositions() {
     if (this.positions.length > 0) return groupPositionsArray(this.positions);
     else return [];
+  }
+
+  get stakeMaintenanceMode() {
+    return vxm.bancor.stakeMaintenanceMode;
   }
 
   poolName(id: string): string {
