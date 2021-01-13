@@ -1,13 +1,8 @@
+//run `yarn test:unit -i momentToDayjs.spec.ts`
 import moment from "moment";
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import dayjs from "@/utils/dayjs"
 
-describe("check moment and dayjs", () => {
-  dayjs.extend(duration);
-  dayjs.extend(relativeTime)
-  dayjs.extend(isSameOrAfter);
+describe("check moment and dayjs", () => {  
 
   test("durationToSeconds", () => {
     // console.log(moment.duration(3, "days").asSeconds())
