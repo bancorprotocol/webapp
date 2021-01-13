@@ -5769,35 +5769,61 @@ export class EthBancorModule
     loading: boolean;
     data: ViewLiquidityEvent<ViewTradeEvent>[];
   } {
-    const liquidityEvents = this.liquidityHistoryArr;
-    const knownTokens = this.tokens;
-    if (liquidityEvents.length == 0 || knownTokens.length == 0) {
+    if (!this.apiData)
       return {
         loading: true,
         data: []
       };
-    }
 
-    const conversionsSupported = liquidityEvents.filter(event =>
-      tokenAddressesInEvent(event).every(tokenAddress =>
-        knownTokens.some(t => compareString(tokenAddress, t.id))
-      )
+    const tokens = this.apiData!.tokens;
+    const meta = this.tokenMeta;
+
+    const trades = this.apiData!.swaps.map(
+      (x): ViewLiquidityEvent<ViewTradeEvent> => {
+        const fromToken = tokens.find(token =>
+          compareString(x.from_token, token.dlt_id)
+        )!;
+        const fromMetaToken = meta.find(meta =>
+          compareString(meta.contract, x.from_token)
+        );
+        const toMetaToken = meta.find(meta =>
+          compareString(meta.contract, x.to_token)
+        );
+
+        return {
+          account: x.account,
+          accountLink: generateEtherscanTxLink(x.account),
+          data: {
+            from: {
+              amount: x.input_amount,
+              decimals: 1,
+              id: x.from_token,
+              logo: (fromMetaToken && fromMetaToken.image) || defaultImage,
+              symbol: x.from_symbol
+            },
+            to: {
+              amount: x.output_amount,
+              decimals: 1,
+              id: x.to_token,
+              logo: (toMetaToken && toMetaToken.image) || defaultImage,
+              symbol: x.to_symbol
+            }
+          },
+          txHash: "",
+          id: x.account + String(x.timestamp),
+          txLink: generateEtherscanTxLink(x.account),
+          type: "swap",
+          unixTime: x.timestamp / 1000,
+          valueTransmitted: new BigNumber(x.input_amount)
+            .times(fromToken.rate.usd || 0)
+            .toNumber()
+        };
+      }
     );
 
     return {
       loading: false,
-      data: conversionsSupported.map(conversion =>
-        conversionEventToViewTradeEvent(
-          conversion,
-          knownTokens,
-          hash =>
-            generateEtherscanTxLink(
-              hash,
-              this.currentNetwork == EthNetworks.Ropsten
-            ),
-          account => generateEtherscanAccountLink(account)
-        )
-      )
+      data: trades
     };
   }
 
