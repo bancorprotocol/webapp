@@ -32,6 +32,8 @@ export interface Pool {
   volume_24h: BntPrice;
   fees_24h: BntPrice;
   fee: string;
+  version: number;
+  supply: string;
 }
 
 export interface Reserve {
@@ -59,6 +61,7 @@ export interface Token {
   liquidity: BntPrice;
   rate: BntPrice;
   rate_24h_ago: BntPrice;
+  precision: number;
 }
 
 interface TokenMetaWithReserve extends TokenMeta {
