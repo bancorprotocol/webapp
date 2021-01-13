@@ -1247,9 +1247,9 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   return uniqueTokens;
 };
 
-const priceChange = (priceThen: number, priceNow: number): number => {
-  const totalPercent = priceNow / priceThen;
-  return 1 - totalPercent;
+const priceChangePercent = (priceThen: number, priceNow: number): number => {
+  const difference = priceNow - priceThen;
+  return difference / priceThen;
 };
 
 const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
@@ -3054,45 +3054,42 @@ export class EthBancorModule
 
     const tokenBalances = this.tokenBalances;
     const tokenMeta = this.tokenMeta;
-    const finalTokens = this.apiData.tokens.map(token => {
-      const liquidityProtection = tokensWithWhiteListedStatus.some(t =>
-        compareString(t.contract, token.dlt_id)
-      );
+    const finalTokens = this.apiData.tokens
+      .map(token => {
+        const liquidityProtection = tokensWithWhiteListedStatus.some(t =>
+          compareString(t.contract, token.dlt_id)
+        );
 
-      const change24h =
-        priceChange(Number(token.rate_24h_ago.usd), Number(token.rate.usd)) *
-        100;
-      const meta = tokenMeta.find(meta =>
-        compareString(meta.contract, token.dlt_id)
-      );
-      const balance = tokenBalances.find(balance =>
-        compareString(balance.id, token.dlt_id)
-      );
-      const balanceString =
-        balance && new BigNumber(balance.balance).toString();
+        const change24h =
+          priceChangePercent(
+            Number(token.rate_24h_ago.usd),
+            Number(token.rate.usd)
+          ) * 100;
+        const meta = tokenMeta.find(meta =>
+          compareString(meta.contract, token.dlt_id)
+        );
+        const balance = tokenBalances.find(balance =>
+          compareString(balance.id, token.dlt_id)
+        );
+        const balanceString =
+          balance && new BigNumber(balance.balance).toString();
 
-      return {
-        contract: token.dlt_id,
-        id: token.dlt_id,
-        name: token.symbol,
-        symbol: token.symbol,
-        precision: token.precision,
-        logo: (meta && meta.image) || defaultImage,
-        change24h,
-        ...(balance && { balance: balanceString }),
-        liqDepth: Number(token.liquidity.usd || 0),
-        liquidityProtection,
-        price: Number(token.rate.usd),
-        volume24h: Number(1)
-      };
-    });
-
-    const bnt = finalTokens.find(token => compareString(token.symbol, "ocean"));
-    console.log(
-      bnt,
-      "is the bnt",
-      this.apiData.tokens.find(x => compareString(x.symbol, "ocean"))
-    );
+        return {
+          contract: token.dlt_id,
+          id: token.dlt_id,
+          name: token.symbol,
+          symbol: token.symbol,
+          precision: token.precision,
+          logo: (meta && meta.image) || defaultImage,
+          change24h,
+          ...(balance && { balance: balanceString }),
+          liqDepth: Number(token.liquidity.usd || 0),
+          liquidityProtection,
+          price: Number(token.rate.usd),
+          volume24h: Number(1)
+        };
+      })
+      .sort(sortByLiqDepth);
 
     console.timeEnd("tokens");
     return finalTokens;
@@ -3200,7 +3197,9 @@ export class EthBancorModule
     const whiteListedPools = this.whiteListedPools;
     const previousRelayBalances = this.previousRelayBalances;
     const limit = vxm.minting.minNetworkTokenLiquidityforMinting;
-    console.log(limit && limit.toString(), "is the limit");
+
+    const liquidityProtectionNetworkToken = this.liquidityProtectionSettings
+      .networkToken;
 
     return this.newPools.map(relay => {
       const liqDepth = Number(relay.liquidity.usd);
@@ -3211,20 +3210,14 @@ export class EthBancorModule
 
       const liquidityProtection =
         relay.reserveTokens.some(reserve =>
-          compareString(
-            reserve.contract,
-            this.liquidityProtectionSettings.networkToken
-          )
+          compareString(reserve.contract, liquidityProtectionNetworkToken)
         ) &&
         relay.reserveTokens.length == 2 &&
         relay.reserveTokens.every(reserve => reserve.reserveWeight == 0.5) &&
         whitelisted;
 
       const bntReserve = relay.reserves.find(reserve =>
-        compareString(
-          reserve.address,
-          this.liquidityProtectionSettings.networkToken || ""
-        )
+        compareString(reserve.address, liquidityProtectionNetworkToken || "")
       );
       const addProtectionSupported =
         liquidityProtection &&
@@ -3253,17 +3246,21 @@ export class EthBancorModule
         compareString(apr.poolId, relay.pool_dlt_id)
       );
 
-      const reserves = relay.reserveTokens.map(
-        reserve =>
-          ({
-            id: reserve.contract,
-            reserveWeight: reserve.reserveWeight,
-            reserveId: relay.pool_dlt_id + reserve.contract,
-            logo: [reserve.image],
-            symbol: reserve.symbol,
-            contract: reserve.contract,
-            smartTokenSymbol: reserve.symbol
-          } as ViewReserve)
+      const reserves = sortAlongSide(
+        relay.reserveTokens.map(
+          reserve =>
+            ({
+              id: reserve.contract,
+              reserveWeight: reserve.reserveWeight,
+              reserveId: relay.pool_dlt_id + reserve.contract,
+              logo: [reserve.image],
+              symbol: reserve.symbol,
+              contract: reserve.contract,
+              smartTokenSymbol: reserve.symbol
+            } as ViewReserve)
+        ),
+        reserve => reserve.contract,
+        [liquidityProtectionNetworkToken]
       );
 
       return {
@@ -6735,7 +6732,6 @@ export class EthBancorModule
     );
 
     const allTokens = pools.flatMap(tokensInRelay);
-    console.log({ allTokens, pools }, "are all tokens");
     const contracts = allTokens.map(token => token.contract);
 
     void this.checkFees(pools);
