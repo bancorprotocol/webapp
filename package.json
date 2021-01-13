@@ -35,6 +35,7 @@
     "bootstrap-vue": "^2.16.0",
     "core-js": "^3.6.5",
     "csv-parse": "^4.9.1",
+    "dayjs": "^1.10.3",
     "decimal.js": "^10.2.0",
     "eos-common": "^0.8.0",
     "eos-transit": "^4.0.1",
