@@ -1247,6 +1247,11 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   return uniqueTokens;
 };
 
+const priceChange = (priceThen: number, priceNow: number): number => {
+  const totalPercent = priceNow / priceThen;
+  return 1 - totalPercent;
+};
+
 const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
   const smartTokens = tokens
     .filter(token => !token.poolTokens)
@@ -3007,104 +3012,90 @@ export class EthBancorModule
     if (!this.apiData) {
       return [];
     }
-    const tokensWithWhiteListedStatus = this.newPools.flatMap(pool => {
-      const whitelisted = whitelistedPools.some(anchor =>
-        compareString(anchor, pool.pool_dlt_id)
-      );
-
-      const liquidityProtection =
-        whitelisted &&
-        pool.reserves.some(reserve =>
-          compareString(
-            reserve.address,
-            this.liquidityProtectionSettings.networkToken
-          )
-        ) &&
-        pool.reserves.length == 2 &&
-        pool.reserves.every(reserve => reserve.weight == decToPpm(0.5));
-
-      return pool.reserves.map(reserve => ({
-        ...reserve,
-        liquidityProtection
-      }));
-    });
-
-    const ret = this.relaysList
-      .filter(relay =>
-        relay.reserves.every(reserve => reserve.reserveFeed && reserve.meta)
-      )
-      .flatMap(relay => {
+    const tokensWithWhiteListedStatus = this.newPools
+      .flatMap(pool => {
         const whitelisted = whitelistedPools.some(anchor =>
-          compareString(anchor, relay.id)
+          compareString(anchor, pool.pool_dlt_id)
         );
 
         const liquidityProtection =
           whitelisted &&
-          relay.reserves.some(reserve =>
+          pool.reserves.some(reserve =>
             compareString(
-              reserve.contract,
+              reserve.address,
               this.liquidityProtectionSettings.networkToken
             )
           ) &&
-          relay.reserves.length == 2 &&
-          relay.reserves.every(reserve => reserve.reserveWeight == 0.5) &&
-          Number(relay.version) >= 41;
+          pool.reserves.length == 2 &&
+          pool.reserves.every(reserve => reserve.weight == decToPpm(0.5)) &&
+          Number(pool.version) >= 41;
 
-        // pool versions
-        // token precisions
-        // track pool token supply
-        // User APRs
-
-        // use observable again to create
-        // tokens with the meta data included
-        // merge together so this isn't done on the getter level
-
-        return relay.reserves.map(reserve => {
-          const { logo, name } = reserve.meta!;
-          const balance = this.tokenBalance(reserve.contract);
-          const balanceString =
-            balance && new BigNumber(balance.balance).toString();
-
-          const reserveFeed = reserve.reserveFeed!;
-          return {
-            id: reserve.contract,
-            contract: reserve.contract,
-            precision: reserve.decimals,
-            symbol: reserve.symbol,
-            liquidityProtection,
-            name: name || reserve.symbol,
-            ...(reserveFeed.costByNetworkUsd && {
-              price: reserveFeed.costByNetworkUsd
-            }),
-            liqDepth: reserveFeed.liqDepth,
-            logo,
-            ...(reserveFeed.change24H && { change24h: reserveFeed.change24H }),
-            ...(reserveFeed.volume24H && { volume24h: reserveFeed.volume24H }),
-            ...(balance && { balance: balanceString })
-          };
-        });
+        return pool.reserves.map(reserve => ({
+          contract: reserve.address,
+          liquidityProtection
+        }));
       })
-      .sort(sortByLiqDepth)
-      .reduce<ViewToken[]>((acc, item) => {
+      .reduce((acc, item) => {
         const existingToken = acc.find(token =>
-          compareString(token.id!, item.id)
+          compareString(token.contract!, item.contract)
         );
         return existingToken
           ? updateArray(
               acc,
-              token =>
-                compareString(token.id!, item.id) && !isNaN(item.liqDepth),
+              token => compareString(token.contract!, item.contract),
               token => ({
                 ...token,
-                liqDepth: token.liqDepth! + item.liqDepth,
                 liquidityProtection:
                   token.liquidityProtection || item.liquidityProtection
               })
             )
-          : [...acc, item as ViewToken];
-      }, []);
+          : [...acc, item];
+      }, [] as { contract: string; liquidityProtection: boolean }[]);
+
+    const tokenBalances = this.tokenBalances;
+    const tokenMeta = this.tokenMeta;
+    const finalTokens = this.apiData.tokens.map(token => {
+      const liquidityProtection = tokensWithWhiteListedStatus.some(t =>
+        compareString(t.contract, token.dlt_id)
+      );
+
+      const change24h =
+        priceChange(Number(token.rate_24h_ago.usd), Number(token.rate.usd)) *
+        100;
+      const meta = tokenMeta.find(meta =>
+        compareString(meta.contract, token.dlt_id)
+      );
+      const balance = tokenBalances.find(balance =>
+        compareString(balance.id, token.dlt_id)
+      );
+      const balanceString =
+        balance && new BigNumber(balance.balance).toString();
+
+      return {
+        contract: token.dlt_id,
+        id: token.dlt_id,
+        name: token.symbol,
+        symbol: token.symbol,
+        precision: token.precision,
+        logo: (meta && meta.image) || defaultImage,
+        change24h,
+        ...(balance && { balance: balanceString }),
+        liqDepth: Number(token.liquidity.usd || 0),
+        liquidityProtection,
+        price: Number(token.rate.usd),
+        volume24h: Number(1)
+      };
+    });
+
+    const bnt = finalTokens.find(token => compareString(token.symbol, "ocean"));
+    console.log(
+      bnt,
+      "is the bnt",
+      this.apiData.tokens.find(x => compareString(x.symbol, "ocean"))
+    );
+
     console.timeEnd("tokens");
-    return ret;
+    return finalTokens;
   }
 
   get tokenMetaObj() {
