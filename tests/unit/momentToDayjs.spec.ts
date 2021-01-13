@@ -18,20 +18,27 @@ describe("check moment and dayjs", () => {
     // moment.duration("24", "hours").asSeconds()
     expect(moment.duration("24", "hours").asSeconds()).toBe(dayjs.duration("24", "hours").asSeconds())
 
+    // console.log(moment().clone().add(1, "year").unix())
+    expect(moment().clone().add(1, "year").unix()).toBe(dayjs().clone().add(1, "year").unix())
+
     const oneDayM = moment.duration(1, "day")
     const yesterDayM = moment().subtract(oneDayM)
 
     const oneDayD = dayjs.duration(1, "day")
-    const yesterDayD = dayjs().subtract(oneDayD)
+    const yesterDayD = dayjs().subtract(oneDayD)    
 
     // console.log(moment().isSameOrAfter(yesterDayM))
     // console.log(dayjs().isSameOrAfter(yesterDayD))
     expect(moment().isSameOrAfter(yesterDayM)).toBe(dayjs().isSameOrAfter(yesterDayD))
     expect(dayjs().isSameOrAfter(yesterDayD)).toBeTruthy()
 
+    expect(moment().isSameOrBefore(yesterDayM)).toBe(dayjs().isSameOrBefore(yesterDayD))
+    expect(dayjs().isSameOrBefore(yesterDayD)).toBeFalsy()
+
     const unixTime = 1610107544
     // console.log(moment.unix(unixTime).isBefore(moment()))
-    // console.log(dayjs.unix(unixTime).isBefore(dayjs()))
+    // console.log(dayjs.unix(unixTime).isBefore(dayjs()))    
+
     expect(moment.unix(unixTime).isBefore(moment())).toBe(dayjs.unix(unixTime).isBefore(dayjs()))
     expect(dayjs.unix(unixTime).isBefore(dayjs())).toBeTruthy()
 
@@ -68,8 +75,9 @@ describe("check moment and dayjs", () => {
     expect(moment.unix(unixTime).format("HH:mm")).toBe(dayjs.unix(unixTime).format("HH:mm"))
 
     // console.log('m', moment.unix(unixTime).fromNow())
-    // console.log('d', moment.unix(unixTime).fromNow())
-    expect(moment.unix(unixTime).fromNow()).toBe(moment.unix(unixTime).fromNow())
+    // console.log('d', dayjs.unix(unixTime).fromNow())
+    expect(moment.unix(unixTime).fromNow()).toBe(dayjs.unix(unixTime).fromNow())
+    expect(moment.unix(unixTime).fromNow(true)).toBe(dayjs.unix(unixTime).fromNow(true))
   })
 
   test("endTime", () => {
