@@ -47,6 +47,15 @@
           </div>
         </div>
       </b-dropdown-item>
+      <b-dropdown-header class="text-uppercase">Languages</b-dropdown-header>
+      <b-button
+        style="margin: 5px"
+        v-for="item in i18n.availableLocales"
+        :key="item.toString()"
+        @click="switchlocale(item)"
+      >
+        {{ getLanguegeByLocale(item) }}
+      </b-button>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
@@ -83,11 +92,21 @@ import { Prop, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { i18n, getLanguegeByLocale } from "../../i18n/i18n";
+
 @Component({
   components: { SlippageTolerance }
 })
 export default class SettingsMenu extends BaseComponent {
   @Prop({ default: true }) showTx!: boolean;
+
+  get i18n() {
+    return i18n;
+  }
+
+  get getLanguegeByLocale() {
+    return getLanguegeByLocale;
+  }
 
   get showTxSettings() {
     if (this.$route.fullPath.includes("data")) return false;
@@ -108,6 +127,10 @@ export default class SettingsMenu extends BaseComponent {
 
   toggleDarkMode() {
     vxm.general.toggleDarkMode();
+  }
+
+  switchlocale(locale: string) {
+    i18n.locale = locale;
   }
 }
 </script>
