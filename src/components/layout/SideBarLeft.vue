@@ -155,7 +155,7 @@ export default class SideBarLeft extends Vue {
     position: absolute;
     width: 230px;
     height: 50px;
-    background-color: #fff;
+    background-color: #f8f9fd;
   }
 
   .side-bar-wrapper {
