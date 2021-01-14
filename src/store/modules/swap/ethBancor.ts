@@ -2953,13 +2953,15 @@ export class EthBancorModule
     gas,
     value,
     resolveImmediately = false,
-    onHash
+    onHash,
+    onConfirmation
   }: {
     tx: ContractSendMethod;
     value?: string;
     gas?: number;
     resolveImmediately?: boolean;
     onHash?: (hash: string) => void;
+    onConfirmation?: (hash: string) => void;
   }): Promise<string> {
     console.log("received", tx);
     return new Promise((resolve, reject) => {
@@ -2977,6 +2979,7 @@ export class EthBancorModule
           }
         })
         .on("confirmation", () => {
+          if (onConfirmation) onConfirmation(txHash);
           resolve(txHash);
         })
         .on("error", (error: any) => reject(error));
@@ -7084,6 +7087,7 @@ export class EthBancorModule
         zeroAddress,
         0
       ),
+      resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
       onHash: () => onUpdate!(3, steps)
     });
