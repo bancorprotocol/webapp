@@ -74,7 +74,7 @@ export interface NewPool extends Pool {
 
 export const getWelcomeData = async (): Promise<WelcomeData> => {
   const res = await axios.get<WelcomeData>(
-    "http://bancor-api.nw.r.appspot.com/welcome"
+    "https://bancor-api.nw.r.appspot.com/welcome"
   );
 
   return res.data;
