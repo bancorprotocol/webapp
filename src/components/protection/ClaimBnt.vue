@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import { Component, Prop, Emit } from "vue-property-decorator";
-import moment from "moment";
+import dayjs from "@/utils/dayjs"
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
@@ -57,12 +57,12 @@ export default class ClaimBnt extends BaseComponent {
   countdown(eventTime: number) {
     const currentTime = Date.now() / 1000;
     const diffTime = eventTime - currentTime;
-    let duration = moment.duration(diffTime * 1000, "milliseconds");
+    let duration = dayjs.duration(diffTime * 1000, "milliseconds");
 
     const interval = 1000;
 
     setInterval(() => {
-      duration = moment.duration(Number(duration) - interval, "milliseconds");
+      duration = dayjs.duration(Number(duration) - interval, "milliseconds");
       this.lockDuration =
         duration.hours() +
         "h:" +

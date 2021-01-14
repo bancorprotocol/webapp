@@ -85,7 +85,7 @@ import { compareString, formatUnixTime, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
-import moment from "moment";
+import dayjs from "@/utils/dayjs"
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -132,7 +132,7 @@ export default class AddProtectionDouble extends BaseComponent {
 
   get fullCoverageDate() {
     const maxDelayTime = vxm.ethBancor.liquidityProtectionSettings.maxDelay;
-    const currentTime = moment().unix();
+    const currentTime = dayjs().unix();
     return formatUnixTime(currentTime + maxDelayTime).date;
   }
 

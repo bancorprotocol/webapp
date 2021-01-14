@@ -155,7 +155,7 @@ import {
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
-import moment from "moment";
+import dayjs from "@/utils/dayjs"
 import { getNetworkVariables } from "@/api/config";
 import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
@@ -1478,9 +1478,9 @@ export class EthBancorModule
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
     contract: "",
-    minDelay: moment.duration("30", "days").asSeconds(),
-    maxDelay: moment.duration("100", "days").asSeconds(),
-    lockedDelay: moment.duration("24", "hours").asSeconds(),
+    minDelay: dayjs.duration("30", "days").asSeconds(),
+    maxDelay: dayjs.duration("100", "days").asSeconds(),
+    lockedDelay: dayjs.duration("24", "hours").asSeconds(),
     networkToken: "",
     govToken: "",
     defaultNetworkTokenMintingLimit: "0"
@@ -1863,10 +1863,10 @@ export class EthBancorModule
         })(),
         Promise.all(
           allPositions.map(async position => {
-            const now = moment();
+            const now = dayjs();
             const fullWaitTime = now.clone().add(1, "year").unix();
 
-            const timeNow = moment().unix();
+            const timeNow = dayjs().unix();
 
             const [
               fullLiquidityReturn,
@@ -2898,9 +2898,9 @@ export class EthBancorModule
       this.contracts.LiquidityProtection
     );
 
-    const now = moment();
+    const now = dayjs();
     const availableClaims = this.lockedBalancesArr
-      .filter(balance => moment.unix(balance.expirationTime).isBefore(now))
+      .filter(balance => dayjs.unix(balance.expirationTime).isBefore(now))
       .sort((a, b) => a.index - b.index);
 
     const chunked = chunk(availableClaims, 5);
@@ -5803,10 +5803,10 @@ export class EthBancorModule
   }
 
   get availableBalances(): ViewLockedBalance[] {
-    const now = moment();
+    const now = dayjs();
     const bntPrice = this.bntUsdPrice;
     const balances = this.lockedBalancesArr.filter(lockedBalance =>
-      moment.unix(lockedBalance.expirationTime).isSameOrBefore(now)
+      dayjs.unix(lockedBalance.expirationTime).isSameOrBefore(now)
     );
     if (balances.length == 0) return [];
 
@@ -5845,10 +5845,10 @@ export class EthBancorModule
   }
 
   get lockedBalances(): ViewLockedBalance[] {
-    const now = moment();
+    const now = dayjs();
     const bntPrice = this.bntUsdPrice;
     const balances = this.lockedBalancesArr.filter(lockedBalance =>
-      moment.unix(lockedBalance.expirationTime).isAfter(now)
+      dayjs.unix(lockedBalance.expirationTime).isAfter(now)
     );
     return balances.map(
       (balance): ViewLockedBalance => {
@@ -6043,7 +6043,7 @@ export class EthBancorModule
     console.time("FirstPromise");
 
     const currentBlock$ = from(web3.eth.getBlockNumber()).pipe(
-      map(block => ({ unixTime: moment().unix(), blockNumber: block })),
+      map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
       shareReplay(1)
     );
 
@@ -7237,7 +7237,7 @@ export class EthBancorModule
       this.contracts.LiquidityProtection,
       posId,
       ppm,
-      moment().unix(),
+      dayjs().unix(),
       w3
     );
 
