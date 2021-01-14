@@ -10,7 +10,7 @@ import {
 } from "@/types/bancor";
 import BigNumber from "bignumber.js";
 import { partition } from "lodash";
-import { compareString } from "./helpers";
+import { compareString } from "@/api/helpers";
 import sort from "fast-sort";
 import numeral from "numeral";
 

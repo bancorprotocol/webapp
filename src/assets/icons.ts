@@ -1,4 +1,6 @@
 /* free-solid-svg-icons */
+import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
+import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
 import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons/faArrowDown";
 import { faBars } from "@fortawesome/free-solid-svg-icons/faBars";
@@ -35,6 +37,8 @@ import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
 
 export const fas = [
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
   faArrowCircleRight,
   faArrowDown,
   faBars,
