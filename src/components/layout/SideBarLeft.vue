@@ -111,6 +111,7 @@ export default class SideBarLeft extends Vue {
       }, 250);
     } else {
       this.visibleLabel = false;
+      clearTimeout()
     }
   }
 
@@ -151,15 +152,15 @@ export default class SideBarLeft extends Vue {
   .bancor-icon-wrapper {
     position: absolute;
     width: 230px;
-    height: 70px;
-    background-color: #e6ebf2;
+    height: 50px;
+    background-color: #fff;
   }
 
   .side-bar-wrapper {
     width: 230px;
     height: 100%;
     background-color: #e6ebf2;
-    margin-top: 70px;
+    margin-top: 60px;
 
     -moz-transition: width 0.25s;
     -ms-transition: width 0.25s;
@@ -169,14 +170,14 @@ export default class SideBarLeft extends Vue {
   }
 
   .brand-icon {
-    margin-top: 18px;
-    margin-left: 25px;
+    margin-top: 10px;
+    margin-left: 19px;
     width: 80.9px;
     height: 22px;
     object-fit: contain;
   }
   .side-bar-links {
-    margin-top: 28px;
+    margin-top: 20px;
 
     .icon-newtab {
       font-size: 13px;
@@ -215,6 +216,8 @@ export default class SideBarLeft extends Vue {
     flex-grow: 1;
   }
   .tm-text {
+    position: absolute;
+    bottom: 15px;
     width: 88px;
     height: 15px;
     font-family: Inter;
@@ -280,7 +283,7 @@ export default class SideBarLeft extends Vue {
   background-color: #1c344e !important;
 
   .bancor-icon-wrapper {
-    background-color: #0a2540;
+    background-color: #1c344e;
   }
   .side-bar-wrapper {
     background-color: #0a2540;
