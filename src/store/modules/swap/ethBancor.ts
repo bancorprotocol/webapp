@@ -5638,33 +5638,33 @@ export class EthBancorModule
     const trades = this.apiData!.swaps.map(
       (x): ViewLiquidityEvent<ViewTradeEvent> => {
         const fromToken = tokens.find(token =>
-          compareString(x.from_token, token.dlt_id)
+          compareString(x.source_token_dlt_id, token.dlt_id)
         )!;
         const toToken = tokens.find(token =>
-          compareString(x.to_token, token.dlt_id)
+          compareString(x.target_token_dlt_id, token.dlt_id)
         )!;
         const fromMetaToken = meta.find(meta =>
-          compareString(meta.contract, x.from_token)
+          compareString(meta.contract, x.source_token_dlt_id)
         );
         const toMetaToken = meta.find(meta =>
-          compareString(meta.contract, x.to_token)
+          compareString(meta.contract, x.target_token_dlt_id)
         );
 
         return {
-          account: x.account,
-          accountLink: generateEtherscanAccountLink(x.account),
+          account: x.wallet_dlt_id,
+          accountLink: generateEtherscanAccountLink(x.wallet_dlt_id),
           data: {
             from: {
               amount: x.input_amount,
               decimals: fromToken.precision,
-              id: x.from_token,
+              id: x.source_token_dlt_id,
               logo: (fromMetaToken && fromMetaToken.image) || defaultImage,
               symbol: fromToken.symbol
             },
             to: {
               amount: x.output_amount,
               decimals: toToken.precision,
-              id: x.to_token,
+              id: x.target_token_dlt_id,
               logo: (toMetaToken && toMetaToken.image) || defaultImage,
               symbol: toToken.symbol
             }
@@ -5685,6 +5685,8 @@ export class EthBancorModule
     const tradesUnderHash = toPairs(groupedByHash)
       .map(([hash, trades]) => ({ hash, trades }))
       .sort((a, b) => b.trades.length - a.trades.length);
+
+    console.log({ tradesUnderHash }, "trades under hash");
 
     const x = tradesUnderHash
       .flatMap(x => {

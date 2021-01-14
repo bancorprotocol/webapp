@@ -43,14 +43,14 @@ export interface Reserve {
 }
 
 export interface Swap {
-  from_token: string;
-  to_token: string;
+  source_token_dlt_id: string;
+  target_token_dlt_id: string;
   tx_hash: string;
   input_amount: string;
   output_amount: string;
   amount: BntPrice;
   timestamp: number;
-  account: string;
+  wallet_dlt_id: string;
 }
 
 export interface Token {
