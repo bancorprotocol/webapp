@@ -19,8 +19,11 @@ import {
   LiquidityModule
 } from "@/types/bancor";
 import { vxm, store } from "@/store";
-import { compareString, updateArray } from "@/api/helpers";
-import { fetchBinanceUsdPriceOfBnt } from "@/api/helpers";
+import {
+  compareString,
+  updateArray,
+  fetchBinanceUsdPriceOfBnt
+} from "@/api/helpers";
 import { defaultModule } from "@/router";
 
 interface BntPrice {
@@ -295,7 +298,7 @@ export class BancorModule extends VuexModule.With({
       const usdPrice = await fetchBinanceUsdPriceOfBnt();
       this.setUsdPriceOfBnt({
         price: usdPrice,
-        lastChecked: new Date().getTime()
+        lastChecked: Date.now()
       });
       return usdPrice;
     } catch (e) {
@@ -318,10 +321,6 @@ export class BancorModule extends VuexModule.With({
 
   @mutation setUsdPriceOfBnt(usdPriceOfBnt: BntPrice) {
     this.usdPriceOfBnt = usdPriceOfBnt;
-  }
-
-  @action async loadMoreTokens(tokenIds?: string[]) {
-    return this.dispatcher(["loadMoreTokens", tokenIds]);
   }
 
   @action async fetchHistoryData(relayId: string): Promise<HistoryRow[]> {

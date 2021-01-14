@@ -23,8 +23,11 @@ import {
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
-import { buildLiquidityProtectionStoreContract } from "./eth/contractTypes";
-import { removeLeadingZeros } from "./eth/helpers";
+import {
+  buildConverterContract,
+  buildLiquidityProtectionStoreContract
+} from "./eth/contractTypes";
+import { removeLeadingZeros, shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
@@ -257,11 +260,41 @@ export const compareString = (stringOne: string, stringTwo: string) => {
   return stringOne.toLowerCase() == stringTwo.toLowerCase();
 };
 
+const cryptoComparekey = process.env.VUE_APP_CRYPTO_COMPARE;
+
+export interface UsdPrices {
+  BNT: { USD: number };
+  ETH: { USD: number };
+}
+
+export const cryptoComparePrices = async () => {
+  const res = await axios.get<UsdPrices>(
+    "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BNT,ETH&tsyms=USD",
+    { headers: { authorization: `Apikey ${cryptoComparekey}` } }
+  );
+  return res.data;
+};
+
 export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
   const res = await axios.get<{ mins: number; price: string }>(
     "https://api.binance.com/api/v3/avgPrice?symbol=BNTUSDT"
   );
   return Number(res.data.price);
+};
+
+export const fetchUsdPriceOfBntViaRelay = async (
+  w3: Web3,
+  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C"
+): Promise<number> => {
+  const contract = buildConverterContract(relayContractAddress, w3);
+  const res = await contract.methods
+    .getReturn(
+      "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+      "0x309627af60F0926daa6041B8279484312f2bf060",
+      "1000000000000000000"
+    )
+    .call();
+  return Number(shrinkToken(res["0"], 18));
 };
 
 export const updateArray = <T>(
@@ -609,8 +642,6 @@ export const getLogs = async (
 
   const response = await axios.post<InfuraEventResponse>(address, request);
 
-  console.log(response, "is the raw return");
-
   if (response.data.error) {
     console.error("eth_getLogs failed!", response.data.error, address, request);
   }
@@ -935,7 +966,6 @@ export interface Relay {
   network: string;
   version: string;
   converterType: PoolType;
-  owner: string;
 }
 
 export interface RelayWithReserveBalances extends Relay {
@@ -1068,7 +1098,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
     more: boolean;
   } = await rpc.get_table_rows({
     code: contractName,
-    table: "converter.v2",
+    table: "converters",
     scope: contractName,
     limit: 99
   });

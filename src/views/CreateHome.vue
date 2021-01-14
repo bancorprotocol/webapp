@@ -8,15 +8,8 @@
       class="mb-3"
     >
       <div class="mt-3">
-        <div v-if="version === 1">
-          <create-v1-step1 v-if="step === 1" v-model="stepOneProps" />
-          <create-v1-step2 v-else v-model="stepTwoProps" />
-        </div>
-
-        <div v-else>
-          <create-v2-step1 v-if="step === 1" />
-          <create-v2-step2 v-else />
-        </div>
+        <create-v1-step1 v-if="step === 1" v-model="stepOneProps" />
+        <create-v1-step2 v-else v-model="stepTwoProps" />
 
         <alert-block variant="error" :msg="errorStep1" class="mt-3" />
 
@@ -98,8 +91,6 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import CreateV1Step1 from "@/components/pool/create/CreateV1Step1.vue";
 import CreateV1Step2 from "@/components/pool/create/CreateV1Step2.vue";
-import CreateV2Step1 from "@/components/pool/create/CreateV2Step1.vue";
-import CreateV2Step2 from "@/components/pool/create/CreateV2Step2.vue";
 import MainButton from "@/components/common/Button.vue";
 import { Step, TxResponse, ViewToken } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -136,8 +127,6 @@ export interface CreateStep2 {
     ContentBlock,
     CreateV1Step1,
     CreateV1Step2,
-    CreateV2Step1,
-    CreateV2Step2,
     MainButton
   }
 })

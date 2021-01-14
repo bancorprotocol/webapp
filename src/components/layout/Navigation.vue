@@ -108,7 +108,8 @@ export default class Navigation extends BaseComponent {
 
 <style lang="scss">
 #navigation-top {
-  margin: 1rem 0;
+  margin-top: 0.2rem;
+  margin-bottom: 0.6rem;
 
   & > * {
     margin-left: 0.75rem;

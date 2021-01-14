@@ -55,7 +55,11 @@
         :value="rate"
         :loading="rateLoading"
         class="mb-2"
-      />
+      >
+        <span @click="inverseRate = !inverseRate" class="cursor">
+          {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
+        </span>
+      </label-content-split>
       <label-content-split
         label="Price Impact"
         tooltip="The difference between market price and estimated price due to trade size"
@@ -136,15 +140,34 @@ export default class SwapAction extends BaseComponent {
     return vxm.bancor.tokens;
   }
 
+  inverseRate = false;
+
   get rate() {
     let rate = "";
-    if (this.amount1 && this.amount2)
-      rate = formatNumber(
-        parseFloat(this.amount2) / parseFloat(this.amount1),
-        9
-      );
-    else rate = formatNumber(parseFloat(this.initialRate), 9);
-    return "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol;
+    switch (this.inverseRate) {
+      case false: {
+        if (this.amount1 && this.amount2)
+          rate = this.prettifyNumber(
+            Number(this.amount1) / Number(this.amount2)
+          );
+        else rate = this.prettifyNumber(1 / Number(this.initialRate));
+        return (
+          "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
+        );
+      }
+      default: {
+        if (this.amount1 && this.amount2)
+          rate = this.prettifyNumber(
+            Number(this.amount2) / Number(this.amount1)
+          );
+        else {
+          rate = this.prettifyNumber(Number(this.initialRate));
+        }
+        return (
+          "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
+        );
+      }
+    }
   }
 
   get disableButton() {
@@ -348,7 +371,7 @@ export default class SwapAction extends BaseComponent {
     await this.calculateRate();
   }
 
-  async created() {
+  async mounted() {
     if (this.$route.query.to && this.$route.query.from)
       await this.onTokenChange(this.$route.query);
     else {

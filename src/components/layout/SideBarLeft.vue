@@ -1,48 +1,72 @@
 <template>
-  <div class="side-bar" :class="darkMode ? 'side-bar-dark' : ''">
-    <b-navbar-brand class="pb-1 brand-icon">
-      <router-link :to="{ name: 'Data' }">
-        <img
-          v-if="darkMode"
-          src="@/assets/media/logos/bancor-white.png"
-          height="35px"
-          class="mb-1"
-        />
-        <img
-          v-else
-          src="@/assets/media/logos/bancor-black.png"
-          height="35px"
-          class="mb-1"
-        />
-      </router-link>
-    </b-navbar-brand>
-    <div class="side-bar-links">
-      <div
-        @click="linkClicked(link)"
-        v-for="link in data.links"
-        :key="link.key"
-        :to="{ name: link.route }"
-        class="side-bar-link"
-        :class="[
-          isRouteActive(link.key)
-            ? darkMode
-              ? 'clicked-link-dark'
-              : 'clicked-link'
-            : darkMode
-            ? 'side-bar-link-dark'
-            : 'side-bar-link',
-          link.hideMobile ? 'hide-on-mobile' : ''
-        ]"
-      >
-        <img
-          class="side-bar-link-icon"
-          :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
-        />
-        <span>{{ link.label }}</span>
-      </div>
+  <div
+    class="side-bar"
+    :class="classSideBar()"
+    @mouseover="mouseoverSidebar"
+    @mouseleave="mouseoutSidebar"
+  >
+    <!-- <div class="btn-toggle d-flex" v-if="showMinimize">
+      <font-awesome-icon @click="toggleView"
+        variant="white"
+        class="block-rounded ml-auto m-1" icon="chevron-circle-right" fixed-width />
+    </div> -->
+    <div class="bancor-icon-wrapper">
+      <b-navbar-brand class="pb-1 brand-icon">
+        <router-link :to="{ name: 'Data' }">
+          <img
+            v-if="darkMode"
+            src="@/assets/media/logos/bancor-white.png"
+            height="35px"
+            class="mb-1"
+          />
+          <img
+            v-else
+            src="@/assets/media/logos/bancor-black.png"
+            height="35px"
+            class="mb-1"
+          />
+        </router-link>
+      </b-navbar-brand>
     </div>
-    <div class="middle-space" />
-    <p class="tm-text">© Bancor 2020</p>
+
+    <div class="side-bar-wrapper">
+      <div class="side-bar-links">
+        <div
+          @click="linkClicked(link)"
+          v-for="link in links"
+          :key="link.key"
+          :to="{ name: link.route }"
+          class="side-bar-link"
+          :class="[
+            link.active
+              ? darkMode
+                ? 'clicked-link-dark'
+                : 'clicked-link'
+              : darkMode
+              ? 'side-bar-link-dark'
+              : 'side-bar-link',
+            link.hideMobile ? 'hide-on-mobile' : ''
+          ]"
+        >
+          <img
+            class="side-bar-link-icon"
+            :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
+          />
+          <transition name="fade">
+            <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
+          </transition>
+          <font-awesome-icon
+            v-if="!showMinimize && visibleLabel && link.newTab"
+            variant="white"
+            class="icon-newtab block-rounded ml-auto"
+            icon="external-link-alt"
+            fixed-width
+          />
+        </div>
+      </div>
+      <div class="middle-space" />
+      <p class="tm-text" v-if="!showMinimize && visibleLabel">© Bancor 2020</p>
+    </div>
   </div>
 </template>
 
@@ -52,25 +76,68 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarLeft extends Vue {
-  @Prop() data!: any;
+  showMinimize: boolean = false;
+  visibleLabel: boolean = true;
+  @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
-  isRouteActive(key: string): boolean {
-    const fullPath = this.$route.fullPath;
-    if (fullPath.includes("swap") || fullPath.includes("pool")) {
-      return key === "swap";
-    } else if (fullPath.includes("data")) {
-      return key === "data";
-    } else if (fullPath.includes("protection")) {
-      return key === "liquidity";
-    } else if (fullPath.includes("vote")) {
-      return key === "vote";
-    } else return false;
+  classSideBar(): string {
+    const classNames: string[] = [];
+    if (this.darkMode) {
+      classNames.push("side-bar-dark");
+    }
+    if (this.showMinimize) {
+      classNames.push("side-bar-minimize");
+    }
+    return classNames.join(" ");
+  }
+
+  mouseoverSidebar() {
+    if (this.showMinimize) {
+      this.toggleView();
+      this.showLabel(true);
+    }
+  }
+
+  mouseoutSidebar() {
+    if (!this.showMinimize) {
+      this.toggleView();
+      this.showLabel(false);
+    }
+  }
+
+  showLabel(visible: boolean) {
+    let timeout
+    if (visible) {
+      timeout = setTimeout(() => {
+        this.visibleLabel = true;
+      }, 250);
+    } else {
+      this.visibleLabel = false;
+      clearTimeout(timeout)
+    }
   }
 
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
+  }
+
+  toggleView() {
+    this.showMinimize = !this.showMinimize;
+  }
+
+  mounted() {
+    const mql = window.matchMedia("(max-width: 1190px)");
+    mql.addEventListener("change", e => {
+      if (e.matches) {
+        this.showMinimize = true;
+        this.showLabel(false);
+      } else {
+        this.showMinimize = false;
+        this.showLabel(true);
+      }
+    });
   }
 }
 </script>
@@ -81,19 +148,45 @@ export default class SideBarLeft extends Vue {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  min-width: 230px;
-  background-color: #e6ebf2;
   height: 100%;
   z-index: 10;
+
+  .bancor-icon-wrapper {
+    position: absolute;
+    width: 230px;
+    height: 50px;
+    background-color: #f8f9fd;
+  }
+
+  .side-bar-wrapper {
+    width: 230px;
+    height: 100%;
+    background-color: #e6ebf2;
+    margin-top: 60px;
+
+    -moz-transition: width 0.25s;
+    -ms-transition: width 0.25s;
+    -o-transition: width 0.25s;
+    -webkit-transition: width 0.25s;
+    transition: width 0.25s ease-in-out;
+  }
+
   .brand-icon {
-    margin-top: 18px;
-    margin-left: 25px;
+    margin-top: 10px;
+    margin-left: 19px;
     width: 80.9px;
     height: 22px;
     object-fit: contain;
   }
   .side-bar-links {
-    margin-top: 28px;
+    margin-top: 20px;
+
+    .icon-newtab {
+      font-size: 13px;
+      position: absolute;
+      right: 10px;
+      top: 15px;
+    }
   }
   .side-bar-link {
     padding-left: 25px;
@@ -117,14 +210,22 @@ export default class SideBarLeft extends Vue {
     .side-bar-link-icon {
       align-self: center;
       width: 14px;
-      height: 14px;
+      height: 43px;
       margin-right: 12px;
+    }
+    .fade-enter-active {
+      transition: opacity .35s;
+    }
+    .fade-enter, .fade-leave-to {
+      opacity: 0;
     }
   }
   .middle-space {
     flex-grow: 1;
   }
   .tm-text {
+    position: absolute;
+    bottom: 15px;
     width: 88px;
     height: 15px;
     font-family: Inter;
@@ -171,6 +272,15 @@ export default class SideBarLeft extends Vue {
       box-shadow: 0 -11px 0 0 #f8f9fd;
     }
   }
+  .btn-toggle {
+    cursor: pointer;
+  }
+}
+.side-bar-minimize {
+  .side-bar-wrapper {
+    min-width: 60px;
+    width: 60px !important;
+  }
 }
 .side-bar-link-dark {
   span {
@@ -178,7 +288,14 @@ export default class SideBarLeft extends Vue {
   }
 }
 .side-bar-dark {
-  background-color: #0a2540;
+  background-color: #1c344e !important;
+
+  .bancor-icon-wrapper {
+    background-color: #1c344e;
+  }
+  .side-bar-wrapper {
+    background-color: #0a2540;
+  }
 }
 
 .clicked-link-dark {

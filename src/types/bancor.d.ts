@@ -1,5 +1,9 @@
 import { Contract } from "web3-eth-contract";
 
+export interface TokenWei {
+  tokenContract: string;
+  weiAmount: string;
+}
 export interface ProtectedViewPosition {
   type: number;
   whitelisted: boolean;
@@ -308,15 +312,14 @@ export interface ViewRelay {
   name: string;
   symbol: string;
   liqDepth: number;
-  reserves: ViewReserve[];
   fee: number;
-  owner: string;
+  reserves: ViewReserve[];
+  addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;
   v2: boolean;
-  version: number;
   feesGenerated?: string;
   feesVsLiquidity?: string;
   apr?: string;
@@ -442,7 +445,6 @@ export interface TradingModule {
   focusSymbol: (symbolName: string) => Promise<void>;
   getReturn: (propose: ProposedFromTransaction) => Promise<ConvertReturn>;
   getCost: (propose: ProposedToTransaction) => Promise<ConvertReturn>;
-  loadMoreTokens: (tokenIds?: string[]) => Promise<void>;
 }
 
 export interface UserPoolBalances {
@@ -777,6 +779,10 @@ export interface LiqMiningApr {
   reward?: number;
 }
 
+export interface ConverterAndAnchor {
+  converterAddress: string;
+  anchorAddress: string;
+}
 export interface ViewTableField {
   id: number;
   label: string;

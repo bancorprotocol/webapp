@@ -1,9 +1,6 @@
 <template>
   <content-block :shadow="true" :title="title" :back-button="true" @back="back">
-    <div v-if="!withdrawLiquidity">
-      <pool-actions-add-v1 v-if="!pool.v2" :pool="pool" />
-      <pool-actions-add-v2 v-else :pool="pool" />
-    </div>
+    <pool-actions-add-v1 v-if="!withdrawLiquidity" :pool="pool" />
 
     <div v-else>
       <pool-actions-remove-v1 v-if="!pool.v2" :pool="pool" />
@@ -18,7 +15,6 @@ import { vxm } from "@/store/";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import { ViewRelay } from "@/types/bancor";
 import PoolActionsAddV1 from "@/components/pool/PoolActionsAddV1.vue";
-import PoolActionsAddV2 from "@/components/pool/PoolActionsAddV2.vue";
 import PoolActionsRemoveV1 from "@/components/pool/PoolActionsRemoveV1.vue";
 import PoolActionsRemoveV2 from "@/components/pool/PoolActionsRemoveV2.vue";
 
@@ -26,7 +22,6 @@ import PoolActionsRemoveV2 from "@/components/pool/PoolActionsRemoveV2.vue";
   components: {
     PoolActionsRemoveV2,
     PoolActionsRemoveV1,
-    PoolActionsAddV2,
     PoolActionsAddV1,
     ContentBlock
   }

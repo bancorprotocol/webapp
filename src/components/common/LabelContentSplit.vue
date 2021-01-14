@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex justify-content-between align-items-center">
-    <div>
+    <div class="d-flex align-items-center">
       <span
         class="font-size-12 font-w500 text-uppercase"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"

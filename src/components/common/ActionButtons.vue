@@ -31,6 +31,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
+import BigNumber from "bignumber.js";
 
 @Component
 export default class ActionButtons extends BaseComponent {
@@ -39,9 +40,9 @@ export default class ActionButtons extends BaseComponent {
   @Prop({ default: false }) small!: boolean;
 
   goToPool() {
-    if (this.pool!.whitelisted) {
+    if (this.pool && this.pool.addProtectionSupported) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id: this.pool!.id }
       });
     } else {

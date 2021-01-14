@@ -1151,6 +1151,7 @@ export class EosBancorModule
           name: buildPoolNameFromReserves(reserves),
           symbol: sortedReserves[1].symbol,
           liqDepth: relayFeed && relayFeed.liqDepth,
+          addProtectionSupported: false,
           addLiquiditySupported: relay.isMultiContract,
           removeLiquiditySupported: true,
           v2: false,
@@ -1349,8 +1350,6 @@ export class EosBancorModule
       dryDelays: remainingV1Relays
     });
   }
-
-  @action async loadMoreTokens() {}
 
   liquidityHistoryArr: DFuseTrade[] = [];
   liquidityHistoryLoading: boolean = true;
@@ -1573,6 +1572,7 @@ export class EosBancorModule
 
       this.setInitialised(true);
       this.setLoadingPools(false);
+      console.log("EOS resolving at", Date.now());
       console.timeEnd("eosResolved");
     } catch (e) {
       throw new Error(`Threw inside eosBancor: ${e.message}`);

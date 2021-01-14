@@ -1,5 +1,16 @@
-import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
+import {
+  ABIDynamicRelay,
+  RawABIDynamicRelay,
+  StaticRelay
+} from "@/store/modules/swap/ethBancor";
+import {
+  ConverterAndAnchor,
+  ViewGroupedPositions,
+  ViewProtectedLiquidity
+} from "@/types/bancor";
 import BigNumber from "bignumber.js";
+import { partition } from "lodash";
+import { compareString } from "@/api/helpers";
 import sort from "fast-sort";
 import numeral from "numeral";
 
@@ -150,6 +161,19 @@ export const miningTknReward = (
   ).toNumber();
 };
 
+export const compareStaticRelayAndSet = (
+  staticRelay: StaticRelay,
+  anchorAndConverter: ConverterAndAnchor
+) =>
+  compareString(
+    staticRelay.poolToken.contract,
+    anchorAndConverter.anchorAddress
+  ) &&
+  compareString(
+    staticRelay.converterAddress,
+    anchorAndConverter.converterAddress
+  );
+
 export const expandToken = (amount: string | number, precision: number) => {
   const trimmed = new BigNumber(amount).toFixed(precision, 1);
   const inWei = new BigNumber(trimmed)
@@ -157,6 +181,13 @@ export const expandToken = (amount: string | number, precision: number) => {
     .toFixed(0);
   return inWei;
 };
+
+export const staticToConverterAndAnchor = (
+  staticRelay: StaticRelay
+): ConverterAndAnchor => ({
+  converterAddress: staticRelay.converterAddress,
+  anchorAddress: staticRelay.poolToken.contract
+});
 
 export const calculatePriceDeviationTooHigh = (
   averageRate: BigNumber,
@@ -185,6 +216,51 @@ export const calculatePriceDeviationTooHigh = (
   );
 
   return priceDeviationTooHigh;
+};
+
+export const reserveContractsInStatic = (relay: StaticRelay) =>
+  relay.reserves.map(reserve => reserve.contract);
+
+export const parseRawDynamic = (
+  rawDynamicRelay: RawABIDynamicRelay
+): ABIDynamicRelay => {
+  const {
+    reserveOneAddress,
+    reserveOne,
+    reserveTwoAddress,
+    reserveTwo
+  } = rawDynamicRelay;
+  const reserves = [
+    [reserveOneAddress, reserveOne],
+    [reserveTwoAddress, reserveTwo]
+  ].map(([reserveAddress, reserveBalance]) => ({
+    reserveAddress,
+    reserveBalance
+  }));
+
+  return {
+    connectorTokenCount: rawDynamicRelay.connectorTokenCount,
+    conversionFee: rawDynamicRelay.conversionFee,
+    converterAddress: rawDynamicRelay.converterAddress,
+    reserves
+  };
+};
+
+export const filterAndWarn = <T>(
+  arr: T[],
+  conditioner: (item: T) => boolean,
+  reason?: string
+): T[] => {
+  const [passed, dropped] = partition(arr, conditioner);
+  if (dropped.length > 0) {
+    console.warn(
+      "Dropped",
+      dropped,
+      "items from array",
+      reason ? `because ${reason}` : ""
+    );
+  }
+  return passed;
 };
 
 export const prettifyNumber = (

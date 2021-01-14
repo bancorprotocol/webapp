@@ -8,6 +8,6 @@ module.exports = {
   },
 
   transformIgnorePatterns: [
-    "/node_modules/(?!(eos-transit-lynx-provider|eos-transit-ledger-provider))"    
+    "/node_modules/(?!(eos-transit-lynx-provider|eos-transit-ledger-provider))",
   ]
 };
