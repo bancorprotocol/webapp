@@ -1550,7 +1550,7 @@ export class EthBancorModule
       },
       twentyFourHourTradeCount: this.liquidityHistory.data.length,
       totalVolume24h: totalVolume24h.toNumber(),
-      bntUsdPrice: this.bntUsdPrice
+      bntUsdPrice: (this.apiData && Number(this.apiData.bnt_price.usd)) || 0
     };
   }
 
