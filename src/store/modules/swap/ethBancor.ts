@@ -110,7 +110,9 @@ import {
   fromPairs,
   chunk,
   last,
-  isEqual
+  isEqual,
+  groupBy,
+  first
 } from "lodash";
 import {
   buildNetworkContract,
@@ -3229,18 +3231,13 @@ export class EthBancorModule
         compareString(apr.poolId, relay.pool_dlt_id)
       );
 
-      const feesGenerated = previousRelayBalances.find(r =>
-        compareString(r.relay.id, relay.pool_dlt_id)
-      );
+      const feesGenerated = relay.fees_24h.usd || 0;
+      const feesVsLiquidity = new BigNumber(feesGenerated)
+        .times(365)
+        .div(liqDepth)
+        .toString();
 
-      const feesVsLiquidity =
-        feesGenerated &&
-        new BigNumber(feesGenerated.totalFees)
-          .times(365)
-          .div(liqDepth)
-          .toString();
-
-      const volume = feesGenerated && feesGenerated.totalVolume;
+      const volume = relay.volume_24h.usd;
 
       const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
         compareString(apr.poolId, relay.pool_dlt_id)
@@ -3276,10 +3273,10 @@ export class EthBancorModule
         liquidityProtection,
         whitelisted,
         v2: false,
+        volume,
+        feesGenerated,
         ...(apr && { apr: apr.oneWeekApr }),
-        ...(feesGenerated && { feesGenerated: feesGenerated.totalFees }),
         ...(feesVsLiquidity && { feesVsLiquidity }),
-        ...(volume && { volume }),
         aprMiningRewards
       } as ViewRelay;
     });
@@ -5783,6 +5780,9 @@ export class EthBancorModule
         const fromToken = tokens.find(token =>
           compareString(x.from_token, token.dlt_id)
         )!;
+        const toToken = tokens.find(token =>
+          compareString(x.to_token, token.dlt_id)
+        )!;
         const fromMetaToken = meta.find(meta =>
           compareString(meta.contract, x.from_token)
         );
@@ -5792,26 +5792,26 @@ export class EthBancorModule
 
         return {
           account: x.account,
-          accountLink: generateEtherscanTxLink(x.account),
+          accountLink: generateEtherscanAccountLink(x.account),
           data: {
             from: {
               amount: x.input_amount,
-              decimals: 1,
+              decimals: fromToken.precision,
               id: x.from_token,
               logo: (fromMetaToken && fromMetaToken.image) || defaultImage,
-              symbol: x.from_symbol
+              symbol: fromToken.symbol
             },
             to: {
               amount: x.output_amount,
-              decimals: 1,
+              decimals: toToken.precision,
               id: x.to_token,
               logo: (toMetaToken && toMetaToken.image) || defaultImage,
-              symbol: x.to_symbol
+              symbol: toToken.symbol
             }
           },
-          txHash: "",
-          id: x.account + String(x.timestamp),
-          txLink: generateEtherscanTxLink(x.account),
+          txHash: x.tx_hash,
+          id: x.tx_hash,
+          txLink: generateEtherscanTxLink(x.tx_hash),
           type: "swap",
           unixTime: x.timestamp / 1000,
           valueTransmitted: new BigNumber(x.input_amount)
@@ -5821,9 +5821,74 @@ export class EthBancorModule
       }
     );
 
+    const groupedByHash = groupBy(trades, trade => trade.txHash.toLowerCase());
+    const tradesUnderHash = toPairs(groupedByHash)
+      .map(([hash, trades]) => ({ hash, trades }))
+      .sort((a, b) => b.trades.length - a.trades.length);
+
+    const x = tradesUnderHash
+      .flatMap(x => {
+        if (x.trades.length == 1) {
+          return x.trades[0];
+        }
+        const tokensTraded = x.trades.reduce(
+          (acc, item) => [...acc, item.data.from.id, item.data.to.id],
+          [] as string[]
+        );
+        const firstTo = first(x.trades)!;
+        const lastTo = last(x.trades)!;
+
+        const terminatingTrades = [firstTo, lastTo];
+        const terminatingTokens = terminatingTrades.map(x => x.data.to.id);
+
+        const sameTerminatingTokens = terminatingTokens.every(
+          (token, index, arr) => arr[0] === token
+        );
+        if (sameTerminatingTokens) return false;
+
+        const uniqueTokens = uniqWith(tokensTraded, compareString);
+        const zeroCounts = uniqueTokens.map(token => [token, 0]);
+        const zeroCountObject = fromPairs(zeroCounts);
+
+        const tokenCounts = toPairs(
+          tokensTraded.reduce(
+            (acc, item) => ({ ...acc, [item]: acc[item] + 1 }),
+            zeroCountObject
+          )
+        ) as [string, number][];
+
+        const lowestTwoCounts = tokenCounts
+          .sort((a, b) => a[1] - b[1])
+          .slice(0, 2);
+
+        const toToken = terminatingTokens.find(token =>
+          lowestTwoCounts.some(([t]) => compareString(token, t))
+        );
+        if (!toToken) {
+          console.error("Unable to find terminating token...");
+          console.log(lowestTwoCounts, terminatingTokens, terminatingTrades);
+          return false;
+        }
+
+        const lastTrade = terminatingTrades.find(x =>
+          compareString(x.data.to.id, toToken)
+        )!;
+        const firstTrade = terminatingTrades.find(x => lastTrade.id !== x.id)!;
+        if (!firstTrade || !lastTrade) return false;
+
+        return {
+          ...firstTrade,
+          data: {
+            ...firstTrade.data,
+            to: lastTrade.data.to
+          }
+        };
+      })
+      .filter(Boolean) as ViewLiquidityEvent<ViewTradeEvent>[];
+
     return {
       loading: false,
-      data: trades
+      data: x
     };
   }
 
