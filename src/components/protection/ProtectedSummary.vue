@@ -57,19 +57,8 @@ export default class ProtectedSummary extends BaseComponent {
 
   modal = false;
 
-  get minNetworkTokenLiquidityforMinting() {
-    return vxm.minting.minNetworkTokenLiquidityforMinting;
-  }
-
   get pools() {
-    const limit = this.minNetworkTokenLiquidityforMinting;
-    return vxm.bancor.relays.filter(
-      pool =>
-        pool.liquidityProtection &&
-        pool.bntReserveBalance &&
-        limit !== null &&
-        limit.lt(pool.bntReserveBalance)
-    );
+    return vxm.bancor.relays.filter(pool => pool.addProtectionSupported);
   }
 
   get summarizedPositions() {
