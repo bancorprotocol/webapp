@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="d-flex justify-content-center align-items-center mt-3 font-size-14 font-w500"
-  >
+  <div v-if="pagesTotal > 0" class="undertable">
     <div
       :class="current > 1 ? 'cursor' : ''"
       @click="current > 1 ? current-- : null"
@@ -18,6 +16,7 @@
       />
     </div>
     <span class="mx-3">Page {{ current }} of {{ pagesTotal }}</span>
+
     <div
       :class="current < pagesTotal ? 'cursor' : ''"
       @click="current < pagesTotal ? current++ : null"
@@ -34,6 +33,7 @@
       />
     </div>
   </div>
+  <span v-else class="undertable"> No results found</span>
 </template>
 
 <script lang="ts">
@@ -52,4 +52,13 @@ export default class TablePagination extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.undertable {
+  display: flex;
+  justify-content: center;
+  margin-block-start: 24px;
+  color: #6b7c93;
+  font-weight: 500;
+  font-size: 14;
+}
+</style>

@@ -9,11 +9,15 @@
       />
     </div>
 
-    <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-      <b-tab title="Swaps" active>
-        <table-transactions :filter="search" :items="itemsSwap" />
-      </b-tab>
-    </b-tabs>
+    <div>
+      <div
+        class="title"
+        :style="darkMode ? 'color: white;' : 'color: #0f59d1;'"
+      >
+        Swaps
+      </div>
+      <table-transactions :filter="search" :items="itemsSwap" />
+    </div>
   </div>
 </template>
 
@@ -41,4 +45,10 @@ export default class TransactionTables extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 5px 5px 15px 20px;
+}
+</style>
