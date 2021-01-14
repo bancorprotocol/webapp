@@ -1151,6 +1151,7 @@ export class EosBancorModule
           name: buildPoolNameFromReserves(reserves),
           symbol: sortedReserves[1].symbol,
           liqDepth: relayFeed && relayFeed.liqDepth,
+          addProtectionSupported: false,
           addLiquiditySupported: relay.isMultiContract,
           removeLiquiditySupported: true,
           v2: false,

@@ -642,8 +642,6 @@ export const getLogs = async (
 
   const response = await axios.post<InfuraEventResponse>(address, request);
 
-  console.log(response, "is the raw return");
-
   if (response.data.error) {
     console.error("eth_getLogs failed!", response.data.error, address, request);
   }
