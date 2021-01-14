@@ -38,7 +38,6 @@ export interface Pool {
 
 export interface Reserve {
   address: string;
-  symbol: string;
   weight: string;
   balance: string;
 }
@@ -46,8 +45,7 @@ export interface Reserve {
 export interface Swap {
   from_token: string;
   to_token: string;
-  from_symbol: string;
-  to_symbol: string;
+  tx_hash: string;
   input_amount: string;
   output_amount: string;
   amount: BntPrice;
