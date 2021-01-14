@@ -114,7 +114,7 @@ export default class SideBarLeft extends Vue {
       }, 250);
     } else {
       this.visibleLabel = false;
-      clearTimeout()
+      clearTimeout(timeout)
     }
   }
 
