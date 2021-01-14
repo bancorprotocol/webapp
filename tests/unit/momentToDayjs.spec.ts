@@ -1,4 +1,6 @@
 //run `yarn test:unit -i momentToDayjs.spec.ts`
+
+/*
 import moment from "moment";
 import dayjs from "@/utils/dayjs"
 
@@ -141,3 +143,5 @@ describe("check moment and dayjs", () => {
   })
 
 })
+
+*/
