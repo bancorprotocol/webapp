@@ -52,7 +52,9 @@
             class="side-bar-link-icon"
             :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
           />
-          <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
+          <transition name="fade">
+            <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
+          </transition>
           <font-awesome-icon
             v-if="!showMinimize && visibleLabel && link.newTab"
             variant="white"
@@ -105,8 +107,9 @@ export default class SideBarLeft extends Vue {
   }
 
   showLabel(visible: boolean) {
+    let timeout
     if (visible) {
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         this.visibleLabel = true;
       }, 250);
     } else {
@@ -145,7 +148,6 @@ export default class SideBarLeft extends Vue {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  // min-width: 230px;
   height: 100%;
   z-index: 10;
 
@@ -210,6 +212,12 @@ export default class SideBarLeft extends Vue {
       width: 14px;
       height: 43px;
       margin-right: 12px;
+    }
+    .fade-enter-active {
+      transition: opacity .35s;
+    }
+    .fade-enter, .fade-leave-to {
+      opacity: 0;
     }
   }
   .middle-space {
