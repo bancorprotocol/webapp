@@ -124,8 +124,7 @@ import {
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSettingsContract,
-  buildAddressLookupContract
-  buildLiquidityProtectionSettingsContract,
+  buildAddressLookupContract,
   buildStakingRewardsDistributionContract
 } from "@/api/eth/contractTypes";
 import {
