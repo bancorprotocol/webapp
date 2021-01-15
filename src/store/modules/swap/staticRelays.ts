@@ -3,7 +3,7 @@ import { compareString } from "@/api/helpers";
 import { staticToConverterAndAnchor } from "@/api/pureHelpers";
 import { ConverterAndAnchor } from "@/types/bancor";
 import { Sym } from "eos-common";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import { StaticRelay } from "./ethBancor";
 
 const bntToken = {
@@ -6912,22 +6912,22 @@ export const knownPools: ConverterAndAnchor[] = moreStaticRelays.map(
 
 export const previousPoolFees: PreviousPoolFee[] = [];
 
-export const liquidityMiningEndTime = moment(
+export const liquidityMiningEndTime = dayjs(
   "2021-02-08 20:15 +0000",
   "YYYY-MM-DD HH:mm Z"
 ).unix();
 
-export const secondRoundLiquidityMiningEndTime = moment(
+export const secondRoundLiquidityMiningEndTime = dayjs(
   "2021-02-25 18:05 +0000",
   "YYYY-MM-DD HH:mm Z"
 ).unix();
 
-export const thirdRoundLiquidityMiningEndTime = moment(
+export const thirdRoundLiquidityMiningEndTime = dayjs(
   "2021-03-22 08:00 +0000",
   "YYYY-MM-DD HH:mm Z"
 ).unix();
 
-export const fourthRoundLiquidityMiningEndTime = moment(
+export const fourthRoundLiquidityMiningEndTime = dayjs(
   "2021-03-25 09:00 +0000",
   "YYYY-MM-DD HH:mm Z"
 ).unix();
