@@ -4340,12 +4340,14 @@ export class EthBancorModule
     poolToken,
     miniumReserveReturnWei = "1",
     onHash,
+    onConfirmation,
     resolveImmediately = false
   }: {
     converterAddress: string;
     poolToken: TokenWei;
     miniumReserveReturnWei: string;
     onHash?: (hash: string) => void;
+    onConfirmation?: (hash: string) => void;
     resolveImmediately: boolean;
   }) {
     const contract = buildV2Converter(converterAddress);
@@ -4357,6 +4359,7 @@ export class EthBancorModule
         miniumReserveReturnWei
       ),
       onHash,
+      onConfirmation,
       resolveImmediately
     });
   }
@@ -4364,16 +4367,19 @@ export class EthBancorModule
   @action async liquidate({
     converterAddress,
     smartTokenAmount,
+    onConfirmation,
     resolveImmediately = false
   }: {
     converterAddress: string;
     smartTokenAmount: string;
+    onConfirmation?: (hash: string) => void;
     resolveImmediately: boolean;
   }) {
     const converterContract = buildConverterContract(converterAddress);
 
     return this.resolveTxOnConfirmation({
       tx: converterContract.methods.liquidate(smartTokenAmount),
+      onConfirmation,
       resolveImmediately
     });
   }
@@ -4389,6 +4395,16 @@ export class EthBancorModule
 
     const withdraw = reserves.find(reserve => reserve.amount)!;
     const converterAddress = relay.contract;
+
+    const syncBalance = () => {
+      const anchorTokens = getAnchorTokenAddresses(relay);
+
+      const tokenAddressesChanged = [
+        ...relay.reserves.map(reserve => reserve.contract),
+        ...anchorTokens
+      ];
+      this.spamBalances(tokenAddressesChanged);
+    }
 
     let hash: string;
     if (postV28 && relay.converterType == PoolType.ChainLink) {
@@ -4429,6 +4445,7 @@ export class EthBancorModule
         miniumReserveReturnWei: await this.weiMinusSlippageTolerance(
           expectedReserveReturn.returnAmountWei
         ),
+        onConfirmation: syncBalance,
         resolveImmediately: true
       });
     } else if (postV28 && relay.converterType == PoolType.Traditional) {
@@ -4464,6 +4481,7 @@ export class EthBancorModule
             )
           };
         }),
+        onConfirmation: syncBalance,
         resolveImmediately: true
       });
     } else {
@@ -4475,17 +4493,12 @@ export class EthBancorModule
       hash = await this.liquidate({
         converterAddress,
         smartTokenAmount: smartTokenAmountWei.amount,
+        onConfirmation: syncBalance,
         resolveImmediately: true
       });
     }
 
-    const anchorTokens = getAnchorTokenAddresses(relay);
-
-    const tokenAddressesChanged = [
-      ...relay.reserves.map(reserve => reserve.contract),
-      ...anchorTokens
-    ];
-    this.spamBalances(tokenAddressesChanged);
+    
 
     return {
       txId: hash,
@@ -4599,11 +4612,13 @@ export class EthBancorModule
     converterAddress,
     smartTokensWei,
     reserveTokens,
+    onConfirmation,
     resolveImmediately = false
   }: {
     converterAddress: string;
     smartTokensWei: string;
     reserveTokens: { tokenAddress: string; minimumReturnWei: string }[];
+    onConfirmation?: (hash: string) => void;
     resolveImmediately: boolean;
   }) {
     const contract = buildV28ConverterContract(converterAddress);
@@ -4614,6 +4629,7 @@ export class EthBancorModule
         reserveTokens.map(token => token.tokenAddress),
         reserveTokens.map(token => token.minimumReturnWei)
       ),
+      onConfirmation,
       resolveImmediately
     });
   }
