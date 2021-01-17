@@ -7,6 +7,7 @@
 </template>
 
 <script lang="ts">
+import { i18n } from "@/i18n";
 import { Component, Vue } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 
@@ -20,15 +21,15 @@ export default class ProtectionActions extends Vue {
     const name = this.$route.name;
     switch (name) {
       case "AddProtectionDouble":
-        return "Add Liquidity Protection";
+        return i18n.t("add_liquidity_protection");
       case "AddProtectionSingle":
-        return "Add Liquidity Protection";
+        return i18n.t("add_liquidity_protection");
       case "WithdrawProtectionSingle":
-        return "Withdraw";
+        return i18n.t("withdraw");
       case "WithdrawProtectionDouble":
-        return "Withdraw";
+        return i18n.t("withdraw");
       default:
-        return "Stake";
+        return i18n.t("stake");
     }
   }
 

@@ -12,7 +12,7 @@
       <img
         class="img-avatar img-avatar20 bg-white logo-shadow"
         :src="bntLogoSrc"
-        alt="Token Logo"
+        :title="$t('token_logo')"
       />
       <span class="mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
       <!-- <span class="text-primary font-size-12">
@@ -24,7 +24,7 @@
         variant="primary"
         @click="click"
         class="font-size-14 font-w500 px-4"
-        >Claim BNT</b-btn
+        >{{ $t("claim" + " BNT") }}</b-btn
       >
     </div>
     <div v-else class="time-left text-center">
@@ -32,7 +32,7 @@
         {{ lockDuration }}
       </div>
       <div class="font-size-12 font-w400" :class="textMutedClass">
-        left until claim
+        {{ $t("left_until_claim") }}
       </div>
     </div>
   </div>

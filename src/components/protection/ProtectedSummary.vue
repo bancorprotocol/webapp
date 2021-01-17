@@ -5,14 +5,14 @@
     :class="darkMode ? 'text-dark' : 'text-light'"
   >
     <div class="d-flex justify-content-between align-items-center d-xl-none">
-      <span class="font-size-16 font-w500">My Stake</span>
+      <span class="font-size-16 font-w500">{{ $t("my_stake") }}</span>
       <b-btn variant="primary" @click="openModal" style="width: 132px">
-        Stake
+        {{ $t("stake") }}
       </b-btn>
     </div>
     <b-row>
       <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
-        <div class="font-size-16 font-w500">My Stake</div>
+        <div class="font-size-16 font-w500">{{ $t("my_stake") }}</div>
       </b-col>
       <b-col
         v-for="(item, index) in summarizedPositions"
@@ -33,7 +33,7 @@
         class="d-none d-xl-flex align-items-center justify-content-end"
       >
         <b-btn variant="primary" class="btn-block" @click="openModal">
-          Stake
+          {{ $t("stake") }}
         </b-btn>
       </b-col>
     </b-row>

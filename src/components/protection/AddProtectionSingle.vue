@@ -1,16 +1,13 @@
 <template>
   <div class="mt-3">
-    <alert-block
-      title="Learn what it means to add liquidity to a pool:"
-      class="my-3"
-    >
+    <alert-block :title="$t('add_liquidity_pool') + ':'" class="my-3">
       <ol class="m-0 pl-3">
         <li>
           <a
             href="https://blog.bancor.network/how-to-stake-liquidity-earn-fees-on-bancor-bff8369274a1"
             target="_blank"
           >
-            How do I make money by providing liquidity?
+            {{ $t("make_money_liquidity") + "?" }}
           </a>
         </li>
         <li>
@@ -18,7 +15,7 @@
             href="https://blog.bancor.network/beginners-guide-to-getting-rekt-by-impermanent-loss-7c9510cb2f22"
             target="_blank"
           >
-            What is impermanent loss?
+            {{ $t("impermanent_loss") + "?" }}
           </a>
         </li>
         <li>
@@ -26,13 +23,13 @@
             href="https://bankless.substack.com/p/how-to-protect-yourself-from-impermanent"
             target="_blank"
           >
-            How does Bancor protect me from impermanent loss?
+            {{ $t("protect_impermanent_loss") + "?" }}
           </a>
         </li>
       </ol>
     </alert-block>
 
-    <label-content-split label="Stake in Pool" class="my-3">
+    <label-content-split :label="$t('stake_pool')" class="my-3">
       <pool-logos
         :pool="pool"
         :dropdown="true"
@@ -47,7 +44,7 @@
     </label-content-split>
 
     <token-input-field
-      label="Stake Amount"
+      :label="$t('stake_amount')"
       :token="token"
       v-model="amount"
       @input="amountChanged"
@@ -67,7 +64,7 @@
     <alert-block
       v-if="priceDeviationTooHigh && !inputError && amount"
       variant="error"
-      msg="Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds."
+      :msg="$t('price_volatility')"
     />
 
     <gray-border-block v-else-if="outputs.length" :gray-bg="true" class="my-3">
@@ -76,14 +73,17 @@
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
-          :label="index == 0 ? `Value you receive` : ``"
+          :label="index == 0 ? $t('value_receive') : ''"
           :value="`${formatNumber(output.amount)} ${output.symbol}`"
         />
       </div>
     </gray-border-block>
 
     <gray-border-block :gray-bg="true" class="my-3">
-      <label-content-split label="Space Available" :loading="loadingMaxStakes">
+      <label-content-split
+        :label="$t('space_available')"
+        :loading="loadingMaxStakes"
+      >
         <span @click="setAmount" class="cursor">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
         }}</span>
@@ -99,7 +99,7 @@
     />
 
     <modal-base
-      title="You are staking and protecting:"
+      :title="$t('staking_protecting') + ':'"
       v-model="modal"
       @input="setDefault"
     >
@@ -136,6 +136,7 @@
 <script lang="ts">
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
@@ -241,9 +242,9 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   get actionButtonLabel() {
-    if (!this.amount) return "Enter an Amount";
-    else if (this.priceDeviationTooHigh) return "Price Deviation too High";
-    else return "Stake and Protect";
+    if (!this.amount) return i18n.t("enter_amount");
+    else if (this.priceDeviationTooHigh) return i18n.t("price_deviation_high");
+    else return i18n.t("stake_protect");
   }
 
   get disableActionButton() {
@@ -256,18 +257,17 @@ export default class AddProtectionSingle extends BaseComponent {
   get inputError() {
     if (this.amount == "") return "";
     if (this.preTxError) return this.preTxError;
-    if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
+    if (parseFloat(this.amount) === 0) return i18n.t("amount_not_Zero");
 
     const amountNumber = new BigNumber(this.amount);
     const balanceNumber = new BigNumber(this.balance || 0);
 
-    if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
+    if (amountNumber.gt(balanceNumber)) return i18n.t("insufficient_balance");
     else return "";
   }
 
   get whitelistWarning() {
-    const msg =
-      "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
+    const msg = i18n.t("pool_not_approved");
     const show = true;
 
     return { show, msg };
@@ -275,12 +275,12 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get modalConfirmButton() {
     return this.error
-      ? "Close"
+      ? i18n.t("close")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? i18n.t("processing") + "..."
+      : i18n.t("confirm");
   }
 
   async initAction() {
@@ -328,15 +328,19 @@ export default class AddProtectionSingle extends BaseComponent {
 
       console.log(res, "was res");
 
-      const errorMsg = `${this.token.symbol} limit reached. Additional ${
-        this.opposingToken!.symbol
-      } liquidity should be staked to allow for ${
-        this.token.symbol
-      } single-sided staking.`;
+      const errorMsg =
+        this.token.symbol +
+        i18n.t("Continue") +
+        this.opposingToken!.symbol +
+        i18n.t("liquidity_allow_for") +
+        this.token.symbol +
+        i18n.t("single_sided_staking");
 
       if (res.error) {
         this.preTxError =
-          res.error == "Insufficient store balance" ? errorMsg : res.error;
+          res.error == i18n.t("insufficient_store_balance")
+            ? errorMsg
+            : res.error;
       } else {
         this.preTxError = "";
       }

@@ -1,7 +1,7 @@
 <template>
   <div>
     <token-input-field
-      label="From"
+      :label="$t('from')"
       v-model="amount1"
       @input="updatePriceReturn"
       @select="selectFromToken"
@@ -21,7 +21,7 @@
     </div>
 
     <token-input-field
-      label="To (Estimated)"
+      :label="$t('to_estimated')"
       v-model="amount2"
       @input="sanitizeAmount"
       @select="selectToToken"
@@ -34,12 +34,14 @@
 
     <div class="my-3">
       <div class="mb-3">
-        <label-content-split :label="advancedOpen ? 'Slippage Tolerance' : ''">
+        <label-content-split
+          :label="advancedOpen ? $t('slippage_tolerance') : ''"
+        >
           <span
             @click="advancedOpen = !advancedOpen"
             class="text-primary font-size-12 font-w500 cursor"
           >
-            Advanced settings
+            {{ $t("advanced_settings") }}
             <font-awesome-icon
               :icon="advancedOpen ? 'caret-up' : 'caret-down'"
             />
@@ -51,7 +53,7 @@
       </div>
 
       <label-content-split
-        label="Rate"
+        :label="$t('rate')"
         :value="rate"
         :loading="rateLoading"
         class="mb-2"
@@ -61,8 +63,8 @@
         </span>
       </label-content-split>
       <label-content-split
-        label="Price Impact"
-        tooltip="The difference between market price and estimated price due to trade size"
+        :label="$t('price_impact')"
+        :tooltip="$t('market_price_diff')"
         :is-alert="overSlippageLimit"
         :value="
           slippage !== null && slippage !== undefined
@@ -70,7 +72,11 @@
             : '0.0000%'
         "
       />
-      <label-content-split v-if="fee !== null" label="Fee" :value="fee" />
+      <label-content-split
+        v-if="fee !== null"
+        :label="$t('fee')"
+        :value="fee"
+      />
     </div>
 
     <main-button
@@ -96,6 +102,7 @@
 <script lang="ts">
 import { Watch, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken } from "@/types/bancor";
@@ -183,14 +190,14 @@ export default class SwapAction extends BaseComponent {
   }
 
   get swapButtonLabel() {
-    if (!this.amount1) return "Enter an Amount";
-    else return "Swap";
+    if (!this.amount1) return i18n.t("enter_amount");
+    else return i18n.t("swap");
   }
 
   get advancedBlockItems() {
     return [
       {
-        label: "Rate",
+        label: i18n.t("rate"),
         value:
           "1 " +
           this.token1.symbol +
@@ -204,7 +211,7 @@ export default class SwapAction extends BaseComponent {
       //   value: "??.??"
       // },
       {
-        label: "Price Impact",
+        label: i18n.t("price_impact"),
         value:
           this.slippage !== null && this.slippage !== undefined
             ? numeral(this.slippage).format("0.0000%")
@@ -299,9 +306,7 @@ export default class SwapAction extends BaseComponent {
       }
       this.amount2 = reward.amount;
       const raiseError = new BigNumber(this.balance1).isLessThan(amount);
-      this.errorToken1 = raiseError
-        ? "Token balance is currently insufficient"
-        : "";
+      this.errorToken1 = raiseError ? i18n.tc("insufficient_token") : "";
       this.errorToken2 = "";
     } catch (e) {
       this.errorToken1 = e.message;

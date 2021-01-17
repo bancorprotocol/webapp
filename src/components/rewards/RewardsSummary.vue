@@ -16,10 +16,10 @@
             style="width: 132px"
             class="mr-3"
           >
-            Withdraw
+            {{ $t("withdraw") }}
           </b-btn>
           <b-btn variant="primary" @click="openModal" style="width: 132px">
-            ReStake
+            {{ $t("restake") }}
           </b-btn>
         </div>
       </div>
@@ -59,7 +59,7 @@
             variant="outline-gray"
             class="btn-block"
             :to="{ name: 'RewardsWithdraw' }"
-            >Withdraw</b-btn
+            >{{ $t("withdraw") }}</b-btn
           >
         </b-col>
         <b-col
@@ -69,7 +69,7 @@
           class="d-none d-xl-flex align-items-center justify-content-end"
         >
           <b-btn variant="primary" class="btn-block" @click="openModal">
-            ReStake
+            {{ $t("restake") }}
           </b-btn>
         </b-col>
       </b-row>
@@ -80,6 +80,7 @@
 </template>
 
 <script lang="ts">
+import { i18n } from "@/i18n";
 import { Component, Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import { stringifyPercentage } from "@/api/helpers";
@@ -101,7 +102,7 @@ export default class RewardsSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
   stringifyPercentage = stringifyPercentage;
 
-  title = "Rewards";
+  title = i18n.t("rewards");
   modal = false;
 
   get pools() {
@@ -112,19 +113,19 @@ export default class RewardsSummary extends BaseComponent {
     return [
       {
         id: 1,
-        label: "Claimable Rewards",
+        label: i18n.tc("claimable_rewards"),
         bnt: 1231231231.123123123123,
         usd: 99.12
       },
       {
         id: 2,
-        label: "Future Rewards",
+        label: i18n.tc("future_rewards"),
         bnt: 1.123123,
         usd: 99.12
       },
       {
         id: 3,
-        label: "Total Reward to date",
+        label: i18n.tc("total_reward"),
         bnt: 1.123123,
         usd: 99.12
       }

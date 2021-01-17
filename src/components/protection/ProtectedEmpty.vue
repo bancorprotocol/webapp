@@ -26,6 +26,7 @@
 </template>
 
 <script lang="ts">
+import { i18n } from "@/i18n";
 import { Component } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -34,17 +35,15 @@ export default class ProtectedEmpty extends BaseComponent {
   content = [
     {
       route: "AddProtectionHome",
-      linkText: "Stake your pool tokens for protections.",
-      description:
-        "Stake pool tokens of any 50/50 pool to protect them from impermanent loss.",
-      buttonText: "Stake"
+      linkText: i18n.t("stake_pool_tokens"),
+      description: i18n.t("stake_pool_tokens_desc"),
+      buttonText: i18n.t("stake")
     },
     {
       route: "AddProtectionHome",
-      linkText: "Add single liquidity.",
-      description:
-        "Add liquidity with one reserve, be exposed to it only and protect it from impermanent loss. ",
-      buttonText: "Stake"
+      linkText: i18n.t("single_liquidity"),
+      description: i18n.t("single_liquidity_desc"),
+      buttonText: i18n.t("stake")
     }
   ];
 }
