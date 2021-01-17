@@ -156,7 +156,7 @@ import {
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
-import dayjs from "@/utils/dayjs";
+import dayjs from "@/utils/dayjs"
 import { getNetworkVariables } from "@/api/config";
 import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
@@ -3131,39 +3131,6 @@ export class EthBancorModule
   }
 
   get relays(): ViewRelay[] {
-    const oldPools = this.relaysList;
-    const newPools = this.traditionalRelays;
-
-    const bntAddress = this.liquidityProtectionSettings.networkToken;
-    const bntPrice = (this.apiData && Number(this.apiData.bnt_price.usd)) || 0;
-
-    const missingRelays = oldPools.filter(
-      relay => !newPools.some(p => compareString(p.id, relay.id))
-    );
-    const holdingBnt = missingRelays.filter(x =>
-      x.reserves.some(reserve => compareString(reserve.contract, bntAddress))
-    );
-    const withLiquidity = holdingBnt
-      .map(relay => {
-        // @ts-ignore
-        const bntReserve = relay.reserveBalances.find(reserve =>
-          compareString(reserve.id, bntAddress)
-        )!;
-        const bntReserveDec = shrinkToken(bntReserve.amount, 18);
-        const bntLiquidity = bntPrice * Number(bntReserveDec);
-        return { ...relay, liquidityDepth: bntLiquidity * 2 };
-      })
-      .sort((a, b) => b.liquidityDepth - a.liquidityDepth);
-
-    const allLiquidity = withLiquidity.reduce(
-      (acc, item) => item.liquidityDepth + acc,
-      0
-    );
-    console.log(
-      { missingRelays, withLiquidity, allLiquidity },
-      "are the missing relays"
-    );
-
     const toReturn = [...this.chainkLinkRelays, ...this.traditionalRelays]
       .sort(sortByLiqDepth)
       .sort(prioritiseV2Pools);
