@@ -1,5 +1,9 @@
 <template>
-  <modal-base v-model="modal" @input="setDefault" title="You will receive">
+  <modal-base
+    v-model="modal"
+    @input="setDefault"
+    :title="$t('you_will_receive')"
+  >
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)" class="w-100">
         <b-col
@@ -51,9 +55,13 @@
             class="font-size-sm font-w400 text-center mt-2"
             :class="!darkMode ? 'text-muted-light' : 'text-muted-dark'"
           >
-            Output is estimated. If the price changes by more than
-            {{ numeral(slippageTolerance).format("0.0[0]%") }} your transaction
-            will revert.
+            {{
+              $t("output_estimated") +
+              " " +
+              numeral(slippageTolerance).format("0.0[0]%") +
+              " " +
+              $t("transaction_revert")
+            }}
           </p>
         </b-col>
 
@@ -99,6 +107,7 @@
 <script lang="ts">
 import { Component, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import {
   LiquidityParams,
   Step,
@@ -143,12 +152,12 @@ export default class ModalPoolAction extends BaseComponent {
   }
   get confirmButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? i18n.t("processing") + "..."
+      : i18n.t("confirm");
   }
 
   get pool(): ViewRelay {
@@ -184,7 +193,10 @@ export default class ModalPoolAction extends BaseComponent {
 
     if (this.isCountryBanned) {
       this.error =
-        "This action through swap.bancor.network is not available in your country.";
+        i18n.t("action_through") +
+        " swap.bancor.network " +
+        i18n.t("not_available_country") +
+        ".";
       return;
     }
 
