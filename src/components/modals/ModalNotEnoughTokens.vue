@@ -42,11 +42,23 @@
         class="font-size-20 mt-4"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        Insufficient {{ symbol }} Balance
+        {{ $t("insufficient_balance") + " " + symbol }}
       </h3>
       <div class="font-size-16" :class="darkMode ? 'text-dark' : 'text-light'">
-        In order to vote, you need to stake {{ symbol }} tokens first. If you do
-        not have {{ symbol }}, you will need to stake BNT into a pool first.
+        {{
+          $t("order_to_vote") +
+          " " +
+          symbol +
+          " " +
+          $t("if_dont") +
+          " " +
+          symbol +
+          " " +
+          $t("you_will_need") +
+          " BNT " +
+          $t("into_pool_first") +
+          "."
+        }}
       </div>
       <main-button
         @click="onHide"

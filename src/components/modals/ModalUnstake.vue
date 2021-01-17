@@ -19,7 +19,7 @@
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              <span v-if="step === 'unstake'">Unstake</span>
+              <span v-if="step === 'unstake'">{{ $t("unstake") }}</span>
             </span>
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -37,7 +37,9 @@
         class="font-size-12 font-w500 text-nowrap"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        <div class="text-uppercase d-inline-block">Unstake your tokens</div>
+        <div class="text-uppercase d-inline-block">
+          {{ $t("unstake_your_tokens") }}
+        </div>
         <div
           class="text-nowrap d-inline-block text-right balance cursor"
           @click="useMax"
@@ -92,14 +94,16 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Waiting For Confirmation
+        {{ $t("waiting_for_confirmation") }}
       </h3>
-      <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">
+        {{ $t("unstaking") + " " + stakeValue + " " + symbol }}
+      </div>
       <div
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        Confirm this transaction in your wallet
+        {{ $t("confirm__transaction_in_wallet") }}
       </div>
     </div>
 
@@ -113,18 +117,18 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Transaction Submitted
+        {{ $t("transaction_submitted") }}
       </h3>
       <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
       <a
         target="_blank"
         class="text-primary font-w500 cursor"
         :href="getEtherscanUrl()"
-        >View on Etherscan</a
+        >{{ $t("view_etherscan") }}</a
       >
       <main-button
         @click="onHide"
-        label="Close"
+        :label="$t('close')"
         :large="true"
         :active="true"
         :block="true"
@@ -136,6 +140,7 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Component, Watch, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
 import BigNumber from "bignumber.js";
@@ -176,12 +181,12 @@ export default class ModalUnstake extends BaseComponent {
 
   get unstakeLabel() {
     return this.unstakeValue && this.unstakeInput.length === 0
-      ? "Enter Amount"
+      ? i18n.t("enter_amount")
       : this.unstakeValue &&
         this.unstakeValue.isGreaterThan(0) &&
         this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
-      ? "Unstake Tokens"
-      : "Insufficient Amount";
+      ? i18n.t("stake_your_tokens")
+      : i18n.t("insufficient_amount");
   }
 
   setUnstakeInput() {
