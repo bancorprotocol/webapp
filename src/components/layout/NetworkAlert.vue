@@ -18,7 +18,7 @@ import { Component } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { vxm } from "@/store";
 import { EthNetworks } from "@/api/web3";
-import { i18n } from "../../i18n/i18n";
+import { i18n } from "@/i18n";
 
 @Component
 export default class NetworkAlert extends BaseComponent {

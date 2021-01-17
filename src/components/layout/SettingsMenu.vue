@@ -54,7 +54,7 @@
         :key="item.toString()"
         @click="switchlocale(item)"
       >
-        {{ getLanguegeByLocale(item) }}
+        {{ getLanguageByLocale(item) }}
       </b-button>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
@@ -92,7 +92,7 @@ import { Prop, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { i18n, getLanguegeByLocale } from "../../i18n/i18n";
+import { i18n, getLanguageByLocale } from "@/i18n";
 
 @Component({
   components: { SlippageTolerance }
@@ -104,8 +104,8 @@ export default class SettingsMenu extends BaseComponent {
     return i18n;
   }
 
-  get getLanguegeByLocale() {
-    return getLanguegeByLocale;
+  get getLanguageByLocale() {
+    return getLanguageByLocale;
   }
 
   get showTxSettings() {

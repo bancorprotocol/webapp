@@ -16,7 +16,7 @@ export const i18n = new VueI18n({
   messages
 });
 
-export const getLanguegeByLocale = (locale: string): string => {
+export const getLanguageByLocale = (locale: string): string => {
   switch (locale) {
     case "en":
       return "English";
