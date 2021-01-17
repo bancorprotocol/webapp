@@ -19,7 +19,7 @@
         <a href="https://gov.bancor.network/" target="_blank" class="mr-2">
           <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
             <img :src="require(`@/assets/media/icons/governance.svg`)" />
-            <span class="d-none d-lg-block ml-2">Governance</span>
+            <span class="d-none d-lg-block ml-2">{{ $t("governance") }}</span>
           </b-btn>
         </a>
         <b-btn
@@ -27,21 +27,21 @@
           variant="primary"
           class="proposal-cta-button"
         >
-          + <span class="d-none d-lg-block ml-2">New Proposal</span>
+          + <span class="d-none d-lg-block ml-2">{{ $t("new_proposal") }}</span>
         </b-btn>
       </div>
 
       <add-proposal v-model="showNewProposal" />
 
       <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-        <b-tab title="Open Proposals" active>
+        <b-tab :title="$t('open_proposals')" active>
           <open-proposals
             :proposals="
               proposalsLoaded ? proposals.filter(p => p.open) : undefined
             "
           />
         </b-tab>
-        <b-tab title="History">
+        <b-tab :title="$t('history')">
           <done-proposals
             :proposals="
               proposalsLoaded ? proposals.filter(p => !p.open) : undefined

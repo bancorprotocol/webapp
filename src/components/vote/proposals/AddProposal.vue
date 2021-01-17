@@ -17,7 +17,7 @@
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              Create Proposal
+              {{ $t("create_proposal") }}
             </span>
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -31,10 +31,16 @@
     </template>
 
     <div v-if="!(txBusy || success || error)" class="w-100">
-
       <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
-        New proposal requires you to hold at least {{ proposalMinimumFormatted }}
-        {{ symbol }} which will be locked up to {{ maxLock }}h.
+        {{
+          $t("new_proposal_requires") +
+          proposalMinimumFormatted +
+          symbol +
+          $t("will_be_locked") +
+          maxLock +
+          $t("will_be_locked") +
+          "."
+        }}
       </b-alert>
 
       <multi-input-field
@@ -44,11 +50,11 @@
         type="url"
         placeholder="https://gov.bancor.network/t/..."
         height="48"
-        label="Discourse Url"
+        :label="$t('discourse_url')"
       />
 
       <template v-if="name || description">
-        <label-content-split label="Title and description" class="mb-2" />
+        <label-content-split :label="$t('title_description')" class="mb-2" />
 
         <b-form-textarea
           v-model="name"
@@ -68,7 +74,7 @@
           max-rows="4"
           readonly
           no-resize="true"
-          placeholder="I would like to propose to ..."
+          :placeholder="$t('i_propose') + '...'"
           :class="[
             !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
             'font-size-14'
@@ -83,7 +89,7 @@
         type="text"
         placeholder="0x0000000000000000000000000000000000000000"
         height="48"
-        label="Contract address"
+        :label="$t('contract_address')"
       />
       <multi-input-field
         class="mb-3"
@@ -91,7 +97,7 @@
         type="url"
         placeholder="https://github.com/..."
         height="48"
-        label="Github URL"
+        :label="$t('github_url')"
       />
       <div class="pt-3" />
     </div>
@@ -115,6 +121,7 @@
 <script lang="ts">
 import { Component, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
@@ -153,12 +160,12 @@ export default class AddProposal extends BaseComponent {
 
   get proposeButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Propose";
+      ? i18n.t("processing") + "..."
+      : i18n.t("propose");
   }
 
   get proposalMinimumFormatted() {
@@ -237,7 +244,7 @@ export default class AddProposal extends BaseComponent {
       this.success = {
         txId: txHash,
         blockExplorerLink: await vxm.ethBancor.createExplorerLink(hash)
-      }
+      };
 
       this.setDefault();
     } catch (e) {
@@ -263,11 +270,11 @@ export default class AddProposal extends BaseComponent {
   }
 
   setDefault() {
-    this.description = '';
-    this.name = '';
-    this.discourseUrl = '';
-    this.githubUrl = '';
-    this.contractAddress = '';
+    this.description = "";
+    this.name = "";
+    this.discourseUrl = "";
+    this.githubUrl = "";
+    this.contractAddress = "";
   }
 
   onHide() {

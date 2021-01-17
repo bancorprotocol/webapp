@@ -5,13 +5,13 @@
         style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
-        label="Loading..."
+        :label="$t('loading') + '...'"
       ></b-spinner>
       <h5
         class="m-0 ml-3"
         :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
       >
-        Just a moment ...
+        {{ $t("just_a_moment") + "..." }}
       </h5>
     </div>
   </div>
@@ -23,7 +23,7 @@
       class="m-0 ml-3"
       :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
     >
-      No Proposals yet ...
+      {{ $t("no_proposals_yet") + "..." }}
     </h5>
   </div>
   <data-table
@@ -53,7 +53,7 @@
           class="result"
           :class="'result--' + (isApproved(proposal) ? 'for' : 'against')"
         >
-          {{ isApproved(proposal) ? "Approved" : "Rejected" }}
+          {{ isApproved(proposal) ? $t("approved") : $t("rejected") }}
         </td>
         <td>
           <div class="font-size-14 font-w500">
@@ -108,7 +108,7 @@
             class="font-size-12 pb-1"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
-            Proposed by
+            {{ $t("proposed_by") }}
             <a
               target="_blank"
               class="font-size-12 font-w500 fix-a"
@@ -122,7 +122,7 @@
             class="font-size-12"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
-            Contract to execute
+            {{ $t("contract_execute") }}
             <a
               target="_blank"
               class="font-size-12 font-w500 fix-a"
@@ -134,7 +134,9 @@
         </td>
         <td colspan="2">
           <div class="pb-1">
-            <span class="font-size-12 text-muted-light"> Vote Start </span>
+            <span class="font-size-12 text-muted-light">
+              {{ $t("vote_start") }}
+            </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
               {{ formatDate(proposal.start) }}
             </span>
@@ -143,7 +145,9 @@
             </span>
           </div>
           <div>
-            <span class="font-size-12 text-muted-light"> Quorum/Required </span>
+            <span class="font-size-12 text-muted-light">
+              {{ $t("quorum_Required") }}
+            </span>
             <span class="font-size-12 font-w500 pl-1 pr-1">
               {{ proposal.quorum / 10000 }}% /
               {{ proposal.quorumRequired / 10000 }}%
@@ -187,6 +191,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import DataTable from "@/components/deprecated/DataTable.vue";
@@ -215,35 +220,35 @@ export default class DoneProposals extends BaseComponent {
   get fields(): ViewTableFields[] {
     return [
       {
-        label: "ID",
+        label: i18n.tc("id"),
         key: "id",
         minWidth: "16px",
         maxWidth: "16px"
       },
       {
-        label: "Details",
+        label: i18n.tc("details"),
         key: "details"
       },
       {
-        label: "Result",
+        label: i18n.tc("result"),
         key: "result",
         maxWidth: "120px",
         minWidth: "120px"
       },
       {
-        label: "Votes for",
+        label: i18n.tc("votes_for"),
         key: "votesFor",
         maxWidth: "140px",
         minWidth: "140px"
       },
       {
-        label: "Votes against",
+        label: i18n.tc("votes_against"),
         key: "votesAgainst",
         maxWidth: "140px",
         minWidth: "140px"
       },
       {
-        label: "Vote start",
+        label: i18n.tc("votes_start"),
         key: "startDate",
         maxWidth: "120px",
         minWidth: "120px"

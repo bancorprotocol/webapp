@@ -13,13 +13,13 @@
           style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
-          label="Loading..."
+          :label="$t('loading') + '...'"
         ></b-spinner>
         <h5
           class="m-0 ml-3"
           :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
         >
-          Just a moment ...
+          {{ $t("just_a_moment") + "..." }}
         </h5>
       </div>
     </div>
@@ -31,7 +31,7 @@
         class="m-0 ml-3"
         :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
       >
-        No Proposals yet ...
+        {{ $t("no_proposals_yet") + "..." }}
       </h5>
     </div>
     <layout-proposals
@@ -47,7 +47,7 @@
         </div>
 
         <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
-          <span>More about proposal:</span>
+          <span>{{ $t("more_about_proposal") + ":" }}</span>
           <a
             target="_blank"
             class="font-size-14 font-w500 pl-2"
@@ -63,7 +63,7 @@
             "
           >
             <font-awesome-icon icon="external-link-alt" />
-            Discussion Forum
+            {{ $t("discussion_forum") }}
           </a>
           <a
             target="_blank"
@@ -89,7 +89,7 @@
           <b-col cols="6">
             <b-row class="pb-1">
               <b-col class="font-size-12 text-muted-light" cols="4">
-                Vote Start
+                {{ $t("vote_start") }}
               </b-col>
               <b-col class="font-size-12 font-w500 text-nowrap" cols="4">
                 {{ formatDate(item.start) }}
@@ -100,7 +100,7 @@
             </b-row>
             <b-row>
               <b-col class="font-size-12 text-muted-light" cols="4">
-                Vote End
+                {{ $t("vote_end") }}
               </b-col>
               <b-col class="font-size-12 font-w500 text-nowrap" cols="4">
                 {{ formatDate(item.end) }}
@@ -115,7 +115,7 @@
               class="font-size-12 pb-1"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
-              Proposed by
+              {{ $t("proposed_by") }}
               <a
                 target="_blank"
                 class="font-size-12 font-w500 fix-a"
@@ -128,7 +128,7 @@
               class="font-size-12"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
-              Contract to execute
+              {{ $t("contract_execute") }}
               <a
                 target="_blank"
                 class="font-size-12 font-w500 fix-a"
@@ -157,7 +157,7 @@
           >
             <main-button
               @click="voteFor(item.id.toString())"
-              label="Vote for"
+              :label="$t('vote_for')"
               :large="true"
               :active="true"
               :block="true"
@@ -166,7 +166,7 @@
 
             <main-button
               @click="voteAgainst(item.id.toString())"
-              label="Vote against"
+              :label="$t('vote_against')"
               :large="true"
               :active="true"
               :block="true"
@@ -201,7 +201,7 @@
                   class="col-4 tiny-text"
                   :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
                 >
-                  <span>your vote</span>
+                  <span>{{ $t("your_vote") }}</span>
                 </div>
                 <div class="col-8 font-size-12 text-right voted-box__text">
                   <span
@@ -217,8 +217,10 @@
                         ) /
                           item.totalVotes) *
                         100
-                      ).toFixed(2)
-                    }}% from voters
+                      ).toFixed(2) +
+                      +"% " +
+                      $t("from_voters")
+                    }}
                   </span>
                 </div>
               </div>
@@ -235,20 +237,22 @@
               />
               <div class="votes-bar__content text-uppercase">
                 <span>
-                  For
                   {{
+                    $t("for") +
                     ((100 / item.totalVotes) * item.totalVotesFor || 0).toFixed(
                       2
-                    )
-                  }}%
+                    ) +
+                    "%"
+                  }}
                 </span>
                 <span>
-                  Against
                   {{
+                    $t("against") +
                     (
                       (100 / item.totalVotes) * item.totalVotesAgainst || 0
-                    ).toFixed(2)
-                  }}%
+                    ).toFixed(2) +
+                    "%"
+                  }}
                 </span>
               </div>
             </div>
@@ -271,16 +275,21 @@
             <div class="row pt-2">
               <div class="col-6">
                 <span>
-                  {{ item.voters.filter(v => v.votes.voted === "for").length }}
-                  Users
+                  {{
+                    item.voters.filter(v => v.votes.voted === "for").length +
+                    " " +
+                    $t("users")
+                  }}
                 </span>
               </div>
               <div class="col-6 text-right">
                 <span>
                   {{
-                    item.voters.filter(v => v.votes.voted === "against").length
+                    item.voters.filter(v => v.votes.voted === "against")
+                      .length +
+                    " " +
+                    $t("users")
                   }}
-                  Users
                 </span>
               </div>
             </div>
@@ -288,7 +297,7 @@
             <div class="row pt-2">
               <div class="col-6 pt-1">
                 <span v-if="Date.now() > item.end">
-                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum
+                  {{ (item.quorum / 10000).toFixed(2) + "% " + $t("quorum") }}
                 </span>
               </div>
               <div class="col-6 text-right">
@@ -302,7 +311,7 @@
                       icon="poll"
                       class="text-muted-light mr-1"
                     />
-                    Breakdown
+                    {{ $t("breakdown") }}
                   </span>
                 </b-btn>
               </div>
@@ -312,7 +321,7 @@
       </template>
       <template #tooltip(votes)>
         <div class="pb-2">
-          According to
+          {{ $t("according_to") + " " }}
           <a
             href="https://gov.bancor.network/t/bip3-governance-changes-bip-documentation-requirements-and-new-majority-and-quorum-rules/97"
             target="_blank"
@@ -322,12 +331,10 @@
         </div>
         <ul class="pl-3">
           <li>
-            Required quorum to pass proposals is 20% for standard BIPs & 40% for
-            Token Whitelistings.
+            {{ $t("required_quorum_to_pass") }}
           </li>
           <li>
-            A 2/3rd majority (66.7%) of votes is also required for all BIP
-            approvals.
+            {{ $t("third_majority") }}
           </li>
         </ul>
       </template>
@@ -338,6 +345,7 @@
 <script lang="ts">
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
 import { ViewProposalsField } from "@/types/bancor";
@@ -386,7 +394,7 @@ export default class OpenProposals extends BaseComponent {
     return [
       {
         id: 1,
-        label: "ID",
+        label: i18n.tc("id"),
         key: "id",
         minWidth: "16px",
         maxWidth: "16px",
@@ -395,7 +403,7 @@ export default class OpenProposals extends BaseComponent {
       },
       {
         id: 2,
-        label: "Details",
+        label: i18n.tc("details"),
         key: "name",
         // minWidth: "380px",
         colAuto: false,
@@ -403,7 +411,7 @@ export default class OpenProposals extends BaseComponent {
       },
       {
         id: 3,
-        label: "Vote",
+        label: i18n.tc("vote"),
         key: "votes",
         minWidth: "200px",
         colAuto: false,
