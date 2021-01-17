@@ -33,7 +33,7 @@ export const en = {
   unstaking_positions:
     "When unstaking protected positions, you will be able to see and claim your BNT here",
   claim: "Claim",
-  privacy_policy: "PRIVACY POLICY",
+  privacy_policy: "Privacy Policy",
   about_us: "About Us",
   about_us_content:
     "The Bancor Network (the “Bancor Network”, “We”, “Us” or “Our”) is a Decentralized Liquidity Network that allows you to hold any Ethereum token and convert it to any other token in the network, with no counter party, at an automatically calculated price, using a simple web wallet (the “Services”). This privacy policy has been created to inform about how we manage, collect, store and use the personal information we receive and collect in connection with the Bancor Network (the Policy).",
@@ -265,7 +265,7 @@ export const en = {
   pool_token_balance: "Pool Token Balance",
   pool_token: "Pool Token",
   remove_liquidity: "Remove Liquidity",
-  connect_wallet: "Connect Wallet to see your Liquidity",
+  connect_wallet_liq: "Connect Wallet to see your Liquidity",
   no_res_found: "No Results found",
   no_liquidity_yet: "You dont have any Liquidity yet",
   pools: "Pools",
@@ -299,5 +299,25 @@ export const en = {
   unstaking: "Unstaking",
   voting_statistics: "Voting Statistics",
   proposal_title: "Proposal Title",
-  user_wallet: "User Wallet"
+  user_wallet: "User Wallet",
+  about: "About (Coming Soon)",
+  apps: "Apps",
+  data: "Data",
+  developers: "Developers",
+  chat: "Chat",
+  community: "Community",
+  terms_of_use: "Terms of Use",
+  connect_wallet: "Connect Wallet",
+  ropsten_testnet: "You are on Ropsten Testnet.",
+  unsupported_network:
+    "Unsupported Network. Switch to mainnet network to use the app!",
+  transaction_settings: "Transaction Settings",
+  interface_settings: "Interface Settings",
+  dark_mode: "Dark Mode",
+  off: "Off",
+  on: "On",
+  languages: "Languages",
+  blockchains: "Blockchains",
+  version: "Version",
+  protection: "Protection"
 };

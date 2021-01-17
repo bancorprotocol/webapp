@@ -13,41 +13,43 @@
     </template>
 
     <b-dropdown-group id="dropdown-group-1" v-if="showTx">
-      <b-dropdown-header class="text-uppercase"
-        >Transaction Settings</b-dropdown-header
-      >
+      <b-dropdown-header class="text-uppercase">{{
+        $t("transaction_settings")
+      }}</b-dropdown-header>
       <b-dropdown-text style="width: 300px">
-        <p class="font-size-sm mb-0">Slippage Tolerance</p>
+        <p class="font-size-sm mb-0">{{ $t("slippage_tolerance") }}</p>
         <slippage-tolerance />
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider v-if="showTx"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-2">
-      <b-dropdown-header class="text-uppercase"
-        >Interface Settings</b-dropdown-header
-      >
+      <b-dropdown-header class="text-uppercase">{{
+        $t("interface_settings")
+      }}</b-dropdown-header>
       <b-dropdown-item @click="toggleDarkMode">
         <div class="d-flex justify-content-between align-items-center">
-          <span class="font-size-sm">Dark Mode</span>
+          <span class="font-size-sm">{{ $t("dark_mode") }}</span>
           <div>
             <b-btn
               size="sm"
               :variant="!darkMode ? 'primary' : 'light'"
               class="mr-1 rounded"
               style="width: 50px"
-              >OFF</b-btn
+              >{{ $t("off") }}</b-btn
             >
             <b-btn
               size="sm"
               :variant="darkMode ? 'primary' : 'light'"
               class="rounded"
               style="width: 50px"
-              >ON</b-btn
+              >{{ $t("on") }}</b-btn
             >
           </div>
         </div>
       </b-dropdown-item>
-      <b-dropdown-header class="text-uppercase">Languages</b-dropdown-header>
+      <b-dropdown-header class="text-uppercase">{{
+        $t("languages")
+      }}</b-dropdown-header>
       <b-button
         style="margin: 5px"
         v-for="item in i18n.availableLocales"
@@ -59,7 +61,9 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header class="text-uppercase">Blockchains</b-dropdown-header>
+      <b-dropdown-header class="text-uppercase">{{
+        $t("blockchains")
+      }}</b-dropdown-header>
       <b-dropdown-text style="width: 300px">
         <div class="d-flex justify-content-between align-items-end">
           <b-btn
@@ -81,7 +85,7 @@
         </div>
       </b-dropdown-text>
       <div class="font-size-12 text-muted-light text-center font-w400">
-        Version {{ appVersion }}
+        {{ $t("version") + " " + appVersion }}
       </div>
     </b-dropdown-group>
   </b-dropdown>

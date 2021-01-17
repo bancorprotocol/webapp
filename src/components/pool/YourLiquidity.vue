@@ -113,7 +113,7 @@ export default class YourLiquidity extends BaseComponent {
   }
 
   get noLiquidityFoundMsg() {
-    if (!this.currentUser) return i18n.t("connect_wallet");
+    if (!this.currentUser) return i18n.t("connect_wallet_liq");
     return (
       (this.search ? i18n.t("no_res_found") : i18n.t("no_liquidity_yet")) + "."
     );
