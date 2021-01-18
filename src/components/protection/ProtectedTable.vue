@@ -376,7 +376,7 @@ import {
   stringifyPercentage
 } from "@/api/helpers";
 import { groupPositionsArray } from "@/api/pureHelpers";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import {
   ViewGroupedPositions,
   ViewProtectedLiquidity,
@@ -533,8 +533,6 @@ export default class ProtectedTable extends BaseComponent {
         return row.fullyProtected.usdValue;
       case "protectedAmount":
         return row.protectedAmount.usdValue;
-      case "apr":
-        return row.apr.day;
       case "currentCoverage":
         return row.coverageDecPercent;
       default:

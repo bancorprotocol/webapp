@@ -3045,7 +3045,6 @@ export class EthBancorModule
   get traditionalRelays(): ViewRelay[] {
     if (!this.apiData) return [];
 
-    const aprs = this.poolAprs;
     const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
     const whiteListedPools = this.whiteListedPools;
     const limit = vxm.minting.minNetworkTokenLiquidityforMinting;
@@ -3076,10 +3075,6 @@ export class EthBancorModule
         bntReserve &&
         limit &&
         limit.isLessThan(bntReserve.balance);
-
-      const apr = aprs.find(apr =>
-        compareString(apr.poolId, relay.pool_dlt_id)
-      );
 
       const feesGenerated = relay.fees_24h.usd || 0;
       const feesVsLiquidity = new BigNumber(feesGenerated)
@@ -3125,7 +3120,6 @@ export class EthBancorModule
         v2: false,
         volume,
         feesGenerated,
-        ...(apr && { apr: apr.oneWeekApr }),
         ...(feesVsLiquidity && { feesVsLiquidity }),
         aprMiningRewards
       } as ViewRelay;
@@ -6315,153 +6309,6 @@ export class EthBancorModule
       apr => !liqMiningApr.some(a => compareString(a.poolId, apr.poolId))
     );
     this.poolLiqMiningAprs = [...withoutOld, ...liqMiningApr];
-  }
-
-  poolAprs: PoolApr[] = [];
-
-  @mutation updatePoolAprs(newPoolAprs: PoolApr[]) {
-    const existing = this.poolAprs;
-    const withoutOld = existing.filter(
-      apr => !newPoolAprs.some(a => compareString(apr.poolId, a.poolId))
-    );
-    this.poolAprs = [...withoutOld, ...newPoolAprs];
-  }
-
-  @action async addAprsToPools() {
-    const whitelistedPools = this.whiteListedPools
-      .map(anchor =>
-        this.relaysList.find(relay => compareString(relay.id, anchor))
-      )
-      .filter(Boolean) as Relay[];
-
-    const poolsToCalculate = whitelistedPools.filter(
-      pool => !this.poolAprs.some(apr => compareString(pool.id, apr.poolId))
-    );
-
-    const currentBlock = await w3.eth.getBlockNumber();
-    const weekAgo = rewindBlocksByDays(currentBlock, 7);
-
-    const reservesShapes = poolsToCalculate.map(pool =>
-      reserveBalanceShape(
-        pool.contract,
-        pool.reserves.map(reserve => reserve.contract)
-      )
-    );
-
-    const [tokenSupplys, reserveBalances] = ((await this.multi({
-      groupsOfShapes: [
-        poolsToCalculate.map(pool =>
-          tokenSupplyShape(pool.id, this.currentNetwork)
-        ),
-        reservesShapes
-      ],
-      blockHeight: weekAgo
-    })) as [unknown, unknown]) as [
-      {
-        tokenContract: string;
-        supply: string;
-      }[],
-      RawAbiReserveBalance[]
-    ];
-
-    console.log(poolsToCalculate, "are pools to calculate");
-    const [passedReserveBalances, failedReserveBalances] = partition(
-      reserveBalances,
-      balance => balance.reserveOne && balance.reserveTwo
-    );
-
-    console.log({ failedReserveBalances });
-
-    const poolRoiShapes = tokenSupplys
-      .filter(supply => {
-        const pool = findOrThrow(poolsToCalculate, pool =>
-          compareString(pool.id, supply.tokenContract)
-        );
-        const found = passedReserveBalances.some(reserve =>
-          compareString(pool.contract, reserve.converterAddress)
-        );
-        return found;
-      })
-      .map(supply => {
-        const anchor = supply.tokenContract;
-
-        const pool = findOrThrow(
-          poolsToCalculate as RelayWithReserveBalances[],
-          pool => compareString(pool.id, anchor),
-          "failed finding pool for pool shape"
-        );
-
-        const converterAddress = pool.contract;
-        const poolTokenSupply = supply.supply;
-        const reserves = findOrThrow(reserveBalances, balance =>
-          compareString(balance.converterAddress, converterAddress)
-        );
-
-        return dualPoolRoiShape(
-          this.contracts.LiquidityProtection,
-          supply.tokenContract,
-          [
-            {
-              tokenContract: reserves.reserveOneAddress,
-              weiAmount: reserves.reserveOne
-            },
-            {
-              tokenContract: reserves.reserveTwoAddress,
-              weiAmount: reserves.reserveTwo
-            }
-          ],
-          poolTokenSupply
-        );
-      });
-
-    try {
-      const [poolRois] = ((await this.multi({
-        groupsOfShapes: [poolRoiShapes]
-      })) as [unknown]) as [
-        {
-          anchor: string;
-          onePrimary: string;
-          oneRoi: string;
-          twoPrimary: string;
-          twoRoi: string;
-        }[]
-      ];
-      console.log("PoolROI Success:", poolRois);
-
-      const successfulPoolRois = poolRois
-        .filter(roi => roi.oneRoi && roi.twoRoi)
-        .map(roi => ({
-          ...roi,
-          oneRoiCalculated: new BigNumber(roi.oneRoi)
-            .div(1000000)
-            .minus(1)
-            .times(52)
-            .toString(),
-          twoRoiCalculated: new BigNumber(roi.twoRoi)
-            .div(1000000)
-            .minus(1)
-            .times(52)
-            .toString()
-        }))
-        .map(roi => ({
-          ...roi,
-          mean: calculateMean(roi.oneRoiCalculated, roi.twoRoiCalculated)
-        }));
-
-      console.log(
-        successfulPoolRois,
-        "allROIS",
-        successfulPoolRois.map(x => x.anchor),
-        "anchors"
-      );
-      this.updatePoolAprs(
-        successfulPoolRois.map(
-          (x): PoolApr => ({ poolId: x.anchor, oneWeekApr: x.mean })
-        )
-      );
-    } catch (e) {
-      console.error("PoolROI Failure:", e.message, poolRoiShapes);
-    }
   }
 
   @action async checkFees(pools: Relay[]) {

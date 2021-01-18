@@ -91,10 +91,6 @@ export default class TablePools extends BaseComponent {
     return new BigNumber(percentage).gte(0) ? formatPercent(percentage) : "N/A";
   }
 
-  get aprsExist() {
-    return this.items.some(pool => pool.apr);
-  }
-
   get fields(): ViewTableField[] {
     return [
       ...(this.isEth

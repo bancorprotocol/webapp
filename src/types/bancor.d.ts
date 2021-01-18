@@ -322,7 +322,6 @@ export interface ViewRelay {
   v2: boolean;
   feesGenerated?: string;
   feesVsLiquidity?: string;
-  apr?: string;
   volume?: string;
   aprMiningRewards?: PoolLiqMiningApr;
   stakedBntSupplyPercent?: number;
