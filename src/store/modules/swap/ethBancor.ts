@@ -1962,13 +1962,6 @@ export class EthBancorModule
     );
     const ppmPercent = decToPpm(decPercent);
 
-    console.log({ ppmPercent, decPercent }, "issue 560");
-    console.assert(
-      decPercent == 1,
-      "dec percent passed from View layer was not 1!"
-    );
-    console.assert();
-
     if (isDissolvingNetworkToken) {
       const dissolvingFullPosition = decPercent === 1;
       const roundingBuffer = 0.01;
@@ -5370,69 +5363,11 @@ export class EthBancorModule
     };
   }
 
-  @mutation deletePools(ids: string[]) {
-    this.relaysList = this.relaysList.filter(
-      relay => !ids.some(id => compareString(relay.id, id))
-    );
-  }
-
-  @action async reloadPools(anchorAndConverters: ConverterAndAnchor[]) {
-    this.deletePools(anchorAndConverters.map(x => x.anchorAddress));
-    this.addPoolsBulk(anchorAndConverters);
-  }
-
   @action async add(anchorAddresses: string[]) {
     const converters = await this.fetchConverterAddressesByAnchorAddresses(
       anchorAddresses
     );
     return zipAnchorAndConverters(anchorAddresses, converters);
-  }
-
-  @action async pullEvents({
-    networkContract,
-    network,
-    fromBlock
-  }: {
-    networkContract: string;
-    network: EthNetworks;
-    fromBlock: number;
-  }) {
-    const res = await getLogs(network, networkContract, fromBlock);
-
-    const uniqTxHashes = uniqWith(
-      res.map(x => x.txHash),
-      compareString
-    );
-
-    const groups = uniqTxHashes.map(hash =>
-      res.filter(x => compareString(x.txHash, hash))
-    );
-
-    const joinStartingAndTerminating = groups.map(
-      (trades): DecodedEvent<ConversionEventDecoded> => {
-        const firstTrade = trades[0];
-        const lastTrade = trades[trades.length - 1];
-        const { txHash: firstHash, blockNumber: firstBlockNumber } = firstTrade;
-        const haveSameBlockNumber = trades.every(
-          trade => trade.blockNumber == firstBlockNumber
-        );
-        const haveSameTxHash = trades.every(trade => trade.txHash == firstHash);
-        if (!(haveSameBlockNumber && haveSameTxHash))
-          throw new Error("Trades do not share the same block number and hash");
-
-        return {
-          ...firstTrade,
-          data: {
-            ...firstTrade.data,
-            to: lastTrade.data.to
-          }
-        };
-      }
-    );
-    return {
-      joinedTradeEvents: joinStartingAndTerminating,
-      singleTraades: res
-    };
   }
 
   previousPoolFeesArr: PreviousPoolFee[] = [];
