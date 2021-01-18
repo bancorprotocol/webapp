@@ -212,6 +212,21 @@ import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
 import { getWelcomeData, NewPool, WelcomeData } from "@/api/eth/bancorApi";
 
+interface ViewRelayConverter extends ViewRelay {
+  converterAddress: string;
+}
+
+const viewRelayConverterToMinimal = (
+  relay: ViewRelayConverter
+): MinimalRelay => ({
+  anchorAddress: relay.id,
+  contract: relay.converterAddress,
+  reserves: relay.reserves.map(reserve => ({
+    contract: reserve.id,
+    symbol: reserve.symbol
+  }))
+});
+
 const currentBlockTwo$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
 const bufferToggle$ = new Subject();
@@ -326,7 +341,7 @@ const calculateShareOfPool = (
   return shareOfPool;
 };
 
-const compareRelayByReserves = (a: Relay, b: Relay) =>
+const compareRelayByReserves = (a: ViewRelay, b: ViewRelay) =>
   a.reserves.every(reserve =>
     b.reserves.some(r => compareString(reserve.contract, r.contract))
   );
@@ -2134,7 +2149,7 @@ export class EthBancorModule
         )
       );
 
-    const allRelays = this.relaysList;
+    const allRelays = this.relays;
     const uniqueAnchors = uniqWith(
       allPositions.map(pos => pos.poolToken),
       compareString
@@ -2315,19 +2330,7 @@ export class EthBancorModule
   }
 
   get morePoolsAvailable() {
-    const allPools = this.registeredAnchorAddresses;
-    const remainingPools = allPools
-      .filter(
-        poolAddress =>
-          !this.relaysList.some(relay => compareString(poolAddress, relay.id))
-      )
-      .filter(
-        poolAddress =>
-          !this.failedPools.some(failedPool =>
-            compareString(failedPool, poolAddress)
-          )
-      );
-    return remainingPools.length > 0;
+    return !this.apiData;
   }
 
   @mutation setLoadingPools(status: boolean) {
@@ -2338,27 +2341,7 @@ export class EthBancorModule
     this.failedPools = uniqWith([...this.failedPools, ...ids], compareString);
   }
 
-  @action async loadMorePools() {
-    this.setLoadingPools(true);
-    const remainingAnchorAddresses = this.registeredAnchorAddresses
-      .filter(
-        address =>
-          !this.relaysList.some(relay => compareString(relay.id, address))
-      )
-      .filter(
-        address =>
-          !this.failedPools.some(failedPoolAddress =>
-            compareString(address, failedPoolAddress)
-          )
-      );
-
-    if (remainingAnchorAddresses && remainingAnchorAddresses.length > 0) {
-      const remainingPools = await this.add(remainingAnchorAddresses);
-
-      await this.addPoolsBulk(remainingPools);
-    }
-    this.setLoadingPools(false);
-  }
+  @action async loadMorePools() {}
 
   @action async checkPriceDeviationTooHigh({
     relayId,
@@ -2489,7 +2472,7 @@ export class EthBancorModule
         .filter(tokenChoice => tokenChoice.id !== networkToken)
         .filter(meta => {
           const suggestedReserveIds = [meta.id, networkToken];
-          const existingRelayWithSameReserves = this.relaysList.some(relay => {
+          const existingRelayWithSameReserves = this.relays.some(relay => {
             const reserves = relay.reserves.map(reserve => reserve.contract);
             return suggestedReserveIds.every(id =>
               reserves.some(r => compareString(id, r))
@@ -3588,23 +3571,16 @@ export class EthBancorModule
   }: {
     poolTokenAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-    const relay = findOrThrow(this.relaysList, relay =>
-      compareString(relay.id, poolTokenAmount.id)
-    );
-    const smartToken = relay.anchor as SmartToken;
-
     const balances = await this.fetchRelayBalances({
-      poolId: smartToken.contract
+      poolId: poolTokenAmount.id
     });
 
     const outputs = balances.reserves.map(reserve => {
-      console.log(reserve, balances, "dishes");
       const rate = new BigNumber(
         calculatePoolTokenRate(balances.smartTokenSupplyWei, reserve.weiAmount)
       ).div(2);
 
       const reserveAmount = rate.times(poolTokenAmount.amount);
-      console.log(rate, "is long string");
       return {
         id: reserve.contract,
         amount: reserveAmount.toString(),
@@ -5944,6 +5920,7 @@ export class EthBancorModule
             anchorAddresses,
             converters
           );
+          this.updateConverterAndAnchors(anchorsAndConverters);
           return anchorsAndConverters;
         })()
       ),
@@ -6161,6 +6138,17 @@ export class EthBancorModule
     } catch (e) {
       console.error("thrown in x", e);
     }
+  }
+
+  converterAndAnchors: ConverterAndAnchor[] = [];
+
+  @mutation updateConverterAndAnchors(
+    converterAndAnchors: ConverterAndAnchor[]
+  ) {
+    this.converterAndAnchors = uniqWith(
+      [...converterAndAnchors, ...this.converterAndAnchors],
+      compareAnchorAndConverter
+    );
   }
 
   @action async fetchPooLiqMiningApr({
@@ -6783,7 +6771,7 @@ export class EthBancorModule
   }: {
     fromId: string;
     toId: string;
-    relays: readonly Relay[];
+    relays: readonly MinimalRelay[];
   }) {
     const lowerCased = relays.map(relay => ({
       ...relay,
@@ -6849,16 +6837,10 @@ export class EthBancorModule
     );
     const toTokenDecimals = await this.getDecimalsByTokenAddress(toToken.id);
 
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
-    const relaysList = sortAlongSide(
-      this.relaysList,
-      relay => relay.id,
-      relaysByLiqDepth.map(relay => relay.id)
-    );
-    const winningRelays = uniqWith(relaysList, compareRelayByReserves);
+    const minimalRelays = await this.winningMinimalRelays();
 
     const relays = await this.findPath({
-      relays: winningRelays,
+      relays: minimalRelays,
       fromId: from.id,
       toId: to.id
     });
@@ -6868,7 +6850,7 @@ export class EthBancorModule
     const fromTokenContract = fromToken.id;
     const toTokenContract = toToken.id;
 
-    const ethPath = generateEthPath(fromSymbol, relays.map(relayToMinimal));
+    const ethPath = generateEthPath(fromSymbol, relays);
 
     const fromWei = expandToken(fromAmount, fromTokenDecimals);
 
@@ -6979,23 +6961,36 @@ export class EthBancorModule
     });
   }
 
-  @action async getDecimalsByTokenAddress(tokenAddress: string) {
+  @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
+    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
+    const winningRelays = uniqWith(relaysByLiqDepth, compareRelayByReserves);
+    const convertersAndAnchors = this.converterAndAnchors;
+
+    const relaysWithConverterAddress = winningRelays.map(
+      (relay): ViewRelayConverter => ({
+        ...relay,
+        converterAddress: findOrThrow(convertersAndAnchors, anchor =>
+          compareString(anchor.anchorAddress, relay.id)
+        ).converterAddress
+      })
+    );
+
+    const minimalRelays = relaysWithConverterAddress.map(
+      viewRelayConverterToMinimal
+    );
+    return minimalRelays;
+  }
+
+  @action async getDecimalsByTokenAddress(
+    tokenAddress: string
+  ): Promise<number> {
     if (compareString(tokenAddress, ethReserveAddress)) return 18;
-    const reserve = this.relaysList
-      .flatMap(relay => relay.reserves)
-      .find(reserve => compareString(reserve.contract, tokenAddress));
-    if (!reserve) {
-      try {
-        const contract = buildTokenContract(tokenAddress, w3);
-        const decimals = await contract.methods.decimals().call();
-        return Number(decimals);
-      } catch (e) {
-        throw new Error(
-          `Failed to find token address ${tokenAddress} in list of reserves. ${e.message}`
-        );
-      }
-    }
-    return reserve.decimals;
+    const token = findOrThrow(
+      this.apiData!.tokens,
+      token => compareString(token.dlt_id, tokenAddress),
+      "failed to find token for decimals"
+    );
+    return token.precision;
   }
 
   @action async calculateSingleWithdraw({
@@ -7025,15 +7020,14 @@ export class EthBancorModule
     );
     const { reserveToken } = position;
 
-    const reserveTokenObj = findOrThrow(
-      this.relaysList.flatMap(r => r.reserves),
-      reserve => compareString(reserveToken, reserve.contract)
+    const reserveTokenObj = findOrThrow(this.apiData!.tokens, token =>
+      compareString(reserveToken, token.dlt_id)
     );
 
     return {
       outputs: [
         {
-          amount: shrinkToken(res.baseAmount, reserveTokenObj.decimals),
+          amount: shrinkToken(res.baseAmount, reserveTokenObj.precision),
           id: reserveToken,
           symbol: reserveTokenObj.symbol
         },
@@ -7044,7 +7038,7 @@ export class EthBancorModule
         }
       ].filter(output => new BigNumber(output.amount).isGreaterThan(0)),
       expectedValue: {
-        amount: shrinkToken(res.targetAmount, reserveTokenObj.decimals),
+        amount: shrinkToken(res.targetAmount, reserveTokenObj.precision),
         id: reserveToken,
         symbol: reserveTokenObj.symbol
       }
@@ -7069,21 +7063,15 @@ export class EthBancorModule
       toTokenContract
     );
 
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
-    const relaysList = sortAlongSide(
-      this.relaysList,
-      relay => relay.id,
-      relaysByLiqDepth.map(relay => relay.id)
-    );
-    const winningRelays = uniqWith(relaysList, compareRelayByReserves);
+    const minimalRelays = await this.winningMinimalRelays();
 
     const relays = await this.findPath({
       fromId: from.id,
       toId,
-      relays: winningRelays
+      relays: minimalRelays
     });
 
-    const path = generateEthPath(fromToken.symbol, relays.map(relayToMinimal));
+    const path = generateEthPath(fromToken.symbol, relays);
 
     console.log(path, "is the path");
 
@@ -7146,7 +7134,9 @@ export class EthBancorModule
         const relayBalances = await Promise.all(
           relays.map(async relay => ({
             relay,
-            balances: await this.fetchRelayBalances({ poolId: relay.id })
+            balances: await this.fetchRelayBalances({
+              poolId: relay.anchorAddress
+            })
           }))
         );
         const relaysWithNoBalances = relayBalances.filter(
@@ -7169,49 +7159,11 @@ export class EthBancorModule
     }
   }
 
+  // @ts-ignore
   @action async getCost({ fromId, to }: ProposedToTransaction) {
-    if (compareString(fromId, to.id))
+    if (compareString(fromId, to.id)) {
       throw new Error("Cannot convert a token to itself.");
-    const fromToken = await this.tokenById(fromId);
-    const toToken = await this.tokenById(to.id);
-
-    const amount = to.amount;
-
-    const [fromTokenContract, toTokenContract] = [fromToken.id, toToken.id];
-
-    const fromTokenDecimals = await this.getDecimalsByTokenAddress(
-      fromTokenContract
-    );
-    const toTokenDecimals = await this.getDecimalsByTokenAddress(
-      toTokenContract
-    );
-
-    const relays = this.relaysList;
-
-    const poolIds = relays.map(relay => relay.id);
-    const allCoveredUnderBancorApi = poolIds.every(poolId =>
-      ethBancorApiDictionary.some(dic =>
-        compareString(poolId, dic.smartTokenAddress)
-      )
-    );
-    if (!allCoveredUnderBancorApi)
-      throw new Error("Fetching the cost of this token is not yet supported.");
-
-    const [fromTokenTicker, toTokenTicker] = await Promise.all([
-      ethBancorApi.getToken(fromToken.symbol),
-      ethBancorApi.getToken(toToken.symbol)
-    ]);
-    const fromTokenId = fromTokenTicker._id;
-    const toTokenId = toTokenTicker._id;
-
-    const result = await ethBancorApi.calculateCost(
-      fromTokenId,
-      toTokenId,
-      expandToken(amount, toTokenDecimals)
-    );
-
-    return {
-      amount: shrinkToken(result, fromTokenDecimals)
-    };
+    }
+    throw new Error("Fetching the cost of this token is not yet supported.");
   }
 }
