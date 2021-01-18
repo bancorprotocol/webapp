@@ -7,57 +7,50 @@
       <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
           <div class="font-size-16 font-w500">Rewards</div>
-          <div>
-            <b-btn variant="outline-gray" size="sm" class="d-lg-none mr-2">
-              <font-awesome-icon icon="plus" />
+          <div class="d-lg-none">
+            <b-btn variant="outline-gray" size="sm" class="mr-2">
+              <font-awesome-icon icon="upload" />
             </b-btn>
-            <b-btn
-              @click="openModal"
-              variant="primary"
-              size="sm"
-              class="d-lg-none"
-            >
+            <b-btn @click="openModal" variant="primary" size="sm">
               <font-awesome-icon icon="plus" />
             </b-btn>
           </div>
         </div>
       </template>
-      <b-container class="pb-1">
-        <b-row style="align-items: center">
-          <b-col
-            v-for="item in summarizedRewards"
-            :key="item.id"
-            class="text-center"
+      <b-row style="align-items: center">
+        <b-col
+          v-for="item in summarizedRewards"
+          :key="item.id"
+          class="text-center"
+        >
+          <div class="font-size-14 font-w600">
+            {{ prettifyNumber(item.bnt) }} BNT
+          </div>
+          <div class="font-size-12 font-w500 text-primary">
+            (~{{ prettifyNumber(item.usd, true) }})
+          </div>
+          <div
+            class="text-uppercase font-size-10 font-w500"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
-            <div class="font-size-14 font-w600">
-              {{ prettifyNumber(item.bnt) }} BNT
-            </div>
-            <div class="font-size-12 font-w500 text-primary">
-              (~{{ prettifyNumber(item.usd, true) }})
-            </div>
-            <div
-              class="text-uppercase font-size-10 font-w500"
-              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            {{ item.label }}
+          </div>
+        </b-col>
+        <b-col cols="3" class="d-none d-lg-block mt-2">
+          <b-row>
+            <b-btn
+              variant="outline-gray"
+              class="btn-block"
+              :to="{ name: 'RewardsWithdraw' }"
+              >Withdraw</b-btn
             >
-              {{ item.label }}
-            </div>
-          </b-col>
-          <b-col cols="3" class="d-none d-lg-block">
-            <b-row>
-              <b-btn
-                variant="outline-gray"
-                class="btn-block"
-                :to="{ name: 'RewardsWithdraw' }"
-                >Withdraw</b-btn
-              >
 
-              <b-btn variant="primary" class="btn-block" @click="openModal">
-                ReStake
-              </b-btn>
-            </b-row>
-          </b-col>
-        </b-row>
-      </b-container>
+            <b-btn variant="primary" class="btn-block" @click="openModal">
+              ReStake
+            </b-btn>
+          </b-row>
+        </b-col>
+      </b-row>
     </ContentBlock>
 
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />

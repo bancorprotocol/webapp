@@ -1,21 +1,24 @@
 <template>
   <div
     :id="darkMode ? 'protected-summary-dark' : 'protected-summary'"
-    class="rounded p-0 mb-3 block-shadow-light"
+    class="rounded p-1 block-shadow-light"
     :class="darkMode ? 'text-dark' : 'text-light'"
   >
-    <b-container class="p-0">
-      <b-row style="margin-left: 1em; padding-top: 13px">
-        <div class="font-size-16 font-w500 col">My Stake</div>
-        <b-btn
-          @click="openModal"
-          variant="primary"
-          class="d-lg-none col-auto mr-4"
-        >
-          <font-awesome-icon icon="plus" />
-        </b-btn>
+    <div>
+      <b-row>
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="font-size-16 font-w500 block-header ml-3">My Stake</div>
+          <b-btn
+            @click="openModal"
+            size="sm"
+            variant="primary"
+            class="d-lg-none mr-4"
+          >
+            <font-awesome-icon icon="plus" />
+          </b-btn>
+        </div>
       </b-row>
-      <div class="seperator p-0" />
+      <div class="seperator" />
       <b-row style="align-items: center" class="p-3">
         <b-col
           v-for="item in summarizedPositions"
@@ -41,7 +44,7 @@
           <font-awesome-icon icon="plus" />
         </b-btn>
       </b-row>
-    </b-container>
+    </div>
 
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
   </div>
