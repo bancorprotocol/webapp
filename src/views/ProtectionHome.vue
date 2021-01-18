@@ -21,16 +21,12 @@
         </p>
       </b-col>
 
-      <b-container>
-        <b-row>
-          <b-col cols="5">
-            <ProtectedSummary v-if="positions.length" :positions="positions"
-          /></b-col>
-          <b-col>
-            <RewardsSummary v-if="positions.length" :positions="positions"
-          /></b-col>
-        </b-row>
-      </b-container>
+      <b-col lg="6">
+        <ProtectedSummary v-if="positions.length" :positions="positions" />
+      </b-col>
+      <b-col lg="6">
+        <RewardsSummary v-if="positions.length" :positions="positions" />
+      </b-col>
 
       <b-col cols="12">
         <content-block
