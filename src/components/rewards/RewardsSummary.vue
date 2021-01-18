@@ -5,24 +5,14 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <template #header>
-        {{ title }}
+        <div class="font-size-16 font-w500 col">Rewards</div>
+        <b-btn variant="outline-gray" class="d-lg-none">
+          <font-awesome-icon icon="plus" />
+        </b-btn>
+        <b-btn @click="openModal" variant="primary" class="d-lg-none">
+          <font-awesome-icon icon="plus" />
+        </b-btn>
       </template>
-      <div class="d-flex justify-content-between align-items-center d-xl-none">
-        <span class="font-size-16 font-w500">{{ title }}</span>
-        <div>
-          <b-btn
-            variant="outline-gray"
-            :to="{ name: 'RewardsWithdraw' }"
-            style="width: 132px"
-            class="mr-3"
-          >
-            Withdraw
-          </b-btn>
-          <b-btn variant="primary" @click="openModal" style="width: 132px">
-            ReStake
-          </b-btn>
-        </div>
-      </div>
       <b-container class="pb-1">
         <b-row style="align-items: center">
           <b-col
@@ -43,7 +33,7 @@
               {{ item.label }}
             </div>
           </b-col>
-          <b-col cols="3">
+          <b-col cols="3" class="d-none d-lg-block">
             <b-row>
               <b-btn
                 variant="outline-gray"

@@ -6,7 +6,14 @@
   >
     <b-container class="p-0">
       <b-row style="margin-left: 1em; padding-top: 13px">
-        <div class="font-size-16 font-w500">My Stake</div>
+        <div class="font-size-16 font-w500 col">My Stake</div>
+        <b-btn
+          @click="openModal"
+          variant="primary"
+          class="d-lg-none col-auto mr-4"
+        >
+          <font-awesome-icon icon="plus" />
+        </b-btn>
       </b-row>
       <div class="seperator p-0" />
       <b-row style="align-items: center" class="p-3">
@@ -25,7 +32,12 @@
             {{ item.key }}
           </div>
         </b-col>
-        <b-btn @click="openModal" variant="primary" style="margin-right: 15px">
+        <b-btn
+          class="d-none d-lg-block"
+          @click="openModal"
+          variant="primary"
+          style="margin-right: 15px"
+        >
           <font-awesome-icon icon="plus" />
         </b-btn>
       </b-row>
