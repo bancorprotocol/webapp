@@ -4,7 +4,7 @@
       :no-header="true"
       :shadow-light="true"
       :px0="true"
-      class="pt-3 px-3 mb-3"
+      class="pt-2 px-3 mb-3 pb-0"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <div class="d-flex justify-content-between align-items-center d-xl-none">
@@ -23,56 +23,45 @@
           </b-btn>
         </div>
       </div>
-      <b-row>
-        <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
+      <b-container class="pb-1">
+        <b-row>
           <div class="font-size-16 font-w500">{{ title }}</div>
-        </b-col>
-        <b-col
-          v-for="(item, index) in summarizedRewards"
-          :key="item.id"
-          cols="6"
-          lg="4"
-          xl="2"
-          class="d-flex flex-column align-items-center mt-3 mt-xl-0"
-          :class="getItemStyleClass(index)"
-        >
-          <div class="font-size-14 font-w600">
-            {{ prettifyNumber(item.bnt) }} BNT
-          </div>
-          <div class="font-size-12 font-w500 text-primary">
-            (~{{ prettifyNumber(item.usd, true) }})
-          </div>
-          <div
-            class="text-uppercase font-size-10 font-w500"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        </b-row>
+        <b-row style="align-items: center">
+          <b-col
+            v-for="item in summarizedRewards"
+            :key="item.id"
+            class="text-center"
           >
-            {{ item.label }}
-          </div>
-        </b-col>
-        <b-col
-          md="6"
-          lg="3"
-          xl="2"
-          class="d-none d-xl-flex align-items-center justify-content-end"
-        >
-          <b-btn
-            variant="outline-gray"
-            class="btn-block"
-            :to="{ name: 'RewardsWithdraw' }"
-            >Withdraw</b-btn
-          >
-        </b-col>
-        <b-col
-          md="6"
-          lg="3"
-          xl="2"
-          class="d-none d-xl-flex align-items-center justify-content-end"
-        >
-          <b-btn variant="primary" class="btn-block" @click="openModal">
-            ReStake
-          </b-btn>
-        </b-col>
-      </b-row>
+            <div class="font-size-14 font-w600">
+              {{ prettifyNumber(item.bnt) }} BNT
+            </div>
+            <div class="font-size-12 font-w500 text-primary">
+              (~{{ prettifyNumber(item.usd, true) }})
+            </div>
+            <div
+              class="text-uppercase font-size-10 font-w500"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              {{ item.label }}
+            </div>
+          </b-col>
+          <b-col cols="3">
+            <b-row>
+              <b-btn
+                variant="outline-gray"
+                class="btn-block"
+                :to="{ name: 'RewardsWithdraw' }"
+                >Withdraw</b-btn
+              >
+
+              <b-btn variant="primary" class="btn-block" @click="openModal">
+                ReStake
+              </b-btn>
+            </b-row>
+          </b-col>
+        </b-row>
+      </b-container>
     </ContentBlock>
 
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
@@ -112,20 +101,14 @@ export default class RewardsSummary extends BaseComponent {
     return [
       {
         id: 1,
-        label: "Claimable Rewards",
-        bnt: 1231231231.123123123123,
+        label: "Total Reward to date",
+        bnt: 1.123123,
         usd: 99.12
       },
       {
         id: 2,
-        label: "Future Rewards",
-        bnt: 1.123123,
-        usd: 99.12
-      },
-      {
-        id: 3,
-        label: "Total Reward to date",
-        bnt: 1.123123,
+        label: "Claimable Rewards",
+        bnt: 1231231231.123123123123,
         usd: 99.12
       }
     ];
@@ -141,13 +124,6 @@ export default class RewardsSummary extends BaseComponent {
       name: "RewardsRestake",
       params: { id }
     });
-  }
-
-  getItemStyleClass(index: number) {
-    const pos = index + 1;
-    if (pos === 1) return "text-center";
-    else if (pos < this.summarizedRewards.length) return "text-center";
-    else return "text-center";
   }
 }
 </script>
