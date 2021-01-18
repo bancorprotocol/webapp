@@ -4896,7 +4896,7 @@ export class EthBancorModule
   }
 
   get loadingTokens() {
-    return this.relaysList.length < 290;
+    return !this.apiData;
   }
 
   get moreTokensAvailable() {
