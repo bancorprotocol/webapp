@@ -2276,6 +2276,18 @@ export class EthBancorModule
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
+    const poolAnchors = this.newPools.map(pool => pool.pool_dlt_id);
+    const balances = this.tokenBalances;
+    const smartTokenBalances = balances.filter(balance =>
+      poolAnchors.some(anchor => compareString(balance.id, anchor))
+    );
+    const newPositions = smartTokenBalances.map(balance => ({
+      relay: findOrThrow(this.relays, relay =>
+        compareString(relay.id, balance.id)
+      ),
+      balance: balance.balance
+    })) as PoolTokenPosition[];
+
     const relaysList = this.relaysList;
     const allIouTokens = relaysList.flatMap(iouTokensInRelay);
     const existingBalances = this.tokenBalances.filter(
@@ -2286,47 +2298,53 @@ export class EthBancorModule
         )
     );
 
-    const relevantRelays = relaysList.filter(relay =>
-      iouTokensInRelay(relay).some(token =>
-        existingBalances.some(balance =>
-          compareString(balance.id, token.contract)
-        )
-      )
-    );
-
-    return relevantRelays.map(relay => {
-      const anchorTokens = iouTokensInRelay(relay);
-      const iouTokens = existingBalances.filter(existingBalance =>
-        anchorTokens.some(anchor =>
-          compareString(existingBalance.id, anchor.contract)
+    const relevantRelays = relaysList
+      .filter(x => x.converterType == PoolType.ChainLink)
+      .filter(relay =>
+        iouTokensInRelay(relay).some(token =>
+          existingBalances.some(balance =>
+            compareString(balance.id, token.contract)
+          )
         )
       );
 
-      const viewRelay = this.relay(relay.id);
-      const isV1 = relay.converterType == PoolType.Traditional;
-      if (isV1) {
-        return {
-          relay: viewRelay,
-          smartTokenAmount: iouTokens[0].balance
-        };
-      } else {
-        const chainkLinkRelay = relay as ChainLinkRelay;
-        const reserveBalances = iouTokens.map(iouToken => {
-          const relevantPoolTokenData = chainkLinkRelay.anchor.poolTokens.find(
-            poolToken =>
-              compareString(poolToken.poolToken.contract, iouToken.id)
-          )!;
+    const oldMethod = relevantRelays.map(
+      (relay): PoolTokenPosition => {
+        const anchorTokens = iouTokensInRelay(relay);
+        const iouTokens = existingBalances.filter(existingBalance =>
+          anchorTokens.some(anchor =>
+            compareString(existingBalance.id, anchor.contract)
+          )
+        );
+
+        const viewRelay = this.relay(relay.id);
+        const isV1 = relay.converterType == PoolType.Traditional;
+        if (isV1) {
           return {
-            balance: iouToken.balance,
-            reserveId: relevantPoolTokenData.reserveId
+            relay: viewRelay,
+            smartTokenAmount: iouTokens[0].balance
           };
-        });
-        return {
-          relay: viewRelay,
-          poolTokens: reserveBalances
-        };
+        } else {
+          const chainkLinkRelay = relay as ChainLinkRelay;
+          const reserveBalances = iouTokens.map(iouToken => {
+            const relevantPoolTokenData = chainkLinkRelay.anchor.poolTokens.find(
+              poolToken =>
+                compareString(poolToken.poolToken.contract, iouToken.id)
+            )!;
+            return {
+              balance: iouToken.balance,
+              reserveId: relevantPoolTokenData.reserveId
+            };
+          });
+          return {
+            relay: viewRelay,
+            poolTokens: reserveBalances
+          };
+        }
       }
-    });
+    );
+
+    return [...newPositions, ...oldMethod];
   }
 
   get morePoolsAvailable() {
@@ -2516,6 +2534,7 @@ export class EthBancorModule
   }
 
   @mutation resetData() {
+    this.apiData = undefined;
     this.relaysList = [];
     this.tokenBalances = [];
     this.initiated = false;
@@ -5010,34 +5029,6 @@ export class EthBancorModule
     return res;
   }
 
-  @action async refreshReserveBalances() {
-    const v1Relays = this.relaysList.filter(
-      relay => relay.converterType == PoolType.Traditional
-    ) as TraditionalRelay[];
-    const v2Relays = this.relaysList.filter(
-      relay => relay.converterType == PoolType.ChainLink
-    ) as ChainLinkRelay[];
-
-    const v1RelayShapes = v1Relays.map(relay =>
-      reserveBalanceShape(
-        relay.contract,
-        relay.reserves.map(r => r.contract)
-      )
-    );
-    const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
-      v2PoolBalanceShape(
-        relay.contract,
-        relay.reserves[0].contract,
-        relay.reserves[1].contract,
-        this.currentNetwork
-      )
-    );
-
-    await this.multi({
-      groupsOfShapes: [v1RelayShapes, v2RelayPoolBalanceShapes]
-    });
-  }
-
   @action async addPoolsV2(
     convertersAndAnchors: ConverterAndAnchor[]
   ): Promise<V2Response> {
@@ -6729,12 +6720,13 @@ export class EthBancorModule
       console.log(userAddress, "fetching protected positions for");
       this.fetchProtectionPositions({});
       this.fetchLockedBalances();
-      const allTokens = this.relaysList.flatMap(tokensInRelay);
-      const uniqueTokenAddresses = uniqWith(
-        allTokens.map(token => token.contract),
-        compareString
-      );
-      this.fetchAndSetTokenBalances(uniqueTokenAddresses);
+      if (this.apiData?.tokens) {
+        const uniqueTokenAddresses = uniqWith(
+          this.apiData.tokens.map(token => token.dlt_id),
+          compareString
+        );
+        this.fetchAndSetTokenBalances(uniqueTokenAddresses);
+      }
     } else {
       Sentry.configureScope(scope => scope.setUser(null));
     }
@@ -6749,6 +6741,9 @@ export class EthBancorModule
   @action async refreshBalances(symbols?: BaseToken[]) {
     if (symbols) {
       symbols.forEach(symbol => this.focusSymbol(symbol.symbol));
+    } else if (this.currentUser && this.apiData) {
+      const tokenAddresses = this.apiData.tokens.map(token => token.dlt_id);
+      this.fetchAndSetTokenBalances(tokenAddresses);
     }
   }
 
