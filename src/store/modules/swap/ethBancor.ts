@@ -7218,30 +7218,4 @@ export class EthBancorModule
       amount: shrinkToken(result, fromTokenDecimals)
     };
   }
-
-  @action async claimRewards({ rewardIds }: { rewardIds: string[] }) {
-    const contract = buildStakingRewardsDistributionContract(
-      this.contracts.StakingRewardsDistribution
-    );
-
-    await contract.methods
-      .claimRewards(rewardIds)
-      .send({ from: this.currentUser });
-  }
-
-  @action async stakeRewards({
-    rewardIds,
-    poolId
-  }: {
-    rewardIds: string[];
-    poolId: string;
-  }) {
-    const contract = buildStakingRewardsDistributionContract(
-      this.contracts.StakingRewardsDistribution
-    );
-
-    await contract.methods
-      .stakeRewards(rewardIds, poolId)
-      .send({ from: this.currentUser });
-  }
 }
