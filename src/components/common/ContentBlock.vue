@@ -11,7 +11,7 @@
   >
     <div v-if="noHeader"></div>
     <div
-      v-else
+      v-else-if="title"
       class="d-flex justify-content-between align-items-center py-2 px-3 font-size-14 font-w600"
       :class="[
         darkMode ? 'border-bottom-dark' : 'border-bottom-light',
@@ -22,14 +22,12 @@
         <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
       </div>
 
-      <slot name="header">
-        <h3
-          class="m-0 p-0 my-2 font-size-14 font-w600 w-100"
-          :class="titleClasses"
-        >
-          {{ title }}
-        </h3>
-      </slot>
+      <h3
+        class="m-0 p-0 my-2 font-size-14 font-w600 w-100"
+        :class="titleClasses"
+      >
+        {{ title }}
+      </h3>
 
       <div class="fix-width d-flex justify-content-end">
         <span
@@ -49,6 +47,13 @@
           prepend="search"
         />
       </div>
+    </div>
+    <div
+      v-else
+      class="block-header"
+      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+    >
+      <slot name="header"></slot>
     </div>
     <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
       <slot></slot>

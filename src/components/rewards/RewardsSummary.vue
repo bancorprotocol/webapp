@@ -5,13 +5,22 @@
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <template #header>
-        <div class="font-size-16 font-w500 col">Rewards</div>
-        <b-btn variant="outline-gray" class="d-lg-none">
-          <font-awesome-icon icon="plus" />
-        </b-btn>
-        <b-btn @click="openModal" variant="primary" class="d-lg-none">
-          <font-awesome-icon icon="plus" />
-        </b-btn>
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="font-size-16 font-w500">Rewards</div>
+          <div>
+            <b-btn variant="outline-gray" size="sm" class="d-lg-none mr-2">
+              <font-awesome-icon icon="plus" />
+            </b-btn>
+            <b-btn
+              @click="openModal"
+              variant="primary"
+              size="sm"
+              class="d-lg-none"
+            >
+              <font-awesome-icon icon="plus" />
+            </b-btn>
+          </div>
+        </div>
       </template>
       <b-container class="pb-1">
         <b-row style="align-items: center">
