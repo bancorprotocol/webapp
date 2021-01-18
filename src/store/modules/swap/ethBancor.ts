@@ -28,7 +28,6 @@ import {
   V1PoolResponse,
   ViewTradeEvent,
   ViewLiquidityEvent,
-  ViewAmountWithMeta,
   ProtectedLiquidityCalculated,
   ProtectLiquidityParams,
   OnUpdate,
@@ -68,9 +67,6 @@ import {
   getLogs,
   DecodedEvent,
   ConversionEventDecoded,
-  DecodedTimedEvent,
-  AddLiquidityEvent,
-  RemoveLiquidityEvent,
   traverseLockedBalances,
   LockedBalance,
   rewindBlocksByDays,
@@ -78,18 +74,13 @@ import {
   buildPoolNameFromReserves
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
-import {
-  ABIContractRegistry,
-  ethErc20WrapperContract,
-  ethReserveAddress
-} from "@/api/eth/ethAbis";
+import { ethErc20WrapperContract, ethReserveAddress } from "@/api/eth/ethAbis";
 import {
   getApprovedBalanceWei,
   getReturnByPath,
   liquidationLimit,
   getConvertersByAnchors,
   getAnchors,
-  getConvertibleTokenAnchors,
   conversionPath,
   getTokenSupplyWei,
   existingPool,
@@ -138,7 +129,6 @@ import { getSmartTokenHistory } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {
-  findPreviousPoolFee,
   priorityEthPools,
   knownPools,
   PreviousPoolFee,
@@ -156,7 +146,7 @@ import {
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
 import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import { getNetworkVariables } from "@/api/config";
 import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
@@ -198,7 +188,6 @@ import {
   reserveContractsInStatic,
   parseRawDynamic,
   filterAndWarn,
-  calculateLimits,
   staticToConverterAndAnchor
 } from "@/api/pureHelpers";
 import { distinctArrayItem } from "@/api/observables";
@@ -302,125 +291,6 @@ const calculatePoolTokenRate = (
   poolTokenSupply: string,
   reserveTokenBalance: string
 ) => new BigNumber(reserveTokenBalance).times(2).div(poolTokenSupply);
-
-const notBadRelay = (converterAndAnchor: ConverterAndAnchor) =>
-  !compareString(
-    converterAndAnchor.anchorAddress,
-    "0x368B3D50E51e8bf62E6C73fc389e4102B9aEB8e2"
-  ) &&
-  !compareString(
-    converterAndAnchor.anchorAddress,
-    "0x7Ef1fEDb73BD089eC1010bABA26Ca162DFa08144"
-  );
-
-const decodedToTimedDecoded = <T>(
-  event: DecodedEvent<T>,
-  knownBlockNumber: number,
-  knownBlockNumberTime: number
-): DecodedTimedEvent<T> => ({
-  ...event,
-  blockTime: estimateBlockTimeUnix(
-    Number(event.blockNumber),
-    knownBlockNumber,
-    knownBlockNumberTime
-  )
-});
-
-const tokenAddressesInEvent = (
-  event:
-    | DecodedEvent<ConversionEventDecoded>
-    | DecodedEvent<AddLiquidityEvent>
-    | DecodedEvent<RemoveLiquidityEvent>
-): string[] => {
-  if (Object.keys(event.data).includes("from")) {
-    const actualEvent = event as DecodedEvent<ConversionEventDecoded>;
-    const res = [actualEvent.data.from.address, actualEvent.data.to.address];
-    const isArrayOfStrings = res.every(address => typeof address == "string");
-    if (!isArrayOfStrings)
-      throw new Error("Failed to get token addresses in event");
-    return res;
-  } else if (Object.keys(event.data).includes("tokenAdded")) {
-    const actualEvent = event as DecodedEvent<AddLiquidityEvent>;
-    return [actualEvent.data.tokenAdded];
-  } else if (Object.keys(event.data).includes("tokenRemoved")) {
-    const actualEvent = event as DecodedEvent<RemoveLiquidityEvent>;
-    return [actualEvent.data.tokenRemoved];
-  } else {
-    throw new Error("Failed to find token");
-  }
-};
-
-const estimateBlockTimeUnix = (
-  blockNumber: number,
-  knownBlockNumber: number,
-  knownBlockNumberTime: number,
-  averageBlockTimeSeconds = 13
-): number => {
-  if (knownBlockNumber < blockNumber) {
-    const blockgap = blockNumber - knownBlockNumber;
-    const timegap = blockgap * averageBlockTimeSeconds;
-    return knownBlockNumberTime + timegap;
-  }
-  const blockGap = knownBlockNumber - blockNumber;
-  const timeGap = blockGap * averageBlockTimeSeconds;
-  return knownBlockNumberTime - timeGap;
-};
-
-const viewTokenToViewAmountWithMeta = (
-  amount: string,
-  token: ViewToken
-): ViewAmountWithMeta => ({
-  amount: amount,
-  decimals: token.precision,
-  id: token.id,
-  logo: token.logo,
-  symbol: token.symbol
-});
-
-const conversionEventToViewTradeEvent = (
-  conversion: DecodedTimedEvent<ConversionEventDecoded>,
-  tokenPrices: ViewToken[],
-  createBlockExplorerTxLink: (hash: string) => string,
-  createBlockExplorerAccountLink: (account: string) => string
-): ViewLiquidityEvent<ViewTradeEvent> => {
-  const fromToken = findOrThrow(
-    tokenPrices,
-    price => compareString(price.id, conversion.data.from.address),
-    `failed finding token meta passed to conversion event to view trade ${conversion.data.from.address}`
-  );
-  const toToken = findOrThrow(
-    tokenPrices,
-    price => compareString(price.id, conversion.data.to.address),
-    `failed finding token meta passed to conversion event to view trade ${conversion.data.to.address}`
-  );
-
-  const fromAmountDec = shrinkToken(
-    conversion.data.from.weiAmount,
-    fromToken.precision
-  );
-
-  const toAmountDec = shrinkToken(
-    conversion.data.to.weiAmount,
-    toToken.precision
-  );
-
-  return {
-    id: conversion.id,
-    txLink: createBlockExplorerTxLink(conversion.txHash),
-    accountLink: createBlockExplorerAccountLink(conversion.data.trader),
-    valueTransmitted: new BigNumber(fromAmountDec)
-      .times(fromToken.price || 0)
-      .toNumber(),
-    type: "swap",
-    unixTime: conversion.blockTime,
-    account: conversion.data.trader,
-    txHash: conversion.txHash,
-    data: {
-      from: viewTokenToViewAmountWithMeta(fromAmountDec, fromToken),
-      to: viewTokenToViewAmountWithMeta(toAmountDec, toToken)
-    }
-  };
-};
 
 type Wei = string;
 
@@ -589,8 +459,6 @@ const smartTokenAnchor = (smartToken: Token) => ({
   anchor: smartToken,
   converterType: PoolType.Traditional
 });
-
-const poolsToAwait = ["0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533"];
 
 const newRelayToRelayWithBalances = (
   newRelay: NewRelay
@@ -5600,23 +5468,7 @@ export class EthBancorModule
     };
   }
 
-  liquidityHistoryArr: DecodedTimedEvent<ConversionEventDecoded>[] = [];
-  singleTradeHistoryArr: DecodedEvent<ConversionEventDecoded>[] = [];
   previousPoolFeesArr: PreviousPoolFee[] = [];
-
-  @mutation setLiquidityHistory({
-    joinedTradeEvents,
-    singleTrades
-  }: {
-    joinedTradeEvents: DecodedTimedEvent<ConversionEventDecoded>[];
-    singleTrades: DecodedEvent<ConversionEventDecoded>[];
-  }) {
-    console.log(singleTrades, "are single trades");
-    this.singleTradeHistoryArr = singleTrades;
-    this.liquidityHistoryArr = joinedTradeEvents
-      .slice()
-      .sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
-  }
 
   get previousPoolFees(): PreviousPoolFee[] {
     return [...this.previousPoolFeesArr, ...previousPoolFees];
@@ -6049,44 +5901,6 @@ export class EthBancorModule
       distinctUntilChanged(compareString),
       shareReplay(1)
     );
-
-    combineLatest([
-      bancorNetwork$,
-      currentBlock$.pipe(
-        map(({ unixTime, blockNumber }) => [
-          unixTime,
-          blockNumber,
-          rewindBlocksByDays(blockNumber, 1)
-        ])
-      ),
-      networkVersion$
-    ])
-      .pipe(
-        switchMap(
-          ([
-            networkContract,
-            [unixTime, currentBlock, blockYesterday],
-            network
-          ]) =>
-            (async () => {
-              const events = await this.pullEvents({
-                network,
-                networkContract,
-                fromBlock: blockYesterday
-              });
-
-              const withDates = events.joinedTradeEvents.map(event =>
-                decodedToTimedDecoded(event, currentBlock, Number(unixTime))
-              );
-
-              return {
-                joinedTradeEvents: withDates,
-                singleTrades: events.singleTraades
-              };
-            })()
-        )
-      )
-      .subscribe(this.setLiquidityHistory);
 
     combineLatest([liquidityProtection$, settingsContractAddress$])
       .pipe(
