@@ -9,21 +9,21 @@ const VuexModule = createModule({
 export class RewardsModule extends VuexModule.With({
   namespaced: "rewards/"
 }) {
-  @action async claimRewards({ rewardIds }: { rewardIds: string[] }) {
+  @action async claimRewards() {
     const contract = buildStakingRewardsDistributionContract(
       vxm.ethBancor.contracts.StakingRewardsDistribution
     );
 
     await contract.methods
-      .claimRewards(rewardIds)
+      .claimRewards()
       .send({ from: vxm.ethBancor.currentUser });
   }
 
   @action async stakeRewards({
-    rewardIds,
+    maxAmount,
     poolId
   }: {
-    rewardIds: string[];
+    maxAmount: string;
     poolId: string;
   }) {
     const contract = buildStakingRewardsDistributionContract(
@@ -31,7 +31,7 @@ export class RewardsModule extends VuexModule.With({
     );
 
     await contract.methods
-      .stakeRewards(rewardIds, poolId)
+      .stakeRewards(maxAmount, poolId)
       .send({ from: vxm.ethBancor.currentUser });
   }
 }
