@@ -11,7 +11,6 @@
   >
     <div v-if="noHeader"></div>
     <div
-      v-else-if="title"
       class="d-flex justify-content-between align-items-center py-2 px-3"
       :class="[
         darkMode ? 'border-bottom-dark' : 'border-bottom-light',
@@ -26,7 +25,7 @@
         class="m-0 p-0 my-2 font-size-14 font-w600 w-100"
         :class="titleClasses"
       >
-        {{ title }}
+        <slot name="header">{{ title }}</slot>
       </h3>
 
       <div class="fix-width d-flex justify-content-end">
@@ -47,9 +46,6 @@
           prepend="search"
         />
       </div>
-    </div>
-    <div v-else class="block-header">
-      <slot name="header"></slot>
     </div>
     <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
       <slot></slot>

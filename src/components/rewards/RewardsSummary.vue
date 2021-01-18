@@ -1,12 +1,12 @@
 <template>
   <div>
     <ContentBlock
-      :no-header="true"
       :shadow-light="true"
-      :px0="true"
-      class="pt-2 px-3 mb-3 pb-0"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
+      <template #header>
+        {{ title }}
+      </template>
       <div class="d-flex justify-content-between align-items-center d-xl-none">
         <span class="font-size-16 font-w500">{{ title }}</span>
         <div>
@@ -24,9 +24,6 @@
         </div>
       </div>
       <b-container class="pb-1">
-        <b-row>
-          <div class="font-size-16 font-w500">{{ title }}</div>
-        </b-row>
         <b-row style="align-items: center">
           <b-col
             v-for="item in summarizedRewards"
