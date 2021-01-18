@@ -259,6 +259,12 @@ export default class SideBarLeft extends Vue {
       background-color: transparent;
       border-bottom-right-radius: 14px;
       box-shadow: 0 11px 0 0 #f8f9fd;
+
+      -moz-transition: left 0.25s;
+      -ms-transition: left 0.25s;
+      -o-transition: left 0.25s;
+      -webkit-transition: left 0.25s;
+      transition: left 0.25s ease-in-out;
     }
     &::after {
       content: "";
@@ -270,6 +276,12 @@ export default class SideBarLeft extends Vue {
       background-color: transparent;
       border-top-right-radius: 14px;
       box-shadow: 0 -11px 0 0 #f8f9fd;
+
+      -moz-transition: left 0.25s;
+      -ms-transition: left 0.25s;
+      -o-transition: left 0.25s;
+      -webkit-transition: left 0.25s;
+      transition: left 0.25s ease-in-out;
     }
   }
   .btn-toggle {
@@ -280,6 +292,23 @@ export default class SideBarLeft extends Vue {
   .side-bar-wrapper {
     min-width: 60px;
     width: 60px !important;
+  }
+
+  .clicked-link {
+    &::before {
+      left: 33px !important;
+    }
+    &::after {
+      left: 33px !important;
+    }
+  }
+  .clicked-link-dark {
+    &::before {
+      left: 33px !important;
+    }
+    &::after {
+      left: 33px !important;
+    }
   }
 }
 .side-bar-link-dark {
@@ -319,6 +348,12 @@ export default class SideBarLeft extends Vue {
       background-color: transparent;
       border-bottom-right-radius: 14px;
       box-shadow: 0 11px 0 0 #1c344e;
+
+      -moz-transition: left 0.25s;
+      -ms-transition: left 0.25s;
+      -o-transition: left 0.25s;
+      -webkit-transition: left 0.25s;
+      transition: left 0.25s ease-in-out;
     }
     &::after {
       content: "";
@@ -330,6 +365,12 @@ export default class SideBarLeft extends Vue {
       background-color: transparent;
       border-top-right-radius: 14px;
       box-shadow: 0 -11px 0 0 #1c344e;
+
+      -moz-transition: left 0.25s;
+      -ms-transition: left 0.25s;
+      -o-transition: left 0.25s;
+      -webkit-transition: left 0.25s;
+      transition: left 0.25s ease-in-out;
     }
   }
 }
