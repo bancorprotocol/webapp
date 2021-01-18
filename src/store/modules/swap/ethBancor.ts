@@ -3759,7 +3759,7 @@ export class EthBancorModule
     this.tokenBalances = addedBalances;
   }
 
-  @action async relayById(relayId: string) {
+  @action async relayById(relayId: string): Promise<Relay> {
     return findOrThrow(
       this.relaysList,
       relay => compareString(relay.id, relayId),
