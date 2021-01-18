@@ -128,3 +128,10 @@ export default class RewardsSummary extends BaseComponent {
   background: $text-color-light;
 }
 </style>
+  background: $gray-border;
+}
+
+#rewards-summary-dark {
+  background: $text-color-light;
+}
+</style>
