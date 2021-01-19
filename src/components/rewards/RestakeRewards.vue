@@ -13,20 +13,23 @@
         :pools="pools"
       />
     </label-content-split>
+
     <token-input-field
       label="Stake Amount"
       :token="token"
       v-model="amount"
-      @input="amountChanged"
+      :balance="pendingRewards.toString()"
       :error-msg="inputError"
     />
+
     <gray-border-block :gray-bg="true" class="my-3">
-      <label-content-split label="Space Available" :loading="loadingMaxStakes">
+      <label-content-split label="Space Available" :loading="loading">
         <span class="cursor">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
         }}</span>
       </label-content-split>
     </gray-border-block>
+
     <main-button
       :label="actionButtonLabel"
       :active="true"
@@ -47,6 +50,7 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -68,7 +72,9 @@ export default class RestakeRewards extends BaseComponent {
 
   maxStakeAmount: string = "";
   maxStakeSymbol: string = "";
-  loadingMaxStakes = false;
+  loading = false;
+
+  pendingRewards: BigNumber = new BigNumber(0);
 
   private interval: any;
 
@@ -87,17 +93,17 @@ export default class RestakeRewards extends BaseComponent {
 
   get disableActionButton() {
     if (!this.amount) return true;
-    else if (this.loadingMaxStakes) return true;
+    else if (this.loading) return true;
     else return this.inputError ? true : false;
   }
 
   get inputError() {
     if (this.amount == "") return "";
+    if (this.pendingRewards.lt(this.amount))
+      return "Insufficient rewards balance";
     if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
     else return "";
   }
-
-  async amountChanged(tokenAmount: string) {}
 
   openPoolSelectModal() {
     this.poolSelectModal = true;
@@ -111,36 +117,40 @@ export default class RestakeRewards extends BaseComponent {
       params: { id }
     });
 
-    await this.loadMaxStakes();
+    await this.loadData();
   }
 
   async loadMaxStakes() {
-    if (this.loadingMaxStakes) return;
-    this.loadingMaxStakes = true;
-    try {
-      const result = await vxm.ethBancor.getMaxStakesView({
-        poolId: this.pool.id
-      });
-      let stake = result.filter(x => x.token === this.token.symbol);
-      if (stake.length === 1) {
-        this.maxStakeAmount = stake[0].amount;
-        this.maxStakeSymbol = stake[0].token;
-      }
-    } catch {
-    } finally {
-      this.loadingMaxStakes = false;
+    const result = await vxm.ethBancor.getMaxStakesView({
+      poolId: this.pool.id
+    });
+    let stake = result.filter(x => x.token === this.token.symbol);
+    if (stake.length === 1) {
+      this.maxStakeAmount = stake[0].amount;
+      this.maxStakeSymbol = stake[0].token;
     }
   }
 
-  setAmount() {
-    this.amount =
-      parseFloat(this.maxStakeAmount) > 0 ? this.maxStakeAmount : "0";
+  async loadPendingRewards() {
+    this.pendingRewards = await vxm.rewards.pendingRewards();
+  }
+
+  async loadData() {
+    this.loading = true;
+    try {
+      await this.loadMaxStakes();
+      await this.loadPendingRewards();
+    } catch (e) {
+      console.log(e);
+    } finally {
+      this.loading = false;
+    }
   }
 
   async mounted() {
-    await this.loadMaxStakes();
+    await this.loadData();
     this.interval = setInterval(async () => {
-      await this.loadMaxStakes();
+      await this.loadData();
     }, 30000);
   }
 

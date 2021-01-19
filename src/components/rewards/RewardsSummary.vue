@@ -144,7 +144,7 @@ export default class RewardsSummary extends BaseComponent {
     try {
       await this.loadRewardsData();
     } catch (e) {
-      console.log("pending rewards error", e);
+      console.error("Load Rewards Data error: ", e);
     }
   }
 }

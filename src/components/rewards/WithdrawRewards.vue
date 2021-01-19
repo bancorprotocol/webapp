@@ -3,7 +3,7 @@
     <label-content-split label="Claimable Rewards">
       <logo-amount-symbol
         :token-id="bntAddress"
-        :amount="prettifyNumber(amount)"
+        :amount="prettifyNumber(pendingRewards)"
         symbol="BNT"
       />
     </label-content-split>
@@ -14,6 +14,8 @@
       :title="warning.title"
       :msg="warning.msg"
     />
+
+    <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
 
     <main-button
       label="Restake my rewards"
@@ -38,12 +40,26 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import { vxm } from "@/store";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import MainButton from "@/components/common/Button.vue";
+import BigNumber from "bignumber.js";
+import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 
 @Component({
-  components: { AlertBlock, LogoAmountSymbol, LabelContentSplit, MainButton }
+  components: {
+    ModalPoolSelect,
+    AlertBlock,
+    LogoAmountSymbol,
+    LabelContentSplit,
+    MainButton
+  }
 })
 export default class WithdrawRewards extends BaseComponent {
-  amount: number = 123;
+  pendingRewards: BigNumber = new BigNumber(0);
+  loading = false;
+  modal = false;
+
+  get pools() {
+    return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
+  }
 
   get bntAddress() {
     return getNetworkVariables(vxm.ethBancor.currentNetwork).bntToken;
@@ -59,11 +75,34 @@ export default class WithdrawRewards extends BaseComponent {
   }
 
   restakeAction() {
-    return;
+    this.modal = true;
   }
 
   withdrawAction() {
     return;
+  }
+
+  selectPool(id: string) {
+    this.modal = false;
+    this.$router.push({
+      name: "RewardsRestake",
+      params: { id }
+    });
+  }
+
+  async loadData() {
+    this.loading = true;
+    try {
+      this.pendingRewards = await vxm.rewards.pendingRewards();
+    } catch (e) {
+      console.log(e);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async mounted() {
+    await this.loadData();
   }
 }
 </script>
