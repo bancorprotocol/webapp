@@ -29,6 +29,8 @@ export default class ProtectionActions extends Vue {
         return "Withdraw";
       case "RewardsRestake":
         return "ReStake BNT for Protection";
+      case "RewardsWithdraw":
+        return "Withdraw Rewards";
       default:
         return "Stake";
     }
