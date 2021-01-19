@@ -2,6 +2,9 @@ import { createModule, action } from "vuex-class-component";
 import { buildStakingRewardsContract } from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
+import { OnUpdate, TxResponse } from "@/types/bancor";
+import { multiSteps } from "@/api/helpers";
+import wait from "waait";
 
 const VuexModule = createModule({
   strict: false
@@ -14,27 +17,86 @@ export class RewardsModule extends VuexModule.With({
     return buildStakingRewardsContract(vxm.ethBancor.contracts.StakingRewards);
   }
 
-  @action async stakeRewards({
-    maxAmount,
-    poolId
-  }: {
-    maxAmount: string;
-    poolId: string;
-  }) {
-    await this.contract.methods
-      .stakeRewards(maxAmount, poolId)
-      .send({ from: vxm.ethBancor.currentUser });
+  get currentUser() {
+    return vxm.ethBancor.currentUser;
   }
 
-  @action async claimRewards() {
-    await this.contract.methods
+  @action async stakeRewards({
+    maxAmount,
+    poolId,
+    onUpdate
+  }: {
+    maxAmount: BigNumber;
+    poolId: string;
+    onUpdate: OnUpdate;
+  }): Promise<TxResponse> {
+    const txHash = (await multiSteps({
+      items: [
+        {
+          description: "ReStaking Rewards ...",
+          task: async () => {
+            return vxm.ethBancor.resolveTxOnConfirmation({
+              tx: this.contract.methods.stakeRewards(
+                maxAmount.toString(),
+                poolId
+              ),
+              onConfirmation: async () => {
+                // this.fetchProtectionPositions({});
+                // await wait(3000);
+                // this.fetchProtectionPositions({});
+              },
+              resolveImmediately: true
+            });
+          }
+        }
+      ],
+      onUpdate
+    })) as string;
+
+    return {
+      blockExplorerLink: await vxm.ethBancor.createExplorerLink(txHash),
+      txId: txHash
+    };
+  }
+
+  @action async claimRewards({
+    onUpdate
+  }: {
+    onUpdate: OnUpdate;
+  }): Promise<TxResponse> {
+    const result = await this.contract.methods
       .claimRewards()
-      .send({ from: vxm.ethBancor.currentUser });
+      .send({ from: this.currentUser });
+
+    const txHash = (await multiSteps({
+      items: [
+        {
+          description: "ReStaking Rewards ...",
+          task: async () => {
+            return vxm.ethBancor.resolveTxOnConfirmation({
+              tx: this.contract.methods.claimRewards(),
+              onConfirmation: async () => {
+                // this.fetchProtectionPositions({});
+                // await wait(3000);
+                // this.fetchProtectionPositions({});
+              },
+              resolveImmediately: true
+            });
+          }
+        }
+      ],
+      onUpdate
+    })) as string;
+
+    return {
+      blockExplorerLink: await vxm.ethBancor.createExplorerLink(txHash),
+      txId: txHash
+    };
   }
 
   @action async totalClaimedRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
-      .totalClaimedRewards(vxm.ethBancor.currentUser)
+      .totalClaimedRewards(this.currentUser)
       .call();
 
     return new BigNumber(result);
@@ -42,7 +104,7 @@ export class RewardsModule extends VuexModule.With({
 
   @action async pendingRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
-      .pendingRewards(vxm.ethBancor.currentUser)
+      .pendingRewards(this.currentUser)
       .call();
 
     return new BigNumber(result);
@@ -54,9 +116,11 @@ export class RewardsModule extends VuexModule.With({
   }: {
     poolId: string;
     reserveId: string;
-  }) {
-    await this.contract.methods
-      .pendingReserveRewards(vxm.ethBancor.currentUser, poolId, reserveId)
+  }): Promise<BigNumber> {
+    const result = await this.contract.methods
+      .pendingReserveRewards(this.currentUser, poolId, reserveId)
       .call();
+
+    return new BigNumber(result);
   }
 }
