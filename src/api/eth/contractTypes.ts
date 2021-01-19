@@ -354,5 +354,11 @@ export const buildStakingRewardsDistributionContract = (
 ): ContractMethods<{
   stakeRewards: (maxAmount: string, poolToken: string) => ContractSendMethod;
   claimRewards: () => ContractSendMethod;
-  claimedPositionRewards: (positionIds: string[]) => ContractSendMethod;
+  totalClaimedRewards: (provider: string) => CallReturn<string>;
+  pendingRewards: (provider: string) => CallReturn<string>;
+  pendingReserveRewards: (
+    provider: string,
+    poolToken: string,
+    reserveToken: string
+  ) => CallReturn<string>;
 }> => buildContract(ABIStakingRewardsDistribution, contractAddress, web3);
