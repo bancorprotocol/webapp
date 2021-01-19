@@ -17,7 +17,7 @@
         v-model="tokenAmount"
         style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-        placeholder="Enter Amount"
+        :placeholder="$t('enter_amount')"
         :disabled="disabled"
         @keypress="isNumber($event)"
       ></b-form-input>
@@ -36,7 +36,7 @@
             <img
               class="img-avatar img-avatar32 border-colouring bg-white mr-1"
               :src="token.logo"
-              alt="Token Logo"
+              :alt="$t('token_logo')"
             />
             <span
               class="px-1 font-size-14 font-w600"

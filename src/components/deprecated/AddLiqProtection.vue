@@ -37,7 +37,7 @@
                   <img
                     class="img-avatar img-avatar20 mr-1"
                     :src="reserve.logo"
-                    alt="Token Logo"
+                    :alt="$t('token_logo')"
                   />
                   <span class="font-w600 font-size-14">{{
                     reserve.symbol

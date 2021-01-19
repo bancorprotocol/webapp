@@ -16,7 +16,7 @@
           <img
             :src="item.logo"
             class="img-avatar img-avatar32 mr-2"
-            alt="Token Logo"
+            :alt="$t('token_logo')"
           />
           <span class="font-w600 font-size-14">{{ item.symbol }}</span>
         </div>

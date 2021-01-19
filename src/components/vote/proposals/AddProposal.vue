@@ -62,7 +62,7 @@
           no-resize
           size="sm"
           max-rows="2"
-          placeholder="Add Liquidity pool xyz"
+          :placeholder="$t('add_liquidity_pool_xyz')"
           class="combo combo--title"
           :class="[
             !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'

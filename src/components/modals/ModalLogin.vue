@@ -38,7 +38,7 @@
               :src="
                 require('@/assets/media/logos/' + providerLogoUrl(provider))
               "
-              alt="Provider Logo"
+              :alt="$t('provider_logo')"
             />
             <h5
               class="m-0 p-0"
@@ -58,7 +58,7 @@
                 require('@/assets/media/logos/' +
                   providerLogoUrl(selectedProvider))
               "
-              alt="Provider Logo"
+              :alt="$t('provider_logo')"
             />
             <h5
               class="m-0 p-0"
@@ -93,7 +93,7 @@
                 require('@/assets/media/logos/' +
                   providerLogoUrl(selectedProvider))
               "
-              alt="Provider Logo"
+              :alt="$t('provider_logo')"
             />
             <h5
               class="m-0 p-0"

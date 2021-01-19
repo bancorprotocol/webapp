@@ -320,5 +320,8 @@ export const en = {
   left_to_unlock: "left to unlock",
   full_protection_reached: "Full protection reached",
   custom: "Custom",
-  page_of: "Page {current} of {total}"
+  page_of: "Page {current} of {total}",
+  add_liquidity_pool_xyz: "Add Liquidity pool xyz",
+  token_logo: "Token Logo",
+  provider_logo: "Provider Logo"
 };

@@ -5,7 +5,7 @@
       v-if="tokenId"
       class="img-avatar bg-white logo-shadow img-avatar20"
       :src="logo"
-      alt="Token Logo"
+      :alt="$t('token_logo')"
     />
     <span
       class="font-size-14 font-w600 ml-2"

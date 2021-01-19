@@ -43,7 +43,7 @@
             <img
               :src="pool.reserves[0].logo"
               class="img-avatar img-avatar20"
-              alt="Token Logo"
+              :alt="$t('token_logo')"
             />
             <span class="ml-2">{{ pool.reserves[0].symbol }}</span>
           </div>
@@ -57,7 +57,7 @@
             <img
               :src="pool.reserves[1].logo"
               class="img-avatar img-avatar20"
-              alt="Token Logo"
+              :alt="$t('token_logo')"
             />
             <span class="ml-2">{{ pool.reserves[1].symbol }}</span>
           </div>

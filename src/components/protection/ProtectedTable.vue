@@ -485,7 +485,7 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 5,
         key: "roi",
-        label: i18n.tc("roi"),
+        label: "ROI",
         tooltip: i18n.tc("roi__protected_value"),
         minWidth: "75px",
         thClass: "text-center"
@@ -493,7 +493,7 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 6,
         key: "apr",
-        label: i18n.tc("apr"),
+        label: "APR",
         tooltip: i18n.tc("estimated_calculation_annual_returns"),
         sortable: true,
         minWidth: "115px"
