@@ -3624,76 +3624,78 @@ export class EthBancorModule
       throw new Error("Cannot fetch balances when not logged in");
     const uniqueAddresses = uniqWith(tokenAddresses, compareString);
 
-    const meta = this.tokenMeta;
+    const withPrecision =
+      this.apiData &&
+      uniqueAddresses.map(address => {
+        const foundToken = this.apiData!.tokens.find(token =>
+          compareString(token.dlt_id, address)
+        );
 
-    const decimalIsKnown = (address: string) =>
-      meta.some(
-        meta =>
-          compareString(meta.contract, address) &&
-          !typeof meta.precision !== undefined
-      );
-
-    const [knownDecimals, unknownDecimals] = partition(
-      uniqueAddresses,
-      decimalIsKnown
-    );
-
-    const owner = this.currentUser;
-
-    const knownDecimalShapes = knownDecimals.map(address =>
-      slimBalanceShape(address, owner, this.currentNetwork)
-    );
-
-    const unknownDecimalShapes = unknownDecimals.map(address =>
-      balanceShape(address, owner, this.currentNetwork)
-    );
-
-    try {
-      const [knownDecimalsRes, unknownDecimalsRes] = (await this.multi({
-        groupsOfShapes: [knownDecimalShapes, unknownDecimalShapes]
-      })) as [
-        { contract: string; balance: string }[],
-        { contract: string; balance: string; decimals: string }[]
-      ];
-
-      const knownResDec = knownDecimalsRes.map(res => {
-        const tokenMeta = meta.find(
-          meta =>
-            compareString(meta.contract, res.contract) &&
-            decimalIsKnown(meta.contract)
-        )!;
-        const shrunkBalance = shrinkToken(res.balance, tokenMeta.precision!);
-        return res.balance !== "0" ? { ...res, balance: shrunkBalance } : res;
+        return {
+          address,
+          ...(foundToken && { precision: foundToken.precision })
+        };
       });
 
-      const [passedUnknown, failedUnknown] = partition(
-        unknownDecimalsRes,
-        res => typeof res.decimals !== "undefined"
+    if (withPrecision) {
+      const [knownPrecisions, unknownPrecisions] = partition(
+        withPrecision,
+        token => Object.keys(token).includes("precision")
+      );
+      const owner = this.currentUser;
+      const currentNetwork = this.currentNetwork;
+
+      const knownDecimalShapes = knownPrecisions.map(token =>
+        slimBalanceShape(token.address, owner, currentNetwork)
       );
 
-      if (failedUnknown.length > 0) {
-        // sentry warning
-        console.warn("failed to find decimals for", failedUnknown);
+      const unknownDecimalShapes = unknownPrecisions.map(token =>
+        balanceShape(token.address, owner, currentNetwork)
+      );
+
+      try {
+        const [knownDecimalsRes, unknownDecimalsRes] = (await this.multi({
+          groupsOfShapes: [knownDecimalShapes, unknownDecimalShapes]
+        })) as [
+          { contract: string; balance: string }[],
+          { contract: string; balance: string; decimals: string }[]
+        ];
+
+        const rebuiltDecimals = knownDecimalsRes.map(token => {
+          const previouslyKnownPrecision = findOrThrow(knownPrecisions, t =>
+            compareString(token.contract, t.address)
+          );
+          return {
+            ...token,
+            decimals: previouslyKnownPrecision.precision!
+          };
+        });
+
+        const parsedNumbers = unknownDecimalsRes.map(res => ({
+          ...res,
+          decimals: Number(res.decimals)
+        }));
+
+        const mergedWei = [...rebuiltDecimals, ...parsedNumbers];
+        const mergedDecimal = mergedWei.map(balance => ({
+          ...balance,
+          balance:
+            balance.balance !== "0"
+              ? shrinkToken(balance.balance, balance.decimals)
+              : balance.balance
+        }));
+
+        return mergedDecimal.map(
+          (balance): Balance => ({
+            balance: balance.balance,
+            id: balance.contract
+          })
+        );
+      } catch (e) {
+        throw new Error("Failed fetching balances");
       }
-
-      const unknownResDec = passedUnknown.map(res => ({
-        ...res,
-        balance:
-          res.balance !== "0"
-            ? shrinkToken(res.balance, Number(res.decimals))
-            : res.balance
-      }));
-
-      const decBalances = [...knownResDec, ...unknownResDec];
-
-      return decBalances.map(
-        (balance): Balance => ({
-          balance: balance.balance,
-          id: balance.contract
-        })
-      );
-    } catch (e) {
-      throw new Error("Failed to fetch balances");
+    } else {
+      return [];
     }
   }
 
