@@ -24,7 +24,7 @@
 
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split label="Space Available" :loading="loading">
-        <span class="cursor">{{
+        <span class="cursor" @click="amount = maxStakeAmount">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
         }}</span>
       </label-content-split>
@@ -34,8 +34,11 @@
       :label="actionButtonLabel"
       :active="true"
       :large="true"
+      @click="restakeRewards"
       :disabled="disableActionButton"
     />
+
+    <modal-tx-action :tx-meta="txMeta" @close="setDefault" />
   </div>
 </template>
 
@@ -49,11 +52,13 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
 import BigNumber from "bignumber.js";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
 @Component({
   components: {
+    ModalTxAction,
     ModalPoolSelect,
     PoolLogos,
     LabelContentSplit,
@@ -62,7 +67,7 @@ import BigNumber from "bignumber.js";
     MainButton
   }
 })
-export default class RestakeRewards extends BaseComponent {
+export default class RestakeRewards extends BaseTxAction {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
@@ -109,6 +114,23 @@ export default class RestakeRewards extends BaseComponent {
     this.poolSelectModal = true;
   }
 
+  async restakeRewards() {
+    this.txMeta.txBusy = true;
+    this.txMeta.showTxModal = true;
+
+    try {
+      this.txMeta.success = await vxm.rewards.stakeRewards({
+        maxAmount: new BigNumber(this.amount),
+        poolId: this.pool.id,
+        onUpdate: this.onUpdate
+      });
+    } catch (e) {
+      this.txMeta.txError = e.message;
+    } finally {
+      this.txMeta.txBusy = false;
+    }
+  }
+
   async selectPool(id: string) {
     if (this.pool.id === id) return;
 
@@ -125,6 +147,7 @@ export default class RestakeRewards extends BaseComponent {
       poolId: this.pool.id
     });
     let stake = result.filter(x => x.token === this.token.symbol);
+    console.log(stake);
     if (stake.length === 1) {
       this.maxStakeAmount = stake[0].amount;
       this.maxStakeSymbol = stake[0].token;
