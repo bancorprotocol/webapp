@@ -32,6 +32,5 @@ describe("resolveTx", () => {
     expect(onConfirmation).toHaveBeenCalled();
     expect(onError).not.toHaveBeenCalled();
     expect(mockSendTx.mock.calls.length).toBe(3);
-    expect(mockSendTx).toMatchSnapshot();
   })
 })
