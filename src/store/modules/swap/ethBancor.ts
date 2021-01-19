@@ -4691,7 +4691,7 @@ export class EthBancorModule
       BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
       LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
       LiquidityProtection: asciiToHex("LiquidityProtection"),
-      StakingRewardsDistribution: asciiToHex("StakingRewardsDistribution")
+      StakingRewardsDistribution: asciiToHex("StakingRewards")
     };
 
     const hardCodedShape = (
