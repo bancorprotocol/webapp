@@ -145,7 +145,7 @@ import { formatUnixTime, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
