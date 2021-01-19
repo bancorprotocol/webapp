@@ -441,12 +441,26 @@ const conversionEventToViewTradeEvent = (
     toToken.precision
   );
 
+  const amountsAndPrices = [
+    { price: fromToken.price, dec: fromAmountDec, id: fromToken.id },
+    { price: toToken.price, dec: toAmountDec, id: toToken.id }
+  ];
+
+  const preferredAmountAndPrice = sortAlongSide(
+    amountsAndPrices,
+    price => price.id,
+    [
+      "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
+      "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    ]
+  )[0];
+
   return {
     id: conversion.id,
     txLink: createBlockExplorerTxLink(conversion.txHash),
     accountLink: createBlockExplorerAccountLink(conversion.data.trader),
-    valueTransmitted: new BigNumber(fromAmountDec)
-      .times(fromToken.price || 0)
+    valueTransmitted: new BigNumber(preferredAmountAndPrice.dec)
+      .times(preferredAmountAndPrice.price || 0)
       .toNumber(),
     type: "swap",
     unixTime: conversion.blockTime,
@@ -3343,7 +3357,11 @@ export class EthBancorModule
             .div(liqDepth)
             .toString();
 
-        const volume = feesGenerated && feesGenerated.totalVolume;
+        const tinyPoolAnchor = "0xc4938292EA2d3085fFFc11C46B87CA068a83BE01";
+        const isTinyPool = compareString(tinyPoolAnchor, relay.id);
+        const volume = isTinyPool
+          ? "21.88"
+          : feesGenerated && feesGenerated.totalVolume;
 
         const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
           compareString(apr.poolId, relay.id)
