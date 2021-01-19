@@ -2498,38 +2498,6 @@ export class EthBancorModule
     }
   }
 
-  @action async deployConverter({
-    smartTokenName,
-    smartTokenSymbol,
-    reserveTokenAddresses,
-    precision = 18
-  }: {
-    smartTokenName: string;
-    smartTokenSymbol: string;
-    reserveTokenAddresses: string[];
-    precision?: number;
-  }): Promise<string> {
-    if (reserveTokenAddresses.length !== 2)
-      throw new Error("Method deployConverter only supports 2 reserves");
-    const contract = buildRegistryContract(
-      this.contracts.BancorConverterRegistry
-    );
-
-    const smartTokenDecimals = precision;
-
-    return this.resolveTxOnConfirmation({
-      tx: contract.methods.newConverter(
-        1,
-        smartTokenName,
-        smartTokenSymbol,
-        smartTokenDecimals,
-        50000,
-        reserveTokenAddresses,
-        ["500000", "500000"]
-      )
-    });
-  }
-
   @action async deployV1Converter({
     poolTokenName,
     poolTokenSymbol,
