@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex justify-content-start align-items-baseline">
+  <div class="d-flex align-items-center">
     <pool-logos-overlapped v-if="poolId" :pool-id="poolId" size="20" />
     <img
       v-if="tokenId"
@@ -7,6 +7,7 @@
       :src="logo"
       alt="Token Logo"
     />
+
     <span
       class="font-size-14 font-w600 ml-2"
       :class="darkMode ? 'text-dark' : 'text-light'"

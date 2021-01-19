@@ -6,7 +6,7 @@
         v-if="currentUser"
         class="font-size-12 font-w500 cursor"
       >
-        {{ formattedBalance }}
+        Balance: ~{{ prettifyNumber(balance) }}
         {{ usdValue ? usdValue : "" }}
       </span>
     </label-content-split>
