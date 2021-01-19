@@ -41,9 +41,9 @@ export class RewardsModule extends VuexModule.With({
                 poolId
               ),
               onConfirmation: async () => {
-                // this.fetchProtectionPositions({});
+                //
                 // await wait(3000);
-                // this.fetchProtectionPositions({});
+                //
               },
               resolveImmediately: true
             });
@@ -64,10 +64,6 @@ export class RewardsModule extends VuexModule.With({
   }: {
     onUpdate: OnUpdate;
   }): Promise<TxResponse> {
-    const result = await this.contract.methods
-      .claimRewards()
-      .send({ from: this.currentUser });
-
     const txHash = (await multiSteps({
       items: [
         {
@@ -76,9 +72,9 @@ export class RewardsModule extends VuexModule.With({
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.claimRewards(),
               onConfirmation: async () => {
-                // this.fetchProtectionPositions({});
+                //
                 // await wait(3000);
-                // this.fetchProtectionPositions({});
+                //
               },
               resolveImmediately: true
             });
