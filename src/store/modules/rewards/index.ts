@@ -26,7 +26,7 @@ export class RewardsModule extends VuexModule.With({
     poolId,
     onUpdate
   }: {
-    maxAmount: BigNumber;
+    maxAmount: string;
     poolId: string;
     onUpdate: OnUpdate;
   }): Promise<TxResponse> {
@@ -36,10 +36,7 @@ export class RewardsModule extends VuexModule.With({
           description: "ReStaking Rewards ...",
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
-              tx: this.contract.methods.stakeRewards(
-                maxAmount.toString(),
-                poolId
-              ),
+              tx: this.contract.methods.stakeRewards(maxAmount, poolId),
               onConfirmation: async () => {
                 //
                 // await wait(3000);

@@ -120,7 +120,7 @@ export default class RestakeRewards extends BaseTxAction {
 
     try {
       this.txMeta.success = await vxm.rewards.stakeRewards({
-        maxAmount: new BigNumber(this.amount),
+        maxAmount: this.amount,
         poolId: this.pool.id,
         onUpdate: this.onUpdate
       });
