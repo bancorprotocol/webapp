@@ -1,7 +1,7 @@
 import { createModule, action } from "vuex-class-component";
-import { buildStakingRewardsDistributionContract } from "@/api/eth/contractTypes";
+import { buildStakingRewardsContract } from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
-import { web3 } from "@/api/web3";
+import BigNumber from "bignumber.js";
 
 const VuexModule = createModule({
   strict: false
@@ -11,9 +11,7 @@ export class RewardsModule extends VuexModule.With({
   namespaced: "rewards/"
 }) {
   get contract() {
-    return buildStakingRewardsDistributionContract(
-      vxm.ethBancor.contracts.StakingRewardsDistribution
-    );
+    return buildStakingRewardsContract(vxm.ethBancor.contracts.StakingRewards);
   }
 
   @action async stakeRewards({
@@ -34,22 +32,20 @@ export class RewardsModule extends VuexModule.With({
       .send({ from: vxm.ethBancor.currentUser });
   }
 
-  @action async totalClaimedRewards() {
-    await this.contract.methods
+  @action async totalClaimedRewards(): Promise<BigNumber> {
+    const result = await this.contract.methods
       .totalClaimedRewards(vxm.ethBancor.currentUser)
       .call();
+
+    return new BigNumber(result);
   }
 
-  @action async pendingRewards() {
-    console.log(
-      "StakingRewardsDistribution",
-      vxm.ethBancor.contracts.StakingRewardsDistribution
-    );
-    const contract = await buildStakingRewardsDistributionContract(
-      vxm.ethBancor.contracts.StakingRewardsDistribution,
-      web3
-    );
-    await contract.methods.pendingRewards(vxm.ethBancor.currentUser).call();
+  @action async pendingRewards(): Promise<BigNumber> {
+    const result = await this.contract.methods
+      .pendingRewards(vxm.ethBancor.currentUser)
+      .call();
+
+    return new BigNumber(result);
   }
 
   @action async pendingReserveRewards({

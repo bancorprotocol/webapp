@@ -115,8 +115,7 @@ import {
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSettingsContract,
-  buildAddressLookupContract,
-  buildStakingRewardsDistributionContract
+  buildAddressLookupContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -1162,7 +1161,7 @@ interface RegisteredContracts {
   BancorConverterRegistry: string;
   LiquidityProtection: string;
   LiquidityProtectionStore: string;
-  StakingRewardsDistribution: string;
+  StakingRewards: string;
 }
 
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
@@ -1362,7 +1361,7 @@ export class EthBancorModule
     BancorConverterRegistry: "",
     LiquidityProtection: "",
     LiquidityProtectionStore: "",
-    StakingRewardsDistribution: ""
+    StakingRewards: ""
   };
   initiated: boolean = false;
   failedPools: string[] = [];
@@ -4691,7 +4690,7 @@ export class EthBancorModule
       BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
       LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
       LiquidityProtection: asciiToHex("LiquidityProtection"),
-      StakingRewardsDistribution: asciiToHex("StakingRewards")
+      StakingRewards: asciiToHex("StakingRewards")
     };
 
     const hardCodedShape = (

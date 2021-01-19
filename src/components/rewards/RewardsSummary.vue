@@ -68,8 +68,6 @@
         </b-col>
       </b-row>
     </ContentBlock>
-    sss
-    <pre>{{ pendingRewards }}</pre>
 
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
   </div>
@@ -83,10 +81,11 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { vxm } from "@/store";
+import BigNumber from "bignumber.js";
 interface ViewRewardsSummaryItem {
   id: number;
   label: string;
-  bnt: number;
+  bnt: BigNumber;
   usd: number;
 }
 
@@ -100,7 +99,8 @@ export default class RewardsSummary extends BaseComponent {
   title = "Rewards";
   modal = false;
 
-  pendingRewards: any = null;
+  pendingRewards: BigNumber = new BigNumber(0);
+  totalClaimedRewards: BigNumber = new BigNumber(0);
 
   get pools() {
     return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
@@ -111,20 +111,21 @@ export default class RewardsSummary extends BaseComponent {
       {
         id: 1,
         label: "Total Reward to date",
-        bnt: 1.123123,
+        bnt: this.totalClaimedRewards.plus(this.pendingRewards),
         usd: 99.12
       },
       {
         id: 2,
         label: "Claimable Rewards",
-        bnt: 1231231231.123123123123,
+        bnt: this.pendingRewards,
         usd: 99.12
       }
     ];
   }
 
-  async loadPendingRewards() {
+  async loadRewardsData() {
     this.pendingRewards = await vxm.rewards.pendingRewards();
+    this.totalClaimedRewards = await vxm.rewards.totalClaimedRewards();
   }
 
   openModal() {
@@ -141,7 +142,7 @@ export default class RewardsSummary extends BaseComponent {
 
   async mounted() {
     try {
-      await this.loadPendingRewards();
+      await this.loadRewardsData();
     } catch (e) {
       console.log("pending rewards error", e);
     }

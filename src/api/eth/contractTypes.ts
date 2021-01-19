@@ -349,7 +349,7 @@ export const buildAddressLookupContract = (
   addressOf: (ascii: string) => CallReturn<string>;
 }> => buildContract(ABIContractRegistry, contractAddress);
 
-export const buildStakingRewardsDistributionContract = (
+export const buildStakingRewardsContract = (
   contractAddress: string,
   web3?: Web3
 ): ContractMethods<{
