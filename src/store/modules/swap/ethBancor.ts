@@ -1481,46 +1481,6 @@ export class EthBancorModule
     });
   }
 
-  @action async unProtectLiquidityTx({
-    id1,
-    id2
-  }: {
-    id1: string;
-    id2: string;
-  }) {
-    const liquidityProtectionAddress = this.contracts.LiquidityProtection;
-    const contract = buildLiquidityProtectionContract(
-      liquidityProtectionAddress
-    );
-    return this.resolveTxOnConfirmation({
-      tx: contract.methods.unprotectLiquidity(id1, id2)
-    });
-  }
-
-  @action async unprotectLiquidity({
-    id1,
-    id2
-  }: {
-    id1: string;
-    id2: string;
-  }): Promise<TxResponse> {
-    const res = await this.unProtectLiquidityTx({ id1, id2 });
-
-    (async () => {
-      await wait(700);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions({});
-      await wait(4000);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions({});
-    })();
-
-    return {
-      blockExplorerLink: await this.createExplorerLink(res),
-      txId: res
-    };
-  }
-
   protectedPositionsArr: ProtectedLiquidityCalculated[] = [];
 
   @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
