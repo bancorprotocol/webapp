@@ -212,6 +212,21 @@ import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
 import { getWelcomeData, NewPool, WelcomeData } from "@/api/eth/bancorApi";
 
+interface ViewRelayConverter extends ViewRelay {
+  converterAddress: string;
+}
+
+const viewRelayConverterToMinimal = (
+  relay: ViewRelayConverter
+): MinimalRelay => ({
+  anchorAddress: relay.id,
+  contract: relay.converterAddress,
+  reserves: relay.reserves.map(reserve => ({
+    contract: reserve.id,
+    symbol: reserve.symbol
+  }))
+});
+
 const currentBlockTwo$ = new Subject<number>();
 const convertersAndAnchors$ = new Subject<ConverterAndAnchor>();
 const bufferToggle$ = new Subject();
@@ -326,7 +341,7 @@ const calculateShareOfPool = (
   return shareOfPool;
 };
 
-const compareRelayByReserves = (a: Relay, b: Relay) =>
+const compareRelayByReserves = (a: ViewRelay, b: ViewRelay) =>
   a.reserves.every(reserve =>
     b.reserves.some(r => compareString(reserve.contract, r.contract))
   );
@@ -1953,13 +1968,6 @@ export class EthBancorModule
     );
     const ppmPercent = decToPpm(decPercent);
 
-    console.log({ ppmPercent, decPercent }, "issue 560");
-    console.assert(
-      decPercent == 1,
-      "dec percent passed from View layer was not 1!"
-    );
-    console.assert();
-
     if (isDissolvingNetworkToken) {
       const dissolvingFullPosition = decPercent === 1;
       const roundingBuffer = 0.01;
@@ -2141,7 +2149,7 @@ export class EthBancorModule
         )
       );
 
-    const allRelays = this.relaysList;
+    const allRelays = this.relays;
     const uniqueAnchors = uniqWith(
       allPositions.map(pos => pos.poolToken),
       compareString
@@ -2268,6 +2276,18 @@ export class EthBancorModule
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
+    const poolAnchors = this.newPools.map(pool => pool.pool_dlt_id);
+    const balances = this.tokenBalances;
+    const smartTokenBalances = balances.filter(balance =>
+      poolAnchors.some(anchor => compareString(balance.id, anchor))
+    );
+    const newPositions = smartTokenBalances.map(balance => ({
+      relay: findOrThrow(this.relays, relay =>
+        compareString(relay.id, balance.id)
+      ),
+      balance: balance.balance
+    })) as PoolTokenPosition[];
+
     const relaysList = this.relaysList;
     const allIouTokens = relaysList.flatMap(iouTokensInRelay);
     const existingBalances = this.tokenBalances.filter(
@@ -2278,63 +2298,57 @@ export class EthBancorModule
         )
     );
 
-    const relevantRelays = relaysList.filter(relay =>
-      iouTokensInRelay(relay).some(token =>
-        existingBalances.some(balance =>
-          compareString(balance.id, token.contract)
-        )
-      )
-    );
-
-    return relevantRelays.map(relay => {
-      const anchorTokens = iouTokensInRelay(relay);
-      const iouTokens = existingBalances.filter(existingBalance =>
-        anchorTokens.some(anchor =>
-          compareString(existingBalance.id, anchor.contract)
+    const relevantRelays = relaysList
+      .filter(x => x.converterType == PoolType.ChainLink)
+      .filter(relay =>
+        iouTokensInRelay(relay).some(token =>
+          existingBalances.some(balance =>
+            compareString(balance.id, token.contract)
+          )
         )
       );
 
-      const viewRelay = this.relay(relay.id);
-      const isV1 = relay.converterType == PoolType.Traditional;
-      if (isV1) {
-        return {
-          relay: viewRelay,
-          smartTokenAmount: iouTokens[0].balance
-        };
-      } else {
-        const chainkLinkRelay = relay as ChainLinkRelay;
-        const reserveBalances = iouTokens.map(iouToken => {
-          const relevantPoolTokenData = chainkLinkRelay.anchor.poolTokens.find(
-            poolToken =>
-              compareString(poolToken.poolToken.contract, iouToken.id)
-          )!;
+    const oldMethod = relevantRelays.map(
+      (relay): PoolTokenPosition => {
+        const anchorTokens = iouTokensInRelay(relay);
+        const iouTokens = existingBalances.filter(existingBalance =>
+          anchorTokens.some(anchor =>
+            compareString(existingBalance.id, anchor.contract)
+          )
+        );
+
+        const viewRelay = this.relay(relay.id);
+        const isV1 = relay.converterType == PoolType.Traditional;
+        if (isV1) {
           return {
-            balance: iouToken.balance,
-            reserveId: relevantPoolTokenData.reserveId
+            relay: viewRelay,
+            smartTokenAmount: iouTokens[0].balance
           };
-        });
-        return {
-          relay: viewRelay,
-          poolTokens: reserveBalances
-        };
+        } else {
+          const chainkLinkRelay = relay as ChainLinkRelay;
+          const reserveBalances = iouTokens.map(iouToken => {
+            const relevantPoolTokenData = chainkLinkRelay.anchor.poolTokens.find(
+              poolToken =>
+                compareString(poolToken.poolToken.contract, iouToken.id)
+            )!;
+            return {
+              balance: iouToken.balance,
+              reserveId: relevantPoolTokenData.reserveId
+            };
+          });
+          return {
+            relay: viewRelay,
+            poolTokens: reserveBalances
+          };
+        }
       }
-    });
+    );
+
+    return [...newPositions, ...oldMethod];
   }
 
   get morePoolsAvailable() {
-    const allPools = this.registeredAnchorAddresses;
-    const remainingPools = allPools
-      .filter(
-        poolAddress =>
-          !this.relaysList.some(relay => compareString(poolAddress, relay.id))
-      )
-      .filter(
-        poolAddress =>
-          !this.failedPools.some(failedPool =>
-            compareString(failedPool, poolAddress)
-          )
-      );
-    return remainingPools.length > 0;
+    return !this.apiData;
   }
 
   @mutation setLoadingPools(status: boolean) {
@@ -2345,27 +2359,7 @@ export class EthBancorModule
     this.failedPools = uniqWith([...this.failedPools, ...ids], compareString);
   }
 
-  @action async loadMorePools() {
-    this.setLoadingPools(true);
-    const remainingAnchorAddresses = this.registeredAnchorAddresses
-      .filter(
-        address =>
-          !this.relaysList.some(relay => compareString(relay.id, address))
-      )
-      .filter(
-        address =>
-          !this.failedPools.some(failedPoolAddress =>
-            compareString(address, failedPoolAddress)
-          )
-      );
-
-    if (remainingAnchorAddresses && remainingAnchorAddresses.length > 0) {
-      const remainingPools = await this.add(remainingAnchorAddresses);
-
-      await this.addPoolsBulk(remainingPools);
-    }
-    this.setLoadingPools(false);
-  }
+  @action async loadMorePools() {}
 
   @action async checkPriceDeviationTooHigh({
     relayId,
@@ -2496,7 +2490,7 @@ export class EthBancorModule
         .filter(tokenChoice => tokenChoice.id !== networkToken)
         .filter(meta => {
           const suggestedReserveIds = [meta.id, networkToken];
-          const existingRelayWithSameReserves = this.relaysList.some(relay => {
+          const existingRelayWithSameReserves = this.relays.some(relay => {
             const reserves = relay.reserves.map(reserve => reserve.contract);
             return suggestedReserveIds.every(id =>
               reserves.some(r => compareString(id, r))
@@ -2540,6 +2534,7 @@ export class EthBancorModule
   }
 
   @mutation resetData() {
+    this.apiData = undefined;
     this.relaysList = [];
     this.tokenBalances = [];
     this.initiated = false;
@@ -3598,23 +3593,16 @@ export class EthBancorModule
   }: {
     poolTokenAmount: ViewAmount;
   }): Promise<ProtectionRes> {
-    const relay = findOrThrow(this.relaysList, relay =>
-      compareString(relay.id, poolTokenAmount.id)
-    );
-    const smartToken = relay.anchor as SmartToken;
-
     const balances = await this.fetchRelayBalances({
-      poolId: smartToken.contract
+      poolId: poolTokenAmount.id
     });
 
     const outputs = balances.reserves.map(reserve => {
-      console.log(reserve, balances, "dishes");
       const rate = new BigNumber(
         calculatePoolTokenRate(balances.smartTokenSupplyWei, reserve.weiAmount)
       ).div(2);
 
       const reserveAmount = rate.times(poolTokenAmount.amount);
-      console.log(rate, "is long string");
       return {
         id: reserve.contract,
         amount: reserveAmount.toString(),
@@ -3646,76 +3634,78 @@ export class EthBancorModule
       throw new Error("Cannot fetch balances when not logged in");
     const uniqueAddresses = uniqWith(tokenAddresses, compareString);
 
-    const meta = this.tokenMeta;
+    const withPrecision =
+      this.apiData &&
+      uniqueAddresses.map(address => {
+        const foundToken = this.apiData!.tokens.find(token =>
+          compareString(token.dlt_id, address)
+        );
 
-    const decimalIsKnown = (address: string) =>
-      meta.some(
-        meta =>
-          compareString(meta.contract, address) &&
-          !typeof meta.precision !== undefined
-      );
-
-    const [knownDecimals, unknownDecimals] = partition(
-      uniqueAddresses,
-      decimalIsKnown
-    );
-
-    const owner = this.currentUser;
-
-    const knownDecimalShapes = knownDecimals.map(address =>
-      slimBalanceShape(address, owner, this.currentNetwork)
-    );
-
-    const unknownDecimalShapes = unknownDecimals.map(address =>
-      balanceShape(address, owner, this.currentNetwork)
-    );
-
-    try {
-      const [knownDecimalsRes, unknownDecimalsRes] = (await this.multi({
-        groupsOfShapes: [knownDecimalShapes, unknownDecimalShapes]
-      })) as [
-        { contract: string; balance: string }[],
-        { contract: string; balance: string; decimals: string }[]
-      ];
-
-      const knownResDec = knownDecimalsRes.map(res => {
-        const tokenMeta = meta.find(
-          meta =>
-            compareString(meta.contract, res.contract) &&
-            decimalIsKnown(meta.contract)
-        )!;
-        const shrunkBalance = shrinkToken(res.balance, tokenMeta.precision!);
-        return res.balance !== "0" ? { ...res, balance: shrunkBalance } : res;
+        return {
+          address,
+          ...(foundToken && { precision: foundToken.precision })
+        };
       });
 
-      const [passedUnknown, failedUnknown] = partition(
-        unknownDecimalsRes,
-        res => typeof res.decimals !== "undefined"
+    if (withPrecision) {
+      const [knownPrecisions, unknownPrecisions] = partition(
+        withPrecision,
+        token => Object.keys(token).includes("precision")
+      );
+      const owner = this.currentUser;
+      const currentNetwork = this.currentNetwork;
+
+      const knownDecimalShapes = knownPrecisions.map(token =>
+        slimBalanceShape(token.address, owner, currentNetwork)
       );
 
-      if (failedUnknown.length > 0) {
-        // sentry warning
-        console.warn("failed to find decimals for", failedUnknown);
+      const unknownDecimalShapes = unknownPrecisions.map(token =>
+        balanceShape(token.address, owner, currentNetwork)
+      );
+
+      try {
+        const [knownDecimalsRes, unknownDecimalsRes] = (await this.multi({
+          groupsOfShapes: [knownDecimalShapes, unknownDecimalShapes]
+        })) as [
+          { contract: string; balance: string }[],
+          { contract: string; balance: string; decimals: string }[]
+        ];
+
+        const rebuiltDecimals = knownDecimalsRes.map(token => {
+          const previouslyKnownPrecision = findOrThrow(knownPrecisions, t =>
+            compareString(token.contract, t.address)
+          );
+          return {
+            ...token,
+            decimals: previouslyKnownPrecision.precision!
+          };
+        });
+
+        const parsedNumbers = unknownDecimalsRes.map(res => ({
+          ...res,
+          decimals: Number(res.decimals)
+        }));
+
+        const mergedWei = [...rebuiltDecimals, ...parsedNumbers];
+        const mergedDecimal = mergedWei.map(balance => ({
+          ...balance,
+          balance:
+            balance.balance !== "0"
+              ? shrinkToken(balance.balance, balance.decimals)
+              : balance.balance
+        }));
+
+        return mergedDecimal.map(
+          (balance): Balance => ({
+            balance: balance.balance,
+            id: balance.contract
+          })
+        );
+      } catch (e) {
+        throw new Error("Failed fetching balances");
       }
-
-      const unknownResDec = passedUnknown.map(res => ({
-        ...res,
-        balance:
-          res.balance !== "0"
-            ? shrinkToken(res.balance, Number(res.decimals))
-            : res.balance
-      }));
-
-      const decBalances = [...knownResDec, ...unknownResDec];
-
-      return decBalances.map(
-        (balance): Balance => ({
-          balance: balance.balance,
-          id: balance.contract
-        })
-      );
-    } catch (e) {
-      throw new Error("Failed to fetch balances");
+    } else {
+      return [];
     }
   }
 
@@ -3781,7 +3771,7 @@ export class EthBancorModule
     this.tokenBalances = addedBalances;
   }
 
-  @action async relayById(relayId: string) {
+  @action async relayById(relayId: string): Promise<Relay> {
     return findOrThrow(
       this.relaysList,
       relay => compareString(relay.id, relayId),
@@ -4942,7 +4932,7 @@ export class EthBancorModule
   }
 
   get loadingTokens() {
-    return this.relaysList.length < 290;
+    return !this.apiData;
   }
 
   get moreTokensAvailable() {
@@ -5073,34 +5063,6 @@ export class EthBancorModule
       blockHeight
     });
     return res;
-  }
-
-  @action async refreshReserveBalances() {
-    const v1Relays = this.relaysList.filter(
-      relay => relay.converterType == PoolType.Traditional
-    ) as TraditionalRelay[];
-    const v2Relays = this.relaysList.filter(
-      relay => relay.converterType == PoolType.ChainLink
-    ) as ChainLinkRelay[];
-
-    const v1RelayShapes = v1Relays.map(relay =>
-      reserveBalanceShape(
-        relay.contract,
-        relay.reserves.map(r => r.contract)
-      )
-    );
-    const v2RelayPoolBalanceShapes = v2Relays.map(relay =>
-      v2PoolBalanceShape(
-        relay.contract,
-        relay.reserves[0].contract,
-        relay.reserves[1].contract,
-        this.currentNetwork
-      )
-    );
-
-    await this.multi({
-      groupsOfShapes: [v1RelayShapes, v2RelayPoolBalanceShapes]
-    });
   }
 
   @action async addPoolsV2(
@@ -5444,69 +5406,11 @@ export class EthBancorModule
     };
   }
 
-  @mutation deletePools(ids: string[]) {
-    this.relaysList = this.relaysList.filter(
-      relay => !ids.some(id => compareString(relay.id, id))
-    );
-  }
-
-  @action async reloadPools(anchorAndConverters: ConverterAndAnchor[]) {
-    this.deletePools(anchorAndConverters.map(x => x.anchorAddress));
-    this.addPoolsBulk(anchorAndConverters);
-  }
-
   @action async add(anchorAddresses: string[]) {
     const converters = await this.fetchConverterAddressesByAnchorAddresses(
       anchorAddresses
     );
     return zipAnchorAndConverters(anchorAddresses, converters);
-  }
-
-  @action async pullEvents({
-    networkContract,
-    network,
-    fromBlock
-  }: {
-    networkContract: string;
-    network: EthNetworks;
-    fromBlock: number;
-  }) {
-    const res = await getLogs(network, networkContract, fromBlock);
-
-    const uniqTxHashes = uniqWith(
-      res.map(x => x.txHash),
-      compareString
-    );
-
-    const groups = uniqTxHashes.map(hash =>
-      res.filter(x => compareString(x.txHash, hash))
-    );
-
-    const joinStartingAndTerminating = groups.map(
-      (trades): DecodedEvent<ConversionEventDecoded> => {
-        const firstTrade = trades[0];
-        const lastTrade = trades[trades.length - 1];
-        const { txHash: firstHash, blockNumber: firstBlockNumber } = firstTrade;
-        const haveSameBlockNumber = trades.every(
-          trade => trade.blockNumber == firstBlockNumber
-        );
-        const haveSameTxHash = trades.every(trade => trade.txHash == firstHash);
-        if (!(haveSameBlockNumber && haveSameTxHash))
-          throw new Error("Trades do not share the same block number and hash");
-
-        return {
-          ...firstTrade,
-          data: {
-            ...firstTrade.data,
-            to: lastTrade.data.to
-          }
-        };
-      }
-    );
-    return {
-      joinedTradeEvents: joinStartingAndTerminating,
-      singleTraades: res
-    };
   }
 
   previousPoolFeesArr: PreviousPoolFee[] = [];
@@ -5985,6 +5889,7 @@ export class EthBancorModule
             anchorAddresses,
             converters
           );
+          this.updateConverterAndAnchors(anchorsAndConverters);
           return anchorsAndConverters;
         })()
       ),
@@ -6202,6 +6107,17 @@ export class EthBancorModule
     } catch (e) {
       console.error("thrown in x", e);
     }
+  }
+
+  converterAndAnchors: ConverterAndAnchor[] = [];
+
+  @mutation updateConverterAndAnchors(
+    converterAndAnchors: ConverterAndAnchor[]
+  ) {
+    this.converterAndAnchors = uniqWith(
+      [...converterAndAnchors, ...this.converterAndAnchors],
+      compareAnchorAndConverter
+    );
   }
 
   @action async fetchPooLiqMiningApr({
@@ -6782,12 +6698,13 @@ export class EthBancorModule
       console.log(userAddress, "fetching protected positions for");
       this.fetchProtectionPositions({});
       this.fetchLockedBalances();
-      const allTokens = this.relaysList.flatMap(tokensInRelay);
-      const uniqueTokenAddresses = uniqWith(
-        allTokens.map(token => token.contract),
-        compareString
-      );
-      this.fetchAndSetTokenBalances(uniqueTokenAddresses);
+      if (this.apiData?.tokens) {
+        const uniqueTokenAddresses = uniqWith(
+          this.apiData.tokens.map(token => token.dlt_id),
+          compareString
+        );
+        this.fetchAndSetTokenBalances(uniqueTokenAddresses);
+      }
     } else {
       Sentry.configureScope(scope => scope.setUser(null));
     }
@@ -6802,6 +6719,9 @@ export class EthBancorModule
   @action async refreshBalances(symbols?: BaseToken[]) {
     if (symbols) {
       symbols.forEach(symbol => this.focusSymbol(symbol.symbol));
+    } else if (this.currentUser && this.apiData) {
+      const tokenAddresses = this.apiData.tokens.map(token => token.dlt_id);
+      this.fetchAndSetTokenBalances(tokenAddresses);
     }
   }
 
@@ -6824,7 +6744,7 @@ export class EthBancorModule
   }: {
     fromId: string;
     toId: string;
-    relays: readonly Relay[];
+    relays: readonly MinimalRelay[];
   }) {
     const lowerCased = relays.map(relay => ({
       ...relay,
@@ -6890,16 +6810,10 @@ export class EthBancorModule
     );
     const toTokenDecimals = await this.getDecimalsByTokenAddress(toToken.id);
 
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
-    const relaysList = sortAlongSide(
-      this.relaysList,
-      relay => relay.id,
-      relaysByLiqDepth.map(relay => relay.id)
-    );
-    const winningRelays = uniqWith(relaysList, compareRelayByReserves);
+    const minimalRelays = await this.winningMinimalRelays();
 
     const relays = await this.findPath({
-      relays: winningRelays,
+      relays: minimalRelays,
       fromId: from.id,
       toId: to.id
     });
@@ -6909,7 +6823,7 @@ export class EthBancorModule
     const fromTokenContract = fromToken.id;
     const toTokenContract = toToken.id;
 
-    const ethPath = generateEthPath(fromSymbol, relays.map(relayToMinimal));
+    const ethPath = generateEthPath(fromSymbol, relays);
 
     const fromWei = expandToken(fromAmount, fromTokenDecimals);
 
@@ -7022,23 +6936,36 @@ export class EthBancorModule
     });
   }
 
-  @action async getDecimalsByTokenAddress(tokenAddress: string) {
+  @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
+    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
+    const winningRelays = uniqWith(relaysByLiqDepth, compareRelayByReserves);
+    const convertersAndAnchors = this.converterAndAnchors;
+
+    const relaysWithConverterAddress = winningRelays.map(
+      (relay): ViewRelayConverter => ({
+        ...relay,
+        converterAddress: findOrThrow(convertersAndAnchors, anchor =>
+          compareString(anchor.anchorAddress, relay.id)
+        ).converterAddress
+      })
+    );
+
+    const minimalRelays = relaysWithConverterAddress.map(
+      viewRelayConverterToMinimal
+    );
+    return minimalRelays;
+  }
+
+  @action async getDecimalsByTokenAddress(
+    tokenAddress: string
+  ): Promise<number> {
     if (compareString(tokenAddress, ethReserveAddress)) return 18;
-    const reserve = this.relaysList
-      .flatMap(relay => relay.reserves)
-      .find(reserve => compareString(reserve.contract, tokenAddress));
-    if (!reserve) {
-      try {
-        const contract = buildTokenContract(tokenAddress, w3);
-        const decimals = await contract.methods.decimals().call();
-        return Number(decimals);
-      } catch (e) {
-        throw new Error(
-          `Failed to find token address ${tokenAddress} in list of reserves. ${e.message}`
-        );
-      }
-    }
-    return reserve.decimals;
+    const token = findOrThrow(
+      this.apiData!.tokens,
+      token => compareString(token.dlt_id, tokenAddress),
+      "failed to find token for decimals"
+    );
+    return token.precision;
   }
 
   @action async calculateSingleWithdraw({
@@ -7068,15 +6995,14 @@ export class EthBancorModule
     );
     const { reserveToken } = position;
 
-    const reserveTokenObj = findOrThrow(
-      this.relaysList.flatMap(r => r.reserves),
-      reserve => compareString(reserveToken, reserve.contract)
+    const reserveTokenObj = findOrThrow(this.apiData!.tokens, token =>
+      compareString(reserveToken, token.dlt_id)
     );
 
     return {
       outputs: [
         {
-          amount: shrinkToken(res.baseAmount, reserveTokenObj.decimals),
+          amount: shrinkToken(res.baseAmount, reserveTokenObj.precision),
           id: reserveToken,
           symbol: reserveTokenObj.symbol
         },
@@ -7087,7 +7013,7 @@ export class EthBancorModule
         }
       ].filter(output => new BigNumber(output.amount).isGreaterThan(0)),
       expectedValue: {
-        amount: shrinkToken(res.targetAmount, reserveTokenObj.decimals),
+        amount: shrinkToken(res.targetAmount, reserveTokenObj.precision),
         id: reserveToken,
         symbol: reserveTokenObj.symbol
       }
@@ -7112,21 +7038,15 @@ export class EthBancorModule
       toTokenContract
     );
 
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
-    const relaysList = sortAlongSide(
-      this.relaysList,
-      relay => relay.id,
-      relaysByLiqDepth.map(relay => relay.id)
-    );
-    const winningRelays = uniqWith(relaysList, compareRelayByReserves);
+    const minimalRelays = await this.winningMinimalRelays();
 
     const relays = await this.findPath({
       fromId: from.id,
       toId,
-      relays: winningRelays
+      relays: minimalRelays
     });
 
-    const path = generateEthPath(fromToken.symbol, relays.map(relayToMinimal));
+    const path = generateEthPath(fromToken.symbol, relays);
 
     console.log(path, "is the path");
 
@@ -7189,7 +7109,9 @@ export class EthBancorModule
         const relayBalances = await Promise.all(
           relays.map(async relay => ({
             relay,
-            balances: await this.fetchRelayBalances({ poolId: relay.id })
+            balances: await this.fetchRelayBalances({
+              poolId: relay.anchorAddress
+            })
           }))
         );
         const relaysWithNoBalances = relayBalances.filter(
@@ -7212,49 +7134,11 @@ export class EthBancorModule
     }
   }
 
+  // @ts-ignore
   @action async getCost({ fromId, to }: ProposedToTransaction) {
-    if (compareString(fromId, to.id))
+    if (compareString(fromId, to.id)) {
       throw new Error("Cannot convert a token to itself.");
-    const fromToken = await this.tokenById(fromId);
-    const toToken = await this.tokenById(to.id);
-
-    const amount = to.amount;
-
-    const [fromTokenContract, toTokenContract] = [fromToken.id, toToken.id];
-
-    const fromTokenDecimals = await this.getDecimalsByTokenAddress(
-      fromTokenContract
-    );
-    const toTokenDecimals = await this.getDecimalsByTokenAddress(
-      toTokenContract
-    );
-
-    const relays = this.relaysList;
-
-    const poolIds = relays.map(relay => relay.id);
-    const allCoveredUnderBancorApi = poolIds.every(poolId =>
-      ethBancorApiDictionary.some(dic =>
-        compareString(poolId, dic.smartTokenAddress)
-      )
-    );
-    if (!allCoveredUnderBancorApi)
-      throw new Error("Fetching the cost of this token is not yet supported.");
-
-    const [fromTokenTicker, toTokenTicker] = await Promise.all([
-      ethBancorApi.getToken(fromToken.symbol),
-      ethBancorApi.getToken(toToken.symbol)
-    ]);
-    const fromTokenId = fromTokenTicker._id;
-    const toTokenId = toTokenTicker._id;
-
-    const result = await ethBancorApi.calculateCost(
-      fromTokenId,
-      toTokenId,
-      expandToken(amount, toTokenDecimals)
-    );
-
-    return {
-      amount: shrinkToken(result, fromTokenDecimals)
-    };
+    }
+    throw new Error("Fetching the cost of this token is not yet supported.");
   }
 }

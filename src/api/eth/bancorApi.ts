@@ -77,5 +77,6 @@ export const getWelcomeData = async (): Promise<WelcomeData> => {
     "https://bancor-api.nw.r.appspot.com/welcome"
   );
 
+  console.log(res.data, "is the new API data");
   return res.data;
 };

@@ -85,7 +85,7 @@ import { compareString, formatUnixTime, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -184,7 +184,6 @@ export default class AddProtectionDouble extends BaseComponent {
         amount: { amount: this.amount, id: this.pool.id },
         onUpdate: this.onUpdate
       });
-      console.log(txRes, "was tx res");
       this.success = txRes;
       this.amount = "";
     } catch (e) {
