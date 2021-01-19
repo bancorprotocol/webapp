@@ -1,13 +1,15 @@
 <template>
   <div
     :id="darkMode ? 'protected-summary-dark' : 'protected-summary'"
-    class="rounded p-1 block-shadow-light"
+    class="rounded p-1 block-shadow-light pb-3"
     :class="darkMode ? 'text-dark' : 'text-light'"
   >
     <div>
       <b-row>
         <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="font-size-16 font-w500 block-header ml-3">My Stake</div>
+          <div class="font-size-16 font-w500 block-header ml-2 pt-1">
+            My Stake
+          </div>
           <b-btn
             @click="openModal"
             size="sm"
@@ -123,7 +125,7 @@ export default class ProtectedSummary extends BaseComponent {
   background: $text-color-light;
 }
 .seperator {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border: 1px solid #97a5b8;
 }
 </style>
