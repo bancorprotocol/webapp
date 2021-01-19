@@ -1892,11 +1892,6 @@ export class EthBancorModule
 
     const depositIsEth = compareString(reserveAmount.id, ethReserveAddress);
 
-    const syncBalance = () => this.spamBalances([
-      this.liquidityProtectionSettings.govToken,
-      reserveTokenAddress
-    ]);
-
     const txHash = (await multiSteps({
       items: [
         {
@@ -1921,7 +1916,15 @@ export class EthBancorModule
                 reserveTokenAddress,
                 reserveAmountWei
               ),
-              onConfirmation: syncBalance,
+              onConfirmation: async () => {
+                this.spamBalances([
+                  this.liquidityProtectionSettings.govToken,
+                  reserveTokenAddress
+                ]);
+                this.fetchProtectionPositions({});
+                await wait(3000);
+                this.fetchProtectionPositions({});
+              },
               resolveImmediately: true,
               ...(depositIsEth && { value: reserveAmountWei })
             });
@@ -1930,12 +1933,6 @@ export class EthBancorModule
       ],
       onUpdate
     })) as string;
-
-    this.fetchProtectionPositions({});
-
-    wait(3000).then(() => {
-      this.fetchProtectionPositions({});
-    });
 
     return {
       blockExplorerLink: await this.createExplorerLink(txHash),
@@ -1986,17 +1983,16 @@ export class EthBancorModule
 
     const txHash = await this.resolveTxOnConfirmation({
       tx: contract.methods.removeLiquidity(dbId, ppmPercent),
-      resolveImmediately: true
+      resolveImmediately: true,
+      onConfirmation: async () => {
+        await wait(600);
+        this.fetchLockedBalances();
+        this.fetchProtectionPositions({});
+        await wait(2000);
+        this.fetchLockedBalances();
+        this.fetchProtectionPositions({});
+      }
     });
-
-    (async () => {
-      await wait(600);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions({});
-      await wait(2000);
-      this.fetchLockedBalances();
-      this.fetchProtectionPositions({});
-    })();
 
     return {
       blockExplorerLink: await this.createExplorerLink(txHash),
@@ -2017,11 +2013,6 @@ export class EthBancorModule
       throw new Error("Pool token does not match anchor ID");
     const poolTokenWei = expandToken(amount.amount, poolToken.decimals);
 
-    const syncBalance = () => this.spamBalances([
-      poolToken.contract,
-      this.liquidityProtectionSettings.govToken
-    ]);
-
     const txHash = await multiSteps({
       items: [
         {
@@ -2041,7 +2032,15 @@ export class EthBancorModule
             return this.protectLiquidityTx({
               anchorAddress: poolToken.contract,
               amountWei: poolTokenWei,
-              onConfirmation: syncBalance,
+              onConfirmation: async () => {
+                this.spamBalances([
+                  poolToken.contract,
+                  this.liquidityProtectionSettings.govToken
+                ]);
+                this.fetchProtectionPositions({});
+                await wait(3000);
+                this.fetchProtectionPositions({});
+              },
               resolveImmediately: true
             });
           }
@@ -2049,14 +2048,6 @@ export class EthBancorModule
       ],
       onUpdate
     });
-
-    (async () => {
-      this.fetchProtectionPositions({});
-      await wait(2000);
-      this.fetchProtectionPositions({});
-      await wait(5000);
-      this.fetchProtectionPositions({});
-    })();
 
     return {
       blockExplorerLink: await this.createExplorerLink(txHash),
@@ -4261,7 +4252,7 @@ export class EthBancorModule
     const withdraw = reserves.find(reserve => reserve.amount)!;
     const converterAddress = relay.contract;
 
-    const syncBalance = () => {
+    const onConfirmation = () => {
       const anchorTokens = getAnchorTokenAddresses(relay);
 
       const tokenAddressesChanged = [
@@ -4269,7 +4260,7 @@ export class EthBancorModule
         ...anchorTokens
       ];
       this.spamBalances(tokenAddressesChanged);
-    }
+    };
 
     let hash: string;
     if (postV28 && relay.converterType == PoolType.ChainLink) {
@@ -4310,7 +4301,7 @@ export class EthBancorModule
         miniumReserveReturnWei: await this.weiMinusSlippageTolerance(
           expectedReserveReturn.returnAmountWei
         ),
-        onConfirmation: syncBalance,
+        onConfirmation,
         resolveImmediately: true
       });
     } else if (postV28 && relay.converterType == PoolType.Traditional) {
@@ -4346,7 +4337,7 @@ export class EthBancorModule
             )
           };
         }),
-        onConfirmation: syncBalance,
+        onConfirmation,
         resolveImmediately: true
       });
     } else {
@@ -4358,12 +4349,10 @@ export class EthBancorModule
       hash = await this.liquidate({
         converterAddress,
         smartTokenAmount: smartTokenAmountWei.amount,
-        onConfirmation: syncBalance,
+        onConfirmation,
         resolveImmediately: true
       });
     }
-
-    
 
     return {
       txId: hash,
@@ -4612,7 +4601,7 @@ export class EthBancorModule
         ...anchorTokens
       ];
       this.spamBalances(tokenAddressesChanged);
-    }
+    };
 
     const steps: Step[] = [
       {
@@ -6844,8 +6833,6 @@ export class EthBancorModule
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
 
-    const syncBalance = () => this.spamBalances([fromTokenContract, toTokenContract]);
-
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
         ethPath,
@@ -6855,7 +6842,8 @@ export class EthBancorModule
         zeroAddress,
         0
       ),
-      onConfirmation: syncBalance,
+      onConfirmation: () =>
+        this.spamBalances([fromTokenContract, toTokenContract]),
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
       onHash: () => onUpdate!(3, steps)
