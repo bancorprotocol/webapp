@@ -110,6 +110,8 @@ export default class RestakeRewards extends BaseComponent {
       name: "RewardsRestake",
       params: { id }
     });
+
+    await this.loadMaxStakes();
   }
 
   async loadMaxStakes() {
