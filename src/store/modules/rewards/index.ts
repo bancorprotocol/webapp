@@ -1,6 +1,7 @@
 import { createModule, action } from "vuex-class-component";
 import { buildStakingRewardsDistributionContract } from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
+import { web3 } from "@/api/web3";
 
 const VuexModule = createModule({
   strict: false
@@ -40,9 +41,15 @@ export class RewardsModule extends VuexModule.With({
   }
 
   @action async pendingRewards() {
-    await this.contract.methods
-      .pendingRewards(vxm.ethBancor.currentUser)
-      .call();
+    console.log(
+      "StakingRewardsDistribution",
+      vxm.ethBancor.contracts.StakingRewardsDistribution
+    );
+    const contract = await buildStakingRewardsDistributionContract(
+      vxm.ethBancor.contracts.StakingRewardsDistribution,
+      web3
+    );
+    await contract.methods.pendingRewards(vxm.ethBancor.currentUser).call();
   }
 
   @action async pendingReserveRewards({

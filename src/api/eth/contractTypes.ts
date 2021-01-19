@@ -14,6 +14,7 @@ import {
   ABIMultiCallContract,
   ABINetworkContract,
   ABISmartToken,
+  ABIStakingRewards,
   ABIStakingRewardsDistribution,
   ABIV2Converter,
   V2PoolsTokenContainer
@@ -361,4 +362,4 @@ export const buildStakingRewardsDistributionContract = (
     poolToken: string,
     reserveToken: string
   ) => CallReturn<string>;
-}> => buildContract(ABIStakingRewardsDistribution, contractAddress, web3);
+}> => buildContract(ABIStakingRewards, contractAddress, web3);

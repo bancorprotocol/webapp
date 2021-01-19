@@ -25,7 +25,7 @@
         <ProtectedSummary v-if="positions.length" :positions="positions" />
       </b-col>
       <b-col lg="6">
-        <RewardsSummary v-if="positions.length" :positions="positions" />
+        <RewardsSummary v-if="!positions.length" :positions="positions" />
       </b-col>
 
       <b-col cols="12">

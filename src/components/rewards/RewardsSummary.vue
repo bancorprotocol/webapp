@@ -68,6 +68,8 @@
         </b-col>
       </b-row>
     </ContentBlock>
+    sss
+    <pre>{{ pendingRewards }}</pre>
 
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
   </div>
@@ -98,6 +100,8 @@ export default class RewardsSummary extends BaseComponent {
   title = "Rewards";
   modal = false;
 
+  pendingRewards: any = null;
+
   get pools() {
     return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
   }
@@ -119,6 +123,10 @@ export default class RewardsSummary extends BaseComponent {
     ];
   }
 
+  async loadPendingRewards() {
+    this.pendingRewards = await vxm.rewards.pendingRewards();
+  }
+
   openModal() {
     this.modal = true;
   }
@@ -129,6 +137,14 @@ export default class RewardsSummary extends BaseComponent {
       name: "RewardsRestake",
       params: { id }
     });
+  }
+
+  async mounted() {
+    try {
+      await this.loadPendingRewards();
+    } catch (e) {
+      console.log("pending rewards error", e);
+    }
   }
 }
 </script>
