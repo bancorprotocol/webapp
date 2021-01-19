@@ -14,6 +14,7 @@
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
@@ -35,7 +36,7 @@ export default class RemainingTime2 extends BaseComponent {
 
   get remaining() {
     if (this.remainingTime < 0) {
-      return "Full protection reached";
+      return i18n.t("full_protection_reached");
     }
 
     const s = this.remainingTime / 1000;

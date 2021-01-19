@@ -4,13 +4,13 @@
       <multi-input-field
         class="max-search-width-xs"
         v-model="search"
-        placeholder="Search"
+        :placeholder="$t('search')"
         prepend="search"
       />
     </div>
 
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-      <b-tab title="Swaps" active>
+      <b-tab :title="$t('swaps')" active>
         <table-transactions :filter="search" :items="itemsSwap" />
       </b-tab>
     </b-tabs>

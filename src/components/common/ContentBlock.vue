@@ -35,7 +35,7 @@
           @click="detailModeProp = !detailModeProp"
           class="text-primary cursor font-size-12 font-w500"
         >
-          {{ detailModeProp ? "Simple" : "Detailed" }}
+          {{ detailModeProp ? $t("simple") : $t("detailed") }}
         </span>
         <version-badge v-if="version !== null" :version="version" />
       </div>
@@ -43,7 +43,7 @@
       <div v-if="searchInput !== null" class="float-right">
         <multi-input-field
           v-model="searchInput"
-          placeholder="Search"
+          :placeholder="$t('search')"
           prepend="search"
         />
       </div>

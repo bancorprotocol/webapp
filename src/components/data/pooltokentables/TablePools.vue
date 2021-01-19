@@ -71,6 +71,7 @@
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import { LiqMiningApr, ViewRelay, ViewTableField } from "@/types/bancor";
@@ -110,61 +111,58 @@ export default class TablePools extends BaseComponent {
         : []),
       {
         id: 2,
-        label: "Name",
+        label: i18n.tc("name"),
         key: "symbol",
         minWidth: "150px"
       },
       {
         id: 3,
-        label: "Liquidity",
+        label: i18n.tc("liquidity"),
         key: "liqDepth",
-        tooltip: "The value of tokens in the pool.",
+        tooltip: i18n.tc("value_tokens_pool"),
         minWidth: "120px"
       },
       {
         id: 4,
-        label: "Rewards",
+        label: i18n.tc("rewards"),
         key: "aprMiningRewards",
-        tooltip:
-          "Estimated APR based on the maximum (2x multiplier) weekly BNT Liquidity Mining rewards. Counter indicates time until 12-week rewards cycle concludes.",
+        tooltip: i18n.tc("estimated_apr"),
         minWidth: "150px"
       },
       {
         id: 5,
-        label: "Fee",
+        label: i18n.tc("fee"),
         key: "fee",
-        tooltip:
-          "The % deducted from each swap and re-deposited into the pool.",
+        tooltip: i18n.tc("percentage_deducted"),
         minWidth: "80px"
       },
       ...(this.isEth
         ? [
             {
               id: 6,
-              label: "Volume (24h)",
+              label: i18n.tc("volume") + " (24h)",
               key: "volume",
               minWidth: "140px"
             },
             {
               id: 7,
-              label: "Fees (24hr)",
+              label: i18n.tc("fees") + " (24h)",
               key: "feesGenerated",
-              tooltip:
-                "The value of swap fees collected in the pool in the past 24h.",
+              tooltip: i18n.tc("value_swap"),
               minWidth: "140px"
             },
             {
               id: 8,
               label: "APR",
               key: "feesVsLiquidity",
-              tooltip: "24h fees annualized divided by liquidity in the pool.",
+              tooltip: i18n.tc("fees_24"),
               minWidth: "80px"
             }
           ]
         : []),
       {
         id: 9,
-        label: "Actions",
+        label: i18n.tc("actions"),
         key: "actions",
         sortable: false,
         minWidth: "150px",

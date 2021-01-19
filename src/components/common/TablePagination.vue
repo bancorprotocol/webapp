@@ -17,7 +17,14 @@
         "
       />
     </div>
-    <span class="mx-3">Page {{ current }} of {{ pagesTotal }}</span>
+    <span class="mx-3">
+      {{
+        $t("page_of", {
+          current: current,
+          total: pagesTotal
+        })
+      }}
+    </span>
     <div
       :class="current < pagesTotal ? 'cursor' : ''"
       @click="current < pagesTotal ? current++ : null"
