@@ -671,7 +671,7 @@ const wallets = [
   { walletName: "torus" },
   { walletName: "status" },
   { walletName: "unilogin" },
-  { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME },
+  { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME, preferred: true },
   { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },
