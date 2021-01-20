@@ -45,7 +45,6 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import { vxm } from "@/store";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import MainButton from "@/components/common/Button.vue";
-import BigNumber from "bignumber.js";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
