@@ -8,6 +8,7 @@ interface TokenMeta {
 }
 
 import axios from "axios";
+import { EthNetworks } from "../web3";
 
 export interface WelcomeData {
   total_liquidity: BntPrice;
@@ -50,7 +51,7 @@ export interface Swap {
   output_amount: string;
   amount: BntPrice;
   timestamp: number;
-  wallet_dlt_id: string;
+  account_dlt_id: string;
 }
 
 export interface Token {
@@ -72,11 +73,18 @@ export interface NewPool extends Pool {
   decFee: number;
 }
 
-export const getWelcomeData = async (): Promise<WelcomeData> => {
+export const getWelcomeData = async (
+  network: EthNetworks
+): Promise<WelcomeData> => {
+  if (!(network == EthNetworks.Mainnet || network == EthNetworks.Ropsten)) {
+    throw new Error("API does not support this network");
+  }
+
   const res = await axios.get<WelcomeData>(
-    "https://bancor-api.nw.r.appspot.com/welcome"
+    network == EthNetworks.Mainnet
+      ? "https://bancor-api.nw.r.appspot.com/welcome"
+      : "http://34.105.255.216:3000/welcome"
   );
 
-  console.log(res.data, "is the new API data");
   return res.data;
 };
