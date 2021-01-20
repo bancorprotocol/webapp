@@ -107,6 +107,7 @@ export default class RewardsSummary extends BaseComponent {
 
   title = "Rewards";
   modal = false;
+  interval: any = null;
 
   get rewardsBalance() {
     return vxm.rewards.balance;
@@ -151,6 +152,13 @@ export default class RewardsSummary extends BaseComponent {
     } catch (e) {
       console.error("Load Rewards Data error: ", e);
     }
+    this.interval = setInterval(async () => {
+      await vxm.rewards.loadData();
+    }, 10000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 }
 </script>
