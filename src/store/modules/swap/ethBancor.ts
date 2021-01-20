@@ -2917,7 +2917,7 @@ export class EthBancorModule
           id: token.dlt_id,
           name: token.symbol,
           symbol: token.symbol,
-          precision: token.precision,
+          precision: token.decimals,
           logo: (meta && meta.image) || defaultImage,
           change24h,
           ...(balance && { balance: balanceString }),
@@ -3606,7 +3606,7 @@ export class EthBancorModule
 
         return {
           address,
-          ...(foundToken && { precision: foundToken.precision })
+          ...(foundToken && { precision: foundToken.decimals })
         };
       });
 
@@ -5429,14 +5429,14 @@ export class EthBancorModule
           data: {
             from: {
               amount: x.input_amount,
-              decimals: fromToken.precision,
+              decimals: fromToken.decimals,
               id: x.source_token_dlt_id,
               logo: (fromMetaToken && fromMetaToken.image) || defaultImage,
               symbol: fromToken.symbol
             },
             to: {
               amount: x.output_amount,
-              decimals: toToken.precision,
+              decimals: toToken.decimals,
               id: x.target_token_dlt_id,
               logo: (toMetaToken && toMetaToken.image) || defaultImage,
               symbol: toToken.symbol
@@ -5876,8 +5876,6 @@ export class EthBancorModule
             anchorAddresses,
             converters
           );
-          console.log(anchorsAndConverters, "are learnt");
-          this.updateConverterAndAnchors(anchorsAndConverters);
           return anchorsAndConverters;
         })()
       ),
@@ -6096,17 +6094,6 @@ export class EthBancorModule
     } catch (e) {
       console.error("thrown in x", e);
     }
-  }
-
-  converterAndAnchors: ConverterAndAnchor[] = [];
-
-  @mutation updateConverterAndAnchors(
-    converterAndAnchors: ConverterAndAnchor[]
-  ) {
-    this.converterAndAnchors = uniqWith(
-      [...converterAndAnchors, ...this.converterAndAnchors],
-      compareAnchorAndConverter
-    );
   }
 
   @action async fetchPooLiqMiningApr({
@@ -6934,26 +6921,16 @@ export class EthBancorModule
   @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
     const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
     const winningRelays = uniqWith(relaysByLiqDepth, compareRelayByReserves);
-    if (this.converterAndAnchors.length == 0) {
-      console.log("waiting a second to resolve converters and anchors...");
-      await wait(1000);
-      if (this.converterAndAnchors.length == 0) {
-        console.log("waiting another second...");
-        console.log(this.converterAndAnchors, "is before 5 seconds");
-        await wait(5000);
-        console.log(this.converterAndAnchors, "is after 5 seconds");
-      }
-    }
-    const convertersAndAnchors = this.converterAndAnchors;
 
-    const relaysWithConverterAddress = winningRelays.map(
-      (relay): ViewRelayConverter => ({
+    const relaysWithConverterAddress = winningRelays.map(relay => {
+      const apiRelay = findOrThrow(this.apiData!.pools, pool =>
+        compareString(pool.pool_dlt_id, relay.id)
+      );
+      return {
         ...relay,
-        converterAddress: findOrThrow(convertersAndAnchors, anchor =>
-          compareString(anchor.anchorAddress, relay.id)
-        ).converterAddress
-      })
-    );
+        converterAddress: apiRelay.converter_dlt_id
+      };
+    });
 
     const minimalRelays = relaysWithConverterAddress.map(
       viewRelayConverterToMinimal
@@ -6970,7 +6947,8 @@ export class EthBancorModule
       token => compareString(token.dlt_id, tokenAddress),
       "failed to find token for decimals"
     );
-    return token.precision;
+    console.log("asked for", tokenAddress, token);
+    return token.decimals;
   }
 
   @action async calculateSingleWithdraw({
@@ -7007,7 +6985,7 @@ export class EthBancorModule
     return {
       outputs: [
         {
-          amount: shrinkToken(res.baseAmount, reserveTokenObj.precision),
+          amount: shrinkToken(res.baseAmount, reserveTokenObj.decimals),
           id: reserveToken,
           symbol: reserveTokenObj.symbol
         },
@@ -7018,7 +6996,7 @@ export class EthBancorModule
         }
       ].filter(output => new BigNumber(output.amount).isGreaterThan(0)),
       expectedValue: {
-        amount: shrinkToken(res.targetAmount, reserveTokenObj.precision),
+        amount: shrinkToken(res.targetAmount, reserveTokenObj.decimals),
         id: reserveToken,
         symbol: reserveTokenObj.symbol
       }
@@ -7061,6 +7039,8 @@ export class EthBancorModule
         path,
         amount: fromWei
       });
+
+      console.log(wei, "is get return by wei");
       const weiNumber = new BigNumber(wei);
 
       const userReturnRate = buildRate(new BigNumber(fromWei), weiNumber);
@@ -7101,11 +7081,13 @@ export class EthBancorModule
         console.warn("Failed calculating slippage", e.message);
       }
 
+      console.log({ wei, toTokenDecimals, slippage });
       return {
         amount: shrinkToken(wei, toTokenDecimals),
         slippage
       };
     } catch (e) {
+      console.log(e, "was caught in here...");
       if (
         e.message.includes(
           `Returned values aren't valid, did it run Out of Gas? You might also see this error if you are not using the correct ABI for the contract you are retrieving data from`
@@ -7123,6 +7105,7 @@ export class EthBancorModule
           relay =>
             !relay.balances.reserves.every(reserve => reserve.weiAmount !== "0")
         );
+        console.log(relayBalances, "is the relay balances");
         if (relaysWithNoBalances.length > 0) {
           const moreThanOne = relayBalances.length > 1;
           throw new Error(

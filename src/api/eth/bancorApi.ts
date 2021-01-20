@@ -62,7 +62,7 @@ export interface Token {
   liquidity: BntPrice;
   rate: BntPrice;
   rate_24h_ago: BntPrice;
-  precision: number;
+  decimals: number;
 }
 
 interface TokenMetaWithReserve extends TokenMeta {
