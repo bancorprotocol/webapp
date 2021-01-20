@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js";
 import { OnUpdate, TxResponse } from "@/types/bancor";
 import { multiSteps } from "@/api/helpers";
 import wait from "waait";
+import { shrinkToken } from "@/api/eth/helpers";
 
 const VuexModule = createModule({
   strict: false
@@ -120,7 +121,7 @@ export class RewardsModule extends VuexModule.With({
       .totalClaimedRewards(this.currentUser)
       .call();
 
-    const value = new BigNumber(result);
+    const value = new BigNumber(shrinkToken(result, 18));
     this.totalClaimedRewards = value;
 
     return value;
@@ -131,7 +132,7 @@ export class RewardsModule extends VuexModule.With({
       .pendingRewards(this.currentUser)
       .call();
 
-    const value = new BigNumber(result);
+    const value = new BigNumber(shrinkToken(result, 18));
     this.pendingRewards = value;
 
     return value;
@@ -148,6 +149,6 @@ export class RewardsModule extends VuexModule.With({
       .pendingReserveRewards(this.currentUser, poolId, reserveId)
       .call();
 
-    return new BigNumber(result);
+    return new BigNumber(shrinkToken(result, 18));
   }
 }
