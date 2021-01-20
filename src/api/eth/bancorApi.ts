@@ -26,8 +26,9 @@ export interface BntPrice {
 }
 
 export interface Pool {
-  reserves: Reserve[];
   pool_dlt_id: string;
+  converter_dlt_id: string;
+  reserves: Reserve[];
   name: string;
   liquidity: BntPrice;
   volume_24h: BntPrice;
@@ -35,6 +36,7 @@ export interface Pool {
   fee: string;
   version: number;
   supply: string;
+  decimals: number;
 }
 
 export interface Reserve {
