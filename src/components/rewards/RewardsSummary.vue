@@ -41,17 +41,17 @@
         >
           <div class="font-size-14 font-w600">
             <animation-number
-              :targetValue="item.bnt"
-              :animationTime="item.id === 1 ? 5000 : 3000"
-              trailingText="BNT"
+              :target-value="item.bnt.toNumber()"
+              :animation-time="item.id === 1 ? 5000 : 3000"
+              trailing-text="BNT"
             />
           </div>
           <div class="font-size-12 font-w500 text-primary">
             <animation-number
-              :targetValue="item.usd"
+              :target-value="item.usd.toNumber()"
               :usd="true"
-              :animationTime="item.id === 1 ? 5000 : 3000"
-              leadingText="~"
+              :animation-time="item.id === 1 ? 5000 : 3000"
+              leading-text="~"
             />
           </div>
           <div
