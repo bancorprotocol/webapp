@@ -40,10 +40,19 @@
           class="text-center"
         >
           <div class="font-size-14 font-w600">
-            {{ prettifyNumber(item.bnt) }} BNT
+            <animation-number
+              :targetValue="item.bnt"
+              :animationTime="item.id === 1 ? 5000 : 3000"
+              trailingText="BNT"
+            />
           </div>
           <div class="font-size-12 font-w500 text-primary">
-            (~{{ prettifyNumber(item.usd, true) }})
+            <animation-number
+              :targetValue="item.usd"
+              :usd="true"
+              :animationTime="item.id === 1 ? 5000 : 3000"
+              leadingText="~"
+            />
           </div>
           <div
             class="text-uppercase font-size-10 font-w500"
@@ -80,6 +89,7 @@ import { stringifyPercentage } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import AnimationNumber from "@/components/common/AnimationNumber.vue";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
 interface ViewRewardsSummaryItem {
@@ -90,7 +100,7 @@ interface ViewRewardsSummaryItem {
 }
 
 @Component({
-  components: { ModalPoolSelect, ContentBlock }
+  components: { ModalPoolSelect, ContentBlock, AnimationNumber }
 })
 export default class RewardsSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
