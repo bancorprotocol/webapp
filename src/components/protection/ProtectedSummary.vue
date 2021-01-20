@@ -71,6 +71,10 @@ export default class ProtectedSummary extends BaseComponent {
     return vxm.bancor.relays.filter(pool => pool.addProtectionSupported);
   }
 
+  get rewardsBalance() {
+    return vxm.rewards.balance;
+  }
+
   get summarizedPositions() {
     if (!this.positions.length) return [];
     else {
@@ -78,13 +82,17 @@ export default class ProtectedSummary extends BaseComponent {
         .map(x => Number(x.stake.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      const protectedValue = this.positions
+      let protectedValue = this.positions
         .map(x => Number(x.fullyProtected.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      const claimableValue = this.positions
+      let claimableValue = this.positions
         .map(x => Number(x.protectedAmount.usdValue || 0))
         .reduce((sum, current) => sum + current);
+
+      const totalRewards = this.rewardsBalance.totalRewards.usd.toNumber();
+      protectedValue += totalRewards;
+      claimableValue += totalRewards;
 
       const roi = (protectedValue - initialStake) / initialStake;
       return [
