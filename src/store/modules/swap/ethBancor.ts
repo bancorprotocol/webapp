@@ -1161,6 +1161,7 @@ interface RegisteredContracts {
   BancorConverterRegistry: string;
   LiquidityProtection: string;
   LiquidityProtectionStore: string;
+  StakingRewards: string;
 }
 
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
@@ -1359,7 +1360,8 @@ export class EthBancorModule
     BancorNetwork: "",
     BancorConverterRegistry: "",
     LiquidityProtection: "",
-    LiquidityProtectionStore: ""
+    LiquidityProtectionStore: "",
+    StakingRewards: ""
   };
   initiated: boolean = false;
   failedPools: string[] = [];
@@ -4687,7 +4689,8 @@ export class EthBancorModule
       BancorNetwork: asciiToHex("BancorNetwork"),
       BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
       LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
-      LiquidityProtection: asciiToHex("LiquidityProtection")
+      LiquidityProtection: asciiToHex("LiquidityProtection"),
+      StakingRewards: asciiToHex("StakingRewards")
     };
 
     const hardCodedShape = (
