@@ -26,8 +26,9 @@ export interface BntPrice {
 }
 
 export interface Pool {
-  reserves: Reserve[];
   pool_dlt_id: string;
+  converter_dlt_id: string;
+  reserves: Reserve[];
   name: string;
   liquidity: BntPrice;
   volume_24h: BntPrice;
@@ -35,6 +36,7 @@ export interface Pool {
   fee: string;
   version: number;
   supply: string;
+  decimals: number;
 }
 
 export interface Reserve {
@@ -60,7 +62,7 @@ export interface Token {
   liquidity: BntPrice;
   rate: BntPrice;
   rate_24h_ago: BntPrice;
-  precision: number;
+  decimals: number;
 }
 
 interface TokenMetaWithReserve extends TokenMeta {
@@ -83,7 +85,7 @@ export const getWelcomeData = async (
   const res = await axios.get<WelcomeData>(
     network == EthNetworks.Mainnet
       ? "https://bancor-api.nw.r.appspot.com/welcome"
-      : "http://34.105.255.216:3000/welcome"
+      : "http://34.105.255.216:443/welcome"
   );
 
   return res.data;
