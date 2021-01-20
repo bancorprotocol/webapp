@@ -107,23 +107,18 @@ export default class RewardsSummary extends BaseComponent {
   }
 
   get summarizedRewards(): ViewRewardsSummaryItem[] {
-    const totalClaimedRewards = this.rewardsBalance.totalClaimedRewards;
-    const pendingRewards = this.rewardsBalance.pendingRewards;
-    const totalRewards = totalClaimedRewards.plus(pendingRewards);
-    const bntPrice = vxm.bancor.stats.bntUsdPrice || 0;
-
     return [
       {
         id: 1,
         label: "Total Reward to date",
-        bnt: totalRewards,
-        usd: totalRewards.times(bntPrice)
+        bnt: this.rewardsBalance.totalRewards.bnt,
+        usd: this.rewardsBalance.totalRewards.usd
       },
       {
         id: 2,
         label: "Claimable Rewards",
-        bnt: pendingRewards,
-        usd: pendingRewards.times(bntPrice)
+        bnt: this.rewardsBalance.pendingRewards.bnt,
+        usd: this.rewardsBalance.pendingRewards.usd
       }
     ];
   }
