@@ -5670,10 +5670,6 @@ export class EthBancorModule
       return this.refresh();
     }
 
-    const apiData$ = from(getWelcomeData()).pipe(share());
-
-    apiData$.subscribe(data => this.setApiData(data));
-
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
     const networkVersion$ = from(web3.eth.getChainId()).pipe(
@@ -5682,6 +5678,13 @@ export class EthBancorModule
       tap(this.setNetwork),
       shareReplay(1)
     );
+
+    const apiData$ = networkVersion$.pipe(
+      switchMap(networkVersion => getWelcomeData(networkVersion)),
+      share()
+    );
+
+    apiData$.subscribe(data => this.setApiData(data));
 
     const tokenMeta$ = networkVersion$.pipe(switchMap(getTokenMeta), share());
 
