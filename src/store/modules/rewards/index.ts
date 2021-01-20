@@ -66,10 +66,10 @@ export class RewardsModule extends VuexModule.With({
                 poolId
               ),
               onConfirmation: async () => {
+                console.log("tx confirmed");
                 await this.loadData();
                 await wait(3000);
                 await this.loadData();
-                console.log("tx confirmed");
               },
               resolveImmediately: true
             });

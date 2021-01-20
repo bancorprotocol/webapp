@@ -90,7 +90,7 @@ export default class ProtectedSummary extends BaseComponent {
         .map(x => Number(x.protectedAmount.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      const totalRewards = this.rewardsBalance.totalRewards.usd.toNumber();
+      const totalRewards = this.rewardsBalance.pendingRewards.usd.toNumber();
       protectedValue += totalRewards;
       claimableValue += totalRewards;
 
