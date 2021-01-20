@@ -13,10 +13,28 @@ const VuexModule = createModule({
 export class RewardsModule extends VuexModule.With({
   namespaced: "rewards/"
 }) {
-  balance = {
-    totalClaimedRewards: new BigNumber(0),
-    pendingRewards: new BigNumber(0)
-  };
+  totalClaimedRewards: BigNumber = new BigNumber(0);
+  pendingRewards: BigNumber = new BigNumber(0);
+
+  get balance() {
+    const totalRewards = this.totalClaimedRewards.plus(this.pendingRewards);
+    const bntPrice = vxm.bancor.stats.bntUsdPrice || 0;
+
+    return {
+      totalRewards: {
+        bnt: totalRewards,
+        usd: totalRewards.times(bntPrice)
+      },
+      totalClaimedRewards: {
+        bnt: this.totalClaimedRewards,
+        usd: this.totalClaimedRewards.times(bntPrice)
+      },
+      pendingRewards: {
+        bnt: this.pendingRewards,
+        usd: this.pendingRewards.times(bntPrice)
+      }
+    };
+  }
 
   get contract() {
     return buildStakingRewardsContract(vxm.ethBancor.contracts.StakingRewards);
@@ -93,33 +111,33 @@ export class RewardsModule extends VuexModule.With({
   }
 
   @action async loadData() {
-    await this.pendingRewards();
-    await this.totalClaimedRewards();
+    await this.loadPendingRewards();
+    await this.loadTotalClaimedRewards();
   }
 
-  @action async totalClaimedRewards(): Promise<BigNumber> {
+  @action async loadTotalClaimedRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
       .totalClaimedRewards(this.currentUser)
       .call();
 
     const value = new BigNumber(result);
-    this.balance.totalClaimedRewards = value;
+    this.totalClaimedRewards = value;
 
     return value;
   }
 
-  @action async pendingRewards(): Promise<BigNumber> {
+  @action async loadPendingRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
       .pendingRewards(this.currentUser)
       .call();
 
     const value = new BigNumber(result);
-    this.balance.pendingRewards = value;
+    this.pendingRewards = value;
 
     return value;
   }
 
-  @action async pendingReserveRewards({
+  @action async loadPendingReserveRewards({
     poolId,
     reserveId
   }: {
