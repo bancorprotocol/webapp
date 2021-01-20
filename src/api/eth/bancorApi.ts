@@ -50,7 +50,7 @@ export interface Swap {
   output_amount: string;
   amount: BntPrice;
   timestamp: number;
-  wallet_dlt_id: string;
+  account_dlt_id: string;
 }
 
 export interface Token {

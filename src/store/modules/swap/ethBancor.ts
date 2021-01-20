@@ -5365,8 +5365,8 @@ export class EthBancorModule
         );
 
         return {
-          account: x.wallet_dlt_id,
-          accountLink: generateEtherscanAccountLink(x.wallet_dlt_id),
+          account: x.account_dlt_id,
+          accountLink: generateEtherscanAccountLink(x.account_dlt_id),
           data: {
             from: {
               amount: x.input_amount,
