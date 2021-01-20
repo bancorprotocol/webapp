@@ -121,7 +121,6 @@ export class RewardsModule extends VuexModule.With({
       .totalClaimedRewards(this.currentUser)
       .call();
 
-    console.log("jan", result);
     const value = new BigNumber(shrinkToken(result, 18));
     this.totalClaimedRewards = value;
 
@@ -133,7 +132,6 @@ export class RewardsModule extends VuexModule.With({
       .pendingRewards(this.currentUser)
       .call();
 
-    console.log("jan", result);
     const value = new BigNumber(shrinkToken(result, 18));
     this.pendingRewards = value;
 
