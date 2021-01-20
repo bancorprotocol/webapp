@@ -62,9 +62,9 @@ export class RewardsModule extends VuexModule.With({
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.stakeRewards(maxAmount, poolId),
               onConfirmation: async () => {
-                //
-                // await wait(3000);
-                //
+                await this.loadData();
+                await wait(3000);
+                await this.loadData();
               },
               resolveImmediately: true
             });
@@ -93,9 +93,9 @@ export class RewardsModule extends VuexModule.With({
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.claimRewards(),
               onConfirmation: async () => {
-                //
-                // await wait(3000);
-                //
+                await this.loadData();
+                await wait(3000);
+                await this.loadData();
               },
               resolveImmediately: true
             });
@@ -121,6 +121,7 @@ export class RewardsModule extends VuexModule.With({
       .totalClaimedRewards(this.currentUser)
       .call();
 
+    console.log("jan", result);
     const value = new BigNumber(shrinkToken(result, 18));
     this.totalClaimedRewards = value;
 
@@ -132,6 +133,7 @@ export class RewardsModule extends VuexModule.With({
       .pendingRewards(this.currentUser)
       .call();
 
+    console.log("jan", result);
     const value = new BigNumber(shrinkToken(result, 18));
     this.pendingRewards = value;
 
