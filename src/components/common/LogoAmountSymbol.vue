@@ -12,7 +12,13 @@
       class="font-size-14 font-w600 ml-2"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      {{ `${amount} ${symbol}` }}
+      <animation-number
+        v-if="animated"
+        :target-value="amount"
+        :animation-time="3000"
+        :trailing-text="symbol"
+      />
+      <span v-else>{{ `${amount} ${symbol}` }}</span>
     </span>
   </div>
 </template>
@@ -22,8 +28,9 @@ import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import AnimationNumber from "@/components/common/AnimationNumber.vue";
 @Component({
-  components: { PoolLogosOverlapped }
+  components: { AnimationNumber, PoolLogosOverlapped }
 })
 export default class LogoAmountSymbol extends BaseComponent {
   @Prop() tokenId?: string;
@@ -31,6 +38,7 @@ export default class LogoAmountSymbol extends BaseComponent {
   @Prop() amount!: string | number;
   @Prop() symbol!: string;
   @Prop({ default: null }) usdValue!: string | number;
+  @Prop({ default: false }) animated!: boolean;
 
   get logo() {
     return vxm.bancor.token(this.tokenId!).logo;

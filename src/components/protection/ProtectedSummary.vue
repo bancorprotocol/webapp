@@ -133,7 +133,7 @@ export default class ProtectedSummary extends BaseComponent {
   background: $text-color-light;
 }
 .seperator {
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
   border: 1px solid #97a5b8;
 }
 </style>
