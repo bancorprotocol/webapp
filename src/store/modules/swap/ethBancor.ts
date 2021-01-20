@@ -210,7 +210,12 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
-import { getWelcomeData, NewPool, WelcomeData } from "@/api/eth/bancorApi";
+import {
+  getWelcomeData,
+  NewPool,
+  WelcomeData,
+  TokenMetaWithReserve
+} from "@/api/eth/bancorApi";
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -800,6 +805,42 @@ interface RawAbiRelay {
   version: string;
   converterType?: string;
 }
+
+const poolsToOldRelay = (
+  pools: NewPool[],
+  tokens: WelcomeData["tokens"]
+): Relay[] => {
+  const allReserves = pools.flatMap(pool => pool.reserveTokens);
+  const allReservesHaveToken = allReserves.every(reserve =>
+    tokens.some(token => compareString(reserve.contract, token.dlt_id))
+  );
+  if (!allReservesHaveToken) throw new Error("Not enough tokens not passed");
+
+  return pools.map(pool => ({
+    anchor: {
+      contract: pool.pool_dlt_id,
+      decimals: pool.decimals,
+      network: "eth",
+      symbol: pool.name
+    },
+    contract: pool.converter_dlt_id,
+    converterType: 1,
+    fee: pool.decFee,
+    id: pool.pool_dlt_id,
+    isMultiContract: false,
+    network: "eth",
+    version: String(pool.version),
+    reserves: pool.reserveTokens.map(reserve => ({
+      network: "eth",
+      contract: reserve.contract,
+      symbol: reserve.symbol,
+      decimals: findOrThrow(tokens, token =>
+        compareString(token.dlt_id, reserve.contract)
+      ).decimals,
+      reserveWeight: reserve.reserveWeight
+    }))
+  }));
+};
 
 const zipAnchorAndConverters = (
   anchorAddresses: string[],
@@ -1527,20 +1568,25 @@ export class EthBancorModule
       "id"
     ];
 
-    // @ts-ignore
-    return multiPositions
+    const protectedLiquidity = multiPositions
       .map(res => ({ ...res.position, "8": res.positionId }))
-      .map(res => fromPairs(keys.map((key, index) => [key, res[index]])));
+      .map(res =>
+        fromPairs(keys.map((key, index) => [key, res[index]]))
+      ) as ProtectedLiquidity[];
+
+    return protectedLiquidity;
   }
 
   @action async fetchProtectionPositions({
     storeAddress,
     blockNumberNow,
-    userAddress
+    userAddress,
+    supportedAnchors
   }: {
     storeAddress?: string;
     blockNumberNow?: number;
     userAddress?: string;
+    supportedAnchors?: string[];
   }) {
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
@@ -1574,7 +1620,7 @@ export class EthBancorModule
         .protectedLiquidityIds(owner)
         .call();
 
-      const [allPositions, currentBlockNumber] = await Promise.all([
+      const [rawPositions, currentBlockNumber] = await Promise.all([
         this.fetchPositionsMulti({
           positionIds,
           liquidityStore
@@ -1584,8 +1630,32 @@ export class EthBancorModule
         })()
       ]);
 
-      if (allPositions.length !== idCount)
+      if (rawPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
+
+      const theSupportedAnchors =
+        supportedAnchors ||
+        (this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id));
+      if (!theSupportedAnchors)
+        throw new Error(
+          "Race condition error, unable to determine supported anchors"
+        );
+      const allPositions = filterAndWarn(
+        rawPositions,
+        pos =>
+          theSupportedAnchors.some(anchor =>
+            compareString(pos.poolToken, anchor)
+          ),
+        "position lost due to anchor not being supported"
+      );
+
+      console.log(allPositions, "are the after thing", {
+        theSupportedAnchors,
+        newPools: this.newPools,
+        supportedAnchors,
+        apiPools:
+          this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id)
+      });
 
       const lpContract = buildLiquidityProtectionContract(
         this.contracts.LiquidityProtection,
@@ -3735,8 +3805,20 @@ export class EthBancorModule
   }
 
   @action async relayById(relayId: string): Promise<Relay> {
+    if (!this.apiData) {
+      console.error("API data not downloaded yet");
+      throw new Error("API data not downloaded yet");
+    }
+    const oldPools = poolsToOldRelay(this.newPools, this.apiData.tokens);
+
+    console.log(
+      relayId,
+      "was relay id",
+      oldPools,
+      this.newPools.map(x => x.pool_dlt_id)
+    );
     return findOrThrow(
-      this.relaysList,
+      oldPools,
       relay => compareString(relay.id, relayId),
       "failed to find relay by id"
     );
@@ -5890,13 +5972,15 @@ export class EthBancorModule
     combineLatest([
       authenticated$,
       liquidityProtectionStore$,
-      currentBlock$
-    ]).subscribe(([userAddress, storeAddress, { blockNumber }]) => {
-      console.log(storeAddress, "was the store address in.....");
+      currentBlock$,
+      apiData$
+    ]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
+      const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
       this.fetchProtectionPositions({
         storeAddress,
         blockNumberNow: blockNumber,
-        userAddress: userAddress as string
+        userAddress: userAddress as string,
+        supportedAnchors
       });
     });
 
@@ -6060,28 +6144,49 @@ export class EthBancorModule
         .pipe(
           mergeMap(([apiData, tokenMeta]) => {
             const pools = apiData.pools;
+            const tokens = apiData.tokens;
 
-            const betterPools = pools
-              .map(pool => {
-                const reserveTokens = pool.reserves
-                  .map(reserve => ({
-                    ...tokenMeta.find(meta =>
+            const betterPools = pools.map(pool => {
+              const reserveTokens = pool.reserves
+                .map(
+                  (reserve): TokenMetaWithReserve => {
+                    const meta = tokenMeta.find(meta =>
                       compareString(meta.contract, reserve.address)
-                    )!,
-                    reserveWeight: ppmToDec(reserve.weight),
-                    decBalance: reserve.balance
-                  }))
-                  .filter(pool => pool.contract);
-                const decFee = ppmToDec(pool.fee);
-                return {
-                  ...pool,
-                  decFee,
-                  reserveTokens
-                };
-              })
-              .filter(pool => pool.reserveTokens.length == 2) as NewPool[];
+                    );
+                    const token = findOrThrow(
+                      tokens,
+                      token => compareString(token.dlt_id, reserve.address),
+                      "was expecting a token for a known reserve in API data"
+                    );
 
-            return betterPools;
+                    return {
+                      id: reserve.address,
+                      contract: reserve.address,
+                      reserveWeight: ppmToDec(reserve.weight),
+                      decBalance: reserve.balance,
+                      name: token.symbol,
+                      symbol: token.symbol,
+                      image: (meta && meta.image) || defaultImage,
+                      precision: token.decimals
+                    };
+                  }
+                )
+                .filter(pool => pool.contract);
+              const decFee = ppmToDec(pool.fee);
+              return {
+                ...pool,
+                decFee,
+                reserveTokens
+              };
+            });
+
+            const passedPools = filterAndWarn(
+              betterPools,
+              pool => pool.reserveTokens.length == 2,
+              "lost pools due to lack of meta data"
+            ) as NewPool[];
+
+            return passedPools;
           }),
           bufferTime(50),
           tap(pools => {
