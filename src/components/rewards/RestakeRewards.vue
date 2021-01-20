@@ -18,7 +18,7 @@
       label="Stake Amount"
       :token="token"
       v-model="amount"
-      :balance="pendingRewards.toString()"
+      :balance="pendingRewards.bnt.toString()"
       :error-msg="inputError"
     />
 
@@ -79,8 +79,6 @@ export default class RestakeRewards extends BaseTxAction {
   maxStakeSymbol: string = "";
   loading = false;
 
-  pendingRewards: BigNumber = new BigNumber(0);
-
   private interval: any;
 
   get token() {
@@ -89,6 +87,10 @@ export default class RestakeRewards extends BaseTxAction {
 
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
+  }
+
+  get pendingRewards() {
+    return vxm.rewards.balance.pendingRewards;
   }
 
   get actionButtonLabel() {
@@ -104,7 +106,7 @@ export default class RestakeRewards extends BaseTxAction {
 
   get inputError() {
     if (this.amount == "") return "";
-    if (this.pendingRewards.lt(this.amount))
+    if (this.pendingRewards.bnt.lt(this.amount))
       return "Insufficient rewards balance";
     if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
     else return "";
@@ -154,15 +156,11 @@ export default class RestakeRewards extends BaseTxAction {
     }
   }
 
-  async loadPendingRewards() {
-    this.pendingRewards = await vxm.rewards.pendingRewards();
-  }
-
   async loadData() {
     this.loading = true;
     try {
       await this.loadMaxStakes();
-      await this.loadPendingRewards();
+      await vxm.rewards.loadPendingRewards();
     } catch (e) {
       console.log(e);
     } finally {
