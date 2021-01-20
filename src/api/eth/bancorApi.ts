@@ -65,7 +65,7 @@ export interface Token {
   decimals: number;
 }
 
-interface TokenMetaWithReserve extends TokenMeta {
+export interface TokenMetaWithReserve extends TokenMeta {
   reserveWeight: number;
   decBalance: string;
 }
