@@ -2776,15 +2776,17 @@ export class EthBancorModule
     }[]
   ) {
     return Promise.all(
-      approvals.map(approval => {
+      approvals.map(async (approval) => {
         const tokenContract = buildTokenContract(approval.tokenAddress);
 
+        const tx = tokenContract.methods.approve(
+          approval.approvedAddress,
+          approval.amount
+        )
+
         return this.resolveTxOnConfirmation({
-          tx: tokenContract.methods.approve(
-            approval.approvedAddress,
-            approval.amount
-          ),
-          gas: 70000
+          tx,
+          gas: await tx.estimateGas()
         });
       })
     );
@@ -4439,9 +4441,12 @@ export class EthBancorModule
     resolveImmediately: boolean;
   }) {
     const converterContract = buildConverterContract(converterAddress);
+
+    const tx = converterContract.methods.fund(fundAmount);
+
     return this.resolveTxOnConfirmation({
-      tx: converterContract.methods.fund(fundAmount),
-      gas: 950000,
+      tx,
+      gas: await tx.estimateGas(),
       onConfirmation,
       resolveImmediately,
       ...(onHash && { onHash })
