@@ -83,7 +83,7 @@ export const getWelcomeData = async (
   const res = await axios.get<WelcomeData>(
     network == EthNetworks.Mainnet
       ? "https://bancor-api.nw.r.appspot.com/welcome"
-      : "http://34.105.255.216:3000/welcome"
+      : "http://35.197.245.144:3000/welcome"
   );
 
   return res.data;
