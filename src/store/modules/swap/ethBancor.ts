@@ -1051,6 +1051,8 @@ interface StakedAndReserve {
   }[];
 }
 
+const authenticated$ = new Subject<string>();
+
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
     contract: ethReserveAddress,
@@ -1545,7 +1547,9 @@ export class EthBancorModule
 
     const isValidAddress = web3.utils.isAddress(liquidityStore);
     if (!isValidAddress) {
-      console.error("Failed to find liquidity store address");
+      console.error(
+        `Failed to find liquidity store address of ${storeAddress}`
+      );
       throw new Error(`Invalid liquidity store address of ${storeAddress}`);
     }
 
@@ -2534,6 +2538,7 @@ export class EthBancorModule
     if (this.currentNetwork !== updatedNetwork) {
       this.resetData();
       this.init();
+      this.setNetwork(updatedNetwork);
     }
   }
 
@@ -5005,7 +5010,9 @@ export class EthBancorModule
     blockHeight?: number;
     traditional?: boolean;
   }) {
-    const networkVars = getNetworkVariables(this.currentNetwork);
+    const currentNetwork = this.currentNetwork;
+    const networkVars = getNetworkVariables(currentNetwork);
+    const isMainNet = currentNetwork == EthNetworks.Mainnet;
     // @ts-ignore
     const multi = new MultiCall(w3, networkVars.multiCall, [
       500,
@@ -5015,12 +5022,23 @@ export class EthBancorModule
       1
     ]);
 
-    console.log(groupsOfShapes, "shapes asked for");
-    const res = await multi.all(groupsOfShapes, {
-      traditional,
-      blockHeight
-    });
-    return res;
+    try {
+      const res = await multi.all(groupsOfShapes, {
+        traditional,
+        blockHeight
+      });
+      return res;
+    } catch (e) {
+      const firstContract = groupsOfShapes[0][0];
+      console.error(`Failed eth-multicall fetch ${e}`, {
+        groupsOfShapes,
+        firstContract,
+        networkVars,
+        isMainNet,
+        currentNetwork
+      });
+      throw new Error(`Failed eth-multicall fetch ${e}`);
+    }
   }
 
   @action async addPoolsV2(
@@ -5630,10 +5648,16 @@ export class EthBancorModule
   @action async fetchLiquidityProtectionSettingsContract(
     liquidityProtectionContract: string
   ): Promise<string> {
-    const contract = buildLiquidityProtectionContract(
-      liquidityProtectionContract
-    );
-    return contract.methods.settings().call();
+    try {
+      const contract = buildLiquidityProtectionContract(
+        liquidityProtectionContract
+      );
+      return contract.methods.settings().call();
+    } catch (e) {
+      const error = `Failed fetching settings contract via address ${liquidityProtectionContract}`;
+      console.error(error);
+      throw new Error(error);
+    }
   }
 
   @action async fetchTokens(tokenContracts: string[]): Promise<RawAbiToken[]> {
@@ -5713,8 +5737,9 @@ export class EthBancorModule
 
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
-    const networkVersion$ = from(web3.eth.getChainId()).pipe(
-      startWith(EthNetworks.Mainnet),
+    const chainId = await web3.eth.getChainId();
+
+    const networkVersion$ = of(chainId).pipe(
       distinctUntilChanged(),
       tap(this.setNetwork),
       shareReplay(1)
@@ -5762,12 +5787,6 @@ export class EthBancorModule
       switchMap(networkVariables =>
         this.fetchContractAddresses(networkVariables.contractRegistry)
       ),
-      startWith({
-        BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
-        BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
-        LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-        LiquidityProtection: "0xc9D9dc719C49edfc6bf9e0F0400Fc341cE93C298"
-      } as RegisteredContracts),
       distinctUntilChanged<RegisteredContracts>(isEqual),
       tap(x => console.log("sending out contracts...", x)),
       share()
@@ -5866,10 +5885,9 @@ export class EthBancorModule
       shareReplay<ConverterAndAnchor[]>(3000)
     );
 
-    const authenticated$ = of(this.currentUser).pipe(
-      filter(Boolean),
-      shareReplay(1)
-    );
+    if (this.currentUser) {
+      authenticated$.next(this.currentUser);
+    }
 
     combineLatest([
       authenticated$,
@@ -6674,8 +6692,7 @@ export class EthBancorModule
           this.liquidityProtectionSettings.govToken
         ]);
       }
-      console.log(userAddress, "fetching protected positions for");
-      this.fetchProtectionPositions({});
+      authenticated$.next(this.currentUser);
       this.fetchLockedBalances();
       if (this.apiData?.tokens) {
         const uniqueTokenAddresses = uniqWith(
