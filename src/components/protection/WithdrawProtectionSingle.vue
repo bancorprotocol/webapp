@@ -190,18 +190,10 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
     if (this.position.givenVBnt && !this.sufficientVBnt) {
       const missingVBnt = givenVBnt - Number(this.vBntBalance);
-      return (
-        i18n.t("insufficient_vBNT_balance") +
-        " " +
-        this.prettifyNumber(givenVBnt) +
-        " " +
-        i18n.t("vBNT_withdrawing_position") +
-        " " +
-        i18n.t("you_are_missing") +
-        " " +
-        this.prettifyNumber(missingVBnt) +
-        "vBNT."
-      );
+      return i18n.t("insufficient_vBNT_balance_missing", {
+        amount: this.prettifyNumber(givenVBnt),
+        missing: this.prettifyNumber(missingVBnt)
+      });
     } else return "";
   }
 

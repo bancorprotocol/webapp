@@ -328,19 +328,16 @@ export default class AddProtectionSingle extends BaseComponent {
 
       console.log(res, "was res");
 
-      const errorMsg =
-        this.token.symbol +
-        i18n.t("Continue") +
-        this.opposingToken!.symbol +
-        i18n.t("liquidity_allow_for") +
-        this.token.symbol +
-        i18n.t("single_sided_staking");
+      const errorMsg = i18n.tc("limit_reached", 0, {
+        token: this.token.symbol,
+        opposingToken: this.opposingToken!.symbol
+      });
 
       if (res.error) {
         this.preTxError =
-          res.error == i18n.t("insufficient_store_balance")
-            ? errorMsg
-            : res.error;
+          res.error == "balance"
+            ? i18n.tc("insufficient_store_balance")
+            : errorMsg;
       } else {
         this.preTxError = "";
       }

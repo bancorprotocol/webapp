@@ -153,11 +153,9 @@ export default class ModalSwapAction extends BaseComponent {
     }
 
     if (this.isCountryBanned) {
-      this.error =
-        i18n.t("action_through") +
-        " swap.bancor.network " +
-        i18n.t("not_available_country") +
-        ".";
+      this.error = i18n.tc("action_through_bancor", 0, {
+        bancor: "swap.bancor.network"
+      });
       return;
     }
 

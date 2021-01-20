@@ -121,13 +121,9 @@ export default class WithdrawProtectionDouble extends BaseComponent {
 
   get inputError() {
     if (!this.sufficientVBnt) {
-      return (
-        i18n.t("insufficient_vBNT_balance") +
-        "" +
-        this.position.givenVBnt +
-        " " +
-        i18n.t("vBNT_withdrawing_position")
-      );
+      return i18n.t("insufficient_vBNT_balance", {
+        amount: this.position.givenVBnt
+      });
     }
     return parseFloat(this.percentage) === 0
       ? i18n.t("percentage_not_zero")

@@ -87,8 +87,8 @@ export const en = {
   vote_against: "Vote against",
   output_estimated: "Output is estimated. If the price changes by more than",
   transaction_revert: "your transaction will revert.",
-  action_through: "This action through",
-  not_available_country: "is not available in your country.",
+  action_through_bancor:
+    "This action through {bancor} is not available in your country.",
   confirm_token_swap: "Confirm Token Swap",
   from: "From",
   to_estimated: "To (Estimated)",
@@ -121,15 +121,13 @@ export const en = {
   price_deviation_high: "Price Deviation too High",
   pool_not_approved:
     "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.",
-  limit_reached: "limit reached. Additional",
-  liquidity_allow_for: "liquidity should be staked to allow for",
-  single_sided_staking: "single-sided staking.",
+  limit_reached:
+    "{token} limit reached. Additional {opposingToken} liquidity should be staked to allow for {token} single-sided staking.",
   insufficient_store_balance: "Insufficient store balance",
   to_claim: "to claim",
   no: "No",
   locked: "locked",
   available_claim: "Available to claim",
-  token_logo: "Token Logo",
   left_until_claim: "left until claim",
   risk_impermanent_loss: "Assets at risk of impermanent loss",
   add_liquidity: "Add Liquidity",
@@ -184,8 +182,8 @@ export const en = {
   you_will_receive: "You will receive",
   havent_reached_coverage:
     "You still haven’t reached full coverage. There is a risk for impermanent loss.",
-  insufficient_vBNT_balance: "Insufficient vBNT balance, you must hold",
-  vBNT_withdrawing_position: "vBNT before withdrawing position.",
+  insufficient_vBNT_balance:
+    "Insufficient vBNT balance, you must hold {amount} vBNT before withdrawing position.",
   percentage_not_zero: "Percentage can not be Zero",
   fully_protected_value: "Fully Protected Value",
   price_volatility_withdrawing:
@@ -196,7 +194,8 @@ export const en = {
     "BNT withdrawals are subject to a 24h lock period before they can be claimed.",
   part_output_bnt:
     "Part of your output is in BNT. This amount will be locked for 24h before it can be claimed",
-  you_are_missing: "You are missing",
+  insufficient_vBNT_balance_missing:
+    "Insufficient vBNT balance, you must hold {amount} vBNT before withdrawing position. You are missing {missing} vBNT.",
   pools_with_two:
     "Pools with 2 reserves and 50/50 weight can be voted for protection.",
   add_another_token: "Add another token",
