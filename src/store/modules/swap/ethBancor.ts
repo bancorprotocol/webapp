@@ -1450,15 +1450,23 @@ export class EthBancorModule
   @action async fetchWhiteListedV1Pools(
     liquidityProtectionSettingsAddress: string
   ) {
-    const contractAddress = liquidityProtectionSettingsAddress;
-    const liquidityProtection = buildLiquidityProtectionSettingsContract(
-      contractAddress,
-      w3
-    );
-    const whiteListedPools = await liquidityProtection.methods
-      .poolWhitelist()
-      .call();
-    return whiteListedPools;
+    try {
+      const contractAddress = liquidityProtectionSettingsAddress;
+      const liquidityProtection = buildLiquidityProtectionSettingsContract(
+        contractAddress,
+        w3
+      );
+      const whiteListedPools = await liquidityProtection.methods
+        .poolWhitelist()
+        .call();
+
+      console.log(whiteListedPools, "are the white listed pools");
+
+      return whiteListedPools;
+    } catch (e) {
+      console.error("Failed fetching whitelisted pools");
+      throw new Error(`Failed to fetch whitelisted pools ${e}`);
+    }
   }
 
   @action async protectLiquidityTx({
@@ -1525,13 +1533,22 @@ export class EthBancorModule
 
   @action async fetchProtectionPositions({
     storeAddress,
-    blockNumberNow
+    blockNumberNow,
+    userAddress
   }: {
     storeAddress?: string;
     blockNumberNow?: number;
+    userAddress?: string;
   }) {
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
+
+    const isValidAddress = web3.utils.isAddress(liquidityStore);
+    if (!isValidAddress) {
+      console.error("Failed to find liquidity store address");
+      throw new Error(`Invalid liquidity store address of ${storeAddress}`);
+    }
+
     if (!this.currentUser) {
       return;
     }
@@ -1540,7 +1557,7 @@ export class EthBancorModule
         liquidityStore,
         w3
       );
-      const owner = this.currentUser;
+      const owner = userAddress || this.currentUser;
       console.time("time to get ID count");
       console.log("getting id count", owner, "was the owner");
       const idCount = Number(
@@ -1623,7 +1640,8 @@ export class EthBancorModule
                   timeScales.map(async scale => {
                     const poolBalance = findOrThrow(
                       pool.historicalBalances,
-                      balance => compareString(balance.scale, scale.label)
+                      balance => compareString(balance.scale, scale.label),
+                      "failed finding historical balance"
                     ).balance;
 
                     const historicalReserveBalances = poolBalance.reserves.map(
@@ -2107,8 +2125,17 @@ export class EthBancorModule
       allPositions.map(pos => pos.poolToken),
       compareString
     );
-    const relays = uniqueAnchors.map(anchor =>
-      findOrThrow(allRelays, relay => compareString(relay.id, anchor))
+
+    const relays = filterAndWarn(
+      uniqueAnchors,
+      anchor => allRelays.some(relay => compareString(relay.id, anchor)),
+      "positions were lost as relays were not found"
+    ).map(anchor =>
+      findOrThrow(
+        allRelays,
+        relay => compareString(relay.id, anchor),
+        "failed here..."
+      )
     );
 
     const viewPositions = allPositions.map(
@@ -2117,8 +2144,10 @@ export class EthBancorModule
 
         const startTime = Number(singleEntry.timestamp);
 
-        const relay = findOrThrow(relays, relay =>
-          compareString(relay.id, singleEntry.poolToken)
+        const relay = findOrThrow(
+          relays,
+          relay => compareString(relay.id, singleEntry.poolToken),
+          "failed to find relay in view positions"
         );
 
         const reserveToken = this.token(singleEntry.reserveToken);
@@ -2224,7 +2253,15 @@ export class EthBancorModule
       }
     );
 
-    console.log({ reviewedSingles: viewPositions });
+    console.log(
+      {
+        viewPositions,
+        allPositions,
+        rawPositions: this.protectedPositionsArr,
+        whiteListedPools
+      },
+      "misty"
+    );
     return viewPositions;
   }
 
@@ -4969,6 +5006,7 @@ export class EthBancorModule
     traditional?: boolean;
   }) {
     const networkVars = getNetworkVariables(this.currentNetwork);
+    // @ts-ignore
     const multi = new MultiCall(w3, networkVars.multiCall, [
       500,
       100,
@@ -5731,7 +5769,14 @@ export class EthBancorModule
         LiquidityProtection: "0xc9D9dc719C49edfc6bf9e0F0400Fc341cE93C298"
       } as RegisteredContracts),
       distinctUntilChanged<RegisteredContracts>(isEqual),
-      shareReplay(1)
+      tap(x => console.log("sending out contracts...", x)),
+      share()
+    );
+
+    const bancorConverterRegistry$ = contractAddresses$.pipe(
+      pluck("BancorConverterRegistry"),
+      distinctUntilChanged(compareString),
+      share()
     );
 
     const liquidityProtection$ = contractAddresses$.pipe(
@@ -5756,12 +5801,6 @@ export class EthBancorModule
 
     settingsContractAddress$.subscribe(settingsContract =>
       vxm.minting.fetchMinLiqForMinting(settingsContract)
-    );
-
-    const bancorConverterRegistry$ = contractAddresses$.pipe(
-      pluck("BancorConverterRegistry"),
-      distinctUntilChanged(compareString),
-      shareReplay(1)
     );
 
     const bancorNetwork$ = contractAddresses$.pipe(
@@ -5789,12 +5828,14 @@ export class EthBancorModule
       .subscribe(this.setWhiteListedPools);
 
     const anchors$ = bancorConverterRegistry$.pipe(
+      tap(x => console.log("registry ran..", x)),
       switchMap(converterRegistryAddress =>
         this.fetchAnchorAddresses({
           converterRegistryAddress
         })
       ),
-      shareReplay(1)
+      shareReplay(1),
+      tap(x => console.log("registry ran and returned", x))
     );
 
     const anchorAndConverters$ = combineLatest([
@@ -5803,6 +5844,10 @@ export class EthBancorModule
     ]).pipe(
       mergeMap(([anchorAddresses, converterRegistryAddress]) =>
         (async () => {
+          console.log("fetching...", {
+            anchorAddresses,
+            converterRegistryAddress
+          });
           const converters = await getConvertersByAnchors({
             anchorAddresses,
             converterRegistryAddress,
@@ -5812,6 +5857,7 @@ export class EthBancorModule
             anchorAddresses,
             converters
           );
+          console.log(anchorsAndConverters, "are learnt");
           this.updateConverterAndAnchors(anchorsAndConverters);
           return anchorsAndConverters;
         })()
@@ -5829,12 +5875,14 @@ export class EthBancorModule
       authenticated$,
       liquidityProtectionStore$,
       currentBlock$
-    ]).subscribe(([_, storeAddress, { blockNumber }]) =>
+    ]).subscribe(([userAddress, storeAddress, { blockNumber }]) => {
+      console.log(storeAddress, "was the store address in.....");
       this.fetchProtectionPositions({
         storeAddress,
-        blockNumberNow: blockNumber
-      })
-    );
+        blockNumberNow: blockNumber,
+        userAddress: userAddress as string
+      });
+    });
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
       mergeMap(x => from(x))
@@ -6045,8 +6093,8 @@ export class EthBancorModule
 
   @action async fetchPooLiqMiningApr({
     highTierPoolAnchors,
-    protectionStoreAddress,
-    relays
+    relays,
+    protectionStoreAddress
   }: {
     highTierPoolAnchors: string[];
     relays: RelayWithReserveBalances[];
@@ -6488,8 +6536,16 @@ export class EthBancorModule
     converterRegistryAddress
   }: {
     converterRegistryAddress: string;
-  }) {
-    return getAnchors(converterRegistryAddress, w3);
+  }): Promise<string[]> {
+    try {
+      const anchors = await getAnchors(converterRegistryAddress, w3);
+      return anchors;
+    } catch (e) {
+      console.error(
+        `Failed to fetch anchors with address ${converterRegistryAddress} ${e}`
+      );
+      throw new Error(`Failed to fetch Anchors ${e}`);
+    }
   }
 
   @mutation updateRelays(relays: Relay[]) {
@@ -6861,6 +6917,16 @@ export class EthBancorModule
   @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
     const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
     const winningRelays = uniqWith(relaysByLiqDepth, compareRelayByReserves);
+    if (this.converterAndAnchors.length == 0) {
+      console.log("waiting a second to resolve converters and anchors...");
+      await wait(1000);
+      if (this.converterAndAnchors.length == 0) {
+        console.log("waiting another second...");
+        console.log(this.converterAndAnchors, "is before 5 seconds");
+        await wait(5000);
+        console.log(this.converterAndAnchors, "is after 5 seconds");
+      }
+    }
     const convertersAndAnchors = this.converterAndAnchors;
 
     const relaysWithConverterAddress = winningRelays.map(
