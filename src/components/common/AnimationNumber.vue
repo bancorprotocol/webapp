@@ -1,5 +1,5 @@
 <template>
-  <div>{{ prettifyNumber(currNumber) }}</div>
+  <div>{{ prettifyNumber(currentNumber) }}</div>
 </template>
 
 <script lang="ts">
@@ -9,15 +9,11 @@ import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
 export default class AnimationNumber extends BaseComponent {
-  @Prop({ default: 0 }) startingValue?: number;
-  @Prop() targetValue?: number;
-  @Prop({ default: 3000 }) animationTime?: number; //ms
+  @Prop({ default: 0 }) startingValue!: number;
+  @Prop() targetValue!: number;
+  @Prop({ default: 3000 }) animationTime!: number; //ms
 
   currentNumber: number = 0;
-
-  get currNumber() {
-    return this.currentNumber;
-  }
 
   created() {
     this.currentNumber = this.startingValue;
