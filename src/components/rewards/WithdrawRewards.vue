@@ -2,12 +2,10 @@
   <div class="mt-3">
     <label-content-split label="Claimable Rewards">
       <div>
-        <logo-amount-symbol :token-id="bntAddress" :amount="''" symbol="BNT" />
-        <!-- pendingRewards -->
-        <animation-number
-          :startingValue="100"
-          :targetValue="0"
-          :animateOnMount="false"
+        <logo-amount-symbol
+          :token-id="bntAddress"
+          :amount="amount"
+          symbol="BNT"
         />
       </div>
     </label-content-split>
