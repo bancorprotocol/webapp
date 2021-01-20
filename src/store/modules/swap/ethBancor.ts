@@ -1877,8 +1877,6 @@ export class EthBancorModule
 
             const shrunk = shrinkToken(feeAmountWei, 18);
 
-            console.log(shrunk, "is the fee amount");
-
             return {
               positionId: position.id,
               amount: shrunk
@@ -3811,12 +3809,6 @@ export class EthBancorModule
     }
     const oldPools = poolsToOldRelay(this.newPools, this.apiData.tokens);
 
-    console.log(
-      relayId,
-      "was relay id",
-      oldPools,
-      this.newPools.map(x => x.pool_dlt_id)
-    );
     return findOrThrow(
       oldPools,
       relay => compareString(relay.id, relayId),
@@ -5993,7 +5985,11 @@ export class EthBancorModule
       anchorSet =>
         v2Pools.some(anchor => compareString(anchor, anchorSet.anchorAddress))
     );
-    v2Pools$.pipe(bufferTime(100)).subscribe(pools => this.addPoolsBulk(pools));
+    v2Pools$.pipe(bufferTime(100)).subscribe(pools => {
+      if (pools.length > 0) {
+        this.addPoolsBulk(pools);
+      }
+    });
 
     const [toLocalLoad$, toRemoteLoad$] = partitionOb(
       v1Pools$,
@@ -7052,7 +7048,6 @@ export class EthBancorModule
       token => compareString(token.dlt_id, tokenAddress),
       "failed to find token for decimals"
     );
-    console.log("asked for", tokenAddress, token);
     return token.decimals;
   }
 
@@ -7145,7 +7140,6 @@ export class EthBancorModule
         amount: fromWei
       });
 
-      console.log(wei, "is get return by wei");
       const weiNumber = new BigNumber(wei);
 
       const userReturnRate = buildRate(new BigNumber(fromWei), weiNumber);
