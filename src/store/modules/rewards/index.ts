@@ -13,6 +13,11 @@ const VuexModule = createModule({
 export class RewardsModule extends VuexModule.With({
   namespaced: "rewards/"
 }) {
+  balance = {
+    totalClaimedRewards: new BigNumber(0),
+    pendingRewards: new BigNumber(0)
+  };
+
   get contract() {
     return buildStakingRewardsContract(vxm.ethBancor.contracts.StakingRewards);
   }
@@ -87,12 +92,20 @@ export class RewardsModule extends VuexModule.With({
     };
   }
 
+  @action async loadData() {
+    await this.pendingRewards();
+    await this.totalClaimedRewards();
+  }
+
   @action async totalClaimedRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
       .totalClaimedRewards(this.currentUser)
       .call();
 
-    return new BigNumber(result);
+    const value = new BigNumber(result);
+    this.balance.totalClaimedRewards = value;
+
+    return value;
   }
 
   @action async pendingRewards(): Promise<BigNumber> {
@@ -100,7 +113,10 @@ export class RewardsModule extends VuexModule.With({
       .pendingRewards(this.currentUser)
       .call();
 
-    return new BigNumber(result);
+    const value = new BigNumber(result);
+    this.balance.pendingRewards = value;
+
+    return value;
   }
 
   @action async pendingReserveRewards({
