@@ -77,7 +77,6 @@
         </b-col>
       </b-row>
     </ContentBlock>
-
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
   </div>
 </template>
@@ -96,7 +95,7 @@ interface ViewRewardsSummaryItem {
   id: number;
   label: string;
   bnt: BigNumber;
-  usd: number;
+  usd: BigNumber;
 }
 
 @Component({
@@ -109,8 +108,9 @@ export default class RewardsSummary extends BaseComponent {
   title = "Rewards";
   modal = false;
 
-  pendingRewards: BigNumber = new BigNumber(0);
-  totalClaimedRewards: BigNumber = new BigNumber(0);
+  get rewardsBalance() {
+    return vxm.rewards.balance;
+  }
 
   get pools() {
     return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
@@ -121,21 +121,16 @@ export default class RewardsSummary extends BaseComponent {
       {
         id: 1,
         label: "Total Reward to date",
-        bnt: this.totalClaimedRewards.plus(this.pendingRewards),
-        usd: 99.12
+        bnt: this.rewardsBalance.totalRewards.bnt,
+        usd: this.rewardsBalance.totalRewards.usd
       },
       {
         id: 2,
         label: "Claimable Rewards",
-        bnt: this.pendingRewards,
-        usd: 99.12
+        bnt: this.rewardsBalance.pendingRewards.bnt,
+        usd: this.rewardsBalance.pendingRewards.usd
       }
     ];
-  }
-
-  async loadRewardsData() {
-    this.pendingRewards = await vxm.rewards.pendingRewards();
-    this.totalClaimedRewards = await vxm.rewards.totalClaimedRewards();
   }
 
   openModal() {
@@ -152,7 +147,7 @@ export default class RewardsSummary extends BaseComponent {
 
   async mounted() {
     try {
-      await this.loadRewardsData();
+      await vxm.rewards.loadData();
     } catch (e) {
       console.error("Load Rewards Data error: ", e);
     }

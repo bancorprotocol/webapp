@@ -210,7 +210,12 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
-import { getWelcomeData, NewPool, WelcomeData } from "@/api/eth/bancorApi";
+import {
+  getWelcomeData,
+  NewPool,
+  WelcomeData,
+  TokenMetaWithReserve
+} from "@/api/eth/bancorApi";
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -801,6 +806,42 @@ interface RawAbiRelay {
   converterType?: string;
 }
 
+const poolsToOldRelay = (
+  pools: NewPool[],
+  tokens: WelcomeData["tokens"]
+): Relay[] => {
+  const allReserves = pools.flatMap(pool => pool.reserveTokens);
+  const allReservesHaveToken = allReserves.every(reserve =>
+    tokens.some(token => compareString(reserve.contract, token.dlt_id))
+  );
+  if (!allReservesHaveToken) throw new Error("Not enough tokens not passed");
+
+  return pools.map(pool => ({
+    anchor: {
+      contract: pool.pool_dlt_id,
+      decimals: pool.decimals,
+      network: "eth",
+      symbol: pool.name
+    },
+    contract: pool.converter_dlt_id,
+    converterType: 1,
+    fee: pool.decFee,
+    id: pool.pool_dlt_id,
+    isMultiContract: false,
+    network: "eth",
+    version: String(pool.version),
+    reserves: pool.reserveTokens.map(reserve => ({
+      network: "eth",
+      contract: reserve.contract,
+      symbol: reserve.symbol,
+      decimals: findOrThrow(tokens, token =>
+        compareString(token.dlt_id, reserve.contract)
+      ).decimals,
+      reserveWeight: reserve.reserveWeight
+    }))
+  }));
+};
+
 const zipAnchorAndConverters = (
   anchorAddresses: string[],
   converterAddresses: string[]
@@ -1050,6 +1091,8 @@ interface StakedAndReserve {
     poolTokenAddress: string;
   }[];
 }
+
+const authenticated$ = new Subject<string>();
 
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
@@ -1525,27 +1568,34 @@ export class EthBancorModule
       "id"
     ];
 
-    // @ts-ignore
-    return multiPositions
+    const protectedLiquidity = multiPositions
       .map(res => ({ ...res.position, "8": res.positionId }))
-      .map(res => fromPairs(keys.map((key, index) => [key, res[index]])));
+      .map(res =>
+        fromPairs(keys.map((key, index) => [key, res[index]]))
+      ) as ProtectedLiquidity[];
+
+    return protectedLiquidity;
   }
 
   @action async fetchProtectionPositions({
     storeAddress,
     blockNumberNow,
-    userAddress
+    userAddress,
+    supportedAnchors
   }: {
     storeAddress?: string;
     blockNumberNow?: number;
     userAddress?: string;
+    supportedAnchors?: string[];
   }) {
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
 
     const isValidAddress = web3.utils.isAddress(liquidityStore);
     if (!isValidAddress) {
-      console.error("Failed to find liquidity store address");
+      console.error(
+        `Failed to find liquidity store address of ${storeAddress}`
+      );
       throw new Error(`Invalid liquidity store address of ${storeAddress}`);
     }
 
@@ -1570,7 +1620,7 @@ export class EthBancorModule
         .protectedLiquidityIds(owner)
         .call();
 
-      const [allPositions, currentBlockNumber] = await Promise.all([
+      const [rawPositions, currentBlockNumber] = await Promise.all([
         this.fetchPositionsMulti({
           positionIds,
           liquidityStore
@@ -1580,8 +1630,32 @@ export class EthBancorModule
         })()
       ]);
 
-      if (allPositions.length !== idCount)
+      if (rawPositions.length !== idCount)
         throw new Error("ID count does not match returned positions");
+
+      const theSupportedAnchors =
+        supportedAnchors ||
+        (this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id));
+      if (!theSupportedAnchors)
+        throw new Error(
+          "Race condition error, unable to determine supported anchors"
+        );
+      const allPositions = filterAndWarn(
+        rawPositions,
+        pos =>
+          theSupportedAnchors.some(anchor =>
+            compareString(pos.poolToken, anchor)
+          ),
+        "position lost due to anchor not being supported"
+      );
+
+      console.log(allPositions, "are the after thing", {
+        theSupportedAnchors,
+        newPools: this.newPools,
+        supportedAnchors,
+        apiPools:
+          this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id)
+      });
 
       const lpContract = buildLiquidityProtectionContract(
         this.contracts.LiquidityProtection,
@@ -1802,8 +1876,6 @@ export class EthBancorModule
             );
 
             const shrunk = shrinkToken(feeAmountWei, 18);
-
-            console.log(shrunk, "is the fee amount");
 
             return {
               positionId: position.id,
@@ -2534,6 +2606,7 @@ export class EthBancorModule
     if (this.currentNetwork !== updatedNetwork) {
       this.resetData();
       this.init();
+      this.setNetwork(updatedNetwork);
     }
   }
 
@@ -2912,7 +2985,7 @@ export class EthBancorModule
           id: token.dlt_id,
           name: token.symbol,
           symbol: token.symbol,
-          precision: token.precision,
+          precision: token.decimals,
           logo: (meta && meta.image) || defaultImage,
           change24h,
           ...(balance && { balance: balanceString }),
@@ -3601,7 +3674,7 @@ export class EthBancorModule
 
         return {
           address,
-          ...(foundToken && { precision: foundToken.precision })
+          ...(foundToken && { precision: foundToken.decimals })
         };
       });
 
@@ -3730,8 +3803,14 @@ export class EthBancorModule
   }
 
   @action async relayById(relayId: string): Promise<Relay> {
+    if (!this.apiData) {
+      console.error("API data not downloaded yet");
+      throw new Error("API data not downloaded yet");
+    }
+    const oldPools = poolsToOldRelay(this.newPools, this.apiData.tokens);
+
     return findOrThrow(
-      this.relaysList,
+      oldPools,
       relay => compareString(relay.id, relayId),
       "failed to find relay by id"
     );
@@ -5005,7 +5084,9 @@ export class EthBancorModule
     blockHeight?: number;
     traditional?: boolean;
   }) {
-    const networkVars = getNetworkVariables(this.currentNetwork);
+    const currentNetwork = this.currentNetwork;
+    const networkVars = getNetworkVariables(currentNetwork);
+    const isMainNet = currentNetwork == EthNetworks.Mainnet;
     // @ts-ignore
     const multi = new MultiCall(w3, networkVars.multiCall, [
       500,
@@ -5015,12 +5096,23 @@ export class EthBancorModule
       1
     ]);
 
-    console.log(groupsOfShapes, "shapes asked for");
-    const res = await multi.all(groupsOfShapes, {
-      traditional,
-      blockHeight
-    });
-    return res;
+    try {
+      const res = await multi.all(groupsOfShapes, {
+        traditional,
+        blockHeight
+      });
+      return res;
+    } catch (e) {
+      const firstContract = groupsOfShapes[0][0];
+      console.error(`Failed eth-multicall fetch ${e}`, {
+        groupsOfShapes,
+        firstContract,
+        networkVars,
+        isMainNet,
+        currentNetwork
+      });
+      throw new Error(`Failed eth-multicall fetch ${e}`);
+    }
   }
 
   @action async addPoolsV2(
@@ -5411,14 +5503,14 @@ export class EthBancorModule
           data: {
             from: {
               amount: x.input_amount,
-              decimals: fromToken.precision,
+              decimals: fromToken.decimals,
               id: x.source_token_dlt_id,
               logo: (fromMetaToken && fromMetaToken.image) || defaultImage,
               symbol: fromToken.symbol
             },
             to: {
               amount: x.output_amount,
-              decimals: toToken.precision,
+              decimals: toToken.decimals,
               id: x.target_token_dlt_id,
               logo: (toMetaToken && toMetaToken.image) || defaultImage,
               symbol: toToken.symbol
@@ -5630,10 +5722,16 @@ export class EthBancorModule
   @action async fetchLiquidityProtectionSettingsContract(
     liquidityProtectionContract: string
   ): Promise<string> {
-    const contract = buildLiquidityProtectionContract(
-      liquidityProtectionContract
-    );
-    return contract.methods.settings().call();
+    try {
+      const contract = buildLiquidityProtectionContract(
+        liquidityProtectionContract
+      );
+      return contract.methods.settings().call();
+    } catch (e) {
+      const error = `Failed fetching settings contract via address ${liquidityProtectionContract}`;
+      console.error(error);
+      throw new Error(error);
+    }
   }
 
   @action async fetchTokens(tokenContracts: string[]): Promise<RawAbiToken[]> {
@@ -5713,8 +5811,9 @@ export class EthBancorModule
 
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
-    const networkVersion$ = from(web3.eth.getChainId()).pipe(
-      startWith(EthNetworks.Mainnet),
+    const chainId = await web3.eth.getChainId();
+
+    const networkVersion$ = of(chainId).pipe(
       distinctUntilChanged(),
       tap(this.setNetwork),
       shareReplay(1)
@@ -5762,12 +5861,6 @@ export class EthBancorModule
       switchMap(networkVariables =>
         this.fetchContractAddresses(networkVariables.contractRegistry)
       ),
-      startWith({
-        BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
-        BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
-        LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-        LiquidityProtection: "0xc9D9dc719C49edfc6bf9e0F0400Fc341cE93C298"
-      } as RegisteredContracts),
       distinctUntilChanged<RegisteredContracts>(isEqual),
       tap(x => console.log("sending out contracts...", x)),
       share()
@@ -5857,8 +5950,6 @@ export class EthBancorModule
             anchorAddresses,
             converters
           );
-          console.log(anchorsAndConverters, "are learnt");
-          this.updateConverterAndAnchors(anchorsAndConverters);
           return anchorsAndConverters;
         })()
       ),
@@ -5866,21 +5957,22 @@ export class EthBancorModule
       shareReplay<ConverterAndAnchor[]>(3000)
     );
 
-    const authenticated$ = of(this.currentUser).pipe(
-      filter(Boolean),
-      shareReplay(1)
-    );
+    if (this.currentUser) {
+      authenticated$.next(this.currentUser);
+    }
 
     combineLatest([
       authenticated$,
       liquidityProtectionStore$,
-      currentBlock$
-    ]).subscribe(([userAddress, storeAddress, { blockNumber }]) => {
-      console.log(storeAddress, "was the store address in.....");
+      currentBlock$,
+      apiData$
+    ]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
+      const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
       this.fetchProtectionPositions({
         storeAddress,
         blockNumberNow: blockNumber,
-        userAddress: userAddress as string
+        userAddress: userAddress as string,
+        supportedAnchors
       });
     });
 
@@ -5893,7 +5985,11 @@ export class EthBancorModule
       anchorSet =>
         v2Pools.some(anchor => compareString(anchor, anchorSet.anchorAddress))
     );
-    v2Pools$.pipe(bufferTime(100)).subscribe(pools => this.addPoolsBulk(pools));
+    v2Pools$.pipe(bufferTime(100)).subscribe(pools => {
+      if (pools.length > 0) {
+        this.addPoolsBulk(pools);
+      }
+    });
 
     const [toLocalLoad$, toRemoteLoad$] = partitionOb(
       v1Pools$,
@@ -6044,28 +6140,49 @@ export class EthBancorModule
         .pipe(
           mergeMap(([apiData, tokenMeta]) => {
             const pools = apiData.pools;
+            const tokens = apiData.tokens;
 
-            const betterPools = pools
-              .map(pool => {
-                const reserveTokens = pool.reserves
-                  .map(reserve => ({
-                    ...tokenMeta.find(meta =>
+            const betterPools = pools.map(pool => {
+              const reserveTokens = pool.reserves
+                .map(
+                  (reserve): TokenMetaWithReserve => {
+                    const meta = tokenMeta.find(meta =>
                       compareString(meta.contract, reserve.address)
-                    )!,
-                    reserveWeight: ppmToDec(reserve.weight),
-                    decBalance: reserve.balance
-                  }))
-                  .filter(pool => pool.contract);
-                const decFee = ppmToDec(pool.fee);
-                return {
-                  ...pool,
-                  decFee,
-                  reserveTokens
-                };
-              })
-              .filter(pool => pool.reserveTokens.length == 2) as NewPool[];
+                    );
+                    const token = findOrThrow(
+                      tokens,
+                      token => compareString(token.dlt_id, reserve.address),
+                      "was expecting a token for a known reserve in API data"
+                    );
 
-            return betterPools;
+                    return {
+                      id: reserve.address,
+                      contract: reserve.address,
+                      reserveWeight: ppmToDec(reserve.weight),
+                      decBalance: reserve.balance,
+                      name: token.symbol,
+                      symbol: token.symbol,
+                      image: (meta && meta.image) || defaultImage,
+                      precision: token.decimals
+                    };
+                  }
+                )
+                .filter(pool => pool.contract);
+              const decFee = ppmToDec(pool.fee);
+              return {
+                ...pool,
+                decFee,
+                reserveTokens
+              };
+            });
+
+            const passedPools = filterAndWarn(
+              betterPools,
+              pool => pool.reserveTokens.length == 2,
+              "lost pools due to lack of meta data"
+            ) as NewPool[];
+
+            return passedPools;
           }),
           bufferTime(50),
           tap(pools => {
@@ -6078,17 +6195,6 @@ export class EthBancorModule
     } catch (e) {
       console.error("thrown in x", e);
     }
-  }
-
-  converterAndAnchors: ConverterAndAnchor[] = [];
-
-  @mutation updateConverterAndAnchors(
-    converterAndAnchors: ConverterAndAnchor[]
-  ) {
-    this.converterAndAnchors = uniqWith(
-      [...converterAndAnchors, ...this.converterAndAnchors],
-      compareAnchorAndConverter
-    );
   }
 
   @action async fetchPooLiqMiningApr({
@@ -6674,8 +6780,7 @@ export class EthBancorModule
           this.liquidityProtectionSettings.govToken
         ]);
       }
-      console.log(userAddress, "fetching protected positions for");
-      this.fetchProtectionPositions({});
+      authenticated$.next(this.currentUser);
       this.fetchLockedBalances();
       if (this.apiData?.tokens) {
         const uniqueTokenAddresses = uniqWith(
@@ -6917,26 +7022,16 @@ export class EthBancorModule
   @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
     const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
     const winningRelays = uniqWith(relaysByLiqDepth, compareRelayByReserves);
-    if (this.converterAndAnchors.length == 0) {
-      console.log("waiting a second to resolve converters and anchors...");
-      await wait(1000);
-      if (this.converterAndAnchors.length == 0) {
-        console.log("waiting another second...");
-        console.log(this.converterAndAnchors, "is before 5 seconds");
-        await wait(5000);
-        console.log(this.converterAndAnchors, "is after 5 seconds");
-      }
-    }
-    const convertersAndAnchors = this.converterAndAnchors;
 
-    const relaysWithConverterAddress = winningRelays.map(
-      (relay): ViewRelayConverter => ({
+    const relaysWithConverterAddress = winningRelays.map(relay => {
+      const apiRelay = findOrThrow(this.apiData!.pools, pool =>
+        compareString(pool.pool_dlt_id, relay.id)
+      );
+      return {
         ...relay,
-        converterAddress: findOrThrow(convertersAndAnchors, anchor =>
-          compareString(anchor.anchorAddress, relay.id)
-        ).converterAddress
-      })
-    );
+        converterAddress: apiRelay.converter_dlt_id
+      };
+    });
 
     const minimalRelays = relaysWithConverterAddress.map(
       viewRelayConverterToMinimal
@@ -6953,7 +7048,7 @@ export class EthBancorModule
       token => compareString(token.dlt_id, tokenAddress),
       "failed to find token for decimals"
     );
-    return token.precision;
+    return token.decimals;
   }
 
   @action async calculateSingleWithdraw({
@@ -6990,7 +7085,7 @@ export class EthBancorModule
     return {
       outputs: [
         {
-          amount: shrinkToken(res.baseAmount, reserveTokenObj.precision),
+          amount: shrinkToken(res.baseAmount, reserveTokenObj.decimals),
           id: reserveToken,
           symbol: reserveTokenObj.symbol
         },
@@ -7001,7 +7096,7 @@ export class EthBancorModule
         }
       ].filter(output => new BigNumber(output.amount).isGreaterThan(0)),
       expectedValue: {
-        amount: shrinkToken(res.targetAmount, reserveTokenObj.precision),
+        amount: shrinkToken(res.targetAmount, reserveTokenObj.decimals),
         id: reserveToken,
         symbol: reserveTokenObj.symbol
       }
@@ -7044,6 +7139,7 @@ export class EthBancorModule
         path,
         amount: fromWei
       });
+
       const weiNumber = new BigNumber(wei);
 
       const userReturnRate = buildRate(new BigNumber(fromWei), weiNumber);
@@ -7084,11 +7180,13 @@ export class EthBancorModule
         console.warn("Failed calculating slippage", e.message);
       }
 
+      console.log({ wei, toTokenDecimals, slippage });
       return {
         amount: shrinkToken(wei, toTokenDecimals),
         slippage
       };
     } catch (e) {
+      console.log(e, "was caught in here...");
       if (
         e.message.includes(
           `Returned values aren't valid, did it run Out of Gas? You might also see this error if you are not using the correct ABI for the contract you are retrieving data from`
@@ -7106,6 +7204,7 @@ export class EthBancorModule
           relay =>
             !relay.balances.reserves.every(reserve => reserve.weiAmount !== "0")
         );
+        console.log(relayBalances, "is the relay balances");
         if (relaysWithNoBalances.length > 0) {
           const moreThanOne = relayBalances.length > 1;
           throw new Error(

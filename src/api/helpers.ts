@@ -33,7 +33,7 @@ import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
 
 export enum PositionType {
@@ -96,7 +96,6 @@ export const traverseLockedBalances = async (
     if (lockedBalances.length >= expectedCount) break;
   }
 
-  console.log(lockedBalances, "should be inspected");
   return lockedBalances;
 };
 
@@ -671,7 +670,12 @@ const wallets = [
   { walletName: "torus" },
   { walletName: "status" },
   { walletName: "unilogin" },
-  { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME, preferred: true },
+  {
+    walletName: "walletLink",
+    rpcUrl: RPC_URL,
+    appName: APP_NAME,
+    preferred: true
+  },
   { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },

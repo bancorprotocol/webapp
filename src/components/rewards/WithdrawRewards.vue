@@ -1,13 +1,11 @@
 <template>
   <div class="mt-3">
     <label-content-split label="Claimable Rewards">
-      <div>
-        <logo-amount-symbol
-          :token-id="bntAddress"
-          :amount="pendingRewards.bnt"
-          symbol="BNT"
-        />
-      </div>
+      <logo-amount-symbol
+        :token-id="bntAddress"
+        :amount="prettifyNumber(pendingRewards.bnt)"
+        symbol="BNT"
+      />
     </label-content-split>
 
     <alert-block
@@ -51,7 +49,6 @@ import BigNumber from "bignumber.js";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
-import AnimationNumber from "@/components/common/AnimationNumber.vue";
 
 @Component({
   components: {
@@ -60,8 +57,7 @@ import AnimationNumber from "@/components/common/AnimationNumber.vue";
     AlertBlock,
     LogoAmountSymbol,
     LabelContentSplit,
-    MainButton,
-    AnimationNumber
+    MainButton
   }
 })
 export default class WithdrawRewards extends BaseTxAction {
@@ -116,7 +112,7 @@ export default class WithdrawRewards extends BaseTxAction {
   async loadData() {
     this.loading = true;
     try {
-      this.pendingRewards = await vxm.rewards.pendingRewards();
+      this.pendingRewards = await vxm.rewards.pendingRewards;
     } catch (e) {
       console.log(e);
     } finally {
