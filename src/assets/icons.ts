@@ -35,6 +35,7 @@ import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
 import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
+import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -72,7 +73,8 @@ export const fas = [
   faChevronDown,
   faChevronLeft,
   faPoll,
-  faRetweet
+  faRetweet,
+  faUpload
 ];
 
 /* free-brands-svg-icons */

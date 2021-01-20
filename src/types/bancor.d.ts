@@ -810,3 +810,12 @@ export interface ViewProposalsField {
   colAuto?: boolean;
   colRate?: number;
 }
+
+export interface ITxMeta {
+  showTxModal: boolean;
+  txBusy: boolean;
+  success: TxResponse | null;
+  txError: string;
+  sections: Step[];
+  stepIndex: number;
+}

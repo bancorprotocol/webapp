@@ -1,40 +1,43 @@
 <template>
   <div>
     <ContentBlock
-      :no-header="true"
       :shadow-light="true"
-      :px0="true"
-      class="pt-3 px-3 mb-3"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <div class="d-flex justify-content-between align-items-center d-xl-none">
-        <span class="font-size-16 font-w500">{{ title }}</span>
-        <div>
-          <b-btn
-            variant="outline-gray"
-            :to="{ name: 'RewardsWithdraw' }"
-            style="width: 132px"
-            class="mr-3"
-          >
-            Withdraw
-          </b-btn>
-          <b-btn variant="primary" @click="openModal" style="width: 132px">
-            ReStake
-          </b-btn>
+      <template #header>
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="font-size-16 font-w500">Rewards</div>
+          <div class="d-lg-none">
+            <b-btn
+              variant="outline-gray"
+              size="sm"
+              class="mr-2"
+              :to="{ name: 'RewardsWithdraw' }"
+            >
+              <svg
+                width="13"
+                height="16"
+                viewBox="0 0 13 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10.5693 6.01098L7.17391 2.94093V11.6756C7.17391 12.1511 6.74329 12.5405 6.21739 12.5405C5.6915 12.5405 5.26087 12.1511 5.26087 11.6756V2.94093L1.86546 6.01098C1.48247 6.35728 0.884639 6.35728 0.502604 6.01098C0.119613 5.66469 0.119613 5.12415 0.502604 4.77872L5.52434 0.238184C5.73919 0.0650422 5.97831 0 6.21744 0C6.45657 0 6.6957 0.0861492 6.8872 0.259286L11.9089 4.79983C12.2919 5.14612 12.2919 5.68666 11.9089 6.03209C11.5502 6.35641 10.9523 6.35642 10.5693 6.01098ZM0.956522 16C0.430626 16 0 15.6106 0 15.1351C0 14.6596 0.430626 14.2703 0.956522 14.2703H11.4783C12.0042 14.2703 12.4348 14.6596 12.4348 15.1351C12.4348 15.6106 12.0042 16 11.4783 16H0.956522Z"
+                  :fill="darkMode ? '#ffffff' : '#0A2540'"
+                />
+              </svg>
+            </b-btn>
+            <b-btn @click="openModal" variant="primary" size="sm">
+              <font-awesome-icon icon="plus" />
+            </b-btn>
+          </div>
         </div>
-      </div>
-      <b-row>
-        <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
-          <div class="font-size-16 font-w500">{{ title }}</div>
-        </b-col>
+      </template>
+      <b-row style="align-items: center">
         <b-col
-          v-for="(item, index) in summarizedRewards"
+          v-for="item in summarizedRewards"
           :key="item.id"
-          cols="6"
-          lg="4"
-          xl="2"
-          class="d-flex flex-column align-items-center mt-3 mt-xl-0"
-          :class="getItemStyleClass(index)"
+          class="text-center"
         >
           <div class="font-size-14 font-w600">
             {{ prettifyNumber(item.bnt) }} BNT
@@ -49,28 +52,19 @@
             {{ item.label }}
           </div>
         </b-col>
-        <b-col
-          md="6"
-          lg="3"
-          xl="2"
-          class="d-none d-xl-flex align-items-center justify-content-end"
-        >
-          <b-btn
-            variant="outline-gray"
-            class="btn-block"
-            :to="{ name: 'RewardsWithdraw' }"
-            >Withdraw</b-btn
-          >
-        </b-col>
-        <b-col
-          md="6"
-          lg="3"
-          xl="2"
-          class="d-none d-xl-flex align-items-center justify-content-end"
-        >
-          <b-btn variant="primary" class="btn-block" @click="openModal">
-            ReStake
-          </b-btn>
+        <b-col cols="3" class="d-none d-lg-block mt-2 mr-4">
+          <b-row>
+            <b-btn
+              variant="outline-gray"
+              class="btn-block"
+              :to="{ name: 'RewardsWithdraw' }"
+              >Withdraw</b-btn
+            >
+
+            <b-btn variant="primary" class="btn-block" @click="openModal">
+              ReStake
+            </b-btn>
+          </b-row>
         </b-col>
       </b-row>
     </ContentBlock>
@@ -87,10 +81,11 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { vxm } from "@/store";
+import BigNumber from "bignumber.js";
 interface ViewRewardsSummaryItem {
   id: number;
   label: string;
-  bnt: number;
+  bnt: BigNumber;
   usd: number;
 }
 
@@ -104,6 +99,9 @@ export default class RewardsSummary extends BaseComponent {
   title = "Rewards";
   modal = false;
 
+  pendingRewards: BigNumber = new BigNumber(0);
+  totalClaimedRewards: BigNumber = new BigNumber(0);
+
   get pools() {
     return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
   }
@@ -112,23 +110,22 @@ export default class RewardsSummary extends BaseComponent {
     return [
       {
         id: 1,
-        label: "Claimable Rewards",
-        bnt: 1231231231.123123123123,
+        label: "Total Reward to date",
+        bnt: this.totalClaimedRewards.plus(this.pendingRewards),
         usd: 99.12
       },
       {
         id: 2,
-        label: "Future Rewards",
-        bnt: 1.123123,
-        usd: 99.12
-      },
-      {
-        id: 3,
-        label: "Total Reward to date",
-        bnt: 1.123123,
+        label: "Claimable Rewards",
+        bnt: this.pendingRewards,
         usd: 99.12
       }
     ];
+  }
+
+  async loadRewardsData() {
+    this.pendingRewards = await vxm.rewards.pendingRewards();
+    this.totalClaimedRewards = await vxm.rewards.totalClaimedRewards();
   }
 
   openModal() {
@@ -143,11 +140,12 @@ export default class RewardsSummary extends BaseComponent {
     });
   }
 
-  getItemStyleClass(index: number) {
-    const pos = index + 1;
-    if (pos === 1) return "text-center";
-    else if (pos < this.summarizedRewards.length) return "text-center";
-    else return "text-center";
+  async mounted() {
+    try {
+      await this.loadRewardsData();
+    } catch (e) {
+      console.error("Load Rewards Data error: ", e);
+    }
   }
 }
 </script>
