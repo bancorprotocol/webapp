@@ -4,7 +4,7 @@
       <div>
         <logo-amount-symbol
           :token-id="bntAddress"
-          :amount="amount"
+          :amount="pendingRewards.bnt"
           symbol="BNT"
         />
       </div>
