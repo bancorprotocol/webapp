@@ -30,6 +30,13 @@ export default class AnimationNumber extends BaseComponent {
     if (this.animateOnMount) this.tween(this.startingValue, this.targetValue);
   }
 
+  @Watch("startingValue")
+  @Watch("targetValue")
+  @Watch("animationTime")
+  onValueChange() {
+    this.tween(this.startingValue, this.targetValue);
+  }
+
   tween(startValue: number, endValue: number) {
     const vm = this;
     const animate = () => {
