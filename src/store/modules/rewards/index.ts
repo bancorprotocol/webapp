@@ -6,6 +6,7 @@ import { OnUpdate, TxResponse } from "@/types/bancor";
 import { multiSteps } from "@/api/helpers";
 import wait from "waait";
 import { shrinkToken } from "@/api/eth/helpers";
+import { expandToken } from "@/api/pureHelpers";
 
 const VuexModule = createModule({
   strict: false
@@ -60,11 +61,15 @@ export class RewardsModule extends VuexModule.With({
           description: "ReStaking Rewards ...",
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
-              tx: this.contract.methods.stakeRewards(maxAmount, poolId),
+              tx: this.contract.methods.stakeRewards(
+                expandToken(maxAmount, 18),
+                poolId
+              ),
               onConfirmation: async () => {
                 await this.loadData();
                 await wait(3000);
                 await this.loadData();
+                console.log("tx confirmed");
               },
               resolveImmediately: true
             });
@@ -96,6 +101,7 @@ export class RewardsModule extends VuexModule.With({
                 await this.loadData();
                 await wait(3000);
                 await this.loadData();
+                console.log("tx confirmed");
               },
               resolveImmediately: true
             });
@@ -123,7 +129,8 @@ export class RewardsModule extends VuexModule.With({
 
     const value = new BigNumber(shrinkToken(result, 18));
     this.totalClaimedRewards = value;
-
+    console.log(value.toString());
+    console.log(this.balance);
     return value;
   }
 
@@ -134,6 +141,7 @@ export class RewardsModule extends VuexModule.With({
 
     const value = new BigNumber(shrinkToken(result, 18));
     this.pendingRewards = value;
+    console.log(value.toString());
 
     return value;
   }
