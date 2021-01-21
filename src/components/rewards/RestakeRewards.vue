@@ -163,7 +163,7 @@ export default class RestakeRewards extends BaseTxAction {
     this.loading = true;
     try {
       await this.loadMaxStakes();
-      await vxm.rewards.loadPendingRewards();
+      await vxm.rewards.fetchAndSetPendingRewards();
     } catch (e) {
       console.log(e);
     } finally {
