@@ -1,6 +1,6 @@
 {
   "name": "bancor-ui",
-  "version": "2.2.23",
+  "version": "2.2.24",
   "private": false,
   "scripts": {
     "start": "vue-cli-service serve",
