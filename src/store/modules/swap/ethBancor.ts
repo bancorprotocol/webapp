@@ -2080,10 +2080,10 @@ export class EthBancorModule
       resolveImmediately: true,
       onConfirmation: async () => {
         await wait(600);
-        this.fetchLockedBalances();
+        this.fetchAndSetLockedBalances({});
         this.fetchProtectionPositions({});
         await wait(2000);
-        this.fetchLockedBalances();
+        this.fetchAndSetLockedBalances({});
         this.fetchProtectionPositions({});
       }
     });
@@ -2188,8 +2188,14 @@ export class EthBancorModule
     this.previousPoolFeesArr = [...currentFees, ...newFees];
   }
 
-  @action async fetchLockedBalances(storeAddress?: string) {
-    const owner = this.currentUser;
+  @action async fetchAndSetLockedBalances({
+    storeAddress,
+    currentUser
+  }: {
+    storeAddress?: string;
+    currentUser?: string;
+  }) {
+    const owner = currentUser || this.currentUser;
     if (!owner) return;
 
     const contractAddress =
@@ -2858,9 +2864,9 @@ export class EthBancorModule
 
     (async () => {
       await wait(2000);
-      this.fetchLockedBalances();
+      this.fetchAndSetLockedBalances({});
     })();
-    this.fetchLockedBalances();
+    this.fetchAndSetLockedBalances({});
 
     return {
       blockExplorerLink: await this.createExplorerLink(hash),
@@ -5899,6 +5905,13 @@ export class EthBancorModule
       shareReplay(1)
     );
 
+    combineLatest([
+      liquidityProtectionStore$,
+      authenticated$
+    ]).subscribe(([storeAddress, currentUser]) =>
+      this.fetchAndSetLockedBalances({ storeAddress, currentUser })
+    );
+
     const settingsContractAddress$ = liquidityProtection$.pipe(
       switchMap(protectionAddress =>
         this.fetchLiquidityProtectionSettingsContract(protectionAddress)
@@ -6150,6 +6163,8 @@ export class EthBancorModule
           })
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
+
+      combineLatest([]);
 
       await combineLatest([apiData$, tokenMeta$])
         .pipe(
@@ -6796,7 +6811,6 @@ export class EthBancorModule
         ]);
       }
       authenticated$.next(this.currentUser);
-      this.fetchLockedBalances();
       if (this.apiData?.tokens) {
         const uniqueTokenAddresses = uniqWith(
           this.apiData.tokens.map(token => token.dlt_id),
