@@ -33,46 +33,28 @@
     </template>
 
     <div v-if="step === 'stake'">
-      <div
-        class="font-size-12 font-w500 text-nowrap"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        <div class="text-uppercase d-inline-block">Stake your tokens</div>
-        <div
-          class="text-nowrap d-inline-block text-right balance cursor"
-          @click="useMax"
-        >
-          Balance: {{ prettifyNumber(currentBalance) }} {{ symbol }}
-        </div>
-      </div>
-
-      <div class="input-currency mt-1">
-        <b-form-input
-          v-model="stakeInput"
-          :state="state"
-          @keypress="setStakeInput"
-          @input="setStakeInput"
-          :max="currentBalance.toNumber()"
-          type="number"
-          placeholder="0"
-          size="lg"
-          class="input-currency__input"
-        />
-        <div class="input-currency__append pr-3">
-          <img
-            class="img-avatar img-avatar32 bg-dark input-currency__img mr-2 ml-3"
-            src="@/assets/media/logos/bancor-white2.png"
-          />
-
-          <span class="font-size-14 font-w500">{{ symbol }}</span>
-        </div>
-      </div>
-
-      <b-alert show variant="warning" class="my-3 p-3 font-size-14 alert-over">
-        Staking {{ symbol }} enables you to vote on proposals. You will be able
-        to unstake once the lock period is over (up to {{ maxLock }}h)
-      </b-alert>
-
+      <token-input-field
+        :state="state"
+        @keypress="setStakeInput"
+        @input="setStakeInput"
+        :max="currentBalance.toNumber()"
+        placeholder="0"
+        :token="gBnt"
+        label="Stake your tokens"
+        v-model="stakeInput"
+        :balance="prettifyNumber(currentBalance)"
+      />
+      <alert-block
+        class="my-3"
+        variant="warning"
+        :msg="
+          'Staking ' +
+          symbol +
+          ' enables you to vote on proposals. You will be able to unstake once the lock period is over (up to ' +
+          maxLock +
+          'h)'
+        "
+      />
       <main-button
         @click="stake"
         :label="stakeLabel"
@@ -143,16 +125,23 @@
 import { vxm } from "@/store/";
 import { Component, Watch, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
+import { ViewToken } from "@/types/bancor";
+import AlertBlock from "@/components/common/AlertBlock.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
-    MainButton
+    MainButton,
+    AlertBlock,
+    TokenInputField
   }
 })
 export default class ModalStake extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
+
+  gBnt: ViewToken = vxm.bancor.tokens[0];
 
   currentBalance: BigNumber = new BigNumber(0);
   stakeInput: string = "";
@@ -259,6 +248,9 @@ export default class ModalStake extends BaseComponent {
   }
 
   async mounted() {
+    this.symbol = await vxm.ethGovernance.getSymbol();
+    this.gBnt.symbol = this.symbol;
+
     await this.update();
   }
 }

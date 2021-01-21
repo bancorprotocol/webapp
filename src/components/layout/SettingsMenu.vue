@@ -11,7 +11,6 @@
     <template #button-content>
       <font-awesome-icon icon="cog" fixed-width />
     </template>
-
     <b-dropdown-group id="dropdown-group-1" v-if="showTx">
       <b-dropdown-header class="text-uppercase"
         >Transaction Settings</b-dropdown-header
