@@ -54,7 +54,10 @@
                 oldrewards.length === 0 ? 0 : oldrewards[index].bnt.toNumber()
               "
               :target-value="item.bnt.toNumber()"
-              :animation-time="item.id === 1 ? 5000 : 3000"
+              :animation-time="
+                item.id === 1 && oldrewards.length === 0 ? 5000 : 3000
+              "
+              :watch="true"
               trailing-text="BNT"
             />
           </div>
@@ -65,7 +68,10 @@
               "
               :target-value="item.usd.toNumber()"
               :usd="true"
-              :animation-time="item.id === 1 ? 5000 : 3000"
+              :animation-time="
+                item.id === 1 && oldrewards.length === 0 ? 5000 : 3000
+              "
+              :watch="true"
               leading-text="~"
             />
           </div>
