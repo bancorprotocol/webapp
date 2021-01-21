@@ -44,12 +44,15 @@
 
       <b-row class="mt-3">
         <b-col
-          v-for="item in summarizedRewards"
+          v-for="(item, index) in summarizedRewards"
           :key="item.id"
           class="text-center"
         >
           <div class="font-size-14 font-w600">
             <animation-number
+              :startingValue="
+                oldrewards.length === 0 ? 0 : oldrewards[index].bnt.toNumber()
+              "
               :target-value="item.bnt.toNumber()"
               :animation-time="item.id === 1 ? 5000 : 3000"
               trailing-text="BNT"
@@ -57,6 +60,9 @@
           </div>
           <div class="font-size-12 font-w500 text-primary">
             <animation-number
+              :startingValue="
+                oldrewards.length === 0 ? 0 : oldrewards[index].usd.toNumber()
+              "
               :target-value="item.usd.toNumber()"
               :usd="true"
               :animation-time="item.id === 1 ? 5000 : 3000"
@@ -103,6 +109,7 @@ export default class RewardsSummary extends BaseComponent {
   title = "Rewards";
   modal = false;
   interval: any = null;
+  oldrewards: ViewRewardsSummaryItem[] = [];
 
   get rewardsBalance() {
     return vxm.rewards.balance;
@@ -148,8 +155,9 @@ export default class RewardsSummary extends BaseComponent {
       console.error("Load Rewards Data error: ", e);
     }
     this.interval = setInterval(async () => {
+      this.oldrewards = this.summarizedRewards;
       await vxm.rewards.loadData();
-    }, 10000);
+    }, 15000);
   }
 
   destroyed() {
