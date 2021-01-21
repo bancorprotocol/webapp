@@ -16,6 +16,7 @@ export default class AnimationNumber extends BaseComponent {
   @Prop({ default: "" }) leadingText!: string;
   @Prop({ default: false }) usd!: boolean;
   @Prop({ default: true }) animateOnMount!: boolean;
+  @Prop({ default: false }) watch!: boolean;
   @Prop({ default: 0 }) startingValue!: number;
   @Prop() targetValue!: number;
   @Prop({ default: 3000 }) animationTime!: number; //ms
@@ -34,7 +35,7 @@ export default class AnimationNumber extends BaseComponent {
   @Watch("targetValue")
   @Watch("animationTime")
   onValueChange() {
-    this.tween(this.startingValue, this.targetValue);
+    if (this.watch) this.tween(this.startingValue, this.targetValue);
   }
 
   tween(startValue: number, endValue: number) {
