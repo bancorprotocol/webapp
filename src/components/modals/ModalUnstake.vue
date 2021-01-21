@@ -42,7 +42,7 @@
         :token="gBnt"
         label="Unstake your tokens"
         v-model="unstakeInput"
-        :balance="prettifyNumber(currentStake)"
+        :balance="currentStake"
       />
       <main-button
         @click="unstake"

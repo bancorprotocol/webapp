@@ -42,7 +42,7 @@
         :token="gBnt"
         label="Stake your tokens"
         v-model="stakeInput"
-        :balance="prettifyNumber(currentBalance)"
+        :balance="currentBalance"
       />
       <alert-block
         class="my-3"

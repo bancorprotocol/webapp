@@ -6,7 +6,7 @@
     :variant="darkMode ? 'outline-light' : 'outline-dark'"
     size="sm"
     toggle-class="block-rounded"
-    :menu-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
+    :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
     no-caret
   >
     <template #button-content>
