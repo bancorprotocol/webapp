@@ -60,9 +60,12 @@ import ModalTxAction from "@/components/modals/ModalTxAction.vue";
   }
 })
 export default class WithdrawRewards extends BaseTxAction {
-  pendingRewards: BigNumber = new BigNumber(0);
   loading = false;
   showPoolSelectModal = false;
+
+  get pendingRewards() {
+    return vxm.rewards.balance.pendingRewards;
+  }
 
   get pools() {
     return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
@@ -108,19 +111,15 @@ export default class WithdrawRewards extends BaseTxAction {
     }
   }
 
-  async loadData() {
+  async mounted() {
     this.loading = true;
     try {
-      this.pendingRewards = await vxm.rewards.pendingRewards;
+      await vxm.rewards.loadData();
     } catch (e) {
       console.log(e);
     } finally {
       this.loading = false;
     }
-  }
-
-  async mounted() {
-    await this.loadData();
   }
 }
 </script>

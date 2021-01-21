@@ -18,7 +18,7 @@
       label="Stake Amount"
       :token="token"
       v-model="amount"
-      :balance="pendingRewards.bnt.toString()"
+      :balance="balance"
       :error-msg="inputError"
     />
 
@@ -52,7 +52,6 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
-import BigNumber from "bignumber.js";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
@@ -83,6 +82,10 @@ export default class RestakeRewards extends BaseTxAction {
 
   get token() {
     return this.pool.reserves[0]; //BNT
+  }
+
+  get balance() {
+    return this.pendingRewards.bnt.valueOf();
   }
 
   get pools() {
@@ -160,7 +163,7 @@ export default class RestakeRewards extends BaseTxAction {
     this.loading = true;
     try {
       await this.loadMaxStakes();
-      await vxm.rewards.loadPendingRewards();
+      await vxm.rewards.fetchAndSetPendingRewards();
     } catch (e) {
       console.log(e);
     } finally {

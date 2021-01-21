@@ -452,6 +452,13 @@ export interface UserPoolBalances {
   iouBalances: ViewAmount[];
 }
 
+export interface RegisteredContracts {
+  BancorNetwork: string;
+  BancorConverterRegistry: string;
+  LiquidityProtection: string;
+  LiquidityProtectionStore: string;
+  StakingRewards: string;
+}
 interface PoolTokenPosition {
   relay: ViewRelay;
   smartTokenAmount?: string;

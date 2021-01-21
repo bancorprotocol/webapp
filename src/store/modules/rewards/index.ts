@@ -1,4 +1,4 @@
-import { createModule, action } from "vuex-class-component";
+import { createModule, action, mutation } from "vuex-class-component";
 import { buildStakingRewardsContract } from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
@@ -6,6 +6,7 @@ import { OnUpdate, TxResponse } from "@/types/bancor";
 import { multiSteps } from "@/api/helpers";
 import wait from "waait";
 import { shrinkToken } from "@/api/eth/helpers";
+import { expandToken } from "@/api/pureHelpers";
 
 const VuexModule = createModule({
   strict: false
@@ -60,8 +61,12 @@ export class RewardsModule extends VuexModule.With({
           description: "ReStaking Rewards ...",
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
-              tx: this.contract.methods.stakeRewards(maxAmount, poolId),
+              tx: this.contract.methods.stakeRewards(
+                expandToken(maxAmount, 18),
+                poolId
+              ),
               onConfirmation: async () => {
+                console.log("tx confirmed");
                 await this.loadData();
                 await wait(3000);
                 await this.loadData();
@@ -96,6 +101,7 @@ export class RewardsModule extends VuexModule.With({
                 await this.loadData();
                 await wait(3000);
                 await this.loadData();
+                console.log("tx confirmed");
               },
               resolveImmediately: true
             });
@@ -112,32 +118,45 @@ export class RewardsModule extends VuexModule.With({
   }
 
   @action async loadData() {
-    await this.loadPendingRewards();
-    await this.loadTotalClaimedRewards();
+    try {
+      await this.fetchAndSetPendingRewards();
+      await this.fetchAndSetTotalClaimedRewards();
+    } catch (e) {
+      console.error("Threw in load data on rewardsmodule");
+      throw new Error(e);
+    }
   }
 
-  @action async loadTotalClaimedRewards(): Promise<BigNumber> {
+  @action async fetchAndSetTotalClaimedRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
       .totalClaimedRewards(this.currentUser)
       .call();
 
-    console.log("jan", result);
     const value = new BigNumber(shrinkToken(result, 18));
-    this.totalClaimedRewards = value;
-
+    this.setTotalClaimedRewards(value);
+    console.log(value.toString());
+    console.log(this.balance);
     return value;
   }
 
-  @action async loadPendingRewards(): Promise<BigNumber> {
+  @action async fetchAndSetPendingRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
       .pendingRewards(this.currentUser)
       .call();
 
-    console.log("jan", result);
     const value = new BigNumber(shrinkToken(result, 18));
-    this.pendingRewards = value;
+    this.setPendingRewards(value);
+    console.log(value.toString());
 
     return value;
+  }
+
+  @mutation setTotalClaimedRewards(value: BigNumber) {
+    this.totalClaimedRewards = value;
+  }
+
+  @mutation setPendingRewards(value: BigNumber) {
+    this.pendingRewards = value;
   }
 
   @action async loadPendingReserveRewards({

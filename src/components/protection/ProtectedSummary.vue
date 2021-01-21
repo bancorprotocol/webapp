@@ -1,52 +1,40 @@
 <template>
-  <div
-    :id="darkMode ? 'protected-summary-dark' : 'protected-summary'"
-    class="rounded p-1 block-shadow-light pb-3"
-    :class="darkMode ? 'text-dark' : 'text-light'"
-  >
-    <div>
-      <b-row>
+  <div>
+    <ContentBlock
+      v-if="true"
+      :shadow-light="true"
+      :class="darkMode ? 'text-dark' : 'text-light'"
+    >
+      <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="font-size-16 font-w500 block-header ml-2 pt-1">
-            My Stake
-          </div>
-          <b-btn
-            @click="openModal"
-            size="sm"
-            variant="primary"
-            class="d-lg-none mr-4"
-          >
-            <font-awesome-icon icon="plus" />
+          <div class="font-size-16 font-w500">My Stake</div>
+          <b-btn @click="openModal" size="sm" variant="primary" class="rounded">
+            <font-awesome-icon icon="plus" class="d-lg-none" />
+            <span class="d-none d-lg-inline">Stake</span>
           </b-btn>
         </div>
-      </b-row>
-      <div class="seperator" />
-      <b-row style="align-items: center" class="p-3">
-        <b-col
-          v-for="item in summarizedPositions"
-          :key="item.key"
-          class="text-center"
-        >
-          <div
-            class="font-size-14 font-w600"
-            :style="item.key === 'ROI' ? 'color: #3EC8C8' : 'color: #0F59D1'"
+      </template>
+
+      <div class="mt-3">
+        <b-row class="mt-4 mb-2">
+          <b-col
+            v-for="item in summarizedPositions"
+            :key="item.key"
+            class="text-center"
           >
-            {{ item.value }}
-          </div>
-          <div class="text-uppercase font-size-10 font-w500">
-            {{ item.key }}
-          </div>
-        </b-col>
-        <b-btn
-          class="d-none d-lg-block"
-          @click="openModal"
-          variant="primary"
-          style="margin-right: 15px"
-        >
-          <font-awesome-icon icon="plus" />
-        </b-btn>
-      </b-row>
-    </div>
+            <div
+              class="font-size-14 font-w600"
+              :class="item.key === 'ROI' ? 'text-success' : 'text-primary'"
+            >
+              {{ item.value }}
+            </div>
+            <div class="text-uppercase font-size-10 font-w500">
+              {{ item.key }}
+            </div>
+          </b-col>
+        </b-row>
+      </div>
+    </ContentBlock>
 
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
   </div>
@@ -60,8 +48,9 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import { stringifyPercentage } from "@/api/helpers";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
+import ContentBlock from "@/components/common/ContentBlock.vue";
 
-@Component({ components: { ModalPoolSelect } })
+@Component({ components: { ContentBlock, ModalPoolSelect } })
 export default class ProtectedSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
 
@@ -90,7 +79,7 @@ export default class ProtectedSummary extends BaseComponent {
         .map(x => Number(x.protectedAmount.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      const totalRewards = this.rewardsBalance.totalRewards.usd.toNumber();
+      const totalRewards = this.rewardsBalance.pendingRewards.usd.toNumber();
       protectedValue += totalRewards;
       claimableValue += totalRewards;
 

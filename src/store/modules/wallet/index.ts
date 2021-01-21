@@ -28,7 +28,6 @@ export class WalletModule extends VuexModule.With({ namespaced: "wallet/" }) {
   }
 
   get currentUser() {
-    return "0x82A9825ebd642A88385F122Be7a8BCB64C828c22";
     // @ts-ignore
     return vxm[`${vxm.bancor.wallet}Wallet`].currentUser;
   }
