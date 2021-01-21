@@ -36,7 +36,7 @@
               class="rounded"
             >
               <font-awesome-icon icon="plus" class="d-lg-none" />
-              <span class="d-none d-lg-inline">ReStake</span>
+              <span class="d-none d-lg-inline">Restake</span>
             </b-btn>
           </div>
         </div>
