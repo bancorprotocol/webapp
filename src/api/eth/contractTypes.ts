@@ -354,12 +354,12 @@ export const buildStakingRewardsStoreContract = (
   web3?: Web3
 ): ContractMethods<{
   poolPrograms: () => CallReturn<{
-    "0": string, // poolToken
-    "1": string, // startTimes
-    "2": string, // endTimes
-    "3": string, // rewardRates
-    "4": string[], // reserveTokens
-    "5": string[] // rewardShares
+    "0": string[],   // poolToken
+    "1": string[],   // startTimes
+    "2": string[],   // endTimes
+    "3": string[],   // rewardRates
+    "4": string[][], // reserveTokens
+    "5": string[][]  // rewardShares
   }>;
 }> => buildContract(ABIStakingRewardsStore, contractAddress, web3);
 

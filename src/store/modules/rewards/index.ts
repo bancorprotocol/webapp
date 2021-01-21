@@ -158,16 +158,20 @@ export class RewardsModule extends VuexModule.With({
       .poolPrograms()
       .call();
 
-    const convertedResults = {
-      poolToken: result[0][0],
-      startTimes: result[1][0],
-      endTimes: result[2][0],
-      rewardRates: result[3][0],
-      reserveTokens: result[4][0],
-      rewardShares: result[5][0],
+    let poolPrograms = [];
+
+    for(let i = 0; i < result[0].length; i++) {
+      poolPrograms.push({
+        poolToken: result[0][i],
+        startTimes: result[1][i],
+        endTimes: result[2][i],
+        rewardRates: result[3][i],
+        reserveTokens: result[4][i],
+        rewardShares: result[5][i],
+      })
     }
 
-    console.log("wwww", convertedResults);
+    console.log("poolPrograms", poolPrograms);
 
     return new BigNumber(0);
   }
