@@ -6,15 +6,16 @@
     >
       <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="font-size-16 font-w500">Rewards</div>
-          <div class="d-lg-none">
+          <div class="font-size-16 font-w500">{{ title }}</div>
+          <div>
             <b-btn
               variant="outline-gray"
               size="sm"
-              class="mr-2"
+              class="mr-2 rounded"
               :to="{ name: 'RewardsWithdraw' }"
             >
               <svg
+                class="d-lg-none"
                 width="13"
                 height="16"
                 viewBox="0 0 13 16"
@@ -26,14 +27,22 @@
                   :fill="darkMode ? '#ffffff' : '#0A2540'"
                 />
               </svg>
+              <span class="d-none d-lg-inline">Withdraw</span>
             </b-btn>
-            <b-btn @click="openModal" variant="primary" size="sm">
-              <font-awesome-icon icon="plus" />
+            <b-btn
+              @click="openModal"
+              variant="primary"
+              size="sm"
+              class="rounded"
+            >
+              <font-awesome-icon icon="plus" class="d-lg-none" />
+              <span class="d-none d-lg-inline">ReStake</span>
             </b-btn>
           </div>
         </div>
       </template>
-      <b-row style="align-items: center">
+
+      <b-row class="mt-3">
         <b-col
           v-for="item in summarizedRewards"
           :key="item.id"
@@ -60,20 +69,6 @@
           >
             {{ item.label }}
           </div>
-        </b-col>
-        <b-col cols="3" class="d-none d-lg-block mt-2 mr-4">
-          <b-row>
-            <b-btn
-              variant="outline-gray"
-              class="btn-block"
-              :to="{ name: 'RewardsWithdraw' }"
-              >Withdraw</b-btn
-            >
-
-            <b-btn variant="primary" class="btn-block" @click="openModal">
-              ReStake
-            </b-btn>
-          </b-row>
         </b-col>
       </b-row>
     </ContentBlock>
