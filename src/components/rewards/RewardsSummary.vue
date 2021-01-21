@@ -9,7 +9,7 @@
           <div class="font-size-16 font-w500">{{ title }}</div>
           <div>
             <b-btn
-              variant="outline-gray"
+              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
               size="sm"
               class="mr-2 rounded"
               :to="{ name: 'RewardsWithdraw' }"
