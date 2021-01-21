@@ -6836,15 +6836,22 @@ export class EthBancorModule
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
 
+    const tx = networkContract.methods.convertByPath(
+      ethPath,
+      fromWei,
+      await this.weiMinusSlippageTolerance(expectedReturnWei),
+      zeroAddress,
+      zeroAddress,
+      0
+    );
+
+    const gas = await tx.estimateGas({
+      from: this.currentUser
+    });
+
     const confirmedHash = await this.resolveTxOnConfirmation({
-      tx: networkContract.methods.convertByPath(
-        ethPath,
-        fromWei,
-        await this.weiMinusSlippageTolerance(expectedReturnWei),
-        zeroAddress,
-        zeroAddress,
-        0
-      ),
+      tx,
+      gas,
       onConfirmation: () =>
         this.spamBalances([fromTokenContract, toTokenContract]),
       resolveImmediately: true,
