@@ -163,7 +163,6 @@ import {
   distinctUntilChanged,
   map,
   filter,
-  startWith,
   concatMap,
   mergeMap,
   tap,
@@ -216,6 +215,49 @@ import {
   WelcomeData,
   TokenMetaWithReserve
 } from "@/api/eth/bancorApi";
+
+const networkVersionReceiver$ = new Subject<EthNetworks>();
+
+const networkVersion$ = networkVersionReceiver$.pipe(
+  distinctUntilChanged(),
+  shareReplay(1)
+);
+
+networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
+
+const apiData$ = networkVersion$.pipe(
+  switchMap(networkVersion => getWelcomeData(networkVersion)),
+  share()
+);
+
+apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
+
+const tokenMeta$ = networkVersion$.pipe(
+  switchMap(network => getTokenMeta(network)),
+  share()
+);
+
+tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
+
+const usdPriceOfBnt$ = apiData$.pipe(
+  map(x => Number(x.bnt_price.usd)),
+  distinctUntilChanged()
+);
+
+const currentBlockReceiver$ = new Subject<number>();
+
+const currentBlock$ = currentBlockReceiver$.pipe(
+  distinctUntilChanged(),
+  map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
+  shareReplay(1)
+);
+
+const networkVars$ = networkVersion$.pipe(
+  map(getNetworkVariables),
+  shareReplay(1)
+);
+
+web3.eth.getBlockNumber().then(number => currentBlockReceiver$.next(number));
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -5812,42 +5854,15 @@ export class EthBancorModule
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
     const chainId = await web3.eth.getChainId();
+    networkVersionReceiver$.next(chainId);
 
-    const networkVersion$ = of(chainId).pipe(
-      distinctUntilChanged(),
-      tap(this.setNetwork),
-      shareReplay(1)
-    );
-
-    const apiData$ = networkVersion$.pipe(
-      switchMap(networkVersion => getWelcomeData(networkVersion)),
-      share()
-    );
-
-    apiData$.subscribe(data => this.setApiData(data));
-
-    const tokenMeta$ = networkVersion$.pipe(switchMap(getTokenMeta), share());
-
-    tokenMeta$.subscribe(this.setTokenMeta);
+    web3.eth
+      .getBlockNumber()
+      .then(number => currentBlockReceiver$.next(number));
 
     this.warmEthApi();
 
-    const usdPriceOfBnt$ = apiData$.pipe(
-      map(x => Number(x.bnt_price.usd)),
-      distinctUntilChanged()
-    );
-
     console.time("FirstPromise");
-
-    const currentBlock$ = from(web3.eth.getBlockNumber()).pipe(
-      map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
-      shareReplay(1)
-    );
-
-    const networkVars$ = networkVersion$.pipe(
-      map(getNetworkVariables),
-      shareReplay(1)
-    );
 
     currentBlock$
       .pipe(firstItem())
@@ -6138,7 +6153,7 @@ export class EthBancorModule
 
       await combineLatest([apiData$, tokenMeta$])
         .pipe(
-          mergeMap(([apiData, tokenMeta]) => {
+          switchMap(([apiData, tokenMeta]) => {
             const pools = apiData.pools;
             const tokens = apiData.tokens;
 
@@ -6185,10 +6200,10 @@ export class EthBancorModule
             return passedPools;
           }),
           bufferTime(50),
+          filter(x => x.length > 0),
+          firstItem(),
           tap(pools => {
-            if (pools.length > 0) {
-              this.updatePools(pools);
-            }
+            this.updatePools(pools);
           })
         )
         .toPromise();
