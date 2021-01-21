@@ -200,7 +200,10 @@ import {
   liquidityProtection$,
   usdPriceOfBnt$,
   apiData$,
-  bancorConverterRegistry$, authenticated$, networkVersion$, tokenMeta$
+  bancorConverterRegistry$,
+  authenticated$,
+  networkVersion$,
+  tokenMeta$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -5871,8 +5874,6 @@ export class EthBancorModule
       authenticated$.next(this.currentUser);
     }
 
-
-
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
       mergeMap(x => from(x))
     ) as Observable<ConverterAndAnchor>;
@@ -6032,7 +6033,6 @@ export class EthBancorModule
           })
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
-
 
       await combineLatest([apiData$, tokenMeta$])
         .pipe(
@@ -6681,7 +6681,10 @@ export class EthBancorModule
       authenticated$.next(this.currentUser);
       if (this.apiData?.tokens) {
         const uniqueTokenAddresses = uniqWith(
-          this.apiData.tokens.map(token => token.dlt_id),
+          [
+            ...this.apiData.tokens.map(token => token.dlt_id),
+            ...this.apiData.pools.map(pool => pool.pool_dlt_id)
+          ],
           compareString
         );
         this.fetchAndSetTokenBalances(uniqueTokenAddresses);
@@ -6701,7 +6704,10 @@ export class EthBancorModule
     if (symbols) {
       symbols.forEach(symbol => this.focusSymbol(symbol.symbol));
     } else if (this.currentUser && this.apiData) {
-      const tokenAddresses = this.apiData.tokens.map(token => token.dlt_id);
+      const tokenAddresses = [
+        ...this.apiData.tokens.map(token => token.dlt_id),
+        ...this.apiData.pools.map(pool => pool.pool_dlt_id)
+      ];
       this.fetchAndSetTokenBalances(tokenAddresses);
     }
   }
