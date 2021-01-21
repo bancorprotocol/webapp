@@ -187,3 +187,14 @@ combineLatest([
     supportedAnchors
   });
 });
+
+combineLatest([authenticated$, apiData$]).subscribe(
+  ([userAddress, apiData]) => {
+    if (userAddress) {
+      const reserveTokens = apiData.tokens.map(token => token.dlt_id);
+      const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
+      const allTokens = [...poolTokens, ...reserveTokens];
+      vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+    }
+  }
+);
