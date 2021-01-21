@@ -15,7 +15,7 @@ import {
   ABINetworkContract,
   ABISmartToken,
   ABIStakingRewards,
-  ABIStakingRewardsDistribution,
+  ABIStakingRewardsStore,
   ABIV2Converter,
   V2PoolsTokenContainer
 } from "@/api/eth/ethAbis";
@@ -349,6 +349,20 @@ export const buildAddressLookupContract = (
   addressOf: (ascii: string) => CallReturn<string>;
 }> => buildContract(ABIContractRegistry, contractAddress);
 
+export const buildStakingRewardsStoreContract = (
+  contractAddress: string,
+  web3?: Web3
+): ContractMethods<{
+  poolPrograms: () => CallReturn<{
+    "0": string, // poolToken
+    "1": string, // startTimes
+    "2": string, // endTimes
+    "3": string, // rewardRates
+    "4": string[], // reserveTokens
+    "5": string[] // rewardShares
+  }>;
+}> => buildContract(ABIStakingRewardsStore, contractAddress, web3);
+
 export const buildStakingRewardsContract = (
   contractAddress: string,
   web3?: Web3
@@ -357,6 +371,7 @@ export const buildStakingRewardsContract = (
   claimRewards: () => ContractSendMethod;
   totalClaimedRewards: (provider: string) => CallReturn<string>;
   pendingRewards: (provider: string) => CallReturn<string>;
+  store: () => CallReturn<string>;
   pendingReserveRewards: (
     provider: string,
     poolToken: string,

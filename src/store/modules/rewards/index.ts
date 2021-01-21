@@ -1,5 +1,5 @@
 import { createModule, action, mutation } from "vuex-class-component";
-import { buildStakingRewardsContract } from "@/api/eth/contractTypes";
+import { buildStakingRewardsContract, buildStakingRewardsStoreContract } from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
 import { OnUpdate, TxResponse } from "@/types/bancor";
@@ -119,6 +119,7 @@ export class RewardsModule extends VuexModule.With({
 
   @action async loadData() {
     try {
+      await this.fetchPoolPrograms();
       await this.fetchAndSetPendingRewards();
       await this.fetchAndSetTotalClaimedRewards();
     } catch (e) {
@@ -149,6 +150,26 @@ export class RewardsModule extends VuexModule.With({
     console.log(value.toString());
 
     return value;
+  }
+
+  @action async fetchPoolPrograms(): Promise<BigNumber> {
+    const store = buildStakingRewardsStoreContract(await this.contract.methods.store().call())
+    const result = await store.methods
+      .poolPrograms()
+      .call();
+
+    const convertedResults = {
+      poolToken: result[0][0],
+      startTimes: result[1][0],
+      endTimes: result[2][0],
+      rewardRates: result[3][0],
+      reserveTokens: result[4][0],
+      rewardShares: result[5][0],
+    }
+
+    console.log("wwww", convertedResults);
+
+    return new BigNumber(0);
   }
 
   @mutation setTotalClaimedRewards(value: BigNumber) {
