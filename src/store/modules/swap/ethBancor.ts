@@ -40,7 +40,8 @@ import {
   PoolLiqMiningApr,
   ProtectedLiquidity,
   ConverterAndAnchor,
-  ViewReserve
+  ViewReserve,
+  RegisteredContracts
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -189,7 +190,18 @@ import {
   filterAndWarn,
   staticToConverterAndAnchor
 } from "@/api/pureHelpers";
-import { distinctArrayItem } from "@/api/observables";
+import {
+  distinctArrayItem,
+  networkVersionReceiver$,
+  currentBlockReceiver$,
+  currentBlock$,
+  networkVars$,
+  liquidityProtectionStore$,
+  liquidityProtection$,
+  usdPriceOfBnt$,
+  apiData$,
+  bancorConverterRegistry$, authenticated$, networkVersion$, tokenMeta$
+} from "@/api/observables";
 import {
   dualPoolRoiShape,
   reserveBalanceShape,
@@ -215,49 +227,6 @@ import {
   WelcomeData,
   TokenMetaWithReserve
 } from "@/api/eth/bancorApi";
-
-const networkVersionReceiver$ = new Subject<EthNetworks>();
-
-const networkVersion$ = networkVersionReceiver$.pipe(
-  distinctUntilChanged(),
-  shareReplay(1)
-);
-
-networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
-
-const apiData$ = networkVersion$.pipe(
-  switchMap(networkVersion => getWelcomeData(networkVersion)),
-  share()
-);
-
-apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
-
-const tokenMeta$ = networkVersion$.pipe(
-  switchMap(network => getTokenMeta(network)),
-  share()
-);
-
-tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
-
-const usdPriceOfBnt$ = apiData$.pipe(
-  map(x => Number(x.bnt_price.usd)),
-  distinctUntilChanged()
-);
-
-const currentBlockReceiver$ = new Subject<number>();
-
-const currentBlock$ = currentBlockReceiver$.pipe(
-  distinctUntilChanged(),
-  map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
-  shareReplay(1)
-);
-
-const networkVars$ = networkVersion$.pipe(
-  map(getNetworkVariables),
-  shareReplay(1)
-);
-
-web3.eth.getBlockNumber().then(number => currentBlockReceiver$.next(number));
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -1134,8 +1103,6 @@ interface StakedAndReserve {
   }[];
 }
 
-const authenticated$ = new Subject<string>();
-
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
     contract: ethReserveAddress,
@@ -1241,14 +1208,6 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
   return { smartTokens, poolTokenAddresses };
 };
 
-interface RegisteredContracts {
-  BancorNetwork: string;
-  BancorConverterRegistry: string;
-  LiquidityProtection: string;
-  LiquidityProtectionStore: string;
-  StakingRewards: string;
-}
-
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
   new Decimal(percent).times(existingSupply).toFixed(0);
 
@@ -1324,7 +1283,7 @@ const metaToTokenAssumedPrecision = (token: TokenMeta): Token => ({
   symbol: token.symbol
 });
 
-const getTokenMeta = async (currentNetwork: EthNetworks) => {
+export const getTokenMeta = async (currentNetwork: EthNetworks) => {
   const networkVars = getNetworkVariables(currentNetwork);
   if (currentNetwork == EthNetworks.Ropsten) {
     return [
@@ -5868,88 +5827,11 @@ export class EthBancorModule
 
     this.warmEthApi();
 
-    console.time("FirstPromise");
-
     currentBlock$
       .pipe(firstItem())
       .subscribe(({ blockNumber }) => currentBlockTwo$.next(blockNumber));
 
-    networkVars$.subscribe(networkVariables =>
-      this.fetchAndSetBntSupply(networkVariables.bntToken)
-    );
-
-    const contractAddresses$ = networkVars$.pipe(
-      switchMap(networkVariables =>
-        this.fetchContractAddresses(networkVariables.contractRegistry)
-      ),
-      distinctUntilChanged<RegisteredContracts>(isEqual),
-      tap(x => console.log("sending out contracts...", x)),
-      share()
-    );
-
-    const bancorConverterRegistry$ = contractAddresses$.pipe(
-      pluck("BancorConverterRegistry"),
-      distinctUntilChanged(compareString),
-      share()
-    );
-
-    const liquidityProtection$ = contractAddresses$.pipe(
-      pluck("LiquidityProtection"),
-      distinctUntilChanged(compareString),
-      shareReplay(1)
-    );
-
-    const liquidityProtectionStore$ = contractAddresses$.pipe(
-      pluck("LiquidityProtectionStore"),
-      distinctUntilChanged(compareString),
-      shareReplay(1)
-    );
-
-    combineLatest([
-      liquidityProtectionStore$,
-      authenticated$
-    ]).subscribe(([storeAddress, currentUser]) =>
-      this.fetchAndSetLockedBalances({ storeAddress, currentUser })
-    );
-
-    const settingsContractAddress$ = liquidityProtection$.pipe(
-      switchMap(protectionAddress =>
-        this.fetchLiquidityProtectionSettingsContract(protectionAddress)
-      ),
-      distinctUntilChanged(compareString),
-      share()
-    );
-
-    settingsContractAddress$.subscribe(settingsContract =>
-      vxm.minting.fetchMinLiqForMinting(settingsContract)
-    );
-
-    const bancorNetwork$ = contractAddresses$.pipe(
-      pluck("BancorNetwork"),
-      distinctUntilChanged(compareString),
-      shareReplay(1)
-    );
-
-    combineLatest([liquidityProtection$, settingsContractAddress$])
-      .pipe(
-        switchMap(([protectionContractAddress, settingsContractAddress]) =>
-          this.fetchLiquidityProtectionSettings({
-            settingsContractAddress,
-            protectionContractAddress
-          })
-        )
-      )
-      .subscribe(settings => {
-        this.setLiquidityProtectionSettings(settings);
-        this.fetchAndSetTokenBalances([settings.govToken]);
-      });
-
-    settingsContractAddress$
-      .pipe(switchMap(this.fetchWhiteListedV1Pools))
-      .subscribe(this.setWhiteListedPools);
-
     const anchors$ = bancorConverterRegistry$.pipe(
-      tap(x => console.log("registry ran..", x)),
       switchMap(converterRegistryAddress =>
         this.fetchAnchorAddresses({
           converterRegistryAddress
@@ -5989,20 +5871,7 @@ export class EthBancorModule
       authenticated$.next(this.currentUser);
     }
 
-    combineLatest([
-      authenticated$,
-      liquidityProtectionStore$,
-      currentBlock$,
-      apiData$
-    ]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
-      const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
-      this.fetchProtectionPositions({
-        storeAddress,
-        blockNumberNow: blockNumber,
-        userAddress: userAddress as string,
-        supportedAnchors
-      });
-    });
+
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
       mergeMap(x => from(x))
@@ -6164,7 +6033,6 @@ export class EthBancorModule
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
-      combineLatest([]);
 
       await combineLatest([apiData$, tokenMeta$])
         .pipe(
