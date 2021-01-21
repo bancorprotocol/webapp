@@ -24,7 +24,7 @@
           >
             <div
               class="font-size-14 font-w600"
-              :style="item.key === 'ROI' ? 'color: #3EC8C8' : 'color: #0F59D1'"
+              :class="item.key === 'ROI' ? 'text-success' : 'text-primary'"
             >
               {{ item.value }}
             </div>
