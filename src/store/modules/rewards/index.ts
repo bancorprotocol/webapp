@@ -1,4 +1,4 @@
-import { createModule, action } from "vuex-class-component";
+import { createModule, action, mutation } from "vuex-class-component";
 import { buildStakingRewardsContract } from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
@@ -118,35 +118,45 @@ export class RewardsModule extends VuexModule.With({
   }
 
   @action async loadData() {
-    await this.loadPendingRewards();
-    await this.loadTotalClaimedRewards();
+    try {
+      await this.fetchAndSetPendingRewards();
+      await this.fetchAndSetTotalClaimedRewards();
+    } catch (e) {
+      console.error("Threw in load data on rewardsmodule");
+      throw new Error(e);
+    }
   }
 
-  @action async loadTotalClaimedRewards(): Promise<BigNumber> {
+  @action async fetchAndSetTotalClaimedRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
       .totalClaimedRewards(this.currentUser)
       .call();
 
     const value = new BigNumber(shrinkToken(result, 18));
-    this.totalClaimedRewards = value;
-    console.log(value.toString());
-    console.log(this.balance);
+    this.setTotalClaimedRewards(value);
     return value;
   }
 
-  @action async loadPendingRewards(): Promise<BigNumber> {
+  @action async fetchAndSetPendingRewards(): Promise<BigNumber> {
     const result = await this.contract.methods
       .pendingRewards(this.currentUser)
       .call();
 
     const value = new BigNumber(shrinkToken(result, 18));
-    this.pendingRewards = value;
-    console.log(value.toString());
+    this.setPendingRewards(value);
 
     return value;
   }
 
-  @action async loadPendingReserveRewards({
+  @mutation setTotalClaimedRewards(value: BigNumber) {
+    this.totalClaimedRewards = value;
+  }
+
+  @mutation setPendingRewards(value: BigNumber) {
+    this.pendingRewards = value;
+  }
+
+  @action async fetchPendingReserveRewards({
     poolId,
     reserveId
   }: {

@@ -40,7 +40,8 @@ import {
   PoolLiqMiningApr,
   ProtectedLiquidity,
   ConverterAndAnchor,
-  ViewReserve
+  ViewReserve,
+  RegisteredContracts
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -163,7 +164,6 @@ import {
   distinctUntilChanged,
   map,
   filter,
-  startWith,
   concatMap,
   mergeMap,
   tap,
@@ -190,7 +190,21 @@ import {
   filterAndWarn,
   staticToConverterAndAnchor
 } from "@/api/pureHelpers";
-import { distinctArrayItem } from "@/api/observables";
+import {
+  distinctArrayItem,
+  networkVersionReceiver$,
+  currentBlockReceiver$,
+  currentBlock$,
+  networkVars$,
+  liquidityProtectionStore$,
+  liquidityProtection$,
+  usdPriceOfBnt$,
+  apiData$,
+  bancorConverterRegistry$,
+  authenticated$,
+  networkVersion$,
+  tokenMeta$
+} from "@/api/observables";
 import {
   dualPoolRoiShape,
   reserveBalanceShape,
@@ -1092,8 +1106,6 @@ interface StakedAndReserve {
   }[];
 }
 
-const authenticated$ = new Subject<string>();
-
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
     contract: ethReserveAddress,
@@ -1199,14 +1211,6 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
   return { smartTokens, poolTokenAddresses };
 };
 
-interface RegisteredContracts {
-  BancorNetwork: string;
-  BancorConverterRegistry: string;
-  LiquidityProtection: string;
-  LiquidityProtectionStore: string;
-  StakingRewards: string;
-}
-
 const percentageOfReserve = (percent: number, existingSupply: string): string =>
   new Decimal(percent).times(existingSupply).toFixed(0);
 
@@ -1282,7 +1286,7 @@ const metaToTokenAssumedPrecision = (token: TokenMeta): Token => ({
   symbol: token.symbol
 });
 
-const getTokenMeta = async (currentNetwork: EthNetworks) => {
+export const getTokenMeta = async (currentNetwork: EthNetworks) => {
   const networkVars = getNetworkVariables(currentNetwork);
   if (currentNetwork == EthNetworks.Ropsten) {
     return [
@@ -2038,10 +2042,10 @@ export class EthBancorModule
       resolveImmediately: true,
       onConfirmation: async () => {
         await wait(600);
-        this.fetchLockedBalances();
+        this.fetchAndSetLockedBalances({});
         this.fetchProtectionPositions({});
         await wait(2000);
-        this.fetchLockedBalances();
+        this.fetchAndSetLockedBalances({});
         this.fetchProtectionPositions({});
       }
     });
@@ -2146,8 +2150,14 @@ export class EthBancorModule
     this.previousPoolFeesArr = [...currentFees, ...newFees];
   }
 
-  @action async fetchLockedBalances(storeAddress?: string) {
-    const owner = this.currentUser;
+  @action async fetchAndSetLockedBalances({
+    storeAddress,
+    currentUser
+  }: {
+    storeAddress?: string;
+    currentUser?: string;
+  }) {
+    const owner = currentUser || this.currentUser;
     if (!owner) return;
 
     const contractAddress =
@@ -2347,7 +2357,7 @@ export class EthBancorModule
       relay: findOrThrow(this.relays, relay =>
         compareString(relay.id, balance.id)
       ),
-      balance: balance.balance
+      smartTokenAmount: balance.balance
     })) as PoolTokenPosition[];
 
     const relaysList = this.relaysList;
@@ -2816,9 +2826,9 @@ export class EthBancorModule
 
     (async () => {
       await wait(2000);
-      this.fetchLockedBalances();
+      this.fetchAndSetLockedBalances({});
     })();
-    this.fetchLockedBalances();
+    this.fetchAndSetLockedBalances({});
 
     return {
       blockExplorerLink: await this.createExplorerLink(hash),
@@ -3768,34 +3778,35 @@ export class EthBancorModule
     return balance;
   }
 
-  @mutation updateUserBalances(freshBalances: Balance[]) {
+  @mutation updateUserBalances(incomingBalances: Balance[]) {
+    const freshBalances = uniqWith(incomingBalances, (a, b) =>
+      compareString(a.id, b.id)
+    );
     const currentBalances = this.tokenBalances;
 
-    const [actualBalances, nullBalances] = partition(freshBalances, balance =>
-      new BigNumber(balance.balance).isGreaterThan(0)
+    const [actualIncomingBalances, nullBalances] = partition(
+      freshBalances,
+      balance => new BigNumber(balance.balance).isGreaterThan(0)
     );
     const droppedNullBalances = currentBalances.filter(
       balance => !nullBalances.some(b => compareString(balance.id, b.id))
     );
 
-    const freshBalancesToUpdate = actualBalances.filter(balance => {
+    const balancesToAdd = actualIncomingBalances.filter(
+      balance => !droppedNullBalances.some(b => compareString(b.id, balance.id))
+    );
+
+    const balancesToUpdate = actualIncomingBalances.filter(balance => {
       const alreadyExists = droppedNullBalances.find(b =>
         compareString(b.id, balance.id)
       );
       return alreadyExists && alreadyExists.balance !== balance.balance;
     });
-    const balancesToAdd = differenceWith(
-      actualBalances,
-      freshBalancesToUpdate,
-      compareById
-    );
 
     const updatedBalances = updateArray(
       droppedNullBalances,
-      balance =>
-        freshBalancesToUpdate.some(b => compareString(balance.id, b.id)),
-      balance =>
-        freshBalancesToUpdate.find(b => compareString(balance.id, b.id))!
+      balance => balancesToUpdate.some(b => compareString(balance.id, b.id)),
+      balance => balancesToUpdate.find(b => compareString(balance.id, b.id))!
     );
     const addedBalances = [...updatedBalances, ...balancesToAdd];
 
@@ -5812,116 +5823,19 @@ export class EthBancorModule
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
     const chainId = await web3.eth.getChainId();
+    networkVersionReceiver$.next(chainId);
 
-    const networkVersion$ = of(chainId).pipe(
-      distinctUntilChanged(),
-      tap(this.setNetwork),
-      shareReplay(1)
-    );
-
-    const apiData$ = networkVersion$.pipe(
-      switchMap(networkVersion => getWelcomeData(networkVersion)),
-      share()
-    );
-
-    apiData$.subscribe(data => this.setApiData(data));
-
-    const tokenMeta$ = networkVersion$.pipe(switchMap(getTokenMeta), share());
-
-    tokenMeta$.subscribe(this.setTokenMeta);
+    web3.eth
+      .getBlockNumber()
+      .then(number => currentBlockReceiver$.next(number));
 
     this.warmEthApi();
-
-    const usdPriceOfBnt$ = apiData$.pipe(
-      map(x => Number(x.bnt_price.usd)),
-      distinctUntilChanged()
-    );
-
-    console.time("FirstPromise");
-
-    const currentBlock$ = from(web3.eth.getBlockNumber()).pipe(
-      map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
-      shareReplay(1)
-    );
-
-    const networkVars$ = networkVersion$.pipe(
-      map(getNetworkVariables),
-      shareReplay(1)
-    );
 
     currentBlock$
       .pipe(firstItem())
       .subscribe(({ blockNumber }) => currentBlockTwo$.next(blockNumber));
 
-    networkVars$.subscribe(networkVariables =>
-      this.fetchAndSetBntSupply(networkVariables.bntToken)
-    );
-
-    const contractAddresses$ = networkVars$.pipe(
-      switchMap(networkVariables =>
-        this.fetchContractAddresses(networkVariables.contractRegistry)
-      ),
-      distinctUntilChanged<RegisteredContracts>(isEqual),
-      tap(x => console.log("sending out contracts...", x)),
-      share()
-    );
-
-    const bancorConverterRegistry$ = contractAddresses$.pipe(
-      pluck("BancorConverterRegistry"),
-      distinctUntilChanged(compareString),
-      share()
-    );
-
-    const liquidityProtection$ = contractAddresses$.pipe(
-      pluck("LiquidityProtection"),
-      distinctUntilChanged(compareString),
-      shareReplay(1)
-    );
-
-    const liquidityProtectionStore$ = contractAddresses$.pipe(
-      pluck("LiquidityProtectionStore"),
-      distinctUntilChanged(compareString),
-      shareReplay(1)
-    );
-
-    const settingsContractAddress$ = liquidityProtection$.pipe(
-      switchMap(protectionAddress =>
-        this.fetchLiquidityProtectionSettingsContract(protectionAddress)
-      ),
-      distinctUntilChanged(compareString),
-      share()
-    );
-
-    settingsContractAddress$.subscribe(settingsContract =>
-      vxm.minting.fetchMinLiqForMinting(settingsContract)
-    );
-
-    const bancorNetwork$ = contractAddresses$.pipe(
-      pluck("BancorNetwork"),
-      distinctUntilChanged(compareString),
-      shareReplay(1)
-    );
-
-    combineLatest([liquidityProtection$, settingsContractAddress$])
-      .pipe(
-        switchMap(([protectionContractAddress, settingsContractAddress]) =>
-          this.fetchLiquidityProtectionSettings({
-            settingsContractAddress,
-            protectionContractAddress
-          })
-        )
-      )
-      .subscribe(settings => {
-        this.setLiquidityProtectionSettings(settings);
-        this.fetchAndSetTokenBalances([settings.govToken]);
-      });
-
-    settingsContractAddress$
-      .pipe(switchMap(this.fetchWhiteListedV1Pools))
-      .subscribe(this.setWhiteListedPools);
-
     const anchors$ = bancorConverterRegistry$.pipe(
-      tap(x => console.log("registry ran..", x)),
       switchMap(converterRegistryAddress =>
         this.fetchAnchorAddresses({
           converterRegistryAddress
@@ -5960,21 +5874,6 @@ export class EthBancorModule
     if (this.currentUser) {
       authenticated$.next(this.currentUser);
     }
-
-    combineLatest([
-      authenticated$,
-      liquidityProtectionStore$,
-      currentBlock$,
-      apiData$
-    ]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
-      const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
-      this.fetchProtectionPositions({
-        storeAddress,
-        blockNumberNow: blockNumber,
-        userAddress: userAddress as string,
-        supportedAnchors
-      });
-    });
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
       mergeMap(x => from(x))
@@ -6138,7 +6037,7 @@ export class EthBancorModule
 
       await combineLatest([apiData$, tokenMeta$])
         .pipe(
-          mergeMap(([apiData, tokenMeta]) => {
+          switchMap(([apiData, tokenMeta]) => {
             const pools = apiData.pools;
             const tokens = apiData.tokens;
 
@@ -6185,10 +6084,10 @@ export class EthBancorModule
             return passedPools;
           }),
           bufferTime(50),
+          filter(x => x.length > 0),
+          firstItem(),
           tap(pools => {
-            if (pools.length > 0) {
-              this.updatePools(pools);
-            }
+            this.updatePools(pools);
           })
         )
         .toPromise();
@@ -6781,10 +6680,12 @@ export class EthBancorModule
         ]);
       }
       authenticated$.next(this.currentUser);
-      this.fetchLockedBalances();
-      if (this.apiData?.tokens) {
+      if (this.apiData && this.apiData.tokens) {
         const uniqueTokenAddresses = uniqWith(
-          this.apiData.tokens.map(token => token.dlt_id),
+          [
+            ...this.apiData.tokens.map(token => token.dlt_id),
+            ...this.apiData.pools.map(pool => pool.pool_dlt_id)
+          ],
           compareString
         );
         this.fetchAndSetTokenBalances(uniqueTokenAddresses);
@@ -6804,7 +6705,10 @@ export class EthBancorModule
     if (symbols) {
       symbols.forEach(symbol => this.focusSymbol(symbol.symbol));
     } else if (this.currentUser && this.apiData) {
-      const tokenAddresses = this.apiData.tokens.map(token => token.dlt_id);
+      const tokenAddresses = [
+        ...this.apiData.tokens.map(token => token.dlt_id),
+        ...this.apiData.pools.map(pool => pool.pool_dlt_id)
+      ];
       this.fetchAndSetTokenBalances(tokenAddresses);
     }
   }
