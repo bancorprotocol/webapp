@@ -127,7 +127,7 @@ describe("check moment and dayjs", () => {
 
     setInterval(() => {
       const durationMM = moment.duration(Number(durationM) - interval, "milliseconds");
-      const durationDD = moment.duration(Number(durationD) - interval, "milliseconds");
+      const durationDD = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
 
       const lockDurationM =
         durationMM.hours() +
