@@ -25,6 +25,7 @@
       label="Withdraw rewards"
       @click="withdrawAction"
       :large="true"
+      :disabled="disableWithdraw"
     />
 
     <modal-pool-select
@@ -82,6 +83,10 @@ export default class WithdrawRewards extends BaseTxAction {
       msg:
         "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and re-stake your rewards atomically without resetting your current multipliers, click the “Restake my rewards” button below."
     };
+  }
+
+  get disableWithdraw() {
+    return !this.pendingRewards.bnt.gt(0);
   }
 
   selectPool(id: string) {
