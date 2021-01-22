@@ -14,7 +14,7 @@
         :src="bntLogoSrc"
         alt="Token Logo"
       />
-      <span class="mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
+      <span class="amt-num mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
       <!-- <span class="text-primary font-size-12">
         {{ `(~$${item.usdValue})` }}
       </span> -->
@@ -23,7 +23,7 @@
       <b-btn
         variant="primary"
         @click="click"
-        class="font-size-14 font-w500 px-4"
+        class="btn-claim font-size-14 font-w500 px-4"
         >Claim BNT</b-btn
       >
     </div>
@@ -58,11 +58,14 @@ export default class ClaimBnt extends BaseComponent {
     const currentTime = Date.now() / 1000;
     const diffTime = eventTime - currentTime;
     let duration = dayjs.duration(diffTime * 1000, "milliseconds");
+    console.log('d', duration.asMilliseconds())
+    
 
     const interval = 1000;
 
     setInterval(() => {
-      duration = dayjs.duration(Number(duration) - interval, "milliseconds");
+      duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
+      // console.log('f', duration)
       this.lockDuration =
         duration.hours() +
         "h:" +
@@ -70,7 +73,13 @@ export default class ClaimBnt extends BaseComponent {
         "m:" +
         duration.seconds() +
         "s";
-      this.locked = diffTime > 0;
+        
+      // this.locked = diffTime > 0;
+      if (duration.asMilliseconds() < 0) {
+        this.locked = false;
+        // console.log('available')
+      }
+
     }, interval);
   }
 

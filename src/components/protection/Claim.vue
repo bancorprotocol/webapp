@@ -16,7 +16,7 @@
       </b-col>
       <b-col xl="6">
         <sub-content-block title="Locked">
-          <claim-bnt v-for="item in locked" :key="item.id" :item="item" />
+          <claim-bnt v-for="item in locked" :key="item.id" :item="item" @click="onClick" />
           <div v-if="!locked.length" class="no-claim-results">
             No BNT locked.
           </div>
