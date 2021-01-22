@@ -7,10 +7,20 @@ import { multiSteps } from "@/api/helpers";
 import wait from "waait";
 import { shrinkToken } from "@/api/eth/helpers";
 import { expandToken } from "@/api/pureHelpers";
+import { Pool } from "@/api/eth/bancorApi"
 
 const VuexModule = createModule({
   strict: false
 });
+
+export interface PoolProgram {
+  poolToken: string,
+  startTimes: string,
+  endTimes: string,
+  rewardRates: string,
+  reserveTokens: string[],
+  rewardShares: string[]
+}
 
 export class RewardsModule extends VuexModule.With({
   namespaced: "rewards/"
@@ -152,28 +162,40 @@ export class RewardsModule extends VuexModule.With({
     return value;
   }
 
-  @action async fetchPoolPrograms(): Promise<BigNumber> {
-    const store = buildStakingRewardsStoreContract(await this.contract.methods.store().call())
-    const result = await store.methods
-      .poolPrograms()
-      .call();
+  poolPrograms?: PoolProgram[];
 
-    let poolPrograms = [];
+  @action async fetchPoolPrograms(): Promise<PoolProgram[]> {
+    if( this.poolPrograms) {
+      return this.poolPrograms;
+    }
 
-    for(let i = 0; i < result[0].length; i++) {
+    const store = buildStakingRewardsStoreContract(
+      await this.contract.methods.store().call()
+    );
+    const result = await store.methods.poolPrograms().call();
+
+    let poolPrograms: PoolProgram[] = [];
+
+    for (let i = 0; i < result[0].length; i++) {
       poolPrograms.push({
         poolToken: result[0][i],
         startTimes: result[1][i],
         endTimes: result[2][i],
         rewardRates: result[3][i],
         reserveTokens: result[4][i],
-        rewardShares: result[5][i],
-      })
+        rewardShares: result[5][i]
+      });
     }
 
     console.log("poolPrograms", poolPrograms);
 
-    return new BigNumber(0);
+    this.setPoolPrograms(poolPrograms);
+
+    return poolPrograms;
+  }
+
+  @mutation setPoolPrograms(value: PoolProgram[]) {
+    this.poolPrograms = value;
   }
 
   @mutation setTotalClaimedRewards(value: BigNumber) {
