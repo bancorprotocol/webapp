@@ -3596,6 +3596,32 @@ export class EthBancorModule
     ];
   }
 
+  @action async getAvailableSpace({ poolId }: { poolId: string }) {
+    const { maxStakes } = await this.getMaxStakes({
+      poolId
+    });
+    const relay = await this.relayById(poolId);
+    const converter = buildV28ConverterContract(relay.contract, w3);
+    const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
+      this.liquidityProtectionSettings.contract,
+      w3
+    );
+
+    const limit = await liquidityProtectionSettings.methods
+      .networkTokenMintingLimits(poolId)
+      .call();
+    console.log(
+      "step 1:" +
+        Number(maxStakes.maxAllowedBntWei) / Number(maxStakes.maxAllowedTknWei)
+    );
+    console.log("limit:" + Number(limit));
+    const placeholder = 100;
+    return (
+      Number(maxStakes.maxAllowedBntWei) / Number(maxStakes.maxAllowedTknWei) +
+      (placeholder - Number(limit))
+    );
+  }
+
   @action async calculateProtectionSingle({
     poolId,
     reserveAmount

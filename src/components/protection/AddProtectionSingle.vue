@@ -83,9 +83,24 @@
     </gray-border-block>
 
     <gray-border-block :gray-bg="true" class="my-3">
-      <label-content-split label="Space Available" :loading="loadingMaxStakes">
+      <label-content-split
+        label="Space Available"
+        :loading="loadingMaxStakes"
+        tooltip="For more information "
+        hrefText="click here"
+        href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
+        class="mb-2"
+      >
         <span @click="setAmount" class="cursor">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
+        }}</span>
+      </label-content-split>
+      <label-content-split
+        label="Amount needed to open up space"
+        :loading="loadingAvailableSpace"
+      >
+        <span @click="setAmount" class="cursor">{{
+          `${prettifyNumber(spaceAvailable)} ${bnt.symbol}`
         }}</span>
       </label-content-split>
     </gray-border-block>
@@ -172,9 +187,11 @@ export default class AddProtectionSingle extends BaseComponent {
 
   maxStakeAmount: string = "";
   maxStakeSymbol: string = "";
+  spaceAvailable: number = 0;
   priceDeviationTooHigh: boolean = false;
 
-  loadingMaxStakes = false;
+  loadingMaxStakes: boolean = false;
+  loadingAvailableSpace: boolean = false;
 
   amount: string = "";
 
@@ -209,6 +226,10 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get token() {
     return this.pool.reserves[this.selectedTokenIndex];
+  }
+
+  get bnt() {
+    return this.pool.reserves[0];
   }
 
   get opposingToken() {
@@ -393,6 +414,14 @@ export default class AddProtectionSingle extends BaseComponent {
     });
   }
 
+  async loadAvailableSpace() {
+    this.loadingAvailableSpace = true;
+    this.spaceAvailable = await vxm.ethBancor.getAvailableSpace({
+      poolId: this.pool.id
+    });
+    this.loadingAvailableSpace = false;
+  }
+
   async loadMaxStakes() {
     if (this.loadingMaxStakes) return;
     this.loadingMaxStakes = true;
@@ -400,11 +429,12 @@ export default class AddProtectionSingle extends BaseComponent {
       const result = await vxm.ethBancor.getMaxStakesView({
         poolId: this.pool.id
       });
-      let stake = result.filter(x => x.token === this.token.symbol);
-      if (stake.length === 1) {
-        this.maxStakeAmount = stake[0].amount;
-        this.maxStakeSymbol = stake[0].token;
-      }
+      result.forEach(async x => {
+        if (x.token === this.token.symbol) {
+          this.maxStakeAmount = x.amount;
+          this.maxStakeSymbol = x.token;
+        }
+      });
     } catch (e) {
       console.log(e);
     } finally {
@@ -419,9 +449,11 @@ export default class AddProtectionSingle extends BaseComponent {
 
   async mounted() {
     await this.loadMaxStakes();
+    await this.loadAvailableSpace();
     await this.loadRecentAverageRate();
     this.interval = setInterval(async () => {
       await this.loadMaxStakes();
+      await this.loadAvailableSpace();
       await this.loadRecentAverageRate();
     }, 30000);
   }
