@@ -54,6 +54,7 @@ import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -109,8 +110,12 @@ export default class RestakeRewards extends BaseTxAction {
 
   get inputError() {
     if (this.amount == "") return "";
-    if (this.pendingRewards.bnt.lt(this.amount))
+
+    const amount = new BigNumber(this.amount);
+
+    if (this.pendingRewards.bnt.lt(amount))
       return "Insufficient rewards balance";
+    if (amount.gt(this.maxStakeAmount)) return "Insufficient space available";
     if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
     else return "";
   }

@@ -62,7 +62,7 @@ export default class ClaimBnt extends BaseComponent {
     const interval = 1000;
 
     setInterval(() => {
-      duration = dayjs.duration(Number(duration) - interval, "milliseconds");
+      duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
       this.lockDuration =
         duration.hours() +
         "h:" +

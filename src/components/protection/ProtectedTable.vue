@@ -172,7 +172,10 @@
 
       <template #cell(fees)="{ item, value }">
         <div class="text-center">
-          {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          <div>
+            {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          </div>
+          <pending-rewards :pool-id="item.poolId" :symbol="item.symbol" />
         </div>
       </template>
       <template #cellCollapsed(fees)="{ value }">
@@ -376,7 +379,7 @@ import {
   stringifyPercentage
 } from "@/api/helpers";
 import { groupPositionsArray } from "@/api/pureHelpers";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import {
   ViewGroupedPositions,
   ViewProtectedLiquidity,
@@ -387,9 +390,11 @@ import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import PendingRewards from "@/components/rewards/PendingRewards.vue";
 
 @Component({
   components: {
+    PendingRewards,
     DataTable,
     RemainingTime2,
     CountdownTimer,
