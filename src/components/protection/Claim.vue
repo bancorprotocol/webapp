@@ -73,13 +73,7 @@ export default class Claim extends Vue {
   }
 
   get locked() {
-    // return vxm.ethBancor.lockedBalances;
-    return [{
-      id: '1',
-      amount: 100,
-      lockedUntil: (Date.now()-10000) / 1000,
-      usdValue: 10
-    }];
+    return vxm.ethBancor.lockedBalances;
   }
 
   async onClick() {

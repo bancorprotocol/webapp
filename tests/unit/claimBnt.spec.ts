@@ -37,6 +37,10 @@ describe('ClaimBnt.vue', () => {
     });
   })
 
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
    /* check props */
   it("shows timer, when time left", () => {    
     const item = {
@@ -76,7 +80,30 @@ describe('ClaimBnt.vue', () => {
   })
 
   it('should unlock after locking period', () => {
-    
+    jest.useFakeTimers();
+
+    const item = {
+      id: '1',
+      amount: 100,
+      lockedUntil: (Date.now()+2000) / 1000,
+      usdValue: 10
+    }
+    const wrapper = shallowMount(ClaimBnt, {
+      propsData: {
+        item
+      },
+      store,
+      localVue
+    });
+
+    expect(setInterval).toHaveBeenCalledTimes(1);
+    expect(setInterval).toHaveBeenLastCalledWith(expect.any(Function), 1000);
+
+    jest.advanceTimersByTime(2200);
+
+    // should be unlocked
+    expect(wrapper.find('.time-left').exists()).toBe(true);
+    expect(wrapper.find('.btn-claim').exists()).toBe(false);
   })
 
 })

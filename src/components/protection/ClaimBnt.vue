@@ -15,9 +15,6 @@
         alt="Token Logo"
       />
       <span class="amt-num mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
-      <!-- <span class="text-primary font-size-12">
-        {{ `(~$${item.usdValue})` }}
-      </span> -->
     </div>
     <div v-if="!locked">
       <b-btn
@@ -57,11 +54,11 @@ export default class ClaimBnt extends BaseComponent {
   countdown(eventTime: number) {
     const currentTime = Date.now() / 1000;
     const diffTime = eventTime - currentTime;
-    let duration = dayjs.duration(diffTime * 1000, "milliseconds");
-    console.log('d', duration.asMilliseconds())
-    
+    let duration = dayjs.duration(diffTime * 1000, "milliseconds");    
 
     const interval = 1000;
+
+    this.locked = (diffTime > 0) ? true : false;
 
     setInterval(() => {
       duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
@@ -72,13 +69,10 @@ export default class ClaimBnt extends BaseComponent {
         "m:" +
         duration.seconds() +
         "s";
-        
-      // this.locked = diffTime > 0;
+
       if (duration.asMilliseconds() < 0) {
         this.locked = false;
-        // console.log('available')
       }
-
     }, interval);
   }
 
