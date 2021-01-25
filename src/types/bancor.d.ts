@@ -1,4 +1,5 @@
 import { Contract } from "web3-eth-contract";
+import BigNumber from "bignumber.js";
 
 export interface TokenWei {
   tokenContract: string;
@@ -54,6 +55,7 @@ export interface ProtectedLiquidityCalculated {
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
+  pendingPoolReward: BigNumber;
 }
 export interface TokenPrice {
   id: string;
@@ -304,6 +306,8 @@ export interface ViewGroupedPositions {
   insuranceStart: number;
   coverageDecPercent: number;
   fullCoverage: number;
+  pendingPoolReward: BigNumber;
+  reserveTokenPrice: number;
   collapsedData: ViewProtectedLiquidity[];
 }
 
@@ -764,6 +768,8 @@ export interface ViewProtectedLiquidity {
   coverageDecPercent: number;
   fullCoverage: number;
   givenVBnt?: string;
+  pendingPoolReward: BigNumber;
+  reserveTokenPrice: number;
 }
 
 export interface ViewLockedBalance {

@@ -1889,23 +1889,33 @@ export class EthBancorModule
         )
       ]);
 
-      const positions = allPositions.map(
-        (position): ProtectedLiquidityCalculated => {
-          const liqReturn =
-            withLiquidityReturn &&
-            withLiquidityReturn.find(p => position.id == p.positionId);
-          const roiReturn =
-            withAprs && withAprs.find(p => position.id == p.positionId);
+      const positions = await Promise.all(
+        allPositions.map(
+          async (position): Promise<ProtectedLiquidityCalculated> => {
+            const liqReturn =
+              withLiquidityReturn &&
+              withLiquidityReturn.find(p => position.id == p.positionId);
+            const roiReturn =
+              withAprs && withAprs.find(p => position.id == p.positionId);
 
-          const fee = withFees.find(p => position.id == p.positionId);
+            const fee = withFees.find(p => position.id == p.positionId);
 
-          return {
-            ...position,
-            ...(liqReturn && omit(liqReturn, ["positionId"])),
-            ...(roiReturn && omit(roiReturn, ["positionId"])),
-            ...(fee && { fee: omit(fee, ["positionId"]) })
-          };
-        }
+            const pendingPoolReward = await vxm.rewards.fetchPendingReserveRewards(
+              {
+                poolId: position.poolToken,
+                reserveId: position.reserveToken
+              }
+            );
+
+            return {
+              ...position,
+              ...(liqReturn && omit(liqReturn, ["positionId"])),
+              ...(roiReturn && omit(roiReturn, ["positionId"])),
+              ...(fee && { fee: omit(fee, ["positionId"]) }),
+              pendingPoolReward: pendingPoolReward
+            };
+          }
+        )
       );
 
       console.log("success!", positions, "are positions");
@@ -2269,6 +2279,11 @@ export class EthBancorModule
         // full coverage - full wait time
         // protectedAmount - current wait time
 
+        const feeGenerated = new BigNumber(currentProtectedDec || 0).minus(
+          reserveTokenDec
+        );
+
+        // @ts-ignore
         return {
           id: `${singleEntry.poolToken}:${singleEntry.id}`,
           whitelisted: isWhiteListed,
@@ -2316,21 +2331,17 @@ export class EthBancorModule
             }
           }),
           coverageDecPercent: progressPercent,
-          ...(singleEntry.fee && {
-            fees: {
-              amount: singleEntry.fee.amount,
-              symbol: reserveToken.symbol
-              // ...(reserveToken.price &&
-              //   fullyProtectedDec && {
-              //     usdValue: new BigNumber(1)
-              //       .times(reserveToken.price!)
-              //       .toNumber()
-              //   })
-            }
-          }),
+          fees: {
+            amount: feeGenerated,
+            symbol: reserveToken.symbol
+          },
           roi:
             fullyProtectedDec &&
-            Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
+            Number(
+              calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+            ),
+          pendingPoolReward: singleEntry.pendingPoolReward,
+          reserveTokenPrice: reserveToken.price
         } as ViewProtectedLiquidity;
       }
     );
