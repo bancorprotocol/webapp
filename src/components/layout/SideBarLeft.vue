@@ -5,25 +5,12 @@
     @mouseover="mouseoverSidebar"
     @mouseleave="mouseoutSidebar"
   >
-    <!-- <div class="btn-toggle d-flex" v-if="showMinimize">
-      <font-awesome-icon @click="toggleView"
-        variant="white"
-        class="block-rounded ml-auto m-1" icon="chevron-circle-right" fixed-width />
-    </div> -->
     <div class="bancor-icon-wrapper">
-      <b-navbar-brand class="pb-1 brand-icon">
+      <b-navbar-brand class="pb-1 brand-icon mb-1">
         <router-link :to="{ name: 'Data' }">
           <img
-            v-if="darkMode"
-            src="@/assets/media/logos/bancor-white.png"
+            :src="imgLogo()"
             height="35px"
-            class="mb-1"
-          />
-          <img
-            v-else
-            src="@/assets/media/logos/bancor-black.png"
-            height="35px"
-            class="mb-1"
           />
         </router-link>
       </b-navbar-brand>
@@ -90,6 +77,22 @@ export default class SideBarLeft extends Vue {
       classNames.push("side-bar-minimize");
     }
     return classNames.join(" ");
+  }
+
+  imgLogo(): string {
+    if (this.darkMode) {
+      if (this.showMinimize) {
+        return require('@/assets/media/logos/bancor-white2.png');
+      } else {
+        return require('@/assets/media/logos/bancor-white.png');
+      }      
+    } else {
+      if (this.showMinimize) {
+        return require('@/assets/media/logos/bancor-black2.png');
+      } else {
+        return require('@/assets/media/logos/bancor-black.png');
+      }      
+    }
   }
 
   mouseoverSidebar() {
