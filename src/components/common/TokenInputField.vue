@@ -46,10 +46,10 @@
             </span>
             <font-awesome-icon v-if="dropdown" icon="caret-down" />
           </div>
-          <div v-else-if="pool">
+          <div v-else>
             <pool-logos @click="openModal" :pool="pool" :dropdown="true" />
           </div>
-          <div v-else>
+          <div v-if="!pool && !token">
             <img
               class="img-avatar img-avatar32 border-colouring bg-white mr-1"
               :src="defaultImage"
