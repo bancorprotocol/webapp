@@ -34,7 +34,7 @@
       :pools="pools"
     />
 
-    <modal-tx-action :tx-meta="txMeta" @close="setDefault" />
+    <modal-tx-action :tx-meta="txMeta" @close="closeTxModal" />
   </div>
 </template>
 
@@ -99,6 +99,13 @@ export default class WithdrawRewards extends BaseTxAction {
 
   restakeAction() {
     this.showPoolSelectModal = true;
+  }
+
+  async closeTxModal() {
+    if (this.txMeta.success) {
+      await this.$router.push({ name: "LiqProtection" });
+    }
+    this.setDefault();
   }
 
   async withdrawAction() {
