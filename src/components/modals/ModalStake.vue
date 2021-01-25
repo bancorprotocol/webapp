@@ -125,7 +125,7 @@
 import { vxm } from "@/store/";
 import { Component, Watch, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
-import { ViewToken } from "@/types/bancor";
+import { compareString } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
@@ -141,8 +141,6 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class ModalStake extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
-  gBnt: ViewToken = vxm.bancor.tokens[0];
-
   currentBalance: BigNumber = new BigNumber(0);
   stakeInput: string = "";
   stakeValue: BigNumber = new BigNumber(0);
@@ -156,6 +154,21 @@ export default class ModalStake extends BaseComponent {
       this.stakeValue.isGreaterThan(0) &&
       this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
     );
+  }
+
+  get gBnt() {
+    const bntToken = vxm.bancor.tokens.find(token =>
+      compareString(token.symbol, "BNT")
+    );
+    if (bntToken) {
+      bntToken.symbol = this.symbol;
+      return bntToken;
+    } else {
+      return {
+        id: -1,
+        symbol: this.symbol
+      };
+    }
   }
 
   get state() {
@@ -249,8 +262,6 @@ export default class ModalStake extends BaseComponent {
 
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
-    this.gBnt.symbol = this.symbol;
-
     await this.update();
   }
 }
