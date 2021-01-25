@@ -139,7 +139,6 @@ import {
   previousPoolFees,
   v2Pools,
   secondRoundLiquidityMiningEndTime,
-  highTierPools,
   compareStaticRelay,
   thirdRoundLiquidityMiningEndTime,
   fourthRoundLiquidityMiningEndTime
@@ -203,7 +202,8 @@ import {
   bancorConverterRegistry$,
   authenticated$,
   networkVersion$,
-  tokenMeta$
+  tokenMeta$,
+  poolPrograms$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -6021,7 +6021,10 @@ export class EthBancorModule
         share()
       );
 
-      const highTierPools$ = of(highTierPools);
+      const highTierPools$ = poolPrograms$.pipe(
+        map(poolPrograms => poolPrograms.map(poolProgram => poolProgram.poolToken),
+        share())
+      );
 
       combineLatest([highTierPools$, finalRelays$, liquidityProtectionStore$])
         .pipe(

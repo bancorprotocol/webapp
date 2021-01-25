@@ -115,6 +115,19 @@ export const bancorConverterRegistry$ = contractAddresses$.pipe(
   share()
 );
 
+export const stakingRewards$ = contractAddresses$.pipe(
+  pluck("StakingRewards"),
+  distinctUntilChanged(compareString),
+  shareReplay(1)
+);
+
+export const poolPrograms$ = stakingRewards$.pipe(
+  switchMap(() =>
+    vxm.rewards.fetchPoolPrograms()
+  ),
+  share()
+)
+
 export const liquidityProtection$ = contractAddresses$.pipe(
   pluck("LiquidityProtection"),
   distinctUntilChanged(compareString),
