@@ -3596,29 +3596,55 @@ export class EthBancorModule
     ];
   }
 
-  @action async getAvailableSpace({ poolId }: { poolId: string }) {
+  @action async getAvailableSpace({
+    poolId
+  }: {
+    poolId: string;
+  }): Promise<string> {
     const { maxStakes } = await this.getMaxStakes({
       poolId
     });
+    const bntSpaceAvailable = new BigNumber(maxStakes.maxAllowedBntWei);
+
+    const balances = await this.fetchRelayBalances({ poolId });
+    const btnIndex = balances.reserves.findIndex(
+      x => x.symbol.toLowerCase() === "bnt"
+    );
+    const bntamount = new BigNumber(balances.reserves[btnIndex].weiAmount);
+    balances.reserves.splice(btnIndex, 1);
+    const tknAmount = new BigNumber(balances.reserves[0].weiAmount);
+
     const relay = await this.relayById(poolId);
     const converter = buildV28ConverterContract(relay.contract, w3);
     const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
       this.liquidityProtectionSettings.contract,
       w3
     );
-
-    const limit = await liquidityProtectionSettings.methods
-      .networkTokenMintingLimits(poolId)
-      .call();
-    console.log(
-      "step 1:" +
-        Number(maxStakes.maxAllowedBntWei) / Number(maxStakes.maxAllowedTknWei)
+    const limit = new BigNumber(
+      await liquidityProtectionSettings.methods
+        .networkTokenMintingLimits(poolId)
+        .call()
     );
-    console.log("limit:" + Number(limit));
-    const placeholder = 100;
-    return (
-      Number(maxStakes.maxAllowedBntWei) / Number(maxStakes.maxAllowedTknWei) +
-      (placeholder - Number(limit))
+
+    console.log("bntamount:" + bntamount);
+    console.log("tknAmount:" + tknAmount);
+    console.log("bntSpaceAvailable:" + bntSpaceAvailable);
+    console.log("limit:" + limit);
+    console.log(
+      "Res:" +
+        shrinkToken(
+          bntamount
+            .div(tknAmount)
+            .plus(bntSpaceAvailable)
+            .minus(limit)
+            .toString(),
+          balances.reserves[btnIndex].decimals
+        )
+    );
+
+    return shrinkToken(
+      bntamount.div(tknAmount).plus(bntSpaceAvailable).minus(limit).toString(),
+      balances.reserves[btnIndex].decimals
     );
   }
 

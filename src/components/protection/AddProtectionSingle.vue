@@ -89,18 +89,19 @@
         tooltip="For more information "
         hrefText="click here"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
-        class="mb-2"
       >
         <span @click="setAmount" class="cursor">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
         }}</span>
       </label-content-split>
       <label-content-split
+        v-if="tknSpaceAvailableLTOne"
+        class="mt-2"
         label="Amount needed to open up space"
         :loading="loadingAvailableSpace"
       >
         <span @click="setAmount" class="cursor">{{
-          `${prettifyNumber(spaceAvailable)} ${bnt.symbol}`
+          `${prettifyNumber(amountToMakeSpace)} ${bnt.symbol}`
         }}</span>
       </label-content-split>
     </gray-border-block>
@@ -187,7 +188,8 @@ export default class AddProtectionSingle extends BaseComponent {
 
   maxStakeAmount: string = "";
   maxStakeSymbol: string = "";
-  spaceAvailable: number = 0;
+  amountToMakeSpace: string = "";
+  tknSpaceAvailableLTOne: boolean = false;
   priceDeviationTooHigh: boolean = false;
 
   loadingMaxStakes: boolean = false;
@@ -416,7 +418,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
   async loadAvailableSpace() {
     this.loadingAvailableSpace = true;
-    this.spaceAvailable = await vxm.ethBancor.getAvailableSpace({
+    this.amountToMakeSpace = await vxm.ethBancor.getAvailableSpace({
       poolId: this.pool.id
     });
     this.loadingAvailableSpace = false;
@@ -442,6 +444,13 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
+  async fetchTknSpaceAvailable() {
+    const result = await vxm.ethBancor.getMaxStakesView({
+      poolId: this.pool.id
+    });
+    this.tknSpaceAvailableLTOne = new BigNumber(result[1].amount).lt(1);
+  }
+
   setAmount() {
     this.amount =
       parseFloat(this.maxStakeAmount) > 0 ? this.maxStakeAmount : "0";
@@ -451,6 +460,7 @@ export default class AddProtectionSingle extends BaseComponent {
     await this.loadMaxStakes();
     await this.loadAvailableSpace();
     await this.loadRecentAverageRate();
+    await this.fetchTknSpaceAvailable();
     this.interval = setInterval(async () => {
       await this.loadMaxStakes();
       await this.loadAvailableSpace();
