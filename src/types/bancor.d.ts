@@ -770,6 +770,7 @@ export interface ViewProtectedLiquidity {
   givenVBnt?: string;
   pendingReserveReward: BigNumber;
   reserveTokenPrice: number;
+  bntTokenPrice: number;
 }
 
 export interface ViewLockedBalance {

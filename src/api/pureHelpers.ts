@@ -94,7 +94,6 @@ export const groupPositionsArray = (
           );
         } else {
           const bntRewardUsd = item.pendingReserveReward.times(
-            // @ts-ignore
             val.bntTokenPrice
           );
           sumFullyProtectedWithReward = bntRewardUsd

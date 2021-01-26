@@ -1889,37 +1889,51 @@ export class EthBancorModule
         )
       ]);
 
-      // map -> poolid and reserveid
-      // const = [rewards] lodash function unique with
+      const poolReserveIds = allPositions.map(position => {
+        return { poolId: position.poolToken, reserveId: position.reserveToken };
+      });
 
-      const positions = await Promise.all(
-        allPositions.map(
-          async (position): Promise<ProtectedLiquidityCalculated> => {
-            const liqReturn =
-              withLiquidityReturn &&
-              withLiquidityReturn.find(p => position.id == p.positionId);
-            const roiReturn =
-              withAprs && withAprs.find(p => position.id == p.positionId);
+      const uniquePoolReserveIds = uniqWith(poolReserveIds, isEqual);
 
-            const fee = withFees.find(p => position.id == p.positionId);
+      const fetchedRewards = await Promise.all(
+        uniquePoolReserveIds.map(async item => {
+          const pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
+            {
+              poolId: item.poolId,
+              reserveId: item.reserveId
+            }
+          );
+          return {
+            id: `${item.poolId}-${item.reserveId}`,
+            pendingReserveReward
+          };
+        })
+      );
 
-            // find on array
-            const pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
-              {
-                poolId: position.poolToken,
-                reserveId: position.reserveToken
-              }
-            );
+      const positions = allPositions.map(
+        (position): ProtectedLiquidityCalculated => {
+          const liqReturn =
+            withLiquidityReturn &&
+            withLiquidityReturn.find(p => position.id == p.positionId);
+          const roiReturn =
+            withAprs && withAprs.find(p => position.id == p.positionId);
 
-            return {
-              ...position,
-              ...(liqReturn && omit(liqReturn, ["positionId"])),
-              ...(roiReturn && omit(roiReturn, ["positionId"])),
-              ...(fee && { fee: omit(fee, ["positionId"]) }),
-              pendingReserveReward: pendingReserveReward
-            };
-          }
-        )
+          const fee = withFees.find(p => position.id == p.positionId);
+
+          const pendingReserveReward = fetchedRewards.find(
+            x => x.id === `${position.poolToken}-${position.reserveToken}`
+          );
+
+          return {
+            ...position,
+            ...(liqReturn && omit(liqReturn, ["positionId"])),
+            ...(roiReturn && omit(roiReturn, ["positionId"])),
+            ...(fee && { fee: omit(fee, ["positionId"]) }),
+            pendingReserveReward: pendingReserveReward
+              ? pendingReserveReward.pendingReserveReward
+              : new BigNumber(0)
+          };
+        }
       );
 
       console.log("success!", positions, "are positions");
@@ -2346,7 +2360,6 @@ export class EthBancorModule
             ),
           pendingReserveReward: singleEntry.pendingReserveReward,
           reserveTokenPrice: reserveToken.price,
-          // @ts-ignore
           bntTokenPrice: this.stats.bntUsdPrice
         } as ViewProtectedLiquidity;
       }
