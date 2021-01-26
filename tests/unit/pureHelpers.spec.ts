@@ -1,5 +1,4 @@
 import {
-  calculatePositionFees,
   decToPpm,
   expandToken,
   miningBntReward,
@@ -9,54 +8,12 @@ import {
   calculateLimits
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
-import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
-
-const shrinkToken = (
-  amount: string | number,
-  precision: number,
-  chopZeros = false
-) => {
-  const res = new BigNumber(amount)
-    .div(new BigNumber(10).pow(precision))
-    .toFixed(precision);
-
-  return chopZeros ? new BigNumber(res).toString() : res;
-};
+// import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 
 describe("dec to ppm works", () => {
   test("range of percentages", () => {
     expect(decToPpm(0.6)).toBe("600000");
     expect(decToPpm(1)).toBe("1000000");
-  });
-});
-
-describe("can calculate position fees", () => {
-  test("Protected Position Fee", async () => {
-    const {
-      originalPoolTokenAmount,
-      currentPoolTokenSupply,
-      depositedAmount,
-      depositedReserveCurrentBalance,
-      opposingDepositedReserveCurrentBalance,
-      reserveRate
-    } = {
-      originalPoolTokenAmount: "500000000000000000",
-      currentPoolTokenSupply: "15576682305422710575136560",
-      depositedAmount: "1340922988163890",
-      depositedReserveCurrentBalance: "15225916667665690655887",
-      opposingDepositedReserveCurrentBalance: "9337353089824759522590240",
-      reserveRate: "322.22513507007347536179"
-    };
-
-    const res = calculatePositionFees(
-      originalPoolTokenAmount,
-      currentPoolTokenSupply,
-      depositedAmount,
-      depositedReserveCurrentBalance,
-      opposingDepositedReserveCurrentBalance,
-      reserveRate
-    );
-    expect(res).toBe("7570785880343");
   });
 });
 

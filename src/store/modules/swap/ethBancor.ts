@@ -178,7 +178,6 @@ import {
   share
 } from "rxjs/operators";
 import {
-  calculatePositionFees,
   decToPpm,
   miningBntReward,
   miningTknReward,
@@ -1684,7 +1683,7 @@ export class EthBancorModule
         label
       }));
 
-      const [withAprs, withLiquidityReturn, withFees] = await Promise.all([
+      const [withAprs, withLiquidityReturn] = await Promise.all([
         (async () => {
           try {
             const poolHistoricalBalances = await Promise.all(
@@ -1851,42 +1850,7 @@ export class EthBancorModule
           })
         ).catch(e => {
           console.warn("Error fetching ROIs", e);
-        }),
-        Promise.all(
-          allPositions.map(async position => {
-            const currentPoolBalances = await this.fetchRelayBalances({
-              poolId: position.poolToken
-            });
-
-            const [
-              depositedReserve,
-              opposingReserve
-            ] = sortAlongSide(
-              currentPoolBalances.reserves,
-              reserve => reserve.contract,
-              [position.reserveToken]
-            );
-            const rate0 = new BigNumber(position.reserveRateN)
-              .div(position.reserveRateD)
-              .toString();
-
-            const feeAmountWei = calculatePositionFees(
-              position.poolAmount,
-              currentPoolBalances.smartTokenSupplyWei,
-              position.reserveAmount,
-              depositedReserve.weiAmount,
-              opposingReserve.weiAmount,
-              rate0
-            );
-
-            const shrunk = shrinkToken(feeAmountWei, 18);
-
-            return {
-              positionId: position.id,
-              amount: shrunk
-            };
-          })
-        )
+        })
       ]);
 
       const poolReserveIds = allPositions.map(position => {
@@ -1918,8 +1882,6 @@ export class EthBancorModule
           const roiReturn =
             withAprs && withAprs.find(p => position.id == p.positionId);
 
-          const fee = withFees.find(p => position.id == p.positionId);
-
           const pendingReserveReward = fetchedRewards.find(
             x => x.id === `${position.poolToken}-${position.reserveToken}`
           );
@@ -1928,7 +1890,6 @@ export class EthBancorModule
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
-            ...(fee && { fee: omit(fee, ["positionId"]) }),
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
               : new BigNumber(0)
@@ -2301,7 +2262,6 @@ export class EthBancorModule
           reserveTokenDec
         );
 
-        // @ts-ignore
         return {
           id: `${singleEntry.poolToken}:${singleEntry.id}`,
           whitelisted: isWhiteListed,
@@ -2350,7 +2310,7 @@ export class EthBancorModule
           }),
           coverageDecPercent: progressPercent,
           fees: {
-            amount: feeGenerated,
+            amount: feeGenerated.toString(),
             symbol: reserveToken.symbol
           },
           roi:

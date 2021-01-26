@@ -16,35 +16,6 @@ import numeral from "numeral";
 
 const oneMillion = new BigNumber(1000000);
 
-export const calculatePositionFees = (
-  originalPoolTokenAmount: string,
-  currentPoolTokenSupply: string,
-  depositedAmount: string,
-  depositedReserveCurrentBalance: string,
-  opposingDepositedReserveCurrentBalance: string,
-  reserveRate: string
-): string => {
-  const currentReserveToPoolBalanceRate = new BigNumber(
-    depositedReserveCurrentBalance
-  ).div(currentPoolTokenSupply);
-
-  const amount1 = new BigNumber(originalPoolTokenAmount)
-    .times(currentReserveToPoolBalanceRate)
-    .times(2);
-  const amount0 = new BigNumber(depositedAmount);
-
-  const rate0 = new BigNumber(reserveRate);
-  const rate1 = new BigNumber(opposingDepositedReserveCurrentBalance).div(
-    depositedReserveCurrentBalance
-  );
-
-  const rateDiv = rate1.div(rate0);
-  const result = rateDiv.sqrt().times(amount1).minus(amount0);
-
-  if (result.lte(0)) return "0";
-  else return result.toFixed(0);
-};
-
 export const groupPositionsArray = (
   arr: ViewProtectedLiquidity[]
 ): ViewGroupedPositions[] => {
