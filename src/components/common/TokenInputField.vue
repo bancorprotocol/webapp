@@ -20,6 +20,7 @@
         placeholder="Enter Amount"
         :disabled="disabled"
         @keypress="isNumber($event)"
+        @paste="onPaste($event)"
       ></b-form-input>
 
       <b-input-group-append :class="{ cursor: pool || dropdown }">
@@ -148,17 +149,28 @@ export default class TokenInputField extends BaseComponent {
 
   isNumber(evt: any) {
     evt = evt ? evt : window.event;
-    let charCode = evt.which ? evt.which : evt.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
+    const charCode = evt.which ? evt.which : evt.keyCode;
+    const txt =
+      this.tokenAmount +
+      String.fromCharCode(evt.which ? evt.which : evt.keyCode);
+    if (this.tokenAmount.includes(".") && charCode === 46) {
       evt.preventDefault();
-    } else {
-      if (charCode === 46) {
-        if (this.tokenAmount.includes(".")) evt.preventDefault();
-        else {
-          return true;
-        }
-      } else return true;
-    }
+    } else if (/[^0-9.]/g.test(txt)) evt.preventDefault();
+
+    return true;
+  }
+
+  onPaste(evt: any) {
+    let txt = (evt.clipboardData || window.clipboardData).getData("text");
+
+    txt = txt
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
+
+    this.tokenAmount = txt;
+    evt.preventDefault();
   }
 
   openModal() {
