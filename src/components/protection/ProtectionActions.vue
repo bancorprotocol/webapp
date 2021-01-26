@@ -22,7 +22,7 @@ export default class ProtectionActions extends Vue {
       case "AddProtectionDouble":
         return "Add Liquidity Protection";
       case "AddProtectionSingle":
-        return "Add Liquidity Protection";
+        return "Add Single-Sided Liquidity";
       case "WithdrawProtectionSingle":
         return "Withdraw";
       case "WithdrawProtectionDouble":
