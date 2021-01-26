@@ -107,6 +107,14 @@ export default class SideBar extends BaseComponent {
         newTab: true,
         hideMobile: true,
         svgName: "bancor"
+      },
+      {
+        route: "FiatPage",
+        key: "fiat",
+        label: "Fiat",
+        newTab: false,
+        hideMobile: true,
+        svgName: "fiat"
       }
     ].map(link => ({
       ...link,
