@@ -2357,7 +2357,7 @@ export class EthBancorModule
       relay: findOrThrow(this.relays, relay =>
         compareString(relay.id, balance.id)
       ),
-      balance: balance.balance
+      smartTokenAmount: balance.balance
     })) as PoolTokenPosition[];
 
     const relaysList = this.relaysList;
@@ -3780,34 +3780,35 @@ export class EthBancorModule
     return balance;
   }
 
-  @mutation updateUserBalances(freshBalances: Balance[]) {
+  @mutation updateUserBalances(incomingBalances: Balance[]) {
+    const freshBalances = uniqWith(incomingBalances, (a, b) =>
+      compareString(a.id, b.id)
+    );
     const currentBalances = this.tokenBalances;
 
-    const [actualBalances, nullBalances] = partition(freshBalances, balance =>
-      new BigNumber(balance.balance).isGreaterThan(0)
+    const [actualIncomingBalances, nullBalances] = partition(
+      freshBalances,
+      balance => new BigNumber(balance.balance).isGreaterThan(0)
     );
     const droppedNullBalances = currentBalances.filter(
       balance => !nullBalances.some(b => compareString(balance.id, b.id))
     );
 
-    const freshBalancesToUpdate = actualBalances.filter(balance => {
+    const balancesToAdd = actualIncomingBalances.filter(
+      balance => !droppedNullBalances.some(b => compareString(b.id, balance.id))
+    );
+
+    const balancesToUpdate = actualIncomingBalances.filter(balance => {
       const alreadyExists = droppedNullBalances.find(b =>
         compareString(b.id, balance.id)
       );
       return alreadyExists && alreadyExists.balance !== balance.balance;
     });
-    const balancesToAdd = differenceWith(
-      actualBalances,
-      freshBalancesToUpdate,
-      compareById
-    );
 
     const updatedBalances = updateArray(
       droppedNullBalances,
-      balance =>
-        freshBalancesToUpdate.some(b => compareString(balance.id, b.id)),
-      balance =>
-        freshBalancesToUpdate.find(b => compareString(balance.id, b.id))!
+      balance => balancesToUpdate.some(b => compareString(balance.id, b.id)),
+      balance => balancesToUpdate.find(b => compareString(balance.id, b.id))!
     );
     const addedBalances = [...updatedBalances, ...balancesToAdd];
 
@@ -6684,7 +6685,7 @@ export class EthBancorModule
         ]);
       }
       authenticated$.next(this.currentUser);
-      if (this.apiData?.tokens) {
+      if (this.apiData && this.apiData.tokens) {
         const uniqueTokenAddresses = uniqWith(
           [
             ...this.apiData.tokens.map(token => token.dlt_id),

@@ -25,6 +25,7 @@
       label="Withdraw rewards"
       @click="withdrawAction"
       :large="true"
+      :disabled="disableWithdraw"
     />
 
     <modal-pool-select
@@ -33,7 +34,7 @@
       :pools="pools"
     />
 
-    <modal-tx-action :tx-meta="txMeta" @close="setDefault" />
+    <modal-tx-action :tx-meta="txMeta" @close="closeTxModal" />
   </div>
 </template>
 
@@ -80,8 +81,12 @@ export default class WithdrawRewards extends BaseTxAction {
       variant: "warning",
       title: "Important",
       msg:
-        "This will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and re-stake your rewards atomically without resetting your current multipliers, click the “Restake my rewards” button below."
+        "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and re-stake your rewards atomically without resetting your current multipliers, click the “Restake my rewards” button below."
     };
+  }
+
+  get disableWithdraw() {
+    return !this.pendingRewards.bnt.gt(0);
   }
 
   selectPool(id: string) {
@@ -94,6 +99,13 @@ export default class WithdrawRewards extends BaseTxAction {
 
   restakeAction() {
     this.showPoolSelectModal = true;
+  }
+
+  async closeTxModal() {
+    if (this.txMeta.success) {
+      await this.$router.push({ name: "LiqProtection" });
+    }
+    this.setDefault();
   }
 
   async withdrawAction() {

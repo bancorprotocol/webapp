@@ -134,8 +134,6 @@ export class RewardsModule extends VuexModule.With({
 
     const value = new BigNumber(shrinkToken(result, 18));
     this.setTotalClaimedRewards(value);
-    console.log(value.toString());
-    console.log(this.balance);
     return value;
   }
 
@@ -146,7 +144,6 @@ export class RewardsModule extends VuexModule.With({
 
     const value = new BigNumber(shrinkToken(result, 18));
     this.setPendingRewards(value);
-    console.log(value.toString());
 
     return value;
   }
@@ -159,7 +156,7 @@ export class RewardsModule extends VuexModule.With({
     this.pendingRewards = value;
   }
 
-  @action async loadPendingReserveRewards({
+  @action async fetchPendingReserveRewards({
     poolId,
     reserveId
   }: {
