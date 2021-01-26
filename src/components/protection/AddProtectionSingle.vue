@@ -77,7 +77,7 @@
           v-for="(output, index) in outputs"
           :key="output.id"
           :label="index == 0 ? `Value you receive` : ``"
-          :value="`${formatNumber(output.amount)} ${output.symbol}`"
+          :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
         />
       </div>
     </gray-border-block>
@@ -109,7 +109,7 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ `${formatNumber(amount)} ${token.symbol}` }}
+            {{ `${prettifyNumber(amount)} ${token.symbol}` }}
           </span>
         </b-col>
       </b-row>
@@ -141,7 +141,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { formatUnixTime, formatNumber } from "@/api/helpers";
+import { formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -359,10 +359,6 @@ export default class AddProtectionSingle extends BaseComponent {
     this.sections = [];
     this.error = "";
     this.success = null;
-  }
-
-  formatNumber(amount: string) {
-    return formatNumber(amount, 6);
   }
 
   get currentStatus() {
