@@ -2345,7 +2345,9 @@ export class EthBancorModule
               calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
             ),
           pendingReserveReward: singleEntry.pendingReserveReward,
-          reserveTokenPrice: reserveToken.price
+          reserveTokenPrice: reserveToken.price,
+          // @ts-ignore
+          bntTokenPrice: this.stats.bntUsdPrice
         } as ViewProtectedLiquidity;
       }
     );

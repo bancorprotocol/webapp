@@ -78,18 +78,38 @@ export const groupPositionsArray = (
         const sumFullyProtected = filtered
           .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
           .reduce((sum, current) => sum + current);
-        const sumFullyProtectedWithReward =
-          sumFullyProtected + Number(val.pendingReserveReward);
-        const sumFullyProtectedWithRewardUSD =
-          sumFullyProtectedWithReward * val.reserveTokenPrice;
+        let sumFullyProtectedWithReward: BigNumber;
 
         const sumProtectedAmount = filtered
           .map(x => Number(x.protectedAmount ? x.protectedAmount.amount : 0))
           .reduce((sum, current) => sum + current);
-        const sumProtectedWithReward =
-          sumProtectedAmount + Number(val.pendingReserveReward);
+        let sumProtectedWithReward: BigNumber;
+
+        if (symbol === "BNT") {
+          sumFullyProtectedWithReward = item.pendingReserveReward.plus(
+            sumFullyProtected
+          );
+          sumProtectedWithReward = item.pendingReserveReward.plus(
+            sumProtectedAmount
+          );
+        } else {
+          const bntRewardUsd = item.pendingReserveReward.times(
+            // @ts-ignore
+            val.bntTokenPrice
+          );
+          sumFullyProtectedWithReward = bntRewardUsd
+            .div(val.reserveTokenPrice)
+            .plus(sumFullyProtected);
+          sumProtectedWithReward = bntRewardUsd
+            .div(val.reserveTokenPrice)
+            .plus(sumProtectedAmount);
+        }
+
+        const sumFullyProtectedWithRewardUSD =
+          Number(sumFullyProtectedWithReward) * val.reserveTokenPrice;
+
         const sumProtectedWithRewardUSD =
-          sumProtectedWithReward * val.reserveTokenPrice;
+          Number(sumProtectedWithReward) * val.reserveTokenPrice;
 
         const sumFees = filtered
           .map(x => Number(x.fees ? x.fees.amount : 0))
@@ -101,15 +121,16 @@ export const groupPositionsArray = (
           unixTime: val.stake.unixTime
         };
         item.fullyProtected = {
-          amount: sumFullyProtectedWithReward,
+          amount: sumFullyProtectedWithReward.toNumber(),
           usdValue: sumFullyProtectedWithRewardUSD
         };
         item.protectedAmount = {
-          amount: sumProtectedWithReward,
+          amount: sumProtectedWithReward.toNumber(),
           usdValue: sumProtectedWithRewardUSD
         };
         item.roi =
-          (sumFullyProtectedWithReward - sumStakeAmount) / sumStakeAmount;
+          (Number(sumFullyProtectedWithReward) - sumStakeAmount) /
+          sumStakeAmount;
         item.fees = sumFees;
 
         obj.set(id, item);
