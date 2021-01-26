@@ -1861,12 +1861,16 @@ export class EthBancorModule
 
       const fetchedRewards = await Promise.all(
         uniquePoolReserveIds.map(async item => {
-          const pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
-            {
-              poolId: item.poolId,
-              reserveId: item.reserveId
-            }
-          );
+          let pendingReserveReward = new BigNumber(0);
+          if (highTierPools.some(x => x === item.poolId)) {
+            pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
+              {
+                poolId: item.poolId,
+                reserveId: item.reserveId
+              }
+            );
+          }
+
           return {
             id: `${item.poolId}-${item.reserveId}`,
             pendingReserveReward
