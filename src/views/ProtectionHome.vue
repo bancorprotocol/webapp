@@ -104,7 +104,7 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   get loading() {
-    return vxm.ethBancor.loadingPools;
+    return vxm.ethBancor.loadingProtectedPositions;
   }
 }
 </script>
