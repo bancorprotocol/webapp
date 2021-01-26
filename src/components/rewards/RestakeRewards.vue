@@ -98,7 +98,7 @@ export default class RestakeRewards extends BaseTxAction {
   }
 
   get actionButtonLabel() {
-    if (this.amount) return "ReStake and Protect";
+    if (this.amount) return "Restake and Protect";
     return "Enter an Amount";
   }
 
