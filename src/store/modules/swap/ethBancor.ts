@@ -3596,56 +3596,76 @@ export class EthBancorModule
     ];
   }
 
-  @action async getAvailableSpace({
+  @action async getAvailableAndAmountToGetSpace({
     poolId
   }: {
     poolId: string;
-  }): Promise<string> {
+  }) {
     const { maxStakes } = await this.getMaxStakes({
       poolId
     });
-    const bntSpaceAvailable = new BigNumber(maxStakes.maxAllowedBntWei);
+    const pool = this.relay(poolId);
+    const bntTknArr = pool.reserves.map(r => {
+      return {
+        contract: r.contract,
+        symbol: r.symbol,
+        decimals: this.token(r.id).precision
+      };
+    });
 
-    const balances = await this.fetchRelayBalances({ poolId });
-    const btnIndex = balances.reserves.findIndex(
-      x => x.symbol.toLowerCase() === "bnt"
-    );
-    const bntamount = new BigNumber(balances.reserves[btnIndex].weiAmount);
-    balances.reserves.splice(btnIndex, 1);
-    const tknAmount = new BigNumber(balances.reserves[0].weiAmount);
+    const [bnt, tkn] = sortAlongSide(bntTknArr, item => item.contract, [
+      this.liquidityProtectionSettings.networkToken
+    ]);
 
-    const relay = await this.relayById(poolId);
-    const converter = buildV28ConverterContract(relay.contract, w3);
-    const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
-      this.liquidityProtectionSettings.contract,
-      w3
+    const availableSpace = [
+      {
+        amount: shrinkToken(maxStakes.maxAllowedBntWei, bnt.decimals),
+        token: bnt.symbol
+      },
+      {
+        amount: shrinkToken(maxStakes.maxAllowedTknWei, tkn.decimals),
+        token: tkn.symbol
+      }
+    ];
+    const tknSpaceAvailableLTOne = new BigNumber(availableSpace[1].amount).lt(
+      1
     );
-    const limit = new BigNumber(
-      await liquidityProtectionSettings.methods
-        .networkTokenMintingLimits(poolId)
-        .call()
-    );
+    if (tknSpaceAvailableLTOne) {
+      const bntSpaceAvailable = new BigNumber(maxStakes.maxAllowedBntWei);
 
-    console.log("bntamount:" + bntamount);
-    console.log("tknAmount:" + tknAmount);
-    console.log("bntSpaceAvailable:" + bntSpaceAvailable);
-    console.log("limit:" + limit);
-    console.log(
-      "Res:" +
+      const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
+        this.liquidityProtectionSettings.contract,
+        w3
+      );
+      const [balances, limit] = await Promise.all([
+        this.fetchRelayBalances({ poolId }),
+        liquidityProtectionSettings.methods
+          .networkTokenMintingLimits(poolId)
+          .call()
+      ]);
+      const [bntReserve, tknReserve] = sortAlongSide(
+        balances.reserves,
+        reserve => reserve.symbol,
+        ["BNT"]
+      );
+
+      const bntAmount = new BigNumber(bntReserve.weiAmount);
+      const tknAmount = new BigNumber(tknReserve.weiAmount);
+
+      return [
+        true,
+        availableSpace,
         shrinkToken(
-          bntamount
+          bntAmount
             .div(tknAmount)
             .plus(bntSpaceAvailable)
             .minus(limit)
             .toString(),
-          balances.reserves[btnIndex].decimals
+          bntReserve.decimals
         )
-    );
-
-    return shrinkToken(
-      bntamount.div(tknAmount).plus(bntSpaceAvailable).minus(limit).toString(),
-      balances.reserves[btnIndex].decimals
-    );
+      ];
+    }
+    return [false, availableSpace];
   }
 
   @action async calculateProtectionSingle({

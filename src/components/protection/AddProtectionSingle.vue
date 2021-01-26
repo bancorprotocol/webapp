@@ -85,7 +85,7 @@
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
         label="Space Available"
-        :loading="loadingMaxStakes"
+        :loading="loading"
         tooltip="For more information "
         hrefText="click here"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
@@ -98,7 +98,7 @@
         v-if="tknSpaceAvailableLTOne"
         class="mt-2"
         label="Amount needed to open up space"
-        :loading="loadingAvailableSpace"
+        :loading="loading"
       >
         <span @click="setAmount" class="cursor">{{
           `${prettifyNumber(amountToMakeSpace)} ${bnt.symbol}`
@@ -192,8 +192,7 @@ export default class AddProtectionSingle extends BaseComponent {
   tknSpaceAvailableLTOne: boolean = false;
   priceDeviationTooHigh: boolean = false;
 
-  loadingMaxStakes: boolean = false;
-  loadingAvailableSpace: boolean = false;
+  loading: boolean = false;
 
   amount: string = "";
 
@@ -214,7 +213,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
   @Watch("token")
   async onTokenChange() {
-    await this.loadMaxStakes();
+    await this.load();
     await this.loadRecentAverageRate();
   }
 
@@ -272,7 +271,7 @@ export default class AddProtectionSingle extends BaseComponent {
   get disableActionButton() {
     if (!this.amount) return true;
     else if (this.priceDeviationTooHigh) return true;
-    else if (this.loadingMaxStakes) return true;
+    else if (this.loading) return true;
     else return this.inputError ? true : false;
   }
 
@@ -416,39 +415,27 @@ export default class AddProtectionSingle extends BaseComponent {
     });
   }
 
-  async loadAvailableSpace() {
-    this.loadingAvailableSpace = true;
-    this.amountToMakeSpace = await vxm.ethBancor.getAvailableSpace({
+  async load() {
+    if (this.loading) return;
+    this.loading = true;
+
+    const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
       poolId: this.pool.id
     });
-    this.loadingAvailableSpace = false;
-  }
-
-  async loadMaxStakes() {
-    if (this.loadingMaxStakes) return;
-    this.loadingMaxStakes = true;
-    try {
-      const result = await vxm.ethBancor.getMaxStakesView({
-        poolId: this.pool.id
-      });
-      result.forEach(async x => {
-        if (x.token === this.token.symbol) {
-          this.maxStakeAmount = x.amount;
-          this.maxStakeSymbol = x.token;
-        }
-      });
-    } catch (e) {
-      console.log(e);
-    } finally {
-      this.loadingMaxStakes = false;
-    }
-  }
-
-  async fetchTknSpaceAvailable() {
-    const result = await vxm.ethBancor.getMaxStakesView({
-      poolId: this.pool.id
+    this.tknSpaceAvailableLTOne = res[0] as boolean;
+    const availableSpace = res[1] as {
+      amount: string;
+      token: string;
+    }[];
+    availableSpace.forEach(x => {
+      if (x.token === this.token.symbol) {
+        this.maxStakeAmount = x.amount;
+        this.maxStakeSymbol = x.token;
+      }
     });
-    this.tknSpaceAvailableLTOne = new BigNumber(result[1].amount).lt(1);
+    if (this.tknSpaceAvailableLTOne) this.amountToMakeSpace = res[2] as string;
+
+    this.loading = false;
   }
 
   setAmount() {
@@ -457,13 +444,10 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   async mounted() {
-    await this.loadMaxStakes();
-    await this.loadAvailableSpace();
+    await this.load();
     await this.loadRecentAverageRate();
-    await this.fetchTknSpaceAvailable();
     this.interval = setInterval(async () => {
-      await this.loadMaxStakes();
-      await this.loadAvailableSpace();
+      await this.load();
       await this.loadRecentAverageRate();
     }, 30000);
   }

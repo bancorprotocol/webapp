@@ -45,6 +45,23 @@ export const calculatePositionFees = (
   else return result.toFixed(0);
 };
 
+export const calculateAmountToGetSpace = (
+  bnt: string,
+  tkn: string,
+  bntSpaceAvailable: string,
+  limit: string
+): string => {
+  const bntAmount = new BigNumber(bnt);
+  const tknAmount = new BigNumber(tkn);
+  const bntSpaceAvailableAmount = new BigNumber(bntSpaceAvailable);
+  const limitAmount = new BigNumber(limit);
+  return bntAmount
+    .div(tknAmount)
+    .plus(bntSpaceAvailableAmount)
+    .minus(limitAmount)
+    .toString();
+};
+
 export const groupPositionsArray = (
   arr: ViewProtectedLiquidity[]
 ): ViewGroupedPositions[] => {
