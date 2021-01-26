@@ -55,7 +55,7 @@ export interface ProtectedLiquidityCalculated {
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
-  pendingPoolReward: BigNumber;
+  pendingReserveReward: BigNumber;
 }
 export interface TokenPrice {
   id: string;
@@ -306,7 +306,7 @@ export interface ViewGroupedPositions {
   insuranceStart: number;
   coverageDecPercent: number;
   fullCoverage: number;
-  pendingPoolReward: BigNumber;
+  pendingReserveReward: BigNumber;
   reserveTokenPrice: number;
   collapsedData: ViewProtectedLiquidity[];
 }
@@ -768,7 +768,7 @@ export interface ViewProtectedLiquidity {
   coverageDecPercent: number;
   fullCoverage: number;
   givenVBnt?: string;
-  pendingPoolReward: BigNumber;
+  pendingReserveReward: BigNumber;
   reserveTokenPrice: number;
 }
 

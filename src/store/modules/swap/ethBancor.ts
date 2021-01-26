@@ -1889,6 +1889,9 @@ export class EthBancorModule
         )
       ]);
 
+      // map -> poolid and reserveid
+      // const = [rewards] lodash function unique with
+
       const positions = await Promise.all(
         allPositions.map(
           async (position): Promise<ProtectedLiquidityCalculated> => {
@@ -1900,7 +1903,8 @@ export class EthBancorModule
 
             const fee = withFees.find(p => position.id == p.positionId);
 
-            const pendingPoolReward = await vxm.rewards.fetchPendingReserveRewards(
+            // find on array
+            const pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
               {
                 poolId: position.poolToken,
                 reserveId: position.reserveToken
@@ -1912,7 +1916,7 @@ export class EthBancorModule
               ...(liqReturn && omit(liqReturn, ["positionId"])),
               ...(roiReturn && omit(roiReturn, ["positionId"])),
               ...(fee && { fee: omit(fee, ["positionId"]) }),
-              pendingPoolReward: pendingPoolReward
+              pendingReserveReward: pendingReserveReward
             };
           }
         )
@@ -2340,7 +2344,7 @@ export class EthBancorModule
             Number(
               calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
             ),
-          pendingPoolReward: singleEntry.pendingPoolReward,
+          pendingReserveReward: singleEntry.pendingReserveReward,
           reserveTokenPrice: reserveToken.price
         } as ViewProtectedLiquidity;
       }

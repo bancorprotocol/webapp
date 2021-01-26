@@ -69,6 +69,7 @@ export const groupPositionsArray = (
         item.insuranceStart = val.insuranceStart;
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
+        item.pendingReserveReward = val.pendingReserveReward;
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
@@ -78,7 +79,7 @@ export const groupPositionsArray = (
           .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
           .reduce((sum, current) => sum + current);
         const sumFullyProtectedWithReward =
-          sumFullyProtected + Number(val.pendingPoolReward);
+          sumFullyProtected + Number(val.pendingReserveReward);
         const sumFullyProtectedWithRewardUSD =
           sumFullyProtectedWithReward * val.reserveTokenPrice;
 
@@ -86,7 +87,7 @@ export const groupPositionsArray = (
           .map(x => Number(x.protectedAmount ? x.protectedAmount.amount : 0))
           .reduce((sum, current) => sum + current);
         const sumProtectedWithReward =
-          sumProtectedAmount + Number(val.pendingPoolReward);
+          sumProtectedAmount + Number(val.pendingReserveReward);
         const sumProtectedWithRewardUSD =
           sumProtectedWithReward * val.reserveTokenPrice;
 
