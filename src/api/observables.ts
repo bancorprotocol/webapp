@@ -34,6 +34,7 @@ import { getNetworkVariables } from "./config";
 import dayjs from "dayjs";
 import { RegisteredContracts } from "@/types/bancor";
 import { compareString } from "./helpers";
+import { buildStakingRewardsContract } from "./eth/contractTypes";
 
 interface DataCache<T> {
   allEmissions: T[];
@@ -121,12 +122,20 @@ export const stakingRewards$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
-export const poolPrograms$ = stakingRewards$.pipe(
-  switchMap(() =>
-    vxm.rewards.fetchPoolPrograms()
+export const storeRewards$ = stakingRewards$.pipe(
+  switchMap(async stakingRewardsContract => {
+    const contract = buildStakingRewardsContract(stakingRewardsContract);
+    return contract.methods.store().call();
+  }),
+  share()
+);
+
+export const poolPrograms$ = storeRewards$.pipe(
+  switchMap(storeRewardContract =>
+    vxm.rewards.fetchPoolPrograms(storeRewardContract)
   ),
   share()
-)
+);
 
 export const liquidityProtection$ = contractAddresses$.pipe(
   pluck("LiquidityProtection"),
