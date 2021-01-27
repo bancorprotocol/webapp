@@ -30,7 +30,7 @@
     </b-col>
 
     <b-col cols="12">
-      <gateway-providers />
+      <gateway-providers class="mx-0 my-2" />
     </b-col>
   </b-row>
 </template>

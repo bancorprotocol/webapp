@@ -1,5 +1,5 @@
 <template>
-  <b-row>
+  <b-row class="card-provider px-4 py-2">
     <b-col lg="3">
       <img
         class="provider-icon"
@@ -77,35 +77,41 @@ export default class GatewayProviders extends BaseComponent {
 </script>
 <style lang="scss" scoped>
 
-.txt-available {
-  text-transform: uppercase;
-  color: #6E7E94;
-  line-height: 15px;
-}
-
-.fiat {
-  width: 70px;
-  height: 24px;
+.card-provider {
+  background: #fff;
+  box-shadow: 0px 1px 2px rgba(15, 89, 209, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04);
   border-radius: 8px;
-  background: #D5FFFF;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 24px;
-  text-align: center;
 
-  &__in {
+  .txt-available {
+    text-transform: uppercase;
+    color: #6E7E94;
+    line-height: 15px;
+  }
+
+  .fiat {
+    width: 70px;
+    height: 24px;
+    border-radius: 8px;
     background: #D5FFFF;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 24px;
+    text-align: center;
+
+    &__in {
+      background: #D5FFFF;
+    }
+
+    &__out {
+      background: #E9F2FD;
+    }
   }
 
-  &__out {
-    background: #E9F2FD;
+  .check-header {
+    text-transform: uppercase;
+    line-height: 15px;
+    color: #6E7E94;
   }
-}
-
-.check-header {
-  text-transform: uppercase;
-  line-height: 15px;
-  color: #6E7E94;
 }
 
 </style>
