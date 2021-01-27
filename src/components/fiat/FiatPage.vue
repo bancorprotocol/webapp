@@ -40,7 +40,7 @@ import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import BaseComponent from "@/components/BaseComponent.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import GatewayProviders from "@/components/fiat/GatewayProviders"
+import GatewayProviders from "@/components/fiat/GatewayProviders.vue";
 
 @Component({
   components: {
