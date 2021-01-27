@@ -16,7 +16,7 @@
     />
 
     <main-button
-      label="Restake my rewards"
+      label="Stake my rewards"
       @click="restakeAction"
       :active="true"
       :large="true"
@@ -81,7 +81,7 @@ export default class WithdrawRewards extends BaseTxAction {
       variant: "warning",
       title: "Important",
       msg:
-        "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and re-stake your rewards atomically without resetting your current multipliers, click the “Restake my rewards” button below."
+        "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and re-stake your rewards atomically without resetting your current multipliers, click the “Stake my rewards” button below."
     };
   }
 

@@ -58,7 +58,7 @@ export class RewardsModule extends VuexModule.With({
     const txHash = (await multiSteps({
       items: [
         {
-          description: "Restaking Rewards ...",
+          description: "Staking Rewards ...",
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.stakeRewards(
