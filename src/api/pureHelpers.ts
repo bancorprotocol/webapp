@@ -83,7 +83,7 @@ export const groupPositionsArray = (
 
         const sumFees = filtered
           .map(x => Number(x.fees ? x.fees.amount : 0))
-          .reduce((sum, current) => sum + current);
+          .reduce((sum, current) => sum + current, 0);
 
         item.stake = {
           amount: sumStakeAmount,
