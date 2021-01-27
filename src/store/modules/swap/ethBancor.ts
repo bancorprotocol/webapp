@@ -177,7 +177,6 @@ import {
   share
 } from "rxjs/operators";
 import {
-  calculatePositionFees,
   decToPpm,
   miningBntReward,
   miningTknReward,
@@ -1684,7 +1683,7 @@ export class EthBancorModule
         label
       }));
 
-      const [withAprs, withLiquidityReturn, withFees] = await Promise.all([
+      const [withAprs, withLiquidityReturn] = await Promise.all([
         (async () => {
           try {
             const poolHistoricalBalances = await Promise.all(
@@ -1851,43 +1850,33 @@ export class EthBancorModule
           })
         ).catch(e => {
           console.warn("Error fetching ROIs", e);
-        }),
-        Promise.all(
-          allPositions.map(async position => {
-            const currentPoolBalances = await this.fetchRelayBalances({
-              poolId: position.poolToken
-            });
-
-            const [
-              depositedReserve,
-              opposingReserve
-            ] = sortAlongSide(
-              currentPoolBalances.reserves,
-              reserve => reserve.contract,
-              [position.reserveToken]
-            );
-            const rate0 = new BigNumber(position.reserveRateN)
-              .div(position.reserveRateD)
-              .toString();
-
-            const feeAmountWei = calculatePositionFees(
-              position.poolAmount,
-              currentPoolBalances.smartTokenSupplyWei,
-              position.reserveAmount,
-              depositedReserve.weiAmount,
-              opposingReserve.weiAmount,
-              rate0
-            );
-
-            const shrunk = shrinkToken(feeAmountWei, 18);
-
-            return {
-              positionId: position.id,
-              amount: shrunk
-            };
-          })
-        )
+        })
       ]);
+
+      const poolReserveIds = allPositions.map(position => {
+        return { poolId: position.poolToken, reserveId: position.reserveToken };
+      });
+
+      const uniquePoolReserveIds = uniqWith(poolReserveIds, isEqual);
+
+      const fetchedRewards = await Promise.all(
+        uniquePoolReserveIds.map(async item => {
+          let pendingReserveReward = new BigNumber(0);
+          if (highTierPools.some(x => compareString(x, item.poolId))) {
+            pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
+              {
+                poolId: item.poolId,
+                reserveId: item.reserveId
+              }
+            );
+          }
+
+          return {
+            id: `${item.poolId}-${item.reserveId}`,
+            pendingReserveReward
+          };
+        })
+      );
 
       const positions = allPositions.map(
         (position): ProtectedLiquidityCalculated => {
@@ -1897,13 +1886,17 @@ export class EthBancorModule
           const roiReturn =
             withAprs && withAprs.find(p => position.id == p.positionId);
 
-          const fee = withFees.find(p => position.id == p.positionId);
+          const pendingReserveReward = fetchedRewards.find(
+            x => x.id === `${position.poolToken}-${position.reserveToken}`
+          );
 
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
-            ...(fee && { fee: omit(fee, ["positionId"]) })
+            pendingReserveReward: pendingReserveReward
+              ? pendingReserveReward.pendingReserveReward
+              : new BigNumber(0)
           };
         }
       );
@@ -2269,6 +2262,10 @@ export class EthBancorModule
         // full coverage - full wait time
         // protectedAmount - current wait time
 
+        const feeGenerated = new BigNumber(currentProtectedDec || 0).minus(
+          reserveTokenDec
+        );
+
         return {
           id: `${singleEntry.poolToken}:${singleEntry.id}`,
           whitelisted: isWhiteListed,
@@ -2316,21 +2313,18 @@ export class EthBancorModule
             }
           }),
           coverageDecPercent: progressPercent,
-          ...(singleEntry.fee && {
-            fees: {
-              amount: singleEntry.fee.amount,
-              symbol: reserveToken.symbol
-              // ...(reserveToken.price &&
-              //   fullyProtectedDec && {
-              //     usdValue: new BigNumber(1)
-              //       .times(reserveToken.price!)
-              //       .toNumber()
-              //   })
-            }
-          }),
+          fees: {
+            amount: feeGenerated.toString(),
+            symbol: reserveToken.symbol
+          },
           roi:
             fullyProtectedDec &&
-            Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
+            Number(
+              calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+            ),
+          pendingReserveReward: singleEntry.pendingReserveReward,
+          reserveTokenPrice: reserveToken.price,
+          bntTokenPrice: this.stats.bntUsdPrice
         } as ViewProtectedLiquidity;
       }
     );

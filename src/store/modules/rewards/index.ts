@@ -70,7 +70,7 @@ export class RewardsModule extends VuexModule.With({
     const txHash = (await multiSteps({
       items: [
         {
-          description: "ReStaking Rewards ...",
+          description: "Restaking Rewards ...",
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.stakeRewards(
@@ -78,10 +78,15 @@ export class RewardsModule extends VuexModule.With({
                 poolId
               ),
               onConfirmation: async () => {
-                console.log("tx confirmed");
-                await this.loadData();
                 await wait(3000);
                 await this.loadData();
+                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchAndSetLockedBalances({});
+                await wait(3000);
+                await this.loadData();
+                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchAndSetLockedBalances({});
+                console.log("tx confirmed");
               },
               resolveImmediately: true
             });
@@ -105,15 +110,20 @@ export class RewardsModule extends VuexModule.With({
     const txHash = (await multiSteps({
       items: [
         {
-          description: "ReStaking Rewards ...",
+          description: "Withdrawing Rewards ...",
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.claimRewards(),
               onConfirmation: async () => {
+                await wait(3000);
+                console.log("tx confirmed");
                 await this.loadData();
+                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchAndSetLockedBalances({});
                 await wait(3000);
                 await this.loadData();
-                console.log("tx confirmed");
+                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchAndSetLockedBalances({});
               },
               resolveImmediately: true
             });
