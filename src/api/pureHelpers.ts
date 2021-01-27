@@ -56,7 +56,7 @@ export const groupPositionsArray = (
           .reduce((sum, current) => sum + current);
         let sumProtectedWithReward: BigNumber;
 
-        if (symbol === "BNT") {
+        if (compareString(symbol, "BNT")) {
           sumFullyProtectedWithReward = item.pendingReserveReward.plus(
             sumFullyProtected
           );
