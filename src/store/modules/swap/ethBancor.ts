@@ -177,8 +177,6 @@ import {
 } from "rxjs/operators";
 import {
   decToPpm,
-  miningBntReward,
-  miningTknReward,
   compareStaticRelayAndSet,
   expandToken,
   calculatePriceDeviationTooHigh,
@@ -6164,16 +6162,9 @@ export class EthBancorModule
         networkToken
       ]);
 
-      const bntReward = miningBntReward(
-        bntProtectedReserve.amount,
-        poolPropgram.rewardRates
-      );
-      const tknReward = miningTknReward(
-        tknReserve.amount,
-        bntReserve.amount,
-        tknProtectedReserve.amount,
-        poolPropgram.rewardRates
-      );
+      const rewardRate = new BigNumber(poolPropgram.rewardRates);
+      const bntReward = new BigNumber(bntProtectedReserve.amount).dividedBy(rewardRate).toNumber();
+      const tknReward = new BigNumber(tknProtectedReserve.amount).dividedBy(rewardRate).toNumber();
 
       return {
         ...pool,
