@@ -1,9 +1,7 @@
 <template>
   <div>
-    <content-block class="mb-3" :shadow="true">
-      <template slot="header">
-        <sub-navigation />
-      </template>
+    <content-block :no-header="true" class="mb-3" :shadow="true">
+      <sub-navigation class="pt-3" />
 
       <div>
         <swap-action />

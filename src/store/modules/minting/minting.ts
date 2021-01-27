@@ -1,9 +1,9 @@
-import { createModule, mutation, action } from "vuex-class-component";
+import { createModule, action } from "vuex-class-component";
 import { buildLiquidityProtectionSettingsContract } from "@/api/eth/contractTypes";
-import { vxm } from "@/store";
 import { web3 } from "@/api/web3";
 import { shrinkToken } from "@/api/eth/helpers";
 import BigNumber from "bignumber.js";
+
 const VuexModule = createModule({
   strict: false
 });
@@ -13,9 +13,9 @@ export class MintingModule extends VuexModule.With({
 }) {
   public minNetworkTokenLiquidityforMinting: BigNumber | null = null;
 
-  @action async fetchMinLiqForMinting() {
+  @action async fetchMinLiqForMinting(protectionSettingsContract: string) {
     const contract = await buildLiquidityProtectionSettingsContract(
-      vxm.ethBancor.liquidityProtectionSettings.contract,
+      protectionSettingsContract,
       web3
     );
 

@@ -22,11 +22,15 @@ export default class ProtectionActions extends Vue {
       case "AddProtectionDouble":
         return "Add Liquidity Protection";
       case "AddProtectionSingle":
-        return "Add Liquidity Protection";
+        return "Add Single-Sided Liquidity";
       case "WithdrawProtectionSingle":
         return "Withdraw";
       case "WithdrawProtectionDouble":
         return "Withdraw";
+      case "RewardsRestake":
+        return "Stake BNT for Protection";
+      case "RewardsWithdraw":
+        return "Withdraw Rewards";
       default:
         return "Stake";
     }

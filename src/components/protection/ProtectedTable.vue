@@ -172,7 +172,16 @@
 
       <template #cell(fees)="{ item, value }">
         <div class="text-center">
-          {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          <div>
+            {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          </div>
+          <b-badge
+            v-if="item.pendingReserveReward.gt(0)"
+            variant="primary"
+            class="px-2"
+          >
+            + {{ prettifyNumber(item.pendingReserveReward) }} BNT
+          </b-badge>
         </div>
       </template>
       <template #cellCollapsed(fees)="{ value }">
@@ -376,7 +385,7 @@ import {
   stringifyPercentage
 } from "@/api/helpers";
 import { groupPositionsArray } from "@/api/pureHelpers";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import {
   ViewGroupedPositions,
   ViewProtectedLiquidity,
@@ -387,9 +396,11 @@ import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import PendingRewards from "@/components/rewards/PendingRewards.vue";
 
 @Component({
   components: {
+    PendingRewards,
     DataTable,
     RemainingTime2,
     CountdownTimer,
@@ -414,17 +425,17 @@ export default class ProtectedTable extends BaseComponent {
   }
 
   insuranceStarted(unixTime: number) {
-    return unixTime < moment().unix();
+    return unixTime < dayjs().unix();
   }
 
   formatEndTime(fullCoverageSeconds: number) {
-    const timeNow = moment();
-    const fullCoverage = moment.unix(fullCoverageSeconds);
+    const timeNow = dayjs();
+    const fullCoverage = dayjs.unix(fullCoverageSeconds);
     const reachedFullCoverage = timeNow.isAfter(fullCoverage);
     if (reachedFullCoverage) {
       return "Full coverage achieved";
     } else {
-      const timeLeft = moment.unix(fullCoverageSeconds).fromNow(true);
+      const timeLeft = dayjs.unix(fullCoverageSeconds).fromNow(true);
       return `${timeLeft} left until full coverage`;
     }
   }
@@ -479,8 +490,9 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 4,
         key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
+        label: "Fees & Rewards",
+        tooltip:
+          "Fees and rewards earned by your stake since you entered the pool.",
         minWidth: "110px",
         thClass: "text-center"
       },

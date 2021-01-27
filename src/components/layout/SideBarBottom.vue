@@ -1,9 +1,9 @@
 <template>
   <div class="bottom-bar" :class="darkMode ? 'side-bar-dark' : ''">
-    <div class="side-bar-links">
+    <div class="side-bar-links" ref="barRef" @scroll="handleScroll">
       <div
         @click="linkClicked(link)"
-        v-for="link in data.links.filter(l => !l.hideMobile)"
+        v-for="link in links"
         :key="link.key"
         :to="{ name: link.route }"
         class="side-bar-link"
@@ -21,9 +21,11 @@
           class="side-bar-link-icon"
           :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
         />
-        <span>{{ link.label }}</span>
+        <div>{{ link.label }}</div>
       </div>
     </div>
+    <div class="blur-backdoor-left" v-show="visibleBlurLeft"></div>
+    <div class="blur-backdoor-right" v-show="visibleBlurRight"></div>
   </div>
 </template>
 
@@ -33,25 +35,44 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarBottom extends Vue {
-  @Prop() data!: any;
+  @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
+  visibleBlurLeft: boolean = false;
+  visibleBlurRight: boolean = true;
+
+  $refs!: {
+    barRef: HTMLElement
+  }
+
   isRouteActive(key: string): boolean {
-    const fullPath = this.$route.fullPath;
-    if (fullPath.includes("swap") || fullPath.includes("pool")) {
-      return key === "swap";
-    } else if (fullPath.includes("data")) {
-      return key === "data";
-    } else if (fullPath.includes("protection")) {
-      return key === "liquidity";
-    } else if (fullPath.includes("vote")) {
-      return key === "vote";
-    } else return false;
+    return this.$route.matched.some(
+      (m: { meta: { key: string } }) => m.meta.key === key
+    );
   }
 
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
+  }
+
+  @Emit("moreClicked")
+  moreClicked() {
+    return true;
+  }
+
+  handleScroll (e: any) {
+    const scrollEnd = this.$refs.barRef.scrollWidth - this.$refs.barRef.clientWidth;
+    const scrollPos = this.$refs.barRef.scrollLeft;
+
+    if (scrollPos === 0) {
+      this.visibleBlurLeft = false;
+    } else if (scrollPos === scrollEnd) {
+      this.visibleBlurRight = false;
+    } else {
+      this.visibleBlurLeft = true;
+      this.visibleBlurRight = true;
+    }
   }
 }
 </script>
@@ -66,23 +87,26 @@ export default class SideBarBottom extends Vue {
   height: 56px;
   background-color: white;
   border-top: 1px solid #e6ebf2;
+
   .side-bar-links {
     width: 100%;
     height: 56px;
     align-items: center;
     margin-top: 0px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
   }
 
   .side-bar-link {
     padding-left: 0px;
-    display: flex;
-    flex-direction: column;
-    span {
+    display: inline-block;
+    width: 100px;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    div {
       height: 40px;
-      display: inline-flex;
       font-family: Inter;
       font-weight: 500;
       font-stretch: normal;
@@ -97,8 +121,7 @@ export default class SideBarBottom extends Vue {
       align-self: center;
       width: 24px;
       height: 24px;
-      margin-right: 0px;
-      margin-top: 22px;
+      margin-top: 10px;
       margin-bottom: 2px;
     }
   }
@@ -128,9 +151,41 @@ export default class SideBarBottom extends Vue {
       color: #0f59d1;
     }
   }
+  .btn-more {
+    cursor: pointer;
+
+    span {
+      font-size: 14px;
+    }
+  }
+  .blur-backdoor-left {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 20px;
+    height: 100%;
+    line-height: 60px;
+    background: linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0.4));
+    filter: blur(2px);
+  }
+  .blur-backdoor-right {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    width: 20px;
+    height: 100%;
+    line-height: 60px;
+    background: linear-gradient(to right, rgba(255,255,255,0.4), rgba(255,255,255,1));
+    filter: blur(2px);
+  }
 }
 .side-bar-dark {
-  background-color: #0a2540;
+  .blur-backdoor-left {
+    background: linear-gradient(to right, rgba(28, 52, 78, 1), rgba(28, 52, 78, 0.7));
+  }
+  .blur-backdoor-right {
+    background: linear-gradient(to right,rgba(28, 52, 78, 0.7), rgba(28, 52, 78, 1));
+  }
 }
 .side-bar-link-dark {
   span {

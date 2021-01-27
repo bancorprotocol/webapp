@@ -1,5 +1,10 @@
 import { Contract } from "web3-eth-contract";
+import BigNumber from "bignumber.js";
 
+export interface TokenWei {
+  tokenContract: string;
+  weiAmount: string;
+}
 export interface ProtectedViewPosition {
   type: number;
   whitelisted: boolean;
@@ -50,6 +55,7 @@ export interface ProtectedLiquidityCalculated {
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
+  pendingReserveReward: BigNumber;
 }
 export interface TokenPrice {
   id: string;
@@ -300,6 +306,8 @@ export interface ViewGroupedPositions {
   insuranceStart: number;
   coverageDecPercent: number;
   fullCoverage: number;
+  pendingReserveReward: BigNumber;
+  reserveTokenPrice: number;
   collapsedData: ViewProtectedLiquidity[];
 }
 
@@ -308,22 +316,20 @@ export interface ViewRelay {
   name: string;
   symbol: string;
   liqDepth: number;
-  reserves: ViewReserve[];
   fee: number;
-  owner: string;
+  reserves: ViewReserve[];
+  addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;
   v2: boolean;
-  version: number;
   feesGenerated?: string;
   feesVsLiquidity?: string;
   apr?: string;
   volume?: string;
   aprMiningRewards?: PoolLiqMiningApr;
   stakedBntSupplyPercent?: number;
-  bntReserveBalance?: string;
 }
 
 export interface ContractMethods<T> extends Contract {
@@ -443,7 +449,6 @@ export interface TradingModule {
   focusSymbol: (symbolName: string) => Promise<void>;
   getReturn: (propose: ProposedFromTransaction) => Promise<ConvertReturn>;
   getCost: (propose: ProposedToTransaction) => Promise<ConvertReturn>;
-  loadMoreTokens: (tokenIds?: string[]) => Promise<void>;
 }
 
 export interface UserPoolBalances {
@@ -451,6 +456,13 @@ export interface UserPoolBalances {
   iouBalances: ViewAmount[];
 }
 
+export interface RegisteredContracts {
+  BancorNetwork: string;
+  BancorConverterRegistry: string;
+  LiquidityProtection: string;
+  LiquidityProtectionStore: string;
+  StakingRewards: string;
+}
 interface PoolTokenPosition {
   relay: ViewRelay;
   smartTokenAmount?: string;
@@ -756,6 +768,9 @@ export interface ViewProtectedLiquidity {
   coverageDecPercent: number;
   fullCoverage: number;
   givenVBnt?: string;
+  pendingReserveReward: BigNumber;
+  reserveTokenPrice: number;
+  bntTokenPrice: number;
 }
 
 export interface ViewLockedBalance {
@@ -778,6 +793,10 @@ export interface LiqMiningApr {
   reward?: number;
 }
 
+export interface ConverterAndAnchor {
+  converterAddress: string;
+  anchorAddress: string;
+}
 export interface ViewTableField {
   id: number;
   label: string;
@@ -804,4 +823,13 @@ export interface ViewProposalsField {
   maxWidth?: string;
   colAuto?: boolean;
   colRate?: number;
+}
+
+export interface ITxMeta {
+  showTxModal: boolean;
+  txBusy: boolean;
+  success: TxResponse | null;
+  txError: string;
+  sections: Step[];
+  stepIndex: number;
 }

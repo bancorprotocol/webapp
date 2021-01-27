@@ -2,11 +2,11 @@
   <div>
     <label-content-split :label="label" class="mb-1">
       <span
-        @click="tokenAmount = balance"
+        @click="maxBalance"
         v-if="currentUser"
         class="font-size-12 font-w500 cursor"
       >
-        {{ formattedBalance }}
+        Balance: {{ prettifyNumber(balance) }}
         {{ usdValue ? usdValue : "" }}
       </span>
     </label-content-split>
@@ -79,12 +79,13 @@ import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { formatNumber } from "@/api/helpers";
+import { compareString, formatNumber } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ethReserveAddress } from "@/api/eth/ethAbis";
 
 @Component({
   components: {
@@ -122,6 +123,22 @@ export default class TokenInputField extends BaseComponent {
   }
 
   modal = false;
+
+  maxBalance() {
+    const isEther =
+      this.token && compareString(this.token!.contract, ethReserveAddress);
+
+    if (isEther) {
+      const leftOverEth = new BigNumber(this.balance).minus(0.01);
+      if (leftOverEth.isLessThanOrEqualTo(0)) {
+        this.tokenAmount = this.balance;
+      } else {
+        this.tokenAmount = leftOverEth.toString();
+      }
+    } else {
+      this.tokenAmount = this.balance;
+    }
+  }
 
   get formattedBalance() {
     const balanceInput = this.balance;
