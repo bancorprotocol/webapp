@@ -1862,7 +1862,7 @@ export class EthBancorModule
       const fetchedRewards = await Promise.all(
         uniquePoolReserveIds.map(async item => {
           let pendingReserveReward = new BigNumber(0);
-          if (highTierPools.some(x => x === item.poolId)) {
+          if (highTierPools.some(x => compareString(x, item.poolId))) {
             pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
               {
                 poolId: item.poolId,
