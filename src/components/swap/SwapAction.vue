@@ -9,6 +9,7 @@
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
+      :usdValue="token1.price"
     />
 
     <div class="text-center my-3">
@@ -30,6 +31,7 @@
       :dropdown="true"
       :disabled="false"
       :tokens="tokens"
+      :usdValue="token2.price"
     />
 
     <div class="my-3">
