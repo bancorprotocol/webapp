@@ -4,11 +4,9 @@ import {
   miningBntReward,
   miningTknReward,
   prettifyNumber,
-  groupPositionsArray,
   calculateLimits
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
-// import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 
 describe("dec to ppm works", () => {
   test("range of percentages", () => {

@@ -127,11 +127,8 @@ export const groupPositionsArray = (
 export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
-export const miningBntReward = (protectedBnt: string, highCap: boolean) => {
-  const baseNumber = "14000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
-
-  return new BigNumber(magicalNumber)
+export const miningBntReward = (protectedBnt: string, reward: string) => {
+  return new BigNumber(reward)
     .multipliedBy(52)
     .dividedBy(protectedBnt)
     .toNumber();
@@ -141,12 +138,10 @@ export const miningTknReward = (
   tknReserveBalance: string,
   bntReserveBalance: string,
   protectedTkn: string,
-  highCap: boolean
+  reward: string
 ) => {
-  const baseNumber = "6000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
   return new BigNumber(
-    new BigNumber(magicalNumber)
+    new BigNumber(reward)
       .multipliedBy(tknReserveBalance)
       .dividedBy(bntReserveBalance)
       .multipliedBy(52)

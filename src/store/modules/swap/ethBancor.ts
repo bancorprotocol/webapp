@@ -133,7 +133,6 @@ import {
   priorityEthPools,
   knownPools,
   PreviousPoolFee,
-  highCapPools,
   liquidityMiningEndTime,
   moreStaticRelays,
   previousPoolFees,
@@ -229,6 +228,7 @@ import {
   WelcomeData,
   TokenMetaWithReserve
 } from "@/api/eth/bancorApi";
+import { PoolProgram } from "../rewards";
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -1861,15 +1861,12 @@ export class EthBancorModule
 
       const fetchedRewards = await Promise.all(
         uniquePoolReserveIds.map(async item => {
-          let pendingReserveReward = new BigNumber(0);
-          if (highTierPools.some(x => compareString(x, item.poolId))) {
-            pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
-              {
-                poolId: item.poolId,
-                reserveId: item.reserveId
-              }
-            );
-          }
+          const pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
+            {
+              poolId: item.poolId,
+              reserveId: item.reserveId
+            }
+          );
 
           return {
             id: `${item.poolId}-${item.reserveId}`,
@@ -6015,16 +6012,11 @@ export class EthBancorModule
         share()
       );
 
-      const highTierPools$ = poolPrograms$.pipe(
-        map(poolPrograms => poolPrograms.map(poolProgram => poolProgram.poolToken),
-        share())
-      );
-
-      combineLatest([highTierPools$, finalRelays$, liquidityProtectionStore$])
+      combineLatest([poolPrograms$, finalRelays$, liquidityProtectionStore$])
         .pipe(
-          mergeMap(([highTierPools, relays, protectionStoreAddress]) => {
+          mergeMap(([poolPrograms, relays, protectionStoreAddress]) => {
             return this.fetchPooLiqMiningApr({
-              highTierPoolAnchors: highTierPools,
+              poolPrograms,
               relays: relays.relays,
               protectionStoreAddress
             });
@@ -6094,16 +6086,18 @@ export class EthBancorModule
   }
 
   @action async fetchPooLiqMiningApr({
-    highTierPoolAnchors,
+    poolPrograms,
     relays,
     protectionStoreAddress
   }: {
-    highTierPoolAnchors: string[];
     relays: RelayWithReserveBalances[];
     protectionStoreAddress: string;
+    poolPrograms: PoolProgram[];
   }): Promise<PoolLiqMiningApr[]> {
     const highTierPools = relays.filter(relay =>
-      highTierPoolAnchors.some(anchor => compareString(relay.id, anchor))
+      poolPrograms.some(poolProgram =>
+        compareString(relay.id, poolProgram.poolToken)
+      )
     );
 
     if (highTierPools.length == 0) return [];
@@ -6145,9 +6139,10 @@ export class EthBancorModule
     }));
 
     const res = zippedProtectedReserves.map(pool => {
-      const isHighCap = highCapPools.some(anchor =>
-        compareString(anchor, pool.anchorAddress)
+      const poolPropgram: PoolProgram = findOrThrow(poolPrograms, pp =>
+        compareString(pool.anchorAddress, pp.poolToken)
       );
+
       const poolBalances = findOrThrow(highTierPools, p =>
         compareString(pool.anchorAddress, p.id)
       );
@@ -6169,29 +6164,24 @@ export class EthBancorModule
         networkToken
       ]);
 
-      const bntReward = miningBntReward(bntProtectedReserve.amount, isHighCap);
+      const bntReward = miningBntReward(
+        bntProtectedReserve.amount,
+        poolPropgram.rewardRates
+      );
       const tknReward = miningTknReward(
         tknReserve.amount,
         bntReserve.amount,
         tknProtectedReserve.amount,
-        isHighCap
+        poolPropgram.rewardRates
       );
 
       return {
         ...pool,
         bntReward,
-        tknReward
+        tknReward,
+        endTime: poolPropgram.endTimes
       };
     });
-
-    const secondRoundPools = [
-      "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8",
-      "0x6b181c478b315be3f9e99c57ce926436c32e17a7"
-    ];
-
-    const thirdRoundPools = ["0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde"];
-
-    const fourthRoundPools = ["0x6c84f4ccc916acf792538f1293b286b540906a2a"];
 
     const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
       const [bntReserve, tknReserve] = sortAlongSide(
@@ -6205,29 +6195,9 @@ export class EthBancorModule
         "failed to find reserve"
       );
 
-      const isSecondRound = secondRoundPools.some(anchor =>
-        compareString(anchor, calculated.anchorAddress)
-      );
-
-      const isThirdRound = thirdRoundPools.some(anchor =>
-        compareString(anchor, calculated.anchorAddress)
-      );
-
-      const isFourthRound = fourthRoundPools.some(anchor =>
-        compareString(anchor, calculated.anchorAddress)
-      );
-
-      const endTime = isSecondRound
-        ? secondRoundLiquidityMiningEndTime
-        : isThirdRound
-        ? thirdRoundLiquidityMiningEndTime
-        : isFourthRound
-        ? fourthRoundLiquidityMiningEndTime
-        : liquidityMiningEndTime;
-
       return {
         poolId: calculated.anchorAddress,
-        endTime,
+        endTime: Number(calculated.endTime),
         rewards: [
           {
             address: bntReserve.contract,
