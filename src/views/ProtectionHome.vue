@@ -15,9 +15,8 @@
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          You can protect your token pools with our special insurance for
-          impermanent loss by simply adding insurance to each of your
-          transactions.
+          Manage your protected positions in Bancor pools and track and analyze
+          your returns.
         </p>
       </b-col>
 
@@ -104,7 +103,8 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   get loading() {
-    return vxm.ethBancor.loadingPools;
+    if (this.currentUser) return vxm.ethBancor.loadingProtectedPositions;
+    else return false;
   }
 }
 </script>

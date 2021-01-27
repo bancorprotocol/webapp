@@ -175,7 +175,13 @@
           <div>
             {{ `${prettifyNumber(value)} ${item.symbol}` }}
           </div>
-          <pending-rewards :pool-id="item.poolId" :symbol="item.symbol" />
+          <b-badge
+            v-if="item.pendingReserveReward.gt(0)"
+            variant="primary"
+            class="px-2"
+          >
+            + {{ prettifyNumber(item.pendingReserveReward) }} BNT
+          </b-badge>
         </div>
       </template>
       <template #cellCollapsed(fees)="{ value }">
@@ -484,8 +490,9 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 4,
         key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
+        label: "Fess & Rewards",
+        tooltip:
+          "Fees and rewards earned by your stake since you entered the pool.",
         minWidth: "110px",
         thClass: "text-center"
       },
