@@ -188,7 +188,8 @@ import {
   reserveContractsInStatic,
   parseRawDynamic,
   filterAndWarn,
-  staticToConverterAndAnchor
+  staticToConverterAndAnchor,
+  calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import {
   distinctArrayItem,
@@ -3600,7 +3601,13 @@ export class EthBancorModule
     poolId
   }: {
     poolId: string;
-  }) {
+  }): Promise<{
+    availableSpace: {
+      amount: string;
+      token: string;
+    }[];
+    amountToGetSpace?: string;
+  }> {
     const { maxStakes } = await this.getMaxStakes({
       poolId
     });
@@ -3631,8 +3638,6 @@ export class EthBancorModule
       1
     );
     if (tknSpaceAvailableLTOne) {
-      const bntSpaceAvailable = new BigNumber(maxStakes.maxAllowedBntWei);
-
       const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
         this.liquidityProtectionSettings.contract,
         w3
@@ -3649,23 +3654,18 @@ export class EthBancorModule
         ["BNT"]
       );
 
-      const bntAmount = new BigNumber(bntReserve.weiAmount);
-      const tknAmount = new BigNumber(tknReserve.weiAmount);
-
-      return [
-        true,
+      const amountToGetSpaceWei = calculateAmountToGetSpace(
+        bntReserve.weiAmount,
+        tknReserve.weiAmount,
+        maxStakes.maxAllowedBntWei,
+        limit
+      );
+      return {
         availableSpace,
-        shrinkToken(
-          bntAmount
-            .div(tknAmount)
-            .plus(bntSpaceAvailable)
-            .minus(limit)
-            .toString(),
-          bntReserve.decimals
-        )
-      ];
+        amountToGetSpace: shrinkToken(amountToGetSpaceWei, bntReserve.decimals)
+      };
     }
-    return [false, availableSpace];
+    return { availableSpace };
   }
 
   @action async calculateProtectionSingle({

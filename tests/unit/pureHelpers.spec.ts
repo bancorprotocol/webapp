@@ -656,6 +656,6 @@ describe("calculate how much bnt you need to stake in order to have room for 1tk
     };
 
     const res = calculateAmountToGetSpace(bnt, tkn, bntSpaceAvailable, limit);
-    expect(res).toBe("403404.28507");
+    expect(res).toBe("403404.28507084303840483049");
   });
 });

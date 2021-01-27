@@ -95,7 +95,7 @@
         }}</span>
       </label-content-split>
       <label-content-split
-        v-if="tknSpaceAvailableLTOne"
+        v-if="amountToMakeSpace"
         class="mt-2"
         label="Amount needed to open up space"
         :loading="loading"
@@ -157,7 +157,12 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { formatUnixTime, formatNumber } from "@/api/helpers";
+import {
+  formatUnixTime,
+  formatNumber,
+  compareString,
+  findOrThrow
+} from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -189,7 +194,6 @@ export default class AddProtectionSingle extends BaseComponent {
   maxStakeAmount: string = "";
   maxStakeSymbol: string = "";
   amountToMakeSpace: string = "";
-  tknSpaceAvailableLTOne: boolean = false;
   priceDeviationTooHigh: boolean = false;
 
   loading: boolean = false;
@@ -418,24 +422,26 @@ export default class AddProtectionSingle extends BaseComponent {
   async load() {
     if (this.loading) return;
     this.loading = true;
+    try {
+      const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
+        poolId: this.pool.id
+      });
+      const availableSpace = res.availableSpace;
 
-    const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
-      poolId: this.pool.id
-    });
-    this.tknSpaceAvailableLTOne = res[0] as boolean;
-    const availableSpace = res[1] as {
-      amount: string;
-      token: string;
-    }[];
-    availableSpace.forEach(x => {
-      if (x.token === this.token.symbol) {
-        this.maxStakeAmount = x.amount;
-        this.maxStakeSymbol = x.token;
-      }
-    });
-    if (this.tknSpaceAvailableLTOne) this.amountToMakeSpace = res[2] as string;
+      const selectedToken = findOrThrow(
+        availableSpace,
+        space => compareString(space.token, this.token.symbol),
+        "Failed finding focused token in available space"
+      );
+      this.maxStakeAmount = selectedToken.amount;
+      this.maxStakeSymbol = selectedToken.token;
 
-    this.loading = false;
+      if (res.amountToGetSpace) this.amountToMakeSpace = res.amountToGetSpace;
+    } catch (e) {
+      console.log(e.message);
+    } finally {
+      this.loading = false;
+    }
   }
 
   setAmount() {

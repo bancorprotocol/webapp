@@ -46,17 +46,17 @@ export const calculatePositionFees = (
 };
 
 export const calculateAmountToGetSpace = (
-  bnt: string,
-  tkn: string,
+  bntAmount: string,
+  tknAmount: string,
   bntSpaceAvailable: string,
   limit: string
 ): string => {
-  const bntAmount = new BigNumber(bnt);
-  const tknAmount = new BigNumber(tkn);
+  const bntAmountDecimal = new BigNumber(bntAmount);
+  const tknAmountDecimal = new BigNumber(tknAmount);
   const bntSpaceAvailableAmount = new BigNumber(bntSpaceAvailable);
   const limitAmount = new BigNumber(limit);
-  return bntAmount
-    .div(tknAmount)
+  return bntAmountDecimal
+    .div(tknAmountDecimal)
     .plus(bntSpaceAvailableAmount)
     .minus(limitAmount)
     .toString();
