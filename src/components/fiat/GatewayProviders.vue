@@ -5,9 +5,9 @@
     :px0="true">
     <b-row class="card-provider px-4 py-2">
       <b-col lg="2">
-        <b-row align-h="center">
+        <b-row>
           <img
-            class="mt-4"
+            class="mt-4 mb-3 ml-3 mr-3"
             :src="require(`@/assets/media/logos/black-mp-logo.png`)"
           />
         </b-row>
@@ -26,7 +26,7 @@
           Our on-and-off-ramp suite of products provides a seamless experience 
           for converting between fiat currencies and cryptocurrencies using all major payment methods.
         </div>
-        <div class="mt-3">
+        <div class="mt-3 mb-2">
           <b-btn
             variant="primary"
             @click="buy"
