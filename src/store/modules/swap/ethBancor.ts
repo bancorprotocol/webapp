@@ -6202,14 +6202,14 @@ export class EthBancorModule
       const bntReward = miningBntReward(
         bntReserve.amount,
         poolPropgram.rewardRates,
-        poolPropgram.rewardShares[1]
+        poolPropgram.rewardShares[0]
       )
 
       const tknReward = miningTknReward(
         bntReserve.amount,
         tknReserve.amount,
         poolPropgram.rewardRates,
-        poolPropgram.rewardShares[0]
+        poolPropgram.rewardShares[1]
       )
 
       return {
