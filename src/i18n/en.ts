@@ -67,7 +67,7 @@ export const en = {
   more_about_proposal: "More about proposal",
   discussion_forum: "Discussion Forum",
   your_vote: "Your vote",
-  from_voters: "from voters",
+  from_voters: "{percentage}% from voters",
   for: "For", //For/against context
   against: "Against",
   users: "Users",
@@ -85,8 +85,8 @@ export const en = {
   history: "History",
   vote_for: "Vote for",
   vote_against: "Vote against",
-  output_estimated: "Output is estimated. If the price changes by more than",
-  transaction_revert: "your transaction will revert.",
+  output_estimated:
+    "Output is estimated. If the price changes by more than {amount} your transaction will revert.",
   action_through_bancor:
     "This action through {bancor} is not available in your country.",
   confirm_token_swap: "Confirm Token Swap",
