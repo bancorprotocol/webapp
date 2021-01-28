@@ -42,7 +42,7 @@
             />
           </div>
           <div
-            v-else-if="!positions.length && currentUser"
+            v-else-if="!positions.length"
             class="mx-3 mt-3 font-size-14 font-w500"
           >
             No protected positions found.
