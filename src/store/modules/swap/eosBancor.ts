@@ -86,7 +86,7 @@ import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import * as Sentry from "@sentry/browser";
 
 const networkContract = "thisisbancor";
