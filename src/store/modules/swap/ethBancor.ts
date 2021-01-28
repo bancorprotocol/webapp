@@ -2266,7 +2266,7 @@ export class EthBancorModule
         // full coverage - full wait time
         // protectedAmount - current wait time
 
-        const feeGenerated = new BigNumber(currentProtectedDec || 0).minus(
+        const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
           reserveTokenDec
         );
 
