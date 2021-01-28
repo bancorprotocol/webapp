@@ -7,10 +7,10 @@
     >
       <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="font-size-16 font-w500">My Stake</div>
+          <div class="font-size-16 font-w500">{{ $t("my_stake") }}</div>
           <b-btn @click="openModal" size="sm" variant="primary" class="rounded">
             <font-awesome-icon icon="plus" class="d-lg-none" />
-            <span class="d-none d-lg-inline">Stake</span>
+            <span class="d-none d-lg-inline"> {{ $t("stake") }} </span>
           </b-btn>
         </div>
       </template>
@@ -29,7 +29,7 @@
               {{ item.value }}
             </div>
             <div class="text-uppercase font-size-10 font-w500">
-              {{ item.key }}
+              {{ item.label }}
             </div>
           </b-col>
         </b-row>
@@ -47,6 +47,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { stringifyPercentage } from "@/api/helpers";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import BigNumber from "bignumber.js";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 
@@ -87,13 +88,19 @@ export default class ProtectedSummary extends BaseComponent {
       return [
         {
           key: "Protected Value",
+          label: i18n.t("protected_value"),
           value: "~" + this.prettifyNumber(protectedValue, true)
         },
         {
           key: "Claimable Value",
+          label: i18n.t("claimable_value"),
           value: "~" + this.prettifyNumber(claimableValue, true)
         },
-        { key: "ROI", value: this.stringifyPercentage(roi) }
+        {
+          key: "ROI",
+          label: "ROI",
+          value: this.stringifyPercentage(roi)
+        }
       ];
     }
   }

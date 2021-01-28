@@ -25,7 +25,7 @@ export const en = {
   go_homepage: "Go to homepage",
   liquidity_protection: "Liquidity Protection",
   protect_tokens:
-    "You can protect your token pools with our special insurance for impermanent loss by simply adding insurance to each of your transactions",
+    "Manage your protected positions in Bancor pools and track and analyze your returns.",
   protected_positions: "My Protected Positions",
   protected: "Protected",
   loading: "Loading",
@@ -145,9 +145,9 @@ export const en = {
   loss_protection_vesting:
     "Impermanent loss protection starts vesting immediately when you deposit. But you must be in the pool until the cliff is reached before the protection can be utilized.",
   coverage_achieved: "Full coverage achieved",
-  left_until_coverage: "left until full coverage",
-  failed_find_position: "Failed to find position of ID",
-  from_position_ids: "from position ids",
+  left_until_coverage: "{time} left until full coverage",
+  failed_find_position:
+    "Failed to find position of ID {id} from position ids {ids}",
   tokens_originally_staked:
     "Amount of tokens you originally staked in the pool.",
   tokens_can_withdraw:
@@ -157,7 +157,8 @@ export const en = {
   tokens_can_withdraw_now:
     "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
   fees: "Fees",
-  fees_stake_earned: "Fees your stake has earned since you entered the pool.",
+  fees_stake_earned:
+    "Fees and rewards earned by your stake since you entered the pool.",
   roi__protected_value:
     "The ROI of your fully protected value vs. your initial stake.",
   estimated_calculation_annual_returns:
@@ -322,5 +323,47 @@ export const en = {
   page_of: "Page {current} of {total}",
   add_liquidity_pool_xyz: "Add Liquidity pool xyz",
   token_logo: "Token Logo",
-  provider_logo: "Provider Logo"
+  provider_logo: "Provider Logo",
+  protected_value: "Protected Value",
+  claimable_value: "Claimable Value",
+  fees_rewards: "Fees & Rewards",
+  add_single_sided_liquidity: "Add Single-Sided Liquidity",
+  stake__bnt_protection: "Stake BNT for Protection",
+  withdraw_rewards: "Withdraw Rewards",
+  processing_transaction: "Processing Transaction",
+  staking_rewards: "Staking Rewards",
+  withdrawing_rewards: "Withdrawing Rewards",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt",
+  ttttttttttttttt: "ttttttttttttttt"
 };
