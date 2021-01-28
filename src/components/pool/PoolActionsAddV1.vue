@@ -132,11 +132,11 @@ export default class PoolActionsAddV1 extends BaseComponent {
   get advancedBlockItems() {
     return [
       {
-        label: this.reserveOne.symbol + " " + i18n.t("deposit"),
+        label: `${this.reserveOne.symbol} ${i18n.t("deposit")}`,
         value: Number(this.amount1)
       },
       {
-        label: this.reserveTwo.symbol + " " + i18n.t("deposit"),
+        label: `${this.reserveTwo.symbol} ${i18n.t("deposit")}`,
         value: Number(this.amount2)
       },
       {
@@ -227,7 +227,7 @@ export default class PoolActionsAddV1 extends BaseComponent {
       return {
         id: token.id,
         title: formatNumber(Number(unit.amount)),
-        label: opposingToken.symbol + " " + i18n.t("per") + " " + token.symbol
+        label: `${opposingToken.symbol} ${i18n.t("per")} ${token.symbol}`
       };
     });
     this.singleUnitCosts = items;

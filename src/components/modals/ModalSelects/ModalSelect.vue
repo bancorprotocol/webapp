@@ -31,7 +31,7 @@
         <b-col v-if="loadingTokens" cols="12" class="text-center">
           <span>
             <font-awesome-icon icon="circle-notch" class="mr-3" spin />
-            {{ $t("loading") + "..." }}
+            {{ `${$t("loading")}...` }}
           </span>
         </b-col>
         <b-col cols="12" class="mb-3 text-center">
@@ -50,7 +50,7 @@
           class="text-center font-size-16 font-w500 mt-3"
         >
           <span :class="darkMode ? 'text-dark' : 'text-light'">
-            {{ $t("no_res_found") + "." }}
+            {{ `${$t("no_res_found")}.` }}
           </span>
         </b-col>
       </b-row>

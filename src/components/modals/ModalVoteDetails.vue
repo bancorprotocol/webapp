@@ -37,7 +37,7 @@
         class="text-uppercase font-size-12 font-w600"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        {{ $t("proposal_title") + ":" }}
+        {{ `${$t("proposal_title")}:` }}
       </span>
       <span
         class="font-size-14 font-w500"

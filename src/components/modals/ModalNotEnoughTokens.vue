@@ -42,7 +42,7 @@
         class="font-size-20 mt-4"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        {{ $t("insufficient_balance") + " " + symbol }}
+        {{ `${$t("insufficient_balance")} ${symbol}` }}
       </h3>
       <div class="font-size-16" :class="darkMode ? 'text-dark' : 'text-light'">
         {{

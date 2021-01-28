@@ -22,9 +22,9 @@
       cols="12"
       class="d-flex justify-content-center align-items-center mt-3"
     >
-      <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400">{{
-        $t("page_not_available") + "."
-      }}</span>
+      <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400">
+        {{ `${$t("page_not_available")}.` }}
+      </span>
     </b-col>
     <b-col
       cols="12"

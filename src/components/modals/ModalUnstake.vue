@@ -97,7 +97,7 @@
         {{ $t("waiting_for_confirmation") }}
       </h3>
       <div class="mt-2 mb-3">
-        {{ $t("unstaking") + " " + stakeValue + " " + symbol }}
+        {{ `${$t("unstaking")} ${stakeValue} ${symbol}` }}
       </div>
       <div
         class="font-size-12 font-w500"

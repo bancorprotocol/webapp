@@ -110,7 +110,7 @@ export default class ModalSelectToken extends BaseComponent {
           compareString(t.id, tokenAddress)
         );
         if (token) this.selectToken(token.id);
-        else this.error = i18n.tc("token_not_found") + ".";
+        else this.error = `${i18n.tc("token_not_found")}.`;
       }
     } catch (e) {
       this.error = e.message;

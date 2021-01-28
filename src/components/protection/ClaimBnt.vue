@@ -24,7 +24,7 @@
         variant="primary"
         @click="click"
         class="font-size-14 font-w500 px-4"
-        >{{ $t("claim" + " BNT") }}</b-btn
+        >{{ `${$t("claim")} BNT` }}</b-btn
       >
     </div>
     <div v-else class="time-left text-center">
@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import { Component, Prop, Emit } from "vue-property-decorator";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
@@ -62,7 +62,10 @@ export default class ClaimBnt extends BaseComponent {
     const interval = 1000;
 
     setInterval(() => {
-      duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
+      duration = dayjs.duration(
+        duration.asMilliseconds() - interval,
+        "milliseconds"
+      );
       this.lockDuration =
         duration.hours() +
         "h:" +

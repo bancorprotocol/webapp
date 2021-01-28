@@ -140,13 +140,13 @@ export default class TablePools extends BaseComponent {
         ? [
             {
               id: 6,
-              label: i18n.tc("volume") + " (24h)",
+              label: `${i18n.tc("volume")} (24h)`,
               key: "volume",
               minWidth: "140px"
             },
             {
               id: 7,
-              label: i18n.tc("fees") + " (24h)",
+              label: `${i18n.tc("fees")} (24h)`,
               key: "feesGenerated",
               tooltip: i18n.tc("value_swap"),
               minWidth: "140px"

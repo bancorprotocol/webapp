@@ -33,7 +33,7 @@
         <h3 :class="darkMode ? 'text-body-dark' : 'text-body-light'">
           {{ $t("transaction_failed") }}
         </h3>
-        {{ $t("error") + " " + error }}
+        {{ `${$t("error")} ${error}` }}
       </h6>
       <h6 v-else-if="!error && success">
         <h3 :class="darkMode ? 'text-body-dark' : 'text-body-light'">

@@ -52,7 +52,7 @@
               <label-content-split
                 v-for="token in pool.poolTokens"
                 :key="token.reserveId"
-                :label="$t('pool_token') + ': '"
+                :label="`${$t('pool_token')}: `"
                 :value="formattedBalance(token.balance.toString())"
               />
             </div>
@@ -114,9 +114,9 @@ export default class YourLiquidity extends BaseComponent {
 
   get noLiquidityFoundMsg() {
     if (!this.currentUser) return i18n.t("connect_wallet_liq");
-    return (
-      (this.search ? i18n.t("no_res_found") : i18n.t("no_liquidity_yet")) + "."
-    );
+    return `${
+      this.search ? i18n.t("no_res_found") : i18n.t("no_liquidity_yet")
+    }.`;
   }
 
   formattedBalance(amount: string) {

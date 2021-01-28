@@ -13,13 +13,13 @@
           style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
-          :label="$t('loading') + '...'"
+          :label="`${$t('loading')}...`"
         ></b-spinner>
         <h5
           class="m-0 ml-3"
           :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
         >
-          {{ $t("just_a_moment") + "..." }}
+          {{ `${$t("just_a_moment")}...` }}
         </h5>
       </div>
     </div>
@@ -31,7 +31,7 @@
         class="m-0 ml-3"
         :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
       >
-        {{ $t("no_proposals_yet") + "..." }}
+        {{ `${$t("no_proposals_yet")}...` }}
       </h5>
     </div>
     <layout-proposals
@@ -47,7 +47,7 @@
         </div>
 
         <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
-          <span>{{ $t("more_about_proposal") + ":" }}</span>
+          <span>{{ `${$t("more_about_proposal")}:` }}</span>
           <a
             target="_blank"
             class="font-size-14 font-w500 pl-2"
@@ -297,7 +297,7 @@
             <div class="row pt-2">
               <div class="col-6 pt-1">
                 <span v-if="Date.now() > item.end">
-                  {{ (item.quorum / 10000).toFixed(2) + "% " + $t("quorum") }}
+                  {{ `${(item.quorum / 10000).toFixed(2)}% ${$t("quorum")}` }}
                 </span>
               </div>
               <div class="col-6 text-right">
@@ -321,7 +321,7 @@
       </template>
       <template #tooltip(votes)>
         <div class="pb-2">
-          {{ $t("according_to") + " " }}
+          {{ `${$t("according_to")} ` }}
           <a
             href="https://gov.bancor.network/t/bip3-governance-changes-bip-documentation-requirements-and-new-majority-and-quorum-rules/97"
             target="_blank"

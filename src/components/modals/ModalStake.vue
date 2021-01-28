@@ -44,9 +44,7 @@
           class="text-nowrap d-inline-block text-right balance cursor"
           @click="useMax"
         >
-          {{
-            $t("calance") + ": " + prettifyNumber(currentBalance) + " " + symbol
-          }}
+          {{ `${$t("balance")}: ${prettifyNumber(currentBalance)} ${symbol}` }}
         </div>
       </div>
 
@@ -111,7 +109,7 @@
         {{ $t("waiting_for_confirmation") }}
       </h3>
       <div class="mt-2 mb-3">
-        {{ $t("staking") + " " + stakeValue + " " + symbol }}
+        {{ `${$t("staking")} ${stakeValue} ${symbol}` }}
       </div>
       <div
         class="font-size-12 font-w500"
@@ -134,7 +132,7 @@
         {{ $t("transaction_submitted") }}
       </h3>
       <div class="mt-2 mb-3">
-        {{ $t("staking") + " " + stakeValue + " " + symbol }}
+        {{ `${$t("staking")} ${stakeValue} ${symbol}` }}
       </div>
       <a
         target="_blank"

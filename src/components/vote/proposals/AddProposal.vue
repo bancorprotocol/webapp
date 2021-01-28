@@ -74,7 +74,7 @@
           max-rows="4"
           readonly
           no-resize="true"
-          :placeholder="$t('i_propose') + '...'"
+          :placeholder="`${$t('i_propose')}...`"
           :class="[
             !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
             'font-size-14'
@@ -164,7 +164,7 @@ export default class AddProposal extends BaseComponent {
       : this.success
       ? i18n.t("close")
       : this.txBusy
-      ? i18n.t("processing") + "..."
+      ? `${i18n.t("processing")}...`
       : i18n.t("propose");
   }
 

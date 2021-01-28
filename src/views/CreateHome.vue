@@ -46,12 +46,12 @@
             <label-content-split
               v-for="item in selectedTokens"
               :key="item.token.id"
-              :label="item.token.symbol + ' ' + $t('ratio')"
-              :value="item.percentage + '%'"
+              :label="`${item.token.symbol} ${$t('ratio')}`"
+              :value="`${item.percentage}%`"
             />
             <label-content-split
               :label="$t('fee')"
-              :value="stepTwoProps.poolFee + '%'"
+              :value="`${stepTwoProps.poolFee}%`"
             />
             <label-content-split
               :label="$t('pool_name')"
@@ -172,7 +172,7 @@ export default class CreateHomeNew extends BaseComponent {
       : this.success
       ? i18n.t("close")
       : this.txBusy
-      ? i18n.t("processing") + "..."
+      ? `${i18n.t("processing")}...`
       : i18n.t("confirm");
   }
 
@@ -185,7 +185,7 @@ export default class CreateHomeNew extends BaseComponent {
 
   get errorStep1() {
     // TMP fix
-    if (this.stepOneProps.length > 2) return i18n.t("curr_two_tokens") + ".";
+    if (this.stepOneProps.length > 2) return `${i18n.t("curr_two_tokens")}.`;
     if (
       this.stepOneProps[0].percentage !== "50" ||
       this.stepOneProps[1].percentage !== "50"

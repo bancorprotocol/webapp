@@ -17,7 +17,7 @@
 
     <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
       <statistics-data-block
-        :title="$t('price') + ' BNT'"
+        :title="`${$t('price')} BNT`"
         :value="bntPriceUsd"
       />
     </b-col>
@@ -31,7 +31,7 @@
 
     <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
       <statistics-data-block
-        :title="$t('volume') + ' (24hrs)'"
+        :title="`${$t('volume')} (24hrs)`"
         :value="volume24h"
       />
     </b-col>
@@ -105,7 +105,7 @@ export default class Statistics extends BaseComponent {
   }
 
   get nativeTokenLabel() {
-    return this.stats.nativeTokenPrice.symbol + " " + i18n.t("price");
+    return `${this.stats.nativeTokenPrice.symbol} ${i18n.t("price")}`;
   }
 
   get nativeTokenPrice() {

@@ -85,7 +85,7 @@
         </div>
       </b-dropdown-text>
       <div class="font-size-12 text-muted-light text-center font-w400">
-        {{ $t("version") + " " + appVersion }}
+        {{ `${$t("version")} ${appVersion}` }}
       </div>
     </b-dropdown-group>
   </b-dropdown>

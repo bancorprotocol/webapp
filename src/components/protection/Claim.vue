@@ -10,7 +10,7 @@
             @click="onClick"
           />
           <div v-if="!available.length" class="no-claim-results">
-            {{ $t("no") + " BNT " + $t("to_claim") + "." }}
+            {{ `${$t("bnt_to_claim")}.` }}
           </div>
         </sub-content-block>
       </b-col>
@@ -18,14 +18,14 @@
         <sub-content-block :title="$t('locked')">
           <claim-bnt v-for="item in locked" :key="item.id" :item="item" />
           <div v-if="!locked.length" class="no-claim-results">
-            {{ $t("no") + " BNT " + $t("locked") + "." }}
+            {{ `${$t("bnt_locked")}.` }}
           </div>
         </sub-content-block>
       </b-col>
     </b-row>
 
     <modal-base
-      :title="$t('claim') + ' BNT'"
+      :title="`${$t('claim')} BNT`"
       v-model="modal"
       @input="setDefault"
     >
@@ -110,7 +110,7 @@ export default class Claim extends Vue {
       : this.success
       ? i18n.t("close")
       : this.txBusy
-      ? i18n.t("processing") + "..."
+      ? `${i18n.t("processing")}...`
       : i18n.t("confirm");
   }
 

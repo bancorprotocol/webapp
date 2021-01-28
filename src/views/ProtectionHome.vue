@@ -39,7 +39,7 @@
             <b-spinner
               style="width: 3rem; height: 3rem"
               class="text-primary"
-              :label="$t('loading') + '... '"
+              :label="`${$t('loading')}... `"
             />
           </div>
           <div v-else>

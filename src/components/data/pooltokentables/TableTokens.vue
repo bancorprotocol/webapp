@@ -92,7 +92,7 @@ export default class TableTokens extends BaseComponent {
     {
       id: 4,
       key: "price",
-      label: i18n.tc("price") + " USD",
+      label: `${i18n.tc("price")} USD`,
       minWidth: "120px"
     },
     /*

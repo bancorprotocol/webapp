@@ -15,7 +15,7 @@
               href="https://blog.bancor.network/how-to-stake-liquidity-earn-fees-on-bancor-bff8369274a1"
               target="_blank"
             >
-              {{ $t("make_money_liquidity") + "?" }}
+              {{ `${$t("make_money_liquidity")}?` }}
             </a>
           </li>
           <li>
@@ -23,7 +23,7 @@
               href="https://blog.bancor.network/beginners-guide-to-getting-rekt-by-impermanent-loss-7c9510cb2f22"
               target="_blank"
             >
-              {{ $t("impermanent_loss") + "?" }}
+              {{ `${$t("impermanent_loss")}?` }}
             </a>
           </li>
           <li>
@@ -31,7 +31,7 @@
               href="https://bankless.substack.com/p/how-to-protect-yourself-from-impermanent"
               target="_blank"
             >
-              {{ $t("protect_impermanent_loss") + "?" }}
+              {{ `${$t("protect_impermanent_loss")}?` }}
             </a>
           </li>
         </ol>

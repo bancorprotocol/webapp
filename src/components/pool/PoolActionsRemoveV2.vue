@@ -220,13 +220,14 @@ export default class PoolActionsRemoveV2 extends BaseComponent {
   get advancedBlockItems() {
     return [
       {
-        label: i18n.t("liquidate") + " ",
-        value:
-          Number(this.amountSmartToken) + " " + this.selectedPoolToken.symbol
+        label: `${i18n.t("liquidate")} `,
+        value: `${Number(this.amountSmartToken)} ${
+          this.selectedPoolToken.symbol
+        }`
       },
       {
         label: i18n.t("exit_fee"),
-        value: this.exitFee + "%"
+        value: `${this.exitFee}%`
       }
     ];
   }

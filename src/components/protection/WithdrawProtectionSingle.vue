@@ -312,7 +312,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       : this.success
       ? i18n.t("close")
       : this.txBusy
-      ? i18n.t("processing") + "..."
+      ? `${i18n.t("processing")}...`
       : i18n.t("confirm");
   }
 }

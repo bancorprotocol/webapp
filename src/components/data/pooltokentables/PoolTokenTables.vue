@@ -13,7 +13,7 @@
         style="display: block; width: 1.5rem; height: 1.5rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
-        :label="$t('loading') + '...'"
+        :label="`${$t('loading')}...`"
       ></b-spinner>
     </div>
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
