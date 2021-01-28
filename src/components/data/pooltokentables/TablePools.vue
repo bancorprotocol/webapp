@@ -112,7 +112,7 @@ export default class TablePools extends BaseComponent {
         id: 2,
         label: "Name",
         key: "symbol",
-        minWidth: "150px"
+        minWidth: "160px"
       },
       {
         id: 3,
