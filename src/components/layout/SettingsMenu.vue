@@ -7,12 +7,13 @@
     size="sm"
     toggle-class="block-rounded"
     no-caret
+    @hide="settingsMenuHide($event)"
   >
     <template #button-content>
       <font-awesome-icon icon="cog" fixed-width />
     </template>
 
-    <b-dropdown-group id="dropdown-group-1" v-if="showTx">
+    <b-dropdown-group id="dropdown-group-1" v-if="showTx && !showLocale">
       <b-dropdown-header class="text-uppercase">{{
         $t("transaction_settings")
       }}</b-dropdown-header>
@@ -21,8 +22,8 @@
         <slippage-tolerance />
       </b-dropdown-text>
     </b-dropdown-group>
-    <b-dropdown-divider v-if="showTx"></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-2">
+    <b-dropdown-divider v-if="showTx && !showLocale"></b-dropdown-divider>
+    <b-dropdown-group id="dropdown-group-2" v-if="!showLocale">
       <b-dropdown-header class="text-uppercase">{{
         $t("interface_settings")
       }}</b-dropdown-header>
@@ -47,20 +48,14 @@
           </div>
         </div>
       </b-dropdown-item>
-      <b-dropdown-header class="text-uppercase">{{
-        $t("languages")
-      }}</b-dropdown-header>
-      <b-button
-        style="margin: 5px"
-        v-for="item in i18n.availableLocales"
-        :key="item.toString()"
-        @click="switchlocale(item)"
-      >
-        {{ getLanguageByLocale(item) }}
-      </b-button>
     </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-3">
+    <b-dropdown-text :variant="darkMode ? 'dark' : 'light'" v-if="!showLocale">
+      <b-button @click="toggleLocale">
+        {{ `Language: ${getLanguageByLocale(i18n.locale)}` }}</b-button
+      >
+    </b-dropdown-text>
+    <b-dropdown-divider v-if="!showLocale"></b-dropdown-divider>
+    <b-dropdown-group id="dropdown-group-3" v-if="!showLocale">
       <b-dropdown-header class="text-uppercase">{{
         $t("blockchains")
       }}</b-dropdown-header>
@@ -88,6 +83,27 @@
         {{ `${$t("version")} ${appVersion}` }}
       </div>
     </b-dropdown-group>
+    <b-dropdown-text :variant="darkMode ? 'dark' : 'light'" v-if="showLocale">
+      <font-awesome-icon
+        @click="goToSettings"
+        icon="arrow-down"
+        class="mr-2 menu-icon"
+      />
+      Choose your language
+    </b-dropdown-text>
+    <b-dropdown-item v-if="showLocale">
+      <b-dropdown-header class="text-uppercase">{{
+        $t("languages")
+      }}</b-dropdown-header>
+      <b-button
+        style="margin: 5px"
+        v-for="item in i18n.availableLocales"
+        :key="item.toString()"
+        @click="switchlocale(item)"
+      >
+        {{ getLanguageByLocale(item) }}
+      </b-button>
+    </b-dropdown-item>
   </b-dropdown>
 </template>
 
@@ -103,6 +119,9 @@ import { i18n, getLanguageByLocale } from "@/i18n";
 })
 export default class SettingsMenu extends BaseComponent {
   @Prop({ default: true }) showTx!: boolean;
+
+  showLocale: boolean = true;
+  goBack: boolean = false;
 
   get i18n() {
     return i18n;
@@ -135,6 +154,22 @@ export default class SettingsMenu extends BaseComponent {
 
   switchlocale(locale: string) {
     i18n.locale = locale;
+  }
+
+  toggleLocale() {
+    this.showLocale = !this.showLocale;
+  }
+
+  goToSettings() {
+    this.goBack = true;
+    this.toggleLocale();
+  }
+
+  settingsMenuHide(bvEvent: { preventDefault: () => void }) {
+    if (this.showLocale || this.goBack) {
+      this.goBack = false;
+      bvEvent.preventDefault();
+    }
   }
 }
 </script>
