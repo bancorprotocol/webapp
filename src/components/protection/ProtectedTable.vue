@@ -490,7 +490,7 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 4,
         key: "fees",
-        label: "Fess & Rewards",
+        label: "Fees & Rewards",
         tooltip:
           "Fees and rewards earned by your stake since you entered the pool.",
         minWidth: "110px",
