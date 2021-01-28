@@ -61,7 +61,7 @@
               trailing-text="BNT"
             />
           </div>
-          <div class="font-size-12 font-w500 text-primary">
+          <div class="font-size-12 font-w500 text-primary" v-if="currentUser">
             <animation-number
               :starting-value="
                 oldrewards.length === 0 ? 0 : oldrewards[index].usd.toNumber()
@@ -101,8 +101,8 @@ import BigNumber from "bignumber.js";
 interface ViewRewardsSummaryItem {
   id: number;
   label: string;
-  bnt: BigNumber;
-  usd: BigNumber;
+  bnt: BigNumber | string;
+  usd: BigNumber | string;
 }
 
 @Component({
@@ -155,6 +155,7 @@ export default class RewardsSummary extends BaseComponent {
   }
 
   async mounted() {
+    if (!this.currentUser) return;
     try {
       await vxm.rewards.loadData();
     } catch (e) {

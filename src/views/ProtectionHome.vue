@@ -24,7 +24,7 @@
         <ProtectedSummary :positions="positions" />
       </b-col>
       <b-col lg="6">
-        <RewardsSummary :positions="positions" />
+        <RewardsSummary v-if="currentUser" :positions="positions" />
       </b-col>
 
       <b-col cols="12">
