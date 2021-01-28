@@ -41,7 +41,9 @@ import {
   ProtectedLiquidity,
   ConverterAndAnchor,
   ViewReserve,
-  RegisteredContracts
+  RegisteredContracts,
+  RawLiquidityProtectionSettings,
+  LiquidityProtectionSettings
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -1374,25 +1376,6 @@ const compareRelayById = (a: Relay, b: Relay) => compareString(a.id, b.id);
 const VuexModule = createModule({
   strict: false
 });
-
-interface LiquidityProtectionSettings {
-  contract: string;
-  minDelay: number;
-  maxDelay: number;
-  lockedDelay: number;
-  govToken: string;
-  networkToken: string;
-  defaultNetworkTokenMintingLimit: string;
-}
-
-interface RawLiquidityProtectionSettings {
-  minProtectionDelay: string;
-  maxProtectionDelay: string;
-  lockDuration: string;
-  govToken: string;
-  networkToken: string;
-  defaultNetworkTokenMintingLimit: string;
-}
 
 export class EthBancorModule
   extends VuexModule.With({ namespaced: "ethBancor/" })
