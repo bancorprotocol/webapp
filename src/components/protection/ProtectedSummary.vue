@@ -45,9 +45,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { stringifyPercentage } from "@/api/helpers";
 import { vxm } from "@/store";
-import BigNumber from "bignumber.js";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import { groupPositionsArray } from "@/api/pureHelpers";
 
 @Component({ components: { ContentBlock, ModalPoolSelect } })
 export default class ProtectedSummary extends BaseComponent {

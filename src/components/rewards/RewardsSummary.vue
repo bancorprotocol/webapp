@@ -101,8 +101,8 @@ import BigNumber from "bignumber.js";
 interface ViewRewardsSummaryItem {
   id: number;
   label: string;
-  bnt: BigNumber | string;
-  usd: BigNumber | string;
+  bnt: BigNumber;
+  usd: BigNumber;
 }
 
 @Component({
@@ -155,7 +155,6 @@ export default class RewardsSummary extends BaseComponent {
   }
 
   async mounted() {
-    if (!this.currentUser) return;
     try {
       await vxm.rewards.loadData();
     } catch (e) {
