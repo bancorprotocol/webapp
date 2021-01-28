@@ -1,7 +1,6 @@
 <template>
   <div>
     <ContentBlock
-      v-if="true"
       :shadow-light="true"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
@@ -14,7 +13,6 @@
           </b-btn>
         </div>
       </template>
-
       <div class="mt-3">
         <b-row class="mt-4 mb-2">
           <b-col
@@ -47,7 +45,6 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import { stringifyPercentage } from "@/api/helpers";
 import { vxm } from "@/store";
-import BigNumber from "bignumber.js";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 
 @Component({ components: { ContentBlock, ModalPoolSelect } })
@@ -60,13 +57,28 @@ export default class ProtectedSummary extends BaseComponent {
     return vxm.bancor.relays.filter(pool => pool.addProtectionSupported);
   }
 
+  get hasPositions() {
+    return !!vxm.ethBancor.protectedPositions.length;
+  }
+
   get rewardsBalance() {
     return vxm.rewards.balance;
   }
 
   get summarizedPositions() {
-    if (!this.positions.length) return [];
-    else {
+    if (!this.hasPositions) {
+      return [
+        {
+          key: "Protected Value",
+          value: "--"
+        },
+        {
+          key: "Claimable Value",
+          value: "--"
+        },
+        { key: "ROI", value: "--" }
+      ];
+    } else {
       const initialStake = this.positions
         .map(x => Number(x.stake.usdValue || 0))
         .reduce((sum, current) => sum + current);

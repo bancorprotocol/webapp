@@ -1591,6 +1591,7 @@ export class EthBancorModule
     userAddress?: string;
     supportedAnchors?: string[];
   }) {
+    this.setLoadingPositions(true);
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
 
@@ -1618,7 +1619,10 @@ export class EthBancorModule
       );
       console.log("got id count", idCount);
       console.timeEnd("time to get ID count");
-      if (idCount == 0) return;
+      if (idCount == 0) {
+        this.setLoadingPositions(false);
+        return;
+      }
       const positionIds = await contract.methods
         .protectedLiquidityIds(owner)
         .call();
@@ -2177,7 +2181,7 @@ export class EthBancorModule
     return lockedBalances;
   }
 
-  loadingProtectedPositions = true;
+  loadingProtectedPositions = false;
 
   get protectedPositions(): ViewProtectedLiquidity[] {
     const owner = this.currentUser;
