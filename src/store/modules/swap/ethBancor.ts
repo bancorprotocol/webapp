@@ -2788,7 +2788,6 @@ export class EthBancorModule
             approval.approvedAddress,
             approval.amount
           ),
-          gas: 70000
         });
       })
     );
@@ -4446,7 +4445,6 @@ export class EthBancorModule
     const converterContract = buildConverterContract(converterAddress);
     return this.resolveTxOnConfirmation({
       tx: converterContract.methods.fund(fundAmount),
-      gas: 950000,
       onConfirmation,
       resolveImmediately,
       ...(onHash && { onHash })
