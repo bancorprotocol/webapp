@@ -2873,7 +2873,7 @@ export class EthBancorModule
     console.log(
       `Web3 estimated is ${bufferedResult} times by ${buffer} is ${bufferedResult} being sent to tx.`
     );
-    return bufferedResult;
+    return new BigNumber(bufferedResult.toFixed(0)).toNumber();
   }
 
   @action async resolveTxOnConfirmation({
@@ -6202,8 +6202,12 @@ export class EthBancorModule
       ]);
 
       const rewardRate = new BigNumber(poolPropgram.rewardRates);
-      const bntReward = new BigNumber(bntProtectedReserve.amount).dividedBy(rewardRate).toNumber();
-      const tknReward = new BigNumber(tknProtectedReserve.amount).dividedBy(rewardRate).toNumber();
+      const bntReward = new BigNumber(bntProtectedReserve.amount)
+        .dividedBy(rewardRate)
+        .toNumber();
+      const tknReward = new BigNumber(tknProtectedReserve.amount)
+        .dividedBy(rewardRate)
+        .toNumber();
 
       return {
         ...pool,
