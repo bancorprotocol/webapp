@@ -1,0 +1,36 @@
+name: Deploy to Preview Channel
+
+on:
+  pull_request:
+    # Optionally configure to run only for specific files. For example:
+    # paths:
+    # - "website/**"
+
+jobs:
+  build_and_preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: yarn
+      - name: Build
+        env:
+          VUE_APP_I18N_LOCALE: "en"
+          VUE_APP_I18N_FALLBACK_LOCALE: "en"
+          VUE_APP_MULTICONTRACT: "bancorcnvrtr"
+          VUE_APP_SMARTTOKENCONTRACT: "smarttokens1"
+          VUE_APP_NETWORKCONTRACT: "thisisbancor"
+          VUE_APP_AFFILIATE: ${{ secrets.VUE_APP_AFFILIATE }}
+          VUE_APP_BLOCKNATIVE: ${{ secrets.VUE_APP_BLOCKNATIVE }}
+          VUE_APP_ALCHEMY_MAINNET: ${{ secrets.VUE_APP_ALCHEMY_MAINNET }}
+          VUE_APP_ALCHEMY_ROPSTEN: ${{ secrets.VUE_APP_ALCHEMY_ROPSTEN }}
+          VUE_APP_PORTIS: ${{ secrets.VUE_APP_PORTIS }}
+          VUE_APP_FORTMATIC: ${{ secrets.VUE_APP_FORTMATIC }}
+          VUE_APP_SQUARELINK: ${{ secrets.VUE_APP_SQUARELINK }}
+        run: yarn build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BANCOR }}"
+          expires: 30d
+          projectId: bancor-v2
