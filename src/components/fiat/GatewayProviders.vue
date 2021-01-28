@@ -1,12 +1,14 @@
 <template>
   <b-row class="card-provider px-4 py-2">
-    <b-col lg="3">
-      <img
-        class="provider-icon"
-        :src="require(`@/assets/media/logos/black-mp-logo.png`)"
-      />
+    <b-col lg="2">
+      <b-row align-h="center">
+        <img
+          class="mt-4"
+          :src="require(`@/assets/media/logos/black-mp-logo.png`)"
+        />
+      </b-row>
     </b-col>
-    <b-col lg="5">
+    <b-col lg="6">
       <div class="name-provider font-size-16 font-w500 mb-2">
         MoonPay
       </div>
@@ -34,27 +36,27 @@
       </div>
     </b-col>
     <b-col lg="4">
-      <div class="check-header font-size-12 font-w600">
+      <div class="check-header font-size-12 font-w600 mt-2 mb-1">
         DEPOSIT METHODS:
       </div>
-      <b-row>
+      <b-row class="check-list">
         <b-col>
-          <div><font-awesome-icon icon="check-circle" /> Wire Transfer</div>
-          <div><font-awesome-icon icon="check-circle" /> Credit Card</div>
-          <div><font-awesome-icon icon="check-circle" /> Debit Card</div>
-          <div><font-awesome-icon icon="check-circle" /> Apple Pay</div>
+          <div class="check-list__item"><font-awesome-icon icon="check-circle" /> Wire Transfer</div>
+          <div class="check-list__item"><font-awesome-icon icon="check-circle" /> Credit Card</div>
+          <div class="check-list__item"><font-awesome-icon icon="check-circle" /> Debit Card</div>
+          <div class="check-list__item"><font-awesome-icon icon="check-circle" /> Apple Pay</div>
         </b-col>
         <b-col>
-          <div><font-awesome-icon icon="check-circle" /> Google Pay</div>
-          <div><font-awesome-icon icon="check-circle" /> Samsung Pay</div>
+          <div class="check-list__item"><font-awesome-icon icon="check-circle" /> Google Pay</div>
+          <div class="check-list__item"><font-awesome-icon icon="check-circle" /> Samsung Pay</div>
         </b-col>
       </b-row>
-      <div class="check-header font-size-12 font-w600">
+      <div class="check-header font-size-12 font-w600 mt-2 mb-1">
         JURISDICTIONS:
       </div>
-      <b-row>
+      <b-row class="check-list">
         <b-col>
-          <div><font-awesome-icon icon="check-circle" /> Global</div>
+          <div class="check-list__item"><font-awesome-icon icon="check-circle" /> Global</div>
         </b-col>
       </b-row>
     </b-col>
@@ -111,6 +113,18 @@ export default class GatewayProviders extends BaseComponent {
     text-transform: uppercase;
     line-height: 15px;
     color: #6E7E94;
+  }
+
+  .check-list {    
+
+    &__item {
+      margin-bottom: 5px;
+      margin-top: 5px;
+      margin-left: 3px;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 24px;
+    }
   }
 }
 
