@@ -155,7 +155,6 @@ export default class RewardsSummary extends BaseComponent {
   }
 
   async mounted() {
-    if (!this.currentUser) return;
     try {
       await vxm.rewards.loadData();
     } catch (e) {
