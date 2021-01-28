@@ -5870,8 +5870,7 @@ export class EthBancorModule
           converterRegistryAddress
         })
       ),
-      shareReplay(1),
-      tap(x => console.log("registry ran and returned", x))
+      shareReplay(1)
     );
 
     const anchorAndConverters$ = combineLatest([
