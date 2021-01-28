@@ -101,8 +101,8 @@ import BigNumber from "bignumber.js";
 interface ViewRewardsSummaryItem {
   id: number;
   label: string;
-  bnt: BigNumber | string;
-  usd: BigNumber | string;
+  bnt: BigNumber;
+  usd: BigNumber;
 }
 
 @Component({
