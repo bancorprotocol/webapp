@@ -2878,7 +2878,7 @@ export class EthBancorModule
     console.log(
       `Web3 estimated is ${bufferedResult} times by ${buffer} is ${bufferedResult} being sent to tx.`
     );
-    return bufferedResult;
+    return new BigNumber(bufferedResult.toFixed(0)).toNumber();
   }
 
   @action async resolveTxOnConfirmation({
