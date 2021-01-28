@@ -127,6 +127,36 @@ export const groupPositionsArray = (
 export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
+export const miningBntReward = (
+  protectedBnt: string,
+  rewardRates: string,
+  rewardShares: string
+) => {
+  return new BigNumber(rewardRates)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(new BigNumber(rewardShares).dividedBy(oneMillion))
+    .multipliedBy(365)
+    .dividedBy(protectedBnt)
+    .toNumber()
+};
+
+export const miningTknReward = (
+  protectedBnt: string,
+  protectedTkn: string,
+  rewardRates: string,
+  rewardShares: string
+) => {
+  return new BigNumber(rewardRates)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(new BigNumber(rewardShares).dividedBy(oneMillion))
+    .multipliedBy(new BigNumber(protectedTkn).dividedBy(protectedBnt))
+    .multipliedBy(365)
+    .dividedBy(protectedTkn)
+    .toNumber()
+};
+
 export const compareStaticRelayAndSet = (
   staticRelay: StaticRelay,
   anchorAndConverter: ConverterAndAnchor

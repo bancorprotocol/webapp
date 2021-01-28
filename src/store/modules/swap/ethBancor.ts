@@ -183,7 +183,9 @@ import {
   reserveContractsInStatic,
   parseRawDynamic,
   filterAndWarn,
-  staticToConverterAndAnchor
+  staticToConverterAndAnchor,
+  miningBntReward,
+  miningTknReward
 } from "@/api/pureHelpers";
 import {
   distinctArrayItem,
@@ -6189,12 +6191,6 @@ export class EthBancorModule
         "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
 
       const [
-        bntProtectedReserve,
-        tknProtectedReserve
-      ] = sortAlongSide(pool.reserves, reserve => reserve.contract, [
-        networkToken
-      ]);
-      const [
         bntReserve,
         tknReserve
       ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
@@ -6202,12 +6198,19 @@ export class EthBancorModule
       ]);
 
       const rewardRate = new BigNumber(poolPropgram.rewardRates);
-      const bntReward = new BigNumber(bntProtectedReserve.amount)
-        .dividedBy(rewardRate)
-        .toNumber();
-      const tknReward = new BigNumber(tknProtectedReserve.amount)
-        .dividedBy(rewardRate)
-        .toNumber();
+
+      const bntReward = miningBntReward(
+        bntReserve.amount,
+        poolPropgram.rewardRates,
+        poolPropgram.rewardShares[1]
+      )
+
+      const tknReward = miningTknReward(
+        bntReserve.amount,
+        tknReserve.amount,
+        poolPropgram.rewardRates,
+        poolPropgram.rewardShares[0]
+      )
 
       return {
         ...pool,

@@ -1,6 +1,8 @@
 import {
   decToPpm,
   expandToken,
+  miningBntReward,
+  miningTknReward,
   prettifyNumber,
   calculateLimits
 } from "@/api/pureHelpers";
@@ -10,6 +12,37 @@ describe("dec to ppm works", () => {
   test("range of percentages", () => {
     expect(decToPpm(0.6)).toBe("600000");
     expect(decToPpm(1)).toBe("1000000");
+  });
+});
+
+describe("can calculate mining aprs", () => {
+  test("bnt", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "5896382514738500207460658";
+    const rewardShare = "700000";
+
+    const res = miningBntReward(protectedBnt, rewardRate, rewardShare);
+
+    const expectedResult = 1.23804722332;
+    expect(res).toBeCloseTo(expectedResult);
+  });
+
+  test("tkn", () => {
+    const rewardRate = "165343915343915330";
+    const protectedTkn = "24250428813979407784157";
+    const protectedBnt = "16789531440368918206750988";
+    const rewardShare = "300000";
+
+    const res = miningTknReward(
+      protectedBnt,
+      protectedTkn,
+      rewardRate,
+      rewardShare
+    )
+
+    const expectedResult = 0.186316621823;
+
+    expect(res).toBeCloseTo(expectedResult);
   });
 });
 
