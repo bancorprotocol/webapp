@@ -26,78 +26,92 @@
       No Proposals yet ...
     </h5>
   </div>
-  <data-table
+  <layout-proposals
     v-else-if="proposals"
     :items="proposals"
     :fields="fields"
     default-sort="to"
     :hide-pagination="true"
   >
-    <template
+    <!-- <template
       v-for="proposal in proposals"
       class="font-w500 font-size-14 aling-rows-cells"
       :class="darkMode ? 'text-dark' : 'text-light'"
-    >
-      <tr
+    > -->
+      <!-- <tr
         :key="'r1-' + proposal.id"
         class="align-rows-cells cursor"
         @click="() => openProposal(proposal)"
-      >
-        <td :class="{ 'no-border': !isNaN(opened) && proposal.id === opened }">
-          {{ proposal.id }}
-        </td>
-        <td class="font-size-14 font-w500">
-          {{ proposal.name }}
-        </td>
-        <td
+      > -->
+
+      <template #cell(id)="{ item }">
+        <div :class="{ 'no-border': !isNaN(opened) && item.id === opened }">
+          {{ item.id }}
+        </div>
+      </template>
+
+      <template #cell(details)="{ item }">
+        <div class="font-size-14 font-w500">
+          {{ item.name }}
+        </div>
+      </template>
+
+      <template #cell(result)="{ item }">
+        <div
           class="result"
-          :class="'result--' + (isApproved(proposal) ? 'for' : 'against')"
+          :class="'result--' + (isApproved(item) ? 'for' : 'against')"
         >
-          {{ isApproved(proposal) ? "Approved" : "Rejected" }}
-        </td>
-        <td>
+          {{ isApproved(item) ? "Approved" : "Rejected" }}
+        </div>
+      </template>
+
+      <template #cell(votesFor)="{ item }">
+        <div>
           <div class="font-size-14 font-w500">
-            {{ prettifyNumber(proposal.totalVotesFor) }} {{ symbol }}
+            {{ prettifyNumber(item.totalVotesFor) }} {{ symbol }}
           </div>
           <div class="font-size-12 font-w500 result result--for">
-            {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
+            {{ getVotesPercentage(item, item.totalVotesFor) }}
           </div>
-        </td>
-        <td>
+        </div>
+      </template>
+
+      <template #cell(votesAgainst)="{ item }">
+        <div>
           <div class="font-size-14 font-w500">
-            {{ prettifyNumber(proposal.totalVotesAgainst) }} {{ symbol }}
+            {{ prettifyNumber(item.totalVotesAgainst) }} {{ symbol }}
           </div>
           <div class="font-size-12 font-w500 result result--against">
-            {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
+            {{ getVotesPercentage(item, item.totalVotesAgainst) }}
           </div>
-        </td>
-        <!--       <td>
+        </div>
+      </template>
+      
+      <template #cell(startDate)="{ item }">
+        <div>
           <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.start) }}
+            {{ formatDate(item.end) }}
           </div>
           <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.start) }} UTC
+            {{ formatTime(item.end) }} UTC
           </div>
-        </td> -->
-        <td>
-          <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.end) }}
-          </div>
-          <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.end) }} UTC
-          </div>
-        </td>
-        <td>
+        </div>
+      </template>
+
+      <template #cell(spacer)="{ item }">
+        <div>
           <font-awesome-icon
             :icon="
-              !isNaN(opened) && proposal.id === opened
+              !isNaN(opened) && item.id === opened
                 ? 'caret-up'
                 : 'caret-down'
             "
           />
-        </td>
-      </tr>
-      <tr
+        </div>
+      </template>
+
+      <!-- </tr> -->
+      <!-- <tr
         :key="'r2-' + proposal.id"
         class="align-rows-cells"
         v-if="!isNaN(opened) && proposal.id === opened"
@@ -179,17 +193,18 @@
             </a>
           </div>
         </td>
-      </tr>
-    </template>
-  </data-table>
+      </tr> -->
+    <!-- </template> -->
+  </layout-proposals>
 </template>
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
+import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
 import MainButton from "@/components/common/Button.vue";
-import DataTable from "@/components/deprecated/DataTable.vue";
+
 import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
 import {
@@ -201,7 +216,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 @Component({
   components: {
     ContentBlock,
-    DataTable,
+    LayoutProposals,    
     MainButton
   }
 })
