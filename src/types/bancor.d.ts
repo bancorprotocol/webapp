@@ -373,6 +373,25 @@ export interface ViewModalToken {
   balance?: string;
 }
 
+export interface RawLiquidityProtectionSettings {
+  minProtectionDelay: string;
+  maxProtectionDelay: string;
+  lockDuration: string;
+  govToken: string;
+  networkToken: string;
+  defaultNetworkTokenMintingLimit: string;
+}
+
+export interface LiquidityProtectionSettings {
+  contract: string;
+  minDelay: number;
+  maxDelay: number;
+  lockedDelay: number;
+  govToken: string;
+  networkToken: string;
+  defaultNetworkTokenMintingLimit: string;
+}
+
 export interface SlippageTolerance {
   readonly slippageTolerance: number;
   setSlippageTolerance: (tolerance: number) => Promise<void>;

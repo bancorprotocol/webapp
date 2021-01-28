@@ -8,8 +8,17 @@ import {
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
-import { EthNetworks, getWeb3 } from "@/api/web3";
+import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import Web3 from "web3";
+import {
+  liquidityProtectionSettingsShape,
+  liquidityProtectionShape
+} from "./shapes";
+import { MultiCall } from "eth-multicall";
+import {
+  LiquidityProtectionSettings,
+  RawLiquidityProtectionSettings
+} from "@/types/bancor";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -189,4 +198,74 @@ export const addLiquidityDisabled = async (
     .call();
 
   return res;
+};
+
+export const fetchLiquidityProtectionSettings = async ({
+  settingsContractAddress,
+  protectionContractAddress
+}: {
+  settingsContractAddress: string;
+  protectionContractAddress: string;
+}) => {
+  // @ts-ignore
+  const ethMulti = new MultiCall(web3);
+
+  const [[settings], [protection]] = ((await ethMulti.all([
+    [liquidityProtectionSettingsShape(settingsContractAddress)],
+    [liquidityProtectionShape(protectionContractAddress)]
+  ])) as [unknown, unknown]) as [
+    RawLiquidityProtectionSettings[],
+    { govToken: string }[]
+  ];
+
+  const newSettings = {
+    contract: settingsContractAddress,
+    minDelay: Number(settings.minProtectionDelay),
+    maxDelay: Number(settings.maxProtectionDelay),
+    lockedDelay: Number(settings.lockDuration),
+    govToken: protection.govToken,
+    networkToken: settings.networkToken,
+    defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
+  } as LiquidityProtectionSettings;
+  return newSettings;
+};
+
+export const fetchLiquidityProtectionSettingsContract = async (
+  liquidityProtectionContract: string
+): Promise<string> => {
+  try {
+    const contract = buildLiquidityProtectionContract(
+      liquidityProtectionContract
+    );
+    return contract.methods.settings().call();
+  } catch (e) {
+    const error = `Failed fetching settings contract via address ${liquidityProtectionContract}`;
+    console.error(error);
+    throw new Error(error);
+  }
+};
+
+export const fetchMinLiqForMinting = async (
+  protectionSettingsContract: string
+) => {
+  const contract = buildLiquidityProtectionSettingsContract(
+    protectionSettingsContract
+  );
+
+  return contract.methods.minNetworkTokenLiquidityForMinting().call();
+};
+
+export const fetchWhiteListedV1Pools = async (
+  liquidityProtectionSettingsAddress: string
+) => {
+  try {
+    const contractAddress = liquidityProtectionSettingsAddress;
+    const liquidityProtection = buildLiquidityProtectionSettingsContract(
+      contractAddress
+    );
+    return liquidityProtection.methods.poolWhitelist().call();
+  } catch (e) {
+    console.error("Failed fetching whitelisted pools");
+    throw new Error(`Failed to fetch whitelisted pools ${e}`);
+  }
 };

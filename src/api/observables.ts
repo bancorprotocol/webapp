@@ -13,6 +13,7 @@ import {
   share,
   withLatestFrom
 } from "rxjs/operators";
+import dayjs from "dayjs";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
 import { getWelcomeData, NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
@@ -22,11 +23,17 @@ import {
   defaultImage
 } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
-import dayjs from "dayjs";
 import { RegisteredContracts } from "@/types/bancor";
 import { compareString, findOrThrow } from "./helpers";
 import { buildStakingRewardsContract } from "./eth/contractTypes";
 import { filterAndWarn } from "./pureHelpers";
+import {
+  fetchLiquidityProtectionSettings,
+  fetchLiquidityProtectionSettingsContract,
+  fetchMinLiqForMinting,
+  fetchWhiteListedV1Pools
+} from "./eth/contractWrappers";
+import { expandToken } from "./pureHelpers";
 
 interface DataCache<T> {
   allEmissions: T[];
@@ -114,26 +121,20 @@ export const networkVars$ = networkVersion$.pipe(
   shareReplay(1)
 );
 
-export const contractAddressesNetwork$ = networkVars$.pipe(
+export const contractAddresses$ = networkVars$.pipe(
   switchMap(networkVariables =>
     vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
   ),
+  startWith({
+    BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
+    BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
+    LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
+    LiquidityProtection: "0x9Ab934010E6f2D633FeEB5b6f1DdCeEdeD601BCF",
+    StakingRewards: "0x457FE44E832181e1D3eCee0fc5be72cd9b36859f"
+  }),
   distinctUntilChanged<RegisteredContracts>(isEqual),
-  share()
+  shareReplay(1)
 );
-
-export const contractAddressesLocal$ = of<RegisteredContracts>({
-  BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
-  BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
-  LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-  LiquidityProtection: "0x9Ab934010E6f2D633FeEB5b6f1DdCeEdeD601BCF",
-  StakingRewards: "0x457FE44E832181e1D3eCee0fc5be72cd9b36859f"
-});
-
-const contractAddresses$ = merge(
-  contractAddressesNetwork$,
-  contractAddressesLocal$
-).pipe(share());
 
 export const bancorConverterRegistry$ = contractAddresses$.pipe(
   pluck("BancorConverterRegistry"),
@@ -231,10 +232,13 @@ newPools$.subscribe(pools => vxm.ethBancor.setPools(pools));
 
 networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
 apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
+apiData$
+  .pipe(
+    pluck("bnt_supply"),
+    map(decSupply => expandToken(decSupply, 18))
+  )
+  .subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
 tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
-networkVars$.subscribe(networkVariables =>
-  vxm.ethBancor.fetchAndSetBntSupply(networkVariables.bntToken)
-);
 
 combineLatest([
   liquidityProtectionStore$,
@@ -243,25 +247,45 @@ combineLatest([
   vxm.ethBancor.fetchAndSetLockedBalances({ storeAddress, currentUser })
 );
 
-const settingsContractAddress$ = liquidityProtection$.pipe(
+const settingsContractAddressLocal$ = networkVersion$.pipe(
+  filter(network => network == EthNetworks.Mainnet),
+  tap(logger("mainnet known")),
+  map(() => "0xd444ec18952c7cAf09636f21807683DaCC1d7dA9")
+);
+
+const settingsContractAddressRemote$ = liquidityProtection$.pipe(
   tap(logger("liquidity protection contract")),
   switchMap(protectionAddress =>
-    vxm.ethBancor.fetchLiquidityProtectionSettingsContract(protectionAddress)
+    fetchLiquidityProtectionSettingsContract(protectionAddress)
   ),
   distinctUntilChanged(compareString),
   tap(logger("settings contract")),
-  share()
+  shareReplay<string>(1)
 );
 
-settingsContractAddress$.subscribe(settingsContract => {
-  console.log("returned", settingsContract);
-  return vxm.minting.fetchMinLiqForMinting(settingsContract);
-});
+const settingsContractAddress$ = merge(
+  settingsContractAddressLocal$,
+  settingsContractAddressRemote$
+).pipe(
+  distinctUntilChanged(compareString),
+  tap(logger("settings contract local")),
+  shareReplay(1)
+);
+
+settingsContractAddress$
+  .pipe(
+    switchMap(settingsContractAddress =>
+      fetchMinLiqForMinting(settingsContractAddress)
+    )
+  )
+  .subscribe(settingsContract =>
+    vxm.minting.setMinNetworkTokenLiquidityForMinting(settingsContract)
+  );
 
 combineLatest([liquidityProtection$, settingsContractAddress$])
   .pipe(
     switchMap(([protectionContractAddress, settingsContractAddress]) =>
-      vxm.ethBancor.fetchLiquidityProtectionSettings({
+      fetchLiquidityProtectionSettings({
         settingsContractAddress,
         protectionContractAddress
       })
@@ -274,7 +298,8 @@ combineLatest([liquidityProtection$, settingsContractAddress$])
 
 settingsContractAddress$
   .pipe(
-    switchMap(address => vxm.ethBancor.fetchWhiteListedV1Pools(address)),
+    tap(logger("white listed pool address")),
+    switchMap(address => fetchWhiteListedV1Pools(address)),
     tap(logger("white listed pools"))
   )
   .subscribe(whitelistedPools =>
