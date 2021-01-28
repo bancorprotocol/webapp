@@ -1,116 +1,15 @@
 import {
-  calculatePositionFees,
   decToPpm,
   expandToken,
-  miningBntReward,
-  miningTknReward,
   prettifyNumber,
-  groupPositionsArray,
   calculateLimits
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
-import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
-
-const shrinkToken = (
-  amount: string | number,
-  precision: number,
-  chopZeros = false
-) => {
-  const res = new BigNumber(amount)
-    .div(new BigNumber(10).pow(precision))
-    .toFixed(precision);
-
-  return chopZeros ? new BigNumber(res).toString() : res;
-};
 
 describe("dec to ppm works", () => {
   test("range of percentages", () => {
     expect(decToPpm(0.6)).toBe("600000");
     expect(decToPpm(1)).toBe("1000000");
-  });
-});
-
-describe("can calculate position fees", () => {
-  test("Protected Position Fee", async () => {
-    const {
-      originalPoolTokenAmount,
-      currentPoolTokenSupply,
-      depositedAmount,
-      depositedReserveCurrentBalance,
-      opposingDepositedReserveCurrentBalance,
-      reserveRate
-    } = {
-      originalPoolTokenAmount: "500000000000000000",
-      currentPoolTokenSupply: "15576682305422710575136560",
-      depositedAmount: "1340922988163890",
-      depositedReserveCurrentBalance: "15225916667665690655887",
-      opposingDepositedReserveCurrentBalance: "9337353089824759522590240",
-      reserveRate: "322.22513507007347536179"
-    };
-
-    const res = calculatePositionFees(
-      originalPoolTokenAmount,
-      currentPoolTokenSupply,
-      depositedAmount,
-      depositedReserveCurrentBalance,
-      opposingDepositedReserveCurrentBalance,
-      reserveRate
-    );
-    expect(res).toBe("7570785880343");
-  });
-});
-
-describe("can calculate mining aprs", () => {
-  test("bnt high cap", () => {
-    const protectedBnt = "3390211026483950866776662";
-
-    const res = miningBntReward(protectedBnt, true);
-
-    const expectedResult = 2.147358952917518;
-    expect(res).toBeCloseTo(expectedResult);
-  });
-
-  test("bnt low cap", () => {
-    const protectedBnt = "3390211026483950866776662";
-
-    const res = miningBntReward(protectedBnt, false);
-
-    const expectedResult = 0.21473589529175177;
-    expect(res).toBeCloseTo(expectedResult);
-  });
-
-  test("tkn high cap", () => {
-    const protectedTkn = "11221593721149874107090";
-    const bntReserveBalance = "8101409855370277274285454";
-    const tknReserveBalance = "15800503317283360679542";
-
-    const res = miningTknReward(
-      tknReserveBalance,
-      bntReserveBalance,
-      protectedTkn,
-      true
-    );
-
-    const expectedResult = 0.5422634970441929;
-
-    expect(res).toBeCloseTo(expectedResult);
-  });
-
-  test("tkn low cap", () => {
-    const protectedTkn = "11221593721149874107090";
-    const bntReserveBalance = "8101409855370277274285454";
-    const tknReserveBalance = "15800503317283360679542";
-
-    const res = miningTknReward(
-      tknReserveBalance,
-      bntReserveBalance,
-      protectedTkn,
-      false
-    );
-
-    const expectedResult = 0.05422634970441928;
-
-    expect(res).toBeCloseTo(expectedResult);
   });
 });
 
@@ -126,7 +25,7 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
   });
 });
 
-describe("calculate grouped positions for protected table", () => {
+/*describe("calculate grouped positions for protected table", () => {
   test("Group Protected Positions", () => {
     const positions: ViewProtectedLiquidity[] = [
       {
@@ -162,7 +61,9 @@ describe("calculate grouped positions for protected table", () => {
           amount: "0.006127116288703279",
           symbol: "BNT"
         },
-        roi: 0.005877144022078273
+        roi: 0.005877144022078273,
+        pendingPoolReward: new BigNumber(0),
+        reserveTokenPrice: 1
       },
       {
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:3",
@@ -231,7 +132,9 @@ describe("calculate grouped positions for protected table", () => {
           amount: "0.011825823889716568",
           symbol: "BNT"
         },
-        roi: 0.01046413789214751
+        roi: 0.01046413789214751,
+        pendingPoolReward: new BigNumber(0),
+        reserveTokenPrice: 1
       },
       {
         id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:23",
@@ -265,7 +168,9 @@ describe("calculate grouped positions for protected table", () => {
           amount: "0.000515015617056458",
           symbol: "NMR"
         },
-        roi: 0.010630813046213022
+        roi: 0.010630813046213022,
+        pendingPoolReward: new BigNumber(0),
+        reserveTokenPrice: 1
       },
       {
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:939",
@@ -300,7 +205,9 @@ describe("calculate grouped positions for protected table", () => {
           amount: "0.002613383452134935",
           symbol: "BNT"
         },
-        roi: 0.002608722329711269
+        roi: 0.002608722329711269,
+        pendingPoolReward: new BigNumber(0),
+        reserveTokenPrice: 1
       }
     ];
 
@@ -342,7 +249,9 @@ describe("calculate grouped positions for protected table", () => {
               amount: "0.002613383452134935",
               symbol: "BNT"
             },
-            roi: 0.002608722329711269
+            roi: 0.002608722329711269,
+            pendingPoolReward: new BigNumber(0),
+            reserveTokenPrice: 1
           },
           {
             id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
@@ -377,7 +286,11 @@ describe("calculate grouped positions for protected table", () => {
               amount: "0.006127116288703279",
               symbol: "BNT"
             },
-            roi: 0.005877144022078273
+            roi: 0.005877144022078273,
+            pendingPoolReward: new BigNumber(0),
+            reserveTokenPrice: 1,
+            pendingPoolReward: new BigNumber(0),
+            reserveTokenPrice: 1
           }
         ],
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533-BNT",
@@ -497,7 +410,7 @@ describe("calculate grouped positions for protected table", () => {
     ];
     expect(grouped).toEqual(result);
   });
-});
+});*/
 
 describe("Prettify Numbers", () => {
   test("convert numbers to strings with comma separator and pre-defined decimal precision", () => {

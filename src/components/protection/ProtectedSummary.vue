@@ -1,42 +1,40 @@
 <template>
-  <div
-    :id="darkMode ? 'protected-summary-dark' : 'protected-summary'"
-    class="rounded p-3 mb-3 block-shadow-light"
-    :class="darkMode ? 'text-dark' : 'text-light'"
-  >
-    <div class="d-flex justify-content-between align-items-center d-xl-none">
-      <span class="font-size-16 font-w500">{{ $t("my_stake") }}</span>
-      <b-btn variant="primary" @click="openModal" style="width: 132px">
-        {{ $t("stake") }}
-      </b-btn>
-    </div>
-    <b-row>
-      <b-col md="6" lg="3" xl="2" class="d-none d-xl-flex align-items-center">
-        <div class="font-size-16 font-w500">{{ $t("my_stake") }}</div>
-      </b-col>
-      <b-col
-        v-for="(item, index) in summarizedPositions"
-        :key="item.key"
-        cols="6"
-        lg="4"
-        xl="2"
-        class="d-flex flex-column align-items-center mt-3 mt-xl-0"
-        :class="getItemStyleClass(index)"
-      >
-        <div class="font-size-14 font-w600 text-primary">{{ item.value }}</div>
-        <div class="text-uppercase font-size-10 font-w500">{{ item.key }}</div>
-      </b-col>
-      <b-col
-        md="6"
-        lg="3"
-        xl="2"
-        class="d-none d-xl-flex align-items-center justify-content-end"
-      >
-        <b-btn variant="primary" class="btn-block" @click="openModal">
-          {{ $t("stake") }}
-        </b-btn>
-      </b-col>
-    </b-row>
+  <div>
+    <ContentBlock
+      v-if="true"
+      :shadow-light="true"
+      :class="darkMode ? 'text-dark' : 'text-light'"
+    >
+      <template #header>
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="font-size-16 font-w500">My Stake</div>
+          <b-btn @click="openModal" size="sm" variant="primary" class="rounded">
+            <font-awesome-icon icon="plus" class="d-lg-none" />
+            <span class="d-none d-lg-inline">Stake</span>
+          </b-btn>
+        </div>
+      </template>
+
+      <div class="mt-3">
+        <b-row class="mt-4 mb-2">
+          <b-col
+            v-for="item in summarizedPositions"
+            :key="item.key"
+            class="text-center"
+          >
+            <div
+              class="font-size-14 font-w600"
+              :class="item.key === 'ROI' ? 'text-success' : 'text-primary'"
+            >
+              {{ item.value }}
+            </div>
+            <div class="text-uppercase font-size-10 font-w500">
+              {{ item.key }}
+            </div>
+          </b-col>
+        </b-row>
+      </div>
+    </ContentBlock>
 
     <modal-pool-select @select="selectPool" v-model="modal" :pools="pools" />
   </div>
@@ -50,8 +48,9 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import { stringifyPercentage } from "@/api/helpers";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
+import ContentBlock from "@/components/common/ContentBlock.vue";
 
-@Component({ components: { ModalPoolSelect } })
+@Component({ components: { ContentBlock, ModalPoolSelect } })
 export default class ProtectedSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
 
@@ -61,6 +60,10 @@ export default class ProtectedSummary extends BaseComponent {
     return vxm.bancor.relays.filter(pool => pool.addProtectionSupported);
   }
 
+  get rewardsBalance() {
+    return vxm.rewards.balance;
+  }
+
   get summarizedPositions() {
     if (!this.positions.length) return [];
     else {
@@ -68,31 +71,29 @@ export default class ProtectedSummary extends BaseComponent {
         .map(x => Number(x.stake.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      const protectedValue = this.positions
+      let protectedValue = this.positions
         .map(x => Number(x.fullyProtected.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      const claimableValue = this.positions
+      let claimableValue = this.positions
         .map(x => Number(x.protectedAmount.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
-      // const roi = (protectedValue - initialStake) / initialStake;
+      const totalRewards = this.rewardsBalance.pendingRewards.usd.toNumber();
+      protectedValue += totalRewards;
+      claimableValue += totalRewards;
 
+      const roi = (protectedValue - initialStake) / initialStake;
       return [
         {
-          key: "Initial Stake",
-          value: this.prettifyNumber(initialStake, true)
-        },
-        {
           key: "Protected Value",
-          value: this.prettifyNumber(protectedValue, true)
+          value: "~" + this.prettifyNumber(protectedValue, true)
         },
         {
           key: "Claimable Value",
-          value: this.prettifyNumber(claimableValue, true)
+          value: "~" + this.prettifyNumber(claimableValue, true)
         },
-        { key: "", value: "" }
-        // { key: "ROI", value: this.stringifyPercentage(roi) }
+        { key: "ROI", value: this.stringifyPercentage(roi) }
       ];
     }
   }
@@ -107,13 +108,6 @@ export default class ProtectedSummary extends BaseComponent {
   }
 
   stringifyPercentage = stringifyPercentage;
-
-  getItemStyleClass(index: number) {
-    const pos = index + 1;
-    if (pos === 1) return "text-center";
-    else if (pos < this.summarizedPositions.length) return "text-center";
-    else return "text-center";
-  }
 }
 </script>
 
@@ -126,5 +120,9 @@ export default class ProtectedSummary extends BaseComponent {
 
 #protected-summary-dark {
   background: $text-color-light;
+}
+.seperator {
+  margin-bottom: 1.1rem;
+  border: 1px solid #97a5b8;
 }
 </style>

@@ -8,6 +8,7 @@ interface TokenMeta {
 }
 
 import axios from "axios";
+import { EthNetworks } from "../web3";
 
 export interface WelcomeData {
   total_liquidity: BntPrice;
@@ -25,8 +26,9 @@ export interface BntPrice {
 }
 
 export interface Pool {
-  reserves: Reserve[];
   pool_dlt_id: string;
+  converter_dlt_id: string;
+  reserves: Reserve[];
   name: string;
   liquidity: BntPrice;
   volume_24h: BntPrice;
@@ -34,6 +36,7 @@ export interface Pool {
   fee: string;
   version: number;
   supply: string;
+  decimals: number;
 }
 
 export interface Reserve {
@@ -43,14 +46,14 @@ export interface Reserve {
 }
 
 export interface Swap {
-  from_token: string;
-  to_token: string;
+  source_token_dlt_id: string;
+  target_token_dlt_id: string;
   tx_hash: string;
   input_amount: string;
   output_amount: string;
   amount: BntPrice;
   timestamp: number;
-  account: string;
+  account_dlt_id: string;
 }
 
 export interface Token {
@@ -59,10 +62,10 @@ export interface Token {
   liquidity: BntPrice;
   rate: BntPrice;
   rate_24h_ago: BntPrice;
-  precision: number;
+  decimals: number;
 }
 
-interface TokenMetaWithReserve extends TokenMeta {
+export interface TokenMetaWithReserve extends TokenMeta {
   reserveWeight: number;
   decBalance: string;
 }
@@ -72,9 +75,17 @@ export interface NewPool extends Pool {
   decFee: number;
 }
 
-export const getWelcomeData = async (): Promise<WelcomeData> => {
+export const getWelcomeData = async (
+  network: EthNetworks
+): Promise<WelcomeData> => {
+  if (!(network == EthNetworks.Mainnet || network == EthNetworks.Ropsten)) {
+    throw new Error("API does not support this network");
+  }
+
   const res = await axios.get<WelcomeData>(
-    "https://bancor-api.nw.r.appspot.com/welcome"
+    network == EthNetworks.Mainnet
+      ? "https://bancor-api.nw.r.appspot.com/welcome"
+      : "https://ropsten-ptdczarhfq-nw.a.run.app/welcome"
   );
 
   return res.data;

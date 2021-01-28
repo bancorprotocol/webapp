@@ -1,9 +1,7 @@
 <template>
   <div>
-    <content-block class="mb-3" :shadow="true">
-      <template slot="header">
-        <sub-navigation />
-      </template>
+    <content-block class="mb-3 pt-3" :no-header="true" :shadow="true">
+      <sub-navigation />
 
       <div>
         <main-button

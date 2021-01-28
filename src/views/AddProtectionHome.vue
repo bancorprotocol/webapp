@@ -67,6 +67,7 @@ export default class AddProtectionHome extends BaseComponent {
   showTokenBalance = false;
 
   get pools() {
+    console.log(vxm.bancor.relays, "are the relays");
     return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
   }
 

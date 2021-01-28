@@ -32,7 +32,7 @@
     </template>
 
     <template #cell(unixTime)="{ value }">
-      {{ moment.unix(value).fromNow() }}
+      {{ dayjs.unix(value).fromNow() }}
     </template>
   </data-table>
 </template>
@@ -41,7 +41,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import { i18n } from "@/i18n";
 import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
-import moment from "moment";
+import dayjs from "@/utils/dayjs"
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TableItem, ViewTableField } from "@/types/bancor";
 import DataTable from "@/components/common/DataTable.vue";
@@ -54,7 +54,7 @@ export default class TableTransactions extends BaseComponent {
   @Prop({ default: [] }) items!: TableItem[];
 
   shortenEthAddress = shortenEthAddress;
-  moment = moment;
+  dayjs = dayjs;
 
   fields: ViewTableField[] = [
     {

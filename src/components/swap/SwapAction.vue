@@ -16,7 +16,7 @@
         icon="exchange-alt"
         rotation="90"
         @click="invertSelection"
-        class="text-primary font-size-16 cursor"
+        :class="rateLoading ? 'inactive' : 'active'"
       />
     </div>
 
@@ -396,4 +396,18 @@ export default class SwapAction extends BaseComponent {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.inactive {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.6;
+  color: #0f59d1;
+  font-size: 1rem;
+}
+
+.active {
+  cursor: pointer;
+  color: #0f59d1;
+  font-size: 1rem;
+}
+</style>

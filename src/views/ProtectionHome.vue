@@ -7,7 +7,7 @@
             class="font-size-20 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ $t("liquidity_protection") }}
+            Liquidity Protection
           </span>
         </div>
 
@@ -15,15 +15,15 @@
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          {{ $t("protect_tokens") + "." }}
+          Manage your protected positions in Bancor pools and track and analyze
+          your returns.
         </p>
       </b-col>
 
-      <b-col cols="12">
+      <b-col lg="6">
         <ProtectedSummary v-if="positions.length" :positions="positions" />
       </b-col>
-
-      <b-col v-if="false" cols="12">
+      <b-col lg="6">
         <RewardsSummary v-if="positions.length" :positions="positions" />
       </b-col>
 
@@ -31,16 +31,14 @@
         <content-block
           :px0="true"
           :shadow-light="true"
-          :title="
-            positions.length ? $t('protected_positions') : $t('protected')
-          "
+          :title="positions.length ? 'My Protected Positions' : 'Protected'"
           :search.sync="searchProtected"
         >
           <div v-if="loading" class="d-flex justify-content-center my-3">
             <b-spinner
               style="width: 3rem; height: 3rem"
               class="text-primary"
-              :label="$t('protected_positions') + '...'"
+              label="Loading..."
             />
           </div>
           <div v-else>
@@ -56,18 +54,19 @@
           class="font-size-20 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          {{ $t("closed_positions") }}
+          Closed Positions
         </span>
 
         <p
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          {{ $t("unstaking_positions") + "." }}
+          When unstaking protected positions, you will be able to see and claim
+          your BNT here.
         </p>
       </b-col>
       <b-col cols="12">
-        <content-block :px0="true" :shadow-light="true" :title="$t('claim')">
+        <content-block :px0="true" :shadow-light="true" title="Claim">
           <claim :search="searchClaim" />
         </content-block>
       </b-col>
@@ -104,7 +103,8 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   get loading() {
-    return vxm.ethBancor.loadingPools;
+    if (this.currentUser) return vxm.ethBancor.loadingProtectedPositions;
+    else return false;
   }
 }
 </script>

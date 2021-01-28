@@ -94,7 +94,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${item.symbol}`
-                : $t('stale_data')
+                : 'Stale data'
             "
           />
         </div>
@@ -114,7 +114,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
-                : $t('stale_data')
+                : 'Stale data'
             "
           />
         </div>
@@ -135,7 +135,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${item.symbol}`
-                : $t('please_refresh')
+                : 'please refresh'
             "
           />
         </div>
@@ -155,7 +155,7 @@
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
-                : $t('please_refresh')
+                : 'please refresh'
             "
           />
         </div>
@@ -172,7 +172,16 @@
 
       <template #cell(fees)="{ item, value }">
         <div class="text-center">
-          {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          <div>
+            {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          </div>
+          <b-badge
+            v-if="item.pendingReserveReward.gt(0)"
+            variant="primary"
+            class="px-2"
+          >
+            + {{ prettifyNumber(item.pendingReserveReward) }} BNT
+          </b-badge>
         </div>
       </template>
       <template #cellCollapsed(fees)="{ value }">
@@ -236,7 +245,7 @@
       <template #cell(currentCoverage)="{ item }">
         <div class="d-flex flex-column font-size-12 font-w600">
           <span v-if="item.collapsedData.length" class="font-w500">
-            {{ $t("position_vesting_time") }}
+            Earliest position vesting time
           </span>
           {{ stringifyPercentage(item.coverageDecPercent) }}
           <div
@@ -244,7 +253,7 @@
             class="d-flex justify-content-between align-items-center text-danger"
           >
             <div>
-              {{ $t("cliff") + ":" }}
+              Cliff:
               <countdown-timer :date-unix="item.insuranceStart" />
             </div>
             <font-awesome-icon
@@ -256,7 +265,9 @@
               triggers="hover"
               placement="bottom"
             >
-              {{ $t("loss_protection_vesting") }}
+              Impermanent loss protection starts vesting immediately when you
+              deposit. But you must be in the pool until the cliff is reached
+              before the protection can be utilized.
             </b-popover>
           </div>
         </div>
@@ -275,7 +286,7 @@
             class="d-flex justify-content-between align-items-center text-danger"
           >
             <div>
-              {{ $t("cliff") + ":" }}
+              Cliff:
               <countdown-timer :date-unix="item.insuranceStart" />
             </div>
             <font-awesome-icon
@@ -287,7 +298,9 @@
               triggers="hover"
               placement="bottom"
             >
-              {{ $t("loss_protection_vesting") }}
+              Impermanent loss protection starts vesting immediately when you
+              deposit. But you must be in the pool until the cliff is reached
+              before the protection can be utilized.
             </b-popover>
           </div>
         </div>
@@ -360,7 +373,6 @@
 </template>
 
 <script lang="ts">
-import { i18n } from "@/i18n";
 import { Component, Prop } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
@@ -373,7 +385,7 @@ import {
   stringifyPercentage
 } from "@/api/helpers";
 import { groupPositionsArray } from "@/api/pureHelpers";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import {
   ViewGroupedPositions,
   ViewProtectedLiquidity,
@@ -384,9 +396,11 @@ import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import PendingRewards from "@/components/rewards/PendingRewards.vue";
 
 @Component({
   components: {
+    PendingRewards,
     DataTable,
     RemainingTime2,
     CountdownTimer,
@@ -411,18 +425,18 @@ export default class ProtectedTable extends BaseComponent {
   }
 
   insuranceStarted(unixTime: number) {
-    return unixTime < moment().unix();
+    return unixTime < dayjs().unix();
   }
 
   formatEndTime(fullCoverageSeconds: number) {
-    const timeNow = moment();
-    const fullCoverage = moment.unix(fullCoverageSeconds);
+    const timeNow = dayjs();
+    const fullCoverage = dayjs.unix(fullCoverageSeconds);
     const reachedFullCoverage = timeNow.isAfter(fullCoverage);
     if (reachedFullCoverage) {
-      return i18n.t("coverage_achieved");
+      return "Full coverage achieved";
     } else {
-      const timeLeft = moment.unix(fullCoverageSeconds).fromNow(true);
-      return timeLeft + " " + i18n.t("left_until_coverage");
+      const timeLeft = dayjs.unix(fullCoverageSeconds).fromNow(true);
+      return `${timeLeft} left until full coverage`;
     }
   }
 
@@ -431,12 +445,9 @@ export default class ProtectedTable extends BaseComponent {
     const position = findOrThrow(
       positions,
       pos => compareString(pos.id, id),
-      i18n.t("left_until_coverage") +
-        " " +
-        id +
-        " " +
-        i18n.t("from_position_ids") +
-        positions.map(position => position.id).join(" ")
+      `failed to find position of ID ${id} from position ids ${positions
+        .map(position => position.id)
+        .join(" ")}`
     );
     const routeName = position.single
       ? "WithdrawProtectionSingle"
@@ -456,29 +467,32 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 1,
         key: "stake",
-        label: i18n.tc("initial_stake"),
-        tooltip: i18n.tc("tokens_originally_staked"),
+        label: "Initial Stake",
+        tooltip: "Amount of tokens you originally staked in the pool.",
         minWidth: "170px"
       },
       {
         id: 2,
         key: "fullyProtected",
-        label: i18n.tc("protected"),
-        tooltip: i18n.tc("tokens_can_withdraw"),
+        label: "Protected",
+        tooltip:
+          "Amount of tokens you can withdraw with 100% protection + fees",
         minWidth: "160px"
       },
       {
         id: 3,
         key: "protectedAmount",
-        label: i18n.tc("claimable"),
-        tooltip: i18n.tc("tokens_can_withdraw_now"),
+        label: "Claimable",
+        tooltip:
+          "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
         minWidth: "160px"
       },
       {
         id: 4,
         key: "fees",
-        label: i18n.tc("fees"),
-        tooltip: i18n.tc("fees_stake_earned"),
+        label: "Fees & Rewards",
+        tooltip:
+          "Fees and rewards earned by your stake since you entered the pool.",
         minWidth: "110px",
         thClass: "text-center"
       },
@@ -486,23 +500,26 @@ export default class ProtectedTable extends BaseComponent {
         id: 5,
         key: "roi",
         label: "ROI",
-        tooltip: i18n.tc("roi__protected_value"),
+        tooltip:
+          "The ROI of your fully protected value vs. your initial stake.",
         minWidth: "75px",
         thClass: "text-center"
       },
       {
         id: 6,
         key: "apr",
-        label: "APR",
-        tooltip: i18n.tc("estimated_calculation_annual_returns"),
+        label: "Apr",
+        tooltip:
+          "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
         sortable: true,
         minWidth: "115px"
       },
       {
         id: 7,
         key: "currentCoverage",
-        label: i18n.tc("current_coverage"),
-        tooltip: i18n.tc("impermanent_loss_protection"),
+        label: "Current Coverage",
+        tooltip:
+          "The impermanent loss protection you have accrued. Impermanent loss protection starts 30 days after your deposit, at a rate of 30% and gradually increases 1% per day until you reach 100% protection.",
         minWidth: "195px"
       },
       {
