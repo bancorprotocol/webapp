@@ -155,7 +155,7 @@ export default class ModalVoteDetails extends BaseComponent {
     {
       id: 5,
       key: "percentOfTotal",
-      label: "% " + i18n.tc("amount"),
+      label: `%${i18n.tc("amount")}`,
       sortable: true,
       thClass: "text-right"
     }

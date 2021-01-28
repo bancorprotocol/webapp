@@ -71,15 +71,7 @@
       </div>
 
       <b-alert show variant="warning" class="my-3 p-3 font-size-14 alert-over">
-        {{
-          $t("staking") +
-          " " +
-          symbol +
-          " " +
-          $t("enable_vote") +
-          " " +
-          $t("up_to", { hours: maxLock })
-        }}
+        {{ $t("enable_vote", { symbol: symbol, hours: maxLock }) }}
       </b-alert>
 
       <main-button

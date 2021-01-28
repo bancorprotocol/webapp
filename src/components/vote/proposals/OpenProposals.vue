@@ -209,17 +209,17 @@
                     :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
                   >
                     {{
-                      (
-                        (shrinkToken(
-                          item.votes.for !== "0"
-                            ? item.votes.for
-                            : item.votes.against
-                        ) /
-                          item.totalVotes) *
-                        100
-                      ).toFixed(2) +
-                      +"% " +
-                      $t("from_voters")
+                      $t("from_voters", {
+                        percentage: (
+                          (shrinkToken(
+                            item.votes.for !== "0"
+                              ? item.votes.for
+                              : item.votes.against
+                          ) /
+                            item.totalVotes) *
+                          100
+                        ).toFixed(2)
+                      })
                     }}
                   </span>
                 </div>
@@ -276,19 +276,19 @@
               <div class="col-6">
                 <span>
                   {{
-                    item.voters.filter(v => v.votes.voted === "for").length +
-                    " " +
-                    $t("users")
+                    `${
+                      item.voters.filter(v => v.votes.voted === "for").length
+                    } ${$t("users")}`
                   }}
                 </span>
               </div>
               <div class="col-6 text-right">
                 <span>
                   {{
-                    item.voters.filter(v => v.votes.voted === "against")
-                      .length +
-                    " " +
-                    $t("users")
+                    `${
+                      item.voters.filter(v => v.votes.voted === "against")
+                        .length
+                    } ${$t("users")}`
                   }}
                 </span>
               </div>

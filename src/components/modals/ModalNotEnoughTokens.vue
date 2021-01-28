@@ -45,20 +45,7 @@
         {{ `${$t("insufficient_balance")} ${symbol}` }}
       </h3>
       <div class="font-size-16" :class="darkMode ? 'text-dark' : 'text-light'">
-        {{
-          $t("order_to_vote") +
-          " " +
-          symbol +
-          " " +
-          $t("if_dont") +
-          " " +
-          symbol +
-          " " +
-          $t("you_will_need") +
-          " BNT " +
-          $t("into_pool_first") +
-          "."
-        }}
+        {{ $t("order_to_vote", { symbol: symbol }) }}
       </div>
       <main-button
         @click="onHide"

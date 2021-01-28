@@ -56,11 +56,9 @@
             :class="!darkMode ? 'text-muted-light' : 'text-muted-dark'"
           >
             {{
-              $t("output_estimated") +
-              " " +
-              numeral(slippageTolerance).format("0.0[0]%") +
-              " " +
-              $t("transaction_revert")
+              $t("output_estimated", {
+                amount: numeral(slippageTolerance).format("0.0[0]%")
+              })
             }}
           </p>
         </b-col>
