@@ -257,7 +257,7 @@ export default class AddProtectionSingle extends BaseComponent {
   get inputError() {
     if (this.amount == "") return "";
     if (this.preTxError) return this.preTxError;
-    if (parseFloat(this.amount) === 0) return i18n.t("amount_not_Zero");
+    if (parseFloat(this.amount) === 0) return i18n.t("amount_not_zero");
 
     const amountNumber = new BigNumber(this.amount);
     const balanceNumber = new BigNumber(this.balance || 0);

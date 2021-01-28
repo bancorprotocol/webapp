@@ -3,7 +3,8 @@ export const ko = {
   add_liquidity_pool: "풀에 유동성을 추가하는 것이 어떤 의미인지 알아보십시오.",
   make_money_liquidity: "유동성을 공급하여 어떻게 돈을 벌 수 있나요",
   impermanent_loss: "비영구적 손실은 무엇인가요",
-  protect_impermanent_loss: "어떻게 Bancor 프로젝트는 비영구적 손실을 방지할 수 있나요?",
+  protect_impermanent_loss:
+    "어떻게 Bancor 프로젝트는 비영구적 손실을 방지할 수 있나요?",
   create_Pool: "풀 생성",
   you_create_Pool: "풀을 생성하는 중입니다",
   ratio: "비율",
@@ -25,7 +26,7 @@ export const ko = {
   go_homepage: "홈페이지 이동",
   liquidity_protection: "유동성 보호",
   protect_tokens:
-   "각 거래에 보험을 추가하면, 우리의 특별 보험으로 당신의 토큰 풀을 보호할 수 있습니다",
+    "각 거래에 보험을 추가하면, 우리의 특별 보험으로 당신의 토큰 풀을 보호할 수 있습니다",
   protected_positions: "내 보호 포지션",
   protected: "보호됨",
   loading: "로딩",
@@ -76,8 +77,7 @@ export const ko = {
   according_to: "다음에 따르면",
   required_quorum_to_pass:
     "제안을 통과하기 위해 필요한 쿼럼은 표준 BIP의 경우 20%, 토큰 화이리스트의 경우 40%입니다",
-  third_majority:
-    "모든 BIP 승인에 대해 과반수(66.7%)의 2/3가 찬성해야 합니다.",
+  third_majority: "모든 BIP 승인에 대해 과반수(66.7%)의 2/3가 찬성해야 합니다.",
   vote: "투표",
   governance: "거버넌스",
   new_proposal: "새 제안",
@@ -96,8 +96,7 @@ export const ko = {
   advanced_settings: "고급 세팅",
   rate: "비율",
   price_impact: "가격 임팩트",
-  market_price_diff:
-    "트레이드 사이즈에 의해 변화된 마켓 가격과 추정 가격은 ",
+  market_price_diff: "트레이드 사이즈에 의해 변화된 마켓 가격과 추정 가격은 ",
   enter_amount: "수 입력",
   swap: "교환",
   insufficient_token: "현재 토큰 잔액이 부족합니다",
@@ -111,7 +110,7 @@ export const ko = {
   value_receive: "받는 값",
   adding_liquidity_protection: "유동성 보호를 추가하고 있습니다",
   stake_protect: "스테이킹과 보호",
-  amount_not_Zero: "액수는 0이 될 수 없습니다",
+  amount_not_zero: "액수는 0이 될 수 없습니다",
   insufficient_balance: "잔액 부족",
   stake_pool: "풀 안의 스테이킹",
   price_volatility:
@@ -148,18 +147,15 @@ export const ko = {
   left_until_coverage: "풀 커버리지까지 남은",
   failed_find_position: "ID의 포지션을 찾는 것을 실패했습니다",
   from_position_ids: "from position ids",
-  tokens_originally_staked:
-    "풀에 초기 스테이킹한 토큰 갯수.",
-  tokens_can_withdraw:
-    "100% 보호 및 수수료를 합산한 출금 가능한 토큰 갯수",
+  tokens_originally_staked: "풀에 초기 스테이킹한 토큰 갯수.",
+  tokens_can_withdraw: "100% 보호 및 수수료를 합산한 출금 가능한 토큰 갯수",
   initial_stake: "초기 스테이크",
   claimable: "클레임 가능한",
   tokens_can_withdraw_now:
     "지금 바로 인출할 수 있는 토큰 갯수(전체 보호를 획득하지 못한 경우 이 값이 보호값보다 작음)",
   fees: "수수료",
   fees_stake_earned: "풀에 들어온 이래로 스테이킹을 통해 얻은 이익의 수수료.",
-  roi__protected_value:
-    "완전히 보호된 값과 초기 스테이킹된 값 사이의 ROI.",
+  roi__protected_value: "완전히 보호된 값과 초기 스테이킹된 값 사이의 ROI.",
   estimated_calculation_annual_returns:
     "과거 활동에 따른 연간 수익 추정 계산 (예: 7d = 7d 수수료/가격)",
   current_coverage: "현제 커버리지",
@@ -190,8 +186,7 @@ export const ko = {
     "가격 변동성으로 인해 현재 토큰을 인출할 수 없습니다. 잠시 후에 다시 시도하십시오.",
   havent_reached_protection:
     "아직 완전 보호가 작동하지 않았습니다. 비영구적 손실 위험이 있고 그 결과로 초기 스테이킹 값보다 낮은 값을 받을 수 있습니다.",
-  bnt_withdrawls:
-    "BNT 인출은 클레임되기 전까지 24시간 동안 유효합니다.",
+  bnt_withdrawls: "BNT 인출은 클레임되기 전까지 24시간 동안 유효합니다.",
   part_output_bnt:
     "출력값의 일부가 BNT에 있습니다. 이 금액은 클레임되기 전에 24시간 동안 잠깁니다.",
   insufficient_vBNT_balance_missing:
@@ -288,8 +283,7 @@ export const ko = {
   value_tokens_pool: "풀의 토큰값.",
   estimated_apr:
     "매주 BNT 유동성 마이닝 보상의 최대(2배 승수)에 근거한 추정 APR. 카운터는 12주 보상 주기가 완료될 때까지의 시간을 나타냅니다.",
-  percentage_deducted:
-    "각 교환에서 공제하고 풀로 재입금된 퍼센티지.",
+  percentage_deducted: "각 교환에서 공제하고 풀로 재입금된 퍼센티지.",
   volume: "볼륨",
   value_swap: "과거 24시간동안 풀에 누적된 교환 요금",
   fees_24: "24시간 요금은 풀에 유동성에 의해 연식화되어 나눠집니다.",

@@ -111,7 +111,7 @@ export const en = {
   value_receive: "Value you receive",
   adding_liquidity_protection: "You are adding liquidity protection",
   stake_protect: "Stake and Protect",
-  amount_not_Zero: "Amount can not be Zero",
+  amount_not_zero: "Amount can not be Zero",
   insufficient_balance: "Insufficient balance",
   stake_pool: "Stake in Pool",
   price_volatility:
@@ -328,5 +328,13 @@ export const en = {
   withdraw_rewards: "Withdraw Rewards",
   processing_transaction: "Processing Transaction",
   staking_rewards: "Staking Rewards",
-  withdrawing_rewards: "Withdrawing Rewards"
+  withdrawing_rewards: "Withdrawing Rewards",
+  selected_pool: "Selected Pool",
+  insufficient_rewards_balance: "Insufficient rewards balance",
+  insufficient_space_available: "Insufficient space available",
+  stake_my_rewards: "Stake my rewards",
+  withdrawing_rewards_reset:
+    "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and stake your rewards atomically without resetting your current multipliers, click the “Stake my rewards” button below.",
+  stake_tokens: "Stake Tokens",
+  unstake_tokens: "Unstake Tokens"
 };

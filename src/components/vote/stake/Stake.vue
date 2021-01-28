@@ -62,7 +62,7 @@
       <div class="p-3 pb-0">
         <main-button
           @click="stakeModal = true"
-          label="Stake Tokens"
+          :label="$t('stake_tokens')"
           :active="true"
           :large="true"
           :block="true"
@@ -73,7 +73,7 @@
         <div v-if="lock.for === 0 && votes > 0">
           <main-button
             @click="unstakeModal = true"
-            label="Unstake Tokens"
+            :label="$t('unstake_tokens')"
             :active="false"
             :large="true"
             :block="true"

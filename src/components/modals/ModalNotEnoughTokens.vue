@@ -49,7 +49,7 @@
       </div>
       <main-button
         @click="onHide"
-        label="Stake"
+        :label="$t('stake')"
         :large="true"
         :active="true"
         :block="true"

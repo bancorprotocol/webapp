@@ -1,14 +1,11 @@
 <template>
-  <content-block title="Add Liquidity" :back-button="true" @back="back">
+  <content-block :title="$t('add_liquidity')" :back-button="true" @back="back">
     <div class="mt-3">
-      <label-content-split label="Selected Pool" class="mb-3">
+      <label-content-split :label="$t('selected_pool')" class="mb-3">
         <pool-logos :pool="pool" :cursor="false" />
       </label-content-split>
 
-      <alert-block
-        title="Learn what it means to add liquidity to a pool:"
-        class="my-3"
-      >
+      <alert-block :title="`${$t('add_liquidity_pool')}:`" class="my-3">
         <ol class="m-0 pl-3">
           <li>
             <a

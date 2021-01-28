@@ -1,6 +1,6 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Stake in Pool" class="my-3">
+    <label-content-split :label="$t('stake_pool')" class="my-3">
       <pool-logos
         :pool="pool"
         :dropdown="true"
@@ -15,7 +15,7 @@
     </label-content-split>
 
     <token-input-field
-      label="Stake Amount"
+      :label="$t('stake_amount')"
       :token="token"
       v-model="amount"
       :balance="balance"
@@ -23,7 +23,7 @@
     />
 
     <gray-border-block :gray-bg="true" class="my-3">
-      <label-content-split label="Space Available" :loading="loading">
+      <label-content-split :label="$t('space_available')" :loading="loading">
         <span class="cursor" @click="amount = maxStakeAmount">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
         }}</span>
@@ -45,6 +45,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { ViewRelay } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -98,8 +99,8 @@ export default class RestakeRewards extends BaseTxAction {
   }
 
   get actionButtonLabel() {
-    if (this.amount) return "Stake and Protect";
-    return "Enter an Amount";
+    if (this.amount) return i18n.t("stake_protect");
+    return i18n.t("enter_amount");
   }
 
   get disableActionButton() {
@@ -114,9 +115,10 @@ export default class RestakeRewards extends BaseTxAction {
     const amount = new BigNumber(this.amount);
 
     if (this.pendingRewards.bnt.lt(amount))
-      return "Insufficient rewards balance";
-    if (amount.gt(this.maxStakeAmount)) return "Insufficient space available";
-    if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
+      return i18n.t("insufficient_rewards_balance");
+    if (amount.gt(this.maxStakeAmount))
+      return i18n.t("insufficient_space_available");
+    if (parseFloat(this.amount) === 0) return i18n.t("amount_not_zero");
     else return "";
   }
 
