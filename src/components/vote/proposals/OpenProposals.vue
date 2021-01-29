@@ -382,7 +382,6 @@ export default class OpenProposals extends BaseComponent {
   }
 
   get fields(): ViewProposalsField[] {
-    console.log("proposals", this.proposals);
     return [
       {
         id: 1,

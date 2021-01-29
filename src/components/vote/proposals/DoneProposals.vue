@@ -204,8 +204,8 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
 import MainButton from "@/components/common/Button.vue";
-
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
+import { ViewProposalsField } from "@/types/bancor";
+// import { ViewTableFields } from "@/components/common/TableHeader.vue";
 import { shortenEthAddress } from "@/api/helpers";
 import {
   ipfsViewUrl,
@@ -227,46 +227,61 @@ export default class DoneProposals extends BaseComponent {
 
   opened: number = -1;
 
-  get fields(): ViewTableFields[] {
+  get fields(): ViewProposalsField[] {
     return [
       {
+        id: 1,
         label: "ID",
         key: "id",
         minWidth: "16px",
-        maxWidth: "16px"
+        maxWidth: "16px",
+        colRate: 1
       },
       {
+        id: 2,
         label: "Details",
-        key: "details"
+        key: "details",
+        colRate: 5
       },
       {
+        id: 3,
         label: "Result",
         key: "result",
         maxWidth: "120px",
-        minWidth: "120px"
+        minWidth: "120px",
+        colRate: 1
       },
       {
+        id: 4,
         label: "Votes for",
         key: "votesFor",
-        maxWidth: "140px",
-        minWidth: "140px"
+        maxWidth: "120px",
+        minWidth: "140px",
+        colRate: 1
       },
       {
+        id: 5,
         label: "Votes against",
         key: "votesAgainst",
-        maxWidth: "140px",
-        minWidth: "140px"
+        maxWidth: "120px",
+        minWidth: "140px",
+        colRate: 1
       },
       {
+        id: 6,
         label: "Vote start",
         key: "startDate",
         maxWidth: "120px",
-        minWidth: "120px"
+        minWidth: "120px",
+        colRate: 1
       },
       {
+        id: 7,
         label: "",
         key: "spacer",
-        maxWidth: "10px"
+        minWidth: "10px",
+        maxWidth: "10px",
+        colRate: 0
       }
     ];
   }
