@@ -2791,8 +2791,7 @@ export class EthBancorModule
           tx: tokenContract.methods.approve(
             approval.approvedAddress,
             approval.amount
-          ),
-          gas: 70000
+          )
         });
       })
     );
@@ -2857,6 +2856,31 @@ export class EthBancorModule
     });
   }
 
+  @action async determineTxGas(tx: ContractSendMethod): Promise<number> {
+    const from = this.currentUser;
+    if (!from)
+      throw new Error("Cannot estimate gas without being authenticated");
+    const buffer = 1.1;
+
+    let adjustedGas: number;
+    try {
+      const withUser = await tx.estimateGas({ from });
+      adjustedGas = withUser;
+    } catch (e) {
+      try {
+        const withoutUser = await tx.estimateGas();
+        adjustedGas = withoutUser;
+      } catch (e) {
+        throw new Error(`Failed estimating gas for tx ${e}`);
+      }
+    }
+    const bufferedResult = adjustedGas * buffer;
+    console.log(
+      `Web3 estimated is ${bufferedResult} times by ${buffer} is ${bufferedResult} being sent to tx.`
+    );
+    return bufferedResult;
+  }
+
   @action async resolveTxOnConfirmation({
     tx,
     gas,
@@ -2873,11 +2897,23 @@ export class EthBancorModule
     onConfirmation?: (hash: string) => void;
   }): Promise<string> {
     console.log("received", tx);
+
+    let adjustedGas: number | boolean = false;
+    if (gas) {
+      adjustedGas = gas;
+    } else {
+      try {
+        adjustedGas = await this.determineTxGas(tx);
+      } catch (e) {
+        console.warn("Failed to estimate gas");
+      }
+    }
+
     return new Promise((resolve, reject) => {
       let txHash: string;
       tx.send({
         from: this.currentUser,
-        ...(gas && { gas }),
+        ...(adjustedGas && { gas: adjustedGas as number }),
         ...(value && { value: toHex(value) })
       })
         .on("transactionHash", (hash: string) => {
@@ -4450,7 +4486,6 @@ export class EthBancorModule
     const converterContract = buildConverterContract(converterAddress);
     return this.resolveTxOnConfirmation({
       tx: converterContract.methods.fund(fundAmount),
-      gas: 950000,
       onConfirmation,
       resolveImmediately,
       ...(onHash && { onHash })

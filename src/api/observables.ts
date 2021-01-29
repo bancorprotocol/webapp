@@ -1,29 +1,15 @@
 import { differenceWith, isEqual } from "lodash";
-import {
-  Subject,
-  combineLatest,
-  from,
-  Observable,
-  of,
-  partition as partitionOb,
-  merge
-} from "rxjs";
+import { Subject, combineLatest, Observable } from "rxjs";
 import {
   distinctUntilChanged,
   map,
   filter,
   startWith,
-  concatMap,
-  mergeMap,
   tap,
   switchMap,
   shareReplay,
   pluck,
   scan,
-  first as firstItem,
-  bufferTime,
-  delay,
-  buffer,
   share
 } from "rxjs/operators";
 import { vxm } from "@/store";
