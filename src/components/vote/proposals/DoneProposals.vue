@@ -101,7 +101,7 @@
     </template>
 
     <template #cell(no)="{}">
-      <div></div>
+      <div> </div>
     </template>
 
     <template #cell(proposed)="{ item }">
