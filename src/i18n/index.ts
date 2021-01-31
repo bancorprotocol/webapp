@@ -30,3 +30,17 @@ export const getLanguageByLocale = (locale: string): string => {
       return "English";
   }
 };
+
+//To add a new country Code check this list https://unstats.un.org/unsd/tradekb/knowledgebase/country-code
+export const getLocaleByCountryCode = (countryCode: string): string => {
+  switch (countryCode) {
+    case "USA":
+      return "en";
+    case "ISR":
+      return "he";
+    case "KOR":
+      return "ko";
+    default:
+      return "en";
+  }
+};

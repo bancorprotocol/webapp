@@ -116,15 +116,21 @@
       {{ $t("choose_language") }}
     </b-dropdown-header>
     <b-dropdown-group v-if="showLocale">
-      <b-dropdown-item-button
+      <b-dropdown-item
         style="margin: 5px"
         v-for="item in i18n.availableLocales"
         :variant="darkMode ? 'dark' : 'light'"
+        class="cursor"
         :key="item.toString()"
         @click="switchlocale(item)"
       >
+        <font-awesome-icon
+          v-if="i18n.locale == item"
+          icon="check"
+          class="mr-2 menu-icon"
+        />
         {{ getLanguageByLocale(item) }}
-      </b-dropdown-item-button>
+      </b-dropdown-item>
     </b-dropdown-group>
   </b-dropdown>
 </template>
@@ -176,7 +182,7 @@ export default class SettingsMenu extends BaseComponent {
   }
 
   switchlocale(locale: string) {
-    i18n.locale = locale;
+    vxm.general.setLocale(locale);
   }
 
   toggleLocale() {
