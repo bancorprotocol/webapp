@@ -86,7 +86,7 @@ import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import * as Sentry from "@sentry/browser";
 
 const networkContract = "thisisbancor";
@@ -1151,6 +1151,7 @@ export class EosBancorModule
           name: buildPoolNameFromReserves(reserves),
           symbol: sortedReserves[1].symbol,
           liqDepth: relayFeed && relayFeed.liqDepth,
+          addProtectionSupported: false,
           addLiquiditySupported: relay.isMultiContract,
           removeLiquiditySupported: true,
           v2: false,
@@ -1395,7 +1396,7 @@ export class EosBancorModule
     // @ts-ignore
     const data: ViewLiquidityEvent<ViewTradeEvent>[] = withKnownPools
       .map(trade => {
-        const momentTime = moment(trade.block.timestamp);
+        const dayjsTime = dayjs(trade.block.timestamp);
 
         const fromTokenAction = first(trade.trace.matchingActions)!;
 
@@ -1456,7 +1457,7 @@ export class EosBancorModule
           account: initialTransferMemoObj.destAccount,
           txLink: `https://www.eosx.io/tx/${trade.trace.id}`,
           accountLink: `https://www.eosx.io/account/${initialTransferMemoObj.destAccount}`,
-          unixTime: momentTime.unix(),
+          unixTime: dayjsTime.unix(),
           data: {
             from: {
               decimals: fromToken.precision,
@@ -1492,11 +1493,11 @@ export class EosBancorModule
     try {
       const results = await past24HourTrades();
 
-      const timeNow = moment();
-      const oneDay = moment.duration(1, "day");
+      const timeNow = dayjs();
+      const oneDay = dayjs.duration(1, "day");
       const yesterday = timeNow.subtract(oneDay);
       const withinPastDay = results.filter(result =>
-        moment(result.block.timestamp).isSameOrAfter(yesterday)
+        dayjs(result.block.timestamp).isSameOrAfter(yesterday)
       );
 
       this.setLiquidityHistory(withinPastDay);

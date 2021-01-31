@@ -3,7 +3,7 @@
     <div id="navigation-top" class="d-flex justify-content-end">
       <b-btn
         @click="loginAction"
-        variant="white"
+        :variant="darkMode ? 'outline-light' : 'outline-dark'"
         class="block-rounded"
         size="sm"
       >
@@ -108,7 +108,8 @@ export default class Navigation extends BaseComponent {
 
 <style lang="scss">
 #navigation-top {
-  margin: 1rem 0;
+  margin-top: 0.2rem;
+  margin-bottom: 0.6rem;
 
   & > * {
     margin-left: 0.75rem;

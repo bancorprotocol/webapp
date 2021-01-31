@@ -33,6 +33,10 @@ export const shrinkToken = (
   precision: number,
   chopZeros = false
 ) => {
+  if (!Number.isInteger(precision))
+    throw new Error(
+      `Must be passed integer to shrink token, received ${precision}`
+    );
   const res = new BigNumber(amount)
     .div(new BigNumber(10).pow(precision))
     .toFixed(precision);

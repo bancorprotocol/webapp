@@ -1,9 +1,7 @@
 <template>
   <div>
-    <content-block class="mb-3" :shadow="true">
-      <template slot="header">
-        <sub-navigation />
-      </template>
+    <content-block class="mb-3 pt-3" :no-header="true" :shadow="true">
+      <sub-navigation />
 
       <div>
         <main-button
@@ -60,22 +58,13 @@ export default class PoolHome extends BaseComponent {
     return vxm.bancor.relays;
   }
 
-  get minNetworkTokenLiquidityforMinting() {
-    return vxm.minting.minNetworkTokenLiquidityforMinting
-  }
-
   selectPool(id: string) {
-    const limit = this.minNetworkTokenLiquidityforMinting
     const pool: ViewRelay = vxm.bancor.relay(id);
     if (!pool) {
       this.modal = false;
       return;
     }
-    if (
-      pool.whitelisted &&
-      pool.bntReserveBalance &&
-      limit !== null && limit.lt(pool.bntReserveBalance)
-    ) {
+    if (pool.addProtectionSupported) {
       this.$router.push({
         name: "AddProtectionSingle",
         params: { id }

@@ -6,7 +6,7 @@
         v-if="currentUser"
         class="font-size-12 font-w500 cursor"
       >
-        {{ formattedBalance }}
+        Balance: {{ prettifyNumber(balance) }}
         {{ usdValue ? usdValue : "" }}
       </span>
     </label-content-split>
@@ -46,9 +46,15 @@
             </span>
             <font-awesome-icon v-if="dropdown" icon="caret-down" />
           </div>
-
           <div v-else>
             <pool-logos @click="openModal" :pool="pool" :dropdown="true" />
+          </div>
+          <div v-if="!pool && !token">
+            <img
+              class="img-avatar img-avatar32 border-colouring bg-white mr-1"
+              :src="defaultImage"
+              alt="Token Logo"
+            />
           </div>
         </div>
       </b-input-group-append>
@@ -86,6 +92,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ethReserveAddress } from "@/api/eth/ethAbis";
+import { defaultImage } from "@/store/modules/swap/ethBancor";
 
 @Component({
   components: {
@@ -115,6 +122,10 @@ export default class TokenInputField extends BaseComponent {
       (this.tokens && this.tokens.length > 0) ||
       (this.pools && this.pools.length > 0)
     );
+  }
+
+  get defaultImage() {
+    return defaultImage;
   }
 
   @Emit()

@@ -1,6 +1,6 @@
 <template>
-  <div class="bottom-bar" :class="darkMode ? 'side-bar-dark' : ''">
-    <div class="side-bar-links">
+  <div class="bottom-bar" :class="darkMode ? 'side-bar-dark ' : ''">
+    <div class="side-bar-links" ref="barRef" @scroll="handleScroll">
       <div
         @click="linkClicked(link)"
         v-for="link in links"
@@ -23,16 +23,9 @@
         />
         <div>{{ link.label }}</div>
       </div>
-
-      <!-- <div
-        @click="moreClicked(link)"
-        class="btn-more"
-        :class="darkMode ? 'side-bar-link-dark': ''"
-      >
-        <span>More</span>
-        <font-awesome-icon icon="chevron-circle-right" class="ml-1" />
-      </div> -->
     </div>
+    <div class="blur-backdoor-left" v-show="visibleBlurLeft"></div>
+    <div class="blur-backdoor-right" v-show="visibleBlurRight"></div>
   </div>
 </template>
 
@@ -44,6 +37,13 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 export default class SideBarBottom extends Vue {
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
+
+  visibleBlurLeft: boolean = false;
+  visibleBlurRight: boolean = true;
+
+  $refs!: {
+    barRef: HTMLElement;
+  };
 
   isRouteActive(key: string): boolean {
     return this.$route.matched.some(
@@ -60,6 +60,21 @@ export default class SideBarBottom extends Vue {
   moreClicked() {
     return true;
   }
+
+  handleScroll(e: any) {
+    const scrollEnd =
+      this.$refs.barRef.scrollWidth - this.$refs.barRef.clientWidth;
+    const scrollPos = this.$refs.barRef.scrollLeft;
+
+    if (scrollPos === 0) {
+      this.visibleBlurLeft = false;
+    } else if (scrollPos === scrollEnd) {
+      this.visibleBlurRight = false;
+    } else {
+      this.visibleBlurLeft = true;
+      this.visibleBlurRight = true;
+    }
+  }
 }
 </script>
 
@@ -72,7 +87,8 @@ export default class SideBarBottom extends Vue {
   width: 100%;
   height: 56px;
   background-color: white;
-  border-top: 1px solid #e6ebf2;
+  border-top: 1px solid #1f3a55;
+
   .side-bar-links {
     width: 100%;
     height: 56px;
@@ -143,9 +159,50 @@ export default class SideBarBottom extends Vue {
       font-size: 14px;
     }
   }
+  .blur-backdoor-left {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 20px;
+    height: 100%;
+    line-height: 60px;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 1),
+      rgba(255, 255, 255, 0.4)
+    );
+    filter: blur(2px);
+  }
+  .blur-backdoor-right {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    width: 20px;
+    height: 100%;
+    line-height: 60px;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 1)
+    );
+    filter: blur(2px);
+  }
 }
 .side-bar-dark {
-  background-color: #0a2540;
+  .blur-backdoor-left {
+    background: linear-gradient(
+      to right,
+      rgba(28, 52, 78, 1),
+      rgba(28, 52, 78, 0.7)
+    );
+  }
+  .blur-backdoor-right {
+    background: linear-gradient(
+      to right,
+      rgba(28, 52, 78, 0.7),
+      rgba(28, 52, 78, 1)
+    );
+  }
 }
 .side-bar-link-dark {
   span {

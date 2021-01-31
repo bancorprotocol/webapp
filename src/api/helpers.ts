@@ -33,7 +33,7 @@ import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
 
 export enum PositionType {
@@ -48,7 +48,7 @@ export const rewindBlocksByDays = (
 ) => {
   if (!Number.isInteger(currentBlock))
     throw new Error("Current block should be an integer");
-  const secondsToRewind = moment.duration(days, "days").asSeconds();
+  const secondsToRewind = dayjs.duration(days, "days").asSeconds();
   const blocksToRewind = parseInt(String(secondsToRewind / secondsPerBlock));
   return currentBlock - blocksToRewind;
 };
@@ -96,7 +96,6 @@ export const traverseLockedBalances = async (
     if (lockedBalances.length >= expectedCount) break;
   }
 
-  console.log(lockedBalances, "should be inspected");
   return lockedBalances;
 };
 
@@ -225,7 +224,7 @@ export const calculateProtectionLevel = (
   minimumDelaySeconds: number,
   maximumDelaySeconds: number
 ): number => {
-  const nowSeconds = moment().unix();
+  const nowSeconds = dayjs().unix();
 
   const timeElaspedSeconds = nowSeconds - startTimeSeconds;
 
@@ -245,7 +244,7 @@ export const calculateProgressLevel = (
   if (endTimeSeconds < startTimeSeconds)
     throw new Error("End time should be greater than start time");
   const totalWaitingTime = endTimeSeconds - startTimeSeconds;
-  const now = moment().unix();
+  const now = dayjs().unix();
   if (now >= endTimeSeconds) return 1;
   const timeWaited = now - startTimeSeconds;
   return timeWaited / totalWaitingTime;
@@ -642,8 +641,6 @@ export const getLogs = async (
 
   const response = await axios.post<InfuraEventResponse>(address, request);
 
-  console.log(response, "is the raw return");
-
   if (response.data.error) {
     console.error("eth_getLogs failed!", response.data.error, address, request);
   }
@@ -673,7 +670,12 @@ const wallets = [
   { walletName: "torus" },
   { walletName: "status" },
   { walletName: "unilogin" },
-  { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME },
+  {
+    walletName: "walletLink",
+    rpcUrl: RPC_URL,
+    appName: APP_NAME,
+    preferred: true
+  },
   { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },
@@ -1072,7 +1074,7 @@ export interface ConverterV2Row {
 }
 
 export const formatLockDuration = (seconds: number): string =>
-  moment.duration(seconds, "seconds").humanize();
+  dayjs.duration(seconds, "seconds").humanize();
 interface BaseSymbol {
   symbol: string;
   precision: number;
@@ -1291,8 +1293,8 @@ export const buildPoolNameFromReserves = (
 export const formatUnixTime = (
   unixTime: number
 ): { date: string; time: string; dateTime: string } => {
-  const date = moment.unix(unixTime).format("MMM D yyyy");
-  const time = moment.unix(unixTime).format("HH:mm");
+  const date = dayjs.unix(unixTime).format("MMM D YYYY");
+  const time = dayjs.unix(unixTime).format("HH:mm");
   const dateTime = `${date} ${time}`;
 
   return { date, time, dateTime };

@@ -1,4 +1,6 @@
 /* free-solid-svg-icons */
+import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
+import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
 import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons/faArrowDown";
 import { faBars } from "@fortawesome/free-solid-svg-icons/faBars";
@@ -33,8 +35,11 @@ import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
 import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
+import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 
 export const fas = [
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
   faArrowCircleRight,
   faArrowDown,
   faBars,
@@ -68,7 +73,8 @@ export const fas = [
   faChevronDown,
   faChevronLeft,
   faPoll,
-  faRetweet
+  faRetweet,
+  faUpload
 ];
 
 /* free-brands-svg-icons */
