@@ -203,7 +203,8 @@ import {
   networkVersion$,
   tokenMeta$,
   poolPrograms$,
-  newPools$
+  newPools$,
+  catchOptimisticNetwork
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -1505,6 +1506,7 @@ export class EthBancorModule
   whiteListedPoolsLoading = true;
 
   @mutation setWhiteListedPools(anchors: string[]) {
+    console.log("whitelisted pools are being set!", anchors.length);
     this.whiteListedPools = anchors;
   }
 
@@ -5011,9 +5013,6 @@ export class EthBancorModule
       this.setContractAddresses(registeredContracts);
       return registeredContracts;
     } catch (e) {
-      console.error(
-        `Failed fetching ETH contract addresses ${e.message} Contract Registry: ${contractRegistry}`
-      );
       throw new Error(e.message);
     }
   }
@@ -5266,14 +5265,6 @@ export class EthBancorModule
       });
       return res;
     } catch (e) {
-      const firstContract = groupsOfShapes[0][0];
-      console.error(`Failed eth-multicall fetch ${e}`, {
-        groupsOfShapes,
-        firstContract,
-        networkVars,
-        isMainNet,
-        currentNetwork
-      });
       throw new Error(`Failed eth-multicall fetch ${e}`);
     }
   }
@@ -5935,8 +5926,9 @@ export class EthBancorModule
 
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
-    const chainId = await web3.eth.getChainId();
-    networkVersionReceiver$.next(chainId);
+    web3.eth
+      .getChainId()
+      .then(chainId => networkVersionReceiver$.next(chainId));
 
     web3.eth
       .getBlockNumber()
@@ -5954,6 +5946,7 @@ export class EthBancorModule
           converterRegistryAddress
         })
       ),
+      catchOptimisticNetwork(),
       shareReplay(1)
     );
 
@@ -6565,9 +6558,6 @@ export class EthBancorModule
       const anchors = await getAnchors(converterRegistryAddress, w3);
       return anchors;
     } catch (e) {
-      console.error(
-        `Failed to fetch anchors with address ${converterRegistryAddress} ${e}`
-      );
       throw new Error(`Failed to fetch Anchors ${e}`);
     }
   }

@@ -4,7 +4,8 @@ import {
   buildV2Converter,
   buildRegistryContract,
   buildLiquidityProtectionContract,
-  buildLiquidityProtectionSettingsContract
+  buildLiquidityProtectionSettingsContract,
+  buildAddressLookupContract
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
@@ -17,8 +18,10 @@ import {
 import { MultiCall } from "eth-multicall";
 import {
   LiquidityProtectionSettings,
-  RawLiquidityProtectionSettings
+  RawLiquidityProtectionSettings,
+  RegisteredContracts
 } from "@/types/bancor";
+import { asciiToHex } from "web3-utils";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -230,6 +233,55 @@ export const fetchLiquidityProtectionSettings = async ({
   return newSettings;
 };
 
+export const fetchContracts = async () => {};
+
+export const fetchContractAddresses = async (
+  contractRegistry: string
+): Promise<RegisteredContracts> => {
+  if (!contractRegistry || !web3.utils.isAddress(contractRegistry))
+    throw new Error("Must pass valid address");
+
+  // @ts-ignore
+  const ethMulti = new MultiCall(web3);
+
+  const hardCodedBytes: RegisteredContracts = {
+    BancorNetwork: asciiToHex("BancorNetwork"),
+    BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
+    LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
+    LiquidityProtection: asciiToHex("LiquidityProtection"),
+    StakingRewards: asciiToHex("StakingRewards")
+  };
+
+  const hardCodedShape = (
+    contractAddress: string,
+    label: string,
+    ascii: string
+  ) => {
+    const contract = buildAddressLookupContract(contractAddress);
+    return {
+      [label]: contract.methods.addressOf(ascii)
+    };
+  };
+
+  const arrBytes = toPairs(hardCodedBytes) as [string, string][];
+
+  try {
+    const hardCodedShapes = arrBytes.map(([label, ascii]) =>
+      hardCodedShape(contractRegistry, label, ascii)
+    );
+    const [contractAddresses] = await ethMulti.all([hardCodedShapes]);
+
+    const registeredContracts = Object.assign(
+      {},
+      ...contractAddresses
+    ) as RegisteredContracts;
+
+    return registeredContracts;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
+
 export const fetchLiquidityProtectionSettingsContract = async (
   liquidityProtectionContract: string
 ): Promise<string> => {
@@ -263,9 +315,17 @@ export const fetchWhiteListedV1Pools = async (
     const liquidityProtection = buildLiquidityProtectionSettingsContract(
       contractAddress
     );
-    return liquidityProtection.methods.poolWhitelist().call();
+    const whitelistedPools = await liquidityProtection.methods
+      .poolWhitelist()
+      .call();
+
+    console.log("fetched whitelisted pools");
+    return whitelistedPools;
   } catch (e) {
-    console.error("Failed fetching whitelisted pools");
+    console.error(
+      "Failed fetching whitelisted pools with address",
+      liquidityProtectionSettingsAddress
+    );
     throw new Error(`Failed to fetch whitelisted pools ${e}`);
   }
 };
