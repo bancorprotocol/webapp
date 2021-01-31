@@ -133,14 +133,10 @@ import {
   priorityEthPools,
   knownPools,
   PreviousPoolFee,
-  liquidityMiningEndTime,
   moreStaticRelays,
   previousPoolFees,
   v2Pools,
-  secondRoundLiquidityMiningEndTime,
   compareStaticRelay,
-  thirdRoundLiquidityMiningEndTime,
-  fourthRoundLiquidityMiningEndTime
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
