@@ -1,11 +1,11 @@
 <template>
   <b-dropdown
-    id="dropdown-settings"
+    id="dropdown-menu"
     right
-    variant="white"
+    :variant="darkMode ? 'outline-light' : 'outline-dark'"
     size="sm"
     toggle-class="block-rounded"
-    menu-class="dropdown-dark"
+    :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
     no-caret
   >
     <template #button-content>
@@ -13,7 +13,11 @@
     </template>
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
-      <b-dropdown-header class="text-uppercase">Bancor</b-dropdown-header>
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+        >Bancor</b-dropdown-header
+      >
       <b-dropdown-item style="width: 230px" disabled>
         <font-awesome-icon icon="info" class="mr-2" fixed-width />
         {{ $t("about") }}
@@ -21,9 +25,11 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group v-if="false" id="dropdown-group-2">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("apps")
-      }}</b-dropdown-header>
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+        >{{ $t("apps") }}</b-dropdown-header
+      >
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
           <img
@@ -75,10 +81,15 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("developers")
-      }}</b-dropdown-header>
-      <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+        >{{ $t("developers") }}</b-dropdown-header
+      >
+      <b-dropdown-item
+        @click="openUrl('https://docs.bancor.network/')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         <font-awesome-icon
           icon="book-open"
           class="mr-2 menu-icon"
@@ -86,7 +97,10 @@
         />
         Gitbook
       </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')">
+      <b-dropdown-item
+        @click="openUrl('https://github.com/bancorprotocol/')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         <font-awesome-icon
           :icon="['fab', 'github']"
           class="mr-2 menu-icon"
@@ -94,7 +108,10 @@
         />
         GitHub
       </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')">
+      <b-dropdown-item
+        @click="openUrl('https://t.me/BancorDevelopers')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         <font-awesome-icon
           :icon="['fab', 'telegram-plane']"
           class="mr-2 menu-icon"
@@ -105,7 +122,10 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header class="text-uppercase">
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         {{ $t("community") }}
       </b-dropdown-header>
       <b-dropdown-text>
@@ -145,10 +165,16 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3" class="font-size-12">
-      <b-dropdown-item @click="navPrivacy">
+      <b-dropdown-item
+        @click="navPrivacy"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         {{ $t("privacy_policy") }}</b-dropdown-item
       >
-      <b-dropdown-item @click="navTermsOfUse">
+      <b-dropdown-item
+        @click="navTermsOfUse"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         {{ $t("terms_of_use") }}</b-dropdown-item
       >
     </b-dropdown-group>

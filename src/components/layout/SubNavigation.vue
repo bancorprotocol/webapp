@@ -4,14 +4,23 @@
       <b-col>
         <b-button-group class="d-flex">
           <b-button
+            class="swap"
             :to="{ name: 'Swap' }"
-            :variant="$route.name !== 'Swap' ? 'outline-primary' : 'primary'"
+            :variant="
+              $route.name !== 'Swap'
+                ? 'outline-primary' + (darkMode ? '-dark' : '')
+                : 'primary'
+            "
             style="width: 50%"
             >{{ $t("swap") }}</b-button
           >
           <b-button
             :to="{ name: 'Pool' }"
-            :variant="$route.name !== 'Pool' ? 'outline-primary' : 'primary'"
+            :variant="
+              $route.name !== 'Pool'
+                ? 'outline-primary' + (darkMode ? '-dark' : '')
+                : 'primary'
+            "
             style="width: 50%"
             >{{ $t("pool") }}</b-button
           >

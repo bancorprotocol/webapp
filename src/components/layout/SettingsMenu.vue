@@ -3,7 +3,7 @@
     id="dropdown-settings"
     ref="dropdown"
     right
-    variant="white"
+    :variant="darkMode ? 'outline-light' : 'outline-dark'"
     size="sm"
     toggle-class="block-rounded"
     :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
@@ -13,30 +13,37 @@
     <template #button-content>
       <font-awesome-icon icon="cog" fixed-width />
     </template>
-
     <b-dropdown-group id="dropdown-group-1" v-if="showTx && !showLocale">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("transaction_settings")
-      }}</b-dropdown-header>
-      <b-dropdown-text style="width: 300px">
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+        >{{ $t("transaction_settings") }}</b-dropdown-header
+      >
+      <b-dropdown-text
+        style="width: 300px"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         <p class="font-size-sm mb-0">{{ $t("slippage_tolerance") }}</p>
         <slippage-tolerance />
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider v-if="showTx && !showLocale"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-2" v-if="!showLocale">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("interface_settings")
-      }}</b-dropdown-header>
-      <b-dropdown-item @click="toggleDarkMode">
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+        >{{ $t("interface_settings") }}</b-dropdown-header
+      >
+      <b-dropdown-text :variant="darkMode ? 'dark' : 'light'">
         <div class="d-flex justify-content-between align-items-center">
           <span class="font-size-sm">{{ $t("dark_mode") }}</span>
           <div>
             <b-btn
               size="sm"
               :variant="!darkMode ? 'primary' : 'light'"
-              class="mr-1 rounded"
+              class="mr-2 rounded"
               style="width: 50px"
+              @click="toggleDarkMode"
               >{{ $t("off") }}</b-btn
             >
             <b-btn
@@ -44,11 +51,12 @@
               :variant="darkMode ? 'primary' : 'light'"
               class="rounded"
               style="width: 50px"
+              @click="toggleDarkMode"
               >{{ $t("on") }}</b-btn
             >
           </div>
         </div>
-      </b-dropdown-item>
+      </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-text
       :variant="darkMode ? 'dark' : 'light'"
@@ -65,9 +73,14 @@
     </b-dropdown-text>
     <b-dropdown-divider v-if="!showLocale"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3" v-if="!showLocale">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("blockchains")
-      }}</b-dropdown-header>
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+        v-if="showLocale"
+        style="width: 300px !important"
+        @click="goToSettings"
+        >{{ $t("blockchains") }}
+      </b-dropdown-header>
       <b-dropdown-text style="width: 300px">
         <div class="d-flex justify-content-between align-items-end">
           <b-btn

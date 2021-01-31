@@ -20,10 +20,10 @@
       </b-col>
 
       <b-col lg="6">
-        <ProtectedSummary v-if="positions.length" :positions="positions" />
+        <ProtectedSummary :positions="positions" />
       </b-col>
       <b-col lg="6">
-        <RewardsSummary v-if="positions.length" :positions="positions" />
+        <RewardsSummary v-if="currentUser" :positions="positions" />
       </b-col>
 
       <b-col cols="12">
@@ -35,12 +35,18 @@
           "
           :search.sync="searchProtected"
         >
-          <div v-if="loading" class="d-flex justify-content-center my-3">
+          <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
               style="width: 3rem; height: 3rem"
               class="text-primary"
               :label="`${$t('loading')}... `"
             />
+          </div>
+          <div
+            v-else-if="!positions.length"
+            class="mx-3 mt-3 font-size-14 font-w500"
+          >
+            No protected positions found.
           </div>
           <div v-else>
             <ProtectedTable :positions="positions" :search="searchProtected" />

@@ -1589,6 +1589,7 @@ export class EthBancorModule
     userAddress?: string;
     supportedAnchors?: string[];
   }) {
+    this.setLoadingPositions(true);
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
 
@@ -1616,7 +1617,10 @@ export class EthBancorModule
       );
       console.log("got id count", idCount);
       console.timeEnd("time to get ID count");
-      if (idCount == 0) return;
+      if (idCount == 0) {
+        this.setLoadingPositions(false);
+        return;
+      }
       const positionIds = await contract.methods
         .protectedLiquidityIds(owner)
         .call();
@@ -2172,7 +2176,7 @@ export class EthBancorModule
     return lockedBalances;
   }
 
-  loadingProtectedPositions = true;
+  loadingProtectedPositions = false;
 
   get protectedPositions(): ViewProtectedLiquidity[] {
     const owner = this.currentUser;
@@ -2869,7 +2873,7 @@ export class EthBancorModule
     console.log(
       `Web3 estimated is ${bufferedResult} times by ${buffer} is ${bufferedResult} being sent to tx.`
     );
-    return bufferedResult;
+    return new BigNumber(bufferedResult.toFixed(0)).toNumber();
   }
 
   @action async resolveTxOnConfirmation({
@@ -6198,8 +6202,12 @@ export class EthBancorModule
       ]);
 
       const rewardRate = new BigNumber(poolPropgram.rewardRates);
-      const bntReward = new BigNumber(bntProtectedReserve.amount).dividedBy(rewardRate).toNumber();
-      const tknReward = new BigNumber(tknProtectedReserve.amount).dividedBy(rewardRate).toNumber();
+      const bntReward = new BigNumber(bntProtectedReserve.amount)
+        .dividedBy(rewardRate)
+        .toNumber();
+      const tknReward = new BigNumber(tknProtectedReserve.amount)
+        .dividedBy(rewardRate)
+        .toNumber();
 
       return {
         ...pool,

@@ -61,7 +61,7 @@
               trailing-text="BNT"
             />
           </div>
-          <div class="font-size-12 font-w500 text-primary">
+          <div class="font-size-12 font-w500 text-primary" v-if="currentUser">
             <animation-number
               :starting-value="
                 oldrewards.length === 0 ? 0 : oldrewards[index].usd.toNumber()
