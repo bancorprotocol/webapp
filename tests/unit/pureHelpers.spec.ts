@@ -16,33 +16,52 @@ describe("dec to ppm works", () => {
 });
 
 describe("can calculate mining aprs", () => {
-  test("bnt", () => {
+  test("USDC Pool", () => {
     const rewardRate = "165343915343915330";
-    const protectedBnt = "5896382514738500207460658";
-    const rewardShare = "700000";
+    const protectedBnt = "5464704021365105009750215";
+    const protectedTkn = "8246694000590";
+    const bntRewardShare = "700000";
+    const tknRewardShare = "300000";
+    const tknReserveBalance = "10034907031540";
+    const bntReserveBalance = "5391863391448499616501339";
 
-    const res = miningBntReward(protectedBnt, rewardRate, rewardShare);
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.3358;
+    expect(bntReward).toBeCloseTo(expectedResult);
 
-    const expectedResult = 1.23804722332;
-    expect(res).toBeCloseTo(expectedResult);
-  });
-
-  test("tkn", () => {
-    const rewardRate = "165343915343915330";
-    const protectedTkn = "24250428813979407784157";
-    const protectedBnt = "16789531440368918206750988";
-    const rewardShare = "300000";
-
-    const res = miningTknReward(
-      protectedBnt,
+    const tknReward = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
       protectedTkn,
       rewardRate,
-      rewardShare
-    )
+      tknRewardShare
+    );
 
-    const expectedResult = 0.186316621823;
+    expect(tknReward).toBeCloseTo(0.7061);
+  });
 
-    expect(res).toBeCloseTo(expectedResult);
+  test("ETHBNT Pool", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "6444242056039567241062271";
+    const protectedTkn = "24483370760343498011551";
+    const bntRewardShare = "700000";
+    const tknRewardShare = "300000";
+    const tknReserveBalance = "24286381681461977556211";
+    const bntReserveBalance = "16997459221259878949065240";
+
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.1328;
+    expect(bntReward).toBeCloseTo(expectedResult);
+
+    const tknReward = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
+      protectedTkn,
+      rewardRate,
+      tknRewardShare
+    );
+
+    expect(tknReward).toBeCloseTo(0.1826);
   });
 });
 
