@@ -104,7 +104,7 @@ export default class ProtectedSummary extends BaseComponent {
         },
         {
           key: "Total Fees",
-          value: this.prettifyNumber(fees, true)
+          value: "~" + this.prettifyNumber(fees, true)
         }
       ];
     }
