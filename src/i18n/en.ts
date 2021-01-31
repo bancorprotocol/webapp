@@ -277,7 +277,7 @@ export const en = {
   dark_mode: "Dark Mode",
   off: "Off",
   on: "On",
-  languages: "Languages",
+  language: "Language",
   blockchains: "Blockchains",
   version: "Version",
   protection: "Protection",
@@ -336,5 +336,6 @@ export const en = {
   withdrawing_rewards_reset:
     "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and stake your rewards atomically without resetting your current multipliers, click the “Stake my rewards” button below.",
   stake_tokens: "Stake Tokens",
-  unstake_tokens: "Unstake Tokens"
+  unstake_tokens: "Unstake Tokens",
+  choose_language: "Choose your language"
 };

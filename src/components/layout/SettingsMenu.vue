@@ -6,6 +6,7 @@
     variant="white"
     size="sm"
     toggle-class="block-rounded"
+    :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
     no-caret
     @hide="settingsMenuHide($event)"
   >
@@ -49,10 +50,18 @@
         </div>
       </b-dropdown-item>
     </b-dropdown-group>
-    <b-dropdown-text :variant="darkMode ? 'dark' : 'light'" v-if="!showLocale">
-      <b-button @click="toggleLocale">
-        {{ `Language: ${getLanguageByLocale(i18n.locale)}` }}</b-button
-      >
+    <b-dropdown-text
+      :variant="darkMode ? 'dark' : 'light'"
+      v-if="!showLocale"
+      @click="toggleLocale"
+      class="cursor"
+    >
+      <div class="d-flex justify-content-between align-items-center">
+        <span>{{
+          `${$t("language")}: ${getLanguageByLocale(i18n.locale)}`
+        }}</span>
+        <font-awesome-icon icon="arrow-right" class="mr-2 menu-icon" />
+      </div>
     </b-dropdown-text>
     <b-dropdown-divider v-if="!showLocale"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3" v-if="!showLocale">
@@ -83,27 +92,27 @@
         {{ `${$t("version")} ${appVersion}` }}
       </div>
     </b-dropdown-group>
-    <b-dropdown-text :variant="darkMode ? 'dark' : 'light'" v-if="showLocale">
-      <font-awesome-icon
-        @click="goToSettings"
-        icon="arrow-down"
-        class="mr-2 menu-icon"
-      />
-      Choose your language
-    </b-dropdown-text>
-    <b-dropdown-item v-if="showLocale">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("languages")
-      }}</b-dropdown-header>
-      <b-button
+    <b-dropdown-header
+      :variant="darkMode ? 'dark' : 'light'"
+      v-if="showLocale"
+      style="width: 300px !important"
+      class="cursor"
+      @click="goToSettings"
+    >
+      <font-awesome-icon icon="arrow-left" class="mr-2 menu-icon" />
+      {{ $t("choose_language") }}
+    </b-dropdown-header>
+    <b-dropdown-group v-if="showLocale">
+      <b-dropdown-item-button
         style="margin: 5px"
         v-for="item in i18n.availableLocales"
+        :variant="darkMode ? 'dark' : 'light'"
         :key="item.toString()"
         @click="switchlocale(item)"
       >
         {{ getLanguageByLocale(item) }}
-      </b-button>
-    </b-dropdown-item>
+      </b-dropdown-item-button>
+    </b-dropdown-group>
   </b-dropdown>
 </template>
 
@@ -120,8 +129,9 @@ import { i18n, getLanguageByLocale } from "@/i18n";
 export default class SettingsMenu extends BaseComponent {
   @Prop({ default: true }) showTx!: boolean;
 
-  showLocale: boolean = true;
+  showLocale: boolean = false;
   goBack: boolean = false;
+  goLocale: boolean = false;
 
   get i18n() {
     return i18n;
@@ -158,6 +168,7 @@ export default class SettingsMenu extends BaseComponent {
 
   toggleLocale() {
     this.showLocale = !this.showLocale;
+    this.goLocale = true;
   }
 
   goToSettings() {
@@ -165,11 +176,12 @@ export default class SettingsMenu extends BaseComponent {
     this.toggleLocale();
   }
 
-  settingsMenuHide(bvEvent: { preventDefault: () => void }) {
-    if (this.showLocale || this.goBack) {
+  settingsMenuHide(bvEvent: any) {
+    if (this.goLocale || this.goBack) {
       this.goBack = false;
+      this.goLocale = false;
       bvEvent.preventDefault();
-    }
+    } else this.showLocale = false;
   }
 }
 </script>
