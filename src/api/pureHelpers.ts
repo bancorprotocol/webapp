@@ -138,23 +138,24 @@ export const miningBntReward = (
     .multipliedBy(new BigNumber(rewardShares).dividedBy(oneMillion))
     .multipliedBy(365)
     .dividedBy(protectedBnt)
-    .toNumber()
+    .toNumber();
 };
 
 export const miningTknReward = (
-  protectedBnt: string,
+  tknReserveBalance: string,
+  bntReserveBalance: string,
   protectedTkn: string,
-  rewardRates: string,
-  rewardShares: string
+  rewardRate: string,
+  rewardShare: string
 ) => {
-  return new BigNumber(rewardRates)
+  return new BigNumber(rewardRate)
     .multipliedBy(86400)
     .multipliedBy(2)
-    .multipliedBy(new BigNumber(rewardShares).dividedBy(oneMillion))
-    .multipliedBy(new BigNumber(protectedTkn).dividedBy(protectedBnt))
+    .multipliedBy(new BigNumber(rewardShare).dividedBy(oneMillion))
+    .multipliedBy(new BigNumber(tknReserveBalance).dividedBy(bntReserveBalance))
     .multipliedBy(365)
     .dividedBy(protectedTkn)
-    .toNumber()
+    .toNumber();
 };
 
 export const compareStaticRelayAndSet = (
