@@ -6178,11 +6178,11 @@ export class EthBancorModule
     }));
 
     const res = zippedProtectedReserves.map(pool => {
-      const poolPropgram: PoolProgram = findOrThrow(poolPrograms, pp =>
+      const poolProgram: PoolProgram = findOrThrow(poolPrograms, pp =>
         compareString(pool.anchorAddress, pp.poolToken)
       );
 
-      const poolBalances = findOrThrow(highTierPools, p =>
+      const poolReserveBalances = findOrThrow(highTierPools, p =>
         compareString(pool.anchorAddress, p.id)
       );
 
@@ -6193,30 +6193,46 @@ export class EthBancorModule
       const [
         bntReserve,
         tknReserve
-      ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
+      ] = sortAlongSide(
+        poolReserveBalances.reserveBalances,
+        reserve => reserve.id,
+        [networkToken]
+      );
+
+      const [bntProtected, tknProtected] = sortAlongSide(
+        pool.reserves,
+        reserve => reserve.contract,
+        [networkToken]
+      );
+
+      const [
+        bntProtectedShare,
+        tknProtectedShare
+      ] = sortAlongSide(poolProgram.reserves, reserve => reserve.reserveId, [
         networkToken
       ]);
 
-      const rewardRate = new BigNumber(poolPropgram.rewardRates);
+      const poolRewardRate = poolProgram.rewardRate;
 
       const bntReward = miningBntReward(
-        bntReserve.amount,
-        poolPropgram.rewardRates,
-        poolPropgram.rewardShares[0]
-      )
+        bntProtected.amount,
+        poolRewardRate,
+        ppmToDec(bntProtectedShare.rewardShare)
+      );
 
       const tknReward = miningTknReward(
-        bntReserve.amount,
         tknReserve.amount,
-        poolPropgram.rewardRates,
-        poolPropgram.rewardShares[1]
-      )
+        bntReserve.amount,
+        tknProtected.amount,
+        poolRewardRate,
+        ppmToDec(tknProtectedShare.rewardShare)
+      );
 
       return {
         ...pool,
         bntReward,
         tknReward,
-        endTime: poolPropgram.endTimes
+        endTime: poolProgram.endTimes
       };
     });
 

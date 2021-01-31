@@ -129,13 +129,13 @@ export const decToPpm = (dec: number | string): string =>
 
 export const miningBntReward = (
   protectedBnt: string,
-  rewardRates: string,
-  rewardShares: string
+  rewardRate: string,
+  rewardShare: number
 ) => {
-  return new BigNumber(rewardRates)
+  return new BigNumber(rewardRate)
     .multipliedBy(86400)
     .multipliedBy(2)
-    .multipliedBy(new BigNumber(rewardShares).dividedBy(oneMillion))
+    .multipliedBy(rewardShare)
     .multipliedBy(365)
     .dividedBy(protectedBnt)
     .toNumber();
@@ -146,12 +146,12 @@ export const miningTknReward = (
   bntReserveBalance: string,
   protectedTkn: string,
   rewardRate: string,
-  rewardShare: string
+  rewardShare: number
 ) => {
   return new BigNumber(rewardRate)
     .multipliedBy(86400)
     .multipliedBy(2)
-    .multipliedBy(new BigNumber(rewardShare).dividedBy(oneMillion))
+    .multipliedBy(rewardShare)
     .multipliedBy(new BigNumber(tknReserveBalance).dividedBy(bntReserveBalance))
     .multipliedBy(365)
     .dividedBy(protectedTkn)
@@ -350,20 +350,6 @@ export const calculateLimits = (
   // add some buffer to avoid tx fails
   tknLimitWei = tknLimitWei.multipliedBy(
     new BigNumber("99.9").dividedBy("100")
-  );
-
-  console.log(
-    "limits",
-    "limitOrDefault",
-    limitOrDefault.toString(),
-    "mintedWei",
-    mintedWei.toString(),
-    "bntRate",
-    bntRate.toString(),
-    "tknDelta",
-    tknDelta.toString(),
-    "tknLimitWei",
-    tknLimitWei.toString()
   );
 
   return { bntLimitWei: mintedWei, tknLimitWei };

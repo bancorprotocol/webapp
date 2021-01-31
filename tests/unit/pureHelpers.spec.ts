@@ -20,8 +20,8 @@ describe("can calculate mining aprs", () => {
     const rewardRate = "165343915343915330";
     const protectedBnt = "5464704021365105009750215";
     const protectedTkn = "8246694000590";
-    const bntRewardShare = "700000";
-    const tknRewardShare = "300000";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
     const tknReserveBalance = "10034907031540";
     const bntReserveBalance = "5391863391448499616501339";
 
@@ -44,8 +44,8 @@ describe("can calculate mining aprs", () => {
     const rewardRate = "165343915343915330";
     const protectedBnt = "6444242056039567241062271";
     const protectedTkn = "24483370760343498011551";
-    const bntRewardShare = "700000";
-    const tknRewardShare = "300000";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
     const tknReserveBalance = "24286381681461977556211";
     const bntReserveBalance = "16997459221259878949065240";
 
