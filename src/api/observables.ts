@@ -1,5 +1,5 @@
 import { differenceWith, isEqual } from "lodash";
-import { Subject, combineLatest, Observable, merge } from "rxjs";
+import { Subject, combineLatest, Observable, merge, EMPTY } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -10,7 +10,8 @@ import {
   shareReplay,
   pluck,
   scan,
-  share
+  share,
+  catchError
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
@@ -21,6 +22,7 @@ import { getNetworkVariables } from "./config";
 import { RegisteredContracts } from "@/types/bancor";
 import { compareString } from "./helpers";
 import {
+  fetchContractAddresses,
   fetchLiquidityProtectionSettings,
   fetchLiquidityProtectionSettingsContract,
   fetchMinLiqForMinting,
@@ -66,15 +68,45 @@ const logger = (label: string) => (data: any) => {
   if (difference) {
     difference = Date.now() - difference;
   }
-  console.log(`${label} returned ${data} ${difference}`);
+  console.log(`Logger (${difference}): ${label} returned ${data}`);
   difference = Date.now();
 };
 
 export const authenticated$ = new Subject<string>();
 export const networkVersionReceiver$ = new Subject<EthNetworks>();
 
+let networkVersionCount: number = 0;
+
+export const catchOptimisticNetwork = () => (source: Observable<any>) =>
+  source.pipe(
+    catchError(err => {
+      console.log("catch optimistic received", err);
+      return EMPTY;
+      if (networkVersionCount >= 2) {
+        console.log(
+          "throwing because the network version count is",
+          networkVersionCount
+        );
+        return EMPTY;
+        throw new Error(err);
+      } else {
+        console.log(
+          "deciding not to throw because network version count is",
+          networkVersionCount
+        );
+        return EMPTY;
+      }
+    })
+  );
+
 export const networkVersion$ = networkVersionReceiver$.pipe(
+  startWith(EthNetworks.Mainnet),
   distinctUntilChanged(),
+  tap(() => {
+    console.log("current network version count is", networkVersionCount);
+    networkVersionCount++;
+    console.log("new network version count is", networkVersionCount);
+  }),
   shareReplay(1)
 );
 
@@ -85,6 +117,7 @@ export const apiData$ = networkVersion$.pipe(
 
 export const tokenMeta$ = networkVersion$.pipe(
   switchMap(network => getTokenMeta(network)),
+  catchError(() => EMPTY),
   share()
 );
 
@@ -108,15 +141,22 @@ export const networkVars$ = networkVersion$.pipe(
 
 export const contractAddresses$ = networkVars$.pipe(
   switchMap(networkVariables =>
-    vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
+    fetchContractAddresses(networkVariables.contractRegistry)
   ),
+  catchOptimisticNetwork(),
   startWith({
     BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
     BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
     LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
     LiquidityProtection: "0x9Ab934010E6f2D633FeEB5b6f1DdCeEdeD601BCF",
-    StakingRewards: "0x457FE44E832181e1D3eCee0fc5be72cd9b36859f"
+    StakingRewards: "0xB443DEA978B39178Cb05Ae005074227A4390DfCe"
   }),
+  tap(
+    data => console.log("data ::", data),
+    error => {
+      console.log("wondering ::", error);
+    }
+  ),
   distinctUntilChanged<RegisteredContracts>(isEqual),
   shareReplay(1)
 );
@@ -140,7 +180,11 @@ export const liquidityProtectionStore$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
-networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
+networkVersion$.subscribe(network => {
+  if (vxm && vxm.ethBancor) {
+    vxm.ethBancor.setNetwork(network);
+  }
+});
 apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
 apiData$
   .pipe(
@@ -186,7 +230,8 @@ settingsContractAddress$
   .pipe(
     switchMap(settingsContractAddress =>
       fetchMinLiqForMinting(settingsContractAddress)
-    )
+    ),
+    catchOptimisticNetwork()
   )
   .subscribe(settingsContract =>
     vxm.minting.setMinNetworkTokenLiquidityForMinting(settingsContract)
@@ -199,7 +244,8 @@ combineLatest([liquidityProtection$, settingsContractAddress$])
         settingsContractAddress,
         protectionContractAddress
       })
-    )
+    ),
+    catchOptimisticNetwork()
   )
   .subscribe(settings => {
     vxm.ethBancor.setLiquidityProtectionSettings(settings);
@@ -210,6 +256,11 @@ settingsContractAddress$
   .pipe(
     tap(logger("white listed pool address")),
     switchMap(address => fetchWhiteListedV1Pools(address)),
+    catchOptimisticNetwork(),
+    tap(
+      x => console.log("success on whitelisted", x),
+      error => console.log("failure on whitelisted not meant", error)
+    ),
     tap(logger("white listed pools"))
   )
   .subscribe(whitelistedPools =>
@@ -222,13 +273,15 @@ combineLatest([
   currentBlock$,
   apiData$
 ]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
-  const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
-  vxm.ethBancor.fetchProtectionPositions({
-    storeAddress,
-    blockNumberNow: blockNumber,
-    userAddress: userAddress as string,
-    supportedAnchors
-  });
+  try {
+    const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
+    vxm.ethBancor.fetchProtectionPositions({
+      storeAddress,
+      blockNumberNow: blockNumber,
+      userAddress: userAddress as string,
+      supportedAnchors
+    });
+  } catch (e) {}
 });
 
 combineLatest([authenticated$, apiData$]).subscribe(
@@ -237,7 +290,9 @@ combineLatest([authenticated$, apiData$]).subscribe(
       const reserveTokens = apiData.tokens.map(token => token.dlt_id);
       const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
       const allTokens = [...poolTokens, ...reserveTokens];
-      vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+      try {
+        vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+      } catch (e) {}
     }
   }
 );
