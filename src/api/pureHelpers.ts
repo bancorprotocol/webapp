@@ -127,31 +127,34 @@ export const groupPositionsArray = (
 export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
-export const miningBntReward = (protectedBnt: string, highCap: boolean) => {
-  const baseNumber = "14000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
-
-  return new BigNumber(magicalNumber)
-    .multipliedBy(52)
+export const miningBntReward = (
+  protectedBnt: string,
+  rewardRates: string,
+  rewardShares: string
+) => {
+  return new BigNumber(rewardRates)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(new BigNumber(rewardShares).dividedBy(oneMillion))
+    .multipliedBy(365)
     .dividedBy(protectedBnt)
-    .toNumber();
+    .toNumber()
 };
 
 export const miningTknReward = (
-  tknReserveBalance: string,
-  bntReserveBalance: string,
+  protectedBnt: string,
   protectedTkn: string,
-  highCap: boolean
+  rewardRates: string,
+  rewardShares: string
 ) => {
-  const baseNumber = "6000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
-  return new BigNumber(
-    new BigNumber(magicalNumber)
-      .multipliedBy(tknReserveBalance)
-      .dividedBy(bntReserveBalance)
-      .multipliedBy(52)
-      .dividedBy(protectedTkn)
-  ).toNumber();
+  return new BigNumber(rewardRates)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(new BigNumber(rewardShares).dividedBy(oneMillion))
+    .multipliedBy(new BigNumber(protectedTkn).dividedBy(protectedBnt))
+    .multipliedBy(365)
+    .dividedBy(protectedTkn)
+    .toNumber()
 };
 
 export const compareStaticRelayAndSet = (

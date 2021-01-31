@@ -20,6 +20,7 @@ import { getNetworkVariables } from "./config";
 import dayjs from "dayjs";
 import { RegisteredContracts } from "@/types/bancor";
 import { compareString } from "./helpers";
+import { buildStakingRewardsContract } from "./eth/contractTypes";
 
 interface DataCache<T> {
   allEmissions: T[];
@@ -98,6 +99,27 @@ export const contractAddresses$ = networkVars$.pipe(
 export const bancorConverterRegistry$ = contractAddresses$.pipe(
   pluck("BancorConverterRegistry"),
   distinctUntilChanged(compareString),
+  share()
+);
+
+export const stakingRewards$ = contractAddresses$.pipe(
+  pluck("StakingRewards"),
+  distinctUntilChanged(compareString),
+  shareReplay(1)
+);
+
+export const storeRewards$ = stakingRewards$.pipe(
+  switchMap(async stakingRewardsContract => {
+    const contract = buildStakingRewardsContract(stakingRewardsContract);
+    return contract.methods.store().call();
+  }),
+  share()
+);
+
+export const poolPrograms$ = storeRewards$.pipe(
+  switchMap(storeRewardContract =>
+    vxm.rewards.fetchPoolPrograms(storeRewardContract)
+  ),
   share()
 );
 
