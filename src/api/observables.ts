@@ -57,6 +57,9 @@ export const distinctArrayItem = <T>(
     startWith(initialValue)
   );
 
+// don't stop the feed if the function throws
+// pipe(startWithMainnet )
+
 let difference = Date.now();
 
 const logger = (label: string) => (data: any) => {
