@@ -1,9 +1,5 @@
 <template>
-  <modal-base
-    title="You are staking and protecting:"
-    v-model="txMeta.showTxModal"
-    @input="close"
-  >
+  <modal-base :title="title" v-model="txMeta.showTxModal" @input="close">
     <action-modal-status
       :error="txMeta.txError"
       :success="txMeta.success"
@@ -22,7 +18,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 })
 export default class ModalTxAction extends Vue {
   @Prop() txMeta!: ITxMeta;
-  @Prop({ default: "Processing Transaction" }) title!: string;
+  @Prop({ default: "You are staking and protecting:" }) title!: string;
 
   get currentStatus() {
     if (this.txMeta.sections.length)
