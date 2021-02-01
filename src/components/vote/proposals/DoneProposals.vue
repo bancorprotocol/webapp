@@ -34,19 +34,28 @@
     default-sort="to"
     :hide-pagination="true"
   >
-    <template #cell(id)="{ item, opened }">
+    <template #cell(id)="{ item, opened, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
       <div :class="{ 'no-border': !isNaN(opened) && item.id === opened }">
         {{ item.id }}
       </div>
     </template>
 
-    <template #cell(details)="{ item }">
+    <template #cell(details)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
       <div class="font-size-14 font-w500">
         {{ item.name }}
       </div>
     </template>
 
-    <template #cell(result)="{ item }">
+    <template #cell(result)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
       <div
         class="result"
         :class="'result--' + (isApproved(item) ? 'for' : 'against')"
@@ -55,7 +64,10 @@
       </div>
     </template>
 
-    <template #cell(votesFor)="{ item }">
+    <template #cell(votesFor)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
       <div>
         <div class="font-size-14 font-w500">
           {{ prettifyNumber(item.totalVotesFor) }} {{ symbol }}
@@ -66,7 +78,10 @@
       </div>
     </template>
 
-    <template #cell(votesAgainst)="{ item }">
+    <template #cell(votesAgainst)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
       <div>
         <div class="font-size-14 font-w500">
           {{ prettifyNumber(item.totalVotesAgainst) }} {{ symbol }}
@@ -77,7 +92,10 @@
       </div>
     </template>
 
-    <template #cell(startDate)="{ item }">
+    <template #cell(startDate)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
       <div>
         <div class="font-size-14 font-w500">
           {{ formatDate(item.end) }}
@@ -88,7 +106,10 @@
       </div>
     </template>
 
-    <template #cell(spacer)="{ item, opened }">
+    <template #cell(spacer)="{ item, opened, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
       <div class="cursor" @click="() => openProposal(item)">
         <font-awesome-icon
           :icon="

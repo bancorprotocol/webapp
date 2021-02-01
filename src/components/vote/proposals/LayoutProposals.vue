@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-container
-      class="vote-head"
+      class="vote-head d-none d-lg-block"
       :class="darkMode ? 'vote-head-dark' : 'vote-head-light'"
     >
       <b-row>
@@ -58,6 +58,7 @@
             :name="`cell(${column.key})`"
             :item="item"
             :opened="opened"
+            :label="column.label"
             :value="item[column.key]"
           >
             {{ item[column.key] }}
