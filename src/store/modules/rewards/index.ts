@@ -85,11 +85,11 @@ export class RewardsModule extends VuexModule.With({
               onConfirmation: async () => {
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchProtectionPositions();
                 vxm.ethBancor.fetchAndSetLockedBalances({});
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchProtectionPositions();
                 vxm.ethBancor.fetchAndSetLockedBalances({});
               },
               resolveImmediately: true
@@ -118,11 +118,11 @@ export class RewardsModule extends VuexModule.With({
               onConfirmation: async () => {
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchProtectionPositions();
                 vxm.ethBancor.fetchAndSetLockedBalances({});
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
+                vxm.ethBancor.fetchProtectionPositions();
                 vxm.ethBancor.fetchAndSetLockedBalances({});
               },
               resolveImmediately: true
