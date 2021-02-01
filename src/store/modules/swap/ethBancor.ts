@@ -203,7 +203,8 @@ import {
   networkVersion$,
   tokenMeta$,
   poolPrograms$,
-  catchOptimisticNetwork
+  catchOptimisticNetwork,
+  fetchPositionsTrigger$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -1581,100 +1582,34 @@ export class EthBancorModule
     return protectedLiquidity;
   }
 
-  @action async fetchProtectionPositions({
-    storeAddress,
+  @action async fetchProtectionPositions() {
+    fetchPositionsTrigger$.next(null);
+  }
+
+  @action async buildFullPositions({
+    rawPositions,
+    liquidityProtection,
     blockNumberNow,
-    userAddress,
     supportedAnchors
   }: {
-    storeAddress?: string;
-    blockNumberNow?: number;
-    userAddress?: string;
-    supportedAnchors?: string[];
+    rawPositions: ProtectedLiquidity[];
+    liquidityProtectionStore: string;
+    liquidityProtection: string;
+    blockNumberNow: number;
+    supportedAnchors: string[];
   }) {
-    const liquidityStore =
-      storeAddress || this.contracts.LiquidityProtectionStore;
-
-    const isValidAddress = web3.utils.isAddress(liquidityStore);
-    if (!isValidAddress) {
-      console.error(
-        `Failed to find liquidity store address of ${storeAddress}`
-      );
-      this.setLoadingPositions(false);
-      throw new Error(`Invalid liquidity store address of ${storeAddress}`);
-    }
-
-    if (!this.currentUser) {
-      this.setLoadingPositions(false);
-      return;
-    }
     try {
-      const contract = buildLiquidityProtectionStoreContract(
-        liquidityStore,
-        w3
-      );
-      const owner = userAddress || this.currentUser;
-      console.time("time to get ID count");
-      console.log("getting id count", owner, "was the owner");
-      const idCount = Number(
-        await contract.methods.protectedLiquidityCount(owner).call()
-      );
-      console.log("got id count", idCount);
-      console.timeEnd("time to get ID count");
-      if (idCount == 0) {
-        this.setLoadingPositions(false);
-        return;
-      }
-      console.time("timeToGetIds");
-      const positionIds = await contract.methods
-        .protectedLiquidityIds(owner)
-        .call();
-      console.timeEnd("timeToGetIds");
-
-      const [rawPositions, currentBlockNumber] = await Promise.all([
-        this.fetchPositionsMulti({
-          positionIds,
-          liquidityStore
-        }),
-        (async () => {
-          return blockNumberNow || w3.eth.getBlockNumber();
-        })()
-      ]);
-
-      if (rawPositions.length !== idCount) {
-        this.setLoadingPositions(false);
-        throw new Error("ID count does not match returned positions");
-      }
-
-      const theSupportedAnchors =
-        supportedAnchors ||
-        (this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id));
-      if (!theSupportedAnchors) {
-        throw new Error("ID count does not match returned positions");
-        throw new Error(
-          "Race condition error, unable to determine supported anchors"
-        );
-      }
+      const currentBlockNumber = blockNumberNow;
 
       const allPositions = filterAndWarn(
         rawPositions,
         pos =>
-          theSupportedAnchors.some(anchor =>
-            compareString(pos.poolToken, anchor)
-          ),
+          supportedAnchors.some(anchor => compareString(pos.poolToken, anchor)),
         "position lost due to anchor not being supported"
       );
 
-      console.log(allPositions, "are the after thing", {
-        theSupportedAnchors,
-        newPools: this.newPools,
-        supportedAnchors,
-        apiPools:
-          this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id)
-      });
-
       const lpContract = buildLiquidityProtectionContract(
-        this.contracts.LiquidityProtection,
+        liquidityProtection,
         w3
       );
 
@@ -1779,7 +1714,7 @@ export class EthBancorModule
                         .call();
                     } catch (err) {
                       console.error("getting pool roi failed!", err, {
-                        address: this.contracts.LiquidityProtection,
+                        address: liquidityProtection,
                         poolToken,
                         reserveToken,
                         reserveAmount,
@@ -1836,14 +1771,14 @@ export class EthBancorModule
               currentLiquidityReturn
             ] = await Promise.all([
               getRemoveLiquidityReturn(
-                this.contracts.LiquidityProtection,
+                liquidityProtection,
                 position.id,
                 oneMillion.toString(),
                 fullWaitTime,
                 w3
               ),
               getRemoveLiquidityReturn(
-                this.contracts.LiquidityProtection,
+                liquidityProtection,
                 position.id,
                 oneMillion.toString(),
                 timeNow,
@@ -2004,9 +1939,9 @@ export class EthBancorModule
                   this.liquidityProtectionSettings.govToken,
                   reserveTokenAddress
                 ]);
-                this.fetchProtectionPositions({});
+                this.fetchProtectionPositions();
                 await wait(3000);
-                this.fetchProtectionPositions({});
+                this.fetchProtectionPositions();
               },
               resolveImmediately: true,
               ...(depositIsEth && { value: reserveAmountWei })
@@ -2067,10 +2002,10 @@ export class EthBancorModule
       onConfirmation: async () => {
         await wait(600);
         this.fetchAndSetLockedBalances({});
-        this.fetchProtectionPositions({});
+        this.fetchProtectionPositions();
         await wait(2000);
         this.fetchAndSetLockedBalances({});
-        this.fetchProtectionPositions({});
+        this.fetchProtectionPositions();
       }
     });
 
@@ -2114,9 +2049,9 @@ export class EthBancorModule
                   poolToken.contract,
                   this.liquidityProtectionSettings.govToken
                 ]);
-                this.fetchProtectionPositions({});
+                this.fetchProtectionPositions();
                 await wait(3000);
-                this.fetchProtectionPositions({});
+                this.fetchProtectionPositions();
               },
               resolveImmediately: true
             });

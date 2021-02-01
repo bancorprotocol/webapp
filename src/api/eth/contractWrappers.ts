@@ -5,7 +5,8 @@ import {
   buildRegistryContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
-  buildAddressLookupContract
+  buildAddressLookupContract,
+  buildLiquidityProtectionStoreContract
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
@@ -13,15 +14,18 @@ import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import Web3 from "web3";
 import {
   liquidityProtectionSettingsShape,
-  liquidityProtectionShape
+  liquidityProtectionShape,
+  protectedPositionShape
 } from "./shapes";
 import { MultiCall } from "eth-multicall";
 import {
   LiquidityProtectionSettings,
+  ProtectedLiquidity,
   RawLiquidityProtectionSettings,
   RegisteredContracts
 } from "@/types/bancor";
 import { asciiToHex } from "web3-utils";
+import { contractAddresses$ } from "../observables";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -163,6 +167,13 @@ export const existingPool = async (
   return res;
 };
 
+const throwIfNotContract = (contractAddress: string) => {
+  if (contractAddress == "") throw new Error("Passed contract is empty");
+  const isValidAddress = web3.utils.isAddress(contractAddress);
+  if (!isValidAddress)
+    throw new Error(`${contractAddress} is an invalid contract address`);
+};
+
 export const getRemoveLiquidityReturn = async (
   protectionContract: string,
   id: string,
@@ -170,6 +181,7 @@ export const getRemoveLiquidityReturn = async (
   removeTimestamp: number,
   web3: Web3
 ) => {
+  throwIfNotContract(protectionContract);
   const contract = buildLiquidityProtectionContract(protectionContract, web3);
 
   const res = await contract.methods
@@ -311,21 +323,72 @@ export const fetchWhiteListedV1Pools = async (
   liquidityProtectionSettingsAddress: string
 ) => {
   try {
-    const contractAddress = liquidityProtectionSettingsAddress;
+    throwIfNotContract(liquidityProtectionSettingsAddress);
     const liquidityProtection = buildLiquidityProtectionSettingsContract(
-      contractAddress
+      liquidityProtectionSettingsAddress
     );
     const whitelistedPools = await liquidityProtection.methods
       .poolWhitelist()
       .call();
 
-    console.log("fetched whitelisted pools");
     return whitelistedPools;
   } catch (e) {
     console.error(
       "Failed fetching whitelisted pools with address",
       liquidityProtectionSettingsAddress
     );
-    throw new Error(`Failed to fetch whitelisted pools ${e}`);
+    throw new Error(
+      `Failed fetching whitelisted pools with address ${liquidityProtectionSettingsAddress}`
+    );
   }
+};
+
+export const fetchPositionIds = async (
+  currentUser: string,
+  liquidityStore: string
+) => {
+  throwIfNotContract(liquidityStore);
+  const contract = buildLiquidityProtectionStoreContract(liquidityStore);
+  try {
+    const positionIds = await contract.methods
+      .protectedLiquidityIds(currentUser)
+      .call();
+
+    return positionIds;
+  } catch (e) {
+    throw new Error(`Failed fetching position ids ${e}`);
+  }
+};
+
+export const fetchPositionsMulti = async (
+  positionIds: string[],
+  liquidityStore: string
+): Promise<ProtectedLiquidity[]> => {
+  const positionShapes = positionIds.map(id =>
+    protectedPositionShape(liquidityStore, id)
+  );
+
+  // @ts-ignore
+  const ethMulti = new MultiCall(web3);
+  const [multiPositions] = await ethMulti.all([positionShapes]);
+
+  const keys = [
+    "owner",
+    "poolToken",
+    "reserveToken",
+    "poolAmount",
+    "reserveAmount",
+    "reserveRateN",
+    "reserveRateD",
+    "timestamp",
+    "id"
+  ];
+
+  const protectedLiquidity = multiPositions
+    .map(res => ({ ...res.position, "8": res.positionId }))
+    .map(res =>
+      fromPairs(keys.map((key, index) => [key, res[index]]))
+    ) as ProtectedLiquidity[];
+
+  return protectedLiquidity;
 };
