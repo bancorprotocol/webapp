@@ -1,8 +1,8 @@
 <template>
   <b-dropdown
-    id="dropdown-settings"
+    id="dropdown-menu"
     right
-    :variant="darkMode ? 'outline-light' : 'outline-dark'"
+    :variant="darkMode ? 'outline-dark' : 'outline-light'"
     size="sm"
     toggle-class="block-rounded"
     :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
@@ -13,11 +13,7 @@
     </template>
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
-      <b-dropdown-header
-        class="text-uppercase"
-        :variant="darkMode ? 'dark' : 'light'"
-        >Bancor</b-dropdown-header
-      >
+      <b-dropdown-header class="text-uppercase">Bancor</b-dropdown-header>
       <b-dropdown-item style="width: 230px" disabled>
         <font-awesome-icon icon="info" class="mr-2" fixed-width /> About (Coming
         Soon)
@@ -25,11 +21,7 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group v-if="false" id="dropdown-group-2">
-      <b-dropdown-header
-        class="text-uppercase"
-        :variant="darkMode ? 'dark' : 'light'"
-        >Apps</b-dropdown-header
-      >
+      <b-dropdown-header class="text-uppercase">Apps</b-dropdown-header>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
           <img
@@ -81,10 +73,7 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header
-        class="text-uppercase"
-        :variant="darkMode ? 'dark' : 'light'"
-      >
+      <b-dropdown-header class="text-uppercase">
         {{ `Community & Support` }}
       </b-dropdown-header>
       <b-dropdown-text>
@@ -124,11 +113,7 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
-      <b-dropdown-header
-        class="text-uppercase"
-        :variant="darkMode ? 'dark' : 'light'"
-        >Developers</b-dropdown-header
-      >
+      <b-dropdown-header class="text-uppercase">Developers</b-dropdown-header>
       <b-dropdown-item
         @click="openUrl('https://docs.bancor.network/')"
         :variant="darkMode ? 'dark' : 'light'"
