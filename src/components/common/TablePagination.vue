@@ -1,5 +1,8 @@
 <template>
-  <div v-if="pagesTotal > 0" class="undertable">
+  <div
+    v-if="pagesTotal > 0"
+    class="d-flex justify-content-center align-items-center mt-4 font-size-14 font-w500"
+  >
     <div
       :class="current > 1 ? 'cursor' : ''"
       @click="current > 1 ? current-- : null"
@@ -33,7 +36,13 @@
       />
     </div>
   </div>
-  <span v-else class="undertable"> No results found</span>
+  <span
+    v-else
+    class="d-flex justify-content-center align-items-center mt-4 font-size-14 font-w500"
+    :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+  >
+    No results found</span
+  >
 </template>
 
 <script lang="ts">
@@ -52,13 +61,4 @@ export default class TablePagination extends BaseComponent {
 }
 </script>
 
-<style lang="scss">
-.undertable {
-  display: flex;
-  justify-content: center;
-  margin-block-start: 24px;
-  color: #6b7c93;
-  font-weight: 500;
-  font-size: 14;
-}
-</style>
+<style lang="scss"></style>
