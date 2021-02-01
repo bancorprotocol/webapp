@@ -234,7 +234,7 @@ export default class AddProposal extends BaseComponent {
         executor: this.contractAddress,
         hash
       });
-      this.success = await vxm.ethBancor.createTxResponse(hash);
+      this.success = await vxm.ethBancor.createTxResponse(txHash);
 
       this.setDefault();
     } catch (e) {
