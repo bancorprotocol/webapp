@@ -287,9 +287,7 @@
 
             <div class="row pt-2">
               <div class="col-6 pt-1">
-                <span v-if="Date.now() > item.end">
-                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum
-                </span>
+                {{ (item.quorum / 10000).toFixed(2) }}% Quorum
               </div>
               <div class="col-6 text-right">
                 <b-btn
