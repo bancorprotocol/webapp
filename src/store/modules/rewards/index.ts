@@ -1,5 +1,8 @@
 import { createModule, action, mutation } from "vuex-class-component";
-import { buildStakingRewardsContract } from "@/api/eth/contractTypes";
+import {
+  buildStakingRewardsContract,
+  buildStakingRewardsStoreContract
+} from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
 import BigNumber from "bignumber.js";
 import { OnUpdate, TxResponse } from "@/types/bancor";
@@ -7,10 +10,23 @@ import { multiSteps } from "@/api/helpers";
 import wait from "waait";
 import { shrinkToken } from "@/api/eth/helpers";
 import { expandToken } from "@/api/pureHelpers";
+import { zip } from "lodash";
 
 const VuexModule = createModule({
   strict: false
 });
+
+interface RewardShare {
+  reserveId: string;
+  rewardShare: string;
+}
+export interface PoolProgram {
+  poolToken: string;
+  startTimes: string;
+  endTimes: string;
+  rewardRate: string;
+  reserves: RewardShare[];
+}
 
 export class RewardsModule extends VuexModule.With({
   namespaced: "rewards/"
@@ -129,6 +145,7 @@ export class RewardsModule extends VuexModule.With({
 
   @action async loadData() {
     try {
+      await this.fetchPoolPrograms();
       await this.fetchAndSetPendingRewards();
       await this.fetchAndSetTotalClaimedRewards();
     } catch (e) {
@@ -156,6 +173,56 @@ export class RewardsModule extends VuexModule.With({
     this.setPendingRewards(value);
 
     return value;
+  }
+
+  poolPrograms?: PoolProgram[];
+
+  @action async fetchPoolPrograms(
+    rewardsStoreContract?: string
+  ): Promise<PoolProgram[]> {
+    if (this.poolPrograms) {
+      return this.poolPrograms;
+    }
+
+    try {
+      const storeContract =
+        rewardsStoreContract || (await this.contract.methods.store().call());
+      const store = buildStakingRewardsStoreContract(storeContract);
+      const result = await store.methods.poolPrograms().call();
+
+      const poolPrograms: PoolProgram[] = [];
+
+      for (let i = 0; i < result[0].length; i++) {
+        const reserveTokens = result[4][i];
+        const rewardShares = result[5][i];
+        const reservesTuple = zip(reserveTokens, rewardShares) as [
+          string,
+          string
+        ][];
+        const reserves: RewardShare[] = reservesTuple.map(
+          ([reserveId, rewardShare]) => ({ reserveId, rewardShare })
+        );
+
+        poolPrograms.push({
+          poolToken: result[0][i],
+          startTimes: result[1][i],
+          endTimes: result[2][i],
+          rewardRate: result[3][i],
+          reserves
+        });
+      }
+      this.setPoolPrograms(poolPrograms);
+
+      console.log("Pool Programs", poolPrograms);
+
+      return poolPrograms;
+    } catch (e) {
+      throw new Error(`Failed fetching pool programs ${e.message}`);
+    }
+  }
+
+  @mutation setPoolPrograms(value: PoolProgram[]) {
+    this.poolPrograms = value;
   }
 
   @mutation setTotalClaimedRewards(value: BigNumber) {
