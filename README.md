@@ -16,7 +16,7 @@ Daily standups
 
 #### Weekday work times
 
-|                 | City                                                                         |
+|                  | City                                                                        |
 | ---------------- | --------------------------------------------------------------------------- |
 | John Williamson  | [Brisbane](https://www.timeanddate.com/worldclock/australia/)               |
 | Jan Langheimer   | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg)         |
@@ -25,9 +25,12 @@ Daily standups
 
 ### Git Strategy
 
-Please create new features in new branches forked from `staging` and submit work at the end of your session as a Drafted PR towards staging.
+Please create new features as Pull Requests in new branches forked from `master` and be sure any work in progress is marked as a **Draft**.
 
 ![DraftPR](https://github.com/bancorprotocol/webapp/raw/master/docs/media/draftPr.png)
+
+- Always link new PRs to their original issue.
+- Assign Asaf as a reviewer and tag the Bancor v2 project for anything to be reviewed prior to going into production.
 
 ## Project setup
 
