@@ -365,14 +365,17 @@ export class EthereumGovernance extends VuexModule.With({
 
     return new Promise((resolve, reject) => {
       let txHash: string;
-      txContract.methods.propose(executor, hash).send({
-        from: account
-      }).on("transactionHash", (hash: string) => {
-        txHash = hash;
-        this.setLastTransaction(Date.now());
-        resolve(txHash)
-      })
-      .on("error", (error: any) => reject(error));
+      txContract.methods
+        .propose(executor, hash)
+        .send({
+          from: account
+        })
+        .on("transactionHash", (hash: string) => {
+          txHash = hash;
+          this.setLastTransaction(Date.now());
+          resolve(txHash);
+        })
+        .on("error", (error: any) => reject(error));
     });
   }
 

@@ -86,7 +86,7 @@ import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import * as Sentry from "@sentry/browser";
 
 const networkContract = "thisisbancor";
@@ -828,7 +828,7 @@ export class EosBancorModule
     return vxm.eosNetwork.getBalances({ tokens: tokensToAskFor, slow: false });
   }
 
-  @action async updateFee({ fee, id }: FeeParams) {
+  @action async updateFee({ fee, id }: FeeParams): Promise<TxResponse> {
     const relay = await this.relayById(id);
     const updateFeeAction = multiContract.updateFeeAction(
       relay.smartToken.symbol,
@@ -839,11 +839,12 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
-  @action async removeRelay(id: string) {
+  @action async removeRelay(id: string): Promise<TxResponse> {
     const relay = await this.relayById(id);
     const reserves = relay.reserves.map(reserve => reserve.symbol);
     const nukeRelayActions = multiContract.nukeRelayAction(
@@ -857,11 +858,15 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
-  @action async updateOwner({ id, newOwner }: NewOwnerParams) {
+  @action async updateOwner({
+    id,
+    newOwner
+  }: NewOwnerParams): Promise<TxResponse> {
     const relay = await this.relayById(id);
     const updateOwnerAction = multiContract.updateOwnerAction(
       relay.smartToken.symbol,
@@ -870,7 +875,8 @@ export class EosBancorModule
     const txRes = await this.triggerTx([updateOwnerAction]);
     return {
       txId: txRes.transaction_id,
-      blockExplorerLink: generateEosxLink(txRes.transaction_id)
+      blockExplorerLink: generateEosxLink(txRes.transaction_id),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -919,7 +925,8 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -1782,7 +1789,7 @@ export class EosBancorModule
     id: relayId,
     reserves,
     onUpdate
-  }: LiquidityParams) {
+  }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
     const tokenAmounts = await this.viewAmountToTokenAmounts(reserves);
 
@@ -1905,7 +1912,8 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -2038,7 +2046,8 @@ export class EosBancorModule
 
     return {
       txId: lastTxId,
-      blockExplorerLink: generateEosxLink(lastTxId)
+      blockExplorerLink: generateEosxLink(lastTxId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -2046,7 +2055,7 @@ export class EosBancorModule
     reserves,
     id: relayId,
     onUpdate
-  }: LiquidityParams) {
+  }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
     const smartTokenSymbol = relay.smartToken.symbol;
 
@@ -2089,7 +2098,8 @@ export class EosBancorModule
     const txId = txRes.transaction_id as string;
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -2408,7 +2418,9 @@ export class EosBancorModule
     );
   }
 
-  @action async convert(proposal: ProposedConvertTransaction) {
+  @action async convert(
+    proposal: ProposedConvertTransaction
+  ): Promise<TxResponse> {
     const { from, to } = proposal;
     if (compareString(from.id, to.id))
       throw new Error("Cannot convert a token to itself.");
@@ -2470,7 +2482,8 @@ export class EosBancorModule
 
     return {
       txId: txRes.transaction_id,
-      blockExplorerLink: generateEosxLink(txRes.transaction_id)
+      blockExplorerLink: generateEosxLink(txRes.transaction_id),
+      blockExplorerName: "EOSX"
     };
   }
 

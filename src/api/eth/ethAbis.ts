@@ -6478,35 +6478,9 @@ export const ABIBancorGovernance: AbiItem[] = [
   }
 ];
 
-export const ABIStakingRewardsDistribution: AbiItem[] = [
+export const ABIStakingRewardsStore: AbiItem[] = [
   {
-    inputs: [
-      {
-        internalType: "contract IStakingRewardsDistributionStore",
-        name: "store",
-        type: "address"
-      },
-      {
-        internalType: "contract ITokenGovernance",
-        name: "networkTokenGovernance",
-        type: "address"
-      },
-      {
-        internalType: "contract ICheckpointStore",
-        name: "lastRemoveTimes",
-        type: "address"
-      },
-      {
-        internalType: "uint256",
-        name: "maxRewards",
-        type: "uint256"
-      },
-      {
-        internalType: "contract IContractRegistry",
-        name: "registry",
-        type: "address"
-      }
-    ],
+    inputs: [],
     stateMutability: "nonpayable",
     type: "constructor"
   },
@@ -6515,99 +6489,30 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
     inputs: [
       {
         indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256"
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256"
-      }
-    ],
-    name: "ClaimedRewardsUpdated",
-    type: "event"
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "previousOwner",
-        type: "address"
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "newOwner",
-        type: "address"
-      }
-    ],
-    name: "OwnershipTransferred",
-    type: "event"
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "provider",
-        type: "address"
-      },
-      {
-        indexed: false,
-        internalType: "uint256[]",
-        name: "ids",
-        type: "uint256[]"
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256"
-      }
-    ],
-    name: "RewardsClaimed",
-    type: "event"
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "provider",
-        type: "address"
-      },
-      {
-        indexed: false,
-        internalType: "uint256[]",
-        name: "ids",
-        type: "uint256[]"
-      },
-      {
-        indexed: true,
-        internalType: "contract IERC20",
+        internalType: "contract IDSToken",
         name: "poolToken",
         type: "address"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount",
+        name: "startTime",
         type: "uint256"
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: "uint256",
-        name: "newId",
+        name: "endTime",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "rewardRate",
         type: "uint256"
       }
     ],
-    name: "RewardsStaked",
+    name: "PoolProgramAdded",
     type: "event"
   },
   {
@@ -6615,18 +6520,31 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
     inputs: [
       {
         indexed: true,
-        internalType: "uint256",
-        name: "id",
-        type: "uint256"
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      }
+    ],
+    name: "PoolProgramRemoved",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "provider",
+        type: "address"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount",
+        name: "claimTime",
         type: "uint256"
       }
     ],
-    name: "RewardsUpdated",
+    name: "ProviderLastClaimTimeUpdated",
     type: "event"
   },
   {
@@ -6719,12 +6637,12 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
   },
   {
     inputs: [],
-    name: "MULTIPLIER_INCREMENT",
+    name: "ROLE_MANAGER",
     outputs: [
       {
-        internalType: "uint32",
+        internalType: "bytes32",
         name: "",
-        type: "uint32"
+        type: "bytes32"
       }
     ],
     stateMutability: "view",
@@ -6732,12 +6650,12 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
   },
   {
     inputs: [],
-    name: "PPM_RESOLUTION",
+    name: "ROLE_OWNER",
     outputs: [
       {
-        internalType: "uint32",
+        internalType: "bytes32",
         name: "",
-        type: "uint32"
+        type: "bytes32"
       }
     ],
     stateMutability: "view",
@@ -6745,7 +6663,7 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
   },
   {
     inputs: [],
-    name: "ROLE_REWARDS_DISTRIBUTOR",
+    name: "ROLE_SEEDER",
     outputs: [
       {
         internalType: "bytes32",
@@ -6764,45 +6682,6 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
         internalType: "bytes32",
         name: "",
         type: "bytes32"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "_onlyOwnerCanUpdateRegistry",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "_prevRegistry",
-    outputs: [
-      {
-        internalType: "contract IContractRegistry",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "_registry",
-    outputs: [
-      {
-        internalType: "contract IContractRegistry",
-        name: "",
-        type: "address"
       }
     ],
     stateMutability: "view",
@@ -6913,52 +6792,6 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
     type: "function"
   },
   {
-    inputs: [],
-    name: "owner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "prevRegistry",
-    outputs: [
-      {
-        internalType: "contract IContractRegistry",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "registry",
-    outputs: [
-      {
-        internalType: "contract IContractRegistry",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
     inputs: [
       {
         internalType: "bytes32",
@@ -6972,26 +6805,6 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
       }
     ],
     name: "renounceRole",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "restoreRegistry",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "bool",
-        name: "onlyOwnerCanUpdateRegistry",
-        type: "bool"
-      }
-    ],
-    name: "restrictRegistryUpdate",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -7017,76 +6830,250 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "newOwner",
+        internalType: "contract IDSToken",
+        name: "poolToken",
         type: "address"
       }
     ],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "updateRegistry",
-    outputs: [],
-    stateMutability: "nonpayable",
+    name: "isPoolParticipating",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
     type: "function"
   },
   {
     inputs: [
       {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      }
+    ],
+    name: "isReserveParticipating",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IDSToken[]",
+        name: "poolTokens",
+        type: "address[]"
+      },
+      {
+        internalType: "contract IERC20Token[2][]",
+        name: "reserveTokens",
+        type: "address[2][]"
+      },
+      {
+        internalType: "uint32[2][]",
+        name: "rewardShares",
+        type: "uint32[2][]"
+      },
+      {
         internalType: "uint256[]",
-        name: "ids",
+        name: "startTime",
         type: "uint256[]"
       },
       {
         internalType: "uint256[]",
-        name: "amounts",
-        type: "uint256[]"
-      }
-    ],
-    name: "setRewards",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256[]",
-        name: "ids",
+        name: "endTimes",
         type: "uint256[]"
       },
       {
         internalType: "uint256[]",
-        name: "amounts",
+        name: "rewardRates",
         type: "uint256[]"
       }
     ],
-    name: "updateClaimedRewards",
+    name: "addPastPoolPrograms",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
   },
   {
     inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token[2]",
+        name: "reserveTokens",
+        type: "address[2]"
+      },
+      {
+        internalType: "uint32[2]",
+        name: "rewardShares",
+        type: "uint32[2]"
+      },
       {
         internalType: "uint256",
-        name: "maxRewards",
+        name: "endTime",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "rewardRate",
         type: "uint256"
       }
     ],
-    name: "setMaxRewards",
+    name: "addPoolProgram",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
   },
   {
-    inputs: [],
-    name: "maxRewards",
+    inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      }
+    ],
+    name: "removePoolProgram",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "newEndTime",
+        type: "uint256"
+      }
+    ],
+    name: "setPoolProgramEndTime",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      }
+    ],
+    name: "poolProgram",
     outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "contract IERC20Token[2]",
+        name: "",
+        type: "address[2]"
+      },
+      {
+        internalType: "uint32[2]",
+        name: "",
+        type: "uint32[2]"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "poolPrograms",
+    outputs: [
+      {
+        internalType: "contract IDSToken[]",
+        name: "",
+        type: "address[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]"
+      },
+      {
+        internalType: "contract IERC20Token[2][]",
+        name: "",
+        type: "address[2][]"
+      },
+      {
+        internalType: "uint32[2][]",
+        name: "",
+        type: "uint32[2][]"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      }
+    ],
+    name: "poolRewards",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
       {
         internalType: "uint256",
         name: "",
@@ -7097,32 +7084,120 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
     type: "function"
   },
   {
-    inputs: [],
-    name: "totalRewards",
-    outputs: [
+    inputs: [
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      },
       {
         internalType: "uint256",
-        name: "",
+        name: "lastUpdateTime",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "rewardPerToken",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "totalClaimedRewards",
         type: "uint256"
       }
     ],
-    stateMutability: "view",
+    name: "updatePoolRewardsData",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function"
   },
   {
     inputs: [
       {
+        internalType: "contract IDSToken[]",
+        name: "poolTokens",
+        type: "address[]"
+      },
+      {
+        internalType: "contract IERC20Token[]",
+        name: "reserveTokens",
+        type: "address[]"
+      },
+      {
         internalType: "uint256[]",
-        name: "ids",
+        name: "lastUpdateTimes",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "rewardsPerToken",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "totalClaimedRewards",
         type: "uint256[]"
       }
     ],
-    name: "claimedPositionRewards",
+    name: "setPoolsRewardData",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "provider",
+        type: "address"
+      },
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      }
+    ],
+    name: "providerRewards",
     outputs: [
       {
-        internalType: "uint256[]",
+        internalType: "uint256",
         name: "",
-        type: "uint256[]"
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      },
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32"
       }
     ],
     stateMutability: "view",
@@ -7134,100 +7209,133 @@ export const ABIStakingRewardsDistribution: AbiItem[] = [
         internalType: "address",
         name: "provider",
         type: "address"
-      }
-    ],
-    name: "claimedProviderRewards",
-    outputs: [
+      },
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      },
       {
         internalType: "uint256",
-        name: "",
+        name: "rewardPerToken",
         type: "uint256"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256[]",
-        name: "ids",
-        type: "uint256[]"
-      }
-    ],
-    name: "rewards",
-    outputs: [
+      },
       {
         internalType: "uint256",
-        name: "",
+        name: "pendingBaseRewards",
         type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "totalClaimedRewards",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "effectiveStakingTime",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "baseRewardsDebt",
+        type: "uint256"
+      },
+      {
+        internalType: "uint32",
+        name: "baseRewardsDebtMultiplier",
+        type: "uint32"
       }
     ],
+    name: "updateProviderRewardsData",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function"
   },
   {
     inputs: [
       {
-        internalType: "uint256[]",
-        name: "ids",
-        type: "uint256[]"
-      }
-    ],
-    name: "claimRewards",
-    outputs: [
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      },
+      {
+        internalType: "address[]",
+        name: "providers",
+        type: "address[]"
+      },
       {
         internalType: "uint256[]",
-        name: "ids",
+        name: "rewardsPerToken",
         type: "uint256[]"
       },
       {
-        internalType: "contract IERC20",
-        name: "poolToken",
+        internalType: "uint256[]",
+        name: "pendingBaseRewards",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "totalClaimedRewards",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "effectiveStakingTimes",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256[]",
+        name: "baseRewardsDebts",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint32[]",
+        name: "baseRewardsDebtMultipliers",
+        type: "uint32[]"
+      }
+    ],
+    name: "setProviderRewardData",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "provider",
         type: "address"
       }
     ],
-    name: "stakeRewards",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
+    name: "updateProviderLastClaimTime",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function"
   },
   {
     inputs: [
       {
-        internalType: "uint256[]",
-        name: "ids",
-        type: "uint256[]"
+        internalType: "address",
+        name: "provider",
+        type: "address"
       }
     ],
-    name: "rewardsMultipliers",
+    name: "providerLastClaimTime",
     outputs: [
       {
-        internalType: "uint32[]",
+        internalType: "uint256",
         name: "",
-        type: "uint32[]"
+        type: "uint256"
       }
     ],
     stateMutability: "view",
@@ -7311,7 +7419,7 @@ export const ABIStakingRewards: AbiItem[] = [
       },
       {
         indexed: true,
-        internalType: "contract IERC20",
+        internalType: "contract IDSToken",
         name: "poolToken",
         type: "address"
       },
@@ -7422,19 +7530,6 @@ export const ABIStakingRewards: AbiItem[] = [
   {
     inputs: [],
     name: "ROLE_PUBLISHER",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "ROLE_REWARDS_DISTRIBUTOR",
     outputs: [
       {
         internalType: "bytes32",
@@ -7713,22 +7808,17 @@ export const ABIStakingRewards: AbiItem[] = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      },
-      {
         internalType: "address",
         name: "provider",
         type: "address"
       },
       {
-        internalType: "contract IERC20",
-        name: "poolToken",
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
         type: "address"
       },
       {
-        internalType: "contract IERC20",
+        internalType: "contract IERC20Token",
         name: "reserveToken",
         type: "address"
       },
@@ -7743,7 +7833,7 @@ export const ABIStakingRewards: AbiItem[] = [
         type: "uint256"
       }
     ],
-    name: "onLiquidityAdded",
+    name: "onAddingLiquidity",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -7761,12 +7851,12 @@ export const ABIStakingRewards: AbiItem[] = [
         type: "address"
       },
       {
-        internalType: "contract IERC20",
-        name: "poolToken",
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
         type: "address"
       },
       {
-        internalType: "contract IERC20",
+        internalType: "contract IERC20Token",
         name: "reserveToken",
         type: "address"
       },
@@ -7781,7 +7871,7 @@ export const ABIStakingRewards: AbiItem[] = [
         type: "uint256"
       }
     ],
-    name: "onLiquidityRemoved",
+    name: "onRemovingLiquidity",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -7833,12 +7923,12 @@ export const ABIStakingRewards: AbiItem[] = [
         type: "address"
       },
       {
-        internalType: "contract IERC20",
+        internalType: "contract IDSToken",
         name: "poolToken",
         type: "address"
       },
       {
-        internalType: "contract IERC20",
+        internalType: "contract IERC20Token",
         name: "reserveToken",
         type: "address"
       }
@@ -7851,7 +7941,7 @@ export const ABIStakingRewards: AbiItem[] = [
         type: "uint256"
       }
     ],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function"
   },
   {
@@ -7870,7 +7960,7 @@ export const ABIStakingRewards: AbiItem[] = [
         type: "uint256"
       }
     ],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function"
   },
   {
@@ -7913,7 +8003,7 @@ export const ABIStakingRewards: AbiItem[] = [
         type: "uint256"
       },
       {
-        internalType: "contract IERC20",
+        internalType: "contract IDSToken",
         name: "poolToken",
         type: "address"
       }
@@ -7945,6 +8035,35 @@ export const ABIStakingRewards: AbiItem[] = [
     name: "updateRewards",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "provider",
+        type: "address"
+      },
+      {
+        internalType: "contract IDSToken",
+        name: "poolToken",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      }
+    ],
+    name: "rewardsMultiplier",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32"
+      }
+    ],
+    stateMutability: "view",
     type: "function"
   }
 ];

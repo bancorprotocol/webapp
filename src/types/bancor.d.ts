@@ -426,6 +426,7 @@ export interface JSON {
 export interface TxResponse {
   txId: string;
   blockExplorerLink: string;
+  blockExplorerName: string;
 }
 
 export interface V1PoolResponse extends TxResponse {

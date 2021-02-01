@@ -127,12 +127,16 @@ export const groupPositionsArray = (
 export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
-export const miningBntReward = (protectedBnt: string, highCap: boolean) => {
-  const baseNumber = "14000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
-
-  return new BigNumber(magicalNumber)
-    .multipliedBy(52)
+export const miningBntReward = (
+  protectedBnt: string,
+  rewardRate: string,
+  rewardShare: number
+) => {
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(365)
     .dividedBy(protectedBnt)
     .toNumber();
 };
@@ -141,17 +145,17 @@ export const miningTknReward = (
   tknReserveBalance: string,
   bntReserveBalance: string,
   protectedTkn: string,
-  highCap: boolean
+  rewardRate: string,
+  rewardShare: number
 ) => {
-  const baseNumber = "6000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
-  return new BigNumber(
-    new BigNumber(magicalNumber)
-      .multipliedBy(tknReserveBalance)
-      .dividedBy(bntReserveBalance)
-      .multipliedBy(52)
-      .dividedBy(protectedTkn)
-  ).toNumber();
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(new BigNumber(tknReserveBalance).dividedBy(bntReserveBalance))
+    .multipliedBy(365)
+    .dividedBy(protectedTkn)
+    .toNumber();
 };
 
 export const compareStaticRelayAndSet = (
@@ -346,20 +350,6 @@ export const calculateLimits = (
   // add some buffer to avoid tx fails
   tknLimitWei = tknLimitWei.multipliedBy(
     new BigNumber("99.9").dividedBy("100")
-  );
-
-  console.log(
-    "limits",
-    "limitOrDefault",
-    limitOrDefault.toString(),
-    "mintedWei",
-    mintedWei.toString(),
-    "bntRate",
-    bntRate.toString(),
-    "tknDelta",
-    tknDelta.toString(),
-    "tknLimitWei",
-    tknLimitWei.toString()
   );
 
   return { bntLimitWei: mintedWei, tknLimitWei };

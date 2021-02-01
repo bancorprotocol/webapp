@@ -1,7 +1,6 @@
 <template>
   <div id="protected-table">
     <data-table
-      v-if="positions.length"
       :fields="fields"
       :items="groupedPositions"
       :collapsable="true"
@@ -367,8 +366,6 @@
         </b-btn>
       </template>
     </data-table>
-
-    <protected-empty v-else class="mx-3" />
   </div>
 </template>
 
@@ -391,20 +388,16 @@ import {
   ViewProtectedLiquidity,
   ViewTableField
 } from "@/types/bancor";
-import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-import PendingRewards from "@/components/rewards/PendingRewards.vue";
 
 @Component({
   components: {
-    PendingRewards,
     DataTable,
     RemainingTime2,
     CountdownTimer,
-    ProtectedEmpty,
     PoolLogosOverlapped,
     ContentBlock
   }
