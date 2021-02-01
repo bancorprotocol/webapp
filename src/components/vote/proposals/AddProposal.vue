@@ -31,10 +31,10 @@
     </template>
 
     <div v-if="!(txBusy || success || error)" class="w-100">
-
       <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
-        New proposal requires you to hold at least {{ proposalMinimumFormatted }}
-        {{ symbol }} which will be locked up to {{ maxLock }}h.
+        New proposal requires you to hold at least
+        {{ proposalMinimumFormatted }} {{ symbol }} which will be locked up to
+        {{ maxLock }}h.
       </b-alert>
 
       <multi-input-field
@@ -234,10 +234,7 @@ export default class AddProposal extends BaseComponent {
         executor: this.contractAddress,
         hash
       });
-      this.success = {
-        txId: txHash,
-        blockExplorerLink: await vxm.ethBancor.createExplorerLink(hash)
-      }
+      this.success = await vxm.ethBancor.createTxResponse(hash);
 
       this.setDefault();
     } catch (e) {
@@ -263,11 +260,11 @@ export default class AddProposal extends BaseComponent {
   }
 
   setDefault() {
-    this.description = '';
-    this.name = '';
-    this.discourseUrl = '';
-    this.githubUrl = '';
-    this.contractAddress = '';
+    this.description = "";
+    this.name = "";
+    this.discourseUrl = "";
+    this.githubUrl = "";
+    this.contractAddress = "";
   }
 
   onHide() {
