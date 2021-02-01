@@ -1,6 +1,8 @@
 import {
   decToPpm,
   expandToken,
+  miningBntReward,
+  miningTknReward,
   prettifyNumber,
   calculateLimits
 } from "@/api/pureHelpers";
@@ -10,6 +12,56 @@ describe("dec to ppm works", () => {
   test("range of percentages", () => {
     expect(decToPpm(0.6)).toBe("600000");
     expect(decToPpm(1)).toBe("1000000");
+  });
+});
+
+describe("can calculate mining aprs", () => {
+  test("USDC Pool", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "5464704021365105009750215";
+    const protectedTkn = "8246694000590";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
+    const tknReserveBalance = "10034907031540";
+    const bntReserveBalance = "5391863391448499616501339";
+
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.3358;
+    expect(bntReward).toBeCloseTo(expectedResult);
+
+    const tknReward = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
+      protectedTkn,
+      rewardRate,
+      tknRewardShare
+    );
+
+    expect(tknReward).toBeCloseTo(0.7061);
+  });
+
+  test("ETHBNT Pool", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "6444242056039567241062271";
+    const protectedTkn = "24483370760343498011551";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
+    const tknReserveBalance = "24286381681461977556211";
+    const bntReserveBalance = "16997459221259878949065240";
+
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.1328;
+    expect(bntReward).toBeCloseTo(expectedResult);
+
+    const tknReward = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
+      protectedTkn,
+      rewardRate,
+      tknRewardShare
+    );
+
+    expect(tknReward).toBeCloseTo(0.1826);
   });
 });
 

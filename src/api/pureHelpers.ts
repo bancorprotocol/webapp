@@ -127,6 +127,37 @@ export const groupPositionsArray = (
 export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
+export const miningBntReward = (
+  protectedBnt: string,
+  rewardRate: string,
+  rewardShare: number
+) => {
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(365)
+    .dividedBy(protectedBnt)
+    .toNumber();
+};
+
+export const miningTknReward = (
+  tknReserveBalance: string,
+  bntReserveBalance: string,
+  protectedTkn: string,
+  rewardRate: string,
+  rewardShare: number
+) => {
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(new BigNumber(tknReserveBalance).dividedBy(bntReserveBalance))
+    .multipliedBy(365)
+    .dividedBy(protectedTkn)
+    .toNumber();
+};
+
 export const compareStaticRelayAndSet = (
   staticRelay: StaticRelay,
   anchorAndConverter: ConverterAndAnchor
@@ -319,20 +350,6 @@ export const calculateLimits = (
   // add some buffer to avoid tx fails
   tknLimitWei = tknLimitWei.multipliedBy(
     new BigNumber("99.9").dividedBy("100")
-  );
-
-  console.log(
-    "limits",
-    "limitOrDefault",
-    limitOrDefault.toString(),
-    "mintedWei",
-    mintedWei.toString(),
-    "bntRate",
-    bntRate.toString(),
-    "tknDelta",
-    tknDelta.toString(),
-    "tknLimitWei",
-    tknLimitWei.toString()
   );
 
   return { bntLimitWei: mintedWei, tknLimitWei };
