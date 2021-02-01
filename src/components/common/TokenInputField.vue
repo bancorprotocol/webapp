@@ -1,14 +1,18 @@
 <template>
   <div>
     <label-content-split :label="label" class="mb-1">
-      <span
-        @click="maxBalance"
-        v-if="currentUser"
-        class="font-size-12 font-w500 cursor"
-      >
-        Balance: {{ prettifyNumber(balance) }}
-        {{ usdValue ? usdValue : "" }}
-      </span>
+      <div v-if="currentUser" class="d-flex flex-row font-size-12 font-w500">
+        <div @click="maxBalance" class="cursor">
+          Balance: {{ prettifyNumber(balance) }}
+        </div>
+        <div
+          v-if="usdValue"
+          class="ml-1"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        >
+          {{ `(~${prettifyNumber(usdValue, true)})` }}
+        </div>
+      </div>
     </label-content-split>
 
     <b-input-group>
