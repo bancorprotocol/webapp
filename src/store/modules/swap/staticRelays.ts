@@ -3,7 +3,6 @@ import { compareString } from "@/api/helpers";
 import { staticToConverterAndAnchor } from "@/api/pureHelpers";
 import { ConverterAndAnchor } from "@/types/bancor";
 import { Sym } from "eos-common";
-import dayjs from "@/utils/dayjs";
 import { StaticRelay } from "./ethBancor";
 
 const bntToken = {
