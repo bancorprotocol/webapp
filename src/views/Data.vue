@@ -1,5 +1,6 @@
 <template>
   <b-container fluid="xl" class="px-xl-0">
+    HELLO TEST 123
     <router-view />
   </b-container>
 </template>
