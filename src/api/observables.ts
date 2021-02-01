@@ -1,5 +1,13 @@
 import { differenceWith, isEqual } from "lodash";
-import { Subject, combineLatest, Observable, merge, EMPTY } from "rxjs";
+import {
+  Subject,
+  combineLatest,
+  Observable,
+  merge,
+  EMPTY,
+  of,
+  PartialObserver
+} from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -14,7 +22,7 @@ import {
   catchError
 } from "rxjs/operators";
 import dayjs from "dayjs";
-import { vxm } from "@/store";
+import { store, vxm } from "@/store";
 import { getTokenMeta } from "@/store/modules/swap/ethBancor";
 import { EthNetworks } from "./web3";
 import { getWelcomeData } from "./eth/bancorApi";
@@ -26,6 +34,8 @@ import {
   fetchLiquidityProtectionSettings,
   fetchLiquidityProtectionSettingsContract,
   fetchMinLiqForMinting,
+  fetchPositionIds,
+  fetchPositionsMulti,
   fetchWhiteListedV1Pools
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
@@ -60,29 +70,36 @@ export const distinctArrayItem = <T>(
     startWith(initialValue)
   );
 
-// don't stop the feed if the function throws
-// pipe(startWithMainnet )
-
 let difference = Date.now();
 
-const logger = (label: string) => (data: any) => {
-  if (difference) {
-    difference = Date.now() - difference;
-  }
-  console.log(`Logger (${difference}): ${label} returned ${data}`);
-  difference = Date.now();
-};
+const logger = (label: string): PartialObserver<any> => ({
+  next: data => {
+    if (difference) {
+      difference = Date.now() - difference;
+    }
+    console.log(`Logger (Next): (${difference}): ${label} returned ${data}`);
+    difference = Date.now();
+  },
+  error: error => {
+    console.warn(`Logger (Error): ${label} has received an error in ${error}`);
+  },
+  complete: () => console.log(`Logger (Complete): ${label} has completed`)
+});
 
 export const authenticated$ = new Subject<string>();
 export const networkVersionReceiver$ = new Subject<EthNetworks>();
+export const fetchPositionsTrigger$ = new Subject<null>();
+fetchPositionsTrigger$.next(null);
 
 let networkVersionCount: number = 0;
 
-export const catchOptimisticNetwork = () => (source: Observable<any>) =>
+export const catchOptimisticNetwork = (label?: string) => (
+  source: Observable<any>
+) =>
   source.pipe(
     catchError(err => {
-      console.log("catch optimistic received", err);
-      return EMPTY;
+      console.log(`CaughtError: ${label} catch optimistic received`, err);
+      return of(false);
       if (networkVersionCount >= 2) {
         console.log(
           "throwing because the network version count is",
@@ -97,7 +114,8 @@ export const catchOptimisticNetwork = () => (source: Observable<any>) =>
         );
         return EMPTY;
       }
-    })
+    }),
+    filter(x => false)
   );
 
 export const networkVersion$ = networkVersionReceiver$.pipe(
@@ -144,7 +162,9 @@ export const contractAddresses$ = networkVars$.pipe(
   switchMap(networkVariables =>
     fetchContractAddresses(networkVariables.contractRegistry)
   ),
-  catchOptimisticNetwork(),
+  tap(logger("incoming contract addresses")),
+  catchOptimisticNetwork("fetching contract addresses"),
+  tap(logger("incoming contract addresses after")),
   startWith({
     BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
     BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
@@ -152,12 +172,6 @@ export const contractAddresses$ = networkVars$.pipe(
     LiquidityProtection: "0x9Ab934010E6f2D633FeEB5b6f1DdCeEdeD601BCF",
     StakingRewards: "0xB443DEA978B39178Cb05Ae005074227A4390DfCe"
   }),
-  tap(
-    data => console.log("data ::", data),
-    error => {
-      console.log("wondering ::", error);
-    }
-  ),
   distinctUntilChanged<RegisteredContracts>(isEqual),
   shareReplay(1)
 );
@@ -223,37 +237,27 @@ combineLatest([
   vxm.ethBancor.fetchAndSetLockedBalances({ storeAddress, currentUser })
 );
 
-const settingsContractAddressLocal$ = networkVersion$.pipe(
-  filter(network => network == EthNetworks.Mainnet),
-  tap(logger("mainnet known")),
-  map(() => "0xd444ec18952c7cAf09636f21807683DaCC1d7dA9")
-);
-
-const settingsContractAddressRemote$ = liquidityProtection$.pipe(
+const settingsContractAddress$ = liquidityProtection$.pipe(
   tap(logger("liquidity protection contract")),
   switchMap(protectionAddress =>
     fetchLiquidityProtectionSettingsContract(protectionAddress)
   ),
+  catchOptimisticNetwork("fetchLiquidityProtectionContract"),
+  startWith("0xd444ec18952c7cAf09636f21807683DaCC1d7dA9"),
   distinctUntilChanged(compareString),
   tap(logger("settings contract")),
   shareReplay<string>(1)
 );
 
-const settingsContractAddress$ = merge(
-  settingsContractAddressLocal$,
-  settingsContractAddressRemote$
-).pipe(
-  distinctUntilChanged(compareString),
-  tap(logger("settings contract local")),
-  shareReplay(1)
-);
+// 876
+// qourumTask
 
 settingsContractAddress$
   .pipe(
     switchMap(settingsContractAddress =>
       fetchMinLiqForMinting(settingsContractAddress)
     ),
-    catchOptimisticNetwork()
+    catchOptimisticNetwork("fetchMingLiqForMinting")
   )
   .subscribe(settingsContract =>
     vxm.minting.setMinNetworkTokenLiquidityForMinting(settingsContract)
@@ -261,13 +265,15 @@ settingsContractAddress$
 
 combineLatest([liquidityProtection$, settingsContractAddress$])
   .pipe(
+    tap(logger("before fetch liquidity protection settings")),
     switchMap(([protectionContractAddress, settingsContractAddress]) =>
       fetchLiquidityProtectionSettings({
         settingsContractAddress,
         protectionContractAddress
       })
     ),
-    catchOptimisticNetwork()
+    tap(logger("after liquidity protection")),
+    catchOptimisticNetwork("fetchLiquidityProtectionSettings")
   )
   .subscribe(settings => {
     vxm.ethBancor.setLiquidityProtectionSettings(settings);
@@ -277,34 +283,65 @@ combineLatest([liquidityProtection$, settingsContractAddress$])
 settingsContractAddress$
   .pipe(
     tap(logger("white listed pool address")),
-    switchMap(address => fetchWhiteListedV1Pools(address)),
-    catchOptimisticNetwork(),
-    tap(
-      x => console.log("success on whitelisted", x),
-      error => console.log("failure on whitelisted not meant", error)
-    ),
+    switchMap(address => {
+      console.log(address, "was given");
+      return [];
+    }),
+    // catchOptimisticNetwork("whitelisted pools abc"),
     tap(logger("white listed pools"))
   )
   .subscribe(whitelistedPools =>
     vxm.ethBancor.setWhiteListedPools(whitelistedPools)
   );
 
-combineLatest([
+const positionIds$ = combineLatest([
   authenticated$,
+  liquidityProtectionStore$
+]).pipe(
+  tap(() => vxm.ethBancor.setLoadingPositions(true)),
+  switchMap(([currentUser, storeAddress]) =>
+    fetchPositionIds(currentUser, storeAddress)
+  ),
+  catchOptimisticNetwork("positionsId"),
+  shareReplay(1)
+);
+
+const rawPositions$ = combineLatest([
+  positionIds$,
+  liquidityProtectionStore$
+]).pipe(
+  tap(logger("raw positions")),
+  switchMap(([positionIds, storeAddress]) =>
+    fetchPositionsMulti(positionIds, storeAddress)
+  ),
+  shareReplay(1)
+);
+
+combineLatest([
+  rawPositions$,
   liquidityProtectionStore$,
+  liquidityProtection$,
   currentBlock$,
   apiData$
-]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
-  try {
+]).subscribe(
+  ([
+    rawPositions,
+    liquidityProtectionStore,
+    liquidityProtection,
+    { blockNumber },
+    apiData
+  ]) => {
     const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
-    vxm.ethBancor.fetchProtectionPositions({
-      storeAddress,
+
+    vxm.ethBancor.buildFullPositions({
+      rawPositions,
+      liquidityProtection,
       blockNumberNow: blockNumber,
-      userAddress: userAddress as string,
-      supportedAnchors
+      supportedAnchors,
+      liquidityProtectionStore
     });
-  } catch (e) {}
-});
+  }
+);
 
 combineLatest([authenticated$, apiData$]).subscribe(
   ([userAddress, apiData]) => {
