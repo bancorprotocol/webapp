@@ -133,16 +133,10 @@ import {
   priorityEthPools,
   knownPools,
   PreviousPoolFee,
-  highCapPools,
-  liquidityMiningEndTime,
   moreStaticRelays,
   previousPoolFees,
   v2Pools,
-  secondRoundLiquidityMiningEndTime,
-  highTierPools,
-  compareStaticRelay,
-  thirdRoundLiquidityMiningEndTime,
-  fourthRoundLiquidityMiningEndTime
+  compareStaticRelay
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -178,10 +172,7 @@ import {
   share
 } from "rxjs/operators";
 import {
-  calculatePositionFees,
   decToPpm,
-  miningBntReward,
-  miningTknReward,
   compareStaticRelayAndSet,
   expandToken,
   calculatePriceDeviationTooHigh,
@@ -189,6 +180,8 @@ import {
   parseRawDynamic,
   filterAndWarn,
   staticToConverterAndAnchor,
+  miningBntReward,
+  miningTknReward,
   calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import {
@@ -204,7 +197,8 @@ import {
   bancorConverterRegistry$,
   authenticated$,
   networkVersion$,
-  tokenMeta$
+  tokenMeta$,
+  poolPrograms$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -231,6 +225,7 @@ import {
   WelcomeData,
   TokenMetaWithReserve
 } from "@/api/eth/bancorApi";
+import { PoolProgram } from "../rewards";
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -1593,6 +1588,7 @@ export class EthBancorModule
     userAddress?: string;
     supportedAnchors?: string[];
   }) {
+    this.setLoadingPositions(true);
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
 
@@ -1620,7 +1616,10 @@ export class EthBancorModule
       );
       console.log("got id count", idCount);
       console.timeEnd("time to get ID count");
-      if (idCount == 0) return;
+      if (idCount == 0) {
+        this.setLoadingPositions(false);
+        return;
+      }
       const positionIds = await contract.methods
         .protectedLiquidityIds(owner)
         .call();
@@ -1685,7 +1684,7 @@ export class EthBancorModule
         label
       }));
 
-      const [withAprs, withLiquidityReturn, withFees] = await Promise.all([
+      const [withAprs, withLiquidityReturn] = await Promise.all([
         (async () => {
           try {
             const poolHistoricalBalances = await Promise.all(
@@ -1852,43 +1851,30 @@ export class EthBancorModule
           })
         ).catch(e => {
           console.warn("Error fetching ROIs", e);
-        }),
-        Promise.all(
-          allPositions.map(async position => {
-            const currentPoolBalances = await this.fetchRelayBalances({
-              poolId: position.poolToken
-            });
-
-            const [
-              depositedReserve,
-              opposingReserve
-            ] = sortAlongSide(
-              currentPoolBalances.reserves,
-              reserve => reserve.contract,
-              [position.reserveToken]
-            );
-            const rate0 = new BigNumber(position.reserveRateN)
-              .div(position.reserveRateD)
-              .toString();
-
-            const feeAmountWei = calculatePositionFees(
-              position.poolAmount,
-              currentPoolBalances.smartTokenSupplyWei,
-              position.reserveAmount,
-              depositedReserve.weiAmount,
-              opposingReserve.weiAmount,
-              rate0
-            );
-
-            const shrunk = shrinkToken(feeAmountWei, 18);
-
-            return {
-              positionId: position.id,
-              amount: shrunk
-            };
-          })
-        )
+        })
       ]);
+
+      const poolReserveIds = allPositions.map(position => {
+        return { poolId: position.poolToken, reserveId: position.reserveToken };
+      });
+
+      const uniquePoolReserveIds = uniqWith(poolReserveIds, isEqual);
+
+      const fetchedRewards = await Promise.all(
+        uniquePoolReserveIds.map(async item => {
+          const pendingReserveReward = await vxm.rewards.fetchPendingReserveRewards(
+            {
+              poolId: item.poolId,
+              reserveId: item.reserveId
+            }
+          );
+
+          return {
+            id: `${item.poolId}-${item.reserveId}`,
+            pendingReserveReward
+          };
+        })
+      );
 
       const positions = allPositions.map(
         (position): ProtectedLiquidityCalculated => {
@@ -1898,13 +1884,17 @@ export class EthBancorModule
           const roiReturn =
             withAprs && withAprs.find(p => position.id == p.positionId);
 
-          const fee = withFees.find(p => position.id == p.positionId);
+          const pendingReserveReward = fetchedRewards.find(
+            x => x.id === `${position.poolToken}-${position.reserveToken}`
+          );
 
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
-            ...(fee && { fee: omit(fee, ["positionId"]) })
+            pendingReserveReward: pendingReserveReward
+              ? pendingReserveReward.pendingReserveReward
+              : new BigNumber(0)
           };
         }
       );
@@ -2185,7 +2175,7 @@ export class EthBancorModule
     return lockedBalances;
   }
 
-  loadingProtectedPositions = true;
+  loadingProtectedPositions = false;
 
   get protectedPositions(): ViewProtectedLiquidity[] {
     const owner = this.currentUser;
@@ -2270,6 +2260,10 @@ export class EthBancorModule
         // full coverage - full wait time
         // protectedAmount - current wait time
 
+        const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
+          reserveTokenDec
+        );
+
         return {
           id: `${singleEntry.poolToken}:${singleEntry.id}`,
           whitelisted: isWhiteListed,
@@ -2317,21 +2311,18 @@ export class EthBancorModule
             }
           }),
           coverageDecPercent: progressPercent,
-          ...(singleEntry.fee && {
-            fees: {
-              amount: singleEntry.fee.amount,
-              symbol: reserveToken.symbol
-              // ...(reserveToken.price &&
-              //   fullyProtectedDec && {
-              //     usdValue: new BigNumber(1)
-              //       .times(reserveToken.price!)
-              //       .toNumber()
-              //   })
-            }
-          }),
+          fees: {
+            amount: feeGenerated.toString(),
+            symbol: reserveToken.symbol
+          },
           roi:
             fullyProtectedDec &&
-            Number(calculatePercentIncrease(reserveTokenDec, fullyProtectedDec))
+            Number(
+              calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+            ),
+          pendingReserveReward: singleEntry.pendingReserveReward,
+          reserveTokenPrice: reserveToken.price,
+          bntTokenPrice: this.stats.bntUsdPrice
         } as ViewProtectedLiquidity;
       }
     );
@@ -2794,8 +2785,7 @@ export class EthBancorModule
           tx: tokenContract.methods.approve(
             approval.approvedAddress,
             approval.amount
-          ),
-          gas: 70000
+          )
         });
       })
     );
@@ -2860,6 +2850,31 @@ export class EthBancorModule
     });
   }
 
+  @action async determineTxGas(tx: ContractSendMethod): Promise<number> {
+    const from = this.currentUser;
+    if (!from)
+      throw new Error("Cannot estimate gas without being authenticated");
+    const buffer = 1.1;
+
+    let adjustedGas: number;
+    try {
+      const withUser = await tx.estimateGas({ from });
+      adjustedGas = withUser;
+    } catch (e) {
+      try {
+        const withoutUser = await tx.estimateGas();
+        adjustedGas = withoutUser;
+      } catch (e) {
+        throw new Error(`Failed estimating gas for tx ${e}`);
+      }
+    }
+    const bufferedResult = adjustedGas * buffer;
+    console.log(
+      `Web3 estimated is ${bufferedResult} times by ${buffer} is ${bufferedResult} being sent to tx.`
+    );
+    return new BigNumber(bufferedResult.toFixed(0)).toNumber();
+  }
+
   @action async resolveTxOnConfirmation({
     tx,
     gas,
@@ -2876,11 +2891,23 @@ export class EthBancorModule
     onConfirmation?: (hash: string) => void;
   }): Promise<string> {
     console.log("received", tx);
+
+    let adjustedGas: number | boolean = false;
+    if (gas) {
+      adjustedGas = gas;
+    } else {
+      try {
+        adjustedGas = await this.determineTxGas(tx);
+      } catch (e) {
+        console.warn("Failed to estimate gas");
+      }
+    }
+
     return new Promise((resolve, reject) => {
       let txHash: string;
       tx.send({
         from: this.currentUser,
-        ...(gas && { gas }),
+        ...(adjustedGas && { gas: adjustedGas as number }),
         ...(value && { value: toHex(value) })
       })
         .on("transactionHash", (hash: string) => {
@@ -4524,7 +4551,6 @@ export class EthBancorModule
     const converterContract = buildConverterContract(converterAddress);
     return this.resolveTxOnConfirmation({
       tx: converterContract.methods.fund(fundAmount),
-      gas: 950000,
       onConfirmation,
       resolveImmediately,
       ...(onHash && { onHash })
@@ -6093,13 +6119,11 @@ export class EthBancorModule
         share()
       );
 
-      const highTierPools$ = of(highTierPools);
-
-      combineLatest([highTierPools$, finalRelays$, liquidityProtectionStore$])
+      combineLatest([poolPrograms$, finalRelays$, liquidityProtectionStore$])
         .pipe(
-          mergeMap(([highTierPools, relays, protectionStoreAddress]) => {
+          mergeMap(([poolPrograms, relays, protectionStoreAddress]) => {
             return this.fetchPooLiqMiningApr({
-              highTierPoolAnchors: highTierPools,
+              poolPrograms,
               relays: relays.relays,
               protectionStoreAddress
             });
@@ -6169,16 +6193,18 @@ export class EthBancorModule
   }
 
   @action async fetchPooLiqMiningApr({
-    highTierPoolAnchors,
+    poolPrograms,
     relays,
     protectionStoreAddress
   }: {
-    highTierPoolAnchors: string[];
     relays: RelayWithReserveBalances[];
     protectionStoreAddress: string;
+    poolPrograms: PoolProgram[];
   }): Promise<PoolLiqMiningApr[]> {
     const highTierPools = relays.filter(relay =>
-      highTierPoolAnchors.some(anchor => compareString(relay.id, anchor))
+      poolPrograms.some(poolProgram =>
+        compareString(relay.id, poolProgram.poolToken)
+      )
     );
 
     if (highTierPools.length == 0) return [];
@@ -6220,10 +6246,11 @@ export class EthBancorModule
     }));
 
     const res = zippedProtectedReserves.map(pool => {
-      const isHighCap = highCapPools.some(anchor =>
-        compareString(anchor, pool.anchorAddress)
+      const poolProgram: PoolProgram = findOrThrow(poolPrograms, pp =>
+        compareString(pool.anchorAddress, pp.poolToken)
       );
-      const poolBalances = findOrThrow(highTierPools, p =>
+
+      const poolReserveBalances = findOrThrow(highTierPools, p =>
         compareString(pool.anchorAddress, p.id)
       );
 
@@ -6232,41 +6259,50 @@ export class EthBancorModule
         "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
 
       const [
-        bntProtectedReserve,
-        tknProtectedReserve
-      ] = sortAlongSide(pool.reserves, reserve => reserve.contract, [
-        networkToken
-      ]);
-      const [
         bntReserve,
         tknReserve
-      ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
+      ] = sortAlongSide(
+        poolReserveBalances.reserveBalances,
+        reserve => reserve.id,
+        [networkToken]
+      );
+
+      const [bntProtected, tknProtected] = sortAlongSide(
+        pool.reserves,
+        reserve => reserve.contract,
+        [networkToken]
+      );
+
+      const [
+        bntProtectedShare,
+        tknProtectedShare
+      ] = sortAlongSide(poolProgram.reserves, reserve => reserve.reserveId, [
         networkToken
       ]);
 
-      const bntReward = miningBntReward(bntProtectedReserve.amount, isHighCap);
+      const poolRewardRate = poolProgram.rewardRate;
+
+      const bntReward = miningBntReward(
+        bntProtected.amount,
+        poolRewardRate,
+        ppmToDec(bntProtectedShare.rewardShare)
+      );
+
       const tknReward = miningTknReward(
         tknReserve.amount,
         bntReserve.amount,
-        tknProtectedReserve.amount,
-        isHighCap
+        tknProtected.amount,
+        poolRewardRate,
+        ppmToDec(tknProtectedShare.rewardShare)
       );
 
       return {
         ...pool,
         bntReward,
-        tknReward
+        tknReward,
+        endTime: poolProgram.endTimes
       };
     });
-
-    const secondRoundPools = [
-      "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8",
-      "0x6b181c478b315be3f9e99c57ce926436c32e17a7"
-    ];
-
-    const thirdRoundPools = ["0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde"];
-
-    const fourthRoundPools = ["0x6c84f4ccc916acf792538f1293b286b540906a2a"];
 
     const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
       const [bntReserve, tknReserve] = sortAlongSide(
@@ -6280,29 +6316,9 @@ export class EthBancorModule
         "failed to find reserve"
       );
 
-      const isSecondRound = secondRoundPools.some(anchor =>
-        compareString(anchor, calculated.anchorAddress)
-      );
-
-      const isThirdRound = thirdRoundPools.some(anchor =>
-        compareString(anchor, calculated.anchorAddress)
-      );
-
-      const isFourthRound = fourthRoundPools.some(anchor =>
-        compareString(anchor, calculated.anchorAddress)
-      );
-
-      const endTime = isSecondRound
-        ? secondRoundLiquidityMiningEndTime
-        : isThirdRound
-        ? thirdRoundLiquidityMiningEndTime
-        : isFourthRound
-        ? fourthRoundLiquidityMiningEndTime
-        : liquidityMiningEndTime;
-
       return {
         poolId: calculated.anchorAddress,
-        endTime,
+        endTime: Number(calculated.endTime),
         rewards: [
           {
             address: bntReserve.contract,
