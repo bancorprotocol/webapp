@@ -347,15 +347,17 @@ export default class SwapAction extends BaseComponent {
   }
 
   get usd1() {
-    if (this.token1.price && this.token1.balance)
-      return new BigNumber(this.token1.price).times(this.token1.balance);
+    const token1 = vxm.bancor.token(this.token1.id);
+    if (token1.price && token1.balance)
+      return new BigNumber(token1.price).times(token1.balance);
 
     return "0";
   }
 
   get usd2() {
-    if (this.token2.price && this.token2.balance)
-      return new BigNumber(this.token2.price).times(this.token2.balance);
+    const token2 = vxm.bancor.token(this.token2.id);
+    if (token2.price && token2.balance)
+      return new BigNumber(token2.price).times(token2.balance);
 
     return "0";
   }
