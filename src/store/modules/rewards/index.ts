@@ -178,6 +178,7 @@ export class RewardsModule extends VuexModule.With({
       return this.poolPrograms;
     }
 
+    console.log("fetchPools called with param", rewardsStoreContract);
     try {
       const storeContract =
         rewardsStoreContract || (await this.contract.methods.store().call());
