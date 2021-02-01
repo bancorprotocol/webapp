@@ -90,17 +90,17 @@
         hrefText="click here"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
-        <span @click="setAmount" class="cursor">{{
+        <span @click="setAmount(maxStakeAmount)" class="cursor">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
         }}</span>
       </label-content-split>
       <label-content-split
         v-if="amountToMakeSpace"
         class="mt-2"
-        label="Amount needed to open up space"
+        :label="`${bnt.symbol} needed to open up ${otherTkn.symbol} space`"
         :loading="loading"
       >
-        <span @click="setAmount" class="cursor">{{
+        <span @click="setAmount(amountToMakeSpace, 0)" class="cursor">{{
           `${prettifyNumber(amountToMakeSpace)} ${bnt.symbol}`
         }}</span>
       </label-content-split>
@@ -235,6 +235,10 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get bnt() {
     return this.pool.reserves[0];
+  }
+
+  get otherTkn() {
+    return this.pool.reserves[1];
   }
 
   get opposingToken() {
@@ -422,6 +426,7 @@ export default class AddProtectionSingle extends BaseComponent {
   async load() {
     if (this.loading) return;
     this.loading = true;
+    this.amountToMakeSpace = "";
     try {
       const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
         poolId: this.pool.id
@@ -444,9 +449,10 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
-  setAmount() {
-    this.amount =
-      parseFloat(this.maxStakeAmount) > 0 ? this.maxStakeAmount : "0";
+  setAmount(amount: string, switchToken: number = -1) {
+    if (switchToken != -1 && this.selectedTokenIndex != switchToken)
+      this.selectedTokenIndex = switchToken;
+    this.amount = parseFloat(amount) > 0 ? amount : "0";
   }
 
   async mounted() {
