@@ -136,7 +136,7 @@ import {
   moreStaticRelays,
   previousPoolFees,
   v2Pools,
-  compareStaticRelay,
+  compareStaticRelay
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -181,7 +181,8 @@ import {
   filterAndWarn,
   staticToConverterAndAnchor,
   miningBntReward,
-  miningTknReward
+  miningTknReward,
+  calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import {
   distinctArrayItem,
@@ -3621,6 +3622,85 @@ export class EthBancorModule
         token: tkn.symbol
       }
     ];
+  }
+
+  @action async getAvailableAndAmountToGetSpace({
+    poolId
+  }: {
+    poolId: string;
+  }): Promise<{
+    availableSpace: {
+      amount: string;
+      token: string;
+    }[];
+    amountToGetSpace?: string;
+  }> {
+    const { maxStakes } = await this.getMaxStakes({
+      poolId
+    });
+    const pool = this.relay(poolId);
+    const bntTknArr = pool.reserves.map(r => {
+      return {
+        contract: r.contract,
+        symbol: r.symbol,
+        decimals: this.token(r.id).precision
+      };
+    });
+
+    const [bnt, tkn] = sortAlongSide(bntTknArr, item => item.contract, [
+      this.liquidityProtectionSettings.networkToken
+    ]);
+
+    const availableSpace = [
+      {
+        amount: shrinkToken(maxStakes.maxAllowedBntWei, bnt.decimals),
+        token: bnt.symbol
+      },
+      {
+        amount: shrinkToken(maxStakes.maxAllowedTknWei, tkn.decimals),
+        token: tkn.symbol
+      }
+    ];
+    const tknSpaceAvailableLTOne = new BigNumber(availableSpace[1].amount).lt(
+      1
+    );
+    if (tknSpaceAvailableLTOne) {
+      const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
+        this.liquidityProtectionSettings.contract,
+        w3
+      );
+      const [balances, limit] = await Promise.all([
+        this.fetchRelayBalances({ poolId }),
+        liquidityProtectionSettings.methods
+          .networkTokenMintingLimits(poolId)
+          .call()
+      ]);
+      const [bntReserve, tknReserve] = sortAlongSide(
+        balances.reserves,
+        reserve => reserve.symbol,
+        ["BNT"]
+      );
+
+      const bntAmount = shrinkToken(bntReserve.weiAmount, bntReserve.decimals);
+      const tknAmount = shrinkToken(tknReserve.weiAmount, tknReserve.decimals);
+      const spaceAvailAble = shrinkToken(
+        maxStakes.maxAllowedBntWei,
+        bntReserve.decimals
+      );
+      const limitShrinked = shrinkToken(limit, bntReserve.decimals);
+
+      const amountToGetSpace = calculateAmountToGetSpace(
+        bntAmount,
+        tknAmount,
+        spaceAvailAble,
+        limitShrinked
+      );
+      return {
+        availableSpace,
+        amountToGetSpace: amountToGetSpace
+      };
+    }
+    return { availableSpace };
   }
 
   @action async calculateProtectionSingle({
