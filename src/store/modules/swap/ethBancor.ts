@@ -3681,15 +3681,23 @@ export class EthBancorModule
         ["BNT"]
       );
 
-      const amountToGetSpaceWei = calculateAmountToGetSpace(
-        bntReserve.weiAmount,
-        tknReserve.weiAmount,
+      const bntAmount = shrinkToken(bntReserve.weiAmount, bntReserve.decimals);
+      const tknAmount = shrinkToken(tknReserve.weiAmount, tknReserve.decimals);
+      const spaceAvailAble = shrinkToken(
         maxStakes.maxAllowedBntWei,
-        limit
+        bntReserve.decimals
+      );
+      const limitShrinked = shrinkToken(limit, bntReserve.decimals);
+
+      const amountToGetSpace = calculateAmountToGetSpace(
+        bntAmount,
+        tknAmount,
+        spaceAvailAble,
+        limitShrinked
       );
       return {
         availableSpace,
-        amountToGetSpace: shrinkToken(amountToGetSpaceWei, bntReserve.decimals)
+        amountToGetSpace: amountToGetSpace
       };
     }
     return { availableSpace };
