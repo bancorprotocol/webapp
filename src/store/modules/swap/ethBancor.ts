@@ -1481,7 +1481,6 @@ export class EthBancorModule
   whiteListedPoolsLoading = true;
 
   @mutation setWhiteListedPools(anchors: string[]) {
-    console.log("whitelisted pools are being set!", anchors.length);
     this.whiteListedPools = anchors;
   }
 
@@ -1538,11 +1537,6 @@ export class EthBancorModule
   protectedPositionsArr: ProtectedLiquidityCalculated[] = [];
 
   @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
-    console.log(positions, "are the positions getting set!");
-
-    const timeEnd = Date.now();
-    const difference = timeEnd - timeStart;
-    console.log("difference", difference, difference / 1000);
     this.protectedPositionsArr = positions;
   }
 
@@ -1868,8 +1862,6 @@ export class EthBancorModule
           };
         }
       );
-
-      console.log("success!", positions, "are positions");
 
       this.setProtectedPositions(positions);
       if (this.loadingProtectedPositions) {
@@ -2936,7 +2928,9 @@ export class EthBancorModule
 
   get tokens(): ViewToken[] {
     console.time("tokens");
-
+    const liquidityProtectionNetworkToken =
+      this.liquidityProtectionSettings.networkToken ||
+      "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
     const whitelistedPools = this.whiteListedPools;
     if (!this.apiData) {
       return [];
@@ -2950,10 +2944,7 @@ export class EthBancorModule
         const liquidityProtection =
           whitelisted &&
           pool.reserves.some(reserve =>
-            compareString(
-              reserve.address,
-              this.liquidityProtectionSettings.networkToken
-            )
+            compareString(reserve.address, liquidityProtectionNetworkToken)
           ) &&
           pool.reserves.length == 2 &&
           pool.reserves.every(reserve => reserve.weight == decToPpm(0.5)) &&
@@ -3126,8 +3117,9 @@ export class EthBancorModule
     const whiteListedPools = this.whiteListedPools;
     const limit = vxm.minting.minNetworkTokenLiquidityforMinting;
 
-    const liquidityProtectionNetworkToken = this.liquidityProtectionSettings
-      .networkToken;
+    const liquidityProtectionNetworkToken =
+      this.liquidityProtectionSettings.networkToken ||
+      "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
 
     return this.newPools.map(relay => {
       const liqDepth = Number(relay.liquidity.usd);
@@ -5208,11 +5200,13 @@ export class EthBancorModule
   @action async multi({
     groupsOfShapes,
     blockHeight,
-    traditional = false
+    traditional = false,
+    label
   }: {
     groupsOfShapes: ShapeWithLabel[][];
     blockHeight?: number;
     traditional?: boolean;
+    label?: string;
   }) {
     const currentNetwork = this.currentNetwork;
     const networkVars = getNetworkVariables(currentNetwork);
@@ -5233,7 +5227,7 @@ export class EthBancorModule
       });
       return res;
     } catch (e) {
-      throw new Error(`Failed eth-multicall fetch ${e}`);
+      throw new Error(`Failed eth-multicall fetch ${e} label is ${label}`);
     }
   }
 
@@ -5263,7 +5257,8 @@ export class EthBancorModule
 
     const [rawRelays, poolAndSmartTokens] = ((await this.multi({
       groupsOfShapes,
-      traditional: smallLoad
+      traditional: smallLoad,
+      label: "raw relays fetch"
     })) as [unknown, unknown]) as [AbiRelay[], AbiCentralPoolToken[]];
 
     const { poolTokenAddresses, smartTokens } = seperateMiniTokens(
@@ -5376,6 +5371,7 @@ export class EthBancorModule
           )
         )
       ],
+      label: "to my eyes",
       traditional: smallLoad
     })) as [unknown, unknown, unknown]) as [
       RawAbiToken[],
@@ -5796,7 +5792,8 @@ export class EthBancorModule
     );
 
     const [rawRelays] = ((await this.multi({
-      groupsOfShapes: [relaysShape]
+      groupsOfShapes: [relaysShape],
+      label: "fetch dynamic relays"
     })) as unknown) as [RawABIDynamicRelay[]];
 
     const hydratedRelays = rawRelays.map(parseRawDynamic);
@@ -5861,7 +5858,10 @@ export class EthBancorModule
 
   @action async fetchTokens(tokenContracts: string[]): Promise<RawAbiToken[]> {
     const tokenShapes = tokenContracts.map(tokenShape);
-    const [res] = await this.multi({ groupsOfShapes: [tokenShapes] });
+    const [res] = await this.multi({
+      groupsOfShapes: [tokenShapes],
+      label: "fetching tokens"
+    });
     return res as RawAbiToken[];
   }
 
@@ -5951,6 +5951,7 @@ export class EthBancorModule
       .subscribe(({ blockNumber }) => currentBlockTwo$.next(blockNumber));
 
     const anchors$ = bancorConverterRegistry$.pipe(
+      filter(() => false),
       switchMap(converterRegistryAddress =>
         this.fetchAnchorAddresses({
           converterRegistryAddress
@@ -6082,8 +6083,10 @@ export class EthBancorModule
       const dynamicRelayRemote$ = staticRelays$.pipe(
         bufferTime(100),
         filter(staticRelays => staticRelays && staticRelays.length > 0),
-        mergeMap(x => this.fetchDynamicRelays(x)),
-        share()
+        mergeMap(x => this.fetchDynamicRelays(x).catch(e => false)),
+        // @ts-ignore
+        filter(x => Boolean(x)),
+        share<NewRelay[]>()
       );
 
       const fullRelays$ = dynamicRelayRemote$.pipe(
@@ -6238,7 +6241,8 @@ export class EthBancorModule
     });
 
     const [protectedReserves] = ((await this.multi({
-      groupsOfShapes: [protectedShapes]
+      groupsOfShapes: [protectedShapes],
+      label: "pool mining"
     })) as unknown[]) as {
       anchorAddress: string;
       reserveOneAddress: string;
@@ -6780,7 +6784,7 @@ export class EthBancorModule
           this.liquidityProtectionSettings.govToken
         ]);
       }
-      authenticated$.next(this.currentUser);
+      authenticated$.next(userAddress);
       if (this.apiData && this.apiData.tokens) {
         const uniqueTokenAddresses = uniqWith(
           [
