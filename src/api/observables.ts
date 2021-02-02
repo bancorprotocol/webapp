@@ -138,11 +138,6 @@ export const catchOptimisticNetwork = (label?: string) => (
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
   distinctUntilChanged(),
-  tap(() => {
-    console.log("current network version count is", networkVersionCount);
-    networkVersionCount++;
-    console.log("new network version count is", networkVersionCount);
-  }),
   shareReplay(1)
 );
 
@@ -177,11 +172,10 @@ export const networkVars$ = networkVersion$.pipe(
 
 export const contractAddresses$ = networkVars$.pipe(
   switchMap(networkVariables =>
-    fetchContractAddresses(networkVariables.contractRegistry)
+    fetchContractAddresses(networkVariables.contractRegistry).catch(() => false)
   ),
+  filter(x => Boolean(x)),
   tap(logger("incoming contract addresses")),
-  catchOptimisticNetwork("fetching contract addresses"),
-  tap(logger("incoming contract addresses after")),
   startWith({
     BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
     BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
@@ -189,6 +183,7 @@ export const contractAddresses$ = networkVars$.pipe(
     LiquidityProtection: "0x9Ab934010E6f2D633FeEB5b6f1DdCeEdeD601BCF",
     StakingRewards: "0xB443DEA978B39178Cb05Ae005074227A4390DfCe"
   }),
+  tap(logger("incoming contract addresses after")),
   distinctUntilChanged<RegisteredContracts>(isEqual),
   shareReplay(1)
 );
@@ -314,22 +309,17 @@ const settingsContractAddress$ = liquidityProtection$.pipe(
   switchMap(protectionAddress =>
     fetchLiquidityProtectionSettingsContract(protectionAddress)
   ),
-  catchOptimisticNetwork("fetchLiquidityProtectionContract"),
   startWith("0xd444ec18952c7cAf09636f21807683DaCC1d7dA9"),
   distinctUntilChanged(compareString),
   tap(logger("settings contract")),
   shareReplay<string>(1)
 );
 
-// 876
-// qourumTask
-
 settingsContractAddress$
   .pipe(
     switchMap(settingsContractAddress =>
       fetchMinLiqForMinting(settingsContractAddress)
-    ),
-    catchOptimisticNetwork("fetchMingLiqForMinting")
+    )
   )
   .subscribe(settingsContract =>
     vxm.minting.setMinNetworkTokenLiquidityForMinting(settingsContract)
@@ -344,8 +334,7 @@ combineLatest([liquidityProtection$, settingsContractAddress$])
         protectionContractAddress
       })
     ),
-    tap(logger("after liquidity protection")),
-    catchOptimisticNetwork("fetchLiquidityProtectionSettings")
+    tap(logger("after liquidity protection"))
   )
   .subscribe(settings => {
     vxm.ethBancor.setLiquidityProtectionSettings(settings);
@@ -359,7 +348,6 @@ settingsContractAddress$
       console.log(address, "was given");
       return [];
     }),
-    // catchOptimisticNetwork("whitelisted pools abc"),
     tap(logger("white listed pools"))
   )
   .subscribe(whitelistedPools =>
@@ -374,7 +362,6 @@ const positionIds$ = combineLatest([
   switchMap(([currentUser, storeAddress]) =>
     fetchPositionIds(currentUser, storeAddress)
   ),
-  catchOptimisticNetwork("positionsId"),
   shareReplay(1)
 );
 

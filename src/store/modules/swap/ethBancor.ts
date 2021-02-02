@@ -193,16 +193,12 @@ import {
   networkVersionReceiver$,
   currentBlockReceiver$,
   currentBlock$,
-  networkVars$,
   liquidityProtectionStore$,
-  liquidityProtection$,
   usdPriceOfBnt$,
-  apiData$,
   bancorConverterRegistry$,
   authenticated$,
   networkVersion$,
   newPools$,
-  catchOptimisticNetwork,
   poolPrograms$,
   fetchPositionsTrigger$
 } from "@/api/observables";
@@ -5894,7 +5890,6 @@ export class EthBancorModule
           converterRegistryAddress
         })
       ),
-      catchOptimisticNetwork(),
       shareReplay(1)
     );
 
