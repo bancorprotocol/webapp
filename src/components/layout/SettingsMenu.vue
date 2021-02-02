@@ -3,38 +3,47 @@
     id="dropdown-settings"
     ref="dropdown"
     right
-    variant="white"
+    :variant="darkMode ? 'outline-light' : 'outline-dark'"
     size="sm"
     toggle-class="block-rounded"
+    :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
     no-caret
   >
     <template #button-content>
       <font-awesome-icon icon="cog" fixed-width />
     </template>
-
     <b-dropdown-group id="dropdown-group-1" v-if="showTx">
-      <b-dropdown-header class="text-uppercase"
+      <b-dropdown-header
+        class="text-uppercase"
+        clas
+        :variant="darkMode ? 'dark' : 'light'"
         >Transaction Settings</b-dropdown-header
       >
-      <b-dropdown-text style="width: 300px">
+      <b-dropdown-text
+        style="width: 300px"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
         <p class="font-size-sm mb-0">Slippage Tolerance</p>
         <slippage-tolerance />
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider v-if="showTx"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-2">
-      <b-dropdown-header class="text-uppercase"
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
         >Interface Settings</b-dropdown-header
       >
-      <b-dropdown-item @click="toggleDarkMode">
+      <b-dropdown-text :variant="darkMode ? 'dark' : 'light'">
         <div class="d-flex justify-content-between align-items-center">
           <span class="font-size-sm">Dark Mode</span>
           <div>
             <b-btn
               size="sm"
               :variant="!darkMode ? 'primary' : 'light'"
-              class="mr-1 rounded"
+              class="mr-2 rounded"
               style="width: 50px"
+              @click="toggleDarkMode"
               >OFF</b-btn
             >
             <b-btn
@@ -42,15 +51,20 @@
               :variant="darkMode ? 'primary' : 'light'"
               class="rounded"
               style="width: 50px"
+              @click="toggleDarkMode"
               >ON</b-btn
             >
           </div>
         </div>
-      </b-dropdown-item>
+      </b-dropdown-text>
     </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-divider />
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header class="text-uppercase">Blockchains</b-dropdown-header>
+      <b-dropdown-header
+        class="text-uppercase"
+        :variant="darkMode ? 'dark' : 'light'"
+        >Blockchains</b-dropdown-header
+      >
       <b-dropdown-text style="width: 300px">
         <div class="d-flex justify-content-between align-items-end">
           <b-btn

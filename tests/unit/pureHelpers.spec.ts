@@ -4,11 +4,9 @@ import {
   miningBntReward,
   miningTknReward,
   prettifyNumber,
-  groupPositionsArray,
   calculateLimits
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
-// import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 
 describe("dec to ppm works", () => {
   test("range of percentages", () => {
@@ -18,56 +16,52 @@ describe("dec to ppm works", () => {
 });
 
 describe("can calculate mining aprs", () => {
-  test("bnt high cap", () => {
-    const protectedBnt = "3390211026483950866776662";
+  test("USDC Pool", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "5464704021365105009750215";
+    const protectedTkn = "8246694000590";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
+    const tknReserveBalance = "10034907031540";
+    const bntReserveBalance = "5391863391448499616501339";
 
-    const res = miningBntReward(protectedBnt, true);
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.3358;
+    expect(bntReward).toBeCloseTo(expectedResult);
 
-    const expectedResult = 2.147358952917518;
-    expect(res).toBeCloseTo(expectedResult);
-  });
-
-  test("bnt low cap", () => {
-    const protectedBnt = "3390211026483950866776662";
-
-    const res = miningBntReward(protectedBnt, false);
-
-    const expectedResult = 0.21473589529175177;
-    expect(res).toBeCloseTo(expectedResult);
-  });
-
-  test("tkn high cap", () => {
-    const protectedTkn = "11221593721149874107090";
-    const bntReserveBalance = "8101409855370277274285454";
-    const tknReserveBalance = "15800503317283360679542";
-
-    const res = miningTknReward(
+    const tknReward = miningTknReward(
       tknReserveBalance,
       bntReserveBalance,
       protectedTkn,
-      true
+      rewardRate,
+      tknRewardShare
     );
 
-    const expectedResult = 0.5422634970441929;
-
-    expect(res).toBeCloseTo(expectedResult);
+    expect(tknReward).toBeCloseTo(0.7061);
   });
 
-  test("tkn low cap", () => {
-    const protectedTkn = "11221593721149874107090";
-    const bntReserveBalance = "8101409855370277274285454";
-    const tknReserveBalance = "15800503317283360679542";
+  test("ETHBNT Pool", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "6444242056039567241062271";
+    const protectedTkn = "24483370760343498011551";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
+    const tknReserveBalance = "24286381681461977556211";
+    const bntReserveBalance = "16997459221259878949065240";
 
-    const res = miningTknReward(
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.1328;
+    expect(bntReward).toBeCloseTo(expectedResult);
+
+    const tknReward = miningTknReward(
       tknReserveBalance,
       bntReserveBalance,
       protectedTkn,
-      false
+      rewardRate,
+      tknRewardShare
     );
 
-    const expectedResult = 0.05422634970441928;
-
-    expect(res).toBeCloseTo(expectedResult);
+    expect(tknReward).toBeCloseTo(0.1826);
   });
 });
 

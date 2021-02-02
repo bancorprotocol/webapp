@@ -6912,25 +6912,6 @@ export const knownPools: ConverterAndAnchor[] = moreStaticRelays.map(
 
 export const previousPoolFees: PreviousPoolFee[] = [];
 
-// export const liquidityMiningEndTime = dayjs(
-//   "2021-02-08 20:15 +0000",
-//   "YYYY-MM-DD HH:mm Z"
-// ).unix();
-
-export const liquidityMiningEndTime = 1612815300;
-export const secondRoundLiquidityMiningEndTime = 1614276300;
-export const thirdRoundLiquidityMiningEndTime = 1616400000;
-export const fourthRoundLiquidityMiningEndTime = 1616662800;
-
-export const highCapPools = [
-  "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-  "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec",
-  "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306",
-  "0x874d8dE5b26c9D9f6aA8d7bab283F9A9c6f777f4",
-  "0xE5Df055773Bf9710053923599504831c7DBdD697",
-  "0x04D0231162b4784b706908c787CE32bD075db9b7"
-];
-
 export const findPreviousPoolFee = (
   previousPoolFees: PreviousPoolFee[],
   blockNumber: number,
@@ -6943,22 +6924,3 @@ export const findPreviousPoolFee = (
   const res = previousFee && previousFee.oldDecFee;
   return res;
 };
-
-export const highTierPools = [
-  // mainnet
-  "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-  "0x04D0231162b4784b706908c787CE32bD075db9b7",
-  "0xE5Df055773Bf9710053923599504831c7DBdD697",
-  "0x5365B5BC56493F08A38E5Eb08E36cBbe6fcC8306",
-  "0x874d8dE5b26c9D9f6aA8d7bab283F9A9c6f777f4",
-  "0xFEE7EeaA0c2f3F7C7e6301751a8dE55cE4D059Ec",
-  "0xCDfF066eDf8a770E9b6A7aE12F7CFD3DbA0011B5",
-  "0xAeB3a1AeD77b5D6e3feBA0055d79176532e5cEb8",
-  "0x6b181C478b315bE3f9E99c57CE926436c32e17a7",
-  "0xb479b102bF135bdC666d6916172422CbaD9E977f",
-  "0xAdAA88CA9913f2d6F8Caa0616Ff01eE8D4223fde",
-  "0x6c84f4ccc916acf792538f1293b286b540906a2a",
-  // Ropsten
-  "0x6DC51c45f409385Fc99a1c7B316D7fab15d66474",
-  "0x1aCE5DD13Ba14CA42695A905526f2ec366720b13"
-];
