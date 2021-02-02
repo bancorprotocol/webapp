@@ -5956,7 +5956,6 @@ export class EthBancorModule
           converterRegistryAddress
         })
       ),
-      catchOptimisticNetwork(),
       shareReplay(1)
     );
 
