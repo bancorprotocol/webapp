@@ -6678,6 +6678,14 @@ export class EthBancorModule
 
   @action async onAuthChange(userAddress: string) {
     this.wipeTokenBalances();
+
+    const v2PoolTokens = [
+      "0x716BBCF0D084DDCC1d3C6c20bD46c54A93553fdC",
+      "0xcd1A771e8c77eCc4d259E25E21C9BB1EEF7D6197",
+      "0x7b5b7c0534cd37fd7B637b46D9e9CdD3D7e3acD9",
+      "0x5C38eD1Df9E2E46D67CcA448164D8313867945E9"
+    ];
+
     if (userAddress) {
       Sentry.setUser({ id: userAddress.toLowerCase() });
       const govAddress = web3.utils.isAddress(
@@ -6693,7 +6701,8 @@ export class EthBancorModule
         const uniqueTokenAddresses = uniqWith(
           [
             ...this.apiData.tokens.map(token => token.dlt_id),
-            ...this.apiData.pools.map(pool => pool.pool_dlt_id)
+            ...this.apiData.pools.map(pool => pool.pool_dlt_id),
+            ...v2PoolTokens
           ],
           compareString
         );
