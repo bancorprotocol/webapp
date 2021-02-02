@@ -1,7 +1,6 @@
 <template>
   <div id="protected-table">
     <data-table
-      v-if="positions.length"
       :fields="fields"
       :items="groupedPositions"
       :collapsable="true"
@@ -175,7 +174,13 @@
           <div>
             {{ `${prettifyNumber(value)} ${item.symbol}` }}
           </div>
-          <pending-rewards :pool-id="item.poolId" :symbol="item.symbol" />
+          <b-badge
+            v-if="item.pendingReserveReward.gt(0)"
+            variant="primary"
+            class="px-2"
+          >
+            + {{ prettifyNumber(item.pendingReserveReward) }} BNT
+          </b-badge>
         </div>
       </template>
       <template #cellCollapsed(fees)="{ value }">
@@ -361,8 +366,6 @@
         </b-btn>
       </template>
     </data-table>
-
-    <protected-empty v-else class="mx-3" />
   </div>
 </template>
 
@@ -385,20 +388,16 @@ import {
   ViewProtectedLiquidity,
   ViewTableField
 } from "@/types/bancor";
-import ProtectedEmpty from "@/components/protection/ProtectedEmpty.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-import PendingRewards from "@/components/rewards/PendingRewards.vue";
 
 @Component({
   components: {
-    PendingRewards,
     DataTable,
     RemainingTime2,
     CountdownTimer,
-    ProtectedEmpty,
     PoolLogosOverlapped,
     ContentBlock
   }
@@ -484,8 +483,9 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 4,
         key: "fees",
-        label: "Fees",
-        tooltip: "Fees your stake has earned since you entered the pool.",
+        label: "Fees & Rewards",
+        tooltip:
+          "Fees and rewards earned by your stake since you entered the pool.",
         minWidth: "110px",
         thClass: "text-center"
       },
