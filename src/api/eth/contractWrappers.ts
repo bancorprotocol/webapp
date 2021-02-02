@@ -344,6 +344,22 @@ export const fetchWhiteListedV1Pools = async (
   }
 };
 
+export const fetchPositionCount = async (
+  currentUser: string,
+  liquidityStore: string
+) => {
+  throwIfNotContract(liquidityStore);
+  const contract = buildLiquidityProtectionStoreContract(liquidityStore);
+  try {
+    const positionIds = await contract.methods
+      .protectedLiquidityCount(currentUser)
+      .call();
+    return positionIds;
+  } catch (e) {
+    throw new Error(`Failed fetching position ids ${e}`);
+  }
+};
+
 export const fetchPositionIds = async (
   currentUser: string,
   liquidityStore: string
