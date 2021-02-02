@@ -168,7 +168,8 @@ export const existingPool = async (
 };
 
 const throwIfNotContract = (contractAddress: string) => {
-  if (contractAddress == "") throw new Error("Passed contract is empty");
+  if (contractAddress == "")
+    throw new Error("Passed contract is an empty string");
   const isValidAddress = web3.utils.isAddress(contractAddress);
   if (!isValidAddress)
     throw new Error(`${contractAddress} is an invalid contract address`);
@@ -287,6 +288,10 @@ export const fetchContractAddresses = async (
       {},
       ...contractAddresses
     ) as RegisteredContracts;
+    const allUndefined = toPairs(registeredContracts).some(
+      ([key, data]) => data == undefined
+    );
+    if (allUndefined) throw new Error("All requests returned undefined");
 
     return registeredContracts;
   } catch (e) {
