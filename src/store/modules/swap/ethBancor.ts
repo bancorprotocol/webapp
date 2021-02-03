@@ -3155,13 +3155,9 @@ export class EthBancorModule
         whitelisted;
 
       const bntReserve = relay.reserves.find(reserve =>
-        compareString(reserve.address, liquidityProtectionNetworkToken || "")
+        compareString(reserve.address, liquidityProtectionNetworkToken)
       );
-      const addProtectionSupported =
-        liquidityProtection &&
-        bntReserve &&
-        limit &&
-        limit.isLessThan(bntReserve.balance);
+      const addProtectionSupported = liquidityProtection && bntReserve;
 
       const apr = aprs.find(apr =>
         compareString(apr.poolId, relay.pool_dlt_id)
