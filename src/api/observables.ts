@@ -358,8 +358,6 @@ const verifiedPositions$ = combineLatest([
   )
 );
 
-const timeStart = Date.now();
-
 combineLatest([
   verifiedPositions$,
   liquidityProtectionStore$,
@@ -376,9 +374,6 @@ combineLatest([
   ]) => {
     const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
 
-    const timeNow = Date.now();
-    const difference = timeNow - timeStart;
-    console.log("difference", difference, difference / 1000);
     vxm.ethBancor
       .buildFullPositions({
         rawPositions,
