@@ -6,10 +6,14 @@
       variant="primary"
       class="mr-3"
       :class="small ? 'table-button-small' : 'table-button'"
-      :disabled="disabled"
+      :disabled="loading"
     >
-      <span v-if="!small"> {{ $t("add_liquidity") }} </span>
-      <font-awesome-icon v-else icon="plus" />
+      <span v-if="!small">{{ $t("add_liquidity") }}</span>
+      <font-awesome-icon
+        v-else
+        :icon="loading ? 'circle-notch' : 'plus'"
+        :spin="loading"
+      />
     </b-btn>
 
     <b-btn
@@ -41,7 +45,7 @@ export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
   @Prop({ default: false }) small!: boolean;
-  @Prop({ default: false }) disabled!: boolean;
+  @Prop({ default: false }) loading!: boolean;
 
   goToPool() {
     if (this.pool && this.pool.addProtectionSupported) {
