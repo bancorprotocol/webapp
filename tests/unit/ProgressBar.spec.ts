@@ -16,26 +16,17 @@ describe("Progress Bar Component", () => {
 
   beforeEach(() => {
     (state = {
-      darkMode: false,
-      countryCode: "KOR"
+      darkMode: false
     }),
-      (actions = {
-        getUserCountry: jest.fn()
-      }),
       (mutations = {
         toggleDarkMode: jest.fn()
-      }),
-      (getters = {
-        isCountryBanned: () => false
       }),
       (store = new Vuex.Store({
         modules: {
           GeneralNewModule: {
             namespaced: true,
             state,
-            actions,
-            mutations,
-            getters
+            mutations
           }
         }
       }));

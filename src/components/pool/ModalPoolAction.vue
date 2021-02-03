@@ -172,10 +172,6 @@ export default class ModalPoolAction extends BaseComponent {
     this.success = null;
   }
 
-  get isCountryBanned() {
-    return vxm.general.isCountryBanned;
-  }
-
   async initAction() {
     if (this.success) {
       this.$bvModal.hide("modal-pool-action");
@@ -186,13 +182,6 @@ export default class ModalPoolAction extends BaseComponent {
 
     if (this.error) {
       this.error = "";
-      return;
-    }
-
-    if (this.isCountryBanned) {
-      this.error = i18n.tc("action_through_bancor", 0, {
-        bancor: "swap.bancor.network"
-      });
       return;
     }
 

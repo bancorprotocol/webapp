@@ -128,10 +128,6 @@ export default class ModalSwapAction extends BaseComponent {
     return vxm.bancor.slippageTolerance;
   }
 
-  get isCountryBanned() {
-    return vxm.general.isCountryBanned;
-  }
-
   setDefault() {
     this.sections = [];
     this.error = "";
@@ -147,13 +143,6 @@ export default class ModalSwapAction extends BaseComponent {
 
     if (this.error) {
       this.error = "";
-      return;
-    }
-
-    if (this.isCountryBanned) {
-      this.error = i18n.tc("action_through_bancor", 0, {
-        bancor: "swap.bancor.network"
-      });
       return;
     }
 

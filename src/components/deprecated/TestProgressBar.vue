@@ -16,33 +16,18 @@ export default class TestProgressBar extends Vue {
   @Prop() type?: "warn" | "error" | "info";
   @Prop() percentage?: number;
 
-  // for testing
-  @Getter("isCountryBanned", { namespace: "GeneralNewModule" })
-  isCountryBanned!: boolean;
-
   @State("darkMode", { namespace: "GeneralNewModule" })
   darkMode!: boolean;
 
-  @State("countryCode", { namespace: "GeneralNewModule" })
-  countryCode!: string;
-
   @Mutation("toggleDarkMode", { namespace: "GeneralNewModule" })
   toggleDarkMode!: () => void;
-
-  @Action("getUserCountry", { namespace: "GeneralNewModule" })
-  getUserCountry!: () => void;
 
   get percentageValue() {
     return `${+(this.percentage || 0)}%`;
   }
 
   async mounted() {
-    console.log("Getter: ", this.isCountryBanned);
-    console.log("State: ", this.darkMode);
     this.toggleDarkMode();
-    console.log("Mutated: ", this.darkMode);
-    await this.getUserCountry();
-    console.log("Action performed: ", this.countryCode);
   }
 }
 </script>

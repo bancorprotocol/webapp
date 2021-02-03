@@ -86,8 +86,6 @@ export const en = {
   vote_against: "Vote against",
   output_estimated:
     "Output is estimated. If the price changes by more than {amount} your transaction will revert.",
-  action_through_bancor:
-    "This action through {bancor} is not available in your country.",
   confirm_token_swap: "Confirm Token Swap",
   from: "From",
   to_estimated: "To (Estimated)",

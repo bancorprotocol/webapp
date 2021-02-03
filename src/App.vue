@@ -162,7 +162,6 @@ export default class App extends BaseComponent {
     if (locale) vxm.general.setLocale(locale);
     else vxm.general.setLocale(lang);
 
-    await vxm.general.getUserCountry();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;
