@@ -77,7 +77,7 @@
           v-for="(output, index) in outputs"
           :key="output.id"
           :label="index == 0 ? `Value you receive` : ``"
-          :value="`${formatNumber(output.amount)} ${output.symbol}`"
+          :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
         />
       </div>
     </gray-border-block>
@@ -125,7 +125,7 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ `${formatNumber(amount)} ${token.symbol}` }}
+            {{ `${prettifyNumber(amount)} ${token.symbol}` }}
           </span>
         </b-col>
       </b-row>
@@ -389,10 +389,6 @@ export default class AddProtectionSingle extends BaseComponent {
     this.sections = [];
     this.error = "";
     this.success = null;
-  }
-
-  formatNumber(amount: string) {
-    return formatNumber(amount, 6);
   }
 
   get currentStatus() {

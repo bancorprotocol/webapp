@@ -482,7 +482,7 @@ describe("Prettify Numbers", () => {
     const expectedNumbers: string[] = [
       "0",
       "< 0.000001",
-      "1.123457",
+      "1.123456",
       "1.1",
       "2",
       "3",
@@ -509,7 +509,7 @@ describe("Prettify Numbers", () => {
     const expectedNumbers: string[] = [
       "0",
       "< 0.000001",
-      "1.123457",
+      "1.123456",
       "1.1",
       "2",
       "3",

@@ -23,7 +23,8 @@
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
         :disabled="disabled"
-        @keypress="isNumber($event)"
+        debounce="300"
+        :formatter="formatter"
       ></b-form-input>
 
       <b-input-group-append :class="{ cursor: pool || dropdown }">
@@ -155,25 +156,14 @@ export default class TokenInputField extends BaseComponent {
     }
   }
 
-  get formattedBalance() {
-    const balanceInput = this.balance;
-    if (new BigNumber(balanceInput).isNaN()) return "";
-    return `Balance: ${formatNumber(parseFloat(balanceInput), 6).toString()}`;
-  }
+  formatter(text: String) {
+    if (text === undefined) text = this.tokenAmount;
 
-  isNumber(evt: any) {
-    evt = evt ? evt : window.event;
-    let charCode = evt.which ? evt.which : evt.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
-      evt.preventDefault();
-    } else {
-      if (charCode === 46) {
-        if (this.tokenAmount.includes(".")) evt.preventDefault();
-        else {
-          return true;
-        }
-      } else return true;
-    }
+    return text
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
   }
 
   openModal() {
