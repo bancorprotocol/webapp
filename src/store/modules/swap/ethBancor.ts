@@ -2475,6 +2475,11 @@ export class EthBancorModule
       recentAverageRateResult["0"]
     );
 
+    if (averageRate.isNaN())
+      throw new Error(
+        "Price deviation calculation failed. Please contact support."
+      );
+
     const priceDeviationTooHigh = calculatePriceDeviationTooHigh(
       averageRate,
       new BigNumber(primaryReserveBalanceResult),
