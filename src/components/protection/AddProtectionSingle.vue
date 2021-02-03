@@ -378,12 +378,13 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   async loadRecentAverageRate() {
-    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
-      relayId: this.pool.id,
-      selectedTokenAddress: this.token.contract
-    });
-
-    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
+    this.priceDeviationTooHigh = false;
+    // this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
+    //   relayId: this.pool.id,
+    //   selectedTokenAddress: this.token.contract
+    // });
+    //
+    // console.log("priceDeviationTooHigh janjan", this.priceDeviationTooHigh);
   }
 
   async selectPool(id: string) {
