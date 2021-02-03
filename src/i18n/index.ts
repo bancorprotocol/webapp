@@ -18,6 +18,7 @@ export const i18n = new VueI18n({
   messages
 });
 
+//To add a new locale check this list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes in the 639-1 coulmn
 export const getLanguageByLocale = (locale: string): string => {
   switch (locale) {
     case "en":
@@ -28,19 +29,5 @@ export const getLanguageByLocale = (locale: string): string => {
       return "한국어";
     default:
       return "English";
-  }
-};
-
-//To add a new country Code check this list https://unstats.un.org/unsd/tradekb/knowledgebase/country-code
-export const getLocaleByCountryCode = (countryCode: string): string => {
-  switch (countryCode) {
-    case "USA":
-      return "en";
-    case "ISR":
-      return "he";
-    case "KOR":
-      return "ko";
-    default:
-      return "en";
   }
 };

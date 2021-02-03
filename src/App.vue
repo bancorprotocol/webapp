@@ -84,7 +84,6 @@ import { vxm } from "@/store/";
 import wait from "waait";
 import BaseComponent from "@/components/BaseComponent.vue";
 import NetworkAlert from "@/components/layout/NetworkAlert.vue";
-import { getLocaleByCountryCode } from "@/i18n";
 
 @Component({
   components: {
@@ -155,13 +154,15 @@ export default class App extends BaseComponent {
     console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
     const locale = localStorage.getItem("locale");
+    const lang =
+      navigator.languages && navigator.languages.length
+        ? navigator.languages[0]
+        : navigator.language;
     if (darkMode) vxm.general.toggleDarkMode();
     if (locale) vxm.general.setLocale(locale);
-    else {
-      const countryCode = await vxm.general.getUserCountry();
-      vxm.general.setLocale(getLocaleByCountryCode(countryCode));
-    }
+    else vxm.general.setLocale(lang);
 
+    await vxm.general.getUserCountry();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;
