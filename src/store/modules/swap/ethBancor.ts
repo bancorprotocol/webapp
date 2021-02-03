@@ -1542,7 +1542,7 @@ export class EthBancorModule
 
     const timeEnd = Date.now();
     const difference = timeEnd - timeStart;
-    console.log('difference', difference, difference / 1000)
+    console.log("difference", difference, difference / 1000);
     this.protectedPositionsArr = positions;
   }
 
@@ -1625,9 +1625,11 @@ export class EthBancorModule
         this.setLoadingPositions(false);
         return;
       }
+      console.time("timeToGetIds");
       const positionIds = await contract.methods
         .protectedLiquidityIds(owner)
         .call();
+      console.timeEnd("timeToGetIds");
 
       const [rawPositions, currentBlockNumber] = await Promise.all([
         this.fetchPositionsMulti({
