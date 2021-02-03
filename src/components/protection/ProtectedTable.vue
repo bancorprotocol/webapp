@@ -271,10 +271,11 @@
           </div>
         </div>
 
-        <remaining-time2
-          :from="item.stake.unixTime * 1000"
-          :to="item.fullCoverage * 1000"
-          class="mt-1"
+        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
+        <countdown-timer
+          :date-unix="item.fullCoverage"
+          msg-countdown-ended="Full protection reached"
+          class="font-size-12"
         />
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
@@ -304,10 +305,11 @@
           </div>
         </div>
 
-        <remaining-time2
-          :from="item.stake.unixTime * 1000"
-          :to="item.fullCoverage * 1000"
-          class="mt-1"
+        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
+        <countdown-timer
+          :date-unix="item.fullCoverage"
+          msg-countdown-ended="Full protection reached"
+          class="font-size-12"
         />
       </template>
 
@@ -389,14 +391,12 @@ import {
   ViewTableField
 } from "@/types/bancor";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
-import RemainingTime2 from "@/components/common/RemainingTime2.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     DataTable,
-    RemainingTime2,
     CountdownTimer,
     PoolLogosOverlapped,
     ContentBlock
