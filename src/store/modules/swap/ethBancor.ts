@@ -1593,7 +1593,6 @@ export class EthBancorModule
     userAddress?: string;
     supportedAnchors?: string[];
   }) {
-    this.setLoadingPositions(true);
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
 
@@ -1602,10 +1601,12 @@ export class EthBancorModule
       console.error(
         `Failed to find liquidity store address of ${storeAddress}`
       );
+      this.setLoadingPositions(false);
       throw new Error(`Invalid liquidity store address of ${storeAddress}`);
     }
 
     if (!this.currentUser) {
+      this.setLoadingPositions(false);
       return;
     }
     try {
@@ -1641,16 +1642,21 @@ export class EthBancorModule
         })()
       ]);
 
-      if (rawPositions.length !== idCount)
+      if (rawPositions.length !== idCount) {
+        this.setLoadingPositions(false);
         throw new Error("ID count does not match returned positions");
+      }
 
       const theSupportedAnchors =
         supportedAnchors ||
         (this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id));
-      if (!theSupportedAnchors)
+      if (!theSupportedAnchors) {
+        throw new Error("ID count does not match returned positions");
         throw new Error(
           "Race condition error, unable to determine supported anchors"
         );
+      }
+
       const allPositions = filterAndWarn(
         rawPositions,
         pos =>
@@ -1916,6 +1922,7 @@ export class EthBancorModule
       return positions;
     } catch (e) {
       console.error("Failed fetching protection positions", e.message);
+      this.setLoadingPositions(false);
     }
   }
 
@@ -2173,7 +2180,7 @@ export class EthBancorModule
     return lockedBalances;
   }
 
-  loadingProtectedPositions = false;
+  loadingProtectedPositions = true;
 
   get protectedPositions(): ViewProtectedLiquidity[] {
     const owner = this.currentUser;
