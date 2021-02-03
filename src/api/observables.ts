@@ -3,7 +3,6 @@ import {
   Subject,
   combineLatest,
   Observable,
-  merge,
   EMPTY,
   of,
   PartialObserver,
@@ -97,6 +96,48 @@ export const optimisticContract = (key: string) => (
     return source.pipe(
       distinctUntilChanged(compareString),
       tap(data => localStorage.setItem(key, data))
+    );
+  }
+};
+
+const getCachedPositions = (): string[] | false => {
+  const cachedPositionIdsString = localStorage.getItem("positionIds");
+  return cachedPositionIdsString
+    ? (JSON.parse(cachedPositionIdsString) as string[])
+    : false;
+};
+
+const compareIdArray = (a: string[], b: string[]) => {
+  const sameLength = a.length == b.length;
+  const allFound = a.every(id => b.some(i => id == i));
+  return sameLength && allFound;
+};
+
+export const optimisticPositionIds = () => (source: Observable<string[]>) => {
+  const cachedPositionIds = getCachedPositions();
+  if (cachedPositionIds) {
+    return source.pipe(
+      startWith(cachedPositionIds),
+      tap(data => {
+        const isSame = compareIdArray(data, cachedPositionIds);
+        if (!isSame) {
+          const hasContent = data.length > 0;
+          if (hasContent) {
+            localStorage.setItem("positionIds", JSON.stringify(data));
+          } else {
+            localStorage.removeItem("positionIds");
+          }
+        }
+      })
+    );
+  } else {
+    return source.pipe(
+      tap(data => {
+        const hasData = data.length > 0;
+        if (hasData) {
+          localStorage.setItem("positionIds", JSON.stringify(data));
+        }
+      })
     );
   }
 };
@@ -215,14 +256,12 @@ export const contractAddresses$ = networkVars$.pipe(
       vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
     );
   }),
-  tap(logger("incoming contract addresses after")),
   tap(x => {
     if (vxm && vxm.ethBancor) {
       vxm.ethBancor.setContractAddresses(x);
     }
   }),
   distinctUntilChanged<RegisteredContracts>(isEqual),
-  tap(logger("incoming contract addresses after ----")),
   shareReplay(1)
 );
 
@@ -239,7 +278,7 @@ export const stakingRewards$ = contractAddresses$.pipe(
 );
 
 export const storeRewards$ = stakingRewards$.pipe(
-  switchMapIgnoreThrow(async stakingRewardsContract => {
+  switchMapIgnoreThrow(stakingRewardsContract => {
     const contract = buildStakingRewardsContract(stakingRewardsContract);
     return contract.methods.store().call();
   }),
@@ -344,12 +383,10 @@ combineLatest([
 );
 
 const settingsContractAddress$ = liquidityProtection$.pipe(
-  tap(logger("liquidity protection contract qbec")),
   switchMapIgnoreThrow(protectionAddress =>
     fetchLiquidityProtectionSettingsContract(protectionAddress)
   ),
   optimisticContract("LiquiditySettings"),
-  tap(logger("settings contract")),
   shareReplay<string>(1)
 );
 
@@ -365,7 +402,6 @@ settingsContractAddress$
 
 combineLatest([liquidityProtection$, settingsContractAddress$])
   .pipe(
-    tap(logger("before fetch liquidity protection settings")),
     switchMapIgnoreThrow(
       ([protectionContractAddress, settingsContractAddress]) =>
         fetchLiquidityProtectionSettings({
@@ -377,8 +413,7 @@ combineLatest([liquidityProtection$, settingsContractAddress$])
             settingsContractAddress
           })
         )
-    ),
-    tap(logger("after liquidity protection"))
+    )
   )
   .subscribe(settings => {
     vxm.ethBancor.setLiquidityProtectionSettings(settings);
@@ -386,16 +421,12 @@ combineLatest([liquidityProtection$, settingsContractAddress$])
   });
 
 settingsContractAddress$
-  .pipe(
-    tap(logger("white listed pool address")),
-    switchMapIgnoreThrow(address => fetchWhiteListedV1Pools(address)),
-    tap(logger("white listed pools"))
-  )
+  .pipe(switchMapIgnoreThrow(address => fetchWhiteListedV1Pools(address)))
   .subscribe(whitelistedPools =>
     vxm.ethBancor.setWhiteListedPools(whitelistedPools)
   );
 
-const positionIds$ = combineLatest([
+const localAndRemotePositionIds$ = combineLatest([
   authenticated$,
   liquidityProtectionStore$
 ]).pipe(
@@ -403,23 +434,32 @@ const positionIds$ = combineLatest([
   switchMapIgnoreThrow(([currentUser, storeAddress]) =>
     fetchPositionIds(currentUser, storeAddress)
   ),
+  optimisticPositionIds(),
+  distinctUntilChanged(compareIdArray),
   shareReplay(1)
 );
 
-const rawPositions$ = combineLatest([
-  positionIds$,
+const unVerifiedPositions$ = combineLatest([
+  localAndRemotePositionIds$,
   liquidityProtectionStore$
 ]).pipe(
-  tap(logger("raw positions")),
   switchMapIgnoreThrow(([positionIds, storeAddress]) =>
     fetchPositionsMulti(positionIds, storeAddress)
   ),
-  tap(logger("raw positions res")),
   shareReplay(1)
 );
 
+const verifiedPositions$ = combineLatest([
+  unVerifiedPositions$,
+  authenticated$
+]).pipe(
+  map(([positions, currentUser]) =>
+    positions.filter(position => compareString(position.owner, currentUser))
+  )
+);
+
 combineLatest([
-  rawPositions$,
+  verifiedPositions$,
   liquidityProtectionStore$,
   liquidityProtection$,
   currentBlock$,
