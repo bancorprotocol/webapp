@@ -106,4 +106,26 @@ describe('ClaimBnt.vue', () => {
     expect(wrapper.find('.btn-claim').exists()).toBe(false);
   })
 
+  it('should emit "refresh" event after locking period', () => {
+    jest.useFakeTimers();
+
+    const item = {
+      id: '1',
+      amount: 100,
+      lockedUntil: (Date.now()+2000) / 1000,
+      usdValue: 10
+    }
+    const wrapper = shallowMount(ClaimBnt, {
+      propsData: {
+        item
+      },
+      store,
+      localVue
+    });
+
+    jest.advanceTimersByTime(2200);
+    expect(wrapper.emitted().refresh).toBeTruthy();
+    expect(wrapper.emitted().refresh?.length).toBe(1);
+  })
+
 })

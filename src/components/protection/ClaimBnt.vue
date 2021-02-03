@@ -51,6 +51,9 @@ export default class ClaimBnt extends BaseComponent {
   @Emit()
   click() {}
 
+  @Emit("refresh")
+  refresh() {}
+
   countdown(eventTime: number) {
     const currentTime = Date.now() / 1000;
     const diffTime = eventTime - currentTime;
@@ -60,7 +63,7 @@ export default class ClaimBnt extends BaseComponent {
 
     this.locked = (diffTime > 0) ? true : false;
 
-    setInterval(() => {
+    const runInterval = setInterval(() => {
       duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
       this.lockDuration =
         duration.hours() +
@@ -72,6 +75,9 @@ export default class ClaimBnt extends BaseComponent {
 
       if (duration.asMilliseconds() < 0) {
         this.locked = false;
+
+        clearInterval(runInterval);
+        this.refresh();
       }
     }, interval);
   }

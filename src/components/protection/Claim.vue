@@ -16,7 +16,7 @@
       </b-col>
       <b-col xl="6">
         <sub-content-block title="Locked">
-          <claim-bnt v-for="item in locked" :key="item.id" :item="item" @click="onClick" />
+          <claim-bnt v-for="item in locked" @refresh="refresh" :key="item.id" :item="item" @click="onClick" />
           <div v-if="!locked.length" class="no-claim-results">
             No BNT locked.
           </div>
@@ -68,11 +68,11 @@ export default class Claim extends Vue {
 
   now = Date.now() / 1000;
 
-  get available() {
+  available() {
     return vxm.ethBancor.availableBalances;
   }
 
-  get locked() {
+  locked() {
     return vxm.ethBancor.lockedBalances;
   }
 
@@ -113,6 +113,11 @@ export default class Claim extends Vue {
     this.error = "";
     this.success = null;
     this.txBusy = false;
+  }
+
+  refresh() {
+    this.available();
+    this.locked();
   }
 
   created() {
