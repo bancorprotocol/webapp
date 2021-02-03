@@ -41,7 +41,7 @@ export const en = {
   governance_contract: "Governance contract",
   governance_token: "Governance token",
   create_proposal: "Create Proposal",
-  new_proposal:
+  new_proposal_req:
     "New proposal requires you to hold at least {amount} {symbol} which will be locked up to {time}h",
   discourse_url: "Discourse Url",
   title_description: "Title and description",
