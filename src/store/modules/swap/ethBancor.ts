@@ -1486,9 +1486,14 @@ export class EthBancorModule
   }
 
   whiteListedPools: string[] = [];
+  whiteListedPoolsLoading = true;
 
   @mutation setWhiteListedPools(anchors: string[]) {
     this.whiteListedPools = anchors;
+  }
+
+  @mutation setWhiteListedPoolsLoading(state: boolean) {
+    this.whiteListedPoolsLoading = state;
   }
 
   @action async fetchWhiteListedV1Pools(
@@ -1510,6 +1515,8 @@ export class EthBancorModule
     } catch (e) {
       console.error("Failed fetching whitelisted pools");
       throw new Error(`Failed to fetch whitelisted pools ${e}`);
+    } finally {
+      this.setWhiteListedPoolsLoading(false);
     }
   }
 

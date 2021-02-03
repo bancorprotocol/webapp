@@ -64,7 +64,11 @@
     </template>
 
     <template #cell(actions)="{ item }">
-      <action-buttons :pool="item" :small="true" />
+      <action-buttons
+        :pool="item"
+        :small="true"
+        :disabled="whiteListedPoolsLoading"
+      />
     </template>
   </data-table>
 </template>
@@ -79,6 +83,7 @@ import BigNumber from "bignumber.js";
 import DataTable from "@/components/common/DataTable.vue";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { vxm } from "@/store";
 
 @Component({
   components: { CountdownTimer, DataTable, PoolLogos, ActionButtons }
@@ -86,6 +91,10 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class TablePools extends BaseComponent {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
+
+  get whiteListedPoolsLoading() {
+    return vxm.ethBancor.whiteListedPoolsLoading;
+  }
 
   formatPercent(percentage: string | number) {
     return new BigNumber(percentage).gte(0) ? formatPercent(percentage) : "N/A";

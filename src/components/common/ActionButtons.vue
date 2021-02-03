@@ -6,6 +6,7 @@
       variant="primary"
       class="mr-3"
       :class="small ? 'table-button-small' : 'table-button'"
+      :disabled="disabled"
     >
       <span v-if="!small">Add Liquidity</span>
       <font-awesome-icon v-else icon="plus" />
@@ -15,6 +16,7 @@
       @click="goToSwap"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       :class="small ? 'table-button-small' : 'table-button'"
+      :disabled="disabled"
     >
       <span v-if="!small">Trade</span>
       <font-awesome-icon
@@ -38,6 +40,7 @@ export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
   @Prop({ default: false }) small!: boolean;
+  @Prop({ default: false }) disabled!: boolean;
 
   goToPool() {
     if (this.pool && this.pool.addProtectionSupported) {
