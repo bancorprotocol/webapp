@@ -86,7 +86,12 @@ export const optimisticContract = (key: string) => (
     return source.pipe(
       startWith(cachedData),
       distinctUntilChanged(compareString),
-      tap(data => localStorage.setItem(key, data))
+      tap(data => {
+        const isSame = cachedData === data;
+        if (!isSame) {
+          localStorage.setItem(key, data);
+        }
+      })
     );
   } else {
     return source.pipe(
@@ -95,6 +100,16 @@ export const optimisticContract = (key: string) => (
     );
   }
 };
+
+export const switchMapIgnoreThrow = <T, Y>(
+  switchMapProm: (data: T) => Promise<Y>
+) => (source: Observable<T>): Observable<Y> =>
+  source.pipe(
+    switchMap(whatever =>
+      switchMapProm(whatever).catch(() => ("DONT THROW" as unknown) as Y)
+    ),
+    filter(x => !(typeof x == "string" && x === "DONT THROW"))
+  );
 
 let difference = Date.now();
 
@@ -194,17 +209,12 @@ export const networkVars$ = networkVersion$.pipe(
 );
 
 export const contractAddresses$ = networkVars$.pipe(
-  switchMap(networkVariables => {
+  switchMapIgnoreThrow(networkVariables => {
     console.log("network vars got..", networkVariables);
-    return fetchContractAddresses(networkVariables.contractRegistry).catch(
-      e => {
-        return vxm.ethBancor
-          .fetchContractAddresses(networkVariables.contractRegistry)
-          .catch(e => console.log("bad error thrown...", e));
-      }
+    return fetchContractAddresses(networkVariables.contractRegistry).catch(() =>
+      vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
     );
   }),
-  filter(x => Boolean(x)),
   tap(logger("incoming contract addresses after")),
   tap(x => {
     if (vxm && vxm.ethBancor) {
@@ -229,22 +239,17 @@ export const stakingRewards$ = contractAddresses$.pipe(
 );
 
 export const storeRewards$ = stakingRewards$.pipe(
-  switchMap(async stakingRewardsContract => {
+  switchMapIgnoreThrow(async stakingRewardsContract => {
     const contract = buildStakingRewardsContract(stakingRewardsContract);
-    return contract.methods
-      .store()
-      .call()
-      .catch(e => "");
+    return contract.methods.store().call();
   }),
-  filter(x => Boolean(x)),
   share()
 );
 
 export const poolPrograms$ = storeRewards$.pipe(
-  switchMap(storeRewardContract =>
-    vxm.rewards.fetchPoolPrograms(storeRewardContract).catch(() => [])
+  switchMapIgnoreThrow(storeRewardContract =>
+    vxm.rewards.fetchPoolPrograms(storeRewardContract)
   ),
-  filter(x => x && x.length > 0),
   share()
 );
 
@@ -340,10 +345,9 @@ combineLatest([
 
 const settingsContractAddress$ = liquidityProtection$.pipe(
   tap(logger("liquidity protection contract qbec")),
-  switchMap(protectionAddress =>
-    fetchLiquidityProtectionSettingsContract(protectionAddress).catch(() => "")
+  switchMapIgnoreThrow(protectionAddress =>
+    fetchLiquidityProtectionSettingsContract(protectionAddress)
   ),
-  filter(x => Boolean(x)),
   optimisticContract("LiquiditySettings"),
   tap(logger("settings contract")),
   shareReplay<string>(1)
@@ -351,10 +355,9 @@ const settingsContractAddress$ = liquidityProtection$.pipe(
 
 settingsContractAddress$
   .pipe(
-    switchMap(settingsContractAddress =>
-      fetchMinLiqForMinting(settingsContractAddress).catch(() => "")
-    ),
-    filter(x => Boolean(x))
+    switchMapIgnoreThrow(settingsContractAddress =>
+      fetchMinLiqForMinting(settingsContractAddress)
+    )
   )
   .subscribe(settingsContract =>
     vxm.minting.setMinNetworkTokenLiquidityForMinting(settingsContract)
@@ -363,23 +366,18 @@ settingsContractAddress$
 combineLatest([liquidityProtection$, settingsContractAddress$])
   .pipe(
     tap(logger("before fetch liquidity protection settings")),
-    switchMap(([protectionContractAddress, settingsContractAddress]) =>
-      fetchLiquidityProtectionSettings({
-        settingsContractAddress,
-        protectionContractAddress
-      }).catch(e =>
-        vxm.ethBancor
-          .fetchLiquidityProtectionSettings({
+    switchMapIgnoreThrow(
+      ([protectionContractAddress, settingsContractAddress]) =>
+        fetchLiquidityProtectionSettings({
+          settingsContractAddress,
+          protectionContractAddress
+        }).catch(e =>
+          vxm.ethBancor.fetchLiquidityProtectionSettings({
             protectionContractAddress,
             settingsContractAddress
           })
-          .catch(e => {
-            console.log("failed again", e);
-            return "";
-          })
-      )
+        )
     ),
-    filter(x => Boolean(x)),
     tap(logger("after liquidity protection"))
   )
   .subscribe(settings => {
@@ -390,8 +388,7 @@ combineLatest([liquidityProtection$, settingsContractAddress$])
 settingsContractAddress$
   .pipe(
     tap(logger("white listed pool address")),
-    switchMap(address => fetchWhiteListedV1Pools(address).catch(() => "")),
-    filter(x => Boolean(x)),
+    switchMapIgnoreThrow(address => fetchWhiteListedV1Pools(address)),
     tap(logger("white listed pools"))
   )
   .subscribe(whitelistedPools =>
@@ -403,10 +400,9 @@ const positionIds$ = combineLatest([
   liquidityProtectionStore$
 ]).pipe(
   tap(() => vxm.ethBancor.setLoadingPositions(true)),
-  switchMap(([currentUser, storeAddress]) =>
-    fetchPositionIds(currentUser, storeAddress).catch(() => "")
+  switchMapIgnoreThrow(([currentUser, storeAddress]) =>
+    fetchPositionIds(currentUser, storeAddress)
   ),
-  filter(x => Boolean(x)),
   shareReplay(1)
 );
 
@@ -415,10 +411,9 @@ const rawPositions$ = combineLatest([
   liquidityProtectionStore$
 ]).pipe(
   tap(logger("raw positions")),
-  switchMap(([positionIds, storeAddress]) =>
-    fetchPositionsMulti(positionIds, storeAddress).catch(() => "")
+  switchMapIgnoreThrow(([positionIds, storeAddress]) =>
+    fetchPositionsMulti(positionIds, storeAddress)
   ),
-  filter(x => Boolean(x)),
   tap(logger("raw positions res")),
   shareReplay(1)
 );
