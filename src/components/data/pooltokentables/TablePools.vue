@@ -67,7 +67,7 @@
       <action-buttons
         :pool="item"
         :small="true"
-        :disabled="whiteListedPoolsLoading"
+        :loading="whiteListedPoolsLoading"
       />
     </template>
   </data-table>
