@@ -70,6 +70,25 @@ export const distinctArrayItem = <T>(
     startWith(initialValue)
   );
 
+export const optimisticContract = (key: string) => (
+  source: Observable<string>
+) => {
+  const cachedData = localStorage.getItem(key);
+
+  if (cachedData) {
+    return source.pipe(
+      startWith(cachedData),
+      distinctUntilChanged(compareString),
+      tap(data => localStorage.setItem(key, data))
+    );
+  } else {
+    return source.pipe(
+      distinctUntilChanged(compareString),
+      tap(data => localStorage.setItem(key, data))
+    );
+  }
+};
+
 let difference = Date.now();
 
 const logger = (label: string): PartialObserver<any> => ({
@@ -142,13 +161,6 @@ export const contractAddresses$ = networkVars$.pipe(
     );
   }),
   filter(x => Boolean(x)),
-  startWith({
-    BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
-    BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
-    LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-    LiquidityProtection: "0x64f21D00088b52638C5770F3bA99FcCe1697f176",
-    StakingRewards: "0xB443DEA978B39178Cb05Ae005074227A4390DfCe"
-  }),
   tap(logger("incoming contract addresses after")),
   tap(x => {
     if (vxm && vxm.ethBancor) {
@@ -162,13 +174,13 @@ export const contractAddresses$ = networkVars$.pipe(
 
 export const bancorConverterRegistry$ = contractAddresses$.pipe(
   pluck("BancorConverterRegistry"),
-  distinctUntilChanged(compareString),
+  optimisticContract("BancorConverterRegistry"),
   share()
 );
 
 export const stakingRewards$ = contractAddresses$.pipe(
   pluck("StakingRewards"),
-  distinctUntilChanged(compareString),
+  optimisticContract("StakingRewards"),
   shareReplay(1)
 );
 
@@ -194,13 +206,13 @@ export const poolPrograms$ = storeRewards$.pipe(
 
 export const liquidityProtection$ = contractAddresses$.pipe(
   pluck("LiquidityProtection"),
-  distinctUntilChanged(compareString),
+  optimisticContract("LiquidityProtection"),
   shareReplay(1)
 );
 
 export const liquidityProtectionStore$ = contractAddresses$.pipe(
   pluck("LiquidityProtectionStore"),
-  distinctUntilChanged(compareString),
+  optimisticContract("LiquidityProtectionStore"),
   shareReplay(1)
 );
 
@@ -228,13 +240,12 @@ combineLatest([
 );
 
 const settingsContractAddress$ = liquidityProtection$.pipe(
-  tap(logger("liquidity protection contract")),
+  tap(logger("liquidity protection contract qbec")),
   switchMap(protectionAddress =>
     fetchLiquidityProtectionSettingsContract(protectionAddress).catch(() => "")
   ),
   filter(x => Boolean(x)),
-  startWith("0xd444ec18952c7cAf09636f21807683DaCC1d7dA9"),
-  distinctUntilChanged(compareString),
+  optimisticContract("LiquiditySettings"),
   tap(logger("settings contract")),
   shareReplay<string>(1)
 );
