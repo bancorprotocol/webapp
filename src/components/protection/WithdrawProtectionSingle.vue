@@ -281,11 +281,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   async loadRecentAverageRate() {
-    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
-      relayId: this.pool.id,
-      selectedTokenAddress: this.tokenContract
-    });
-    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
+    this.priceDeviationTooHigh = false;
+    // this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
+    //   relayId: this.pool.id,
+    //   selectedTokenAddress: this.tokenContract
+    // });
+    // console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
   }
 
   private interval: any;

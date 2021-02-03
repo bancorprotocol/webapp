@@ -1486,9 +1486,14 @@ export class EthBancorModule
   }
 
   whiteListedPools: string[] = [];
+  whiteListedPoolsLoading = true;
 
   @mutation setWhiteListedPools(anchors: string[]) {
     this.whiteListedPools = anchors;
+  }
+
+  @mutation setWhiteListedPoolsLoading(state: boolean) {
+    this.whiteListedPoolsLoading = state;
   }
 
   @action async fetchWhiteListedV1Pools(
@@ -1510,6 +1515,8 @@ export class EthBancorModule
     } catch (e) {
       console.error("Failed fetching whitelisted pools");
       throw new Error(`Failed to fetch whitelisted pools ${e}`);
+    } finally {
+      this.setWhiteListedPoolsLoading(false);
     }
   }
 
@@ -2452,6 +2459,8 @@ export class EthBancorModule
       selectedTokenAddress
     ]).map(x => x.contract);
 
+    console.log("janjan selectedTokenAddress", selectedTokenAddress);
+
     const [
       recentAverageRateResult,
       averageRateMaxDeviationResult,
@@ -2473,6 +2482,12 @@ export class EthBancorModule
       new BigNumber(primaryReserveBalanceResult),
       new BigNumber(secondaryReserveBalanceResult),
       new BigNumber(averageRateMaxDeviationResult)
+    );
+
+    console.log("janjan recentAverageRateResult", recentAverageRateResult);
+    console.log(
+      "janjan averageRateMaxDeviationResult",
+      averageRateMaxDeviationResult
     );
 
     return priceDeviationTooHigh;
