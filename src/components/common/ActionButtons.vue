@@ -6,6 +6,7 @@
       variant="primary"
       class="mr-3"
       :class="small ? 'table-button-small' : 'table-button'"
+      :disabled="disabled"
     >
       <span v-if="!small"> {{ $t("add_liquidity") }} </span>
       <font-awesome-icon v-else icon="plus" />
@@ -40,6 +41,7 @@ export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
   @Prop({ default: false }) small!: boolean;
+  @Prop({ default: false }) disabled!: boolean;
 
   goToPool() {
     if (this.pool && this.pool.addProtectionSupported) {
