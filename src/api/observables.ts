@@ -146,7 +146,7 @@ export const contractAddresses$ = networkVars$.pipe(
     BancorNetwork: "0x2F9EC37d6CcFFf1caB21733BdaDEdE11c823cCB0",
     BancorConverterRegistry: "0xC0205e203F423Bcd8B2a4d6f8C8A154b0Aa60F19",
     LiquidityProtectionStore: "0xf5FAB5DBD2f3bf675dE4cB76517d4767013cfB55",
-    LiquidityProtection: "0x9Ab934010E6f2D633FeEB5b6f1DdCeEdeD601BCF",
+    LiquidityProtection: "0x64f21D00088b52638C5770F3bA99FcCe1697f176",
     StakingRewards: "0xB443DEA978B39178Cb05Ae005074227A4390DfCe"
   }),
   tap(logger("incoming contract addresses after")),
@@ -156,6 +156,7 @@ export const contractAddresses$ = networkVars$.pipe(
     }
   }),
   distinctUntilChanged<RegisteredContracts>(isEqual),
+  tap(logger("incoming contract addresses after ----")),
   shareReplay(1)
 );
 
@@ -193,7 +194,6 @@ export const poolPrograms$ = storeRewards$.pipe(
 
 export const liquidityProtection$ = contractAddresses$.pipe(
   pluck("LiquidityProtection"),
-  tap(logger("liquidity protection store")),
   distinctUntilChanged(compareString),
   shareReplay(1)
 );
