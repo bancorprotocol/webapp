@@ -1556,6 +1556,11 @@ export class EthBancorModule
   protectedPositionsArr: ProtectedLiquidityCalculated[] = [];
 
   @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
+    console.log(positions, "are the positions getting set!");
+
+    const timeEnd = Date.now();
+    const difference = timeEnd - timeStart;
+    console.log("difference", difference, difference / 1000);
     this.protectedPositionsArr = positions;
   }
 
