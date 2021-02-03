@@ -226,6 +226,8 @@ import {
 } from "@/api/eth/bancorApi";
 import { PoolProgram } from "../rewards";
 
+const timeStart = Date.now();
+
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
 }
@@ -1537,6 +1539,10 @@ export class EthBancorModule
 
   @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
     console.log(positions, "are the positions getting set!");
+
+    const timeEnd = Date.now();
+    const difference = timeEnd - timeStart;
+    console.log("difference", difference, difference / 1000);
     this.protectedPositionsArr = positions;
   }
 
@@ -1619,9 +1625,11 @@ export class EthBancorModule
         this.setLoadingPositions(false);
         return;
       }
+      console.time("timeToGetIds");
       const positionIds = await contract.methods
         .protectedLiquidityIds(owner)
         .call();
+      console.timeEnd("timeToGetIds");
 
       const [rawPositions, currentBlockNumber] = await Promise.all([
         this.fetchPositionsMulti({
@@ -3155,13 +3163,9 @@ export class EthBancorModule
         whitelisted;
 
       const bntReserve = relay.reserves.find(reserve =>
-        compareString(reserve.address, liquidityProtectionNetworkToken || "")
+        compareString(reserve.address, liquidityProtectionNetworkToken)
       );
-      const addProtectionSupported =
-        liquidityProtection &&
-        bntReserve &&
-        limit &&
-        limit.isLessThan(bntReserve.balance);
+      const addProtectionSupported = liquidityProtection && bntReserve;
 
       const apr = aprs.find(apr =>
         compareString(apr.poolId, relay.pool_dlt_id)
