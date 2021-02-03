@@ -9,7 +9,7 @@
           <div class="font-size-16 font-w500">{{ title }}</div>
           <div>
             <b-btn
-              variant="outline-gray"
+              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
               size="sm"
               class="mr-2 rounded"
               :to="{ name: 'RewardsWithdraw' }"
@@ -36,7 +36,7 @@
               class="rounded"
             >
               <font-awesome-icon icon="plus" class="d-lg-none" />
-              <span class="d-none d-lg-inline">Restake</span>
+              <span class="d-none d-lg-inline">Stake</span>
             </b-btn>
           </div>
         </div>
@@ -50,7 +50,7 @@
         >
           <div class="font-size-14 font-w600">
             <animation-number
-              :startingValue="
+              :starting-value="
                 oldrewards.length === 0 ? 0 : oldrewards[index].bnt.toNumber()
               "
               :target-value="item.bnt.toNumber()"
@@ -61,9 +61,9 @@
               trailing-text="BNT"
             />
           </div>
-          <div class="font-size-12 font-w500 text-primary">
+          <div class="font-size-12 font-w500 text-primary" v-if="currentUser">
             <animation-number
-              :startingValue="
+              :starting-value="
                 oldrewards.length === 0 ? 0 : oldrewards[index].usd.toNumber()
               "
               :target-value="item.usd.toNumber()"

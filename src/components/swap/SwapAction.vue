@@ -9,6 +9,7 @@
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
+      :usdValue="usd1"
     />
 
     <div class="text-center my-3">
@@ -16,7 +17,7 @@
         icon="exchange-alt"
         rotation="90"
         @click="invertSelection"
-        class="text-primary font-size-16 cursor"
+        :class="rateLoading ? 'inactive' : 'active'"
       />
     </div>
 
@@ -30,6 +31,7 @@
       :dropdown="true"
       :disabled="false"
       :tokens="tokens"
+      :usdValue="usd2"
     />
 
     <div class="my-3">
@@ -344,6 +346,22 @@ export default class SwapAction extends BaseComponent {
     return vxm.bancor.token(this.token2.id).balance ?? "0";
   }
 
+  get usd1() {
+    const token1 = vxm.bancor.token(this.token1.id);
+    if (token1.price && token1.balance)
+      return new BigNumber(token1.price).times(token1.balance);
+
+    return "0";
+  }
+
+  get usd2() {
+    const token2 = vxm.bancor.token(this.token2.id);
+    if (token2.price && token2.balance)
+      return new BigNumber(token2.price).times(token2.balance);
+
+    return "0";
+  }
+
   get overSlippageLimit() {
     if (
       this.slippage !== null &&
@@ -391,4 +409,18 @@ export default class SwapAction extends BaseComponent {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.inactive {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.6;
+  color: #0f59d1;
+  font-size: 1rem;
+}
+
+.active {
+  cursor: pointer;
+  color: #0f59d1;
+  font-size: 1rem;
+}
+</style>

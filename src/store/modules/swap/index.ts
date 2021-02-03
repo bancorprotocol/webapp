@@ -75,7 +75,7 @@ export class BancorModule extends VuexModule.With({
     error: false
   }));
 
-  slippageTolerance = 0.05;
+  slippageTolerance = 0.005;
 
   @mutation setTolerance(tolerance: number) {
     this.slippageTolerance = tolerance;

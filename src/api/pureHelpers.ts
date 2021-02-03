@@ -16,33 +16,21 @@ import numeral from "numeral";
 
 const oneMillion = new BigNumber(1000000);
 
-export const calculatePositionFees = (
-  originalPoolTokenAmount: string,
-  currentPoolTokenSupply: string,
-  depositedAmount: string,
-  depositedReserveCurrentBalance: string,
-  opposingDepositedReserveCurrentBalance: string,
-  reserveRate: string
+export const calculateAmountToGetSpace = (
+  bntAmount: string,
+  tknAmount: string,
+  bntSpaceAvailable: string,
+  limit: string
 ): string => {
-  const currentReserveToPoolBalanceRate = new BigNumber(
-    depositedReserveCurrentBalance
-  ).div(currentPoolTokenSupply);
-
-  const amount1 = new BigNumber(originalPoolTokenAmount)
-    .times(currentReserveToPoolBalanceRate)
-    .times(2);
-  const amount0 = new BigNumber(depositedAmount);
-
-  const rate0 = new BigNumber(reserveRate);
-  const rate1 = new BigNumber(opposingDepositedReserveCurrentBalance).div(
-    depositedReserveCurrentBalance
-  );
-
-  const rateDiv = rate1.div(rate0);
-  const result = rateDiv.sqrt().times(amount1).minus(amount0);
-
-  if (result.lte(0)) return "0";
-  else return result.toFixed(0);
+  const bntAmountDecimal = new BigNumber(bntAmount);
+  const tknAmountDecimal = new BigNumber(tknAmount);
+  const bntSpaceAvailableAmount = new BigNumber(bntSpaceAvailable);
+  const limitAmount = new BigNumber(limit);
+  return bntAmountDecimal
+    .div(tknAmountDecimal)
+    .plus(bntSpaceAvailableAmount)
+    .minus(limitAmount)
+    .toString();
 };
 
 export const groupPositionsArray = (
@@ -69,45 +57,67 @@ export const groupPositionsArray = (
         item.insuranceStart = val.insuranceStart;
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
+        item.pendingReserveReward = val.pendingReserveReward;
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
           .reduce((sum, current) => sum + current);
-        const sumStakeUsd = filtered
-          .map(x => Number(x.stake.usdValue || 0))
-          .reduce((sum, current) => sum + current);
 
-        const sumProtectedValueAmount = filtered
+        const sumFullyProtected = filtered
           .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
           .reduce((sum, current) => sum + current);
-        const sumProtectedValueUsd = filtered
-          .map(x => Number(x.fullyProtected ? x.fullyProtected.usdValue : 0))
-          .reduce((sum, current) => sum + current);
+        let sumFullyProtectedWithReward: BigNumber;
 
         const sumProtectedAmount = filtered
           .map(x => Number(x.protectedAmount ? x.protectedAmount.amount : 0))
           .reduce((sum, current) => sum + current);
-        const sumProtectedAmountUsd = filtered
-          .map(x => Number(x.protectedAmount ? x.protectedAmount.usdValue : 0))
-          .reduce((sum, current) => sum + current);
+        let sumProtectedWithReward: BigNumber;
+
+        if (compareString(symbol, "BNT")) {
+          sumFullyProtectedWithReward = item.pendingReserveReward.plus(
+            sumFullyProtected
+          );
+          sumProtectedWithReward = item.pendingReserveReward.plus(
+            sumProtectedAmount
+          );
+        } else {
+          const bntRewardUsd = item.pendingReserveReward.times(
+            val.bntTokenPrice
+          );
+          sumFullyProtectedWithReward = bntRewardUsd
+            .div(val.reserveTokenPrice)
+            .plus(sumFullyProtected);
+          sumProtectedWithReward = bntRewardUsd
+            .div(val.reserveTokenPrice)
+            .plus(sumProtectedAmount);
+        }
+
+        const sumFullyProtectedWithRewardUSD =
+          Number(sumFullyProtectedWithReward) * val.reserveTokenPrice;
+
+        const sumProtectedWithRewardUSD =
+          Number(sumProtectedWithReward) * val.reserveTokenPrice;
+
         const sumFees = filtered
           .map(x => Number(x.fees ? x.fees.amount : 0))
-          .reduce((sum, current) => sum + current);
+          .reduce((sum, current) => sum + current, 0);
 
         item.stake = {
           amount: sumStakeAmount,
-          usdValue: sumStakeUsd,
+          usdValue: sumStakeAmount * val.reserveTokenPrice,
           unixTime: val.stake.unixTime
         };
         item.fullyProtected = {
-          amount: sumProtectedValueAmount,
-          usdValue: sumProtectedValueUsd
+          amount: sumFullyProtectedWithReward.toNumber(),
+          usdValue: sumFullyProtectedWithRewardUSD
         };
         item.protectedAmount = {
-          amount: sumProtectedAmount,
-          usdValue: sumProtectedAmountUsd
+          amount: sumProtectedWithReward.toNumber(),
+          usdValue: sumProtectedWithRewardUSD
         };
-        item.roi = (sumProtectedValueAmount - sumStakeAmount) / sumStakeAmount;
+        item.roi =
+          (Number(sumFullyProtectedWithReward) - sumStakeAmount) /
+          sumStakeAmount;
         item.fees = sumFees;
 
         obj.set(id, item);
@@ -134,12 +144,16 @@ export const groupPositionsArray = (
 export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
-export const miningBntReward = (protectedBnt: string, highCap: boolean) => {
-  const baseNumber = "14000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
-
-  return new BigNumber(magicalNumber)
-    .multipliedBy(52)
+export const miningBntReward = (
+  protectedBnt: string,
+  rewardRate: string,
+  rewardShare: number
+) => {
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(365)
     .dividedBy(protectedBnt)
     .toNumber();
 };
@@ -148,17 +162,17 @@ export const miningTknReward = (
   tknReserveBalance: string,
   bntReserveBalance: string,
   protectedTkn: string,
-  highCap: boolean
+  rewardRate: string,
+  rewardShare: number
 ) => {
-  const baseNumber = "6000000000000000000000";
-  const magicalNumber = highCap ? baseNumber + "0" : baseNumber;
-  return new BigNumber(
-    new BigNumber(magicalNumber)
-      .multipliedBy(tknReserveBalance)
-      .dividedBy(bntReserveBalance)
-      .multipliedBy(52)
-      .dividedBy(protectedTkn)
-  ).toNumber();
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(new BigNumber(tknReserveBalance).dividedBy(bntReserveBalance))
+    .multipliedBy(365)
+    .dividedBy(protectedTkn)
+    .toNumber();
 };
 
 export const compareStaticRelayAndSet = (
@@ -302,20 +316,6 @@ export const calculateLimits = (
   // add some buffer to avoid tx fails
   tknLimitWei = tknLimitWei.multipliedBy(
     new BigNumber("99.9").dividedBy("100")
-  );
-
-  console.log(
-    "limits",
-    "limitOrDefault",
-    limitOrDefault.toString(),
-    "mintedWei",
-    mintedWei.toString(),
-    "bntRate",
-    bntRate.toString(),
-    "tknDelta",
-    tknDelta.toString(),
-    "tknLimitWei",
-    tknLimitWei.toString()
   );
 
   return { bntLimitWei: mintedWei, tknLimitWei };

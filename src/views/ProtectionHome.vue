@@ -15,17 +15,16 @@
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          You can protect your token pools with our special insurance for
-          impermanent loss by simply adding insurance to each of your
-          transactions.
+          Manage your protected positions in Bancor pools and track and analyze
+          your returns.
         </p>
       </b-col>
 
       <b-col lg="6">
-        <ProtectedSummary v-if="positions.length" :positions="positions" />
+        <ProtectedSummary :positions="positions" />
       </b-col>
       <b-col lg="6">
-        <RewardsSummary v-if="positions.length" :positions="positions" />
+        <RewardsSummary v-if="currentUser" :positions="positions" />
       </b-col>
 
       <b-col cols="12">
@@ -35,12 +34,18 @@
           :title="positions.length ? 'My Protected Positions' : 'Protected'"
           :search.sync="searchProtected"
         >
-          <div v-if="loading" class="d-flex justify-content-center my-3">
+          <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
               style="width: 3rem; height: 3rem"
               class="text-primary"
               label="Loading..."
             />
+          </div>
+          <div
+            v-else-if="!positions.length"
+            class="mx-3 mt-3 font-size-14 font-w500"
+          >
+            No protected positions found.
           </div>
           <div v-else>
             <ProtectedTable :positions="positions" :search="searchProtected" />
@@ -49,7 +54,7 @@
       </b-col>
     </b-row>
 
-    <b-row>
+    <b-row class="closedPos">
       <b-col cols="12">
         <span
           class="font-size-20 font-w600"
@@ -104,7 +109,18 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   get loading() {
-    return vxm.ethBancor.loadingPools;
+    if (this.currentUser) return vxm.ethBancor.loadingProtectedPositions;
+    else return false;
+  }
+
+  async mounted() {
+    const scroll = this.$route.params.scroll;
+    const el = this.$el.getElementsByClassName("closedPos")[0];
+
+    if (el && scroll) {
+      console.log("now: " + el);
+      el.scrollIntoView({ behavior: "smooth" });
+    }
   }
 }
 </script>
