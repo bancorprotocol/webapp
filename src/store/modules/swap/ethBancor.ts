@@ -2459,8 +2459,6 @@ export class EthBancorModule
       selectedTokenAddress
     ]).map(x => x.contract);
 
-    console.log("janjan selectedTokenAddress", selectedTokenAddress);
-
     const [
       recentAverageRateResult,
       averageRateMaxDeviationResult,
@@ -2482,12 +2480,6 @@ export class EthBancorModule
       new BigNumber(primaryReserveBalanceResult),
       new BigNumber(secondaryReserveBalanceResult),
       new BigNumber(averageRateMaxDeviationResult)
-    );
-
-    console.log("janjan recentAverageRateResult", recentAverageRateResult);
-    console.log(
-      "janjan averageRateMaxDeviationResult",
-      averageRateMaxDeviationResult
     );
 
     return priceDeviationTooHigh;
