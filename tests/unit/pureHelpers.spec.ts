@@ -1,8 +1,11 @@
 import {
   decToPpm,
   expandToken,
+  miningBntReward,
+  miningTknReward,
   prettifyNumber,
-  calculateLimits
+  calculateLimits,
+  calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
 
@@ -10,6 +13,56 @@ describe("dec to ppm works", () => {
   test("range of percentages", () => {
     expect(decToPpm(0.6)).toBe("600000");
     expect(decToPpm(1)).toBe("1000000");
+  });
+});
+
+describe("can calculate mining aprs", () => {
+  test("USDC Pool", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "5464704021365105009750215";
+    const protectedTkn = "8246694000590";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
+    const tknReserveBalance = "10034907031540";
+    const bntReserveBalance = "5391863391448499616501339";
+
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.3358;
+    expect(bntReward).toBeCloseTo(expectedResult);
+
+    const tknReward = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
+      protectedTkn,
+      rewardRate,
+      tknRewardShare
+    );
+
+    expect(tknReward).toBeCloseTo(0.7061);
+  });
+
+  test("ETHBNT Pool", () => {
+    const rewardRate = "165343915343915330";
+    const protectedBnt = "6444242056039567241062271";
+    const protectedTkn = "24483370760343498011551";
+    const bntRewardShare = 0.7;
+    const tknRewardShare = 0.3;
+    const tknReserveBalance = "24286381681461977556211";
+    const bntReserveBalance = "16997459221259878949065240";
+
+    const bntReward = miningBntReward(protectedBnt, rewardRate, bntRewardShare);
+    const expectedResult = 1.1328;
+    expect(bntReward).toBeCloseTo(expectedResult);
+
+    const tknReward = miningTknReward(
+      tknReserveBalance,
+      bntReserveBalance,
+      protectedTkn,
+      rewardRate,
+      tknRewardShare
+    );
+
+    expect(tknReward).toBeCloseTo(0.1826);
   });
 });
 
@@ -429,7 +482,7 @@ describe("Prettify Numbers", () => {
     const expectedNumbers: string[] = [
       "0",
       "< 0.000001",
-      "1.123457",
+      "1.123456",
       "1.1",
       "2",
       "3",
@@ -456,7 +509,7 @@ describe("Prettify Numbers", () => {
     const expectedNumbers: string[] = [
       "0",
       "< 0.000001",
-      "1.123457",
+      "1.123456",
       "1.1",
       "2",
       "3",
@@ -555,5 +608,19 @@ describe("calculateLimits", () => {
       "14147951967419454727944.8873357485195903336563"
     );
     expect(bntLimitWei.toString()).toEqual("26554714837518616832230");
+  });
+});
+
+describe("calculate how much bnt you need to stake in order to have room for 1tkn", () => {
+  test("Amount to get space", async () => {
+    const { bnt, tkn, bntSpaceAvailable, limit } = {
+      bnt: "1711365.486100309578494856",
+      tkn: "7542395.245134802630180142",
+      bntSpaceAvailable: "1403404.058171372713746323",
+      limit: "1000000"
+    };
+
+    const res = calculateAmountToGetSpace(bnt, tkn, bntSpaceAvailable, limit);
+    expect(res).toBe("403404.28507084303840483049");
   });
 });

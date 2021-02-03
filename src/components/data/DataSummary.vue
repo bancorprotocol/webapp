@@ -11,8 +11,13 @@
       </content-block>
     </b-col>
     <b-col cols="12" v-if="isEth">
-      <content-block :px0="true" :shadow-light="true" :no-header="true">
-        <transaction-tables />
+      <content-block
+        :px0="true"
+        :shadow-light="true"
+        title="Swaps"
+        :search.sync="txSearch"
+      >
+        <table-transactions :filter="txSearch" :items="itemsSwap" />
       </content-block>
     </b-col>
   </b-row>
@@ -23,20 +28,29 @@ import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Statistics from "@/components/data/statistics/Statistics.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
-import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
+import { vxm } from "@/store";
 
 @Component({
   components: {
-    TransactionTables,
+    TableTransactions,
     PoolTokenTables,
     Statistics,
     ContentBlock
   }
 })
 export default class DataSummary extends BaseComponent {
+  txSearch = "";
+
   get isEth() {
     return this.$route.params.service === "eth";
+  }
+
+  get itemsSwap() {
+    const liquidityHistory = vxm.bancor.liquidityHistory;
+    if (liquidityHistory.loading) return [];
+    return liquidityHistory.data;
   }
 }
 </script>

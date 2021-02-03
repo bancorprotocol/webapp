@@ -41,9 +41,8 @@ export const en = {
   governance_contract: "Governance contract",
   governance_token: "Governance token",
   create_proposal: "Create Proposal",
-  new_proposal_requires: "New proposal requires you to hold at least",
-  will_be_locked: "which will be locked up to",
-  h: "h", //hours shortcut
+  new_proposal:
+    "New proposal requires you to hold at least {amount} {symbol} which will be locked up to {time}h",
   discourse_url: "Discourse Url",
   title_description: "Title and description",
   i_propose: "I would like to propose to",
@@ -266,7 +265,7 @@ export const en = {
   data: "Data",
   developers: "Developers",
   chat: "Chat",
-  community: "Community",
+  community_support: "Community & Support",
   terms_of_use: "Terms of Use",
   connect_wallet: "Connect Wallet",
   ropsten_testnet: "You are on Ropsten Testnet.",
@@ -337,5 +336,10 @@ export const en = {
     "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and stake your rewards atomically without resetting your current multipliers, click the “Stake my rewards” button below.",
   stake_tokens: "Stake Tokens",
   unstake_tokens: "Unstake Tokens",
-  choose_language: "Choose your language"
+  choose_language: "Choose your language",
+  for_more_information: "For more information",
+  click_here: "click here",
+  needed_open_space: "{bnt} needed to open up {tkn} space",
+  total_fees: "Total Fees",
+  creating_proposal: "Creating Proposal"
 };

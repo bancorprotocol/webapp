@@ -55,7 +55,7 @@
       </b-col>
     </b-row>
 
-    <b-row>
+    <b-row class="closedPos">
       <b-col cols="12">
         <span
           class="font-size-20 font-w600"
@@ -111,6 +111,16 @@ export default class ProtectionHome extends BaseComponent {
   get loading() {
     if (this.currentUser) return vxm.ethBancor.loadingProtectedPositions;
     else return false;
+  }
+
+  async mounted() {
+    const scroll = this.$route.params.scroll;
+    const el = this.$el.getElementsByClassName("closedPos")[0];
+
+    if (el && scroll) {
+      console.log("now: " + el);
+      el.scrollIntoView({ behavior: "smooth" });
+    }
   }
 }
 </script>

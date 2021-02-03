@@ -16,6 +16,23 @@ import numeral from "numeral";
 
 const oneMillion = new BigNumber(1000000);
 
+export const calculateAmountToGetSpace = (
+  bntAmount: string,
+  tknAmount: string,
+  bntSpaceAvailable: string,
+  limit: string
+): string => {
+  const bntAmountDecimal = new BigNumber(bntAmount);
+  const tknAmountDecimal = new BigNumber(tknAmount);
+  const bntSpaceAvailableAmount = new BigNumber(bntSpaceAvailable);
+  const limitAmount = new BigNumber(limit);
+  return bntAmountDecimal
+    .div(tknAmountDecimal)
+    .plus(bntSpaceAvailableAmount)
+    .minus(limitAmount)
+    .toString();
+};
+
 export const groupPositionsArray = (
   arr: ViewProtectedLiquidity[]
 ): ViewGroupedPositions[] => {
@@ -127,6 +144,37 @@ export const groupPositionsArray = (
 export const decToPpm = (dec: number | string): string =>
   new BigNumber(dec).times(oneMillion).toFixed(0);
 
+export const miningBntReward = (
+  protectedBnt: string,
+  rewardRate: string,
+  rewardShare: number
+) => {
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(365)
+    .dividedBy(protectedBnt)
+    .toNumber();
+};
+
+export const miningTknReward = (
+  tknReserveBalance: string,
+  bntReserveBalance: string,
+  protectedTkn: string,
+  rewardRate: string,
+  rewardShare: number
+) => {
+  return new BigNumber(rewardRate)
+    .multipliedBy(86400)
+    .multipliedBy(2)
+    .multipliedBy(rewardShare)
+    .multipliedBy(new BigNumber(tknReserveBalance).dividedBy(bntReserveBalance))
+    .multipliedBy(365)
+    .dividedBy(protectedTkn)
+    .toNumber();
+};
+
 export const compareStaticRelayAndSet = (
   staticRelay: StaticRelay,
   anchorAndConverter: ConverterAndAnchor
@@ -237,67 +285,16 @@ export const prettifyNumber = (
   if (usd) {
     if (bigNum.lte(0)) return "$0.00";
     else if (bigNum.lt(0.01)) return "< $0.01";
-    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
+    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0", Math.floor);
     else return numeral(bigNum).format("$0,0.00");
   } else {
     if (bigNum.lte(0)) return "0";
-    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
+    else if (bigNum.gte(2))
+      return numeral(bigNum).format("0,0.[00]", Math.floor);
     else if (bigNum.lt(0.000001)) return "< 0.000001";
-    else return numeral(bigNum).format("0.[000000]");
+    else return numeral(bigNum).format("0.[000000]", Math.floor);
   }
 };
-
-// export const prettifyNumber = (num: number | string, usd = false): string => {
-//   const roundDown = (num: number, places: number): number => {
-//     const string = num.toString();
-//     const number = string.split(".")[0];
-//     const decimals = string.split(".")[1];
-//     if (!decimals || !places) return Number(number);
-//     else {
-//       const result = number + "." + decimals.substr(0, places);
-//       return Number(result);
-//     }
-//   };
-//
-//   const addCommaSeparator = (num: number, per = 3) => {
-//     const string = num.toString();
-//     const number = string.split(".")[0];
-//     const decimal = string.split(".")[1];
-//     let aComma = "";
-//     if (number.length > per) {
-//       let j = 0;
-//       for (let i = number.length - 1; i >= 0; i--) {
-//         aComma = number.charAt(i) + aComma;
-//         j++;
-//         if (j == per && i != 0) {
-//           aComma = "," + aComma;
-//           j = 0;
-//         }
-//       }
-//     } else {
-//       aComma = number;
-//     }
-//     return aComma + (decimal ? `.${decimal}` : "");
-//   };
-//
-//   const number = Number(num);
-//   if (isNaN(number)) return "N/A";
-//
-//   let result = 0;
-//   if (usd) {
-//     if (number === 0) return "$0";
-//     else if (number < 0.01) return "< $0.01";
-//     else if (number >= 100) result = Number(number.toFixed(0));
-//     else result = Number(number.toFixed(2));
-//     return "$" + addCommaSeparator(result);
-//   } else {
-//     if (number === 0) return "0";
-//     else if (number < 0.000001) return "< 0.000001";
-//     else if (number >= 2) result = Number(number.toFixed(2));
-//     else result = Number(number.toFixed(6));
-//     return addCommaSeparator(result);
-//   }
-// };
 
 export const calculateLimits = (
   poolLimitWei: string,
@@ -319,20 +316,6 @@ export const calculateLimits = (
   // add some buffer to avoid tx fails
   tknLimitWei = tknLimitWei.multipliedBy(
     new BigNumber("99.9").dividedBy("100")
-  );
-
-  console.log(
-    "limits",
-    "limitOrDefault",
-    limitOrDefault.toString(),
-    "mintedWei",
-    mintedWei.toString(),
-    "bntRate",
-    bntRate.toString(),
-    "tknDelta",
-    tknDelta.toString(),
-    "tknLimitWei",
-    tknLimitWei.toString()
   );
 
   return { bntLimitWei: mintedWei, tknLimitWei };

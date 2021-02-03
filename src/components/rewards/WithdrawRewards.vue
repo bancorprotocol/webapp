@@ -34,7 +34,11 @@
       :pools="pools"
     />
 
-    <modal-tx-action :tx-meta="txMeta" @close="closeTxModal" />
+    <modal-tx-action
+      :tx-meta="txMeta"
+      title="You are withdrawing rewards:"
+      @close="closeTxModal"
+    />
   </div>
 </template>
 

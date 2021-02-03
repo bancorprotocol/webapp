@@ -1,47 +1,15 @@
 <template>
-  <b-modal
-    scrollable
-    centered
-    v-model="show"
-    hide-footer
-    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
-    @close="onHide"
-    @cancel="onHide"
-    @hide="onHide"
-  >
-    <template slot="modal-header">
-      <div class="w-100">
-        <b-row>
-          <b-col cols="12" class="d-flex justify-content-between mb-2">
-            <span
-              class="font-size-14 font-w600"
-              :class="darkMode ? 'text-dark' : 'text-light'"
-            >
-              {{ $t("create_proposal") }}
-            </span>
-            <font-awesome-icon
-              class="cursor font-size-lg"
-              :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="onHide"
-              icon="times"
-            />
-          </b-col>
-        </b-row>
-      </div>
-    </template>
-
-    <div v-if="!(txBusy || success || error)" class="w-100">
-      <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
-        {{
-          $t("new_proposal_requires") +
-          proposalMinimumFormatted +
-          symbol +
-          $t("will_be_locked") +
-          maxLock +
-          $t("will_be_locked") +
-          "."
-        }}
-      </b-alert>
+  <modal-base :title="$t('create_proposal')" v-model="show" @input="setDefault">
+    <div v-if="!(txBusy || success || error)">
+      <alert-block
+        class="mb-3"
+        variant="warning"
+        :msg="`${$t('new_proposal_req', {
+          amount: proposalMinimumFormatted,
+          symbol,
+          time: maxLock
+        })}:`"
+      />
 
       <multi-input-field
         class="mb-3"
@@ -61,7 +29,6 @@
           readonly
           no-resize
           size="sm"
-          max-rows="2"
           :placeholder="$t('add_liquidity_pool_xyz')"
           class="combo combo--title"
           :class="[
@@ -73,7 +40,7 @@
           v-model="description"
           max-rows="4"
           readonly
-          no-resize="true"
+          no-resize
           :placeholder="`${$t('i_propose')}...`"
           :class="[
             !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
@@ -99,23 +66,24 @@
         height="48"
         :label="$t('github_url')"
       />
-      <div class="pt-3" />
     </div>
 
     <action-modal-status
-      v-if="txBusy || error || success"
+      v-else
       :error="error"
       :success="success"
+      :step-description="$t('creating_proposal')"
     />
 
     <main-button
       @click="propose"
+      class="mt-3"
       :label="proposeButton"
-      :large="true"
       :active="true"
+      :large="true"
       :disabled="!success && (this.hasError || txBusy)"
     />
-  </b-modal>
+  </modal-base>
 </template>
 
 <script lang="ts">
@@ -132,6 +100,8 @@ import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TxResponse } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
   components: {
@@ -139,7 +109,9 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     ContentBlock,
     LabelContentSplit,
     MainButton,
-    ActionModalStatus
+    ActionModalStatus,
+    ModalBase,
+    AlertBlock
   }
 })
 export default class AddProposal extends BaseComponent {
@@ -204,9 +176,11 @@ export default class AddProposal extends BaseComponent {
   }
 
   async propose() {
-    if (this.success) {
+    if (this.success || this.error) {
       this.setDefault();
-      this.onHide();
+      this.error = "";
+      this.success = null;
+      this.txBusy = false;
       return;
     }
 
@@ -275,12 +249,6 @@ export default class AddProposal extends BaseComponent {
     this.discourseUrl = "";
     this.githubUrl = "";
     this.contractAddress = "";
-  }
-
-  onHide() {
-    this.show = false;
-    this.error = "";
-    this.success = null;
   }
 }
 </script>

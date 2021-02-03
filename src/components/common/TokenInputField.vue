@@ -1,17 +1,18 @@
 <template>
   <div>
     <label-content-split :label="label" class="mb-1">
-      <span
-        @click="maxBalance"
-        v-if="currentUser"
-        class="font-size-12 font-w500 cursor"
-      >
-        {{
-          `${$t("balance")}: ${prettifyNumber(balance)} ${
-            usdValue ? usdValue : ""
-          }`
-        }}
-      </span>
+      <div v-if="currentUser" class="d-flex flex-row font-size-12 font-w500">
+        <div @click="maxBalance" class="cursor">
+          {{ `${$t("balance")}: ${prettifyNumber(balance)}` }}
+        </div>
+        <div
+          v-if="usdValue"
+          class="ml-1"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        >
+          {{ `(~${prettifyNumber(usdValue, true)})` }}
+        </div>
+      </div>
     </label-content-split>
 
     <b-input-group>
@@ -22,7 +23,8 @@
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         :placeholder="$t('enter_amount')"
         :disabled="disabled"
-        @keypress="isNumber($event)"
+        debounce="300"
+        :formatter="formatter"
       ></b-form-input>
 
       <b-input-group-append :class="{ cursor: pool || dropdown }">
@@ -39,7 +41,7 @@
             <img
               class="img-avatar img-avatar32 border-colouring bg-white mr-1"
               :src="token.logo"
-              :alt="$t('token_logo')"
+              alt="Token Logo"
             />
             <span
               class="px-1 font-size-14 font-w600"
@@ -56,7 +58,7 @@
             <img
               class="img-avatar img-avatar32 border-colouring bg-white mr-1"
               :src="defaultImage"
-              alt="Token Logo"
+              :alt="$t('token_logo')"
             />
           </div>
         </div>
@@ -154,25 +156,14 @@ export default class TokenInputField extends BaseComponent {
     }
   }
 
-  get formattedBalance() {
-    const balanceInput = this.balance;
-    if (new BigNumber(balanceInput).isNaN()) return "";
-    return `Balance: ${formatNumber(parseFloat(balanceInput), 6).toString()}`;
-  }
+  formatter(text: String) {
+    if (text === undefined) text = this.tokenAmount;
 
-  isNumber(evt: any) {
-    evt = evt ? evt : window.event;
-    let charCode = evt.which ? evt.which : evt.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
-      evt.preventDefault();
-    } else {
-      if (charCode === 46) {
-        if (this.tokenAmount.includes(".")) evt.preventDefault();
-        else {
-          return true;
-        }
-      } else return true;
-    }
+    return text
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
   }
 
   openModal() {

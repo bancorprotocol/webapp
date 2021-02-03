@@ -11,18 +11,22 @@ import { multiSteps } from "@/api/helpers";
 import wait from "waait";
 import { shrinkToken } from "@/api/eth/helpers";
 import { expandToken } from "@/api/pureHelpers";
+import { zip } from "lodash";
 
 const VuexModule = createModule({
   strict: false
 });
 
+interface RewardShare {
+  reserveId: string;
+  rewardShare: string;
+}
 export interface PoolProgram {
   poolToken: string;
   startTimes: string;
   endTimes: string;
-  rewardRates: string;
-  reserveTokens: string[];
-  rewardShares: string[];
+  rewardRate: string;
+  reserves: RewardShare[];
 }
 
 export class RewardsModule extends VuexModule.With({
@@ -190,13 +194,22 @@ export class RewardsModule extends VuexModule.With({
       const poolPrograms: PoolProgram[] = [];
 
       for (let i = 0; i < result[0].length; i++) {
+        const reserveTokens = result[4][i];
+        const rewardShares = result[5][i];
+        const reservesTuple = zip(reserveTokens, rewardShares) as [
+          string,
+          string
+        ][];
+        const reserves: RewardShare[] = reservesTuple.map(
+          ([reserveId, rewardShare]) => ({ reserveId, rewardShare })
+        );
+
         poolPrograms.push({
           poolToken: result[0][i],
           startTimes: result[1][i],
           endTimes: result[2][i],
-          rewardRates: result[3][i],
-          reserveTokens: result[4][i],
-          rewardShares: result[5][i]
+          rewardRate: result[3][i],
+          reserves
         });
       }
       this.setPoolPrograms(poolPrograms);

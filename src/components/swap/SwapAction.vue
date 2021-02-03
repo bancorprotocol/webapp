@@ -9,6 +9,7 @@
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
+      :usdValue="usd1"
     />
 
     <div class="text-center my-3">
@@ -30,6 +31,7 @@
       :dropdown="true"
       :disabled="false"
       :tokens="tokens"
+      :usdValue="usd2"
     />
 
     <div class="my-3">
@@ -347,6 +349,22 @@ export default class SwapAction extends BaseComponent {
 
   get balance2() {
     return vxm.bancor.token(this.token2.id).balance ?? "0";
+  }
+
+  get usd1() {
+    const token1 = vxm.bancor.token(this.token1.id);
+    if (token1.price && token1.balance)
+      return new BigNumber(token1.price).times(token1.balance);
+
+    return "0";
+  }
+
+  get usd2() {
+    const token2 = vxm.bancor.token(this.token2.id);
+    if (token2.price && token2.balance)
+      return new BigNumber(token2.price).times(token2.balance);
+
+    return "0";
   }
 
   get overSlippageLimit() {

@@ -133,14 +133,10 @@ import {
   priorityEthPools,
   knownPools,
   PreviousPoolFee,
-  liquidityMiningEndTime,
   moreStaticRelays,
   previousPoolFees,
   v2Pools,
-  secondRoundLiquidityMiningEndTime,
-  compareStaticRelay,
-  thirdRoundLiquidityMiningEndTime,
-  fourthRoundLiquidityMiningEndTime
+  compareStaticRelay
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -183,7 +179,10 @@ import {
   reserveContractsInStatic,
   parseRawDynamic,
   filterAndWarn,
-  staticToConverterAndAnchor
+  staticToConverterAndAnchor,
+  miningBntReward,
+  miningTknReward,
+  calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import {
   distinctArrayItem,
@@ -3625,6 +3624,85 @@ export class EthBancorModule
     ];
   }
 
+  @action async getAvailableAndAmountToGetSpace({
+    poolId
+  }: {
+    poolId: string;
+  }): Promise<{
+    availableSpace: {
+      amount: string;
+      token: string;
+    }[];
+    amountToGetSpace?: string;
+  }> {
+    const { maxStakes } = await this.getMaxStakes({
+      poolId
+    });
+    const pool = this.relay(poolId);
+    const bntTknArr = pool.reserves.map(r => {
+      return {
+        contract: r.contract,
+        symbol: r.symbol,
+        decimals: this.token(r.id).precision
+      };
+    });
+
+    const [bnt, tkn] = sortAlongSide(bntTknArr, item => item.contract, [
+      this.liquidityProtectionSettings.networkToken
+    ]);
+
+    const availableSpace = [
+      {
+        amount: shrinkToken(maxStakes.maxAllowedBntWei, bnt.decimals),
+        token: bnt.symbol
+      },
+      {
+        amount: shrinkToken(maxStakes.maxAllowedTknWei, tkn.decimals),
+        token: tkn.symbol
+      }
+    ];
+    const tknSpaceAvailableLTOne = new BigNumber(availableSpace[1].amount).lt(
+      1
+    );
+    if (tknSpaceAvailableLTOne) {
+      const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
+        this.liquidityProtectionSettings.contract,
+        w3
+      );
+      const [balances, limit] = await Promise.all([
+        this.fetchRelayBalances({ poolId }),
+        liquidityProtectionSettings.methods
+          .networkTokenMintingLimits(poolId)
+          .call()
+      ]);
+      const [bntReserve, tknReserve] = sortAlongSide(
+        balances.reserves,
+        reserve => reserve.symbol,
+        ["BNT"]
+      );
+
+      const bntAmount = shrinkToken(bntReserve.weiAmount, bntReserve.decimals);
+      const tknAmount = shrinkToken(tknReserve.weiAmount, tknReserve.decimals);
+      const spaceAvailAble = shrinkToken(
+        maxStakes.maxAllowedBntWei,
+        bntReserve.decimals
+      );
+      const limitShrinked = shrinkToken(limit, bntReserve.decimals);
+
+      const amountToGetSpace = calculateAmountToGetSpace(
+        bntAmount,
+        tknAmount,
+        spaceAvailAble,
+        limitShrinked
+      );
+      return {
+        availableSpace,
+        amountToGetSpace: amountToGetSpace
+      };
+    }
+    return { availableSpace };
+  }
+
   @action async calculateProtectionSingle({
     poolId,
     reserveAmount
@@ -6176,11 +6254,11 @@ export class EthBancorModule
     }));
 
     const res = zippedProtectedReserves.map(pool => {
-      const poolPropgram: PoolProgram = findOrThrow(poolPrograms, pp =>
+      const poolProgram: PoolProgram = findOrThrow(poolPrograms, pp =>
         compareString(pool.anchorAddress, pp.poolToken)
       );
 
-      const poolBalances = findOrThrow(highTierPools, p =>
+      const poolReserveBalances = findOrThrow(highTierPools, p =>
         compareString(pool.anchorAddress, p.id)
       );
 
@@ -6189,31 +6267,48 @@ export class EthBancorModule
         "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
 
       const [
-        bntProtectedReserve,
-        tknProtectedReserve
-      ] = sortAlongSide(pool.reserves, reserve => reserve.contract, [
-        networkToken
-      ]);
-      const [
         bntReserve,
         tknReserve
-      ] = sortAlongSide(poolBalances.reserveBalances, reserve => reserve.id, [
+      ] = sortAlongSide(
+        poolReserveBalances.reserveBalances,
+        reserve => reserve.id,
+        [networkToken]
+      );
+
+      const [bntProtected, tknProtected] = sortAlongSide(
+        pool.reserves,
+        reserve => reserve.contract,
+        [networkToken]
+      );
+
+      const [
+        bntProtectedShare,
+        tknProtectedShare
+      ] = sortAlongSide(poolProgram.reserves, reserve => reserve.reserveId, [
         networkToken
       ]);
 
-      const rewardRate = new BigNumber(poolPropgram.rewardRates);
-      const bntReward = new BigNumber(bntProtectedReserve.amount)
-        .dividedBy(rewardRate)
-        .toNumber();
-      const tknReward = new BigNumber(tknProtectedReserve.amount)
-        .dividedBy(rewardRate)
-        .toNumber();
+      const poolRewardRate = poolProgram.rewardRate;
+
+      const bntReward = miningBntReward(
+        bntProtected.amount,
+        poolRewardRate,
+        ppmToDec(bntProtectedShare.rewardShare)
+      );
+
+      const tknReward = miningTknReward(
+        tknReserve.amount,
+        bntReserve.amount,
+        tknProtected.amount,
+        poolRewardRate,
+        ppmToDec(tknProtectedShare.rewardShare)
+      );
 
       return {
         ...pool,
         bntReward,
         tknReward,
-        endTime: poolPropgram.endTimes
+        endTime: poolProgram.endTimes
       };
     });
 

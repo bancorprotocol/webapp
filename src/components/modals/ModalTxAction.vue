@@ -1,9 +1,5 @@
 <template>
-  <modal-base
-    :title="`${$t('staking_protecting')}:`"
-    v-model="txMeta.showTxModal"
-    @input="close"
-  >
+  <modal-base :title="title" v-model="txMeta.showTxModal" @input="close">
     <action-modal-status
       :error="txMeta.txError"
       :success="txMeta.success"
@@ -13,17 +9,17 @@
 </template>
 <script lang="ts">
 import { Component, Emit, Prop, Vue } from "vue-property-decorator";
-import { i18n } from "@/i18n";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import { ITxMeta } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import { i18n } from "@/i18n";
 
 @Component({
   components: { ActionModalStatus, ModalBase }
 })
 export default class ModalTxAction extends Vue {
   @Prop() txMeta!: ITxMeta;
-  @Prop({ default: i18n.t("processing_transaction") }) title!: string;
+  @Prop({ default: `${i18n.t("staking_protecting")}:` }) title!: string;
 
   get currentStatus() {
     if (this.txMeta.sections.length)
