@@ -20,7 +20,7 @@
       v-if="priceDeviationTooHigh && !inputError"
       variant="error"
       class="mb-3"
-      :msg="$t('price_volatility_withdrawing')"
+      :msg="$t('price_volatility')"
     />
 
     <alert-block

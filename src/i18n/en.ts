@@ -183,8 +183,6 @@ export const en = {
     "Insufficient vBNT balance, you must hold {amount} vBNT before withdrawing position.",
   percentage_not_zero: "Percentage can not be Zero",
   fully_protected_value: "Fully Protected Value",
-  price_volatility_withdrawing:
-    "Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds.",
   havent_reached_protection:
     "You still haven’t reached full protection. There is a risk for impermanent loss and you might receive less than your original stake amount as a result.",
   bnt_withdrawls:
