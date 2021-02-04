@@ -21,6 +21,9 @@
         placement="top"
       >
         {{ tooltip }}
+        <a v-if="href" :href="href" target="_blank">
+          {{ hrefText }}
+        </a>
       </b-popover>
     </div>
 
@@ -51,6 +54,8 @@ export default class LabelContentSplit extends BaseComponent {
   @Prop() value?: string;
   @Prop({ default: false }) loading?: boolean;
   @Prop({ default: "" }) tooltip?: string;
+  @Prop({ default: "" }) href?: string;
+  @Prop({ default: "" }) hrefText?: string;
   @Prop({ default: false }) isAlert?: boolean;
 }
 </script>
