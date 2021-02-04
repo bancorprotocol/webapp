@@ -238,21 +238,20 @@
               <div class="votes-bar__content text-uppercase">
                 <span>
                   {{
-                    $t("for") +
-                    ((100 / item.totalVotes) * item.totalVotesFor || 0).toFixed(
-                      2
-                    ) +
-                    "%"
+                    `${$t("for")} ${(
+                      (100 / item.totalVotes) * item.totalVotesFor || 0
+                    ).toFixed(2)}
+                     %`
                   }}
                 </span>
                 <span>
                   {{
-                    $t("against") +
-                    (
+                    `${$t("against")} ${(
                       (100 / item.totalVotes) * item.totalVotesAgainst || 0
-                    ).toFixed(2) +
-                    "%"
+                    ).toFixed(2)}
+                     %`
                   }}
+                  Against {{}}%
                 </span>
               </div>
             </div>
@@ -296,9 +295,7 @@
 
             <div class="row pt-2">
               <div class="col-6 pt-1">
-                <span v-if="Date.now() > item.end">
-                  {{ `${(item.quorum / 10000).toFixed(2)}% ${$t("quorum")}` }}
-                </span>
+                {{ `${(item.quorum / 10000).toFixed(2)}% ${$t("quorum")}` }}
               </div>
               <div class="col-6 text-right">
                 <b-btn
@@ -390,7 +387,6 @@ export default class OpenProposals extends BaseComponent {
   }
 
   get fields(): ViewProposalsField[] {
-    console.log("proposals", this.proposals);
     return [
       {
         id: 1,
@@ -405,7 +401,6 @@ export default class OpenProposals extends BaseComponent {
         id: 2,
         label: i18n.tc("details"),
         key: "name",
-        // minWidth: "380px",
         colAuto: false,
         colRate: 7
       },

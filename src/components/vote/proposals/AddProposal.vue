@@ -215,10 +215,8 @@ export default class AddProposal extends BaseComponent {
         executor: this.contractAddress,
         hash
       });
-      this.success = {
-        txId: txHash,
-        blockExplorerLink: await vxm.ethBancor.createExplorerLink(hash)
-      };
+
+      this.success = await vxm.ethBancor.createTxResponse(txHash);
 
       this.setDefault();
     } catch (e) {
@@ -249,6 +247,12 @@ export default class AddProposal extends BaseComponent {
     this.discourseUrl = "";
     this.githubUrl = "";
     this.contractAddress = "";
+  }
+
+  onHide() {
+    this.show = false;
+    this.error = "";
+    this.success = null;
   }
 }
 </script>

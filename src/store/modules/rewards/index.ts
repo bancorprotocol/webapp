@@ -101,10 +101,7 @@ export class RewardsModule extends VuexModule.With({
       onUpdate
     })) as string;
 
-    return {
-      blockExplorerLink: await vxm.ethBancor.createExplorerLink(txHash),
-      txId: txHash
-    };
+    return vxm.ethBancor.createTxResponse(txHash);
   }
 
   @action async claimRewards({
@@ -138,10 +135,7 @@ export class RewardsModule extends VuexModule.With({
       onUpdate
     })) as string;
 
-    return {
-      blockExplorerLink: await vxm.ethBancor.createExplorerLink(txHash),
-      txId: txHash
-    };
+    return vxm.ethBancor.createTxResponse(txHash);
   }
 
   @action async loadData() {
