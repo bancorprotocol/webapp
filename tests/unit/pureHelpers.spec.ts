@@ -4,7 +4,8 @@ import {
   miningBntReward,
   miningTknReward,
   prettifyNumber,
-  calculateLimits
+  calculateLimits,
+  calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import BigNumber from "bignumber.js";
 
@@ -481,7 +482,7 @@ describe("Prettify Numbers", () => {
     const expectedNumbers: string[] = [
       "0",
       "< 0.000001",
-      "1.123457",
+      "1.123456",
       "1.1",
       "2",
       "3",
@@ -508,7 +509,7 @@ describe("Prettify Numbers", () => {
     const expectedNumbers: string[] = [
       "0",
       "< 0.000001",
-      "1.123457",
+      "1.123456",
       "1.1",
       "2",
       "3",
@@ -607,5 +608,19 @@ describe("calculateLimits", () => {
       "14147951967419454727944.8873357485195903336563"
     );
     expect(bntLimitWei.toString()).toEqual("26554714837518616832230");
+  });
+});
+
+describe("calculate how much bnt you need to stake in order to have room for 1tkn", () => {
+  test("Amount to get space", async () => {
+    const { bnt, tkn, bntSpaceAvailable, limit } = {
+      bnt: "1711365.486100309578494856",
+      tkn: "7542395.245134802630180142",
+      bntSpaceAvailable: "1403404.058171372713746323",
+      limit: "1000000"
+    };
+
+    const res = calculateAmountToGetSpace(bnt, tkn, bntSpaceAvailable, limit);
+    expect(res).toBe("403404.28507084303840483049");
   });
 });
