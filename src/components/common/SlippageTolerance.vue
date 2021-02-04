@@ -12,7 +12,7 @@
           :class="formInputStyles"
           v-model="custom"
           @input="setCustomSlippage"
-          placeholder="Custom"
+          :placeholder="$t('custom')"
         />
         <b-input-group-append>
           <div

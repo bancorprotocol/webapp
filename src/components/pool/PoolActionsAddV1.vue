@@ -1,7 +1,7 @@
 <template>
   <div class="mt-3">
     <token-input-field
-      label="Input"
+      :label="$t('input')"
       :token="reserveOne"
       v-model="amount1"
       @input="tokenOneChanged"
@@ -12,7 +12,7 @@
       <font-awesome-icon icon="plus" class="text-primary font-size-16" />
     </div>
     <token-input-field
-      label="Input"
+      :label="$t('input')"
       :token="reserveTwo"
       v-model="amount2"
       @input="tokenTwoChanged"
@@ -20,10 +20,13 @@
       :balance="balance2"
       :error-msg="token2Error"
     />
-    <rate-share-block :items="shareBlockItems" label="Prices and Pool Share" />
+    <rate-share-block
+      :items="shareBlockItems"
+      :label="$t('prices_pool_share')"
+    />
     <main-button
       @click="initAction"
-      label="Supply"
+      :label="$t('supply')"
       :active="true"
       :large="true"
       class="mt-3"
@@ -41,6 +44,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { ViewRelay, ViewAmount } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
@@ -110,7 +114,7 @@ export default class PoolActionsAddV1 extends BaseComponent {
         {
           id: "poolShare",
           title: this.share,
-          label: "Share of Pool"
+          label: i18n.t("share_of_pool")
         }
       ];
     } else {
@@ -118,7 +122,7 @@ export default class PoolActionsAddV1 extends BaseComponent {
         ...this.singleUnitCosts,
         {
           id: "poolShare",
-          label: "Share of Pool",
+          label: i18n.t("share_of_pool"),
           title: "0%"
         }
       ];
@@ -128,15 +132,15 @@ export default class PoolActionsAddV1 extends BaseComponent {
   get advancedBlockItems() {
     return [
       {
-        label: this.reserveOne.symbol + " Deposit",
+        label: `${this.reserveOne.symbol} ${i18n.t("deposit")}`,
         value: Number(this.amount1)
       },
       {
-        label: this.reserveTwo.symbol + " Deposit",
+        label: `${this.reserveTwo.symbol} ${i18n.t("deposit")}`,
         value: Number(this.amount2)
       },
       {
-        label: "Rates",
+        label: i18n.t("rates"),
         value:
           this.singleUnitCosts.length > 1
             ? `${this.singleUnitCosts[0].title} ${this.singleUnitCosts[0].label}`
@@ -150,7 +154,7 @@ export default class PoolActionsAddV1 extends BaseComponent {
             : "0"
       },
       {
-        label: "Share of Pool",
+        label: i18n.t("share_of_pool"),
         value: this.share
       }
     ];
@@ -194,13 +198,13 @@ export default class PoolActionsAddV1 extends BaseComponent {
       const raiseToken1InsufficientBalance =
         Number(this.balance1) < Number(tokenAmount);
       this.token1Error = raiseToken1InsufficientBalance
-        ? "Insufficient balance"
+        ? i18n.tc("insufficient_balance")
         : "";
 
       const raiseToken2InsufficientBalance =
         Number(this.balance2) < Number(this.amount2);
       this.token2Error = raiseToken2InsufficientBalance
-        ? "Insufficient balance"
+        ? i18n.tc("insufficient_balance")
         : "";
 
       this.shareOfPool = results.shareOfPool;
@@ -223,7 +227,7 @@ export default class PoolActionsAddV1 extends BaseComponent {
       return {
         id: token.id,
         title: formatNumber(Number(unit.amount)),
-        label: `${opposingToken.symbol} per ${token.symbol}`
+        label: `${opposingToken.symbol} ${i18n.t("per")} ${token.symbol}`
       };
     });
     this.singleUnitCosts = items;
@@ -253,13 +257,13 @@ export default class PoolActionsAddV1 extends BaseComponent {
       const raiseToken1InsufficientBalance =
         Number(this.balance1) < Number(this.amount1);
       this.token1Error = raiseToken1InsufficientBalance
-        ? "Insufficient balance"
+        ? i18n.tc("insufficient_balance")
         : "";
 
       const raiseToken2InsufficientBalance =
         Number(this.balance2) < Number(tokenAmount);
       this.token2Error = raiseToken2InsufficientBalance
-        ? "Insufficient balance"
+        ? i18n.tc("insufficient_balance")
         : "";
     } catch (e) {
       this.token1Error = "";

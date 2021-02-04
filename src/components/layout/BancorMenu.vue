@@ -19,8 +19,8 @@
         >Bancor</b-dropdown-header
       >
       <b-dropdown-item style="width: 230px" disabled>
-        <font-awesome-icon icon="info" class="mr-2" fixed-width /> About (Coming
-        Soon)
+        <font-awesome-icon icon="info" class="mr-2" fixed-width />
+        {{ $t("about") }}
       </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
@@ -28,7 +28,7 @@
       <b-dropdown-header
         class="text-uppercase"
         :variant="darkMode ? 'dark' : 'light'"
-        >Apps</b-dropdown-header
+        >{{ $t("apps") }}</b-dropdown-header
       >
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
@@ -37,7 +37,7 @@
             width="16"
             :src="require(`@/assets/media/icons/swap.svg`)"
           />
-          <span class="ml-3">Swap</span>
+          <span class="ml-3">{{ $t("swap") }}</span>
         </div>
       </b-dropdown-item>
       <b-dropdown-item v-else @click="navData">
@@ -47,12 +47,12 @@
             width="16"
             :src="require(`@/assets/media/icons/data.svg`)"
           />
-          <span class="ml-3">Data</span>
+          <span class="ml-3">{{ $t("data") }}</span>
         </div>
       </b-dropdown-item>
       <b-dropdown-item :to="{ name: 'LiqProtection' }">
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
-        Liquidity Protection
+        {{ $t("liquidity_protection") }}
       </b-dropdown-item>
       <b-dropdown-item :to="{ name: 'GovernancePage' }">
         <font-awesome-icon icon="thumbs-up" class="mr-2" fixed-width />
@@ -85,7 +85,7 @@
         class="text-uppercase"
         :variant="darkMode ? 'dark' : 'light'"
       >
-        {{ `Community & Support` }}
+        {{ $t("community_support") }}
       </b-dropdown-header>
       <b-dropdown-text>
         <div class="d-flex justify-content-between cursor">
@@ -127,7 +127,7 @@
       <b-dropdown-header
         class="text-uppercase"
         :variant="darkMode ? 'dark' : 'light'"
-        >Developers</b-dropdown-header
+        >{{ $t("developers") }}</b-dropdown-header
       >
       <b-dropdown-item
         @click="openUrl('https://docs.bancor.network/')"
@@ -160,7 +160,7 @@
           class="mr-2 menu-icon"
           fixed-width
         />
-        Chat
+        {{ $t("chat") }}
       </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
@@ -169,14 +169,14 @@
         @click="navPrivacy"
         :variant="darkMode ? 'dark' : 'light'"
       >
-        Privacy Policy</b-dropdown-item
-      >
+        {{ $t("privacy_policy") }}
+      </b-dropdown-item>
       <b-dropdown-item
         @click="navTermsOfUse"
         :variant="darkMode ? 'dark' : 'light'"
       >
-        Terms of Use</b-dropdown-item
-      >
+        {{ $t("terms_of_use") }}
+      </b-dropdown-item>
     </b-dropdown-group>
   </b-dropdown>
 </template>

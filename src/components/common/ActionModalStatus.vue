@@ -23,7 +23,7 @@
     <b-col cols="12" class="text-center">
       <div v-if="!success && !error">
         <h3 :class="darkMode ? 'text-body-dark' : 'text-body-light'">
-          Waiting for Confirmation
+          {{ $t("waiting_for_confirmation") }}
         </h3>
         <h6 :class="darkMode ? 'text-body-dark' : 'text-body-light'">
           {{ stepDescription }}
@@ -31,21 +31,25 @@
       </div>
       <h6 v-else-if="error && !success" class="text-danger">
         <h3 :class="darkMode ? 'text-body-dark' : 'text-body-light'">
-          Transaction Failed
+          {{ $t("transaction_failed") }}
         </h3>
-        Error: {{ error }}
+        {{ `${$t("error")} ${error}` }}
       </h6>
       <h6 v-else-if="!error && success">
         <h3 :class="darkMode ? 'text-body-dark' : 'text-body-light'">
-          Transaction Submitted
+          {{ $t("transaction_submitted") }}
         </h3>
         <a
           :href="success.blockExplorerLink"
           target="_blank"
           class="text-primary"
         >
-          View TX Details for ID {{ success.txId.substring(0, 6) }} on
-          {{ success.blockExplorerName }}.
+          {{
+            $t("tx_details", {
+              id: success.txId.substring(0, 6),
+              explorerName: explorerName
+            })
+          }}
         </a>
         <div :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
           BNT withdrawals are subject to a 24h lock period before they can be
@@ -59,14 +63,26 @@
 <script lang="ts">
 import { Prop, Component } from "vue-property-decorator";
 import { TxResponse } from "@/types/bancor";
+import { i18n } from "@/i18n";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
 export default class ActionModalStatus extends BaseComponent {
   @Prop() error?: string;
   @Prop() success?: TxResponse | null;
-  @Prop({ default: "Wait for your Wallet to prompt and continue there" })
+  @Prop({ default: i18n.t("wait_for_wallet") })
   stepDescription!: string;
+
+  get explorerName() {
+    switch (this.currentNetwork) {
+      case "eos":
+        return `EOSX.io`;
+      case "eth":
+        return `Etherscan`;
+      default:
+        return `Block Explorer`;
+    }
+  }
 }
 </script>
 

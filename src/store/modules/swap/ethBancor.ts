@@ -3746,7 +3746,7 @@ export class EthBancorModule
 
     return {
       outputs: [],
-      ...(overMaxLimit && { error: "Insufficient store balance" })
+      ...(overMaxLimit && { error: "balance" })
     };
   }
 

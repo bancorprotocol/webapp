@@ -1,5 +1,9 @@
 <template>
-  <modal-base v-model="show" @input="setDefault" title="Confirm Token Swap">
+  <modal-base
+    v-model="show"
+    @input="setDefault"
+    :title="$t('confirm_token_swap')"
+  >
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)">
         <b-col cols="12" class="text-center">
@@ -28,9 +32,11 @@
             class="font-size-sm font-w400 text-center mt-2 mb-3"
             :class="!darkMode ? 'text-muted-light' : 'text-muted-dark'"
           >
-            Output is estimated. If the price changes by more than
-            {{ numeral(slippageTolerance).format("0.0[0]%") }} your transaction
-            will revert.
+            {{
+              $t("output_estimated", {
+                amount: numeral(slippageTolerance).format("0.0[0]%")
+              })
+            }}
           </p>
         </b-col>
 
@@ -76,6 +82,7 @@
 <script lang="ts">
 import { Component, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import { Step, TxResponse, ViewToken } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -109,20 +116,16 @@ export default class ModalSwapAction extends BaseComponent {
 
   get confirmButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 
   get slippageTolerance() {
     return vxm.bancor.slippageTolerance;
-  }
-
-  get isCountryBanned() {
-    return vxm.general.isCountryBanned;
   }
 
   setDefault() {
@@ -140,12 +143,6 @@ export default class ModalSwapAction extends BaseComponent {
 
     if (this.error) {
       this.error = "";
-      return;
-    }
-
-    if (this.isCountryBanned) {
-      this.error =
-        "This action through swap.bancor.network is not available in your country.";
       return;
     }
 

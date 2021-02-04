@@ -7,7 +7,7 @@
             class="font-size-20 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            Liquidity Protection
+            {{ $t("liquidity_protection") }}
           </span>
         </div>
 
@@ -15,8 +15,7 @@
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          Manage your protected positions in Bancor pools and track and analyze
-          your returns.
+          {{ $t("protect_tokens") }}
         </p>
       </b-col>
 
@@ -31,14 +30,16 @@
         <content-block
           :px0="true"
           :shadow-light="true"
-          :title="positions.length ? 'My Protected Positions' : 'Protected'"
+          :title="
+            positions.length ? $t('protected_positions') : $t('protected')
+          "
           :search.sync="searchProtected"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
               style="width: 3rem; height: 3rem"
               class="text-primary"
-              label="Loading..."
+              :label="`${$t('loading')}... `"
             />
           </div>
           <div
@@ -60,19 +61,18 @@
           class="font-size-20 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          Closed Positions
+          {{ $t("closed_positions") }}
         </span>
 
         <p
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          When unstaking protected positions, you will be able to see and claim
-          your BNT here.
+          {{ $t("unstaking_positions") }}
         </p>
       </b-col>
       <b-col cols="12">
-        <content-block :px0="true" :shadow-light="true" title="Claim">
+        <content-block :px0="true" :shadow-light="true" :title="$t('claim')">
           <claim :search="searchClaim" />
         </content-block>
       </b-col>
