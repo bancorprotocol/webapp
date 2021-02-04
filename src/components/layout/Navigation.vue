@@ -3,7 +3,7 @@
     <div id="navigation-top" class="d-flex justify-content-end">
       <b-btn
         @click="loginAction"
-        :variant="darkMode ? 'outline-light' : 'outline-dark'"
+        :variant="darkMode ? 'outline-dark' : 'outline-light'"
         class="block-rounded"
         size="sm"
       >
