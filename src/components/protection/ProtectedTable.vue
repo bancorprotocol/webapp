@@ -272,7 +272,7 @@
         <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
         <countdown-timer
           :date-unix="item.fullCoverage"
-          msg-countdown-ended="Full protection reached"
+          :msg-countdown-ended="$t('full_protection_reached')"
           class="font-size-12"
         />
       </template>
@@ -304,7 +304,7 @@
         <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
         <countdown-timer
           :date-unix="item.fullCoverage"
-          msg-countdown-ended="Full protection reached"
+          :msg-countdown-ended="$t('full_protection_reached')"
           class="font-size-12"
         />
       </template>
