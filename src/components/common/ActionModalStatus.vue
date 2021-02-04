@@ -45,7 +45,7 @@
           class="text-primary"
         >
           View TX Details for ID {{ success.txId.substring(0, 6) }} on
-          {{ explorerName }}.
+          {{ success.blockExplorerName }}.
         </a>
         <div :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
           BNT withdrawals are subject to a 24h lock period before they can be
@@ -67,17 +67,6 @@ export default class ActionModalStatus extends BaseComponent {
   @Prop() success?: TxResponse | null;
   @Prop({ default: "Wait for your Wallet to prompt and continue there" })
   stepDescription!: string;
-
-  get explorerName() {
-    switch (this.currentNetwork) {
-      case "eos":
-        return `EOSX.io`;
-      case "eth":
-        return `Etherscan`;
-      default:
-        return `Block Explorer`;
-    }
-  }
 }
 </script>
 
