@@ -20,10 +20,7 @@
             :key="item.key"
             class="text-center"
           >
-            <div
-              class="font-size-14 font-w600"
-              :class="item.key === 'ROI' ? 'text-success' : 'text-primary'"
-            >
+            <div class="font-size-14 font-w600 text-primary">
               {{ item.value }}
             </div>
             <div class="text-uppercase font-size-10 font-w500">
@@ -76,7 +73,7 @@ export default class ProtectedSummary extends BaseComponent {
           key: "Claimable Value",
           value: "--"
         },
-        { key: "ROI", value: "--" }
+        { key: "Total Fees", value: "--" }
       ];
     } else {
       const initialStake = this.positions
@@ -91,11 +88,11 @@ export default class ProtectedSummary extends BaseComponent {
         .map(x => Number(x.protectedAmount.usdValue || 0))
         .reduce((sum, current) => sum + current);
 
+      const fees = protectedValue - initialStake;
       const totalRewards = this.rewardsBalance.pendingRewards.usd.toNumber();
       protectedValue += totalRewards;
       claimableValue += totalRewards;
 
-      const roi = (protectedValue - initialStake) / initialStake;
       return [
         {
           key: "Protected Value",
@@ -105,7 +102,10 @@ export default class ProtectedSummary extends BaseComponent {
           key: "Claimable Value",
           value: "~" + this.prettifyNumber(claimableValue, true)
         },
-        { key: "ROI", value: this.stringifyPercentage(roi) }
+        {
+          key: "Total Fees",
+          value: "~" + this.prettifyNumber(fees, true)
+        }
       ];
     }
   }
