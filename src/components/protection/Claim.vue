@@ -4,20 +4,20 @@
       <b-col xl="6">
         <sub-content-block title="Available to claim">
           <claim-bnt
-            v-for="item in available"
+            v-for="item in available()"
             :key="item.id"
             :item="item"
             @click="onClick"
           />
-          <div v-if="!available.length" class="no-claim-results">
+          <div v-if="!available().length" class="no-claim-results">
             No BNT to claim.
           </div>
         </sub-content-block>
       </b-col>
       <b-col xl="6">
         <sub-content-block title="Locked">
-          <claim-bnt v-for="item in locked" @refresh="refresh" :key="item.id" :item="item" @click="onClick" />
-          <div v-if="!locked.length" class="no-claim-results">
+          <claim-bnt v-for="item in locked()" @refresh="refresh" :key="item.id" :item="item" @click="onClick" />
+          <div v-if="!locked().length" class="no-claim-results">
             No BNT locked.
           </div>
         </sub-content-block>
@@ -68,12 +68,12 @@ export default class Claim extends Vue {
 
   now = Date.now() / 1000;
 
-  available() {
-    return vxm.ethBancor.availableBalances;
+  async available() {
+    return await vxm.ethBancor.availableBalances();
   }
 
-  locked() {
-    return vxm.ethBancor.lockedBalances;
+  async locked() {
+    return await vxm.ethBancor.lockedBalances();
   }
 
   async onClick() {
@@ -118,6 +118,7 @@ export default class Claim extends Vue {
   refresh() {
     this.available();
     this.locked();
+    this.$forceUpdate();
   }
 
   created() {

@@ -5638,7 +5638,7 @@ export class EthBancorModule
     };
   }
 
-  get availableBalances(): ViewLockedBalance[] {
+  @action async availableBalances() {
     const now = dayjs();
     const bntPrice = this.bntUsdPrice;
     const balances = this.lockedBalancesArr.filter(lockedBalance =>
@@ -5680,7 +5680,7 @@ export class EthBancorModule
     ];
   }
 
-  get lockedBalances(): ViewLockedBalance[] {
+  @action async lockedBalances() {
     const now = dayjs();
     const bntPrice = this.bntUsdPrice;
     const balances = this.lockedBalancesArr.filter(lockedBalance =>
