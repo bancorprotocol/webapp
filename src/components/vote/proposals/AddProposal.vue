@@ -55,7 +55,6 @@
           readonly
           no-resize
           size="sm"
-          max-rows="2"
           placeholder="Add Liquidity pool xyz"
           class="combo combo--title"
           :class="[
@@ -67,7 +66,7 @@
           v-model="description"
           max-rows="4"
           readonly
-          no-resize="true"
+          no-resize
           placeholder="I would like to propose to ..."
           :class="[
             !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
@@ -93,23 +92,24 @@
         height="48"
         label="Github URL"
       />
-      <div class="pt-3" />
     </div>
 
     <action-modal-status
-      v-if="txBusy || error || success"
+      v-else
       :error="error"
       :success="success"
+      step-description="Creating Proposal"
     />
 
     <main-button
       @click="propose"
+      class="mt-3"
       :label="proposeButton"
-      :large="true"
       :active="true"
+      :large="true"
       :disabled="!success && (this.hasError || txBusy)"
     />
-  </b-modal>
+  </modal-base>
 </template>
 
 <script lang="ts">
@@ -125,6 +125,8 @@ import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TxResponse } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
   components: {
@@ -132,7 +134,9 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     ContentBlock,
     LabelContentSplit,
     MainButton,
-    ActionModalStatus
+    ActionModalStatus,
+    ModalBase,
+    AlertBlock
   }
 })
 export default class AddProposal extends BaseComponent {
@@ -197,9 +201,11 @@ export default class AddProposal extends BaseComponent {
   }
 
   async propose() {
-    if (this.success) {
+    if (this.success || this.error) {
       this.setDefault();
-      this.onHide();
+      this.error = "";
+      this.success = null;
+      this.txBusy = false;
       return;
     }
 
@@ -234,6 +240,7 @@ export default class AddProposal extends BaseComponent {
         executor: this.contractAddress,
         hash
       });
+
       this.success = await vxm.ethBancor.createTxResponse(txHash);
 
       this.setDefault();
@@ -265,6 +272,7 @@ export default class AddProposal extends BaseComponent {
     this.discourseUrl = "";
     this.githubUrl = "";
     this.contractAddress = "";
+
   }
 
   onHide() {
