@@ -1,21 +1,18 @@
 <template>
-  <content-block title="Add Liquidity" :back-button="true" @back="back">
+  <content-block :title="$t('add_liquidity')" :back-button="true" @back="back">
     <div class="mt-3">
-      <label-content-split label="Selected Pool" class="mb-3">
+      <label-content-split :label="$t('selected_pool')" class="mb-3">
         <pool-logos :pool="pool" :cursor="false" />
       </label-content-split>
 
-      <alert-block
-        title="Learn what it means to add liquidity to a pool:"
-        class="my-3"
-      >
+      <alert-block :title="`${$t('add_liquidity_pool')}:`" class="my-3">
         <ol class="m-0 pl-3">
           <li>
             <a
               href="https://blog.bancor.network/how-to-stake-liquidity-earn-fees-on-bancor-bff8369274a1"
               target="_blank"
             >
-              How do I make money by providing liquidity?
+              {{ `${$t("make_money_liquidity")}?` }}
             </a>
           </li>
           <li>
@@ -23,7 +20,7 @@
               href="https://blog.bancor.network/beginners-guide-to-getting-rekt-by-impermanent-loss-7c9510cb2f22"
               target="_blank"
             >
-              What is impermanent loss?
+              {{ `${$t("impermanent_loss")}?` }}
             </a>
           </li>
           <li>
@@ -31,7 +28,7 @@
               href="https://bankless.substack.com/p/how-to-protect-yourself-from-impermanent"
               target="_blank"
             >
-              How does Bancor protect me from impermanent loss?
+              {{ `${$t("protect_impermanent_loss")}?` }}
             </a>
           </li>
         </ol>

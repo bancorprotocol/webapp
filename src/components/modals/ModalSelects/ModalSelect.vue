@@ -25,20 +25,20 @@
           @click="selectItem"
         >
           <slot name="item" :item="item">
-            <p>Nothing here!</p>
+            <p>{{ $t("nothing_here") }}</p>
           </slot>
         </b-col>
         <b-col v-if="loadingTokens" cols="12" class="text-center">
           <span>
             <font-awesome-icon icon="circle-notch" class="mr-3" spin />
-            loading ...
+            {{ `${$t("loading")}...` }}
           </span>
         </b-col>
         <b-col cols="12" class="mb-3 text-center">
           <main-button
             v-if="canDisplayMoreItems"
             @click="currentStep++"
-            label="more"
+            :label="$t('more')"
             :small="true"
           />
         </b-col>
@@ -50,7 +50,7 @@
           class="text-center font-size-16 font-w500 mt-3"
         >
           <span :class="darkMode ? 'text-dark' : 'text-light'">
-            No results found.
+            {{ `${$t("no_res_found")}.` }}
           </span>
         </b-col>
       </b-row>

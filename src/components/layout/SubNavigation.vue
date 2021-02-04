@@ -12,7 +12,7 @@
                 : 'primary'
             "
             style="width: 50%"
-            >Swap</b-button
+            >{{ $t("swap") }}</b-button
           >
           <b-button
             :to="{ name: 'Pool' }"
@@ -22,7 +22,7 @@
                 : 'primary'
             "
             style="width: 50%"
-            >Pool</b-button
+            >{{ $t("pool") }}</b-button
           >
         </b-button-group>
       </b-col>

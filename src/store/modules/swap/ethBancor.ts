@@ -136,7 +136,7 @@ import {
   moreStaticRelays,
   previousPoolFees,
   v2Pools,
-  compareStaticRelay,
+  compareStaticRelay
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -181,7 +181,8 @@ import {
   filterAndWarn,
   staticToConverterAndAnchor,
   miningBntReward,
-  miningTknReward
+  miningTknReward,
+  calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import {
   distinctArrayItem,
@@ -225,6 +226,8 @@ import {
   TokenMetaWithReserve
 } from "@/api/eth/bancorApi";
 import { PoolProgram } from "../rewards";
+
+const timeStart = Date.now();
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -1484,9 +1487,14 @@ export class EthBancorModule
   }
 
   whiteListedPools: string[] = [];
+  whiteListedPoolsLoading = true;
 
   @mutation setWhiteListedPools(anchors: string[]) {
     this.whiteListedPools = anchors;
+  }
+
+  @mutation setWhiteListedPoolsLoading(state: boolean) {
+    this.whiteListedPoolsLoading = state;
   }
 
   @action async fetchWhiteListedV1Pools(
@@ -1508,6 +1516,8 @@ export class EthBancorModule
     } catch (e) {
       console.error("Failed fetching whitelisted pools");
       throw new Error(`Failed to fetch whitelisted pools ${e}`);
+    } finally {
+      this.setWhiteListedPoolsLoading(false);
     }
   }
 
@@ -1537,6 +1547,10 @@ export class EthBancorModule
 
   @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
     console.log(positions, "are the positions getting set!");
+
+    const timeEnd = Date.now();
+    const difference = timeEnd - timeStart;
+    console.log("difference", difference, difference / 1000);
     this.protectedPositionsArr = positions;
   }
 
@@ -1587,7 +1601,6 @@ export class EthBancorModule
     userAddress?: string;
     supportedAnchors?: string[];
   }) {
-    this.setLoadingPositions(true);
     const liquidityStore =
       storeAddress || this.contracts.LiquidityProtectionStore;
 
@@ -1596,10 +1609,12 @@ export class EthBancorModule
       console.error(
         `Failed to find liquidity store address of ${storeAddress}`
       );
+      this.setLoadingPositions(false);
       throw new Error(`Invalid liquidity store address of ${storeAddress}`);
     }
 
     if (!this.currentUser) {
+      this.setLoadingPositions(false);
       return;
     }
     try {
@@ -1619,9 +1634,11 @@ export class EthBancorModule
         this.setLoadingPositions(false);
         return;
       }
+      console.time("timeToGetIds");
       const positionIds = await contract.methods
         .protectedLiquidityIds(owner)
         .call();
+      console.timeEnd("timeToGetIds");
 
       const [rawPositions, currentBlockNumber] = await Promise.all([
         this.fetchPositionsMulti({
@@ -1633,16 +1650,21 @@ export class EthBancorModule
         })()
       ]);
 
-      if (rawPositions.length !== idCount)
+      if (rawPositions.length !== idCount) {
+        this.setLoadingPositions(false);
         throw new Error("ID count does not match returned positions");
+      }
 
       const theSupportedAnchors =
         supportedAnchors ||
         (this.apiData && this.apiData.pools.map(pool => pool.pool_dlt_id));
-      if (!theSupportedAnchors)
+      if (!theSupportedAnchors) {
+        throw new Error("ID count does not match returned positions");
         throw new Error(
           "Race condition error, unable to determine supported anchors"
         );
+      }
+
       const allPositions = filterAndWarn(
         rawPositions,
         pos =>
@@ -1908,6 +1930,7 @@ export class EthBancorModule
       return positions;
     } catch (e) {
       console.error("Failed fetching protection positions", e.message);
+      this.setLoadingPositions(false);
     }
   }
 
@@ -1980,10 +2003,7 @@ export class EthBancorModule
       onUpdate
     })) as string;
 
-    return {
-      blockExplorerLink: await this.createExplorerLink(txHash),
-      txId: txHash
-    };
+    return this.createTxResponse(txHash);
   }
 
   @action async removeProtection({
@@ -2040,10 +2060,7 @@ export class EthBancorModule
       }
     });
 
-    return {
-      blockExplorerLink: await this.createExplorerLink(txHash),
-      txId: txHash
-    };
+    return this.createTxResponse(txHash);
   }
 
   @action async protectLiquidity({
@@ -2095,10 +2112,7 @@ export class EthBancorModule
       onUpdate
     });
 
-    return {
-      blockExplorerLink: await this.createExplorerLink(txHash),
-      txId: txHash
-    };
+    return this.createTxResponse(txHash);
   }
 
   @mutation setTolerance(tolerance: number) {
@@ -2174,7 +2188,7 @@ export class EthBancorModule
     return lockedBalances;
   }
 
-  loadingProtectedPositions = false;
+  loadingProtectedPositions = true;
 
   get protectedPositions(): ViewProtectedLiquidity[] {
     const owner = this.currentUser;
@@ -2755,18 +2769,23 @@ export class EthBancorModule
       onUpdate
     });
 
+    const txResponse = await this.createTxResponse(newConverterTx);
     return {
-      txId: newConverterTx,
-      blockExplorerLink: await this.createExplorerLink(newConverterTx),
+      ...txResponse,
       poolId
     };
   }
 
-  @action async createExplorerLink(txHash: string) {
-    return generateEtherscanTxLink(
+  @action async createTxResponse(txHash: string): Promise<TxResponse> {
+    const txLink = generateEtherscanTxLink(
       txHash,
       this.currentNetwork == EthNetworks.Ropsten
     );
+    return {
+      blockExplorerName: "Etherscan",
+      blockExplorerLink: txLink,
+      txId: txHash
+    };
   }
 
   @action async approveTokenWithdrawals(
@@ -2821,7 +2840,7 @@ export class EthBancorModule
     this.fetchAndSetLockedBalances({});
 
     return {
-      blockExplorerLink: await this.createExplorerLink(hash),
+      ...(await this.createTxResponse(hash)),
       txId: hash
     };
   }
@@ -3159,13 +3178,9 @@ export class EthBancorModule
         whitelisted;
 
       const bntReserve = relay.reserves.find(reserve =>
-        compareString(reserve.address, liquidityProtectionNetworkToken || "")
+        compareString(reserve.address, liquidityProtectionNetworkToken)
       );
-      const addProtectionSupported =
-        liquidityProtection &&
-        bntReserve &&
-        limit &&
-        limit.isLessThan(bntReserve.balance);
+      const addProtectionSupported = liquidityProtection && bntReserve;
 
       const apr = aprs.find(apr =>
         compareString(apr.poolId, relay.pool_dlt_id)
@@ -3623,6 +3638,85 @@ export class EthBancorModule
     ];
   }
 
+  @action async getAvailableAndAmountToGetSpace({
+    poolId
+  }: {
+    poolId: string;
+  }): Promise<{
+    availableSpace: {
+      amount: string;
+      token: string;
+    }[];
+    amountToGetSpace?: string;
+  }> {
+    const { maxStakes } = await this.getMaxStakes({
+      poolId
+    });
+    const pool = this.relay(poolId);
+    const bntTknArr = pool.reserves.map(r => {
+      return {
+        contract: r.contract,
+        symbol: r.symbol,
+        decimals: this.token(r.id).precision
+      };
+    });
+
+    const [bnt, tkn] = sortAlongSide(bntTknArr, item => item.contract, [
+      this.liquidityProtectionSettings.networkToken
+    ]);
+
+    const availableSpace = [
+      {
+        amount: shrinkToken(maxStakes.maxAllowedBntWei, bnt.decimals),
+        token: bnt.symbol
+      },
+      {
+        amount: shrinkToken(maxStakes.maxAllowedTknWei, tkn.decimals),
+        token: tkn.symbol
+      }
+    ];
+    const tknSpaceAvailableLTOne = new BigNumber(availableSpace[1].amount).lt(
+      1
+    );
+    if (tknSpaceAvailableLTOne) {
+      const liquidityProtectionSettings = buildLiquidityProtectionSettingsContract(
+        this.liquidityProtectionSettings.contract,
+        w3
+      );
+      const [balances, limit] = await Promise.all([
+        this.fetchRelayBalances({ poolId }),
+        liquidityProtectionSettings.methods
+          .networkTokenMintingLimits(poolId)
+          .call()
+      ]);
+      const [bntReserve, tknReserve] = sortAlongSide(
+        balances.reserves,
+        reserve => reserve.symbol,
+        ["BNT"]
+      );
+
+      const bntAmount = shrinkToken(bntReserve.weiAmount, bntReserve.decimals);
+      const tknAmount = shrinkToken(tknReserve.weiAmount, tknReserve.decimals);
+      const spaceAvailAble = shrinkToken(
+        maxStakes.maxAllowedBntWei,
+        bntReserve.decimals
+      );
+      const limitShrinked = shrinkToken(limit, bntReserve.decimals);
+
+      const amountToGetSpace = calculateAmountToGetSpace(
+        bntAmount,
+        tknAmount,
+        spaceAvailAble,
+        limitShrinked
+      );
+      return {
+        availableSpace,
+        amountToGetSpace: amountToGetSpace
+      };
+    }
+    return { availableSpace };
+  }
+
   @action async calculateProtectionSingle({
     poolId,
     reserveAmount
@@ -3652,7 +3746,7 @@ export class EthBancorModule
 
     return {
       outputs: [],
-      ...(overMaxLimit && { error: "Insufficient store balance" })
+      ...(overMaxLimit && { error: "balance" })
     };
   }
 
@@ -4324,7 +4418,10 @@ export class EthBancorModule
     });
   }
 
-  @action async removeLiquidity({ reserves, id: relayId }: LiquidityParams) {
+  @action async removeLiquidity({
+    reserves,
+    id: relayId
+  }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
 
     const preV11 = Number(relay.version) < 11;
@@ -4438,10 +4535,7 @@ export class EthBancorModule
       });
     }
 
-    return {
-      txId: hash,
-      blockExplorerLink: await this.createExplorerLink(hash)
-    };
+    return this.createTxResponse(hash);
   }
 
   @action async mintEthErc(ethDec: string) {
@@ -4653,7 +4747,7 @@ export class EthBancorModule
     id: relayId,
     reserves,
     onUpdate
-  }: LiquidityParams) {
+  }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
 
     const preV11 = Number(relay.version) < 11;
@@ -4819,10 +4913,7 @@ export class EthBancorModule
 
     onUpdate!(3, steps);
 
-    return {
-      txId: txHash,
-      blockExplorerLink: await this.createExplorerLink(txHash)
-    };
+    return this.createTxResponse(txHash);
   }
 
   @action async spamBalances(tokenAddresses: string[]) {
@@ -6865,10 +6956,7 @@ export class EthBancorModule
     });
     onUpdate!(4, steps);
 
-    return {
-      txId: confirmedHash,
-      blockExplorerLink: await this.createExplorerLink(confirmedHash)
-    };
+    return this.createTxResponse(confirmedHash);
   }
 
   @action async triggerApprovalIfRequired({

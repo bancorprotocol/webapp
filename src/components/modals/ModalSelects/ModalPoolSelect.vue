@@ -3,8 +3,8 @@
     v-model="modal"
     :search.sync="search"
     :items="searchedPools"
-    title="Select a pool"
-    subtitle="Pools"
+    :title="$t('select_pool')"
+    :subtitle="$t('pools')"
   >
     <template #item="{ item }">
       <select-pool-row

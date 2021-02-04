@@ -7,7 +7,7 @@
       class="mr-3"
       :class="small ? 'table-button-small' : 'table-button'"
     >
-      <span v-if="!small">Add Liquidity</span>
+      <span v-if="!small"> {{ $t("add_liquidity") }} </span>
       <font-awesome-icon v-else icon="plus" />
     </b-btn>
 
@@ -16,12 +16,12 @@
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       :class="small ? 'table-button-small' : 'table-button'"
     >
-      <span v-if="!small">Trade</span>
+      <span v-if="!small">{{ $t("trade") }}</span>
       <font-awesome-icon
         v-else
         icon="exchange-alt"
         v-b-tooltip.hover
-        title="Trade"
+        :title="$t('trade')"
       />
     </b-btn>
   </div>

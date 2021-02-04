@@ -19,6 +19,7 @@
 <script lang="ts">
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
@@ -61,7 +62,7 @@ export default class Navigation extends BaseComponent {
       const currentUser = vxm.ethWallet.currentUser;
       if (currentUser) {
         return this.shortenedEthAddress;
-      } else return "Connect Wallet";
+      } else return i18n.t("connect_wallet");
     }
   }
 
@@ -79,7 +80,7 @@ export default class Navigation extends BaseComponent {
 
   async loginActionEos() {
     const status = this.loginButtonLabel;
-    if (status === "Connect Wallet") {
+    if (status === i18n.t("connect_wallet")) {
       this.$bvModal.show("modal-login");
     } else if (
       status !== "Authenticating" &&

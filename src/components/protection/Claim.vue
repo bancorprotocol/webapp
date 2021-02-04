@@ -2,7 +2,7 @@
   <div class="px-4 pt-4">
     <b-row>
       <b-col xl="6">
-        <sub-content-block title="Available to claim">
+        <sub-content-block :title="$t('available_claim')">
           <claim-bnt
             v-for="item in available"
             :key="item.id"
@@ -10,21 +10,25 @@
             @click="onClick"
           />
           <div v-if="!available.length" class="no-claim-results">
-            No BNT to claim.
+            {{ `${$t("bnt_to_claim")}.` }}
           </div>
         </sub-content-block>
       </b-col>
       <b-col xl="6">
-        <sub-content-block title="Locked">
+        <sub-content-block :title="$t('locked')">
           <claim-bnt v-for="item in locked" :key="item.id" :item="item" />
           <div v-if="!locked.length" class="no-claim-results">
-            No BNT locked.
+            {{ `${$t("bnt_locked")}.` }}
           </div>
         </sub-content-block>
       </b-col>
     </b-row>
 
-    <modal-base title="Claim BNT" v-model="modal" @input="setDefault">
+    <modal-base
+      :title="`${$t('claim')} BNT`"
+      v-model="modal"
+      @input="setDefault"
+    >
       <action-modal-status :error="error" :success="success" />
 
       <main-button
@@ -44,6 +48,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -101,12 +106,12 @@ export default class Claim extends Vue {
 
   get modalConfirmButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 
   setDefault() {

@@ -4,6 +4,7 @@ import {
   buildStakingRewardsStoreContract
 } from "@/api/eth/contractTypes";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import BigNumber from "bignumber.js";
 import { OnUpdate, TxResponse } from "@/types/bancor";
 import { multiSteps } from "@/api/helpers";
@@ -74,7 +75,7 @@ export class RewardsModule extends VuexModule.With({
     const txHash = (await multiSteps({
       items: [
         {
-          description: "Staking Rewards ...",
+          description: `${i18n.t("staking_rewards")}...`,
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.stakeRewards(
@@ -100,10 +101,7 @@ export class RewardsModule extends VuexModule.With({
       onUpdate
     })) as string;
 
-    return {
-      blockExplorerLink: await vxm.ethBancor.createExplorerLink(txHash),
-      txId: txHash
-    };
+    return vxm.ethBancor.createTxResponse(txHash);
   }
 
   @action async claimRewards({
@@ -114,7 +112,7 @@ export class RewardsModule extends VuexModule.With({
     const txHash = (await multiSteps({
       items: [
         {
-          description: "Withdrawing Rewards ...",
+          description: `${i18n.t("withdrawing_rewards")}...`,
           task: async () => {
             return vxm.ethBancor.resolveTxOnConfirmation({
               tx: this.contract.methods.claimRewards(),
@@ -137,10 +135,7 @@ export class RewardsModule extends VuexModule.With({
       onUpdate
     })) as string;
 
-    return {
-      blockExplorerLink: await vxm.ethBancor.createExplorerLink(txHash),
-      txId: txHash
-    };
+    return vxm.ethBancor.createTxResponse(txHash);
   }
 
   @action async loadData() {

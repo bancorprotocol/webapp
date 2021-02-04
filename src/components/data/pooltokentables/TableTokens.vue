@@ -45,6 +45,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
@@ -78,20 +79,20 @@ export default class TableTokens extends BaseComponent {
       : []),
     {
       id: 2,
-      label: "Name",
+      label: i18n.tc("name"),
       key: "symbol",
       minWidth: "150px"
     },
     {
       id: 3,
       key: "change24h",
-      label: "24h Change",
+      label: i18n.tc("change_24"),
       minWidth: "135px"
     },
     {
       id: 4,
       key: "price",
-      label: "Price USD",
+      label: `${i18n.tc("price")} USD`,
       minWidth: "120px"
     },
     /*
@@ -105,13 +106,13 @@ export default class TableTokens extends BaseComponent {
     {
       id: 6,
       key: "liqDepth",
-      label: "Liquidity Depth",
+      label: i18n.tc("liquidity_depth"),
       minWidth: "160px"
     },
     {
       id: 7,
       key: "actionButtons",
-      label: "Action",
+      label: i18n.tc("action"),
       minWidth: "160px",
       maxWidth: "160px",
       sortable: false
