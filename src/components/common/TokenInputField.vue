@@ -1,14 +1,18 @@
 <template>
   <div>
     <label-content-split :label="label" class="mb-1">
-      <span
-        @click="maxBalance"
-        v-if="currentUser"
-        class="font-size-12 font-w500 cursor"
-      >
-        Balance: {{ prettifyNumber(balance) }}
-        {{ usdValue ? usdValue : "" }}
-      </span>
+      <div v-if="currentUser" class="d-flex flex-row font-size-12 font-w500">
+        <div @click="maxBalance" class="cursor">
+          Balance: {{ prettifyNumber(balance) }}
+        </div>
+        <div
+          v-if="usdValue"
+          class="ml-1"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        >
+          {{ `(~${prettifyNumber(usdValue, true)})` }}
+        </div>
+      </div>
     </label-content-split>
 
     <b-input-group>
@@ -19,7 +23,8 @@
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         placeholder="Enter Amount"
         :disabled="disabled"
-        @keypress="isNumber($event)"
+        debounce="300"
+        :formatter="formatter"
       ></b-form-input>
 
       <b-input-group-append :class="{ cursor: pool || dropdown }">
@@ -46,9 +51,15 @@
             </span>
             <font-awesome-icon v-if="dropdown" icon="caret-down" />
           </div>
-
           <div v-else>
             <pool-logos @click="openModal" :pool="pool" :dropdown="true" />
+          </div>
+          <div v-if="!pool && !token">
+            <img
+              class="img-avatar img-avatar32 border-colouring bg-white mr-1"
+              :src="defaultImage"
+              alt="Token Logo"
+            />
           </div>
         </div>
       </b-input-group-append>
@@ -86,6 +97,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ethReserveAddress } from "@/api/eth/ethAbis";
+import { defaultImage } from "@/store/modules/swap/ethBancor";
 
 @Component({
   components: {
@@ -117,6 +129,10 @@ export default class TokenInputField extends BaseComponent {
     );
   }
 
+  get defaultImage() {
+    return defaultImage;
+  }
+
   @Emit()
   select(id: string) {
     return id;
@@ -140,25 +156,14 @@ export default class TokenInputField extends BaseComponent {
     }
   }
 
-  get formattedBalance() {
-    const balanceInput = this.balance;
-    if (new BigNumber(balanceInput).isNaN()) return "";
-    return `Balance: ${formatNumber(parseFloat(balanceInput), 6).toString()}`;
-  }
+  formatter(text: String) {
+    if (text === undefined) text = this.tokenAmount;
 
-  isNumber(evt: any) {
-    evt = evt ? evt : window.event;
-    let charCode = evt.which ? evt.which : evt.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
-      evt.preventDefault();
-    } else {
-      if (charCode === 46) {
-        if (this.tokenAmount.includes(".")) evt.preventDefault();
-        else {
-          return true;
-        }
-      } else return true;
-    }
+    return text
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
   }
 
   openModal() {
