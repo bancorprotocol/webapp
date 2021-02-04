@@ -29,7 +29,7 @@
 }
 
 .bg-light {
-  background: #eeeeee !important;
+  background: $light-white !important;
 }
 
 .bg-block-dark {
@@ -220,13 +220,22 @@
   }
   &.btn-outline-light {
     color: $primary !important;
-    border-color: $primary !important;
+    border-color: $gray-placeholder !important;
     background-color: $bg-body-light !important;
   }
   &.btn-outline-dark {
-    color: $primary !important;
-    border-color: $primary !important;
+    color: $light-white !important;
+    border-color: $light-white !important;
     background-color: $bg-body-dark !important;
+  }
+  &.btn-outline-dark:hover {
+    background-color: $light-white !important;
+    color: $bg-body-dark !important;
+  }
+  &.btn-outline-light:hover {
+    background-color: $primary !important;
+    color: $light-white !important;
+    border-color: $primary !important;
   }
 }
 
