@@ -246,7 +246,7 @@ export const en = {
   balance: "Balance",
   staking: "Staking",
   enable_vote:
-    "Staking  {symbol} enables you to vote on proposals. You will be able to unstake once the lock period is over (up to {hours}h)",
+    "Staking {symbol} enables you to vote on proposals. You will be able to unstake once the lock period is over (up to {hours}h)",
   waiting_for_confirmation: "Waiting For Confirmation",
   confirm__transaction_in_wallet: "Confirm this transaction in your wallet",
   transaction_submitted: "Transaction Submitted",
