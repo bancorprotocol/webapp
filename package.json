@@ -94,7 +94,7 @@
     "babel-plugin-transform-decorators": "^6.24.1",
     "eslint": "^5.8.0",
     "eslint-plugin-prettier": "^3.1.4",
-    "eslint-plugin-vue": "^5.2.3",
+    "eslint-plugin-vue": "^6.2.2",
     "jest": "^26.6.2",
     "jest-fetch-mock": "^3.0.3",
     "node-sass": "^4.12.0",
