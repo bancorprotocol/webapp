@@ -64,12 +64,6 @@
       class="mt-3 mb-3"
     />
 
-    <alert-block
-      v-if="priceDeviationTooHigh && !inputError && amount"
-      variant="error"
-      msg="Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds."
-    />
-
     <gray-border-block v-else-if="outputs.length" :gray-bg="true" class="my-3">
       <div>
         {{ outputs }}
@@ -87,7 +81,7 @@
         label="Space Available"
         :loading="loading"
         tooltip="For more information "
-        hrefText="click here"
+        href-text="click here"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
         <span @click="setAmount(maxStakeAmount)" class="cursor">{{
@@ -105,6 +99,14 @@
         }}</span>
       </label-content-split>
     </gray-border-block>
+
+    <price-deviation-error
+      v-model="priceDeviationTooHigh"
+      :pool-id="pool.id"
+      :token-contract="token.contract"
+      class="mb-3"
+      ref="priceDeviationError"
+    />
 
     <main-button
       :label="actionButtonLabel"
@@ -171,9 +173,12 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import Vue from "vue";
+import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
 
 @Component({
   components: {
+    PriceDeviationError,
     ModalPoolSelect,
     ActionModalStatus,
     PoolLogos,
@@ -404,12 +409,9 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   async loadRecentAverageRate() {
-    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
-      relayId: this.pool.id,
-      selectedTokenAddress: this.token.contract
-    });
-
-    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
+    await (this.$refs.priceDeviationError as Vue & {
+      loadRecentAverageRate: () => boolean;
+    }).loadRecentAverageRate();
   }
 
   async selectPool(id: string) {
