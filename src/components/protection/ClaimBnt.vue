@@ -14,13 +14,13 @@
         :src="bntLogoSrc"
         :title="$t('token_logo')"
       />
-      <span class="amt-num mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
+      <span class="mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
     </div>
     <div v-if="!locked">
       <b-btn
         variant="primary"
         @click="click"
-        class="btn-claim font-size-14 font-w500 px-4"
+        class="font-size-14 font-w500 px-4"
         >{{ `${$t("claim")} BNT` }}</b-btn>
     </div>
     <div v-else class="time-left text-center">
