@@ -1,7 +1,7 @@
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import Vuex from 'vuex';
-import dayjs from "@/utils/dayjs"
+import { i18n } from "@/i18n";
 
 describe('ClaimBnt.vue', () => {
   let state: any;
@@ -54,7 +54,8 @@ describe('ClaimBnt.vue', () => {
         item
       },
       store,
-      localVue
+      localVue,
+      i18n
     });
     expect(wrapper.find('.amt-num').exists()).toBe(true);
     expect(wrapper.find('.time-left').exists()).toBe(true);
@@ -73,7 +74,8 @@ describe('ClaimBnt.vue', () => {
         item
       },
       store,
-      localVue
+      localVue,
+      i18n
     });
     expect(wrapper.find('.time-left').exists()).toBe(false);
     expect(wrapper.find('.btn-claim').exists()).toBe(true);
@@ -93,7 +95,8 @@ describe('ClaimBnt.vue', () => {
         item
       },
       store,
-      localVue
+      localVue,
+      i18n
     });
 
     expect(setInterval).toHaveBeenCalledTimes(1);
@@ -120,7 +123,8 @@ describe('ClaimBnt.vue', () => {
         item
       },
       store,
-      localVue
+      localVue,
+      i18n
     });
 
     jest.advanceTimersByTime(2200);
