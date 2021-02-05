@@ -10,7 +10,9 @@
         class="remaining-time__icon"
       />
       <span class="remaining-time__progress-text">{{ remaining }}</span>
-      <span v-if="isUnlock" class="remaining-time__desc">left to unlock</span>
+      <span v-if="isUnlock" class="remaining-time__desc">
+        {{ $t("left_to_unlock") }}</span
+      >
     </div>
   </div>
 </template>

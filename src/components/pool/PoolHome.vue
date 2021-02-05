@@ -6,7 +6,7 @@
       <div>
         <main-button
           @click="modal = true"
-          label="Join a Pool"
+          :label="$t('join_pool')"
           :active="true"
           :large="true"
         />
@@ -24,7 +24,7 @@
         class="cursor font-w700 mb-3"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        <font-awesome-icon icon="plus" class="mr-2" />Create Pool
+        <font-awesome-icon icon="plus" class="mr-2" />{{ $t("create_pool") }}
       </router-link>
     </div>
   </div>

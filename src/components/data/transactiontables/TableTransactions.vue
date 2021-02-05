@@ -39,6 +39,7 @@
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
 import dayjs from "@/utils/dayjs"
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -59,39 +60,39 @@ export default class TableTransactions extends BaseComponent {
     {
       id: 1,
       key: "description",
-      label: "Description",
+      label: i18n.tc("description"),
       minWidth: "260px"
     },
     {
       id: 2,
       key: "valueTransmitted",
-      label: "Total Value",
+      label: i18n.tc("total_value"),
       minWidth: "160px"
     },
     {
       id: 3,
       key: "from",
-      label: "Amount From",
+      label: i18n.tc("amount_from"),
       minWidth: "200px",
       sortable: false
     },
     {
       id: 4,
       key: "to",
-      label: "Amount To",
+      label: i18n.tc("amount_to"),
       minWidth: "200px",
       sortable: false
     },
     {
       id: 5,
       key: "account",
-      label: "Account",
+      label: i18n.tc("account"),
       minWidth: "160px"
     },
     {
       id: 6,
       key: "unixTime",
-      label: "Time",
+      label: i18n.tc("time"),
       minWidth: "120px"
     }
   ];

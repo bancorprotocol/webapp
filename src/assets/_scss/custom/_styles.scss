@@ -17,11 +17,11 @@
 }
 
 .bg-body-light {
-  background: #f8f9fd !important;
+  background: $bg-body-light !important;
 }
 
 .bg-body-dark {
-  background: #1c344e !important;
+  background: $bg-body-dark !important;
 }
 
 .bg-block-light {
@@ -29,7 +29,7 @@
 }
 
 .bg-light {
-  background: #eeeeee !important;
+  background: $light-white !important;
 }
 
 .bg-block-dark {
@@ -218,6 +218,25 @@
     background-color: $bg-btn-outline-dark !important;
     color: $text-color-dark !important;
   }
+  &.btn-outline-light {
+    color: $primary !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-dark {
+    color: $light-white !important;
+    border-color: $light-white !important;
+    background-color: $bg-body-dark !important;
+  }
+  &.btn-outline-dark:hover {
+    background-color: $light-white !important;
+    color: $bg-body-dark !important;
+  }
+  &.btn-outline-light:hover {
+    background-color: $primary !important;
+    color: $light-white !important;
+    border-color: $primary !important;
+  }
 }
 
 .modal .modal-content {
@@ -328,4 +347,8 @@
   @media (max-width: 768px) {
     width: 120px !important;
   }
+}
+
+.progress {
+  height: 4px !important;
 }

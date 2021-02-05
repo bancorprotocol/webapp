@@ -14,15 +14,17 @@
       cols="12"
       class="d-flex justify-content-center align-items-center mt-3"
     >
-      <span class="text-primary font-size-24 font-w600">Page not found</span>
+      <span class="text-primary font-size-24 font-w600">{{
+        $t("page_not_found")
+      }}</span>
     </b-col>
     <b-col
       cols="12"
       class="d-flex justify-content-center align-items-center mt-3"
     >
-      <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400"
-        >The page you're looking for is not available.</span
-      >
+      <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400">
+        {{ `${$t("page_not_available")}.` }}
+      </span>
     </b-col>
     <b-col
       cols="12"
@@ -33,7 +35,7 @@
           $router.push({ name: 'Swap', params: { service: currentNetwork } })
         "
         class="px-5 mt-2"
-        label="Go to homepage"
+        :label="$t('go_homepage')"
         :active="true"
         :large="true"
         :block="false"

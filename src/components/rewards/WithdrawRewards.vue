@@ -1,6 +1,6 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Claimable Rewards">
+    <label-content-split :label="$t('claimable_rewards')">
       <logo-amount-symbol
         :token-id="bntAddress"
         :amount="prettifyNumber(pendingRewards.bnt)"
@@ -16,13 +16,13 @@
     />
 
     <main-button
-      label="Stake my rewards"
+      :label="$t('stake_my_rewards')"
       @click="restakeAction"
       :active="true"
       :large="true"
     />
     <main-button
-      label="Withdraw rewards"
+      :label="$t('withdraw_rewards')"
       @click="withdrawAction"
       :large="true"
       :disabled="disableWithdraw"
@@ -48,6 +48,7 @@ import { getNetworkVariables } from "@/api/config";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
@@ -83,9 +84,8 @@ export default class WithdrawRewards extends BaseTxAction {
   get warning() {
     return {
       variant: "warning",
-      title: "Important",
-      msg:
-        "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and stake your rewards atomically without resetting your current multipliers, click the “Stake my rewards” button below."
+      title: i18n.t("important"),
+      msg: i18n.t("withdrawing_rewards_reset")
     };
   }
 
