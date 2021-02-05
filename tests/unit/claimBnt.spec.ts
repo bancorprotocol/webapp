@@ -57,9 +57,9 @@ describe('ClaimBnt.vue', () => {
       localVue,
       i18n
     });
-    expect(wrapper.find('.amt-num').exists()).toBe(true);
+    expect(wrapper.find('.img-avatar').exists()).toBe(true);
     expect(wrapper.find('.time-left').exists()).toBe(true);
-    expect(wrapper.find('.btn-claim').exists()).toBe(false);
+    expect(wrapper.find('.btn').exists()).toBe(false);
   })
 
   it("hide timer, after unlock time period", () => {    
@@ -78,7 +78,6 @@ describe('ClaimBnt.vue', () => {
       i18n
     });
     expect(wrapper.find('.time-left').exists()).toBe(false);
-    expect(wrapper.find('.btn-claim').exists()).toBe(true);
   })
 
   it('should unlock after locking period', () => {
@@ -106,7 +105,7 @@ describe('ClaimBnt.vue', () => {
 
     // should be unlocked
     expect(wrapper.find('.time-left').exists()).toBe(true);
-    expect(wrapper.find('.btn-claim').exists()).toBe(false);
+    expect(wrapper.find('.btn').exists()).toBe(false);
   })
 
   it('should emit "refresh" event after locking period', () => {
