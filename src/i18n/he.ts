@@ -118,9 +118,10 @@ export const he = {
   limit_reached:
     "{token} על מנת לאפשר הפקדה חד צדדית של {opposingToken} יש להפקיד {token} הגעת לגבול",
   insufficient_store_balance: "יתרת חנות לא מספיקה",
-  bnt_to_claim: "למשיכה BNT אין",
-  bnt_locked: "נעול BNT אין",
   available_claim: "זמין למשיכה",
+  bnt_to_claim: "למשיכה BNT אין",
+  locked: "נעול",
+  bnt_locked: "נעול BNT אין",
   left_until_claim: "נשאר עד משיכה",
   risk_impermanent_loss: "נכסים בסיכון להפסד לא קבוע",
   add_liquidity: "הוסף נזילות",
@@ -147,7 +148,7 @@ export const he = {
   claimable: "ניתן למשיכה",
   tokens_can_withdraw_now:
     "(בהנחה ולא הגעת להגנה מלאה הערך הזה יהיה נמוך מהערך המוגן) הכמות של המטבעות שאתה יכול למשוך עכשיו",
-  fees: "עמלות",
+  fees: "עמלות (24 שעות)",
   fees_stake_earned: "עמלות ופרסים שהרווחת על ידי  הפקדה מאז שנכנסת לבריכה",
   roi__protected_value: "על הערך המוגן לגמרי שלך כנגד ההפדקה המקורית שלך ROI-ה",
   estimated_calculation_annual_returns:
@@ -271,11 +272,11 @@ export const he = {
   estimated_apr:
     ".המונה מציין זמן עד לסיום מחזור התמלוגים של 12 שבועות .BNT השבועי של פרסים מכריית מטבעות (2x מכפיל) מכפיל מבוסס על המקסימום APR אומדן",
   percentage_deducted: ".האחוז המופחץ מכל החלפה ומופקד חזרה לבריכה",
-  volume: "נפח",
+  volume: "נפח (24 שעות)",
   value_swap: ".הערך לעמלות החלפה שנאספו בבריכה ב24 שעות האחרונות",
   fees_24: ".עמלות שנתיות ל24 שעות חלקי הנזילות בבריכה",
   actions: "פעולות",
-  change_24: "שינוי 24שעות",
+  change_24: "שינוי 24 שעות",
   liquidity_depth: "עומק נזילות",
   action: "פעולה",
   total_liquidity: "סך נזילות",
@@ -326,5 +327,7 @@ export const he = {
   click_here: "לחץ כאן",
   needed_open_space: "{tkn} נדרש כדיי לפתוח מקום ל {bnt}",
   total_fees: "סך עמלות",
-  creating_proposal: "יוצר הצעה"
+  creating_proposal: "יוצר הצעה",
+  vote_ended: "ההצבעה הסתיימה",
+  you_withdrawing_rewards: "אתה מושך פרסים"
 };

@@ -52,8 +52,7 @@
           }}
         </a>
         <div :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
-          BNT withdrawals are subject to a 24h lock period before they can be
-          claimed.
+          {{ $t("bnt_withdrawls") }}
         </div>
       </h6>
     </b-col>

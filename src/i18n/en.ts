@@ -121,9 +121,10 @@ export const en = {
   limit_reached:
     "{token} limit reached. Additional {opposingToken} liquidity should be staked to allow for {token} single-sided staking.",
   insufficient_store_balance: "Insufficient store balance",
-  bnt_to_claim: "No BNT to claim",
-  bnt_locked: "No BNT locked",
   available_claim: "Available to claim",
+  bnt_to_claim: "No BNT to claim",
+  locked: "Locked",
+  bnt_locked: "No BNT locked",
   left_until_claim: "left until claim",
   risk_impermanent_loss: "Assets at risk of impermanent loss",
   add_liquidity: "Add Liquidity",
@@ -152,7 +153,7 @@ export const en = {
   claimable: "Claimable",
   tokens_can_withdraw_now:
     "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
-  fees: "Fees",
+  fees: "Fees (24h)",
   fees_stake_earned:
     "Fees and rewards earned by your stake since you entered the pool.",
   roi__protected_value:
@@ -282,7 +283,7 @@ export const en = {
     "Estimated APR based on the maximum (2x multiplier) weekly BNT Liquidity Mining rewards. Counter indicates time until 12-week rewards cycle concludes.",
   percentage_deducted:
     "The % deducted from each swap and re-deposited into the pool.",
-  volume: "Volume",
+  volume: "Volume (24h)",
   value_swap: "The value of swap fees collected in the pool in the past 24h.",
   fees_24: "24h fees annualized divided by liquidity in the pool.",
   actions: "Actions",
@@ -337,5 +338,7 @@ export const en = {
   click_here: "click here",
   needed_open_space: "{bnt} needed to open up {tkn} space",
   total_fees: "Total Fees",
-  creating_proposal: "Creating Proposal"
+  creating_proposal: "Creating Proposal",
+  vote_ended: "Vote Ended",
+  you_withdrawing_rewards: "You are withdrawing rewards"
 };

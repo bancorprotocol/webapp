@@ -36,7 +36,7 @@
 
     <modal-tx-action
       :tx-meta="txMeta"
-      title="You are withdrawing rewards:"
+      :title="$t('you_withdrawing_rewards')"
       @close="closeTxModal"
     />
   </div>

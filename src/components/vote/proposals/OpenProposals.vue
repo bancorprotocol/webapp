@@ -251,7 +251,6 @@
                     ).toFixed(2)}
                      %`
                   }}
-                  Against {{}}%
                 </span>
               </div>
             </div>
