@@ -37,7 +37,7 @@
         <b-badge variant="danger">
           <countdown-timer
             :date-unix="value.endTime"
-            msg-countdown-ended="Rewards ended"
+            :msg-countdown-ended="$t('rewards_ended')"
           />
         </b-badge>
       </div>

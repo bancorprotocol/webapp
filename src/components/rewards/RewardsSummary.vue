@@ -6,7 +6,7 @@
     >
       <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="font-size-16 font-w500">{{ title }}</div>
+          <div class="font-size-16 font-w500">{{ $t("rewards") }}</div>
           <div>
             <b-btn
               :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -113,7 +113,6 @@ export default class RewardsSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
   stringifyPercentage = stringifyPercentage;
 
-  title = i18n.t("rewards");
   modal = false;
   interval: any = null;
   oldrewards: ViewRewardsSummaryItem[] = [];

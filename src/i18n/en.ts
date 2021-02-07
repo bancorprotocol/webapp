@@ -340,5 +340,6 @@ export const en = {
   total_fees: "Total Fees",
   creating_proposal: "Creating Proposal",
   vote_ended: "Vote Ended",
-  you_withdrawing_rewards: "You are withdrawing rewards"
+  you_withdrawing_rewards: "You are withdrawing rewards",
+  rewards_ended: "Rewards ended"
 };
