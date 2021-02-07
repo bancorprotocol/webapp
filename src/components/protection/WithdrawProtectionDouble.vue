@@ -47,7 +47,11 @@
     />
 
     <modal-base title="You will receive" v-model="modal" @input="setDefault">
-      <action-modal-status :error="error" :success="success" />
+      <action-modal-status
+        :error="error"
+        :success="success"
+        :withdrawBNT="true"
+      />
 
       <main-button
         @click="onModalClick"

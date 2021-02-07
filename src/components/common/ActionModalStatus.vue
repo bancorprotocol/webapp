@@ -47,7 +47,10 @@
           View TX Details for ID {{ success.txId.substring(0, 6) }} on
           {{ success.blockExplorerName }}.
         </a>
-        <div :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
+        <div
+          v-if="withdrawBNT"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
           BNT withdrawals are subject to a 24h lock period before they can be
           claimed.
         </div>
@@ -67,6 +70,7 @@ export default class ActionModalStatus extends BaseComponent {
   @Prop() success?: TxResponse | null;
   @Prop({ default: "Wait for your Wallet to prompt and continue there" })
   stepDescription!: string;
+  @Prop() withdrawBNT?: boolean;
 }
 </script>
 
