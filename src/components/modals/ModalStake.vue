@@ -160,15 +160,11 @@ export default class ModalStake extends BaseComponent {
     const bntToken = vxm.bancor.tokens.find(token =>
       compareString(token.symbol, "BNT")
     );
-    if (bntToken) {
-      bntToken.symbol = this.symbol;
-      return bntToken;
-    } else {
-      return {
-        id: -1,
-        symbol: this.symbol
-      };
-    }
+    return {
+      id: -1,
+      symbol: this.symbol,
+      logo: bntToken ? bntToken.logo : ""
+    };
   }
 
   get state() {
