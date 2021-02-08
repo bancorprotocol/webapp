@@ -2305,6 +2305,10 @@ export class EthBancorModule
         } as ViewProtectedLiquidity;
       }
     );
+<<<<<<< dcfedb2333d0057507e16a191cb0a4fa39d0796c
+=======
+
+>>>>>>> remove logs
     return viewPositions;
   }
 
@@ -6575,39 +6579,6 @@ export class EthBancorModule
     }));
 
     this.relaysList = Object.freeze(meshedRelays);
-
-    const staticRelays: StaticRelay[] = meshedRelays
-      .filter(x => x.converterType == PoolType.Traditional)
-      .map(relay => {
-        const x = relay as TraditionalRelay;
-
-        const poolToken = {
-          symbol: x.anchor.symbol,
-          decimals: String(x.anchor.decimals),
-          contract: x.anchor.contract
-        };
-        return {
-          converterAddress: x.contract,
-          reserves: x.reserves.map(reserve => ({
-            contract: reserve.contract,
-            decimals: String(reserve.decimals),
-            symbol: reserve.symbol
-          })),
-          converterType: x.converterType,
-          poolToken,
-          version: Number(x.version)
-        };
-      });
-
-    const convertersAndAnchors: ConverterAndAnchor[] = staticRelays.map(
-      staticToConverterAndAnchor
-    );
-
-    const differences = differenceWith(
-      moreStaticRelays,
-      staticRelays,
-      compareStaticRelay
-    );
   }
 
   @mutation wipeTokenBalances() {
