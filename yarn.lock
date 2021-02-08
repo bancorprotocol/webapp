@@ -13168,12 +13168,12 @@ locate-path@^5.0.0:
   dependencies:
     p-locate "^4.1.0"
 
-lodash-webpack-plugin@^0.11.5:
-  version "0.11.5"
-  resolved "https://registry.yarnpkg.com/lodash-webpack-plugin/-/lodash-webpack-plugin-0.11.5.tgz#c4bd064b4f561c3f823fa5982bdeb12c475390b9"
-  integrity sha512-QWfEIYxpixOdbd6KBe5g6MDWcyTgP3trDXwKHFqTlXrWiLcs/67fGQ0IWeRyhWlTITQIgMpJAYd2oeIztuV5VA==
+lodash-webpack-plugin@^0.11.6:
+  version "0.11.6"
+  resolved "https://registry.yarnpkg.com/lodash-webpack-plugin/-/lodash-webpack-plugin-0.11.6.tgz#8204c6b78beb62ce5211217dfe783c21557ecd33"
+  integrity sha512-nsHN/+IxZK/C425vGC8pAxkKJ8KQH2+NJnhDul14zYNWr6HJcA95w+oRR7Cp0oZpOdMplDZXmjVROp8prPk7ig==
   dependencies:
-    lodash "^4.17.4"
+    lodash "^4.17.20"
 
 lodash._reinterpolate@^3.0.0:
   version "3.0.0"
@@ -18828,10 +18828,10 @@ vue-functional-data-merge@^3.1.0:
   resolved "https://registry.yarnpkg.com/vue-functional-data-merge/-/vue-functional-data-merge-3.1.0.tgz#08a7797583b7f35680587f8a1d51d729aa1dc657"
   integrity sha512-leT4kdJVQyeZNY1kmnS1xiUlQ9z1B/kdBFCILIjYYQDqZgLqCLa0UhjSSeRX6c3mUe6U5qYeM8LrEqkHJ1B4LA==
 
-vue-gtag@^1.8.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/vue-gtag/-/vue-gtag-1.10.0.tgz#787d62eb4f1135dfa2997b465f1b11e5cf8fb0c9"
-  integrity sha512-pGbe6m/12a2DHftnWQOHBmkS+a3kPAZNU6ouP426mF/MPc/43DcHCEySUtB3MeJCPuXaUQQgGsRosIZWPdl/MQ==
+vue-gtag@^1.11.0:
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/vue-gtag/-/vue-gtag-1.11.0.tgz#4c1eedfa6db7d5c0945a535198e460f105f94b10"
+  integrity sha512-tIieh6aZoB/METabJlEHJ3e/SwHpR5ysK6tW1lzsG8NSrI7HUpy/Wf5tVdq1AHAHV6Pr8aK99g63rC5iDzf0TA==
 
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
