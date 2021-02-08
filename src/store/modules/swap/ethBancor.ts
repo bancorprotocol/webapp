@@ -2284,7 +2284,6 @@ export class EthBancorModule
           single: true,
           apr: {
             day: Number(singleEntry.oneDayDec),
-            // month: Number(singleEntry.on)
             week: Number(singleEntry.oneWeekDec)
           },
           insuranceStart: startTime + minDelay,

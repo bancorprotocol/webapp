@@ -62,30 +62,6 @@
           </div>
         </div>
       </template>
-      <template #cellCollapsed(stake)="{ value }">
-        <div>
-          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
-        </div>
-        <div
-          v-if="value && value.usdValue !== undefined"
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
-        <div
-          v-if="false"
-          v-text="formatDate(value.unixTime).dateTime"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
-        <div class="d-flex align-items-center">
-          <pool-logos-overlapped
-            :pool-id="value.poolId"
-            size="20"
-            class="mr-1"
-          />
-          {{ poolName(value.poolId) }}
-        </div>
-      </template>
 
       <template #cell(fullyProtected)="{ item, value }">
         <div class="d-flex align-items-start">
@@ -106,6 +82,14 @@
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
           class="font-size-12 font-w400 text-primary"
         />
+        <div class="d-flex align-items-center">
+          <pool-logos-overlapped
+            :pool-id="value.poolId"
+            size="20"
+            class="mr-1"
+          />
+          {{ poolName(value.poolId) }}
+        </div>
       </template>
       <template #cellCollapsed(fullyProtected)="{ value }">
         <div class="d-flex align-items-start">
@@ -409,8 +393,13 @@ export default class ProtectedTable extends BaseComponent {
   stringifyPercentage = stringifyPercentage;
 
   get groupedPositions() {
-    if (this.positions.length > 0) return groupPositionsArray(this.positions);
-    else return [];
+    if (this.positions.length > 0) {
+      const groupedPositions = groupPositionsArray(this.positions);
+      return groupedPositions.map(pos => ({
+        ...pos,
+        fullyProtected: { ...pos.fullyProtected, poolId: pos.poolId }
+      }));
+    } else return [];
   }
 
   poolName(id: string): string {
@@ -457,13 +446,6 @@ export default class ProtectedTable extends BaseComponent {
 
   get fields(): ViewTableField[] {
     return [
-      {
-        id: 1,
-        key: "stake",
-        label: "Initial Stake",
-        tooltip: "Amount of tokens you originally staked in the pool.",
-        minWidth: "170px"
-      },
       {
         id: 2,
         key: "fullyProtected",
