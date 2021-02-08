@@ -63,27 +63,32 @@
         </div>
       </template>
       <template #cellCollapsed(stake)="{ value }">
-        <div>
-          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
-        </div>
         <div
-          v-if="value && value.usdValue !== undefined"
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
-        <div
-          v-if="false"
-          v-text="formatDate(value.unixTime).dateTime"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
-        <div class="d-flex align-items-center">
-          <pool-logos-overlapped
-            :pool-id="value.poolId"
-            size="20"
-            class="mr-1"
+          @mouseover="toggleStakeTime(true)"
+          @mouseleave="toggleStakeTime(false)"
+        >
+          <div>
+            {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+          </div>
+          <div
+            v-if="value && value.usdValue !== undefined"
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400 text-primary"
           />
-          {{ poolName(value.poolId) }}
+          <div
+            v-if="showInitStakeTime"
+            v-text="formatDate(value.unixTime).dateTime"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          />
+          <div class="d-flex align-items-center">
+            <pool-logos-overlapped
+              :pool-id="value.poolId"
+              size="20"
+              class="mr-1"
+            />
+            {{ poolName(value.poolId) }}
+          </div>
         </div>
       </template>
 
@@ -407,10 +412,15 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
+  showInitStakeTime: boolean = false;
 
   get groupedPositions() {
     if (this.positions.length > 0) return groupPositionsArray(this.positions);
     else return [];
+  }
+
+  toggleStakeTime(show: boolean) {
+    this.showInitStakeTime = show;
   }
 
   poolName(id: string): string {
