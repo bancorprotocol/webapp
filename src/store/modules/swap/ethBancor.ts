@@ -2287,15 +2287,6 @@ export class EthBancorModule
       }
     );
 
-    console.log(
-      {
-        viewPositions,
-        allPositions,
-        rawPositions: this.protectedPositionsArr,
-        whiteListedPools
-      },
-      "misty"
-    );
     return viewPositions;
   }
 
@@ -6733,43 +6724,6 @@ export class EthBancorModule
 
     this.stakedBntPercent = percent;
     this.relaysList = Object.freeze(meshedRelays);
-
-    const staticRelays: StaticRelay[] = meshedRelays
-      .filter(x => x.converterType == PoolType.Traditional)
-      .map(relay => {
-        const x = relay as TraditionalRelay;
-
-        const poolToken = {
-          symbol: x.anchor.symbol,
-          decimals: String(x.anchor.decimals),
-          contract: x.anchor.contract
-        };
-        return {
-          converterAddress: x.contract,
-          reserves: x.reserves.map(reserve => ({
-            contract: reserve.contract,
-            decimals: String(reserve.decimals),
-            symbol: reserve.symbol
-          })),
-          converterType: x.converterType,
-          poolToken,
-          version: Number(x.version)
-        };
-      });
-
-    const convertersAndAnchors: ConverterAndAnchor[] = staticRelays.map(
-      staticToConverterAndAnchor
-    );
-
-    const differences = differenceWith(
-      moreStaticRelays,
-      staticRelays,
-      compareStaticRelay
-    );
-    console.log(
-      { convertersAndAnchors, staticRelays, differences },
-      "is the latest cacheable data"
-    );
   }
 
   stakedBntPercent: number = 0;
@@ -7192,7 +7146,6 @@ export class EthBancorModule
         console.warn("Failed calculating slippage", e.message);
       }
 
-      console.log({ wei, toTokenDecimals, slippage });
       return {
         amount: shrinkToken(wei, toTokenDecimals),
         slippage

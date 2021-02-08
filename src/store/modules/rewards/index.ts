@@ -208,8 +208,6 @@ export class RewardsModule extends VuexModule.With({
       }
       this.setPoolPrograms(poolPrograms);
 
-      console.log("Pool Programs", poolPrograms);
-
       return poolPrograms;
     } catch (e) {
       throw new Error(`Failed fetching pool programs ${e.message}`);
