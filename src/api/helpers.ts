@@ -1263,18 +1263,6 @@ export interface TickerPrice {
   symbol: string;
 }
 
-export const getCountryCode = async (): Promise<string> => {
-  try {
-    const res: AxiosResponse<any> = await axios.get("https://ipapi.co/json");
-    const code = res.data.country_code_iso3;
-    if (code) return code;
-    else return "UNKOWN";
-  } catch (e) {
-    console.error(e);
-    return "UNKOWN";
-  }
-};
-
 export const buildPoolName = (poolId: string): string => {
   const pool: ViewRelay = vxm.bancor.relay(poolId);
   if (pool) {

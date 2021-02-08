@@ -4,7 +4,7 @@
       <multi-input-field
         class="max-search-width-xs"
         v-model="search"
-        placeholder="Search"
+        :placeholder="$t('search')"
         prepend="search"
       />
     </div>
@@ -13,14 +13,14 @@
         style="display: block; width: 1.5rem; height: 1.5rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
-        label="Loading..."
+        :label="`${$t('loading')}...`"
       ></b-spinner>
     </div>
     <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
-      <b-tab title="Pools" active>
+      <b-tab :title="$t('pools')" active>
         <table-pools :filter="search" :items="poolItems" />
       </b-tab>
-      <b-tab title="Tokens">
+      <b-tab :title="$t('tokens')">
         <table-tokens :filter="search" />
       </b-tab>
     </b-tabs>

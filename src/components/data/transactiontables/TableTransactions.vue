@@ -39,8 +39,9 @@
 
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
-import dayjs from "@/utils/dayjs"
+import dayjs from "@/utils/dayjs";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TableItem, ViewTableField } from "@/types/bancor";
 import DataTable from "@/components/common/DataTable.vue";
@@ -55,46 +56,48 @@ export default class TableTransactions extends BaseComponent {
   shortenEthAddress = shortenEthAddress;
   dayjs = dayjs;
 
-  fields: ViewTableField[] = [
-    {
-      id: 1,
-      key: "description",
-      label: "Description",
-      minWidth: "260px"
-    },
-    {
-      id: 2,
-      key: "valueTransmitted",
-      label: "Total Value",
-      minWidth: "160px"
-    },
-    {
-      id: 3,
-      key: "from",
-      label: "Amount From",
-      minWidth: "200px",
-      sortable: false
-    },
-    {
-      id: 4,
-      key: "to",
-      label: "Amount To",
-      minWidth: "200px",
-      sortable: false
-    },
-    {
-      id: 5,
-      key: "account",
-      label: "Account",
-      minWidth: "160px"
-    },
-    {
-      id: 6,
-      key: "unixTime",
-      label: "Time",
-      minWidth: "120px"
-    }
-  ];
+  get fields(): ViewTableField[] {
+    return [
+      {
+        id: 1,
+        key: "description",
+        label: i18n.tc("description"),
+        minWidth: "260px"
+      },
+      {
+        id: 2,
+        key: "valueTransmitted",
+        label: i18n.tc("total_value"),
+        minWidth: "160px"
+      },
+      {
+        id: 3,
+        key: "from",
+        label: i18n.tc("amount_from"),
+        minWidth: "200px",
+        sortable: false
+      },
+      {
+        id: 4,
+        key: "to",
+        label: i18n.tc("amount_to"),
+        minWidth: "200px",
+        sortable: false
+      },
+      {
+        id: 5,
+        key: "account",
+        label: i18n.tc("account"),
+        minWidth: "160px"
+      },
+      {
+        id: 6,
+        key: "unixTime",
+        label: i18n.tc("time"),
+        minWidth: "120px"
+      }
+    ];
+  }
 
   doFilter(row: any, filter: string) {
     const fromSymbol = row.data.from.symbol;

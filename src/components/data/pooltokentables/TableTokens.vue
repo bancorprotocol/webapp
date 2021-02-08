@@ -45,6 +45,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ColouredPercentage from "@/components/common/ColouredPercentage.vue";
@@ -64,37 +65,38 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class TableTokens extends BaseComponent {
   @Prop() filter!: string;
 
-  fields: ViewTableField[] = [
-    ...(this.isEth
-      ? [
-          {
-            id: 1,
-            label: "",
-            key: "liquidityProtection",
-            minWidth: "60px",
-            maxWidth: "60px"
-          }
-        ]
-      : []),
-    {
-      id: 2,
-      label: "Name",
-      key: "symbol",
-      minWidth: "150px"
-    },
-    {
-      id: 3,
-      key: "change24h",
-      label: "24h Change",
-      minWidth: "135px"
-    },
-    {
-      id: 4,
-      key: "price",
-      label: "Price USD",
-      minWidth: "120px"
-    },
-    /*
+  get fields(): ViewTableField[] {
+    return [
+      ...(this.isEth
+        ? [
+            {
+              id: 1,
+              label: "",
+              key: "liquidityProtection",
+              minWidth: "60px",
+              maxWidth: "60px"
+            }
+          ]
+        : []),
+      {
+        id: 2,
+        label: i18n.tc("name"),
+        key: "symbol",
+        minWidth: "150px"
+      },
+      {
+        id: 3,
+        key: "change24h",
+        label: i18n.tc("change_24"),
+        minWidth: "135px"
+      },
+      {
+        id: 4,
+        key: "price",
+        label: `${i18n.tc("price")} USD`,
+        minWidth: "120px"
+      },
+      /*
     {
       id: 5,
       key: "volume24h",
@@ -102,21 +104,22 @@ export default class TableTokens extends BaseComponent {
       minWidth: "120px"
     },
     */
-    {
-      id: 6,
-      key: "liqDepth",
-      label: "Liquidity Depth",
-      minWidth: "160px"
-    },
-    {
-      id: 7,
-      key: "actionButtons",
-      label: "Action",
-      minWidth: "160px",
-      maxWidth: "160px",
-      sortable: false
-    }
-  ];
+      {
+        id: 6,
+        key: "liqDepth",
+        label: i18n.tc("liquidity_depth"),
+        minWidth: "160px"
+      },
+      {
+        id: 7,
+        key: "actionButtons",
+        label: i18n.tc("action"),
+        minWidth: "160px",
+        maxWidth: "160px",
+        sortable: false
+      }
+    ];
+  }
 
   get items() {
     return vxm.bancor.tokens;

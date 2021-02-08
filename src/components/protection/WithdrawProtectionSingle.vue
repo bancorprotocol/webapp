@@ -1,6 +1,6 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Initial Stake">
+    <label-content-split :label="$t('initial_stake')">
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
         :amount="prettifyNumber(position.stake.amount)"
@@ -9,7 +9,7 @@
     </label-content-split>
 
     <label-content-split
-      label="Fully Protected Value"
+      :label="$t('fully_protected_value')"
       :value="`${prettifyNumber(position.protectedAmount.amount)} ${
         position.stake.symbol
       }`"
@@ -19,13 +19,13 @@
     <alert-block
       v-if="warning"
       variant="warning"
-      title="Important"
+      :title="$t('important')"
       :msg="warning"
       class="my-3"
     />
 
     <percentage-slider
-      label="Input"
+      :label="$t('input')"
       v-model="percentage"
       @input="onPercentUpdate"
       :show-buttons="true"
@@ -45,7 +45,7 @@
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
         v-if="expectedValue"
-        label="Output value of"
+        :label="$t('output_value')"
         :value="`${prettifyNumber(expectedValue.amount)} ${
           expectedValue.symbol
         }`"
@@ -53,7 +53,7 @@
 
       <label-content-split
         v-for="(output, index) in outputs"
-        :label="index == 0 ? 'Output breakdown' : ''"
+        :label="index == 0 ? $t('output_breakdown') : ''"
         :key="output.id"
         :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       />
@@ -80,14 +80,18 @@
     />
 
     <main-button
-      label="Continue"
+      :label="$t('continue')"
       @click="initAction"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
     />
 
-    <modal-base title="You will receive" v-model="modal" @input="setDefault">
+    <modal-base
+      :title="$t('you_will_receive')"
+      v-model="modal"
+      @input="setDefault"
+    >
       <action-modal-status :error="error" :success="success" />
 
       <main-button
@@ -105,6 +109,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
@@ -149,7 +154,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
-      ? "You still haven’t reached full protection. There is a risk for impermanent loss and you might receive less than your original stake amount as a result."
+      ? i18n.t("havent_reached_protection")
       : "";
   }
 
@@ -161,7 +166,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   get inputError() {
-    if (parseFloat(this.percentage) === 0) return "Percentage can not be Zero";
+    if (parseFloat(this.percentage) === 0) return i18n.t("percentage_not_zero");
     else return "";
   }
 
@@ -170,10 +175,8 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       this.outputs.length === 1 && this.outputs.find(o => o.symbol === "BNT");
     const isTknWithBnt =
       this.outputs.length === 2 && this.outputs.find(o => o.symbol === "BNT");
-    if (isBnt)
-      return "BNT withdrawals are subject to a 24h lock period before they can be claimed.";
-    else if (isTknWithBnt)
-      return "Part of your output is in BNT. This amount will be locked for 24h before it can be claimed";
+    if (isBnt) return i18n.t("bnt_withdrawls");
+    else if (isTknWithBnt) return i18n.t("part_output_bnt");
     else return "";
   }
 
@@ -191,11 +194,10 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
     if (this.position.givenVBnt && !this.sufficientVBnt) {
       const missingVBnt = givenVBnt - Number(this.vBntBalance);
-      return `Insufficient vBNT balance, you must hold ${this.prettifyNumber(
-        givenVBnt
-      )} vBNT before withdrawing this position. You are missing ${this.prettifyNumber(
-        missingVBnt
-      )} vBNT.`;
+      return i18n.t("insufficient_vBNT_balance_missing", {
+        amount: this.prettifyNumber(givenVBnt),
+        missing: this.prettifyNumber(missingVBnt)
+      });
     } else return "";
   }
 
@@ -308,12 +310,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   get modalConfirmButton() {
     return this.error
-      ? "Close"
+      ? i18n.t("close")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 }
 </script>

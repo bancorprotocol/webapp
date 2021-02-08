@@ -1,7 +1,7 @@
 <template>
   <b-row>
     <b-col cols="12">
-      <content-block title="Statistics" :shadow-light="true">
+      <content-block :title="$t('statistics')" :shadow-light="true">
         <statistics class="mt-3" />
       </content-block>
     </b-col>
@@ -14,7 +14,7 @@
       <content-block
         :px0="true"
         :shadow-light="true"
-        title="Swaps"
+        :title="$t('swaps')"
         :search.sync="txSearch"
       >
         <table-transactions :filter="txSearch" :items="itemsSwap" />

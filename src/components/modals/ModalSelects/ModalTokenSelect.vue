@@ -3,8 +3,8 @@
     v-model="show"
     :search.sync="search"
     :items="searchedTokens"
-    title="Select a token"
-    subtitle="Tokens"
+    :title="$t('select_token')"
+    :subtitle="$t('tokens')"
   >
     <template #item="{ item }">
       <div
@@ -16,7 +16,7 @@
           <img
             :src="item.logo"
             class="img-avatar img-avatar32 mr-2"
-            alt="Token Logo"
+            :alt="$t('token_logo')"
           />
           <span class="font-w600 font-size-14">{{ item.symbol }}</span>
         </div>
@@ -26,15 +26,15 @@
       </div>
     </template>
     <template v-if="allowTokenAdd" #footer>
-      <p class="mb-0">Can't find the token you're looking for?</p>
+      <p class="mb-0">{{ $t("cant_find_token") }}</p>
       <span @click="promptTokenAddModal" class="text-primary cursor font-w600">
-        Add token
+        {{ $t("add_token") }}
       </span>
-      <modal-base title="Add Token" v-model="addTokenModal">
+      <modal-base :title="$t('add_token')" v-model="addTokenModal">
         <multi-input-field
           v-model="addTokenText"
           @input="onTokenInput"
-          label="Token Address"
+          :label="$t('token_address')"
           placeholder="eg. 0x90feoiw..."
           height="48"
         />
@@ -47,6 +47,7 @@
 <script lang="ts">
 import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
@@ -109,7 +110,7 @@ export default class ModalSelectToken extends BaseComponent {
           compareString(t.id, tokenAddress)
         );
         if (token) this.selectToken(token.id);
-        else this.error = "Token not found.";
+        else this.error = `${i18n.tc("token_not_found")}.`;
       }
     } catch (e) {
       this.error = e.message;
