@@ -7326,10 +7326,10 @@ cssstyle@^2.0.0, cssstyle@^2.2.0:
   dependencies:
     cssom "~0.3.6"
 
-csv-parse@^4.9.1:
-  version "4.14.1"
-  resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-4.14.1.tgz#b6b3736508fb94682fa6d450fe1755237221d291"
-  integrity sha512-4wmcO7QbWtDAncGFaBwlWFPhEN4Akr64IbM4zvDwEOFekI8blLc04Nw7XjQjtSNy+3AUAgBgtUa9nWo5Cq89Xg==
+csv-parse@^4.15.1:
+  version "4.15.1"
+  resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-4.15.1.tgz#fc5a0a1b24eaa6d4c24892daa387c46f7f92f8d2"
+  integrity sha512-TXIvRtNp0fqMJbk3yPR35bQIDzMH4khDwduElzE7Fl1wgnl25mnWYLSLqd/wS5GsDoX1rWtysivEYMNsz5jKwQ==
 
 currently-unhandled@^0.4.1:
   version "0.4.1"
