@@ -574,21 +574,23 @@ export class EthereumGovernance extends VuexModule.With({
     for await (const file of ipfs.get(hash, {
       timeout: timeoutInSeconds * 1000
     })) {
-      if (!file.content) continue;
+      if (file.type == "file") {
+        if (!file.content) continue;
 
-      let content = "";
+        let content = "";
 
-      for await (const chunk of file.content) {
-        content += chunk.toString("utf8");
+        for await (const chunk of file.content) {
+          content += new TextDecoder("utf-8").decode(chunk);
+        }
+
+        metadata = JSON.parse(content);
+        const newCache = this.metaDataCache;
+
+        newCache[hash] = metadata;
+        this.setMetaDataCache(newCache);
+
+        break;
       }
-
-      metadata = JSON.parse(content);
-      const newCache = this.metaDataCache;
-
-      newCache[hash] = metadata;
-      this.setMetaDataCache(newCache);
-
-      break;
     }
 
     return metadata;
