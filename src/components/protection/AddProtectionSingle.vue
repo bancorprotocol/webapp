@@ -87,7 +87,7 @@
         label="Space Available"
         :loading="loading"
         tooltip="For more information "
-        hrefText="click here"
+        href-text="click here"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
         <span @click="setAmount(maxStakeAmount)" class="cursor">{{
@@ -297,7 +297,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get whitelistWarning() {
     const msg =
-      "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
+      "Pool you have selected is not approved for protection. Your stake will provide you with vBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
     const show = true;
 
     return { show, msg };
