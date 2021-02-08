@@ -331,6 +331,10 @@ export const buildLiquidityProtectionSettingsContract = (
   web3?: Web3
 ): ContractMethods<{
   poolWhitelist(): CallReturn<string[]>;
+  addLiquidityDisabled: (
+    poolId: string,
+    reserveId: string
+  ) => CallReturn<string>;
   minProtectionDelay: () => CallReturn<string>;
   lockDuration: () => CallReturn<string>;
   networkToken: () => CallReturn<string>;
