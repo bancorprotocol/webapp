@@ -6086,13 +6086,13 @@ export class EthBancorModule
 
       combineLatest([poolPrograms$, finalRelays$, liquidityProtectionStore$])
         .pipe(
-          mergeMap(([poolPrograms, relays, protectionStoreAddress]) => {
-            return this.fetchPooLiqMiningApr({
+          mergeMap(([poolPrograms, relays, protectionStoreAddress]) =>
+            this.fetchPooLiqMiningApr({
               poolPrograms,
               relays: relays.relays,
               protectionStoreAddress
-            });
-          })
+            })
+          )
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
