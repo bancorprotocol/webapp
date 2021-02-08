@@ -77,15 +77,31 @@
           v-for="(output, index) in outputs"
           :key="output.id"
           :label="index == 0 ? `Value you receive` : ``"
-          :value="`${formatNumber(output.amount)} ${output.symbol}`"
+          :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
         />
       </div>
     </gray-border-block>
 
     <gray-border-block :gray-bg="true" class="my-3">
-      <label-content-split label="Space Available" :loading="loadingMaxStakes">
-        <span @click="setAmount" class="cursor">{{
+      <label-content-split
+        label="Space Available"
+        :loading="loading"
+        tooltip="For more information "
+        href-text="click here"
+        href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
+      >
+        <span @click="setAmount(maxStakeAmount)" class="cursor">{{
           `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
+        }}</span>
+      </label-content-split>
+      <label-content-split
+        v-if="amountToMakeSpace"
+        class="mt-2"
+        :label="`${bnt.symbol} needed to open up ${otherTkn.symbol} space`"
+        :loading="loading"
+      >
+        <span @click="setAmount(amountToMakeSpace, 0)" class="cursor">{{
+          `${prettifyNumber(amountToMakeSpace)} ${bnt.symbol}`
         }}</span>
       </label-content-split>
     </gray-border-block>
@@ -109,7 +125,7 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ `${formatNumber(amount)} ${token.symbol}` }}
+            {{ `${prettifyNumber(amount)} ${token.symbol}` }}
           </span>
         </b-col>
       </b-row>
@@ -141,7 +157,12 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { formatUnixTime, formatNumber } from "@/api/helpers";
+import {
+  formatUnixTime,
+  formatNumber,
+  compareString,
+  findOrThrow
+} from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -172,9 +193,10 @@ export default class AddProtectionSingle extends BaseComponent {
 
   maxStakeAmount: string = "";
   maxStakeSymbol: string = "";
+  amountToMakeSpace: string = "";
   priceDeviationTooHigh: boolean = false;
 
-  loadingMaxStakes = false;
+  loading: boolean = false;
 
   amount: string = "";
 
@@ -195,7 +217,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
   @Watch("token")
   async onTokenChange() {
-    await this.loadMaxStakes();
+    await this.load();
     await this.loadRecentAverageRate();
   }
 
@@ -209,6 +231,14 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get token() {
     return this.pool.reserves[this.selectedTokenIndex];
+  }
+
+  get bnt() {
+    return this.pool.reserves[0];
+  }
+
+  get otherTkn() {
+    return this.pool.reserves[1];
   }
 
   get opposingToken() {
@@ -249,7 +279,7 @@ export default class AddProtectionSingle extends BaseComponent {
   get disableActionButton() {
     if (!this.amount) return true;
     else if (this.priceDeviationTooHigh) return true;
-    else if (this.loadingMaxStakes) return true;
+    else if (this.loading) return true;
     else return this.inputError ? true : false;
   }
 
@@ -267,7 +297,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get whitelistWarning() {
     const msg =
-      "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
+      "Pool you have selected is not approved for protection. Your stake will provide you with vBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
     const show = true;
 
     return { show, msg };
@@ -361,10 +391,6 @@ export default class AddProtectionSingle extends BaseComponent {
     this.success = null;
   }
 
-  formatNumber(amount: string) {
-    return formatNumber(amount, 6);
-  }
-
   get currentStatus() {
     if (this.sections.length) {
       return this.sections[this.stepIndex].description;
@@ -393,35 +419,43 @@ export default class AddProtectionSingle extends BaseComponent {
     });
   }
 
-  async loadMaxStakes() {
-    if (this.loadingMaxStakes) return;
-    this.loadingMaxStakes = true;
+  async load() {
+    if (this.loading) return;
+    this.loading = true;
+    this.amountToMakeSpace = "";
     try {
-      const result = await vxm.ethBancor.getMaxStakesView({
+      const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
         poolId: this.pool.id
       });
-      let stake = result.filter(x => x.token === this.token.symbol);
-      if (stake.length === 1) {
-        this.maxStakeAmount = stake[0].amount;
-        this.maxStakeSymbol = stake[0].token;
-      }
+      const availableSpace = res.availableSpace;
+
+      const selectedToken = findOrThrow(
+        availableSpace,
+        space => compareString(space.token, this.token.symbol),
+        "Failed finding focused token in available space"
+      );
+      this.maxStakeAmount = selectedToken.amount;
+      this.maxStakeSymbol = selectedToken.token;
+
+      if (res.amountToGetSpace) this.amountToMakeSpace = res.amountToGetSpace;
     } catch (e) {
-      console.log(e);
+      console.log(e.message);
     } finally {
-      this.loadingMaxStakes = false;
+      this.loading = false;
     }
   }
 
-  setAmount() {
-    this.amount =
-      parseFloat(this.maxStakeAmount) > 0 ? this.maxStakeAmount : "0";
+  setAmount(amount: string, switchToken: number = -1) {
+    if (switchToken != -1 && this.selectedTokenIndex != switchToken)
+      this.selectedTokenIndex = switchToken;
+    this.amount = parseFloat(amount) > 0 ? amount : "0";
   }
 
   async mounted() {
-    await this.loadMaxStakes();
+    await this.load();
     await this.loadRecentAverageRate();
     this.interval = setInterval(async () => {
-      await this.loadMaxStakes();
+      await this.load();
       await this.loadRecentAverageRate();
     }, 30000);
   }

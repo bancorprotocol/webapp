@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-container
-      class="vote-head"
+      class="vote-head d-none d-lg-block"
       :class="darkMode ? 'vote-head-dark' : 'vote-head-light'"
     >
       <b-row>
@@ -52,10 +52,13 @@
           cols="12"
           :lg="column.colRate != 0 ? column.colRate : ''"
           :style="getWidthStyle(column)"
+          @click="() => openProposal(item)"
         >
           <slot
             :name="`cell(${column.key})`"
             :item="item"
+            :opened="opened"
+            :label="column.label"
             :value="item[column.key]"
           >
             {{ item[column.key] }}
@@ -66,6 +69,33 @@
           class="divider"
           :class="darkMode ? 'divider-dark' : 'divider-light'"
         />
+
+        <template v-if="!isNaN(opened) && item.id === opened">
+          <b-col
+            v-for="column in fields2"
+            :key="column.id"
+            class="colb my-auto"
+            :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
+            cols="12"
+            :lg="column.colRate != 0 ? column.colRate : ''"
+            :style="getWidthStyle(column)"
+          >
+            <slot
+              :name="`cell(${column.key})`"
+              :item="item"
+              :opened="opened"
+              :value="item[column.key]"
+            >
+              {{ item[column.key] }}
+            </slot>
+          </b-col>
+
+          <div
+            class="divider"
+            :class="darkMode ? 'divider-dark' : 'divider-light'"
+          />
+        </template>
+
       </b-row>
     </b-container>
 
@@ -85,6 +115,7 @@ import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TableItem, ViewProposalsField } from "@/types/bancor";
+import { Proposal } from "@/store/modules/governance/ethGovernance";
 
 @Component({
   components: {
@@ -93,6 +124,7 @@ import { TableItem, ViewProposalsField } from "@/types/bancor";
 })
 export default class LayoutProposals extends BaseComponent {
   @Prop() fields!: ViewProposalsField[];
+  @Prop() fields2!: ViewProposalsField[];
   @Prop() items!: TableItem[];
   @Prop() filter?: string;
   @Prop() filterBy?: string;
@@ -105,6 +137,8 @@ export default class LayoutProposals extends BaseComponent {
   sortBy: string = "";
   descOrder: boolean = this.defaultOrder === "desc";
   currentPage = 1;
+  opened: number = -1;
+
   created() {
     this.sortBy = this.defaultSort ? this.defaultSort : "";
   }
@@ -161,6 +195,12 @@ export default class LayoutProposals extends BaseComponent {
   }
   isHtmlTooltip(key: string) {
     return !!this.$slots[`tooltip(${key})`];
+  }
+  openProposal(proposal: Proposal) {
+    if (this.fields2) {
+      this.opened = proposal.id === this.opened ? -1 : proposal.id;
+      this.$forceUpdate();
+    }
   }
   @Watch("filter")
   @Watch("sortBy")
