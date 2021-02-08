@@ -55,7 +55,7 @@
     "fast-sort": "^2.2.0",
     "ipfs-http-client": "^48.1.0",
     "lodash": "^4.17.15",
-    "lodash-webpack-plugin": "^0.11.5",
+    "lodash-webpack-plugin": "^0.11.6",
     "lodash.debounce": "^4.0.8",
     "numeral": "^2.0.6",
     "rxjs": "^6.6.3",
