@@ -302,7 +302,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
   get whitelistWarning() {
     const msg =
-      "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
+      "Pool you have selected is not approved for protection. Your stake will provide you with vBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
     const show = true;
 
     return { show, msg };
