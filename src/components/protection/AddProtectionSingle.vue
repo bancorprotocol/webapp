@@ -84,7 +84,7 @@
         :label="$t('space_available')"
         :loading="loading"
         :tooltip="`${$t('for_more_information')} `"
-        :hrefText="$t('click_here')"
+        :href-text="$t('click_here')"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
         <span @click="setAmount(maxStakeAmount)" class="cursor">{{
@@ -357,10 +357,11 @@ export default class AddProtectionSingle extends BaseComponent {
 
       console.log(res, "was res");
 
-      const errorMsg = i18n.tc("limit_reached", 0, {
-        token: this.token.symbol,
-        opposingToken: this.opposingToken!.symbol
-      });
+      const errorMsg = `${this.token.symbol} limit reached. Additional ${
+        this.opposingToken!.symbol
+      } liquidity should be staked to allow for ${
+        this.token.symbol
+      } single-sided staking.`;
 
       if (res.error) {
         this.preTxError =
@@ -374,6 +375,7 @@ export default class AddProtectionSingle extends BaseComponent {
       this.outputs = [];
     }
   }
+
   async openModal() {
     if (this.currentUser) this.modal = true;
     // @ts-ignore
