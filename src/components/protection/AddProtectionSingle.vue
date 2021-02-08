@@ -247,8 +247,15 @@ export default class AddProtectionSingle extends BaseComponent {
     );
   }
 
+  disabledReserves: string[] = [];
+
   get tokens() {
-    return this.pool.reserves;
+    return this.pool.reserves.filter(
+      reserve =>
+        !this.disabledReserves.some(reserveId =>
+          compareString(reserveId, reserve.id)
+        )
+    );
   }
 
   get pools() {
@@ -419,27 +426,40 @@ export default class AddProtectionSingle extends BaseComponent {
     });
   }
 
+  async fetchAndSetMaxStakes(poolId: string) {
+    this.amountToMakeSpace = "";
+
+    const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
+      poolId
+    });
+    const availableSpace = res.availableSpace;
+
+    const selectedToken = findOrThrow(
+      availableSpace,
+      space => compareString(space.token, this.token.symbol),
+      "Failed finding focused token in available space"
+    );
+    this.maxStakeAmount = selectedToken.amount;
+    this.maxStakeSymbol = selectedToken.token;
+
+    if (res.amountToGetSpace) this.amountToMakeSpace = res.amountToGetSpace;
+  }
+
+  async fetchAndSetDisabledReserves(poolId: string) {
+    const disabledReserves = await vxm.ethBancor.fetchDisabledReserves(poolId);
+    this.disabledReserves = disabledReserves;
+  }
+
   async load() {
     if (this.loading) return;
     this.loading = true;
-    this.amountToMakeSpace = "";
     try {
-      const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
-        poolId: this.pool.id
-      });
-      const availableSpace = res.availableSpace;
-
-      const selectedToken = findOrThrow(
-        availableSpace,
-        space => compareString(space.token, this.token.symbol),
-        "Failed finding focused token in available space"
-      );
-      this.maxStakeAmount = selectedToken.amount;
-      this.maxStakeSymbol = selectedToken.token;
-
-      if (res.amountToGetSpace) this.amountToMakeSpace = res.amountToGetSpace;
+      await Promise.all([
+        this.fetchAndSetMaxStakes(this.pool.id),
+        this.fetchAndSetDisabledReserves(this.pool.id)
+      ]);
     } catch (e) {
-      console.log(e.message);
+      console.error(e.message);
     } finally {
       this.loading = false;
     }

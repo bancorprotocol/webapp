@@ -187,6 +187,6 @@ export const addLiquidityDisabled = async (
   const res = await contract.methods
     .addLiquidityDisabled(poolId, reserveId)
     .call();
-  console.warn(res, "check this!");
-  return res == "1";
+
+  return res;
 };

@@ -85,7 +85,8 @@ import {
   conversionPath,
   getTokenSupplyWei,
   existingPool,
-  getRemoveLiquidityReturn
+  getRemoveLiquidityReturn,
+  addLiquidityDisabled
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
@@ -3636,6 +3637,31 @@ export class EthBancorModule
         token: tkn.symbol
       }
     ];
+  }
+
+  @action async fetchDisabledReserves(poolId: string): Promise<string[]> {
+    const pool = findOrThrow(
+      this.newPools,
+      pool => compareString(pool.pool_dlt_id, poolId),
+      `failed to find pool with id of ${poolId}`
+    );
+    const reserveIds = pool.reserves.map(reserve => reserve.address);
+    const settingsContract = this.liquidityProtectionSettings.contract;
+
+    const reserveStatuses = await Promise.all(
+      reserveIds.map(async reserveId => ({
+        reserveId,
+        disabled: await addLiquidityDisabled(
+          settingsContract,
+          pool.pool_dlt_id,
+          reserveId
+        )
+      }))
+    );
+    const disabledReserves = reserveStatuses.filter(
+      reserve => reserve.disabled
+    );
+    return disabledReserves.map(reserve => reserve.reserveId);
   }
 
   @action async getAvailableAndAmountToGetSpace({
