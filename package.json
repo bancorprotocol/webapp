@@ -29,6 +29,7 @@
     "@types/lodash.debounce": "^4.0.6",
     "@types/numeral": "2.0.0",
     "axios": "^0.21.1",
+    "axios-etag-cache": "^1.0.5",
     "bancorx": "^0.3.0",
     "bignumber.js": "^9.0.0",
     "bnc-onboard": "^1.18.0",

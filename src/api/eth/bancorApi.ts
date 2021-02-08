@@ -1,3 +1,7 @@
+import axios from "axios";
+import axiosETAGCache from "axios-etag-cache";
+import { EthNetworks } from "../web3";
+
 interface TokenMeta {
   id: string;
   image: string;
@@ -6,9 +10,6 @@ interface TokenMeta {
   name: string;
   precision?: number;
 }
-
-import axios from "axios";
-import { EthNetworks } from "../web3";
 
 export interface WelcomeData {
   total_liquidity: BntPrice;
@@ -81,12 +82,13 @@ export const getWelcomeData = async (
   if (!(network == EthNetworks.Mainnet || network == EthNetworks.Ropsten)) {
     throw new Error("API does not support this network");
   }
+  const url =
+    network == EthNetworks.Mainnet
+      ? "https://api-v2.bancor.network/welcome"
+      : "https://ropsten-ptdczarhfq-nw.a.run.app/welcome";
   try {
-    const res = await axios.get<WelcomeData>(
-      network == EthNetworks.Mainnet
-        ? "https://api-v2.bancor.network/welcome"
-        : "https://ropsten-ptdczarhfq-nw.a.run.app/welcome"
-    );
+    const res = await axiosETAGCache().get<WelcomeData>(url);
+
     return res.data;
   } catch (e) {
     console.error("Failed to load data from Bancor API", e);
