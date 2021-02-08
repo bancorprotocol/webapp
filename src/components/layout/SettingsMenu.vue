@@ -66,7 +66,7 @@
     </b-dropdown-group>
     <b-dropdown-text
       :variant="darkMode ? 'dark' : 'light'"
-      v-if="!showLocale"
+      v-if="false & !showLocale"
       @click="toggleLocale"
       class="cursor"
     >
