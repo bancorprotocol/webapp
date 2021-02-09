@@ -6,7 +6,7 @@
     >
       <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="font-size-16 font-w500">{{ title }}</div>
+          <div class="font-size-16 font-w500">{{ $t("rewards") }}</div>
           <div>
             <b-btn
               :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -42,39 +42,42 @@
         </div>
       </template>
 
-      <b-row class="mt-3">
+      <b-row :class="currentUser ? 'mt-3' : 'mt-4 mb-2'">
         <b-col
           v-for="(item, index) in summarizedRewards"
           :key="item.id"
           class="text-center"
         >
-          <div class="font-size-14 font-w600">
-            <animation-number
-              :starting-value="
-                oldrewards.length === 0 ? 0 : oldrewards[index].bnt.toNumber()
-              "
-              :target-value="item.bnt.toNumber()"
-              :animation-time="
-                item.id === 1 && oldrewards.length === 0 ? 5000 : 3000
-              "
-              :watch="true"
-              trailing-text="BNT"
-            />
+          <div v-if="currentUser">
+            <div class="font-size-14 font-w600">
+              <animation-number
+                :starting-value="
+                  oldrewards.length === 0 ? 0 : oldrewards[index].bnt.toNumber()
+                "
+                :target-value="item.bnt.toNumber()"
+                :animation-time="
+                  item.id === 1 && oldrewards.length === 0 ? 5000 : 3000
+                "
+                :watch="true"
+                trailing-text="BNT"
+              />
+            </div>
+            <div class="font-size-12 font-w500 text-primary">
+              <animation-number
+                :starting-value="
+                  oldrewards.length === 0 ? 0 : oldrewards[index].usd.toNumber()
+                "
+                :target-value="item.usd.toNumber()"
+                :usd="true"
+                :animation-time="
+                  item.id === 1 && oldrewards.length === 0 ? 5000 : 3000
+                "
+                :watch="true"
+                leading-text="~"
+              />
+            </div>
           </div>
-          <div class="font-size-12 font-w500 text-primary" v-if="currentUser">
-            <animation-number
-              :starting-value="
-                oldrewards.length === 0 ? 0 : oldrewards[index].usd.toNumber()
-              "
-              :target-value="item.usd.toNumber()"
-              :usd="true"
-              :animation-time="
-                item.id === 1 && oldrewards.length === 0 ? 5000 : 3000
-              "
-              :watch="true"
-              leading-text="~"
-            />
-          </div>
+          <div v-else class="font-size-14 font-w600 text-primary">--</div>
           <div
             class="text-uppercase font-size-10 font-w500"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
@@ -113,7 +116,6 @@ export default class RewardsSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
   stringifyPercentage = stringifyPercentage;
 
-  title = i18n.t("rewards");
   modal = false;
   interval: any = null;
   oldrewards: ViewRewardsSummaryItem[] = [];

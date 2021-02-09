@@ -14,7 +14,7 @@
       <content-block
         :px0="true"
         :shadow-light="true"
-        title="Swaps"
+        :title="$t('swaps')"
         :search.sync="txSearch"
       >
         <table-transactions :filter="txSearch" :items="itemsSwap" />

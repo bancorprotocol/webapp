@@ -126,40 +126,42 @@ export default class ModalVoteDetails extends BaseComponent {
   decimals: number = 0;
   etherscanUrl: string = "";
 
-  fields: ViewTableField[] = [
-    {
-      id: 1,
-      key: "index",
-      label: "#",
-      sortable: true
-    },
-    {
-      id: 2,
-      key: "account",
-      label: i18n.tc("user_wallet"),
-      sortable: true
-    },
-    {
-      id: 3,
-      key: "weight",
-      label: i18n.tc("amount"),
-      sortable: true,
-      thClass: "text-right"
-    },
-    {
-      id: 4,
-      key: "voted",
-      label: i18n.tc("vote"),
-      sortable: true
-    },
-    {
-      id: 5,
-      key: "percentOfTotal",
-      label: `%${i18n.tc("amount")}`,
-      sortable: true,
-      thClass: "text-right"
-    }
-  ];
+  get fields(): ViewTableField[] {
+    return [
+      {
+        id: 1,
+        key: "index",
+        label: "#",
+        sortable: true
+      },
+      {
+        id: 2,
+        key: "account",
+        label: i18n.tc("user_wallet"),
+        sortable: true
+      },
+      {
+        id: 3,
+        key: "weight",
+        label: i18n.tc("amount"),
+        sortable: true,
+        thClass: "text-right"
+      },
+      {
+        id: 4,
+        key: "voted",
+        label: i18n.tc("vote"),
+        sortable: true
+      },
+      {
+        id: 5,
+        key: "percentOfTotal",
+        label: `%${i18n.tc("amount")}`,
+        sortable: true,
+        thClass: "text-right"
+      }
+    ];
+  }
 
   getWeight(votes: Votes): string {
     return this.formatNumber(votes.for !== "0" ? votes.for : votes.against);

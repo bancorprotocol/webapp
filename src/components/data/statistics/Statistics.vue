@@ -30,10 +30,7 @@
     </b-col>-->
 
     <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
-      <statistics-data-block
-        :title="`${$t('volume')} (24hrs)`"
-        :value="volume24h"
-      />
+      <statistics-data-block :title="$t('volume')" :value="volume24h" />
     </b-col>
 
     <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">

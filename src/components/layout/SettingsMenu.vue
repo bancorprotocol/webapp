@@ -39,25 +39,25 @@
                 class="shadow-none"
                 size="sm"
                 :variant="
-                  !darkMode
-                    ? 'outline-primary' + (darkMode ? '-dark' : '')
-                    : 'primary'
-                "
-                style="width: 50%"
-                @click="toggleDarkMode"
-                >OFF</b-button
-              >
-              <b-button
-                class="shadow-none"
-                size="sm"
-                :variant="
                   darkMode
                     ? 'outline-primary' + (darkMode ? '-dark' : '')
                     : 'primary'
                 "
                 style="width: 50%"
                 @click="toggleDarkMode"
-                >ON</b-button
+                >{{ $t("off") }}</b-button
+              >
+              <b-button
+                class="shadow-none"
+                size="sm"
+                :variant="
+                  !darkMode
+                    ? 'outline-primary' + (darkMode ? '-dark' : '')
+                    : 'primary'
+                "
+                style="width: 50%"
+                @click="toggleDarkMode"
+                >{{ $t("on") }}</b-button
               >
             </b-button-group>
           </div>
@@ -66,7 +66,7 @@
     </b-dropdown-group>
     <b-dropdown-text
       :variant="darkMode ? 'dark' : 'light'"
-      v-if="!showLocale"
+      v-if="false & !showLocale"
       @click="toggleLocale"
       class="cursor"
     >
@@ -121,10 +121,9 @@
     </b-dropdown-header>
     <b-dropdown-group v-if="showLocale">
       <b-dropdown-item
-        style="margin: 5px"
         v-for="item in i18n.availableLocales"
         :variant="darkMode ? 'dark' : 'light'"
-        class="cursor"
+        class="cursor font-size-14 m-1"
         :key="item.toString()"
         @click="switchlocale(item)"
       >

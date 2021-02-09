@@ -61,12 +61,6 @@
       class="mt-3 mb-3"
     />
 
-    <alert-block
-      v-if="priceDeviationTooHigh && !inputError && amount"
-      variant="error"
-      :msg="$t('price_volatility')"
-    />
-
     <gray-border-block v-else-if="outputs.length" :gray-bg="true" class="my-3">
       <div>
         {{ outputs }}
@@ -83,8 +77,13 @@
       <label-content-split
         :label="$t('space_available')"
         :loading="loading"
+<<<<<<< HEAD
         tooltip="For more information "
         href-text="click here"
+=======
+        :tooltip="`${$t('for_more_information')} `"
+        :href-text="$t('click_here')"
+>>>>>>> master
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
         <span @click="setAmount(maxStakeAmount)" class="cursor">{{
@@ -104,6 +103,14 @@
         }}</span>
       </label-content-split>
     </gray-border-block>
+
+    <price-deviation-error
+      v-model="priceDeviationTooHigh"
+      :pool-id="pool.id"
+      :token-contract="token.contract"
+      class="mb-3"
+      ref="priceDeviationError"
+    />
 
     <main-button
       :label="actionButtonLabel"
@@ -171,9 +178,12 @@ import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import Vue from "vue";
+import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
 
 @Component({
   components: {
+    PriceDeviationError,
     ModalPoolSelect,
     ActionModalStatus,
     PoolLogos,
@@ -296,8 +306,7 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   get whitelistWarning() {
-    const msg =
-      "Pool you have selected is not approved for protection. Your stake will provide you with vBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.";
+    const msg = i18n.t("pool_not_approved");
     const show = true;
 
     return { show, msg };
@@ -358,10 +367,11 @@ export default class AddProtectionSingle extends BaseComponent {
 
       console.log(res, "was res");
 
-      const errorMsg = i18n.tc("limit_reached", 0, {
-        token: this.token.symbol,
-        opposingToken: this.opposingToken!.symbol
-      });
+      const errorMsg = `${this.token.symbol} limit reached. Additional ${
+        this.opposingToken!.symbol
+      } liquidity should be staked to allow for ${
+        this.token.symbol
+      } single-sided staking.`;
 
       if (res.error) {
         this.preTxError =
@@ -375,6 +385,7 @@ export default class AddProtectionSingle extends BaseComponent {
       this.outputs = [];
     }
   }
+
   async openModal() {
     if (this.currentUser) this.modal = true;
     // @ts-ignore
@@ -404,12 +415,9 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   async loadRecentAverageRate() {
-    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
-      relayId: this.pool.id,
-      selectedTokenAddress: this.token.contract
-    });
-
-    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
+    await (this.$refs.priceDeviationError as Vue & {
+      loadRecentAverageRate: () => boolean;
+    }).loadRecentAverageRate();
   }
 
   async selectPool(id: string) {

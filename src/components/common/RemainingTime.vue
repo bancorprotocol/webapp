@@ -20,6 +20,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { i18n } from "@/i18n";
 
 @Component
 export default class RemainingTime extends BaseComponent {
@@ -57,7 +58,7 @@ export default class RemainingTime extends BaseComponent {
 
   get remaining() {
     if (this.remainingTime < 0) {
-      return "Vote Ended";
+      return i18n.t("vote_ended");
     }
     if (this.isUnlock) {
       const diff = (this.to || 0) - Date.now();

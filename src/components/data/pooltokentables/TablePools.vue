@@ -37,7 +37,7 @@
         <b-badge variant="danger">
           <countdown-timer
             :date-unix="value.endTime"
-            msg-countdown-ended="Rewards ended"
+            :msg-countdown-ended="$t('rewards_ended')"
           />
         </b-badge>
       </div>
@@ -145,13 +145,13 @@ export default class TablePools extends BaseComponent {
         ? [
             {
               id: 6,
-              label: `${i18n.tc("volume")} (24h)`,
+              label: i18n.tc("volume"),
               key: "volume",
               minWidth: "140px"
             },
             {
               id: 7,
-              label: `${i18n.tc("fees")} (24h)`,
+              label: i18n.tc("fees"),
               key: "feesGenerated",
               tooltip: i18n.tc("value_swap"),
               minWidth: "140px"

@@ -5,7 +5,7 @@
         style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
-        label="Loading..."
+        :label="`${$t('loading')}... `"
       ></b-spinner>
       <h5
         class="m-0 ml-3"
