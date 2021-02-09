@@ -50,6 +50,7 @@
       label="Stake Amount"
       :token="token"
       v-model="amount"
+      :disabled="focusedReserveIsDisabled"
       @input="amountChanged"
       :balance="balance"
       :error-msg="inputError"
@@ -81,6 +82,13 @@
         />
       </div>
     </gray-border-block>
+
+    <alert-block
+      v-if="focusedReserveIsDisabled"
+      variant="error"
+      :msg="`The selected pool supports adding liquidity using ${availableReserveSymbol} only. In order to add liquidity, please select the 2nd reserve.`"
+      class="mt-3 mb-3"
+    />
 
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
@@ -250,12 +258,22 @@ export default class AddProtectionSingle extends BaseComponent {
   disabledReserves: string[] = [];
 
   get tokens() {
-    return this.pool.reserves.filter(
+    return this.pool.reserves;
+  }
+
+  get focusedReserveIsDisabled() {
+    return this.disabledReserves.some(reserveId =>
+      compareString(reserveId, this.token.id)
+    );
+  }
+
+  get availableReserveSymbol() {
+    return this.pool.reserves.find(
       reserve =>
         !this.disabledReserves.some(reserveId =>
           compareString(reserveId, reserve.id)
         )
-    );
+    )!.symbol;
   }
 
   get pools() {
