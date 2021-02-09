@@ -77,13 +77,8 @@
       <label-content-split
         :label="$t('space_available')"
         :loading="loading"
-<<<<<<< HEAD
-        tooltip="For more information "
-        href-text="click here"
-=======
         :tooltip="`${$t('for_more_information')} `"
         :href-text="$t('click_here')"
->>>>>>> master
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
         <span @click="setAmount(maxStakeAmount)" class="cursor">{{
