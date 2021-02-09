@@ -150,7 +150,7 @@ export default class ModalVoteDetails extends BaseComponent {
       {
         id: 4,
         key: "voted",
-        label: i18n.tc("vote"),
+        label: i18n.tc("title.vote"),
         sortable: true
       },
       {

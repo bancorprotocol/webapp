@@ -88,7 +88,7 @@ export default class SideBar extends BaseComponent {
       {
         route: "VotePage",
         key: "vote",
-        label: i18n.t("vote"),
+        label: i18n.t("title.vote"),
         newTab: false,
         hideMobile: true,
         svgName: "vote"

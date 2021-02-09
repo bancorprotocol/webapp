@@ -317,16 +317,14 @@
       </template>
       <template #tooltip(votes)>
         <div class="pb-2">
-          In order for a proposal to be passed, two conditions must be met:
+          {{ $t("vote.openProposals.tooltip1.p1") }}
         </div>
         <ol class="pl-3">
           <li>
-            20% of all staked vBNT must vote in favor. For a Token Whitelisting,
-            40% of all staked vBNT must vote in favor.
+            {{ $t("vote.openProposals.tooltip1.list1") }}
           </li>
           <li>
-            Two-thirds (66.7%) of votes for a given BIP must be in favor in
-            order for the BIP to be approved.
+            {{ $t("vote.openProposals.tooltip1.list2") }}
           </li>
         </ol>
       </template>
@@ -401,7 +399,7 @@ export default class OpenProposals extends BaseComponent {
       },
       {
         id: 3,
-        label: i18n.tc("vote"),
+        label: i18n.tc("title.vote"),
         key: "votes",
         minWidth: "200px",
         colAuto: false,
