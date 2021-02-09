@@ -1,17 +1,26 @@
 <template>
   <div>
-    <gray-border-block @click.native="clickAction" :class="type === 'primary' ? 'cursor' : ''">
+    <gray-border-block
+      @click.native="clickAction"
+      :class="type === 'primary' ? 'cursor' : ''"
+    >
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <pool-logos v-if="token" :token="token" :cursor="type === 'primary'" />
-          <span v-else class="font-size-14 font-w600">Select a token</span>
+          <pool-logos
+            v-if="token"
+            :token="token"
+            :cursor="type === 'primary'"
+          />
+          <span v-else class="font-size-14 font-w600">
+            {{ $t("select_token") }}</span
+          >
         </div>
         <div :class="darkMode ? 'text-white' : 'text-primary'">
           <span
             v-if="token && type === 'primary'"
             class="font-size-12 font-w500 text-primary cursor"
           >
-            remove
+            {{ $t("remove") }}
           </span>
           <font-awesome-icon v-else-if="type === 'primary'" icon="caret-down" />
         </div>
@@ -54,7 +63,7 @@ export default class SelectTokenBlock extends BaseComponent {
   }
 
   clickAction() {
-    if (this.type === "secondary") return
+    if (this.type === "secondary") return;
     if (this.token && this.type === "primary") this.removeToken();
     else this.modal = true;
   }

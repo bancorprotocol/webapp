@@ -19,7 +19,7 @@
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              <span>Voting Statistics</span>
+              <span>{{ $t("voting_statistics") }}</span>
             </span>
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -37,7 +37,7 @@
         class="text-uppercase font-size-12 font-w600"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        Proposal Title:
+        {{ `${$t("proposal_title")}:` }}
       </span>
       <span
         class="font-size-14 font-w500"
@@ -73,7 +73,7 @@
 
       <template #cell(voted)="data">
         <div class="text-uppercase" :class="getVoteClass(data.value)">
-          {{ data.value === 1 ? "FOR" : "AGAINST" }}
+          {{ data.value === 1 ? $t("for") : $t("against") }}
         </div>
       </template>
 
@@ -86,7 +86,7 @@
       <div class="text-center w-100">
         <main-button
           @click="onHide"
-          label="Close"
+          :label="$t('close')"
           :active="true"
           :block="false"
           style="width: 175px"
@@ -98,6 +98,7 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
 import {
@@ -125,40 +126,42 @@ export default class ModalVoteDetails extends BaseComponent {
   decimals: number = 0;
   etherscanUrl: string = "";
 
-  fields: ViewTableField[] = [
-    {
-      id: 1,
-      key: "index",
-      label: "#",
-      sortable: true
-    },
-    {
-      id: 2,
-      key: "account",
-      label: "User Wallet",
-      sortable: true
-    },
-    {
-      id: 3,
-      key: "weight",
-      label: "Amount",
-      sortable: true,
-      thClass: "text-right"
-    },
-    {
-      id: 4,
-      key: "voted",
-      label: "Vote",
-      sortable: true
-    },
-    {
-      id: 5,
-      key: "percentOfTotal",
-      label: "% of Total",
-      sortable: true,
-      thClass: "text-right"
-    }
-  ];
+  get fields(): ViewTableField[] {
+    return [
+      {
+        id: 1,
+        key: "index",
+        label: "#",
+        sortable: true
+      },
+      {
+        id: 2,
+        key: "account",
+        label: i18n.tc("user_wallet"),
+        sortable: true
+      },
+      {
+        id: 3,
+        key: "weight",
+        label: i18n.tc("amount"),
+        sortable: true,
+        thClass: "text-right"
+      },
+      {
+        id: 4,
+        key: "voted",
+        label: i18n.tc("vote"),
+        sortable: true
+      },
+      {
+        id: 5,
+        key: "percentOfTotal",
+        label: `%${i18n.tc("amount")}`,
+        sortable: true,
+        thClass: "text-right"
+      }
+    ];
+  }
 
   getWeight(votes: Votes): string {
     return this.formatNumber(votes.for !== "0" ? votes.for : votes.against);

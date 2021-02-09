@@ -14,7 +14,7 @@
         :class="darkMode ? 'text-dark' : 'text-light'"
         @click="opened = !opened"
       >
-        Stake
+        {{ $t("stake") }}
         <font-awesome-icon
           class="open-icon"
           :icon="opened ? 'caret-up' : 'caret-down'"
@@ -31,7 +31,7 @@
           class="text-uppercase font-size-12 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          Your Balance
+          {{ $t("your_balance") }}
         </span>
         <div
           class="font-size-12 font-w500"
@@ -49,7 +49,7 @@
           class="text-uppercase font-size-12 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          Currently Staked
+          {{ $t("currently_staked") }}
         </span>
         <div
           class="font-size-12 font-w500"
@@ -62,7 +62,7 @@
       <div class="p-3 pb-0">
         <main-button
           @click="stakeModal = true"
-          label="Stake Tokens"
+          :label="$t('stake_tokens')"
           :active="true"
           :large="true"
           :block="true"
@@ -73,7 +73,7 @@
         <div v-if="lock.for === 0 && votes > 0">
           <main-button
             @click="unstakeModal = true"
-            label="Unstake Tokens"
+            :label="$t('unstake_tokens')"
             :active="false"
             :large="true"
             :block="true"
@@ -96,7 +96,7 @@
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           <div>
-            Governance contract
+            {{ $t("governance_contract") }}
             <a
               :href="getEtherscanUrl(governanceContractAddress)"
               class="font-w500"
@@ -114,7 +114,7 @@
           </div>
 
           <div>
-            Governance token
+            {{ $t("governance_token") }}
             <a
               :href="getEtherscanUrl(tokenAddress)"
               class="font-w500"

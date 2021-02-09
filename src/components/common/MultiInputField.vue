@@ -42,6 +42,7 @@
 
 <script lang="ts">
 import { Component, Prop, VModel } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -50,7 +51,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 })
 export default class MultiInputField extends BaseComponent {
   @VModel() text!: string | number;
-  @Prop({ default: "Enter here" }) placeholder!: string;
+  @Prop({ default: i18n.t("enter_here") }) placeholder!: string;
   @Prop({ default: "text" }) type!: string;
   @Prop() label?: string;
   @Prop({ default: "md" }) fontSize!: "sm" | "md" | "lg";

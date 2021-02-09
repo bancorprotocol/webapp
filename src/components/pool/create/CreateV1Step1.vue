@@ -1,10 +1,6 @@
 <template>
   <div>
-    <alert-block
-      class="my-3"
-      variant="info"
-      msg="Pools with 2 reserves and 50/50 weight can be voted for protection."
-    />
+    <alert-block class="my-3" variant="info" :msg="$t('pools_with_two')" />
 
     <div v-for="(props, index) in stepOneProps" :key="index">
       <create-v1-token-block
@@ -23,7 +19,7 @@
         v-else-if="stepOneProps[stepOneProps.length - 1].token"
         class="font-size-12 font-w500 text-primary text-right mt-3"
       >
-        <span class="cursor">+ Add another token</span>
+        <span class="cursor">+ {{ $t("add_another_token") }}</span>
       </div>
     </div>
   </div>

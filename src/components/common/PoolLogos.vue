@@ -18,7 +18,7 @@
       <img
         class="img-avatar img-avatar32 bg-white"
         :src="token.logo"
-        alt="Token Logo"
+        :alt="$t('token_logo')"
         style="
           box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
           border: solid 1px #e6ebf2;

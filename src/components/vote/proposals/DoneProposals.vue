@@ -5,13 +5,13 @@
         style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
-        label="Loading..."
+        :label="`${$t('loading')}... `"
       ></b-spinner>
       <h5
         class="m-0 ml-3"
         :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
       >
-        Just a moment ...
+        {{ `${$t("just_a_moment")}...` }}
       </h5>
     </div>
   </div>
@@ -23,7 +23,7 @@
       class="m-0 ml-3"
       :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
     >
-      No Proposals yet ...
+      {{ `${$t("no_proposals_yet")}...` }}
     </h5>
   </div>
   <layout-proposals
@@ -60,7 +60,7 @@
         class="result"
         :class="'result--' + (isApproved(item) ? 'for' : 'against')"
       >
-        {{ isApproved(item) ? "Approved" : "Rejected" }}
+        {{ isApproved(item) ? $t("approved") : $t("rejected") }}
       </div>
     </template>
 
@@ -113,16 +113,14 @@
       <div class="cursor" @click="() => openProposal(item)">
         <font-awesome-icon
           :icon="
-            !isNaN(opened) && item.id === opened
-              ? 'caret-up'
-              : 'caret-down'
+            !isNaN(opened) && item.id === opened ? 'caret-up' : 'caret-down'
           "
         />
       </div>
     </template>
 
     <template #cell(no)="{}">
-      <div> </div>
+      <div></div>
     </template>
 
     <template #cell(proposed)="{ item }">
@@ -130,7 +128,7 @@
         class="font-size-12 pb-1"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        Proposed by
+        {{ $t("proposed_by") }}
         <a
           target="_blank"
           class="font-size-12 font-w500 fix-a"
@@ -144,7 +142,7 @@
         class="font-size-12"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        Contract to execute
+        {{ $t("contract_execute") }}
         <a
           target="_blank"
           class="font-size-12 font-w500 fix-a"
@@ -157,7 +155,9 @@
 
     <template #cell(vote)="{ item }">
       <div class="pb-1">
-        <span class="font-size-12 text-muted-light"> Vote Start </span>
+        <span class="font-size-12 text-muted-light">
+          {{ $t("vote_start") }}
+        </span>
         <span class="font-size-12 font-w500 pl-1 pr-1">
           {{ formatDate(item.start) }}
         </span>
@@ -166,10 +166,11 @@
         </span>
       </div>
       <div>
-        <span class="font-size-12 text-muted-light"> Quorum/Required </span>
+        <span class="font-size-12 text-muted-light">
+          {{ $t("quorum_Required") }}
+        </span>
         <span class="font-size-12 font-w500 pl-1 pr-1">
-          {{ item.quorum / 10000 }}% /
-          {{ item.quorumRequired / 10000 }}%
+          {{ item.quorum / 10000 }}% / {{ item.quorumRequired / 10000 }}%
         </span>
       </div>
     </template>
@@ -181,11 +182,7 @@
           target="_blank"
           style="width: 100%; display: inline-block"
         >
-          <main-button
-            :small="true"
-            :active="true"
-            class="font-w400 mt-0 mb-0"
-          >
+          <main-button :small="true" :active="true" class="font-w400 mt-0 mb-0">
             BIP
             <font-awesome-icon icon="external-link-alt" />
           </main-button>
@@ -209,6 +206,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -223,7 +221,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 @Component({
   components: {
     ContentBlock,
-    LayoutProposals,    
+    LayoutProposals,
     MainButton
   }
 })
@@ -236,7 +234,7 @@ export default class DoneProposals extends BaseComponent {
     return [
       {
         id: 1,
-        label: "ID",
+        label: i18n.tc("id"),
         key: "id",
         minWidth: "16px",
         maxWidth: "16px",
@@ -244,13 +242,13 @@ export default class DoneProposals extends BaseComponent {
       },
       {
         id: 2,
-        label: "Details",
+        label: i18n.tc("details"),
         key: "details",
         colRate: 5
       },
       {
         id: 3,
-        label: "Result",
+        label: i18n.tc("result"),
         key: "result",
         maxWidth: "120px",
         minWidth: "100px",
@@ -258,21 +256,21 @@ export default class DoneProposals extends BaseComponent {
       },
       {
         id: 4,
-        label: "Votes for",
+        label: i18n.tc("votes_for"),
         key: "votesFor",
         minWidth: "120px",
         colRate: 1
       },
       {
         id: 5,
-        label: "Votes against",
+        label: i18n.tc("votes_against"),
         key: "votesAgainst",
         minWidth: "120px",
         colRate: 1
       },
       {
         id: 6,
-        label: "Vote start",
+        label: i18n.tc("votes_start"),
         key: "startDate",
         minWidth: "120px",
         colRate: 1
@@ -318,7 +316,7 @@ export default class DoneProposals extends BaseComponent {
         minWidth: "240px",
         colRate: 3
       }
-    ]
+    ];
   }
 
   getIPFSUrl(hash: string) {
