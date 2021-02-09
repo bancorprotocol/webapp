@@ -62,11 +62,8 @@
           </div>
         </div>
       </template>
-      <template #cellCollapsed(stake)="{ value }">
-        <div
-          @mouseover="toggleStakeTime(true)"
-          @mouseleave="toggleStakeTime(false)"
-        >
+      <template #cellCollapsed(stake)="{ item, value }">
+        <div :id="`popover-target-${item.id}`">
           <div>
             {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
           </div>
@@ -74,12 +71,6 @@
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
             class="font-size-12 font-w400 text-primary"
-          />
-          <div
-            v-if="showInitStakeTime"
-            v-text="formatDate(value.unixTime).dateTime"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           />
           <div class="d-flex align-items-center">
             <pool-logos-overlapped
@@ -89,6 +80,15 @@
             />
             {{ poolName(value.poolId) }}
           </div>
+          <b-popover
+            :target="`popover-target-${item.id}`"
+            triggers="hover"
+            placement="top"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ formatDate(value.unixTime).dateTime }}
+          </b-popover>
         </div>
       </template>
 
@@ -412,15 +412,10 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
-  showInitStakeTime: boolean = false;
 
   get groupedPositions() {
     if (this.positions.length > 0) return groupPositionsArray(this.positions);
     else return [];
-  }
-
-  toggleStakeTime(show: boolean) {
-    this.showInitStakeTime = show;
   }
 
   poolName(id: string): string {
