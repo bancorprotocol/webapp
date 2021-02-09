@@ -90,7 +90,7 @@
       <action-modal-status
         :error="error"
         :success="success"
-        :withdrawBNT="true"
+        msg="BNT withdrawals are subject to a 24h lock period before they can be claimed."
       />
 
       <main-button
