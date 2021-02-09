@@ -25,6 +25,7 @@
 </template>
 
 <script lang="ts">
+import { i18n } from "@/i18n";
 import { Component, Watch } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
@@ -55,7 +56,7 @@ export default class SideBar extends BaseComponent {
       {
         route: "DataSummary",
         key: "data",
-        label: "Data",
+        label: i18n.t("data"),
         newTab: false,
         hideMobile: false,
         svgName: "data"
@@ -63,7 +64,7 @@ export default class SideBar extends BaseComponent {
       {
         route: "Swap",
         key: "swap",
-        label: "Swap",
+        label: i18n.t("swap"),
         newTab: false,
         hideMobile: false,
         svgName: "swap"
@@ -71,7 +72,7 @@ export default class SideBar extends BaseComponent {
       {
         route: "LiqProtection",
         key: "protection",
-        label: "Protection",
+        label: i18n.t("protection"),
         newTab: false,
         hideMobile: false,
         svgName: "liquidity"
@@ -79,7 +80,7 @@ export default class SideBar extends BaseComponent {
       {
         route: "https://gov.bancor.network",
         key: "governance",
-        label: "Governance",
+        label: i18n.t("governance"),
         newTab: true,
         hideMobile: false,
         svgName: "governance"
@@ -87,7 +88,7 @@ export default class SideBar extends BaseComponent {
       {
         route: "VotePage",
         key: "vote",
-        label: "Vote",
+        label: i18n.t("vote"),
         newTab: false,
         hideMobile: true,
         svgName: "vote"

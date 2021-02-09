@@ -2,7 +2,7 @@
   <div>
     <content-block
       :shadow="true"
-      title="Create a Pool"
+      :title="$t('create_Pool')"
       :back-button="true"
       @back="back"
       class="mb-3"
@@ -25,7 +25,7 @@
     </content-block>
 
     <modal-base
-      title="You are creating a pool"
+      :title="$t('you_create_Pool')"
       v-model="modal"
       @input="setDefault"
     >
@@ -46,19 +46,19 @@
             <label-content-split
               v-for="item in selectedTokens"
               :key="item.token.id"
-              :label="item.token.symbol + ' Ratio'"
-              :value="item.percentage + '%'"
+              :label="`${item.token.symbol} ${$t('ratio')}`"
+              :value="`${item.percentage}%`"
             />
             <label-content-split
-              label="Fee"
-              :value="stepTwoProps.poolFee + '%'"
+              :label="$t('fee')"
+              :value="`${stepTwoProps.poolFee}%`"
             />
             <label-content-split
-              label="Pool Name"
+              :label="$t('pool_name')"
               :value="stepTwoProps.poolName"
             />
             <label-content-split
-              label="Token Symbol"
+              :label="$t('token_symbol')"
               :value="stepTwoProps.poolSymbol"
             />
           </gray-border-block>
@@ -87,6 +87,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import CreateV1Step1 from "@/components/pool/create/CreateV1Step1.vue";
@@ -162,17 +163,17 @@ export default class CreateHomeNew extends BaseComponent {
   };
 
   get stepsConfirmButton() {
-    return this.step === 1 ? "Continue" : "Create a Pool";
+    return this.step === 1 ? i18n.t("continue") : i18n.t("create_Pool");
   }
 
   get modalConfirmButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 
   get stepsConfirmError() {
@@ -184,16 +185,15 @@ export default class CreateHomeNew extends BaseComponent {
 
   get errorStep1() {
     // TMP fix
-    if (this.stepOneProps.length > 2)
-      return "Currently you can only add two tokens.";
+    if (this.stepOneProps.length > 2) return `${i18n.t("curr_two_tokens")}.`;
     if (
       this.stepOneProps[0].percentage !== "50" ||
       this.stepOneProps[1].percentage !== "50"
     )
-      return "Currently the ratio is locked to 50% / 50%";
+      return i18n.t("curr_fifty_fifty");
 
     const fee = parseFloat(this.stepTwoProps.poolFee);
-    if (fee > 5 || fee < 0) return "Fee must be between 0% and 5%";
+    if (fee > 5 || fee < 0) return i18n.t("fee_zero_five");
     // TMP fix end
 
     if (this.existingPoolWarning) return this.existingPoolWarning;
@@ -213,7 +213,7 @@ export default class CreateHomeNew extends BaseComponent {
   }
 
   get percentageWarning() {
-    return this.totalPercentage > 100 ? "Maximum total reserve is 100%" : "";
+    return this.totalPercentage > 100 ? i18n.t("max_reserve") : "";
   }
 
   get totalPercentage() {
@@ -231,7 +231,7 @@ export default class CreateHomeNew extends BaseComponent {
   }
 
   get existingPoolWarning() {
-    return this.existingPool ? "A pool like this already exists" : "";
+    return this.existingPool ? i18n.t("pool_exists") : "";
   }
 
   get selectedTokens() {

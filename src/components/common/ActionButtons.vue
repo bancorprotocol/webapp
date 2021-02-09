@@ -6,14 +6,9 @@
       variant="primary"
       class="mr-3"
       :class="small ? 'table-button-small' : 'table-button'"
-      :disabled="loading"
     >
-      <span v-if="!small">Add Liquidity</span>
-      <font-awesome-icon
-        v-else
-        :icon="loading ? 'circle-notch' : 'plus'"
-        :spin="loading"
-      />
+      <span v-if="!small"> {{ $t("add_liquidity") }} </span>
+      <font-awesome-icon v-else icon="plus" />
     </b-btn>
 
     <b-btn
@@ -21,12 +16,12 @@
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       :class="small ? 'table-button-small' : 'table-button'"
     >
-      <span v-if="!small">Trade</span>
+      <span v-if="!small">{{ $t("trade") }}</span>
       <font-awesome-icon
         v-else
         icon="exchange-alt"
         v-b-tooltip.hover
-        title="Trade"
+        :title="$t('trade')"
       />
     </b-btn>
   </div>
@@ -43,7 +38,6 @@ export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
   @Prop({ default: false }) small!: boolean;
-  @Prop({ default: false }) loading!: boolean;
 
   goToPool() {
     if (this.pool && this.pool.addProtectionSupported) {

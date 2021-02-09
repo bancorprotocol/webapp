@@ -1,18 +1,14 @@
 <template>
-  <modal-base title="Create Proposal" v-model="show" @input="setDefault">
+  <modal-base :title="$t('create_proposal')" v-model="show" @input="setDefault">
     <div v-if="!(txBusy || success || error)">
       <alert-block
         class="mb-3"
         variant="warning"
-        :msg="
-          'New proposal requires you to hold at least ' +
-          proposalMinimumFormatted +
-          ' ' +
-          symbol +
-          ' which will be locked up to ' +
-          maxLock +
-          'h.'
-        "
+        :msg="`${$t('new_proposal_req', {
+          amount: proposalMinimumFormatted,
+          symbol,
+          time: maxLock
+        })}:`"
       />
 
       <multi-input-field
@@ -22,18 +18,18 @@
         type="url"
         placeholder="https://gov.bancor.network/t/..."
         height="48"
-        label="Discourse Url"
+        :label="$t('discourse_url')"
       />
 
       <template v-if="name || description">
-        <label-content-split label="Title and description" class="mb-2" />
+        <label-content-split :label="$t('title_description')" class="mb-2" />
 
         <b-form-textarea
           v-model="name"
           readonly
           no-resize
           size="sm"
-          placeholder="Add Liquidity pool xyz"
+          :placeholder="$t('add_liquidity_pool_xyz')"
           class="combo combo--title"
           :class="[
             !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
@@ -45,7 +41,7 @@
           max-rows="4"
           readonly
           no-resize
-          placeholder="I would like to propose to ..."
+          :placeholder="`${$t('i_propose')}...`"
           :class="[
             !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
             'font-size-14'
@@ -60,7 +56,7 @@
         type="text"
         placeholder="0x0000000000000000000000000000000000000000"
         height="48"
-        label="Contract address"
+        :label="$t('contract_address')"
       />
       <multi-input-field
         class="mb-3"
@@ -68,7 +64,7 @@
         type="url"
         placeholder="https://github.com/..."
         height="48"
-        label="Github URL"
+        :label="$t('github_url')"
       />
     </div>
 
@@ -76,7 +72,7 @@
       v-else
       :error="error"
       :success="success"
-      step-description="Creating Proposal"
+      :step-description="$t('creating_proposal')"
     />
 
     <main-button
@@ -93,6 +89,7 @@
 <script lang="ts">
 import { Component, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
@@ -135,12 +132,12 @@ export default class AddProposal extends BaseComponent {
 
   get proposeButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Propose";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("propose");
   }
 
   get proposalMinimumFormatted() {

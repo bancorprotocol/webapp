@@ -1,7 +1,7 @@
 <template>
   <div class="mt-3">
     <token-input-field
-      label="Stake Amount"
+      :label="$t('stake_amount')"
       :pool="pool"
       v-model="amount"
       @input="amountChanged"
@@ -16,7 +16,7 @@
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
-          :label="index == 0 ? `Value you receive` : ``"
+          :label="index == 0 ? $t('value_receive') : ''"
           :value="`${formatNumber(output.amount)} ${output.symbol}`"
         />
       </gray-border-block>
@@ -32,7 +32,7 @@
     />
 
     <modal-base
-      title="You are adding liquidity protection"
+      :title="$t('adding_liquidity_protection')"
       v-model="modal"
       @input="setDefault"
     >
@@ -76,6 +76,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
@@ -137,8 +138,8 @@ export default class AddProtectionDouble extends BaseComponent {
   }
 
   get actionButtonLabel() {
-    if (!this.amount) return "Enter an Amount";
-    else return "Stake and Protect";
+    if (!this.amount) return i18n.t("enter_amount");
+    else return i18n.t("stake_protect");
   }
 
   get disableActionButton() {
@@ -147,23 +148,23 @@ export default class AddProtectionDouble extends BaseComponent {
   }
 
   get inputError() {
-    if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
+    if (parseFloat(this.amount) === 0) return i18n.t("amount_not_zero");
 
     const amountNumber = new BigNumber(this.amount);
     const balanceNumber = new BigNumber(this.balance || 0);
 
-    if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
+    if (amountNumber.gt(balanceNumber)) return i18n.t("insufficient_balance");
     else return "";
   }
 
   get modalConfirmButton() {
     return this.error
-      ? "Close"
+      ? i18n.t("close")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 
   async initAction() {

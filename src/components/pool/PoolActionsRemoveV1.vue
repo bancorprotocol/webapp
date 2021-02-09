@@ -1,13 +1,13 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Select Pool">
+    <label-content-split :label="$t('select_pool')">
       <pool-logos :pool="pool" :cursor="false" />
     </label-content-split>
 
     <percentage-slider
       class="mt-3"
       v-model="percentage"
-      label="Amount"
+      :label="$t('amount')"
       :show-buttons="true"
     />
 
@@ -43,7 +43,7 @@
             <img
               :src="pool.reserves[0].logo"
               class="img-avatar img-avatar20"
-              alt="Token Logo"
+              :alt="$t('token_logo')"
             />
             <span class="ml-2">{{ pool.reserves[0].symbol }}</span>
           </div>
@@ -57,7 +57,7 @@
             <img
               :src="pool.reserves[1].logo"
               class="img-avatar img-avatar20"
-              alt="Token Logo"
+              :alt="$t('token_logo')"
             />
             <span class="ml-2">{{ pool.reserves[1].symbol }}</span>
           </div>
@@ -67,7 +67,7 @@
 
     <label-content-split
       v-if="false"
-      label="Price"
+      :label="$t('price')"
       :value="`1 ${pool.reserves[1].symbol} = ${rate} ${pool.reserves[0].symbol}`"
       class="my-3"
     />
@@ -76,7 +76,7 @@
 
     <main-button
       @click="initAction"
-      label="Remove"
+      :label="$t('remove')"
       :active="true"
       :large="true"
       class="mt-1"
@@ -94,6 +94,7 @@
 <script lang="ts">
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -158,14 +159,14 @@ export default class PoolActionsRemoveV1 extends BaseComponent {
         this.amountToken1 = amount;
         this.amountToken2 = new BigNumber(opposingAmount);
       } else {
-        this.error = "Error: Failed to calculate opposing withdraw.";
+        this.error = i18n.tc("failed_calculate_withdraw");
         return;
       }
       if (
         this.balance1.isLessThan(amount) ||
         this.balance2.isLessThan(opposingAmount)
       ) {
-        this.error = "Token balance is currently insufficient";
+        this.error = i18n.tc("insufficient_token");
       }
     } catch (e) {
       this.error = e.message;

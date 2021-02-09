@@ -16,6 +16,8 @@ $gray-border-dark: #1f3a55 !default;
 $gray-placeholder: #d0d7df;
 $gray-placeholder-dark: #516175;
 
+$light-white: #eeeeee;
+
 $border-radius: 8px;
 $modal-sm: 379px;
 
@@ -39,6 +41,9 @@ $text-info-dark: $primary;
 
 $text-error-light: #de4a5c;
 $text-error-dark: #de4a5c;
+
+$bg-body-dark: #1c344e;
+$bg-body-light: #f8f9fd;
 
 $bg-error-light: rgba($text-error-light, 0.1);
 $bg-error-dark: rgba($text-error-light, 0.1);

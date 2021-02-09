@@ -17,6 +17,7 @@ import { ViewRelay } from "@/types/bancor";
 import PoolActionsAddV1 from "@/components/pool/PoolActionsAddV1.vue";
 import PoolActionsRemoveV1 from "@/components/pool/PoolActionsRemoveV1.vue";
 import PoolActionsRemoveV2 from "@/components/pool/PoolActionsRemoveV2.vue";
+import { i18n } from "@/i18n";
 
 @Component({
   components: {
@@ -31,7 +32,9 @@ export default class PoolActions extends Vue {
   detailMode: boolean | null = null;
 
   get title() {
-    return (this.withdrawLiquidity ? "Remove" : "Add") + " Liquidity";
+    return `${
+      this.withdrawLiquidity ? i18n.t("Remove") : i18n.t("Add")
+    } ${i18n.t("Liquidity")}`;
   }
 
   get version() {

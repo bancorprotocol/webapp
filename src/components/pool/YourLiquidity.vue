@@ -9,18 +9,18 @@
           class="font-size-12 font-w500 text-uppercase"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          Your Liquidity
+          {{ $t("your_liquidity") }}
         </span>
         <router-link
           :to="{ name: 'LiqProtection' }"
           class="font-size-12 font-w500"
         >
-          View protected tokens
+          {{ $t("view_protected_tokens") }}
         </router-link>
       </b-col>
       <b-col cols="12">
         <multi-input-field
-          placeholder="Search"
+          :placeholder="$t('search')"
           v-model="search"
           prepend="search"
           class="my-2"
@@ -45,14 +45,14 @@
           <div class="my-3">
             <label-content-split
               v-if="!pool.relay.v2"
-              label="Pool Token Balance"
+              :label="$t('pool_token_balance')"
               :value="formattedBalance(pool.smartTokenAmount.toString())"
             />
             <div v-else-if="pool.poolTokens">
               <label-content-split
                 v-for="token in pool.poolTokens"
                 :key="token.reserveId"
-                :label="`Pool Token: `"
+                :label="`${$t('pool_token')}: `"
                 :value="formattedBalance(token.balance.toString())"
               />
             </div>
@@ -61,14 +61,14 @@
             <b-col cols="6" class="pr-1">
               <main-button
                 @click="goToAdd(pool.relay.id)"
-                label="Add Liquidity"
+                :label="$t('add_liquidity')"
                 :active="true"
               />
             </b-col>
             <b-col cols="6" class="pl-1">
               <main-button
                 @click="goToRemove(pool.relay.id)"
-                label="Remove Liquidity"
+                :label="$t('remove_liquidity')"
               />
             </b-col>
           </b-row>
@@ -84,6 +84,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { PoolTokenPosition, ViewReserve } from "@/types/bancor";
 import MainButton from "@/components/common/Button.vue";
@@ -112,10 +113,10 @@ export default class YourLiquidity extends BaseComponent {
   }
 
   get noLiquidityFoundMsg() {
-    if (!this.currentUser) return "Connect Wallet to see your Liquidity";
-    return this.search
-      ? "No Results found."
-      : "You dont have any Liquidity yet";
+    if (!this.currentUser) return i18n.t("connect_wallet_liq");
+    return `${
+      this.search ? i18n.t("no_res_found") : i18n.t("no_liquidity_yet")
+    }.`;
   }
 
   formattedBalance(amount: string) {

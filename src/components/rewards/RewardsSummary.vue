@@ -6,7 +6,7 @@
     >
       <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="font-size-16 font-w500">{{ title }}</div>
+          <div class="font-size-16 font-w500">{{ $t("rewards") }}</div>
           <div>
             <b-btn
               :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -27,7 +27,7 @@
                   :fill="darkMode ? '#ffffff' : '#0A2540'"
                 />
               </svg>
-              <span class="d-none d-lg-inline">Withdraw</span>
+              <span class="d-none d-lg-inline">{{ $t("withdraw") }}</span>
             </b-btn>
             <b-btn
               @click="openModal"
@@ -36,7 +36,7 @@
               class="rounded"
             >
               <font-awesome-icon icon="plus" class="d-lg-none" />
-              <span class="d-none d-lg-inline">Stake</span>
+              <span class="d-none d-lg-inline">{{ $t("stake") }}</span>
             </b-btn>
           </div>
         </div>
@@ -100,6 +100,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import AnimationNumber from "@/components/common/AnimationNumber.vue";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import BigNumber from "bignumber.js";
 interface ViewRewardsSummaryItem {
   id: number;
@@ -115,7 +116,6 @@ export default class RewardsSummary extends BaseComponent {
   @Prop({ default: [] }) positions!: ViewProtectedLiquidity[];
   stringifyPercentage = stringifyPercentage;
 
-  title = "Rewards";
   modal = false;
   interval: any = null;
   oldrewards: ViewRewardsSummaryItem[] = [];
@@ -132,13 +132,13 @@ export default class RewardsSummary extends BaseComponent {
     return [
       {
         id: 1,
-        label: "Total Reward to date",
+        label: i18n.tc("total_reward"),
         bnt: this.rewardsBalance.totalRewards.bnt,
         usd: this.rewardsBalance.totalRewards.usd
       },
       {
         id: 2,
-        label: "Claimable Rewards",
+        label: i18n.tc("claimable_rewards"),
         bnt: this.rewardsBalance.pendingRewards.bnt,
         usd: this.rewardsBalance.pendingRewards.usd
       }

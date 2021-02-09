@@ -6,6 +6,7 @@
 import { Component, Prop, VModel } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
@@ -16,7 +17,7 @@ export default class PriceDeviationError extends BaseComponent {
   @Prop() poolId!: string;
   @Prop() tokenContract!: string;
 
-  errorMsg = "";
+  errorMsg: string = "";
 
   async loadRecentAverageRate() {
     try {
@@ -26,8 +27,7 @@ export default class PriceDeviationError extends BaseComponent {
       });
 
       if (this.error) {
-        this.errorMsg =
-          "Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds.";
+        this.errorMsg = i18n.tc("price_volatility");
       } else this.errorMsg = "";
     } catch (e) {
       this.error = true;

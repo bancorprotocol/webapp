@@ -3,7 +3,7 @@
     <label-content-split :label="label" class="mb-1">
       <div v-if="currentUser" class="d-flex flex-row font-size-12 font-w500">
         <div @click="maxBalance" class="cursor">
-          Balance: {{ prettifyNumber(balance) }}
+          {{ `${$t("balance")}: ${prettifyNumber(balance)}` }}
         </div>
         <div
           v-if="usdValue"
@@ -21,7 +21,7 @@
         v-model="tokenAmount"
         style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-        placeholder="Enter Amount"
+        :placeholder="$t('enter_amount')"
         :disabled="disabled"
         debounce="300"
         :formatter="formatter"
@@ -58,7 +58,7 @@
             <img
               class="img-avatar img-avatar32 border-colouring bg-white mr-1"
               :src="defaultImage"
-              alt="Token Logo"
+              :alt="$t('token_logo')"
             />
           </div>
         </div>

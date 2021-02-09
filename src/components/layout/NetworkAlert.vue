@@ -18,6 +18,7 @@ import { Component } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { vxm } from "@/store";
 import { EthNetworks } from "@/api/web3";
+import { i18n } from "@/i18n";
 
 @Component
 export default class NetworkAlert extends BaseComponent {
@@ -26,17 +27,17 @@ export default class NetworkAlert extends BaseComponent {
     switch (network) {
       case EthNetworks.Mainnet:
         return {
-          msg: "This interface is in beta. Use it at your own risk.",
+          msg: i18n.t("beta"),
           variant: "primary"
         };
       case EthNetworks.Ropsten:
         return {
-          msg: "You are on Ropsten Testnet.",
+          msg: i18n.t("ropsten_testnet"),
           variant: "warning"
         };
       default:
         return {
-          msg: "Unsupported Network. Switch to mainnet network to use the app!",
+          msg: i18n.t("unsupported_network"),
           variant: "danger"
         };
     }
