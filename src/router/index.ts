@@ -310,6 +310,14 @@ export const router = new Router({
       }
     },
     {
+      path: "/:service/test-board",
+      name: "TestBoard",
+      components: {
+        Nav: Navigation,
+        default: () => import('@/views/TestBoard.vue')
+      }
+    },
+    {
       path: "*",
       redirect: `/${defaultModule}`
     },
