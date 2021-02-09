@@ -302,6 +302,7 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   get disableActionButton() {
+    if (this.focusedReserveIsDisabled) return true;
     if (!this.amount) return true;
     else if (this.priceDeviationTooHigh) return true;
     else if (this.loading) return true;
