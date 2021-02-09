@@ -68,6 +68,41 @@ export const distinctArrayItem = <T>(
     startWith(initialValue)
   );
 
+// Will emit stale data from cache
+// Will overwrite cache with remote data
+
+const optimisticObservable = <T, Y>(
+  localKey: string,
+  remoteCall: (param: Y) => Promise<T>
+) => (source: Observable<Y>): Observable<T> => {
+  const localData = localStorage.getItem(localKey);
+  if (localData) {
+    const parsedData = JSON.parse(localData) as T;
+
+    return source.pipe(
+      switchMapIgnoreThrow(remoteCall),
+      filter(remoteData => !isEqual(remoteData, parsedData)),
+      startWith(parsedData),
+      tap(data => {
+        const isSame = isEqual(parsedData, data);
+        if (!isSame) {
+          console.log("data is not the same! setting again");
+          localStorage.setItem(localKey, JSON.stringify(data));
+        } else {
+          console.log("data is the same, setting");
+        }
+      })
+    );
+  } else {
+    return source.pipe(
+      switchMapIgnoreThrow(remoteCall),
+      tap(data => {
+        localStorage.setItem(localKey, JSON.stringify(data));
+      })
+    );
+  }
+};
+
 export const optimisticContract = (key: string) => (
   source: Observable<string>
 ) => {
@@ -146,37 +181,46 @@ export const switchMapIgnoreThrow = <T, Y>(
 
 let difference = Date.now();
 
-const logger = (label: string): PartialObserver<any> => ({
-  next: data => {
-    if (difference) {
-      difference = Date.now() - difference;
-    }
-    console.log(
-      `Logger (Next): (${difference}): ${label} returned ${JSON.stringify(
-        data
-      )}`
-    );
-    difference = Date.now();
-  },
-  error: error => {
-    console.warn(`Logger (Error): ${label} has received an error in ${error}`);
-  },
-  complete: () => console.log(`Logger (Complete): ${label} has completed`)
-});
+const logger = <T>(label: string) => (source: Observable<T>) =>
+  source.pipe(
+    tap({
+      next: data => {
+        if (difference) {
+          difference = Date.now() - difference;
+        }
+        console.log(
+          `Logger (Next): (${difference} ms): ${label} returned ${JSON.stringify(
+            data
+          )}`
+        );
+        difference = Date.now();
+      },
+      error: error => {
+        console.warn(
+          `Logger (Error): ${label} has received an error in ${error}`
+        );
+      },
+      complete: () => console.log(`Logger (Complete): ${label} has completed`)
+    })
+  );
 
 export const authenticated$ = new Subject<string>();
 export const networkVersionReceiver$ = new Subject<EthNetworks>();
 export const fetchPositionsTrigger$ = new Subject<null>();
 fetchPositionsTrigger$.next(null);
 
+authenticated$.pipe(logger("authenticated")).subscribe(x => {});
+
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
   distinctUntilChanged(),
+  logger("network version"),
   shareReplay(1)
 );
 
 export const apiData$ = networkVersion$.pipe(
   switchMap(networkVersion => getWelcomeData(networkVersion)),
+  logger("api data"),
   share()
 );
 
@@ -196,6 +240,7 @@ export const currentBlockReceiver$ = new Subject<number>();
 export const currentBlock$ = currentBlockReceiver$.pipe(
   distinctUntilChanged(),
   map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
+  // logger("current block"),
   shareReplay(1)
 );
 
@@ -287,6 +332,7 @@ const settingsContractAddress$ = liquidityProtection$.pipe(
     fetchLiquidityProtectionSettingsContract(protectionAddress)
   ),
   optimisticContract("LiquiditySettings"),
+  logger("logger liquidity settings"),
   shareReplay<string>(1)
 );
 
@@ -343,48 +389,52 @@ const unVerifiedPositions$ = combineLatest([
   localAndRemotePositionIds$,
   liquidityProtectionStore$
 ]).pipe(
-  switchMapIgnoreThrow(([positionIds, storeAddress]) =>
+  optimisticObservable("positionsss", ([positionIds, storeAddress]) =>
     fetchPositionsMulti(positionIds, storeAddress)
   ),
+  logger("positions"),
   shareReplay(1)
 );
 
-const verifiedPositions$ = combineLatest([
+const fullPositions$ = combineLatest([
   unVerifiedPositions$,
-  authenticated$
-]).pipe(
-  map(([positions, currentUser]) =>
-    positions.filter(position => compareString(position.owner, currentUser))
-  )
-);
-
-combineLatest([
-  verifiedPositions$,
   liquidityProtectionStore$,
   liquidityProtection$,
   currentBlock$,
   apiData$
-]).subscribe(
-  ([
-    rawPositions,
-    liquidityProtectionStore,
-    liquidityProtection,
-    { blockNumber },
-    apiData
-  ]) => {
-    const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
+]).pipe(
+  tap(() => vxm.ethBancor.setLoadingPositions(true)),
+  logger("build full positions fetching"),
+  switchMapIgnoreThrow(
+    ([
+      rawPositions,
+      liquidityProtectionStore,
+      liquidityProtection,
+      { blockNumber },
+      apiData
+    ]) => {
+      const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
 
-    vxm.ethBancor
-      .buildFullPositions({
+      return vxm.ethBancor.buildFullPositions({
         rawPositions,
         liquidityProtection,
         blockNumberNow: blockNumber,
         supportedAnchors,
         liquidityProtectionStore
-      })
-      .catch(e => console.log("failed on build full positions"));
-  }
+      });
+    }
+  ),
+  logger("build full positions fetched")
 );
+
+combineLatest([fullPositions$, authenticated$])
+  .pipe(logger("with authentication"))
+  .subscribe(([positions, currentUser]) => {
+    vxm.ethBancor.setProtectedPositions(
+      positions.filter(position => compareString(position.owner, currentUser))
+    );
+    vxm.ethBancor.setLoadingPositions(false);
+  });
 
 combineLatest([authenticated$, apiData$]).subscribe(
   ([userAddress, apiData]) => {

@@ -1868,15 +1868,9 @@ export class EthBancorModule
         }
       );
 
-      this.setProtectedPositions(positions);
-      if (this.loadingProtectedPositions) {
-        await wait(2);
-        this.setLoadingPositions(false);
-      }
       return positions;
     } catch (e) {
-      console.error("Failed fetching protection positions", e.message);
-      this.setLoadingPositions(false);
+      throw new Error(`Failed building full positions ${e}`);
     }
   }
 
@@ -3938,7 +3932,7 @@ export class EthBancorModule
     return findOrThrow(
       oldPools,
       relay => compareString(relay.id, relayId),
-      "failed to find relay by id"
+      `failed to find relay by id ${relayId}`
     );
   }
 
