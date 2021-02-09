@@ -1415,9 +1415,9 @@ export class EthBancorModule
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
     contract: "",
-    minDelay: dayjs.duration("30", "days").asSeconds(),
-    maxDelay: dayjs.duration("100", "days").asSeconds(),
-    lockedDelay: dayjs.duration("24", "hours").asSeconds(),
+    minDelay: dayjs.duration(30, "days").asSeconds(),
+    maxDelay: dayjs.duration(100, "days").asSeconds(),
+    lockedDelay: dayjs.duration(24, "hours").asSeconds(),
     networkToken: "",
     govToken: "",
     defaultNetworkTokenMintingLimit: "0"
