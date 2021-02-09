@@ -31,6 +31,13 @@
       class="my-3"
     />
 
+    <alert-block
+      v-if="rewardsWithMultiplier"
+      variant="warning"
+      :msg="$t('withdraw_reset')"
+      class="my-3"
+    />
+
     <percentage-slider
       :label="$t('input')"
       v-model="percentage"
@@ -186,6 +193,13 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     );
     console.log(pos, "is the selected pos");
     return pos;
+  }
+
+  get rewardsWithMultiplier() {
+    // vxm.ethBancor.protectedPositions.forEach((position){
+    //   position.pendingReserveReward
+    // });
+    return false;
   }
 
   get vBntWarning() {
