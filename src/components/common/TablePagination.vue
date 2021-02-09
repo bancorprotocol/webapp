@@ -1,6 +1,7 @@
 <template>
   <div
-    class="d-flex justify-content-center align-items-center mt-3 font-size-14 font-w500"
+    v-if="pagesTotal > 0"
+    class="d-flex justify-content-center align-items-center mt-4 font-size-14 font-w500"
   >
     <div
       :class="current > 1 ? 'cursor' : ''"
@@ -17,7 +18,15 @@
         "
       />
     </div>
-    <span class="mx-3">Page {{ current }} of {{ pagesTotal }}</span>
+    <span class="mx-3">
+      {{
+        $t("page_of", {
+          current: current,
+          total: pagesTotal
+        })
+      }}</span
+    >
+
     <div
       :class="current < pagesTotal ? 'cursor' : ''"
       @click="current < pagesTotal ? current++ : null"
@@ -34,6 +43,13 @@
       />
     </div>
   </div>
+  <span
+    v-else
+    class="d-flex justify-content-center align-items-center mt-4 font-size-14 font-w500"
+    :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+  >
+    {{ $t("no_res_found") }}</span
+  >
 </template>
 
 <script lang="ts">

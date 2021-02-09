@@ -1,6 +1,10 @@
 /* free-solid-svg-icons */
+import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
+import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
 import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons/faArrowDown";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons/faArrowLeft";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons/faArrowRight";
 import { faBars } from "@fortawesome/free-solid-svg-icons/faBars";
 import { faBookOpen } from "@fortawesome/free-solid-svg-icons/faBookOpen";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons/faCaretDown";
@@ -27,10 +31,18 @@ import { faShieldAlt } from "@fortawesome/free-solid-svg-icons/faShieldAlt";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
 import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
+import { faChevronCircleRight } from "@fortawesome/free-solid-svg-icons/faChevronCircleRight";
+import { faChevronUp } from "@fortawesome/free-solid-svg-icons/faChevronUp";
+import { faChevronDown } from "@fortawesome/free-solid-svg-icons/faChevronDown";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons/faChevronLeft";
 import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
+import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
+import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
+import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
 
 export const fas = [
+  faAngleDoubleLeft,
+  faAngleDoubleRight,
   faArrowCircleRight,
   faArrowDown,
   faBars,
@@ -59,8 +71,16 @@ export const fas = [
   faThumbsUp,
   faTimes,
   faTimesCircle,
+  faChevronCircleRight,
+  faChevronUp,
+  faChevronDown,
   faChevronLeft,
-  faPoll
+  faPoll,
+  faRetweet,
+  faUpload,
+  faArrowLeft,
+  faArrowRight,
+  faCheck
 ];
 
 /* free-brands-svg-icons */

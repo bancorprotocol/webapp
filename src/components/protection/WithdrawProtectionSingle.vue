@@ -1,6 +1,6 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Initial Stake">
+    <label-content-split :label="$t('initial_stake')">
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
         :amount="prettifyNumber(position.stake.amount)"
@@ -9,7 +9,7 @@
     </label-content-split>
 
     <label-content-split
-      label="Fully Protected Value"
+      :label="$t('fully_protected_value')"
       :value="`${prettifyNumber(position.protectedAmount.amount)} ${
         position.stake.symbol
       }`"
@@ -19,16 +19,23 @@
     <alert-block
       v-if="warning"
       variant="warning"
-      title="Important"
+      :title="$t('important')"
       :msg="warning"
       class="my-3"
     />
 
     <percentage-slider
-      label="Input"
+      :label="$t('input')"
       v-model="percentage"
       @input="onPercentUpdate"
       :show-buttons="true"
+    />
+
+    <alert-block
+      v-if="inputError"
+      variant="error"
+      :msg="inputError"
+      class="mt-3"
     />
 
     <div class="d-flex justify-content-center mb-3">
@@ -38,7 +45,7 @@
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
         v-if="expectedValue"
-        label="Output value of"
+        :label="$t('output_value')"
         :value="`${prettifyNumber(expectedValue.amount)} ${
           expectedValue.symbol
         }`"
@@ -46,7 +53,7 @@
 
       <label-content-split
         v-for="(output, index) in outputs"
-        :label="index == 0 ? 'Output breakdown' : ''"
+        :label="index == 0 ? $t('output_breakdown') : ''"
         :key="output.id"
         :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       />
@@ -64,15 +71,27 @@
       class="my-3"
     />
 
+    <price-deviation-error
+      v-model="priceDeviationTooHigh"
+      :pool-id="pool.id"
+      :token-contract="tokenContract"
+      class="mb-3"
+      ref="priceDeviationError"
+    />
+
     <main-button
-      label="Continue"
+      :label="$t('continue')"
       @click="initAction"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
     />
 
-    <modal-base title="You will receive" v-model="modal" @input="setDefault">
+    <modal-base
+      :title="$t('you_will_receive')"
+      v-model="modal"
+      @input="setDefault"
+    >
       <action-modal-status :error="error" :success="success" />
 
       <main-button
@@ -90,21 +109,25 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { compareString, findOrThrow, prettifyNumber } from "@/api/helpers";
+import { compareString, findOrThrow } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
+import Vue from "vue";
 
 @Component({
   components: {
+    PriceDeviationError,
     LogoAmountSymbol,
     ActionModalStatus,
     ModalBase,
@@ -116,8 +139,9 @@ import BaseComponent from "@/components/BaseComponent.vue";
   }
 })
 export default class WithdrawProtectionSingle extends BaseComponent {
-  @Prop() pool!: ViewRelay;
-
+  get pool(): ViewRelay {
+    return vxm.bancor.relay(this.position.stake.poolId);
+  }
   percentage: string = "50";
 
   modal = false;
@@ -126,21 +150,23 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   error = "";
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
+  priceDeviationTooHigh: boolean = false;
 
   get warning() {
     return this.position.whitelisted && this.position.coverageDecPercent !== 1
-      ? "You still haven’t reached full protection. There is a risk for impermanent loss and you might receive less than your original stake amount as a result."
+      ? i18n.t("havent_reached_protection")
       : "";
   }
 
   get disableActionButton() {
     if (this.vBntWarning) return true;
     else if (parseFloat(this.percentage) === 0) return true;
+    else if (this.priceDeviationTooHigh) return true;
     else return this.inputError ? true : false;
   }
 
   get inputError() {
-    if (parseFloat(this.percentage) === 0) return "Percentage can not be Zero";
+    if (parseFloat(this.percentage) === 0) return i18n.t("percentage_not_zero");
     else return "";
   }
 
@@ -149,10 +175,8 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       this.outputs.length === 1 && this.outputs.find(o => o.symbol === "BNT");
     const isTknWithBnt =
       this.outputs.length === 2 && this.outputs.find(o => o.symbol === "BNT");
-    if (isBnt)
-      return "BNT withdrawals are subject to a 24h lock period before they can be claimed.";
-    else if (isTknWithBnt)
-      return "Part of your output is in BNT. This amount will be locked for 24h before it can be claimed";
+    if (isBnt) return i18n.t("bnt_withdrawls");
+    else if (isTknWithBnt) return i18n.t("part_output_bnt");
     else return "";
   }
 
@@ -165,14 +189,20 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   get vBntWarning() {
-    return this.position.givenVBnt && !this.sufficientVBnt
-      ? `Insufficient vBNT balance, you must hold ${prettifyNumber(
-          Number(this.position.givenVBnt!) * (Number(this.percentage) / 100)
-        )} vBNT before withdrawing position.`
-      : "";
+    const givenVBnt =
+      Number(this.position.givenVBnt!) * (Number(this.percentage) / 100);
+
+    if (this.position.givenVBnt && !this.sufficientVBnt) {
+      const missingVBnt = givenVBnt - Number(this.vBntBalance);
+      return i18n.t("insufficient_vBNT_balance_missing", {
+        amount: this.prettifyNumber(givenVBnt),
+        missing: this.prettifyNumber(missingVBnt)
+      });
+    } else return "";
   }
 
   get sufficientVBnt() {
+    if (this.vBntBalance === null) return true;
     if (this.position.givenVBnt) {
       const decPercent = new BigNumber(this.percentage).div(100);
       const proposedWithdraw = new BigNumber(this.position.givenVBnt).times(
@@ -182,11 +212,18 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     } else return true;
   }
 
-  get vBntBalance() {
-    const balance = vxm.ethBancor.tokenBalance(
-      vxm.ethBancor.liquidityProtectionSettings.govToken
-    );
-    return balance ? balance.balance : "0";
+  vBntBalance: BigNumber | null = null;
+
+  get isVoteLoaded() {
+    return vxm.ethGovernance.isLoaded;
+  }
+
+  async loadVBntBalance() {
+    this.vBntBalance = this.currentUser
+      ? await vxm.ethGovernance.getBalance({
+          account: this.currentUser
+        })
+      : new BigNumber(0);
   }
 
   async initAction() {
@@ -212,15 +249,11 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      this.$router.push({ name: "LiqProtection", params: { scroll: "true" } });
     } else if (this.error) {
       this.setDefault();
       this.modal = false;
     }
-  }
-
-  prettifyNumber(amount: string | number, usd = false) {
-    return prettifyNumber(amount, usd);
   }
 
   setDefault() {
@@ -231,29 +264,58 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   async onPercentUpdate(newPercent: string) {
     console.log(newPercent, "is the new percent");
+    const percentage = Number(this.percentage) / 100;
+    if (!percentage) return;
     const res = await vxm.ethBancor.calculateSingleWithdraw({
       id: this.position.id,
-      decPercent: Number(this.percentage) / 100
+      decPercent: percentage
     });
 
     this.expectedValue = res.expectedValue;
     this.outputs = res.outputs;
 
     console.log(res, "was the res");
+    await this.loadRecentAverageRate();
   }
 
-  created() {
-    this.onPercentUpdate(this.percentage);
+  get tokenContract() {
+    const reserve = this.pool.reserves.find(
+      x => x.symbol === this.position.stake.symbol
+    );
+    if (reserve) return reserve.contract;
+    else return "";
+  }
+
+  async loadRecentAverageRate() {
+    await (this.$refs.priceDeviationError as Vue & {
+      loadRecentAverageRate: () => boolean;
+    }).loadRecentAverageRate();
+  }
+
+  private interval: any;
+
+  async mounted() {
+    if (!this.isVoteLoaded) await vxm.ethGovernance.init();
+    await this.onPercentUpdate(this.percentage);
+    await this.loadVBntBalance();
+    this.interval = setInterval(async () => {
+      await this.loadVBntBalance();
+      await this.loadRecentAverageRate();
+    }, 10000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 
   get modalConfirmButton() {
     return this.error
-      ? "Close"
+      ? i18n.t("close")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 }
 </script>

@@ -9,7 +9,7 @@
       />
       <percentage-slider
         class="mt-3"
-        label="Token Reserve Ratio"
+        :label="$t('token_reserve_ratio')"
         v-model="percent"
       />
     </gray-border-block>

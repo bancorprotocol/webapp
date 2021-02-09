@@ -43,7 +43,7 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch, Emit } from "vue-property-decorator";
 
-import DataTable from "@/components/deprecated/DataTable.vue";
+import DataTable from "@/components/common/DataTable.vue";
 import sort from "fast-sort";
 
 interface ViewTableFields {

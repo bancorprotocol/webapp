@@ -1,14 +1,18 @@
 <template>
   <div>
     <label-content-split :label="label" class="mb-1">
-      <span
-        @click="tokenAmount = balance"
-        v-if="currentUser"
-        class="font-size-12 font-w500 cursor"
-      >
-        {{ formattedBalance }}
-        {{ usdValue ? usdValue : "" }}
-      </span>
+      <div v-if="currentUser" class="d-flex flex-row font-size-12 font-w500">
+        <div @click="maxBalance" class="cursor">
+          {{ `${$t("balance")}: ${prettifyNumber(balance)}` }}
+        </div>
+        <div
+          v-if="usdValue"
+          class="ml-1"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        >
+          {{ `(~${prettifyNumber(usdValue, true)})` }}
+        </div>
+      </div>
     </label-content-split>
 
     <b-input-group>
@@ -17,9 +21,10 @@
         v-model="tokenAmount"
         style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-        placeholder="Enter Amount"
+        :placeholder="$t('enter_amount')"
         :disabled="disabled"
-        @keypress="isNumber($event)"
+        debounce="300"
+        :formatter="formatter"
       ></b-form-input>
 
       <b-input-group-append :class="{ cursor: pool || dropdown }">
@@ -46,9 +51,15 @@
             </span>
             <font-awesome-icon v-if="dropdown" icon="caret-down" />
           </div>
-
           <div v-else>
             <pool-logos @click="openModal" :pool="pool" :dropdown="true" />
+          </div>
+          <div v-if="!pool && !token">
+            <img
+              class="img-avatar img-avatar32 border-colouring bg-white mr-1"
+              :src="defaultImage"
+              :alt="$t('token_logo')"
+            />
           </div>
         </div>
       </b-input-group-append>
@@ -79,12 +90,14 @@ import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import { ViewRelay, ViewReserve, ViewModalToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { formatNumber } from "@/api/helpers";
+import { compareString, formatNumber } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ethReserveAddress } from "@/api/eth/ethAbis";
+import { defaultImage } from "@/store/modules/swap/ethBancor";
 
 @Component({
   components: {
@@ -116,6 +129,10 @@ export default class TokenInputField extends BaseComponent {
     );
   }
 
+  get defaultImage() {
+    return defaultImage;
+  }
+
   @Emit()
   select(id: string) {
     return id;
@@ -123,25 +140,30 @@ export default class TokenInputField extends BaseComponent {
 
   modal = false;
 
-  get formattedBalance() {
-    const balanceInput = this.balance;
-    if (new BigNumber(balanceInput).isNaN()) return "";
-    return `Balance: ${formatNumber(parseFloat(balanceInput), 6).toString()}`;
+  maxBalance() {
+    const isEther =
+      this.token && compareString(this.token!.contract, ethReserveAddress);
+
+    if (isEther) {
+      const leftOverEth = new BigNumber(this.balance).minus(0.01);
+      if (leftOverEth.isLessThanOrEqualTo(0)) {
+        this.tokenAmount = this.balance;
+      } else {
+        this.tokenAmount = leftOverEth.toString();
+      }
+    } else {
+      this.tokenAmount = this.balance;
+    }
   }
 
-  isNumber(evt: any) {
-    evt = evt ? evt : window.event;
-    let charCode = evt.which ? evt.which : evt.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
-      evt.preventDefault();
-    } else {
-      if (charCode === 46) {
-        if (this.tokenAmount.includes(".")) evt.preventDefault();
-        else {
-          return true;
-        }
-      } else return true;
-    }
+  formatter(text: String) {
+    if (text === undefined) text = this.tokenAmount;
+
+    return text
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
   }
 
   openModal() {

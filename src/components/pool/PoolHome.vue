@@ -1,14 +1,12 @@
 <template>
   <div>
-    <content-block class="mb-3" :shadow="true">
-      <template slot="header">
-        <sub-navigation />
-      </template>
+    <content-block class="mb-3 pt-3" :no-header="true" :shadow="true">
+      <sub-navigation />
 
       <div>
         <main-button
           @click="modal = true"
-          label="Join a Pool"
+          :label="$t('join_pool')"
           :active="true"
           :large="true"
         />
@@ -26,7 +24,7 @@
         class="cursor font-w700 mb-3"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        <font-awesome-icon icon="plus" class="mr-2" />Create Pool
+        <font-awesome-icon icon="plus" class="mr-2" />{{ $t("create_pool") }}
       </router-link>
     </div>
   </div>
@@ -41,6 +39,8 @@ import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { ViewRelay } from "@/types/bancor";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -59,10 +59,14 @@ export default class PoolHome extends BaseComponent {
   }
 
   selectPool(id: string) {
-    const whitelisted = vxm.bancor.relay(id).whitelisted;
-    if (whitelisted) {
+    const pool: ViewRelay = vxm.bancor.relay(id);
+    if (!pool) {
+      this.modal = false;
+      return;
+    }
+    if (pool.addProtectionSupported) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id }
       });
     } else {

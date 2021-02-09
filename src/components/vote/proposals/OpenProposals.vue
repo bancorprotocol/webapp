@@ -13,13 +13,13 @@
           style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
-          label="Loading..."
+          :label="`${$t('loading')}...`"
         ></b-spinner>
         <h5
           class="m-0 ml-3"
           :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
         >
-          Just a moment ...
+          {{ `${$t("just_a_moment")}...` }}
         </h5>
       </div>
     </div>
@@ -31,10 +31,10 @@
         class="m-0 ml-3"
         :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
       >
-        No Proposals yet ...
+        {{ `${$t("no_proposals_yet")}...` }}
       </h5>
     </div>
-    <data-table
+    <layout-proposals
       v-else-if="proposals"
       :items="items"
       :fields="fields"
@@ -47,7 +47,7 @@
         </div>
 
         <div class="font-size-14 font-w500 text-muted-light pb-3 pt-2">
-          <span>More about proposal:</span>
+          <span>{{ `${$t("more_about_proposal")}:` }}</span>
           <a
             target="_blank"
             class="font-size-14 font-w500 pl-2"
@@ -63,7 +63,7 @@
             "
           >
             <font-awesome-icon icon="external-link-alt" />
-            Discussion Forum
+            {{ $t("discussion_forum") }}
           </a>
           <a
             target="_blank"
@@ -88,25 +88,25 @@
         <b-row>
           <b-col cols="6">
             <b-row class="pb-1">
-              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
-                Vote Start
+              <b-col class="font-size-12 text-muted-light" cols="4">
+                {{ $t("vote_start") }}
               </b-col>
-              <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
+              <b-col class="font-size-12 font-w500 text-nowrap" cols="4">
                 {{ formatDate(item.start) }}
-              </b-col>
-              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
-                {{ formatTime(item.start) }}
+                <span class="text-muted-light pl-1">
+                  {{ formatTime(item.start) }}
+                </span>
               </b-col>
             </b-row>
             <b-row>
-              <b-col class="font-size-12 text-muted-light text-nowrap" cols="4">
-                Vote End
+              <b-col class="font-size-12 text-muted-light" cols="4">
+                {{ $t("vote_end") }}
               </b-col>
-              <b-col class="font-size-12 font-w500 pl-1 pr-1" cols="4">
+              <b-col class="font-size-12 font-w500 text-nowrap" cols="4">
                 {{ formatDate(item.end) }}
-              </b-col>
-              <b-col class="font-size-12 font-w500 text-muted-light" cols="2">
-                {{ formatTime(item.end) }}
+                <span class="text-muted-light pl-1">
+                  {{ formatTime(item.end) }}
+                </span>
               </b-col>
             </b-row>
           </b-col>
@@ -115,7 +115,7 @@
               class="font-size-12 pb-1"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
-              Proposed by
+              {{ $t("proposed_by") }}
               <a
                 target="_blank"
                 class="font-size-12 font-w500 fix-a"
@@ -128,7 +128,7 @@
               class="font-size-12"
               :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             >
-              Contract to execute
+              {{ $t("contract_execute") }}
               <a
                 target="_blank"
                 class="font-size-12 font-w500 fix-a"
@@ -140,7 +140,7 @@
           </b-col>
         </b-row>
 
-        <div class="pt-2">
+        <div class="pt-2 px-1">
           <remaining-time
             type="warn"
             :show-seconds="true"
@@ -150,14 +150,14 @@
         </div>
       </template>
       <template #cell(votes)="{ item }">
-        <div class="pl-3 container-border h-100">
+        <div class="pl-lg-3 container-border h-100">
           <div
             v-if="!item.votes.voted && item.end > Date.now()"
             class="d-flex align-items-center mb-2"
           >
             <main-button
               @click="voteFor(item.id.toString())"
-              label="Vote for"
+              :label="$t('vote_for')"
               :large="true"
               :active="true"
               :block="true"
@@ -166,7 +166,7 @@
 
             <main-button
               @click="voteAgainst(item.id.toString())"
-              label="Vote against"
+              :label="$t('vote_against')"
               :large="true"
               :active="true"
               :block="true"
@@ -201,7 +201,7 @@
                   class="col-4 tiny-text"
                   :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
                 >
-                  <span>your vote</span>
+                  <span>{{ $t("your_vote") }}</span>
                 </div>
                 <div class="col-8 font-size-12 text-right voted-box__text">
                   <span
@@ -209,16 +209,18 @@
                     :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
                   >
                     {{
-                      (
-                        (shrinkToken(
-                          item.votes.for !== "0"
-                            ? item.votes.for
-                            : item.votes.against
-                        ) /
-                          item.totalVotes) *
-                        100
-                      ).toFixed(2)
-                    }}% from voters
+                      $t("from_voters", {
+                        percentage: (
+                          (shrinkToken(
+                            item.votes.for !== "0"
+                              ? item.votes.for
+                              : item.votes.against
+                          ) /
+                            item.totalVotes) *
+                          100
+                        ).toFixed(2)
+                      })
+                    }}
                   </span>
                 </div>
               </div>
@@ -235,20 +237,20 @@
               />
               <div class="votes-bar__content text-uppercase">
                 <span>
-                  For
                   {{
-                    ((100 / item.totalVotes) * item.totalVotesFor || 0).toFixed(
-                      2
-                    )
-                  }}%
+                    `${$t("for")} ${(
+                      (100 / item.totalVotes) * item.totalVotesFor || 0
+                    ).toFixed(2)}
+                     %`
+                  }}
                 </span>
                 <span>
-                  Against
                   {{
-                    (
+                    `${$t("against")} ${(
                       (100 / item.totalVotes) * item.totalVotesAgainst || 0
-                    ).toFixed(2)
-                  }}%
+                    ).toFixed(2)}
+                     %`
+                  }}
                 </span>
               </div>
             </div>
@@ -271,25 +273,28 @@
             <div class="row pt-2">
               <div class="col-6">
                 <span>
-                  {{ item.voters.filter(v => v.votes.voted === "for").length }}
-                  Users
+                  {{
+                    `${
+                      item.voters.filter(v => v.votes.voted === "for").length
+                    } ${$t("users")}`
+                  }}
                 </span>
               </div>
               <div class="col-6 text-right">
                 <span>
                   {{
-                    item.voters.filter(v => v.votes.voted === "against").length
+                    `${
+                      item.voters.filter(v => v.votes.voted === "against")
+                        .length
+                    } ${$t("users")}`
                   }}
-                  Users
                 </span>
               </div>
             </div>
 
             <div class="row pt-2">
               <div class="col-6 pt-1">
-                <span v-if="Date.now() > item.end">
-                  {{ (item.quorum / 10000).toFixed(2) }}% Quorum
-                </span>
+                {{ `${(item.quorum / 10000).toFixed(2)}% ${$t("quorum")}` }}
               </div>
               <div class="col-6 text-right">
                 <b-btn
@@ -297,12 +302,12 @@
                   :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
                   class="block-rounded btn-sm"
                 >
-                  <span class="font-size-14 font-w500">
+                  <span class="btn-breakdown">
                     <font-awesome-icon
                       icon="poll"
                       class="text-muted-light mr-1"
                     />
-                    Breakdown
+                    {{ $t("breakdown") }}
                   </span>
                 </b-btn>
               </div>
@@ -312,7 +317,7 @@
       </template>
       <template #tooltip(votes)>
         <div class="pb-2">
-          According to
+          {{ `${$t("according_to")} ` }}
           <a
             href="https://gov.bancor.network/t/bip3-governance-changes-bip-documentation-requirements-and-new-majority-and-quorum-rules/97"
             target="_blank"
@@ -322,29 +327,29 @@
         </div>
         <ul class="pl-3">
           <li>
-            Required quorum to pass proposals is 20% for standard BIPs & 40% for
-            Token Whitelistings.
+            {{ $t("required_quorum_to_pass") }}
           </li>
           <li>
-            A 2/3rd majority (66.7%) of votes is also required for all BIP
-            approvals.
+            {{ $t("third_majority") }}
           </li>
         </ul>
       </template>
-    </data-table>
+    </layout-proposals>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import DataTable, { ViewTableField } from "@/components/common/DataTable.vue";
+import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
+import { ViewProposalsField } from "@/types/bancor";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RemainingTime from "@/components/common/RemainingTime.vue";
 import ButtonProgress from "@/components/common/ButtonProgress.vue";
 import MainButton from "@/components/common/Button.vue";
-import { prettifyNumber, shortenEthAddress } from "@/api/helpers";
+import { shortenEthAddress } from "@/api/helpers";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import BigNumber from "bignumber.js";
 import ModalNotEnoughTokens from "@/components/modals/ModalNotEnoughTokens.vue";
@@ -358,7 +363,7 @@ import { shrinkToken } from "@/api/eth/helpers";
     ContentBlock,
     ProgressBar,
     RemainingTime,
-    DataTable,
+    LayoutProposals,
     ButtonProgress,
     MainButton,
     ModalNotEnoughTokens
@@ -380,42 +385,37 @@ export default class OpenProposals extends BaseComponent {
     return this.proposals ? this.proposals.slice() : [];
   }
 
-  get fields(): ViewTableField[] {
-    console.log("proposals", this.proposals);
+  get fields(): ViewProposalsField[] {
     return [
       {
         id: 1,
-        label: "ID",
+        label: i18n.tc("id"),
         key: "id",
         minWidth: "16px",
         maxWidth: "16px",
-        sortable: false
+        colAuto: true,
+        colRate: 1
       },
       {
         id: 2,
-        label: "Details",
+        label: i18n.tc("details"),
         key: "name",
-        minWidth: "450px",
-        maxWidth: "500px",
-        sortable: false
+        colAuto: false,
+        colRate: 7
       },
       {
         id: 3,
-        label: "Vote",
+        label: i18n.tc("vote"),
         key: "votes",
-        minWidth: "300px",
-        maxWidth: "300px",
-        sortable: false
+        minWidth: "200px",
+        colAuto: false,
+        colRate: 4
       }
     ];
   }
 
   shrinkToken(amount: string): string {
     return shrinkToken(amount, this.decimals);
-  }
-
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
   }
 
   getVotePercent(proposal: Proposal) {
@@ -521,7 +521,9 @@ export default class OpenProposals extends BaseComponent {
 }
 
 .container-border {
-  border-left: 1px solid $gray-border;
+  @media (min-width: 992px) {
+    border-left: 1px solid $gray-border;
+  }
 }
 
 @mixin vote-bg() {
@@ -609,7 +611,7 @@ export default class OpenProposals extends BaseComponent {
   background: #de4a5c;
   position: relative;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 0.65rem;
 
   &__progress {
     background: #3ec8c8;
@@ -643,6 +645,11 @@ export default class OpenProposals extends BaseComponent {
   &--against {
     color: #de4a5c;
   }
+}
+
+.btn-breakdown {
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .tiny-text {

@@ -1,111 +1,95 @@
 <template>
-  <b-modal
-    scrollable
-    centered
-    v-model="show"
-    hide-footer
-    :content-class="darkMode ? 'bg-block-dark' : 'bg-block-light'"
-    @close="onHide"
-    @cancel="onHide"
-    @hide="onHide"
-  >
-    <template slot="modal-header">
-      <div class="w-100">
-        <b-row>
-          <b-col cols="12" class="d-flex justify-content-between mb-2">
-            <span
-              class="font-size-14 font-w600"
-              :class="darkMode ? 'text-dark' : 'text-light'"
-            >
-              Create Proposal
-            </span>
-            <font-awesome-icon
-              class="cursor font-size-lg"
-              :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="onHide"
-              icon="times"
-            />
-          </b-col>
-        </b-row>
-      </div>
-    </template>
-
-    <b-alert show variant="warning" class="mb-3 p-3 font-size-14 alert-over">
-      New proposal requires you to hold at least {{ proposalMinimumFormatted }}
-      {{ symbol }} which will be locked up to {{ maxLock }}h.
-    </b-alert>
-
-    <multi-input-field
-      class="mb-3"
-      v-model="discourseUrl"
-      @input="onDiscourseInput"
-      type="url"
-      placeholder="https://gov.bancor.network/t/..."
-      height="48"
-      label="Discourse Url"
-    />
-
-    <template v-if="name || description">
-      <label-content-split label="Title and description" class="mb-2" />
-
-      <b-form-textarea
-        v-model="name"
-        readonly
-        no-resize
-        size="sm"
-        max-rows="2"
-        placeholder="Add Liquidity pool xyz"
-        class="combo combo--title"
-        :class="[
-          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
-        ]"
+  <modal-base :title="$t('create_proposal')" v-model="show" @input="setDefault">
+    <div v-if="!(txBusy || success || error)">
+      <alert-block
+        class="mb-3"
+        variant="warning"
+        :msg="`${$t('new_proposal_req', {
+          amount: proposalMinimumFormatted,
+          symbol,
+          time: maxLock
+        })}:`"
       />
-      <b-form-textarea
-        class="mb-3 combo combo--desc"
-        v-model="description"
-        max-rows="4"
-        readonly
-        no-resize="true"
-        placeholder="I would like to propose to ..."
-        :class="[
-          !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
-          'font-size-14'
-        ]"
-      />
-    </template>
 
-    <multi-input-field
-      class="mb-3"
-      v-model="contractAddress"
-      @input="onAddressInput"
-      type="text"
-      placeholder="0x0000000000000000000000000000000000000000"
-      height="48"
-      label="Contract address"
+      <multi-input-field
+        class="mb-3"
+        v-model="discourseUrl"
+        @input="onDiscourseInput"
+        type="url"
+        placeholder="https://gov.bancor.network/t/..."
+        height="48"
+        :label="$t('discourse_url')"
+      />
+
+      <template v-if="name || description">
+        <label-content-split :label="$t('title_description')" class="mb-2" />
+
+        <b-form-textarea
+          v-model="name"
+          readonly
+          no-resize
+          size="sm"
+          :placeholder="$t('add_liquidity_pool_xyz')"
+          class="combo combo--title"
+          :class="[
+            !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark'
+          ]"
+        />
+        <b-form-textarea
+          class="mb-3 combo combo--desc"
+          v-model="description"
+          max-rows="4"
+          readonly
+          no-resize
+          :placeholder="`${$t('i_propose')}...`"
+          :class="[
+            !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
+            'font-size-14'
+          ]"
+        />
+      </template>
+
+      <multi-input-field
+        class="mb-3"
+        v-model="contractAddress"
+        @input="onAddressInput"
+        type="text"
+        placeholder="0x0000000000000000000000000000000000000000"
+        height="48"
+        :label="$t('contract_address')"
+      />
+      <multi-input-field
+        class="mb-3"
+        v-model="githubUrl"
+        type="url"
+        placeholder="https://github.com/..."
+        height="48"
+        :label="$t('github_url')"
+      />
+    </div>
+
+    <action-modal-status
+      v-else
+      :error="error"
+      :success="success"
+      :step-description="$t('creating_proposal')"
     />
-    <multi-input-field
-      class="mb-3"
-      v-model="githubUrl"
-      type="url"
-      placeholder="https://github.com/..."
-      height="48"
-      label="Github URL"
-    />
-    <div class="pt-3" />
 
     <main-button
       @click="propose"
-      label="Propose"
-      :large="true"
+      class="mt-3"
+      :label="proposeButton"
       :active="true"
-      :disabled="this.hasError"
+      :large="true"
+      :disabled="!success && (this.hasError || txBusy)"
     />
-  </b-modal>
+  </modal-base>
 </template>
 
 <script lang="ts">
 import { Component, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
@@ -114,13 +98,20 @@ import { isAddress } from "web3-utils";
 import { formatNumber } from "@/api/helpers";
 import { ProposalMetaData } from "@/store/modules/governance/ethGovernance";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { TxResponse } from "@/types/bancor";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 
 @Component({
   components: {
     MultiInputField,
     ContentBlock,
     LabelContentSplit,
-    MainButton
+    MainButton,
+    ActionModalStatus,
+    ModalBase,
+    AlertBlock
   }
 })
 export default class AddProposal extends BaseComponent {
@@ -131,10 +122,23 @@ export default class AddProposal extends BaseComponent {
   contractAddress: string = "";
   description: string = "";
   name: string = "";
-  error: boolean = false;
+  error: string = "";
+  inputError: boolean = false;
   maxLock: number = 0;
   proposalMinimum: number = 0;
   symbol: string = "";
+  txBusy = false;
+  success: TxResponse | null = null;
+
+  get proposeButton() {
+    return this.error
+      ? i18n.t("try_again")
+      : this.success
+      ? i18n.t("close")
+      : this.txBusy
+      ? `${i18n.t("processing")}...`
+      : i18n.t("propose");
+  }
 
   get proposalMinimumFormatted() {
     return formatNumber(this.proposalMinimum, 2);
@@ -157,12 +161,12 @@ export default class AddProposal extends BaseComponent {
   }
 
   onAddressInput(input: string) {
-    this.error = !isAddress(input);
+    this.inputError = !isAddress(input);
   }
 
   get hasError() {
     return (
-      this.error ||
+      this.inputError ||
       this.discourseUrl.length === 0 ||
       this.githubUrl.length === 0 ||
       this.description.length === 0 ||
@@ -172,6 +176,14 @@ export default class AddProposal extends BaseComponent {
   }
 
   async propose() {
+    if (this.success || this.error) {
+      this.setDefault();
+      this.error = "";
+      this.success = null;
+      this.txBusy = false;
+      return;
+    }
+
     if (this.hasError) {
       return;
     }
@@ -189,19 +201,29 @@ export default class AddProposal extends BaseComponent {
       revision: "0.0.1"
     };
 
-    // store in ipfs!
-    const hash = await vxm.ethGovernance.storeInIPFS({
-      proposalMetaData
-    });
+    try {
+      this.txBusy = true;
+      this.error = "";
+      // store in ipfs!
+      const hash = await vxm.ethGovernance.storeInIPFS({
+        proposalMetaData
+      });
 
-    // propose!
-    await vxm.ethGovernance.propose({
-      account: this.currentUser,
-      executor: this.contractAddress,
-      hash
-    });
+      // propose!
+      const txHash = await vxm.ethGovernance.propose({
+        account: this.currentUser,
+        executor: this.contractAddress,
+        hash
+      });
 
-    this.onHide();
+      this.success = await vxm.ethBancor.createTxResponse(txHash);
+
+      this.setDefault();
+    } catch (e) {
+      this.error = e.message;
+    } finally {
+      this.txBusy = false;
+    }
   }
 
   async updateMaxLock() {
@@ -219,8 +241,18 @@ export default class AddProposal extends BaseComponent {
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 
+  setDefault() {
+    this.description = "";
+    this.name = "";
+    this.discourseUrl = "";
+    this.githubUrl = "";
+    this.contractAddress = "";
+  }
+
   onHide() {
     this.show = false;
+    this.error = "";
+    this.success = null;
   }
 }
 </script>

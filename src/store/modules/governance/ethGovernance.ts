@@ -355,20 +355,28 @@ export class EthereumGovernance extends VuexModule.With({
     account: EthAddress;
     executor: EthAddress;
     hash: string;
-  }): Promise<boolean> {
+  }): Promise<string> {
     if (!executor || !hash || !account)
       throw new Error("Cannot propose without executor and hash");
 
     const txContract = buildGovernanceContract(
       await this.getGovernanceContractAddress()
     );
-    await txContract.methods.propose(executor, hash).send({
-      from: account
+
+    return new Promise((resolve, reject) => {
+      let txHash: string;
+      txContract.methods
+        .propose(executor, hash)
+        .send({
+          from: account
+        })
+        .on("transactionHash", (hash: string) => {
+          txHash = hash;
+          this.setLastTransaction(Date.now());
+          resolve(txHash);
+        })
+        .on("error", (error: any) => reject(error));
     });
-
-    this.setLastTransaction(Date.now());
-
-    return true;
   }
 
   @action async voteFor({
@@ -566,21 +574,23 @@ export class EthereumGovernance extends VuexModule.With({
     for await (const file of ipfs.get(hash, {
       timeout: timeoutInSeconds * 1000
     })) {
-      if (!file.content) continue;
+      if (file.type == "file") {
+        if (!file.content) continue;
 
-      let content = "";
+        let content = "";
 
-      for await (const chunk of file.content) {
-        content += chunk.toString("utf8");
+        for await (const chunk of file.content) {
+          content += new TextDecoder("utf-8").decode(chunk);
+        }
+
+        metadata = JSON.parse(content);
+        const newCache = this.metaDataCache;
+
+        newCache[hash] = metadata;
+        this.setMetaDataCache(newCache);
+
+        break;
       }
-
-      metadata = JSON.parse(content);
-      const newCache = this.metaDataCache;
-
-      newCache[hash] = metadata;
-      this.setMetaDataCache(newCache);
-
-      break;
     }
 
     return metadata;

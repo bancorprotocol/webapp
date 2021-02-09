@@ -1,5 +1,10 @@
 import { Contract } from "web3-eth-contract";
+import BigNumber from "bignumber.js";
 
+export interface TokenWei {
+  tokenContract: string;
+  weiAmount: string;
+}
 export interface ProtectedViewPosition {
   type: number;
   whitelisted: boolean;
@@ -50,6 +55,7 @@ export interface ProtectedLiquidityCalculated {
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
+  pendingReserveReward: BigNumber;
 }
 export interface TokenPrice {
   id: string;
@@ -272,25 +278,58 @@ export interface ViewReserve {
   reserveWeight: number;
 }
 
+export interface ViewGroupedPositions {
+  id: string;
+  positionId: string;
+  poolId: string;
+  symbol: string;
+  stake: {
+    amount: number;
+    usdValue: number;
+    unixTime: number;
+  };
+  protectedAmount: {
+    amount: number;
+    usdValue: number;
+  };
+  fullyProtected: {
+    amount: number;
+    usdValue: number;
+  };
+  apr: {
+    day: number;
+    week: number;
+    // month: number;
+  };
+  fees: number;
+  roi: number;
+  insuranceStart: number;
+  coverageDecPercent: number;
+  fullCoverage: number;
+  pendingReserveReward: BigNumber;
+  reserveTokenPrice: number;
+  collapsedData: ViewProtectedLiquidity[];
+}
+
 export interface ViewRelay {
   id: string;
+  name: string;
   symbol: string;
   liqDepth: number;
-  reserves: ViewReserve[];
   fee: number;
-  owner: string;
+  reserves: ViewReserve[];
+  addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
   removeLiquiditySupported: boolean;
-  focusAvailable?: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;
   v2: boolean;
-  version: number;
   feesGenerated?: string;
   feesVsLiquidity?: string;
   apr?: string;
   volume?: string;
   aprMiningRewards?: PoolLiqMiningApr;
+  stakedBntSupplyPercent?: number;
 }
 
 export interface ContractMethods<T> extends Contract {
@@ -368,6 +407,7 @@ export interface JSON {
 export interface TxResponse {
   txId: string;
   blockExplorerLink: string;
+  blockExplorerName: string;
 }
 
 export interface V1PoolResponse extends TxResponse {
@@ -388,6 +428,7 @@ export interface ViewRemoveEvent {
 }
 
 export interface ViewLiquidityEvent<T> {
+  id: string;
   valueTransmitted: number;
   txHash: string;
   txLink: string;
@@ -409,7 +450,6 @@ export interface TradingModule {
   focusSymbol: (symbolName: string) => Promise<void>;
   getReturn: (propose: ProposedFromTransaction) => Promise<ConvertReturn>;
   getCost: (propose: ProposedToTransaction) => Promise<ConvertReturn>;
-  loadMoreTokens: (tokenIds?: string[]) => Promise<void>;
 }
 
 export interface UserPoolBalances {
@@ -417,6 +457,13 @@ export interface UserPoolBalances {
   iouBalances: ViewAmount[];
 }
 
+export interface RegisteredContracts {
+  BancorNetwork: string;
+  BancorConverterRegistry: string;
+  LiquidityProtection: string;
+  LiquidityProtectionStore: string;
+  StakingRewards: string;
+}
 interface PoolTokenPosition {
   relay: ViewRelay;
   smartTokenAmount?: string;
@@ -441,12 +488,6 @@ interface LiquidityHistory {
   data: ViewLiquidityEvent<ViewTradeEvent>[];
 }
 
-export interface FocusPoolRes {
-  conversionEvents: ViewLiquidityEvent<ViewTradeEvent>[];
-  addEvents: ViewLiquidityEvent<ViewAddEvent>[];
-  removeEvents: ViewLiquidityEvent<ViewRemoveEvent>[];
-}
-
 export interface LiquidityModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly primaryReserveChoices: (secondaryChoiceId: string) => ModalChoice[];
@@ -460,10 +501,14 @@ export interface LiquidityModule {
     totalLiquidityDepth: number;
     nativeTokenPrice: { price: number; symbol: string };
     twentyFourHourTradeCount: number;
+    totalVolume24h: number;
+    bntUsdPrice?: number;
+    stakedBntPercent?: number;
+    totalPoolCount?: number;
+    totalTokenCount?: number;
   };
   readonly poolTokenPositions: PoolTokenPosition[];
   readonly liquidityHistory: LiquidityHistory;
-  focusPool: (poolId: string) => Promise<FocusPoolRes | void>;
   loadMorePools: () => Promise<void>;
   calculateOpposingDeposit: (
     opposingDeposit: OpposingLiquidParams
@@ -698,7 +743,7 @@ export interface Service {
 export interface TokenReward {
   amount: string;
   symbol: string;
-  usdValue?: string;
+  usdValue?: string | number;
 }
 export interface ViewProtectedLiquidity {
   id: string;
@@ -724,6 +769,9 @@ export interface ViewProtectedLiquidity {
   coverageDecPercent: number;
   fullCoverage: number;
   givenVBnt?: string;
+  pendingReserveReward: BigNumber;
+  reserveTokenPrice: number;
+  bntTokenPrice: number;
 }
 
 export interface ViewLockedBalance {
@@ -744,4 +792,45 @@ export interface LiqMiningApr {
   address: string;
   amount: string;
   reward?: number;
+}
+
+export interface ConverterAndAnchor {
+  converterAddress: string;
+  anchorAddress: string;
+}
+export interface ViewTableField {
+  id: number;
+  label: string;
+  key: string;
+  sortable?: boolean;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  thClass?: string;
+}
+
+export interface TableItem {
+  id: string;
+  [key: string]: any;
+  collapsedData?: TableItem[];
+}
+
+export interface ViewProposalsField {
+  id: number;
+  label: string;
+  key: string;
+  tooltip?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  colAuto?: boolean;
+  colRate?: number;
+}
+
+export interface ITxMeta {
+  showTxModal: boolean;
+  txBusy: boolean;
+  success: TxResponse | null;
+  txError: string;
+  sections: Step[];
+  stepIndex: number;
 }

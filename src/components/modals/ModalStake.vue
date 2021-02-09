@@ -19,7 +19,7 @@
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              <span v-if="step === 'stake'">Stake</span>
+              <span v-if="step === 'stake'">{{ $t("stake") }}</span>
             </span>
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -33,46 +33,22 @@
     </template>
 
     <div v-if="step === 'stake'">
-      <div
-        class="font-size-12 font-w500 text-nowrap"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        <div class="text-uppercase d-inline-block">Stake your tokens</div>
-        <div
-          class="text-nowrap d-inline-block text-right balance cursor"
-          @click="useMax"
-        >
-          Balance: {{ prettifyNumber(currentBalance) }} {{ symbol }}
-        </div>
-      </div>
-
-      <div class="input-currency mt-1">
-        <b-form-input
-          v-model="stakeInput"
-          :state="state"
-          @keypress="setStakeInput"
-          @input="setStakeInput"
-          :max="currentBalance.toNumber()"
-          type="number"
-          placeholder="0"
-          size="lg"
-          class="input-currency__input"
-        />
-        <div class="input-currency__append pr-3">
-          <img
-            class="img-avatar img-avatar32 bg-dark input-currency__img mr-2 ml-3"
-            src="@/assets/media/logos/bancor-white2.png"
-          />
-
-          <span class="font-size-14 font-w500">{{ symbol }}</span>
-        </div>
-      </div>
-
-      <b-alert show variant="warning" class="my-3 p-3 font-size-14 alert-over">
-        Staking {{ symbol }} enables you to vote on proposals. You will be able
-        to unstake once the lock period is over (up to {{ maxLock }}h)
-      </b-alert>
-
+      <token-input-field
+        :state="state"
+        @keypress="setStakeInput"
+        @input="setStakeInput"
+        :max="currentBalance.toNumber()"
+        placeholder="0"
+        :token="gBnt"
+        :label="$t('stake_your_tokens')"
+        v-model="stakeInput"
+        :balance="currentBalance"
+      />
+      <alert-block
+        class="my-3"
+        variant="warning"
+        :msg="$t('enable_vote', { symbol: symbol, hours: maxLock })"
+      />
       <main-button
         @click="stake"
         :label="stakeLabel"
@@ -97,14 +73,16 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Waiting For Confirmation
+        {{ $t("waiting_for_confirmation") }}
       </h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">
+        {{ `${$t("staking")} ${stakeValue} ${symbol}` }}
+      </div>
       <div
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        Confirm this transaction in your wallet
+        {{ $t("confirm__transaction_in_wallet") }}
       </div>
     </div>
 
@@ -118,18 +96,20 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Transaction Submitted
+        {{ $t("transaction_submitted") }}
       </h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">
+        {{ `${$t("staking")} ${stakeValue} ${symbol}` }}
+      </div>
       <a
         target="_blank"
         class="text-primary font-w500 cursor"
         :href="getEtherscanUrl()"
-        >View on Etherscan</a
+        >{{ $t("view_etherscan") }}</a
       >
       <main-button
         @click="onHide"
-        label="Close"
+        :label="$t('close')"
         :large="true"
         :active="true"
         :block="true"
@@ -141,15 +121,20 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Component, Watch, VModel } from "vue-property-decorator";
-import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
+import { compareString } from "@/api/helpers";
+import AlertBlock from "@/components/common/AlertBlock.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
-    MainButton
+    MainButton,
+    AlertBlock,
+    TokenInputField
   }
 })
 export default class ModalStake extends BaseComponent {
@@ -163,13 +148,22 @@ export default class ModalStake extends BaseComponent {
   etherscanUrl: string = "";
   maxLock: number = 0;
 
-  prettifyNumber = prettifyNumber;
-
   get buttonActive() {
     return (
-        this.stakeValue.isGreaterThan(0) &&
-        this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
-    )
+      this.stakeValue.isGreaterThan(0) &&
+      this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
+    );
+  }
+
+  get gBnt() {
+    const bntToken = vxm.bancor.tokens.find(token =>
+      compareString(token.symbol, "BNT")
+    );
+    return {
+      id: -1,
+      symbol: this.symbol,
+      logo: bntToken ? bntToken.logo : ""
+    };
   }
 
   get state() {
@@ -184,12 +178,12 @@ export default class ModalStake extends BaseComponent {
 
   get stakeLabel() {
     return this.stakeValue && this.stakeInput.length === 0
-      ? "Enter Amount"
+      ? i18n.t("enter_amount")
       : this.stakeValue &&
         this.stakeValue.isGreaterThan(0) &&
         this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
-      ? "Stake Tokens"
-      : "Insufficient Amount";
+      ? i18n.t("stake_your_tokens")
+      : i18n.t("insufficient_amount");
   }
 
   setStakeInput() {
@@ -225,8 +219,8 @@ export default class ModalStake extends BaseComponent {
     this.step = "stake";
     setTimeout(() => {
       this.stakeInput = "";
-      this.setStakeInput()
-    }, 100)
+      this.setStakeInput();
+    }, 100);
   }
 
   useMax() {
@@ -262,6 +256,7 @@ export default class ModalStake extends BaseComponent {
   }
 
   async mounted() {
+    this.symbol = await vxm.ethGovernance.getSymbol();
     await this.update();
   }
 }

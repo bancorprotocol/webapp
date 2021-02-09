@@ -30,7 +30,8 @@ import {
   TxResponse,
   DFuseTrade,
   ViewTradeEvent,
-  ViewLiquidityEvent
+  ViewLiquidityEvent,
+  ViewReserve
 } from "@/types/bancor";
 import { bancorApi, ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -53,7 +54,8 @@ import {
   assetToDecNumberString,
   decNumberStringToAsset,
   findChangedReserve,
-  StringPool
+  StringPool,
+  buildPoolNameFromReserves
 } from "@/api/helpers";
 import {
   Sym as Symbol,
@@ -84,7 +86,7 @@ import { getHardCodedRelays } from "./staticRelays";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { liquidateAction } from "@/api/eos/singleContractTx";
 import BigNumber from "bignumber.js";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import * as Sentry from "@sentry/browser";
 
 const networkContract = "thisisbancor";
@@ -636,8 +638,7 @@ export class EosBancorModule
   }
 
   get currentUser() {
-    // @ts-ignore
-    return this.$store.rootGetters[`${this.wallet}Wallet/currentUser`];
+    return vxm.wallet.currentUser;
   }
 
   @action async onAuthChange(currentUser: string | false) {
@@ -652,8 +653,6 @@ export class EosBancorModule
       Sentry.configureScope(scope => scope.setUser(null));
     }
   }
-
-  @action async focusPool() {}
 
   get wallet() {
     return "eos";
@@ -829,7 +828,7 @@ export class EosBancorModule
     return vxm.eosNetwork.getBalances({ tokens: tokensToAskFor, slow: false });
   }
 
-  @action async updateFee({ fee, id }: FeeParams) {
+  @action async updateFee({ fee, id }: FeeParams): Promise<TxResponse> {
     const relay = await this.relayById(id);
     const updateFeeAction = multiContract.updateFeeAction(
       relay.smartToken.symbol,
@@ -840,11 +839,12 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
-  @action async removeRelay(id: string) {
+  @action async removeRelay(id: string): Promise<TxResponse> {
     const relay = await this.relayById(id);
     const reserves = relay.reserves.map(reserve => reserve.symbol);
     const nukeRelayActions = multiContract.nukeRelayAction(
@@ -858,11 +858,15 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
-  @action async updateOwner({ id, newOwner }: NewOwnerParams) {
+  @action async updateOwner({
+    id,
+    newOwner
+  }: NewOwnerParams): Promise<TxResponse> {
     const relay = await this.relayById(id);
     const updateOwnerAction = multiContract.updateOwnerAction(
       relay.smartToken.symbol,
@@ -871,7 +875,8 @@ export class EosBancorModule
     const txRes = await this.triggerTx([updateOwnerAction]);
     return {
       txId: txRes.transaction_id,
-      blockExplorerLink: generateEosxLink(txRes.transaction_id)
+      blockExplorerLink: generateEosxLink(txRes.transaction_id),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -920,7 +925,8 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -1075,7 +1081,10 @@ export class EosBancorModule
         symbol: "EOS",
         price: (eos && eos.price) || 0
       },
-      twentyFourHourTradeCount: this.liquidityHistory.data.length
+      twentyFourHourTradeCount: this.liquidityHistory.data.length,
+      totalVolume24h: this.relays
+        .map(x => Number(x.volume || 0))
+        .reduce((sum, current) => sum + current)
     };
   }
 
@@ -1128,6 +1137,17 @@ export class EosBancorModule
           reserve => reserve.symbol
         );
 
+        const reserves = sortedReserves.map(
+          (reserve: AgnosticToken) =>
+            ({
+              ...reserve,
+              reserveWeight: 0.5,
+              reserveId: relay.id + reserve.id,
+              logo: [this.token(reserve.id).logo],
+              ...(reserve.amount && { balance: reserve.amount })
+            } as ViewReserve)
+        );
+
         return {
           ...relay,
           version: relay.isMultiContract ? 2 : 1,
@@ -1135,22 +1155,17 @@ export class EosBancorModule
             contract: relay.smartToken.contract,
             symbol: relay.smartToken.symbol
           }),
+          name: buildPoolNameFromReserves(reserves),
           symbol: sortedReserves[1].symbol,
           liqDepth: relayFeed && relayFeed.liqDepth,
+          addProtectionSupported: false,
           addLiquiditySupported: relay.isMultiContract,
           removeLiquiditySupported: true,
-          focusAvailable: false,
           v2: false,
           liquidityProtection: false,
           whitelisted: false,
-          reserves: sortedReserves.map((reserve: AgnosticToken) => ({
-            ...reserve,
-            reserveWeight: 0.5,
-            reserveId: relay.id + reserve.id,
-            logo: [this.token(reserve.id).logo],
-            ...(reserve.amount && { balance: reserve.amount })
-          }))
-        };
+          reserves
+        } as ViewRelay;
       });
   }
 
@@ -1343,8 +1358,6 @@ export class EosBancorModule
     });
   }
 
-  @action async loadMoreTokens() {}
-
   liquidityHistoryArr: DFuseTrade[] = [];
   liquidityHistoryLoading: boolean = true;
   liquidityHistoryError: string = "";
@@ -1390,7 +1403,7 @@ export class EosBancorModule
     // @ts-ignore
     const data: ViewLiquidityEvent<ViewTradeEvent>[] = withKnownPools
       .map(trade => {
-        const momentTime = moment(trade.block.timestamp);
+        const dayjsTime = dayjs(trade.block.timestamp);
 
         const fromTokenAction = first(trade.trace.matchingActions)!;
 
@@ -1451,7 +1464,7 @@ export class EosBancorModule
           account: initialTransferMemoObj.destAccount,
           txLink: `https://www.eosx.io/tx/${trade.trace.id}`,
           accountLink: `https://www.eosx.io/account/${initialTransferMemoObj.destAccount}`,
-          unixTime: momentTime.unix(),
+          unixTime: dayjsTime.unix(),
           data: {
             from: {
               decimals: fromToken.precision,
@@ -1487,11 +1500,11 @@ export class EosBancorModule
     try {
       const results = await past24HourTrades();
 
-      const timeNow = moment();
-      const oneDay = moment.duration(1, "day");
+      const timeNow = dayjs();
+      const oneDay = dayjs.duration(1, "day");
       const yesterday = timeNow.subtract(oneDay);
       const withinPastDay = results.filter(result =>
-        moment(result.block.timestamp).isSameOrAfter(yesterday)
+        dayjs(result.block.timestamp).isSameOrAfter(yesterday)
       );
 
       this.setLiquidityHistory(withinPastDay);
@@ -1566,6 +1579,7 @@ export class EosBancorModule
 
       this.setInitialised(true);
       this.setLoadingPools(false);
+      console.log("EOS resolving at", Date.now());
       console.timeEnd("eosResolved");
     } catch (e) {
       throw new Error(`Threw inside eosBancor: ${e.message}`);
@@ -1775,7 +1789,7 @@ export class EosBancorModule
     id: relayId,
     reserves,
     onUpdate
-  }: LiquidityParams) {
+  }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
     const tokenAmounts = await this.viewAmountToTokenAmounts(reserves);
 
@@ -1848,7 +1862,7 @@ export class EosBancorModule
             if (failedDueToBadCalculation) {
               const { fundAmount, addLiquidityActions } = state;
               const backupFundAction = multiContractAction.fund(
-                vxm.wallet.currentUser,
+                this.currentUser,
                 number_to_asset(
                   Number(fundAmount) * 0.96,
                   new Symbol(relay.smartToken.symbol, 4)
@@ -1898,7 +1912,8 @@ export class EosBancorModule
 
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -2031,7 +2046,8 @@ export class EosBancorModule
 
     return {
       txId: lastTxId,
-      blockExplorerLink: generateEosxLink(lastTxId)
+      blockExplorerLink: generateEosxLink(lastTxId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -2039,7 +2055,7 @@ export class EosBancorModule
     reserves,
     id: relayId,
     onUpdate
-  }: LiquidityParams) {
+  }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
     const smartTokenSymbol = relay.smartToken.symbol;
 
@@ -2082,7 +2098,8 @@ export class EosBancorModule
     const txId = txRes.transaction_id as string;
     return {
       txId,
-      blockExplorerLink: generateEosxLink(txId)
+      blockExplorerLink: generateEosxLink(txId),
+      blockExplorerName: "EOSX"
     };
   }
 
@@ -2401,7 +2418,9 @@ export class EosBancorModule
     );
   }
 
-  @action async convert(proposal: ProposedConvertTransaction) {
+  @action async convert(
+    proposal: ProposedConvertTransaction
+  ): Promise<TxResponse> {
     const { from, to } = proposal;
     if (compareString(from.id, to.id))
       throw new Error("Cannot convert a token to itself.");
@@ -2463,7 +2482,8 @@ export class EosBancorModule
 
     return {
       txId: txRes.transaction_id,
-      blockExplorerLink: generateEosxLink(txRes.transaction_id)
+      blockExplorerLink: generateEosxLink(txRes.transaction_id),
+      blockExplorerName: "EOSX"
     };
   }
 

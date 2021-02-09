@@ -16,13 +16,13 @@
           style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
-          label="Loading..."
+          :label="`${$t('loading')}... `"
         ></b-spinner>
         <h5
           class="m-0 ml-3"
           :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
         >
-          Just a moment ...
+          {{ `${$t("just_a_moment")}...` }}
         </h5>
       </div>
     </div>
@@ -47,11 +47,7 @@
       darkMode ? 'bg-body-dark text-body-dark' : 'bg-body-light text-body-light'
     "
   >
-    <div
-      class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
-    >
-      This interface is in beta. Use it at your own risk.
-    </div>
+    <NetworkAlert />
     <div name="MainLayout" class="main-layout">
       <side-bar />
       <main
@@ -87,9 +83,11 @@ import SideBar from "@/components/layout/SideBar.vue";
 import { vxm } from "@/store/";
 import wait from "waait";
 import BaseComponent from "@/components/BaseComponent.vue";
+import NetworkAlert from "@/components/layout/NetworkAlert.vue";
 
 @Component({
   components: {
+    NetworkAlert,
     ModalLogin,
     SideBar
   }
@@ -155,9 +153,16 @@ export default class App extends BaseComponent {
   async created() {
     console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
+    // const locale = localStorage.getItem("locale");
+    // const lang =
+    //   navigator.languages && navigator.languages.length
+    //     ? navigator.languages[0]
+    //     : navigator.language;
     if (darkMode) vxm.general.toggleDarkMode();
+    // if (locale) vxm.general.setLocale(locale);
+    // else vxm.general.setLocale(lang);
+    vxm.general.setLocale("en");
 
-    vxm.general.getUserCountry();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;

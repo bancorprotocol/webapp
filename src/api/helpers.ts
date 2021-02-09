@@ -17,7 +17,9 @@ import {
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken
+  ViewToken,
+  TableItem,
+  ViewReserve
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -31,9 +33,8 @@ import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
-import { Item } from "@/components/common/DataTable.vue";
 
 export enum PositionType {
   single,
@@ -47,61 +48,9 @@ export const rewindBlocksByDays = (
 ) => {
   if (!Number.isInteger(currentBlock))
     throw new Error("Current block should be an integer");
-  const secondsToRewind = moment.duration(days, "days").asSeconds();
+  const secondsToRewind = dayjs.duration(days, "days").asSeconds();
   const blocksToRewind = parseInt(String(secondsToRewind / secondsPerBlock));
   return currentBlock - blocksToRewind;
-};
-
-const zeroIfNegative = (big: BigNumber) =>
-  big.isNegative() ? new BigNumber(0) : big;
-
-export const calculateMaxStakes = (
-  tknReserveBalanceWei: string,
-  bntReserveBalanceWei: string,
-  poolTokenSupplyWei: string,
-  poolTokenSystemBalanceWei: string,
-  maxSystemNetworkTokenAmount: string,
-  maxSystemNetworkTokenRatioPpm: string,
-  isHighTierPool: boolean
-) => {
-  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
-  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
-  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
-  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
-  const maxSystemNetworkTokenRatioDec = new BigNumber(
-    maxSystemNetworkTokenRatioPpm
-  ).div(1000000);
-
-  // calculating the systemBNT  from system pool tokens
-  const rate = bntReserveBalance.div(poolTokenSupply);
-  const systemBNT = poolTokenSystemBalance.times(rate);
-
-  // allowed BNT based on limit cap
-  const maxLimitBnt = zeroIfNegative(
-    new BigNumber(maxSystemNetworkTokenAmount).minus(systemBNT)
-  );
-
-  // allowed BNT based on ratio cap
-  const maxRatioBnt = zeroIfNegative(
-    new BigNumber(maxSystemNetworkTokenRatioDec)
-      .times(bntReserveBalance)
-      .minus(systemBNT)
-  );
-
-  const lowestAmount = isHighTierPool
-    ? maxLimitBnt
-    : BigNumber.min(maxLimitBnt, maxRatioBnt);
-
-  const maxAllowedBntInTkn = lowestAmount.times(
-    tknReserveBalance.div(bntReserveBalance)
-  );
-
-  const maxAllowedBnt = systemBNT;
-
-  return {
-    maxAllowedBntWei: maxAllowedBnt.toString(),
-    maxAllowedTknWei: maxAllowedBntInTkn.toString()
-  };
 };
 
 export interface LockedBalance {
@@ -147,7 +96,6 @@ export const traverseLockedBalances = async (
     if (lockedBalances.length >= expectedCount) break;
   }
 
-  console.log(lockedBalances, "should be inspected");
   return lockedBalances;
 };
 
@@ -228,22 +176,10 @@ export const formatNumber = (num: number | string, size: number = 4) => {
   return reduced;
 };
 
-export const prettifyNumber = (
-  num: number | string | BigNumber,
-  usd = false
-): string => {
-  const bigNum = new BigNumber(num);
-  if (usd) {
-    if (bigNum.eq(0)) return "$0.00";
-    else if (bigNum.lt(0.01)) return "< $0.01";
-    else if (bigNum.gt(100)) return numeral(bigNum).format("$0,0");
-    else return numeral(bigNum).format("$0,0.00");
-  } else {
-    if (bigNum.eq(0)) return "0";
-    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
-    else if (bigNum.lt(0.000001)) return "< 0.000001";
-    else return numeral(bigNum).format("0.[000000]");
-  }
+export const stringifyPercentage = (percentage: number): string => {
+  if (percentage <= 0) return "0.00%";
+  else if (percentage < 0.0001) return "< 0.01%";
+  else return numeral(percentage).format("0.00%");
 };
 
 export const findChangedReserve = (
@@ -288,7 +224,7 @@ export const calculateProtectionLevel = (
   minimumDelaySeconds: number,
   maximumDelaySeconds: number
 ): number => {
-  const nowSeconds = moment().unix();
+  const nowSeconds = dayjs().unix();
 
   const timeElaspedSeconds = nowSeconds - startTimeSeconds;
 
@@ -308,7 +244,7 @@ export const calculateProgressLevel = (
   if (endTimeSeconds < startTimeSeconds)
     throw new Error("End time should be greater than start time");
   const totalWaitingTime = endTimeSeconds - startTimeSeconds;
-  const now = moment().unix();
+  const now = dayjs().unix();
   if (now >= endTimeSeconds) return 1;
   const timeWaited = now - startTimeSeconds;
   return timeWaited / totalWaitingTime;
@@ -323,6 +259,21 @@ export const compareString = (stringOne: string, stringTwo: string) => {
   return stringOne.toLowerCase() == stringTwo.toLowerCase();
 };
 
+const cryptoComparekey = process.env.VUE_APP_CRYPTO_COMPARE;
+
+export interface UsdPrices {
+  BNT: { USD: number };
+  ETH: { USD: number };
+}
+
+export const cryptoComparePrices = async () => {
+  const res = await axios.get<UsdPrices>(
+    "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BNT,ETH&tsyms=USD",
+    { headers: { authorization: `Apikey ${cryptoComparekey}` } }
+  );
+  return res.data;
+};
+
 export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
   const res = await axios.get<{ mins: number; price: string }>(
     "https://api.binance.com/api/v3/avgPrice?symbol=BNTUSDT"
@@ -331,8 +282,8 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 };
 
 export const fetchUsdPriceOfBntViaRelay = async (
-  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
-  w3: Web3
+  w3: Web3,
+  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C"
 ): Promise<number> => {
   const contract = buildConverterContract(relayContractAddress, w3);
   const res = await contract.methods
@@ -419,6 +370,7 @@ export interface DecodedEvent<T> {
   blockNumber: string;
   txHash: string;
   data: T;
+  id: string;
 }
 
 export interface DecodedTimedEvent<T> extends DecodedEvent<T> {
@@ -461,6 +413,7 @@ const decodeRemoveLiquidity = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
+    id: txHash,
     txHash,
     blockNumber,
     data: {
@@ -491,6 +444,7 @@ const decodeAddLiquidityEvent = (
   const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
+    id: txHash,
     blockNumber,
     txHash,
     data: {
@@ -526,6 +480,7 @@ const decodeConversionEvent = (
   const res = {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       from: {
         address: removeLeadingZeros(fromAddress),
@@ -564,6 +519,7 @@ const decodeNetworkConversionEvent = (
   return {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       poolToken: removeLeadingZeros(poolToken),
       from: {
@@ -685,8 +641,6 @@ export const getLogs = async (
 
   const response = await axios.post<InfuraEventResponse>(address, request);
 
-  console.log(response, "is the raw return");
-
   if (response.data.error) {
     console.error("eth_getLogs failed!", response.data.error, address, request);
   }
@@ -698,6 +652,9 @@ export const getLogs = async (
 
 const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet, false);
 const APP_NAME = "Bancor Swap";
+const FORTMATIC_KEY = process.env.VUE_APP_FORTMATIC;
+const PORTIS_KEY = process.env.VUE_APP_PORTIS;
+const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 
 const wallets = [
   { walletName: "metamask", preferred: true },
@@ -713,11 +670,46 @@ const wallets = [
   { walletName: "torus" },
   { walletName: "status" },
   { walletName: "unilogin" },
-  { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME },
+  {
+    walletName: "walletLink",
+    rpcUrl: RPC_URL,
+    appName: APP_NAME,
+    preferred: true
+  },
   { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },
-  { walletName: "hyperpay" }
+  { walletName: "hyperpay" },
+  {
+    walletName: "trezor",
+    appUrl: "https://www.bancor.network",
+    email: "services@bancor.network",
+    rpcUrl: RPC_URL
+  },
+  {
+    walletName: "fortmatic",
+    apiKey: FORTMATIC_KEY,
+    preferred: true
+  },
+  {
+    walletName: "portis",
+    apiKey: PORTIS_KEY,
+    preferred: true,
+    label: "Login with Email"
+  },
+  {
+    walletName: "squarelink",
+    apiKey: SQUARELINK_KEY
+  },
+  { walletName: "authereum" },
+  {
+    walletName: "walletConnect",
+    preferred: true,
+    rpc: {
+      [EthNetworks.Mainnet]: RPC_URL
+    }
+  },
+  { walletName: "wallet.io", rpcUrl: RPC_URL }
 ];
 
 export const onboard = Onboard({
@@ -978,7 +970,6 @@ export interface Relay {
   network: string;
   version: string;
   converterType: PoolType;
-  owner: string;
 }
 
 export interface RelayWithReserveBalances extends Relay {
@@ -1083,7 +1074,7 @@ export interface ConverterV2Row {
 }
 
 export const formatLockDuration = (seconds: number): string =>
-  moment.duration(seconds, "seconds").humanize();
+  dayjs.duration(seconds, "seconds").humanize();
 interface BaseSymbol {
   symbol: string;
   precision: number;
@@ -1111,7 +1102,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
     more: boolean;
   } = await rpc.get_table_rows({
     code: contractName,
-    table: "converter.v2",
+    table: "converters",
     scope: contractName,
     limit: 99
   });
@@ -1272,39 +1263,33 @@ export interface TickerPrice {
   symbol: string;
 }
 
-export const getCountryCode = async (): Promise<string> => {
-  try {
-    const res: AxiosResponse<any> = await axios.get("https://ipapi.co/json");
-    const code = res.data.country_code_iso3;
-    if (code) return code;
-    else return "UNKOWN";
-  } catch (e) {
-    console.error(e);
-    return "UNKOWN";
-  }
+export const buildPoolName = (poolId: string): string => {
+  const pool: ViewRelay = vxm.bancor.relay(poolId);
+  if (pool) {
+    return buildPoolNameFromReserves(pool.reserves);
+  } else return "N/A";
 };
 
-export const buildPoolName = (
-  poolId: string,
+export const buildPoolNameFromReserves = (
+  reserves: ViewReserve[],
   separator: string = "/"
 ): string => {
-  const pool: ViewRelay = vxm.bancor.relay(poolId);
-  const symbols = pool.reserves.map(x => x.symbol);
+  const symbols = reserves.map(x => x.symbol);
   return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (
   unixTime: number
 ): { date: string; time: string; dateTime: string } => {
-  const date = moment.unix(unixTime).format("MMM D yyyy");
-  const time = moment.unix(unixTime).format("HH:mm");
+  const date = dayjs.unix(unixTime).format("MMM D YYYY");
+  const time = dayjs.unix(unixTime).format("HH:mm");
   const dateTime = `${date} ${time}`;
 
   return { date, time, dateTime };
 };
 
 export const defaultTableSort = (
-  row: Item,
+  row: TableItem,
   sortBy: string,
   sortZero: boolean = false
 ) => {

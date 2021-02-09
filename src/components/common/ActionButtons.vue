@@ -7,7 +7,7 @@
       class="mr-3"
       :class="small ? 'table-button-small' : 'table-button'"
     >
-      <span v-if="!small">Add Liquidity</span>
+      <span v-if="!small"> {{ $t("add_liquidity") }} </span>
       <font-awesome-icon v-else icon="plus" />
     </b-btn>
 
@@ -16,12 +16,12 @@
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       :class="small ? 'table-button-small' : 'table-button'"
     >
-      <span v-if="!small">Trade</span>
+      <span v-if="!small">{{ $t("trade") }}</span>
       <font-awesome-icon
         v-else
         icon="exchange-alt"
         v-b-tooltip.hover
-        title="Trade"
+        :title="$t('trade')"
       />
     </b-btn>
   </div>
@@ -31,6 +31,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
+import BigNumber from "bignumber.js";
 
 @Component
 export default class ActionButtons extends BaseComponent {
@@ -39,9 +40,9 @@ export default class ActionButtons extends BaseComponent {
   @Prop({ default: false }) small!: boolean;
 
   goToPool() {
-    if (this.pool!.whitelisted) {
+    if (this.pool && this.pool.addProtectionSupported) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id: this.pool!.id }
       });
     } else {

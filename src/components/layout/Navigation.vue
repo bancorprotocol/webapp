@@ -3,11 +3,9 @@
     <div id="navigation-top" class="d-flex justify-content-end">
       <b-btn
         @click="loginAction"
-        variant="white"
+        :variant="darkMode ? 'outline-dark' : 'outline-light'"
         class="block-rounded"
         size="sm"
-        v-b-tooltip.hover
-        :title="loginTooltip"
       >
         <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
         <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
@@ -21,9 +19,10 @@
 <script lang="ts">
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
-import { shortenEthAddress } from "@/api/helpers";
+import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
@@ -45,12 +44,6 @@ export default class Navigation extends BaseComponent {
     }
   }
 
-  get loginTooltip() {
-    return this.currentNetwork == "eth" && this.currentUser
-      ? "Logout via wallet"
-      : "";
-  }
-
   get loginStatus() {
     return vxm.eosWallet.loginStatus;
   }
@@ -69,7 +62,7 @@ export default class Navigation extends BaseComponent {
       const currentUser = vxm.ethWallet.currentUser;
       if (currentUser) {
         return this.shortenedEthAddress;
-      } else return "Connect Wallet";
+      } else return i18n.t("connect_wallet");
     }
   }
 
@@ -87,7 +80,7 @@ export default class Navigation extends BaseComponent {
 
   async loginActionEos() {
     const status = this.loginButtonLabel;
-    if (status === "Connect Wallet") {
+    if (status === i18n.t("connect_wallet")) {
       this.$bvModal.show("modal-login");
     } else if (
       status !== "Authenticating" &&
@@ -100,7 +93,7 @@ export default class Navigation extends BaseComponent {
 
   async loginActionEth() {
     if (vxm.ethWallet.currentUser) {
-      // Cannot logout of MetaMask
+      onboard.walletReset();
     } else {
       await vxm.ethWallet.connect();
     }
@@ -108,7 +101,7 @@ export default class Navigation extends BaseComponent {
 
   async loginAction() {
     const wallet = this.selectedWallet;
-    if (wallet == "eos") await this.loginActionEos();
+    if (wallet === "eos") await this.loginActionEos();
     else await this.loginActionEth();
   }
 }
@@ -116,7 +109,8 @@ export default class Navigation extends BaseComponent {
 
 <style lang="scss">
 #navigation-top {
-  margin: 1rem 0;
+  margin-top: 0.2rem;
+  margin-bottom: 0.6rem;
 
   & > * {
     margin-left: 0.75rem;

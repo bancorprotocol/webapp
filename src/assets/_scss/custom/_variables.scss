@@ -16,6 +16,8 @@ $gray-border-dark: #1f3a55 !default;
 $gray-placeholder: #d0d7df;
 $gray-placeholder-dark: #516175;
 
+$light-white: #eeeeee;
+
 $border-radius: 8px;
 $modal-sm: 379px;
 
@@ -26,7 +28,7 @@ $text-color-light: #0a2540;
 $text-color-dark: #cdd1d6;
 
 $headings-color-light: #373737;
-$headings-color-dark: #FFFFFF;
+$headings-color-dark: #ffffff;
 
 $text-muted-light: #6b7c93;
 $text-muted-dark: #cdd1d6;
@@ -40,17 +42,23 @@ $text-info-dark: $primary;
 $text-error-light: #de4a5c;
 $text-error-dark: #de4a5c;
 
+$bg-body-dark: #1c344e;
+$bg-body-light: #f8f9fd;
+
 $bg-error-light: rgba($text-error-light, 0.1);
 $bg-error-dark: rgba($text-error-light, 0.1);
 
 $bg-info-light: rgba($text-info-light, 0.1);
 $bg-info-dark: rgba($text-info-light, 0.1);
 
-$text-warning-light: #F6AB30;
-$text-warning-dark: #F6AB30;
+$bg-btn-outline-light: #e9f2fd;
+$bg-btn-outline-dark: #0a316e;
 
-$bg-warning-light: #FFF8ED;
-$bg-warning-dark: #FFF8ED;
+$text-warning-light: #f6ab30;
+$text-warning-dark: #f6ab30;
+
+$bg-warning-light: #fff8ed;
+$bg-warning-dark: #fff8ed;
 
 $block-bg-blue: #f7f9fc;
 $block-bg-blue-dark: #1c344e;
@@ -64,7 +72,6 @@ $block-header-gray-dark: #e7ebf1;
 $breakpoint-mobile: 576px;
 $breakpoint-tablet: 768px;
 $breakpoint-desktop: 1024px;
-
 
 // Table sorting
 $b-table-sort-icon-bg-width: 0.65em !default;

@@ -5,7 +5,7 @@
       class="font-w600 font-size-14 d-flex align-items-center"
       :class="[darkMode ? 'text-dark' : 'text-light', cursor ? 'cursor' : '']"
     >
-      <pool-logos-overlapped :pool-id="pool.id" size="20" />
+      <pool-logos-overlapped :pool="pool" size="20" />
       <span class="ml-2">{{ baseLabel }} </span>
       <font-awesome-icon v-if="dropdown" icon="caret-down" class="ml-2" />
       <version-badge v-if="version" :version="pool.v2 ? 2 : 1" class="ml-2" />
@@ -18,7 +18,7 @@
       <img
         class="img-avatar img-avatar32 bg-white"
         :src="token.logo"
-        alt="Token Logo"
+        :alt="$t('token_logo')"
         style="
           box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
           border: solid 1px #e6ebf2;
@@ -34,7 +34,6 @@
 import { Component, Prop, Emit } from "vue-property-decorator";
 import { ViewRelay, ViewToken } from "@/types/bancor";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
-import { buildPoolName } from "@/api/helpers";
 import VersionBadge from "@/components/common/VersionBadge.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -53,11 +52,7 @@ export default class PoolLogos extends BaseComponent {
   click() {}
 
   get baseLabel() {
-    return `${this.label ? `${this.label} ` : ""}${this.poolName}`;
-  }
-
-  get poolName() {
-    return buildPoolName(this.pool!.id);
+    return `${this.label ? `${this.label} ` : ""}${this.pool?.name || "N/A"}`;
   }
 }
 </script>

@@ -17,11 +17,11 @@
 }
 
 .bg-body-light {
-  background: #f8f9fd !important;
+  background: $bg-body-light !important;
 }
 
 .bg-body-dark {
-  background: #1c344e !important;
+  background: $bg-body-dark !important;
 }
 
 .bg-block-light {
@@ -29,7 +29,7 @@
 }
 
 .bg-light {
-  background: #eeeeee !important;
+  background: $light-white !important;
 }
 
 .bg-block-dark {
@@ -70,6 +70,11 @@
 
 .text-dark {
   color: $text-color-dark !important;
+}
+
+.text-red {
+  color: $text-error-dark !important;
+  font-weight: 700 !important;
 }
 
 .text-muted-light {
@@ -129,7 +134,6 @@
   color: $text-error-dark;
 }
 
-
 .alert-warning-light {
   border: 1px $text-warning-light solid !important;
   background: $bg-warning-light;
@@ -188,6 +192,8 @@
 }
 
 .btn {
+  font-weight: 500;
+  font-size: 14px;
   &.block-rounded {
     border-radius: $border-radius !important;
   }
@@ -198,6 +204,38 @@
 
   &.btn-outline-gray-dark {
     color: $text-color-dark !important;
+  }
+
+  &.btn-outline-gray-dark:hover {
+    color: $text-color-light !important;
+  }
+
+  &.btn-outline-primary:hover {
+    background-color: $bg-btn-outline-light !important;
+    color: $text-color-light !important;
+  }
+  &.btn-outline-primary-dark:hover {
+    background-color: $bg-btn-outline-dark !important;
+    color: $text-color-dark !important;
+  }
+  &.btn-outline-light {
+    color: $primary !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-dark {
+    color: $light-white !important;
+    border-color: $light-white !important;
+    background-color: $bg-body-dark !important;
+  }
+  &.btn-outline-dark:hover {
+    background-color: $light-white !important;
+    color: $bg-body-dark !important;
+  }
+  &.btn-outline-light:hover {
+    background-color: $primary !important;
+    color: $light-white !important;
+    border-color: $primary !important;
   }
 }
 
@@ -288,13 +326,16 @@
   border: 1px solid $gray-border-dark !important;
 }
 
-
 .pagination {
-  .page-item, .page-item.active, .page-item:hover, .page-link, .page-link.active, .page-link:hover {
+  .page-item,
+  .page-item.active,
+  .page-item:hover,
+  .page-link,
+  .page-link.active,
+  .page-link:hover {
     border: none !important;
     background-color: transparent !important;
   }
-
 }
 
 .logo-shadow {
@@ -306,4 +347,8 @@
   @media (max-width: 768px) {
     width: 120px !important;
   }
+}
+
+.progress {
+  height: 4px !important;
 }

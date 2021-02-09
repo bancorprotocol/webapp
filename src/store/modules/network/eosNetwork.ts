@@ -131,7 +131,7 @@ export class EosNetworkModule
     maxPings?: number;
     interval?: number;
   }) {
-    return new Promise(async resolve => {
+    return new Promise<void>(async resolve => {
       for (let i = 0; i < maxPings; i++) {
         const newBalanceArray = await this.getBalances({
           tokens: originalBalances,

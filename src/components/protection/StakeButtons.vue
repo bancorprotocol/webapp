@@ -24,7 +24,7 @@
           <label-content-split
             v-for="(amount, index) in maxStakes"
             :key="index"
-            :label="!index ? 'Space Available' : ''"
+            :label="!index ? $t('space_available') : ''"
             :value="amount"
             :loading="loadingMaxStakes"
           />
@@ -48,7 +48,7 @@ import { Component, Prop, Emit } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import { vxm } from "@/store";
-import { prettifyNumber } from "@/api/helpers";
+import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -72,10 +72,9 @@ export default class StakeButtons extends BaseComponent {
     return [
       {
         id: 0,
-        title: `Single-Sided Protection`,
-        desc:
-          "Add liquidity with exposure to one token and protect it from impermanent loss.",
-        buttonTxt: "Stake and Protect",
+        title: i18n.t("single_sided_protection"),
+        desc: i18n.t("liquidity_with_exposure"),
+        buttonTxt: i18n.t("stake_protect"),
         buttonActive: true,
         buttonEnabled: true,
         hide: false,
@@ -83,10 +82,9 @@ export default class StakeButtons extends BaseComponent {
       },
       {
         id: 1,
-        title: "Dual-Sided Protection",
-        desc:
-          "Stake pools tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
-        buttonTxt: "Stake and Protect",
+        title: i18n.t("dual_sided_protection"),
+        desc: i18n.t("stake_pools_tokens"),
+        buttonTxt: i18n.t("stake_protect"),
         buttonActive: true,
         buttonEnabled: true,
         hide: this.showAddLiquidity,
@@ -94,9 +92,9 @@ export default class StakeButtons extends BaseComponent {
       },
       {
         id: 2,
-        title: "Dual-Sided Liquidity",
-        desc: "Stake with two tokens and receive pool tokens in return.",
-        buttonTxt: "Add Dual Sided Liquidity",
+        title: i18n.t("dual_sided_liquidity"),
+        desc: i18n.t("stake_with_two"),
+        buttonTxt: i18n.t("add_dual_liquidity"),
         buttonActive: true,
         buttonEnabled: true,
         hide: !this.showAddLiquidity,
@@ -113,7 +111,7 @@ export default class StakeButtons extends BaseComponent {
         poolId: this.poolId
       });
       this.maxStakes = result.map(x => {
-        return `${prettifyNumber(x.amount)} ${x.token}`;
+        return `${this.prettifyNumber(x.amount)} ${x.token}`;
       });
     } catch (e) {
       console.log(e);
@@ -122,7 +120,7 @@ export default class StakeButtons extends BaseComponent {
     }
   }
 
-  async created() {
+  async mounted() {
     await this.loadMaxStakes();
     this.interval = setInterval(async () => {
       await this.loadMaxStakes();

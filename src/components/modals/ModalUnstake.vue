@@ -19,7 +19,7 @@
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              <span v-if="step === 'unstake'">Unstake</span>
+              <span v-if="step === 'unstake'">{{ $t("unstake") }}</span>
             </span>
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -33,41 +33,17 @@
     </template>
 
     <div v-if="step === 'unstake'">
-      <div
-        class="font-size-12 font-w500 text-nowrap"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        <div class="text-uppercase d-inline-block">Unstake your tokens</div>
-        <div
-          class="text-nowrap d-inline-block text-right balance cursor"
-          @click="useMax"
-        >
-          Balance: {{ prettifyNumber(currentStake) }} {{ symbol }}
-        </div>
-      </div>
-
-      <div class="input-currency mt-1">
-        <b-form-input
-          v-model="unstakeInput"
-          :state="state"
-          @keypress="setUnstakeInput"
-          @input="setUnstakeInput"
-          :max="currentStake.toNumber()"
-          type="number"
-          placeholder="0"
-          size="lg"
-          class="input-currency__input"
-        />
-        <div class="input-currency__append pr-3">
-          <img
-            class="img-avatar img-avatar32 bg-dark input-currency__img mr-2 ml-3"
-            src="@/assets/media/logos/bancor-white2.png"
-          />
-
-          <span class="font-size-14 font-w500">{{ symbol }}</span>
-        </div>
-      </div>
-
+      <token-input-field
+        :state="state"
+        @keypress="setUnstakeInput"
+        @input="setUnstakeInput"
+        :max="currentStake.toNumber()"
+        placeholder="0"
+        :token="gBnt"
+        :label="$t('unstake_your_tokens')"
+        v-model="unstakeInput"
+        :balance="currentStake"
+      />
       <main-button
         @click="unstake"
         :label="unstakeLabel"
@@ -92,14 +68,16 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Waiting For Confirmation
+        {{ $t("waiting_for_confirmation") }}
       </h3>
-      <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">
+        {{ `${$t("unstaking")} ${stakeValue} ${symbol}` }}
+      </div>
       <div
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        Confirm this transaction in your wallet
+        {{ $t("confirm__transaction_in_wallet") }}
       </div>
     </div>
 
@@ -113,18 +91,20 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Transaction Submitted
+        {{ $t("transaction_submitted") }}
       </h3>
-      <div class="mt-2 mb-3">Unstaking {{ unstakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">
+        {{ `${$t("unstaking")} ${stakeValue} ${symbol}` }}
+      </div>
       <a
         target="_blank"
         class="text-primary font-w500 cursor"
         :href="getEtherscanUrl()"
-        >View on Etherscan</a
+        >{{ $t("view_etherscan") }}</a
       >
       <main-button
         @click="onHide"
-        label="Close"
+        :label="$t('close')"
         :large="true"
         :active="true"
         :block="true"
@@ -136,25 +116,27 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Component, Watch, VModel } from "vue-property-decorator";
-import { prettifyNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
+import { ViewToken } from "@/types/bancor";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import TokenInputField from "@/components/common/TokenInputField.vue";
 
 @Component({
   components: {
-    MainButton
+    MainButton,
+    TokenInputField
   }
 })
 export default class ModalUnstake extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
+  gBnt: ViewToken = vxm.bancor.tokens[0];
   currentStake: BigNumber = new BigNumber(0);
   unstakeInput: string = "";
   unstakeValue: BigNumber = new BigNumber(0);
-
-  prettifyNumber = prettifyNumber;
 
   step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";
@@ -162,9 +144,9 @@ export default class ModalUnstake extends BaseComponent {
 
   get buttonActive() {
     return (
-        this.unstakeValue.isGreaterThan(0) &&
-        this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
-    )
+      this.unstakeValue.isGreaterThan(0) &&
+      this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
+    );
   }
 
   get state() {
@@ -179,12 +161,12 @@ export default class ModalUnstake extends BaseComponent {
 
   get unstakeLabel() {
     return this.unstakeValue && this.unstakeInput.length === 0
-      ? "Enter Amount"
+      ? i18n.t("enter_amount")
       : this.unstakeValue &&
         this.unstakeValue.isGreaterThan(0) &&
         this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
-      ? "Unstake Tokens"
-      : "Insufficient Amount";
+      ? i18n.t("stake_your_tokens")
+      : i18n.t("insufficient_amount");
   }
 
   setUnstakeInput() {
@@ -227,8 +209,8 @@ export default class ModalUnstake extends BaseComponent {
     this.step = "unstake";
     setTimeout(() => {
       this.unstakeInput = "";
-      this.setUnstakeInput()
-    }, 100)
+      this.setUnstakeInput();
+    }, 100);
   }
 
   @Watch("step")
@@ -246,6 +228,9 @@ export default class ModalUnstake extends BaseComponent {
   }
 
   async mounted() {
+    this.symbol = await vxm.ethGovernance.getSymbol();
+    this.gBnt.symbol = this.symbol;
+
     await this.update();
   }
 }
