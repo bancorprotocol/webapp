@@ -317,22 +317,18 @@
       </template>
       <template #tooltip(votes)>
         <div class="pb-2">
-          {{ `${$t("according_to")} ` }}
-          <a
-            href="https://gov.bancor.network/t/bip3-governance-changes-bip-documentation-requirements-and-new-majority-and-quorum-rules/97"
-            target="_blank"
-            rel="noopener"
-            >BIP3</a
-          >:
+          In order for a proposal to be passed, two conditions must be met:
         </div>
-        <ul class="pl-3">
+        <ol class="pl-3">
           <li>
-            {{ $t("required_quorum_to_pass") }}
+            20% of all staked vBNT must vote in favor. For a Token Whitelisting,
+            40% of all staked vBNT must vote in favor.
           </li>
           <li>
-            {{ $t("third_majority") }}
+            Two-thirds (66.7%) of votes for a given BIP must be in favor in
+            order for the BIP to be approved.
           </li>
-        </ul>
+        </ol>
       </template>
     </layout-proposals>
   </div>
