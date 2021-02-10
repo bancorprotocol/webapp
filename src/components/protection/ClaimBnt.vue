@@ -15,17 +15,13 @@
         :title="$t('token_logo')"
       />
       <span class="mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
-      <!-- <span class="text-primary font-size-12">
-        {{ `(~$${item.usdValue})` }}
-      </span> -->
     </div>
     <div v-if="!locked">
       <b-btn
         variant="primary"
         @click="click"
         class="font-size-14 font-w500 px-4"
-        >{{ `${$t("claim")} BNT` }}</b-btn
-      >
+        >{{ `${$t("claim")} BNT` }}</b-btn>
     </div>
     <div v-else class="time-left text-center">
       <div class="text-primary font-size-18">
@@ -54,18 +50,21 @@ export default class ClaimBnt extends BaseComponent {
   @Emit()
   click() {}
 
+  @Emit("refresh")
+  refresh() {}
+
   countdown(eventTime: number) {
     const currentTime = Date.now() / 1000;
     const diffTime = eventTime - currentTime;
-    let duration = dayjs.duration(diffTime * 1000, "milliseconds");
+    let duration = dayjs.duration(diffTime * 1000, "milliseconds");    
 
     const interval = 1000;
 
-    setInterval(() => {
-      duration = dayjs.duration(
-        duration.asMilliseconds() - interval,
-        "milliseconds"
-      );
+    this.locked = (diffTime > 0) ? true : false;
+
+    const runInterval = setInterval(() => {
+      duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
+
       this.lockDuration =
         duration.hours() +
         "h:" +
@@ -73,7 +72,13 @@ export default class ClaimBnt extends BaseComponent {
         "m:" +
         duration.seconds() +
         "s";
-      this.locked = diffTime > 0;
+
+      if (duration.asMilliseconds() < 0) {
+        this.locked = false;
+
+        clearInterval(runInterval);
+        this.refresh();
+      }
     }, interval);
   }
 
