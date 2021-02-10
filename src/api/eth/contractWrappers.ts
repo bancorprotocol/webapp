@@ -5,8 +5,9 @@ import {
   buildRegistryContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
+  buildLiquidityProtectionStoreContract,
   buildAddressLookupContract,
-  buildLiquidityProtectionStoreContract
+  buildStakingRewardsContract
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
@@ -20,12 +21,15 @@ import {
 import { MultiCall } from "eth-multicall";
 import {
   LiquidityProtectionSettings,
+  PositionReturn,
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
   RegisteredContracts
 } from "@/types/bancor";
 import { asciiToHex } from "web3-utils";
-import { contractAddresses$ } from "../observables";
+import dayjs from "dayjs";
+import BigNumber from "bignumber.js";
+import { shrinkToken } from "./helpers";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -180,7 +184,7 @@ export const getRemoveLiquidityReturn = async (
   id: string,
   ppm: string,
   removeTimestamp: number,
-  web3: Web3
+  web3?: Web3
 ) => {
   throwIfNotContract(protectionContract);
   const contract = buildLiquidityProtectionContract(protectionContract, web3);
@@ -202,19 +206,6 @@ export const getRemoveLiquidityReturn = async (
   // baseAmount - actual return amount in the reserve token
   // networkAmount - compensation in the network token
 };
-
-export const addLiquidityDisabled = async (
-  settingsContract: string,
-  poolId: string,
-  reserveId: string
-): Promise<boolean> => {
-  const contract = buildLiquidityProtectionSettingsContract(settingsContract);
-  const res = await contract.methods
-    .addLiquidityDisabled(poolId, reserveId)
-    .call();
-
-  return res;
-}
 
 export const fetchLiquidityProtectionSettings = async ({
   settingsContractAddress,
@@ -408,4 +399,93 @@ export const fetchPositionsMulti = async (
     ) as ProtectedLiquidity[];
 
   return protectedLiquidity;
+};
+
+export const addLiquidityDisabled = async (
+  settingsContract: string,
+  poolId: string,
+  reserveId: string
+): Promise<boolean> => {
+  const contract = buildLiquidityProtectionSettingsContract(settingsContract);
+  const res = await contract.methods
+    .addLiquidityDisabled(poolId, reserveId)
+    .call();
+
+  return res;
+};
+
+const calculateReturnOnInvestment = (
+  investment: string,
+  newReturn: string
+): string => {
+  return new BigNumber(newReturn).div(investment).minus(1).toString();
+};
+
+interface RemoveLiquidityReturn {
+  positionId: string;
+  fullLiquidityReturn: PositionReturn;
+  currentLiquidityReturn: PositionReturn;
+  roiDec: string;
+}
+
+export const removeLiquidityReturn = async (
+  position: ProtectedLiquidity,
+  liquidityProtectionContract: string
+): Promise<RemoveLiquidityReturn> => {
+  const now = dayjs();
+  const fullWaitTime = now.clone().add(1, "year").unix();
+
+  const timeNow = dayjs().unix();
+
+  const oneMillion = "1000000";
+  const [fullLiquidityReturn, currentLiquidityReturn] = await Promise.all([
+    getRemoveLiquidityReturn(
+      liquidityProtectionContract,
+      position.id,
+      oneMillion,
+      fullWaitTime
+    ),
+    getRemoveLiquidityReturn(
+      liquidityProtectionContract,
+      position.id,
+      oneMillion,
+      timeNow
+    )
+  ]);
+
+  return {
+    positionId: position.id,
+    fullLiquidityReturn,
+    currentLiquidityReturn,
+    roiDec: calculateReturnOnInvestment(
+      position.reserveAmount,
+      fullLiquidityReturn.targetAmount
+    )
+  };
+};
+
+interface PendingReserveReward {
+  poolId: string;
+  reserveId: string;
+  decBnt: string;
+}
+
+export const pendingRewardRewards = async (
+  stakingRewardsContract: string,
+  currentUser: string,
+  poolId: string,
+  reserveId: string
+): Promise<PendingReserveReward> => {
+  const contract = buildStakingRewardsContract(stakingRewardsContract);
+
+  const wei = await contract.methods
+    .pendingReserveRewards(currentUser, poolId, reserveId)
+    .call();
+  const decBnt = shrinkToken(wei, 18);
+
+  return {
+    poolId,
+    reserveId,
+    decBnt
+  };
 };
