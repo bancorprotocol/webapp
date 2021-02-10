@@ -3238,7 +3238,7 @@ export class EthBancorModule
     poolId: string;
     blockHeight?: number;
   }) {
-    const apiData = this.apiData
+    const apiData = this.apiData;
     if (!apiData)
       throw new Error("Cannot fetch relay balances without API data");
     const pool = findOrThrow(
@@ -3277,14 +3277,24 @@ export class EthBancorModule
       console.error(`fetchRelayBalances failed ${err.message} for ${poolId}`);
     }
 
-    const tokenReserves = reserves.map(reserve => findOrThrow(apiData.tokens, token => compareString(reserve.address, token.dlt_id)))
+    const tokenReserves = reserves.map(reserve =>
+      findOrThrow(apiData.tokens, token =>
+        compareString(reserve.address, token.dlt_id)
+      )
+    );
     return {
-      reserves: reserves.map((reserve, index) => ({
-        ...reserve,
-        contract: reserve.address,
-        decimals: findOrThrow(tokenReserves, token => compareString(token.dlt_id, reserve.address)).decimals,
-        weiAmount: reserveBalances[index]
-      })),
+      reserves: reserves.map((reserve, index) => {
+        const token = findOrThrow(tokenReserves, token =>
+          compareString(token.dlt_id, reserve.address)
+        );
+        return {
+          ...reserve,
+          contract: reserve.address,
+          decimals: token.decimals,
+          symbol: token.symbol,
+          weiAmount: reserveBalances[index]
+        };
+      }),
       smartTokenSupplyWei
     };
   }
