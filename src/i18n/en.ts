@@ -72,12 +72,18 @@ export const en = {
   users: "Users",
   quorum: "Quorum",
   breakdown: "Breakdown",
-  according_to: "According to",
-  required_quorum_to_pass:
-    "Required quorum to pass proposals is 20% for standard BIPs & 40% for Token Whitelistings.",
-  third_majority:
-    "A 2/3rd majority (66.7%) of votes is also required for all BIP approvals.",
-  vote: "Vote",
+  vote: {
+    title: "Vote",
+    openProposals: {
+      tooltip1: {
+        p1: "In order for a proposal to be passed, two conditions must be met:",
+        list1:
+          "20% of all staked vBNT must vote in favor. For a Token Whitelisting, 40% of all staked vBNT must vote in favor.",
+        list2:
+          "Two-thirds (66.7%) of votes for a given BIP must be in favor in order for the BIP to be approved."
+      }
+    }
+  },
   governance: "Governance",
   new_proposal: "New Proposal",
   open_proposals: "Open Proposals",
