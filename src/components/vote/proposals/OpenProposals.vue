@@ -399,7 +399,7 @@ export default class OpenProposals extends BaseComponent {
       },
       {
         id: 3,
-        label: i18n.tc("title.vote"),
+        label: i18n.tc("vote.title"),
         key: "votes",
         minWidth: "200px",
         colAuto: false,

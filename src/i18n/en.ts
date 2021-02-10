@@ -73,6 +73,7 @@ export const en = {
   quorum: "Quorum",
   breakdown: "Breakdown",
   vote: {
+    title: "Vote",
     openProposals: {
       tooltip1: {
         p1: "In order for a proposal to be passed, two conditions must be met:",
@@ -83,7 +84,6 @@ export const en = {
       }
     }
   },
-  title: { vote: "Vote" },
   governance: "Governance",
   new_proposal: "New Proposal",
   open_proposals: "Open Proposals",
