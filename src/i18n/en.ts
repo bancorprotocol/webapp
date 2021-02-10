@@ -337,6 +337,8 @@ export const en = {
   for_more_information: "For more information",
   click_here: "click here",
   needed_open_space: "{bnt} needed to open up {tkn} space",
+  available_reserve_only:
+    "The selected pool supports adding liquidity using {availableReserveSymbol} only. In order to add liquidity, please select the other reserve.",
   total_fees: "Total Fees",
   creating_proposal: "Creating Proposal",
   vote_ended: "Vote Ended",
