@@ -77,7 +77,7 @@
     <alert-block
       v-if="focusedReserveIsDisabled"
       variant="error"
-      :msg="`The selected pool supports adding liquidity using ${availableReserveSymbol} only. In order to add liquidity, please select the 2nd reserve.`"
+      :msg="$t(`available_reserve_only`, { availableReserveSymbol })"
       class="mt-3 mb-3"
     />
 
