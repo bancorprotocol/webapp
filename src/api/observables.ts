@@ -1,4 +1,4 @@
-import { differenceWith, isEqual } from "lodash";
+import { differenceWith, isEqual, uniqWith } from "lodash";
 import {
   Subject,
   combineLatest,
@@ -43,7 +43,9 @@ import {
   fetchMinLiqForMinting,
   fetchPositionIds,
   fetchPositionsMulti,
-  fetchWhiteListedV1Pools
+  fetchWhiteListedV1Pools,
+  pendingRewardRewards,
+  removeLiquidityReturn
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
 
@@ -495,6 +497,46 @@ const unVerifiedPositions$ = combineLatest([
   shareReplay(1)
 );
 
+const removeLiquidityReturn$ = combineLatest([
+  unVerifiedPositions$,
+  liquidityProtection$
+]).pipe(
+  switchMapIgnoreThrow(([positions, contractAddress]) =>
+    Promise.all(
+      positions.map(position =>
+        removeLiquidityReturn(position, contractAddress)
+      )
+    )
+  ),
+  logger("simple")
+);
+
+const pendingReserveRewards$ = combineLatest([
+  stakingRewards$,
+  unVerifiedPositions$,
+  authenticated$
+]).pipe(
+  switchMapIgnoreThrow(([stakingRewards, positions, currentUser]) => {
+    const uniquePoolReserveIds = uniqWith(
+      positions,
+      (a, b) =>
+        compareString(a.poolToken, b.poolToken) &&
+        compareString(a.reserveToken, b.reserveToken)
+    );
+
+    return Promise.all(
+      uniquePoolReserveIds.map(poolReserve =>
+        pendingRewardRewards(
+          stakingRewards,
+          currentUser,
+          poolReserve.poolToken,
+          poolReserve.reserveToken
+        )
+      )
+    );
+  })
+);
+
 const fullPositions$ = combineLatest([
   unVerifiedPositions$,
   liquidityProtection$,
@@ -502,7 +544,6 @@ const fullPositions$ = combineLatest([
   apiData$
 ]).pipe(
   tap(() => vxm.ethBancor.setLoadingPositions(true)),
-  logger("build full positions fetching"),
   switchMap(([rawPositions, liquidityProtection, { blockNumber }]) => {
     return vxm.ethBancor.buildFullPositions({
       rawPositions,
