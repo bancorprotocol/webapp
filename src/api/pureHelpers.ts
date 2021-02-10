@@ -36,11 +36,6 @@ export const calculateAmountToGetSpace = (
 export const groupPositionsArray = (
   arr: ViewProtectedLiquidity[]
 ): ViewGroupedPositions[] => {
-  console.log(
-    arr[0].pendingReserveReward,
-    typeof arr[0].pendingReserveReward == "string",
-    "just kidding"
-  );
   return arr.reduce(
     (obj => (acc: ViewGroupedPositions[], val: ViewProtectedLiquidity) => {
       const symbol = val.stake.symbol;
@@ -63,7 +58,6 @@ export const groupPositionsArray = (
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
         item.pendingReserveReward = val.pendingReserveReward;
-        console.log(arr, "is the arr", item, item.pendingReserveReward);
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
@@ -79,17 +73,18 @@ export const groupPositionsArray = (
           .reduce((sum, current) => sum + current);
         let sumProtectedWithReward: BigNumber;
 
+        const pendingReserveRewardBig = new BigNumber(
+          item.pendingReserveReward
+        );
         if (compareString(symbol, "BNT")) {
-          sumFullyProtectedWithReward = item.pendingReserveReward.plus(
+          sumFullyProtectedWithReward = pendingReserveRewardBig.plus(
             sumFullyProtected
           );
-          sumProtectedWithReward = item.pendingReserveReward.plus(
+          sumProtectedWithReward = pendingReserveRewardBig.plus(
             sumProtectedAmount
           );
         } else {
-          const bntRewardUsd = item.pendingReserveReward.times(
-            val.bntTokenPrice
-          );
+          const bntRewardUsd = pendingReserveRewardBig.times(val.bntTokenPrice);
           sumFullyProtectedWithReward = bntRewardUsd
             .div(val.reserveTokenPrice)
             .plus(sumFullyProtected);

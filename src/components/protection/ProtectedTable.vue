@@ -192,7 +192,7 @@
             {{ `${prettifyNumber(value)} ${item.symbol}` }}
           </div>
           <b-badge
-            v-if="item.pendingReserveReward.gt(0)"
+            v-if="new BigNumber(item.pendingReserveReward).gt(0)"
             variant="primary"
             class="px-2"
           >
@@ -407,6 +407,7 @@ import {
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -421,6 +422,7 @@ export default class ProtectedTable extends BaseComponent {
   @Prop() positions!: ViewProtectedLiquidity[];
 
   stringifyPercentage = stringifyPercentage;
+  BigNumber = BigNumber;
 
   get groupedPositions() {
     if (this.positions.length > 0) {
