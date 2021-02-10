@@ -3640,9 +3640,6 @@ export class EthBancorModule
   }
 
   @action async fetchDisabledReserves(poolId: string): Promise<string[]> {
-    // DELETE ME
-    return ["0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"];
-    // DELETE ME END
     const pool = findOrThrow(
       this.newPools,
       pool => compareString(pool.pool_dlt_id, poolId),
