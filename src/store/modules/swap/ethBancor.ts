@@ -1596,7 +1596,7 @@ export class EthBancorModule
     liquidityProtection: string;
     blockNumberNow: number;
     supportedAnchors: string[];
-  }) {
+  }): Promise<ProtectedLiquidityCalculated[]> {
     try {
       const currentBlockNumber = blockNumberNow;
 
