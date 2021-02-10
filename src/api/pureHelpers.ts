@@ -36,6 +36,11 @@ export const calculateAmountToGetSpace = (
 export const groupPositionsArray = (
   arr: ViewProtectedLiquidity[]
 ): ViewGroupedPositions[] => {
+  console.log(
+    arr[0].pendingReserveReward,
+    typeof arr[0].pendingReserveReward == "string",
+    "just kidding"
+  );
   return arr.reduce(
     (obj => (acc: ViewGroupedPositions[], val: ViewProtectedLiquidity) => {
       const symbol = val.stake.symbol;
@@ -58,6 +63,7 @@ export const groupPositionsArray = (
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
         item.pendingReserveReward = val.pendingReserveReward;
+        console.log(arr, "is the arr", item, item.pendingReserveReward);
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
