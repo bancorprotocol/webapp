@@ -47,6 +47,7 @@
       :label="$t('stake_amount')"
       :token="token"
       v-model="amount"
+      :disabled="focusedReserveIsDisabled"
       @input="amountChanged"
       :balance="balance"
       :error-msg="inputError"
@@ -72,6 +73,13 @@
         />
       </div>
     </gray-border-block>
+
+    <alert-block
+      v-if="focusedReserveIsDisabled"
+      variant="error"
+      :msg="$t(`available_reserve_only`, { availableReserveSymbol })"
+      class="mt-3 mb-3"
+    />
 
     <gray-border-block :gray-bg="true" class="my-3">
       <label-content-split
@@ -252,8 +260,25 @@ export default class AddProtectionSingle extends BaseComponent {
     );
   }
 
+  disabledReserves: string[] = [];
+
   get tokens() {
     return this.pool.reserves;
+  }
+
+  get focusedReserveIsDisabled() {
+    return this.disabledReserves.some(reserveId =>
+      compareString(reserveId, this.token.id)
+    );
+  }
+
+  get availableReserveSymbol() {
+    return this.pool.reserves.find(
+      reserve =>
+        !this.disabledReserves.some(reserveId =>
+          compareString(reserveId, reserve.id)
+        )
+    )!.symbol;
   }
 
   get pools() {
@@ -282,6 +307,7 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   get disableActionButton() {
+    if (this.focusedReserveIsDisabled) return true;
     if (!this.amount) return true;
     else if (this.priceDeviationTooHigh) return true;
     else if (this.loading) return true;
@@ -422,27 +448,40 @@ export default class AddProtectionSingle extends BaseComponent {
     });
   }
 
+  async fetchAndSetMaxStakes(poolId: string) {
+    this.amountToMakeSpace = "";
+
+    const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
+      poolId
+    });
+    const availableSpace = res.availableSpace;
+
+    const selectedToken = findOrThrow(
+      availableSpace,
+      space => compareString(space.token, this.token.symbol),
+      "Failed finding focused token in available space"
+    );
+    this.maxStakeAmount = selectedToken.amount;
+    this.maxStakeSymbol = selectedToken.token;
+
+    if (res.amountToGetSpace) this.amountToMakeSpace = res.amountToGetSpace;
+  }
+
+  async fetchAndSetDisabledReserves(poolId: string) {
+    const disabledReserves = await vxm.ethBancor.fetchDisabledReserves(poolId);
+    this.disabledReserves = disabledReserves;
+  }
+
   async load() {
     if (this.loading) return;
     this.loading = true;
-    this.amountToMakeSpace = "";
     try {
-      const res = await vxm.ethBancor.getAvailableAndAmountToGetSpace({
-        poolId: this.pool.id
-      });
-      const availableSpace = res.availableSpace;
-
-      const selectedToken = findOrThrow(
-        availableSpace,
-        space => compareString(space.token, this.token.symbol),
-        "Failed finding focused token in available space"
-      );
-      this.maxStakeAmount = selectedToken.amount;
-      this.maxStakeSymbol = selectedToken.token;
-
-      if (res.amountToGetSpace) this.amountToMakeSpace = res.amountToGetSpace;
+      await Promise.all([
+        this.fetchAndSetMaxStakes(this.pool.id),
+        this.fetchAndSetDisabledReserves(this.pool.id)
+      ]);
     } catch (e) {
-      console.log(e.message);
+      console.error(e.message);
     } finally {
       this.loading = false;
     }
