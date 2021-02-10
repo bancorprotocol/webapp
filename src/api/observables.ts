@@ -86,7 +86,7 @@ const optimisticObservable = <T, Y>(
       tap(data => {
         const isSame = isEqual(parsedData, data);
         if (!isSame) {
-          console.log("data is not the same! setting again");
+          console.log("data is not the same! setting...", JSON.stringify(data));
           localStorage.setItem(localKey, JSON.stringify(data));
         } else {
           console.log("data is the same, setting");
@@ -181,7 +181,9 @@ export const switchMapIgnoreThrow = <T, Y>(
 
 let difference = Date.now();
 
-const logger = <T>(label: string) => (source: Observable<T>) =>
+const logger = <T>(label: string, hideReturn = false) => (
+  source: Observable<T>
+) =>
   source.pipe(
     tap({
       next: data => {
@@ -189,14 +191,14 @@ const logger = <T>(label: string) => (source: Observable<T>) =>
           difference = Date.now() - difference;
         }
         console.log(
-          `Logger (Next): (${difference} ms): ${label} returned ${JSON.stringify(
-            data
-          )}`
+          `Logger (Next): (${difference} ms): ${label} returned ${
+            hideReturn ? "" : JSON.stringify(data)
+          }`
         );
         difference = Date.now();
       },
       error: error => {
-        console.warn(
+        console.error(
           `Logger (Error): ${label} has received an error in ${error}`
         );
       },
@@ -220,7 +222,7 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
 
 export const apiData$ = networkVersion$.pipe(
   switchMap(networkVersion => getWelcomeData(networkVersion)),
-  logger("api data"),
+  logger("api data", true),
   share()
 );
 
@@ -404,8 +406,9 @@ const fullPositions$ = combineLatest([
   apiData$
 ]).pipe(
   tap(() => vxm.ethBancor.setLoadingPositions(true)),
-  logger("build full positions fetching"),
-  switchMapIgnoreThrow(
+  logger("build full positions fetching", true),
+  optimisticObservable(
+    "fullPositions",
     ([
       rawPositions,
       liquidityProtectionStore,
