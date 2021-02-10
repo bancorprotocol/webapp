@@ -1607,24 +1607,20 @@ export class EthBancorModule
   @action async buildFullPositions({
     rawPositions,
     liquidityProtection,
-    blockNumberNow,
-    supportedAnchors
+    blockNumberNow
   }: {
     rawPositions: ProtectedLiquidity[];
-    liquidityProtectionStore: string;
     liquidityProtection: string;
     blockNumberNow: number;
-    supportedAnchors: string[];
   }): Promise<ProtectedLiquidityCalculated[]> {
+    const isValidAddress = web3.utils.isAddress(liquidityProtection);
+    if (!isValidAddress) throw new Error("Invalid contract address passed");
+
+    console.log({ rawPositions, liquidityProtection, blockNumberNow });
     try {
       const currentBlockNumber = blockNumberNow;
 
-      const allPositions = filterAndWarn(
-        rawPositions,
-        pos =>
-          supportedAnchors.some(anchor => compareString(pos.poolToken, anchor)),
-        "position lost due to anchor not being supported"
-      );
+      const allPositions = rawPositions;
 
       const lpContract = buildLiquidityProtectionContract(
         liquidityProtection,
@@ -1889,7 +1885,9 @@ export class EthBancorModule
 
       return positions;
     } catch (e) {
-      throw new Error(`Failed building full positions ${e}`);
+      throw new Error(
+        `bbbbbbbbbbbbbbbbbbbbbb - Failed building full positions ${e}`
+      );
     }
   }
 
@@ -3240,7 +3238,16 @@ export class EthBancorModule
     poolId: string;
     blockHeight?: number;
   }) {
-    const { reserves, version, contract } = await this.relayById(poolId);
+    const apiData = this.apiData
+    if (!apiData)
+      throw new Error("Cannot fetch relay balances without API data");
+    const pool = findOrThrow(
+      apiData.pools,
+      pool => compareString(pool.pool_dlt_id, poolId),
+      "failed finding pool"
+    );
+    const { reserves, version } = pool;
+    const contract = pool.converter_dlt_id;
 
     const converterContract = buildConverterContract(contract, w3);
     const smartTokenContract = buildTokenContract(poolId, w3);
@@ -3255,7 +3262,7 @@ export class EthBancorModule
           reserves.map(reserve =>
             fetchReserveBalance(
               converterContract,
-              reserve.contract,
+              reserve.address,
               version,
               blockHeight
             )
@@ -3270,9 +3277,12 @@ export class EthBancorModule
       console.error(`fetchRelayBalances failed ${err.message} for ${poolId}`);
     }
 
+    const tokenReserves = reserves.map(reserve => findOrThrow(apiData.tokens, token => compareString(reserve.address, token.dlt_id)))
     return {
       reserves: reserves.map((reserve, index) => ({
         ...reserve,
+        contract: reserve.address,
+        decimals: findOrThrow(tokenReserves, token => compareString(token.dlt_id, reserve.address)).decimals,
         weiAmount: reserveBalances[index]
       })),
       smartTokenSupplyWei

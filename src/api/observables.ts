@@ -497,41 +497,48 @@ const unVerifiedPositions$ = combineLatest([
 
 const fullPositions$ = combineLatest([
   unVerifiedPositions$,
-  liquidityProtectionStore$,
   liquidityProtection$,
   currentBlock$,
   apiData$
 ]).pipe(
   tap(() => vxm.ethBancor.setLoadingPositions(true)),
-  logger("build full positions fetching", true),
-  optimisticObservable(
-    "fullPositions",
-    ([
+  logger("build full positions fetching"),
+  switchMap(([rawPositions, liquidityProtection, { blockNumber }]) => {
+    return vxm.ethBancor.buildFullPositions({
       rawPositions,
-      liquidityProtectionStore,
       liquidityProtection,
-      { blockNumber },
-      apiData
-    ]) => {
-      const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
-
-      return vxm.ethBancor.buildFullPositions({
-        rawPositions,
-        liquidityProtection,
-        blockNumberNow: blockNumber,
-        supportedAnchors,
-        liquidityProtectionStore
-      });
-    }
-  ),
+      blockNumberNow: blockNumber
+    });
+  }),
   logger("build full positions fetched")
 );
 
-onLogin$.pipe(withLatestFrom(apiData$)).subscribe(([userAddress, apiData]) => {
-  if (userAddress) {
-    const reserveTokens = apiData.tokens.map(token => token.dlt_id);
-    const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
-    const allTokens = [...poolTokens, ...reserveTokens];
-    vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+combineLatest([fullPositions$, authenticated$, apiData$])
+  .pipe(logger("with authentication"))
+  .subscribe(([positions, currentUser, apiData]) => {
+    const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
+
+    vxm.ethBancor.setProtectedPositions(
+      positions
+        .filter(position => compareString(position.owner, currentUser))
+        .filter(position =>
+          supportedAnchors.some(anchor =>
+            compareString(anchor, position.poolToken)
+          )
+        )
+    );
+    vxm.ethBancor.setLoadingPositions(false);
+  });
+
+combineLatest([authenticated$, apiData$]).subscribe(
+  ([userAddress, apiData]) => {
+    if (userAddress) {
+      const reserveTokens = apiData.tokens.map(token => token.dlt_id);
+      const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
+      const allTokens = [...poolTokens, ...reserveTokens];
+      try {
+        vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+      } catch (e) {}
+    }
   }
 });
