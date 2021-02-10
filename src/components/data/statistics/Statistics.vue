@@ -9,11 +9,17 @@
     </b-col> -->
 
     <b-col cols="6" lg="3" class="mb-4 mb-lg-0">
-      <statistics-data-block title="Total Liquidity" :value="liquidityDepth" />
+      <statistics-data-block
+        :title="$t('total_liquidity')"
+        :value="liquidityDepth"
+      />
     </b-col>
 
     <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
-      <statistics-data-block title="BNT Price" :value="bntPriceUsd" />
+      <statistics-data-block
+        :title="`${$t('price')} BNT`"
+        :value="bntPriceUsd"
+      />
     </b-col>
 
     <!--    <b-col md="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
@@ -24,12 +30,12 @@
     </b-col>-->
 
     <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
-      <statistics-data-block title="Volume (24hrs)" :value="volume24h" />
+      <statistics-data-block :title="$t('volume')" :value="volume24h" />
     </b-col>
 
     <b-col cols="6" lg="3" class="mb-4 mb-md-0 mb-lg-0">
       <statistics-data-block
-        title="Total BNT Staked"
+        :title="$t('total_bnt_staked')"
         :value="lockedVsCirculatingBnt"
       />
     </b-col>
@@ -65,6 +71,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import StatisticsDataBlock from "@/components/data/statistics/StatisticsDataBlock.vue";
 import numeral from "numeral";
 import { stringifyPercentage } from "@/api/helpers";
@@ -95,7 +102,7 @@ export default class Statistics extends BaseComponent {
   }
 
   get nativeTokenLabel() {
-    return `${this.stats.nativeTokenPrice.symbol} Price`;
+    return `${this.stats.nativeTokenPrice.symbol} ${i18n.t("price")}`;
   }
 
   get nativeTokenPrice() {

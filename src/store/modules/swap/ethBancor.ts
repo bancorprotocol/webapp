@@ -1416,9 +1416,9 @@ export class EthBancorModule
 
   liquidityProtectionSettings: LiquidityProtectionSettings = {
     contract: "",
-    minDelay: dayjs.duration("30", "days").asSeconds(),
-    maxDelay: dayjs.duration("100", "days").asSeconds(),
-    lockedDelay: dayjs.duration("24", "hours").asSeconds(),
+    minDelay: dayjs.duration(30, "days").asSeconds(),
+    maxDelay: dayjs.duration(100, "days").asSeconds(),
+    lockedDelay: dayjs.duration(24, "hours").asSeconds(),
     networkToken: "",
     govToken: "",
     defaultNetworkTokenMintingLimit: "0"
@@ -2476,6 +2476,12 @@ export class EthBancorModule
     const averageRate = new BigNumber(recentAverageRateResult["1"]).dividedBy(
       recentAverageRateResult["0"]
     );
+
+    if (averageRate.isNaN()) {
+      throw new Error(
+        "Price deviation calculation failed. Please contact support."
+      );
+    }
 
     const priceDeviationTooHigh = calculatePriceDeviationTooHigh(
       averageRate,
@@ -3773,7 +3779,7 @@ export class EthBancorModule
 
     return {
       outputs: [],
-      ...(overMaxLimit && { error: "Insufficient store balance" })
+      ...(overMaxLimit && { error: "balance" })
     };
   }
 

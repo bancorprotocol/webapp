@@ -1,16 +1,13 @@
 <template>
   <div class="mt-3">
-    <alert-block
-      title="Learn what it means to add liquidity to a pool:"
-      class="my-3"
-    >
+    <alert-block :title="`${$t('add_liquidity_pool')}:`" class="my-3">
       <ol class="m-0 pl-3">
         <li>
           <a
             href="https://blog.bancor.network/how-to-stake-liquidity-earn-fees-on-bancor-bff8369274a1"
             target="_blank"
           >
-            How do I make money by providing liquidity?
+            {{ `${$t("make_money_liquidity")}?` }}
           </a>
         </li>
         <li>
@@ -18,7 +15,7 @@
             href="https://blog.bancor.network/beginners-guide-to-getting-rekt-by-impermanent-loss-7c9510cb2f22"
             target="_blank"
           >
-            What is impermanent loss?
+            {{ `${$t("impermanent_loss")}?` }}
           </a>
         </li>
         <li>
@@ -26,7 +23,7 @@
             href="https://bankless.substack.com/p/how-to-protect-yourself-from-impermanent"
             target="_blank"
           >
-            How does Bancor protect me from impermanent loss?
+            {{ `${$t("protect_impermanent_loss")}?` }}
           </a>
         </li>
       </ol>
@@ -52,6 +49,7 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import StakeButtons from "@/components/protection/StakeButtons.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { i18n } from "@/i18n";
 
 @Component({
   components: {

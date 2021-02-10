@@ -31,7 +31,7 @@
           <b-col cols="12">
             <multi-input-field
               v-model="searchField"
-              placeholder="Search"
+              :placeholder="$t('search')"
               prepend="search"
               height="48"
               font-size="lg"

@@ -1,6 +1,6 @@
 <template>
   <collapsable-block
-    title="Assets at risk of impermanent loss"
+    :title="$t('risk_impermanent_loss')"
     header-icon="exclamation-triangle"
   >
     <div
@@ -37,7 +37,7 @@
           variant="primary"
           class="table-button"
         >
-          Add Liquidity
+          {{ $t("add_liquidity") }}
         </b-btn>
       </div>
     </div>

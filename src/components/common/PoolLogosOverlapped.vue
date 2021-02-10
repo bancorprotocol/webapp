@@ -6,7 +6,7 @@
       class="img-avatar bg-white logo-shadow"
       :class="styleClasses(index)"
       :src="reserve.logo"
-      alt="Token Logo"
+      :alt="$t('token_logo')"
     />
   </div>
 </template>
@@ -14,8 +14,8 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay } from "@/types/bancor"
-import { defaultImage } from "@/store/modules/swap/ethBancor"
+import { ViewRelay } from "@/types/bancor";
+import { defaultImage } from "@/store/modules/swap/ethBancor";
 
 @Component
 export default class PoolLogosOverlapped extends Vue {
