@@ -3661,10 +3661,11 @@ export class EthBancorModule
         )
       }))
     );
-    const disabledReserves = reserveStatuses.filter(
-      reserve => reserve.disabled
-    );
-    return disabledReserves.map(reserve => reserve.reserveId);
+    const disabledReserves = reserveStatuses
+      .filter(reserve => reserve.disabled)
+      .map(reserve => reserve.reserveId);
+
+    return disabledReserves;
   }
 
   @action async getAvailableAndAmountToGetSpace({
