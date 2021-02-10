@@ -253,6 +253,6 @@ export class RewardsModule extends VuexModule.With({
       .rewardsMultiplier(this.currentUser, poolId, reserveId)
       .call();
 
-    return new BigNumber(result);
+    return new BigNumber(shrinkToken(result, 6));
   }
 }

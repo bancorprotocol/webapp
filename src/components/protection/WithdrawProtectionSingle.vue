@@ -196,9 +196,9 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   get rewardsWithMultiplier() {
-    vxm.ethBancor.protectedPositions.forEach(position => {
-      console.log("position.rewardsMultiplier " + position.rewardsMultiplier);
-    });
+    for (let position of vxm.ethBancor.protectedPositions)
+      if (position.rewardsMultiplier.gt(1)) return true;
+
     return false;
   }
 
