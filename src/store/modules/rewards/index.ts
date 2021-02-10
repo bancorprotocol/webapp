@@ -241,4 +241,18 @@ export class RewardsModule extends VuexModule.With({
 
     return new BigNumber(shrinkToken(result, 18));
   }
+
+  @action async fetchRewardsMultiplier({
+    poolId,
+    reserveId
+  }: {
+    poolId: string;
+    reserveId: string;
+  }): Promise<BigNumber> {
+    const result = await this.contract.methods
+      .rewardsMultiplier(this.currentUser, poolId, reserveId)
+      .call();
+
+    return new BigNumber(result);
+  }
 }
