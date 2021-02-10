@@ -51,7 +51,11 @@
       v-model="modal"
       @input="setDefault"
     >
-      <action-modal-status :error="error" :success="success" />
+      <action-modal-status
+        :error="error"
+        :success="success"
+        :msg="$t('bnt_withdrawls')"
+      />
 
       <main-button
         @click="onModalClick"

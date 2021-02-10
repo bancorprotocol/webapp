@@ -557,14 +557,10 @@ export const ABILiquidityProtection: AbiItem[] = [
 export const ABILiquidityProtectionSettings: AbiItem[] = [
   {
     inputs: [
-      {
-        internalType: "contract IERC20Token",
-        name: "_networkToken",
-        type: "address"
-      },
+      { internalType: "contract IERC20Token", name: "token", type: "address" },
       {
         internalType: "contract IContractRegistry",
-        name: "_registry",
+        name: "registry",
         type: "address"
       }
     ],
@@ -575,15 +571,35 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      },
+      {
+        indexed: true,
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      },
+      { indexed: false, internalType: "bool", name: "disabled", type: "bool" }
+    ],
+    name: "AddLiquidityDisabled",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "uint32",
-        name: "_prevAverageRateMaxDeviation",
+        name: "prevAverageRateMaxDeviation",
         type: "uint32"
       },
       {
         indexed: false,
         internalType: "uint32",
-        name: "_newAverageRateMaxDeviation",
+        name: "newAverageRateMaxDeviation",
         type: "uint32"
       }
     ],
@@ -596,13 +612,13 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "_prevDefault",
+        name: "prevDefault",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_newDefault",
+        name: "newDefault",
         type: "uint256"
       }
     ],
@@ -615,13 +631,13 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "_prevLockDuration",
+        name: "prevLockDuration",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_newLockDuration",
+        name: "newLockDuration",
         type: "uint256"
       }
     ],
@@ -634,13 +650,13 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "_prevMinNetworkCompensation",
+        name: "prevMinNetworkCompensation",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_newMinNetworkCompensation",
+        name: "newMinNetworkCompensation",
         type: "uint256"
       }
     ],
@@ -653,13 +669,13 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "_prevMin",
+        name: "prevMin",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_newMin",
+        name: "newMin",
         type: "uint256"
       }
     ],
@@ -672,48 +688,23 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       {
         indexed: true,
         internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
+        name: "poolAnchor",
         type: "address"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_prevLimit",
+        name: "prevLimit",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_newLimit",
+        name: "newLimit",
         type: "uint256"
       }
     ],
     name: "NetworkTokenMintingLimitUpdated",
-    type: "event"
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_prevAmount",
-        type: "uint256"
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_newAmount",
-        type: "uint256"
-      }
-    ],
-    name: "NetworkTokensMintedUpdated",
     type: "event"
   },
   {
@@ -741,10 +732,10 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       {
         indexed: true,
         internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
+        name: "poolAnchor",
         type: "address"
       },
-      { indexed: false, internalType: "bool", name: "_added", type: "bool" }
+      { indexed: false, internalType: "bool", name: "added", type: "bool" }
     ],
     name: "PoolWhitelistUpdated",
     type: "event"
@@ -755,25 +746,25 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "_prevMinProtectionDelay",
+        name: "prevMinProtectionDelay",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_newMinProtectionDelay",
+        name: "newMinProtectionDelay",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_prevMaxProtectionDelay",
+        name: "prevMaxProtectionDelay",
         type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "_newMaxProtectionDelay",
+        name: "newMaxProtectionDelay",
         type: "uint256"
       }
     ],
@@ -841,15 +832,22 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
     type: "event"
   },
   {
-    inputs: [],
-    name: "DEFAULT_ADMIN_ROLE",
-    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
-    stateMutability: "view",
-    type: "function"
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "contract ILiquidityProtectionEventsSubscriber",
+        name: "subscriber",
+        type: "address"
+      },
+      { indexed: false, internalType: "bool", name: "added", type: "bool" }
+    ],
+    name: "SubscriberUpdated",
+    type: "event"
   },
   {
     inputs: [],
-    name: "ROLE_MINTED_TOKENS_ADMIN",
+    name: "DEFAULT_ADMIN_ROLE",
     outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
     stateMutability: "view",
     type: "function"
@@ -869,6 +867,50 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
     type: "function"
   },
   {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      }
+    ],
+    name: "addLiquidityDisabled",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      }
+    ],
+    name: "addPoolToWhitelist",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract ILiquidityProtectionEventsSubscriber",
+        name: "subscriber",
+        type: "address"
+      }
+    ],
+    name: "addSubscriber",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
     inputs: [],
     name: "averageRateMaxDeviation",
     outputs: [{ internalType: "uint32", name: "", type: "uint32" }],
@@ -880,6 +922,25 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
     name: "defaultNetworkTokenMintingLimit",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      },
+      {
+        internalType: "contract IERC20Token",
+        name: "reserveToken",
+        type: "address"
+      },
+      { internalType: "bool", name: "disable", type: "bool" }
+    ],
+    name: "disableAddLiquidity",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function"
   },
   {
@@ -922,6 +983,32 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       { internalType: "address", name: "account", type: "address" }
     ],
     name: "hasRole",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      }
+    ],
+    name: "isPoolSupported",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      }
+    ],
+    name: "isPoolWhitelisted",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function"
@@ -972,18 +1059,13 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
   },
   {
     inputs: [
-      { internalType: "contract IConverterAnchor", name: "", type: "address" }
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      }
     ],
     name: "networkTokenMintingLimits",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "contract IConverterAnchor", name: "", type: "address" }
-    ],
-    name: "networkTokensMinted",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function"
@@ -1011,6 +1093,13 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
   },
   {
     inputs: [],
+    name: "poolWhitelist",
+    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
     name: "prevRegistry",
     outputs: [
       { internalType: "contract IContractRegistry", name: "", type: "address" }
@@ -1025,6 +1114,32 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
       { internalType: "contract IContractRegistry", name: "", type: "address" }
     ],
     stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      }
+    ],
+    name: "removePoolFromWhitelist",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract ILiquidityProtectionEventsSubscriber",
+        name: "subscriber",
+        type: "address"
+      }
+    ],
+    name: "removeSubscriber",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function"
   },
   {
@@ -1068,6 +1183,72 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
     type: "function"
   },
   {
+    inputs: [{ internalType: "uint32", name: "deviation", type: "uint32" }],
+    name: "setAverageRateMaxDeviation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+    name: "setDefaultNetworkTokenMintingLimit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "duration", type: "uint256" }],
+    name: "setLockDuration",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+    name: "setMinNetworkCompensation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+    name: "setMinNetworkTokenLiquidityForMinting",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IConverterAnchor",
+        name: "poolAnchor",
+        type: "address"
+      },
+      { internalType: "uint256", name: "amount", type: "uint256" }
+    ],
+    name: "setNetworkTokenMintingLimit",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "minDelay", type: "uint256" },
+      { internalType: "uint256", name: "maxDelay", type: "uint256" }
+    ],
+    name: "setProtectionDelays",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "subscribers",
+    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
     inputs: [{ internalType: "address", name: "_newOwner", type: "address" }],
     name: "transferOwnership",
     outputs: [],
@@ -1079,162 +1260,6 @@ export const ABILiquidityProtectionSettings: AbiItem[] = [
     name: "updateRegistry",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      }
-    ],
-    name: "addPoolToWhitelist",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      }
-    ],
-    name: "removePoolFromWhitelist",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      }
-    ],
-    name: "isPoolWhitelisted",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "poolWhitelist",
-    outputs: [{ internalType: "address[]", name: "", type: "address[]" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "_minimum", type: "uint256" }],
-    name: "setMinNetworkTokenLiquidityForMinting",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "_limit", type: "uint256" }],
-    name: "setDefaultNetworkTokenMintingLimit",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      },
-      { internalType: "uint256", name: "_limit", type: "uint256" }
-    ],
-    name: "setNetworkTokenMintingLimit",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      },
-      { internalType: "uint256", name: "_amount", type: "uint256" }
-    ],
-    name: "incNetworkTokensMinted",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      },
-      { internalType: "uint256", name: "_amount", type: "uint256" }
-    ],
-    name: "decNetworkTokensMinted",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_minProtectionDelay", type: "uint256" },
-      { internalType: "uint256", name: "_maxProtectionDelay", type: "uint256" }
-    ],
-    name: "setProtectionDelays",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_minCompensation", type: "uint256" }
-    ],
-    name: "setMinNetworkCompensation",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "_lockDuration", type: "uint256" }
-    ],
-    name: "setLockDuration",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint32",
-        name: "_averageRateMaxDeviation",
-        type: "uint32"
-      }
-    ],
-    name: "setAverageRateMaxDeviation",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IConverterAnchor",
-        name: "_poolAnchor",
-        type: "address"
-      }
-    ],
-    name: "isPoolSupported",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
     type: "function"
   }
 ];

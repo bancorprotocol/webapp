@@ -17,6 +17,13 @@
     />
 
     <alert-block
+      v-if="priceDeviationTooHigh && !inputError"
+      variant="error"
+      class="mb-3"
+      msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds."
+    />
+
+    <alert-block
       v-if="warning"
       variant="warning"
       :title="$t('important')"
@@ -71,14 +78,6 @@
       class="my-3"
     />
 
-    <price-deviation-error
-      v-model="priceDeviationTooHigh"
-      :pool-id="pool.id"
-      :token-contract="tokenContract"
-      class="mb-3"
-      ref="priceDeviationError"
-    />
-
     <main-button
       :label="$t('continue')"
       @click="initAction"
@@ -92,7 +91,11 @@
       v-model="modal"
       @input="setDefault"
     >
-      <action-modal-status :error="error" :success="success" />
+      <action-modal-status
+        :error="error"
+        :success="success"
+        msg="BNT withdrawals are subject to a 24h lock period before they can be claimed."
+      />
 
       <main-button
         @click="onModalClick"
@@ -122,12 +125,9 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
-import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
-import Vue from "vue";
 
 @Component({
   components: {
-    PriceDeviationError,
     LogoAmountSymbol,
     ActionModalStatus,
     ModalBase,
@@ -270,12 +270,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       id: this.position.id,
       decPercent: percentage
     });
+    await this.loadRecentAverageRate();
 
     this.expectedValue = res.expectedValue;
     this.outputs = res.outputs;
 
     console.log(res, "was the res");
-    await this.loadRecentAverageRate();
   }
 
   get tokenContract() {
@@ -287,9 +287,11 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   async loadRecentAverageRate() {
-    await (this.$refs.priceDeviationError as Vue & {
-      loadRecentAverageRate: () => boolean;
-    }).loadRecentAverageRate();
+    this.priceDeviationTooHigh = await vxm.bancor.checkPriceDeviationTooHigh({
+      relayId: this.pool.id,
+      selectedTokenAddress: this.tokenContract
+    });
+    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
   }
 
   private interval: any;
