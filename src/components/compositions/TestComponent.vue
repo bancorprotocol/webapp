@@ -2,6 +2,7 @@
   <div>
     <pre>{{ books }}</pre>
     <b-input v-model="search" />
+    {{ search }}
     <pre>{{ filteredBooks }}</pre>
     <b-input v-model="bookInput.title" />
     <b-input v-model="bookInput.author" />
@@ -11,18 +12,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from "@vue/composition-api";
-import {
-  addBook,
-  books,
-  filteredBooks,
-  IBook,
-  search
-} from "@/components/compositions/store";
+import { computed, defineComponent, reactive, ref } from "@vue/composition-api";
+import { addBook, books, IBook } from "@/components/compositions/store";
 
 export default defineComponent({
   setup() {
     const bookInput = reactive<IBook>({ title: "", author: "" });
+
+    const search = ref<string>("");
+
+    const filteredBooks = computed(() => {
+      return books.filter(book => {
+        return book.title === "ja";
+      });
+    });
 
     return {
       books,
