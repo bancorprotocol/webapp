@@ -400,41 +400,35 @@ const unVerifiedPositions$ = combineLatest([
 
 const fullPositions$ = combineLatest([
   unVerifiedPositions$,
-  liquidityProtectionStore$,
   liquidityProtection$,
   currentBlock$,
   apiData$
 ]).pipe(
   tap(() => vxm.ethBancor.setLoadingPositions(true)),
-  logger("build full positions fetching", true),
-  optimisticObservable(
-    "fullPositions",
-    ([
+  logger("build full positions fetching"),
+  switchMap(([rawPositions, liquidityProtection, { blockNumber }]) => {
+    return vxm.ethBancor.buildFullPositions({
       rawPositions,
-      liquidityProtectionStore,
       liquidityProtection,
-      { blockNumber },
-      apiData
-    ]) => {
-      const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
-
-      return vxm.ethBancor.buildFullPositions({
-        rawPositions,
-        liquidityProtection,
-        blockNumberNow: blockNumber,
-        supportedAnchors,
-        liquidityProtectionStore
-      });
-    }
-  ),
+      blockNumberNow: blockNumber
+    });
+  }),
   logger("build full positions fetched")
 );
 
-combineLatest([fullPositions$, authenticated$])
+combineLatest([fullPositions$, authenticated$, apiData$])
   .pipe(logger("with authentication"))
-  .subscribe(([positions, currentUser]) => {
+  .subscribe(([positions, currentUser, apiData]) => {
+    const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
+
     vxm.ethBancor.setProtectedPositions(
-      positions.filter(position => compareString(position.owner, currentUser))
+      positions
+        .filter(position => compareString(position.owner, currentUser))
+        .filter(position =>
+          supportedAnchors.some(anchor =>
+            compareString(anchor, position.poolToken)
+          )
+        )
     );
     vxm.ethBancor.setLoadingPositions(false);
   });
