@@ -100,7 +100,11 @@ import TablePagination from "@/components/common/TablePagination.vue";
 import sort from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { TableItem, ViewTableField } from "@/types/bancor";
+import {
+  TableItem,
+  ViewTableField,
+  ViewGroupedPositions
+} from "@/types/bancor";
 
 @Component({
   components: {
@@ -117,7 +121,7 @@ export default class DataTable extends BaseComponent {
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
-  @Prop() filterFunction?: Function;
+  @Prop() filterFunctions?: Function[];
   @Prop() sortFunction?: Function;
 
   sortBy: string = "";
@@ -129,22 +133,20 @@ export default class DataTable extends BaseComponent {
   }
 
   get filteredItems() {
-    let filtered = [];
-    const items = this.items.slice();
+    let filtered = this.items.slice();
     const filter = this.filter;
     const filterBy = this.filterBy;
-    const filterFunction = this.filterFunction;
 
-    if (filterFunction !== undefined) {
-      filtered = items.filter((t: any) => filterFunction(t, filter));
+    if (this.filterFunctions !== undefined) {
+      this.filterFunctions.forEach(filterFunction => {
+        filtered = filtered.filter((t: any) => filterFunction(t));
+      });
     } else if (filter && filterBy) {
-      filtered = items.filter(
+      filtered = filtered.filter(
         (t: any) =>
           t[filterBy] &&
           t[filterBy].toUpperCase().includes(filter.toUpperCase())
       );
-    } else {
-      filtered = items;
     }
 
     return filtered;
@@ -177,7 +179,7 @@ export default class DataTable extends BaseComponent {
     const startIndex = endIndex - perPage;
     const items = this.sortedItems.slice(startIndex, endIndex);
     const itemsWithoutId = items.filter(x => !x.id);
-    if(itemsWithoutId.length > 0) {
+    if (itemsWithoutId.length > 0) {
       console.log(itemsWithoutId, "are without an ID");
     }
     return items;

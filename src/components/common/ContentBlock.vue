@@ -29,13 +29,16 @@
       <b-dropdown
         v-for="dropdown in dropDownFilters"
         :key="dropdown.id"
-        :text="dropdown.title"
+        :text="dropdown.items[dropdown.selectedIndex].title"
         variant="outline"
         class="m-2"
       >
-        <b-dropdown-item v-for="item in dropdown.items" :key="item.id">{{
-          item.title
-        }}</b-dropdown-item>
+        <b-dropdown-item
+          v-for="(item, index) in dropdown.items"
+          :key="item.id"
+          @click="() => (dropdown.selectedIndex = index)"
+          >{{ item.title }}</b-dropdown-item
+        >
       </b-dropdown>
 
       <div v-if="searchInput !== null">
@@ -77,7 +80,7 @@ export default class ContentBlock extends BaseComponent {
   @Prop({ default: false }) backButton!: boolean;
   @Prop() dropDownFilters!: {
     id: string;
-    title: string;
+    selectedIndex: number;
     items: {
       id: string;
       title: string;

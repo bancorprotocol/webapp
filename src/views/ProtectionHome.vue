@@ -50,7 +50,11 @@
             No protected positions found.
           </div>
           <div v-else>
-            <ProtectedTable :positions="positions" :search="searchProtected" />
+            <ProtectedTable
+              :positions="positions"
+              :search="searchProtected"
+              :filter-functions="[positionFilterFunction, poolsFilterFunction]"
+            />
           </div>
         </content-block>
       </b-col>
@@ -104,28 +108,33 @@ import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
+  dropDownFilters = [
+    {
+      id: "position",
+      selectedIndex: 0,
+      items: [
+        { id: "1", title: "All positions" },
+        { id: "2", title: "Fully protected" },
+        { id: "3", title: "Not fully protected" }
+      ]
+    },
+    {
+      id: "pools",
+      selectedIndex: 0,
+      items: [
+        { id: "1", title: "All Pools" },
+        { id: "2", title: "ETH / BNT" },
+        { id: "3", title: "WBTC / BNT " }
+      ]
+    }
+  ];
 
-  get dropDownFilters() {
-    return [
-      {
-        id: "1",
-        title: "All positions",
-        items: [
-          { id: "1", title: "All positions" },
-          { id: "2", title: "Fully protected" },
-          { id: "3", title: "Not fully protected" }
-        ]
-      },
-      {
-        id: "2",
-        title: "All positions",
-        items: [
-          { id: "1", title: "All positions" },
-          { id: "2", title: "Fully protected" },
-          { id: "3", title: "Not fully protected" }
-        ]
-      }
-    ];
+  positionFilterFunction(row: ViewProtectedLiquidity) {
+    return true;
+  }
+
+  poolsFilterFunction(row: ViewProtectedLiquidity) {
+    return true;
   }
 
   get positions(): ViewProtectedLiquidity[] {
