@@ -184,8 +184,8 @@ export default class SwapAction extends BaseComponent {
     else if (
       this.amount1 &&
       this.amount2 &&
-      new BigNumber(this.amount1).comparedTo(0) != 0 &&
-      new BigNumber(this.amount2).comparedTo(0) != 0 &&
+      !new BigNumber(this.amount1).isZero() &&
+      !new BigNumber(this.amount2).isZero() &&
       !this.errorToken1 &&
       !this.errorToken2
     )
