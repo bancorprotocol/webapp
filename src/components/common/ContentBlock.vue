@@ -18,29 +18,27 @@
         searchInput !== null ? 'pr-2' : ''
       ]"
     >
-      <div v-if="backButton" class="fix-width">
+      <div v-if="backButton">
         <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
       </div>
 
-      <h3
-        class="m-0 p-0 my-2 font-size-14 font-w600 w-100"
-        :class="titleClasses"
-      >
+      <h3 class="p-0 my-2 font-size-14 font-w600" :class="titleClasses">
         {{ title }}
       </h3>
 
-      <div class="fix-width d-flex justify-content-end">
-        <span
-          v-if="detailModeProp !== null"
-          @click="detailModeProp = !detailModeProp"
-          class="text-primary cursor font-size-12 font-w500"
-        >
-          {{ detailModeProp ? $t("simple") : $t("detailed") }}
-        </span>
-        <version-badge v-if="version !== null" :version="version" />
-      </div>
+      <b-dropdown
+        v-for="dropdown in dropDownFilters"
+        :key="dropdown.id"
+        :text="dropdown.title"
+        variant="outline"
+        class="m-2"
+      >
+        <b-dropdown-item v-for="item in dropdown.items" :key="item.id">{{
+          item.title
+        }}</b-dropdown-item>
+      </b-dropdown>
 
-      <div v-if="searchInput !== null" class="float-right">
+      <div v-if="searchInput !== null">
         <multi-input-field
           v-model="searchInput"
           :placeholder="$t('search')"
@@ -77,16 +75,24 @@ export default class ContentBlock extends BaseComponent {
   @Prop({ default: false }) shadowLight?: boolean;
   @Prop({ default: false }) px0?: boolean;
   @Prop({ default: false }) backButton!: boolean;
+  @Prop() dropDownFilters!: {
+    id: string;
+    title: string;
+    items: {
+      id: string;
+      title: string;
+    }[];
+  }[];
+  @Prop({ default: false }) dateFilter!: Date[];
   @Prop({ default: null }) version!: 1 | 2 | null;
   @PropSync("search", { default: null }) searchInput!: string | null;
-  @PropSync("detailMode", { default: null }) detailModeProp!: boolean | null;
 
   @Emit()
   back() {}
 
   get titleClasses() {
     const color = this.darkMode ? "text-dark" : "text-light";
-    const alignment = this.backButton ? "text-center" : "text-left";
+    const alignment = this.backButton ? "text-center w-100" : "text-left";
     return [color, alignment];
   }
 }
@@ -101,9 +107,5 @@ export default class ContentBlock extends BaseComponent {
 
 .border-bottom-dark {
   border-bottom: 1px solid $gray-border-dark;
-}
-
-.fix-width {
-  width: 120px;
 }
 </style>

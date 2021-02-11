@@ -34,6 +34,7 @@
             positions.length ? $t('protected_positions') : $t('protected')
           "
           :search.sync="searchProtected"
+          :dropDownFilters="dropDownFilters"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
@@ -103,6 +104,29 @@ import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
+
+  get dropDownFilters() {
+    return [
+      {
+        id: "1",
+        title: "All positions",
+        items: [
+          { id: "1", title: "All positions" },
+          { id: "2", title: "Fully protected" },
+          { id: "3", title: "Not fully protected" }
+        ]
+      },
+      {
+        id: "2",
+        title: "All positions",
+        items: [
+          { id: "1", title: "All positions" },
+          { id: "2", title: "Fully protected" },
+          { id: "3", title: "Not fully protected" }
+        ]
+      }
+    ];
+  }
 
   get positions(): ViewProtectedLiquidity[] {
     return vxm.ethBancor.protectedPositions;
