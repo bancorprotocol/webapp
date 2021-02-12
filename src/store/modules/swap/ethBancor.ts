@@ -43,7 +43,8 @@ import {
   ViewReserve,
   RegisteredContracts,
   RawLiquidityProtectionSettings,
-  LiquidityProtectionSettings
+  LiquidityProtectionSettings,
+  TimeScale
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -1632,11 +1633,7 @@ export class EthBancorModule
         compareString
       ) as string[];
 
-      const timeScales: {
-        blockHeight: number;
-        days: number;
-        label: string;
-      }[] = ([
+      const timeScales: TimeScale[] = ([
         [1, "day"],
         [7, "week"]
       ] as [number, string][]).map(([days, label]) => ({

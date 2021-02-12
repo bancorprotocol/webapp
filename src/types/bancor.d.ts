@@ -37,6 +37,12 @@ export interface PositionReturn {
   networkAmount: string;
   targetAmount: string;
 }
+
+export interface TimeScale {
+  blockHeight: number;
+  days: number;
+  label: string;
+}
 export interface ProtectedLiquidityCalculated {
   id: string;
   owner: string;

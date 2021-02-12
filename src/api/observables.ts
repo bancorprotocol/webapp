@@ -48,6 +48,7 @@ import {
   removeLiquidityReturn
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
+import { MinimalPool } from "./eth/helpers";
 
 interface DataCache<T> {
   allEmissions: T[];
@@ -269,6 +270,20 @@ export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
   switchMap(([networkVersion]) => getWelcomeData(networkVersion)),
   share()
 );
+
+export const pools$ = apiData$.pipe(pluck("pools"), share());
+export const minimalPools$ = pools$.pipe(
+  map(pools =>
+    pools.map(
+      (pool): MinimalPool => ({
+        anchorAddress: pool.pool_dlt_id,
+        converterAddress: pool.converter_dlt_id,
+        reserves: pool.reserves.map(reserve => reserve.address)
+      })
+    )
+  )
+);
+export const tokens$ = apiData$.pipe(pluck("tokens"), share());
 
 export const tokenMeta$ = networkVersion$.pipe(
   switchMap(network => getTokenMeta(network)),
@@ -508,6 +523,7 @@ const removeLiquidityReturn$ = combineLatest([
       )
     )
   ),
+  startWith(undefined),
   logger("simple")
 );
 
@@ -534,8 +550,24 @@ const pendingReserveRewards$ = combineLatest([
         )
       )
     );
-  })
+  }),
+  startWith(undefined)
 );
+
+const poolAprs$ = combineLatest([unVerifiedPositions$, minimalPools$])
+  .pipe(
+    withLatestFrom(currentBlock$),
+    switchMap(([[unverified, minimal], currentBlock]) =>
+      console.log("pool aprs", x)
+    )
+  )
+  .subscribe(x => console.log(x, "aaa"));
+
+const quickPositions = combineLatest([
+  unVerifiedPositions$,
+  removeLiquidityReturn$,
+  pendingReserveRewards$
+]).subscribe(x => console.log(x, "was the quick positions"));
 
 const fullPositions$ = combineLatest([
   unVerifiedPositions$,
@@ -554,10 +586,10 @@ const fullPositions$ = combineLatest([
   logger("build full positions fetched")
 );
 
-combineLatest([fullPositions$, authenticated$, apiData$])
+combineLatest([fullPositions$, authenticated$, minimalPools$])
   .pipe(logger("with authentication"))
-  .subscribe(([positions, currentUser, apiData]) => {
-    const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
+  .subscribe(([positions, currentUser, pools]) => {
+    const supportedAnchors = pools.map(pool => pool.anchorAddress);
 
     vxm.ethBancor.setProtectedPositions(
       positions
@@ -571,12 +603,13 @@ combineLatest([fullPositions$, authenticated$, apiData$])
     vxm.ethBancor.setLoadingPositions(false);
   });
 
-combineLatest([authenticated$, apiData$]).subscribe(
-  ([userAddress, apiData]) => {
+combineLatest([authenticated$, minimalPools$]).subscribe(
+  ([userAddress, pools]) => {
     if (userAddress) {
-      const reserveTokens = apiData.tokens.map(token => token.dlt_id);
-      const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
-      const allTokens = [...poolTokens, ...reserveTokens];
+      const allTokens = pools.flatMap(pool => [
+        ...pool.reserves,
+        pool.anchorAddress
+      ]);
       try {
         vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
       } catch (e) {}
