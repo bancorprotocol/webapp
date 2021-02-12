@@ -324,6 +324,7 @@ export const en = {
   provider_logo: "Provider Logo",
   protected_value: "Protected Value",
   claimable_value: "Claimable Value",
+  claimable_amount: "Claimable Amount",
   fees_rewards: "Fees & Rewards",
   add_single_sided_liquidity: "Add Single-Sided Liquidity",
   stake__bnt_protection: "Stake BNT for Protection",

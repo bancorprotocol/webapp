@@ -1,20 +1,12 @@
 <template>
   <div class="mt-3">
-    <label-content-split :label="$t('initial_stake')">
+    <label-content-split :label="$t('claimable_amount')">
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
-        :amount="prettifyNumber(position.stake.amount)"
+        :amount="prettifyNumber(position.protectedAmount.amount)"
         :symbol="position.stake.symbol"
       />
     </label-content-split>
-
-    <label-content-split
-      :label="$t('fully_protected_value')"
-      :value="`${prettifyNumber(position.protectedAmount.amount)} ${
-        position.stake.symbol
-      }`"
-      class="my-3"
-    />
 
     <alert-block
       v-if="priceDeviationTooHigh && !inputError"
