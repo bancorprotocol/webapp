@@ -24,7 +24,8 @@ import {
   PositionReturn,
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
-  RegisteredContracts
+  RegisteredContracts,
+  TimeScale
 } from "@/types/bancor";
 import { asciiToHex } from "web3-utils";
 import dayjs from "dayjs";
@@ -489,3 +490,29 @@ export const pendingRewardRewards = async (
     decBnt
   };
 };
+
+export const fetchHistoricBalances = async (timeScales: TimeScale[]) => {
+  const poolHistoricalBalances = await Promise.all(
+    uniqueAnchors.map(async anchor => {
+      const historicalBalances = await Promise.all(
+        timeScales.map(async scale => {
+          const balance = await this.fetchRelayBalances({
+            poolId: anchor,
+            blockHeight: scale.blockHeight
+          });
+          return {
+            balance,
+            scale: scale.label
+          };
+        })
+      );
+
+      return {
+        poolId: anchor,
+        historicalBalances
+      };
+    })
+  );
+};
+
+export const aprRewardPositions = async (positions: ProtectedLiquidity[]) => {};
