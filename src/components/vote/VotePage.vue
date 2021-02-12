@@ -1,35 +1,36 @@
 <template>
   <b-row v-if="loaded">
-    <b-col class="col-12 col-sm-3 col-lg-2">
+    <b-col class="col-12" sm="3" lg="2">
       <stake />
     </b-col>
-    <b-col class="col-12 col-sm-9 col-lg-10">
+    <b-col class="col-12" sm="9" lg="10">
       <proposals />
     </b-col>
   </b-row>
   <span v-else>
     <div class="d-flex justify-content-center align-items-center my-5">
       <b-spinner
-        style="display: block; width: 2rem; height: 2rem;"
+        style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
-        label="Loading..."
+        :label="`${$t('loading')}... `"
       ></b-spinner>
       <h5
         class="m-0 ml-3"
         :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
       >
-        Just a moment ...
+        {{ `${$t("just_a_moment")}...` }}
       </h5>
     </div>
   </span>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import Stake from "@/components/vote/stake/Stake.vue";
 import Proposals from "@/components/vote/proposals/Proposals.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -37,17 +38,13 @@ import Proposals from "@/components/vote/proposals/Proposals.vue";
     Proposals
   }
 })
-export default class VotePage extends Vue {
+export default class VotePage extends BaseComponent {
   get isEth() {
     return this.$route.params.service === "eth";
   }
 
   get loaded() {
     return vxm.ethGovernance.isLoaded;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   async mounted() {
@@ -60,4 +57,4 @@ export default class VotePage extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

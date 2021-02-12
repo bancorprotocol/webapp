@@ -3,10 +3,10 @@
     v-model="show"
     :search.sync="search"
     :items="searchedTokens"
-    title="Select a token"
-    subtitle="Tokens"
+    :title="$t('select_token')"
+    :subtitle="$t('tokens')"
   >
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <div
         @click="selectToken(item.id)"
         class="d-flex align-items-center justify-content-between"
@@ -16,7 +16,7 @@
           <img
             :src="item.logo"
             class="img-avatar img-avatar32 mr-2"
-            alt="Token Logo"
+            :alt="$t('token_logo')"
           />
           <span class="font-w600 font-size-14">{{ item.symbol }}</span>
         </div>
@@ -26,17 +26,15 @@
       </div>
     </template>
     <template v-if="allowTokenAdd" #footer>
-      <p class="mb-0">
-        Can't find the token you're looking for?
-      </p>
+      <p class="mb-0">{{ $t("cant_find_token") }}</p>
       <span @click="promptTokenAddModal" class="text-primary cursor font-w600">
-        Add token
+        {{ $t("add_token") }}
       </span>
-      <modal-base title="Add Token" v-model="addTokenModal">
+      <modal-base :title="$t('add_token')" v-model="addTokenModal">
         <multi-input-field
           v-model="addTokenText"
           @input="onTokenInput"
-          label="Token Address"
+          :label="$t('token_address')"
           placeholder="eg. 0x90feoiw..."
           height="48"
         />
@@ -47,24 +45,24 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Vue, Prop, Emit } from "vue-property-decorator";
+import { Component, Prop, Emit, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-
-import { ViewRelay, ViewToken, ViewModalToken } from "@/types/bancor";
-import { formatNumber, VModel } from "@/api/helpers";
+import { ViewModalToken } from "@/types/bancor";
+import { compareString, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import { isAddress } from "web3-utils";
-import wait from "waait";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 const INVALID_ADDRESS = "Invalid address";
 
 @Component({
   components: { ModalSelect, MainButton, MultiInputField, ModalBase }
 })
-export default class ModalSelectToken extends Vue {
+export default class ModalSelectToken extends BaseComponent {
   @VModel() show!: boolean;
   @Prop() tokens!: ViewModalToken[];
   @Prop({ default: false }) allowTokenAdd!: boolean;
@@ -75,7 +73,7 @@ export default class ModalSelectToken extends Vue {
   error: string = "";
 
   get isEos() {
-    return vxm.bancor.currentNetwork === "eos";
+    return this.currentNetwork === "eos";
   }
 
   @Emit("select")
@@ -102,11 +100,18 @@ export default class ModalSelectToken extends Vue {
   }
 
   async triggerAdd() {
-    const tokenAddress = this.addTokenText;
     try {
-      await vxm.ethBancor.addToken(tokenAddress);
+      const { tokenAddress } = await vxm.ethBancor.addToken(this.addTokenText);
       this.error = "";
       this.addTokenModal = false;
+
+      if (tokenAddress) {
+        const token = this.tokens.find((t: ViewModalToken) =>
+          compareString(t.id, tokenAddress)
+        );
+        if (token) this.selectToken(token.id);
+        else this.error = `${i18n.tc("token_not_found")}.`;
+      }
     } catch (e) {
       this.error = e.message;
     }
@@ -124,10 +129,6 @@ export default class ModalSelectToken extends Vue {
           token.symbol.toLowerCase().includes(search.toLowerCase())
         )
       : tokens;
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
   }
 }
 </script>

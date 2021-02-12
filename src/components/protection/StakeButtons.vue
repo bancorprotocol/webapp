@@ -24,7 +24,7 @@
           <label-content-split
             v-for="(amount, index) in maxStakes"
             :key="index"
-            :label="!index ? 'Space Available' : ''"
+            :label="!index ? $t('space_available') : ''"
             :value="amount"
             :loading="loadingMaxStakes"
           />
@@ -44,36 +44,37 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from "vue-property-decorator";
+import { Component, Prop, Emit } from "vue-property-decorator";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import MainButton from "@/components/common/Button.vue";
-import {vxm} from "@/store";
-import {prettifyNumber} from "@/api/helpers";
-import {ViewRelay} from "@/types/bancor";
+import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
-  components: {LabelContentSplit, GrayBorderBlock, MainButton }
+  components: { LabelContentSplit, GrayBorderBlock, MainButton }
 })
-export default class StakeButtons extends Vue {
+export default class StakeButtons extends BaseComponent {
   @Prop({ default: false }) showAddLiquidity!: boolean;
 
   maxStakes: string[] = [];
 
   loadingMaxStakes = false;
 
+  private interval: any;
+
   get poolId(): string | null {
-    return this.$route.params.id ?? null
+    return this.$route.params.id ?? null;
   }
 
   get stakeOptions() {
     return [
       {
         id: 0,
-        title: `Single-Sided Protection`,
-        desc:
-          "Add liquidity with exposure to one token and protect it from impermanent loss.",
-        buttonTxt: "Stake and Protect",
+        title: i18n.t("single_sided_protection"),
+        desc: i18n.t("liquidity_with_exposure"),
+        buttonTxt: i18n.t("stake_protect"),
         buttonActive: true,
         buttonEnabled: true,
         hide: false,
@@ -81,10 +82,9 @@ export default class StakeButtons extends Vue {
       },
       {
         id: 1,
-        title: "Dual-Sided Protection",
-        desc:
-          "Stake pools tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
-        buttonTxt: "Stake and Protect",
+        title: i18n.t("dual_sided_protection"),
+        desc: i18n.t("stake_pools_tokens"),
+        buttonTxt: i18n.t("stake_protect"),
         buttonActive: true,
         buttonEnabled: true,
         hide: this.showAddLiquidity,
@@ -92,9 +92,9 @@ export default class StakeButtons extends Vue {
       },
       {
         id: 2,
-        title: "Dual-Sided Liquidity",
-        desc: "Stake with two tokens and receive pool tokens in return.",
-        buttonTxt: "Add Dual Sided Liquidity",
+        title: i18n.t("dual_sided_liquidity"),
+        desc: i18n.t("stake_with_two"),
+        buttonTxt: i18n.t("add_dual_liquidity"),
         buttonActive: true,
         buttonEnabled: true,
         hide: !this.showAddLiquidity,
@@ -104,13 +104,15 @@ export default class StakeButtons extends Vue {
   }
 
   async loadMaxStakes() {
-    if (this.loadingMaxStakes || !this.poolId) return
+    if (this.loadingMaxStakes || !this.poolId) return;
     this.loadingMaxStakes = true;
     try {
       const result = await vxm.ethBancor.getMaxStakesView({
         poolId: this.poolId
       });
-      this.maxStakes = result.map(x => { return `${prettifyNumber(x.amount)} ${x.token}` })
+      this.maxStakes = result.map(x => {
+        return `${this.prettifyNumber(x.amount)} ${x.token}`;
+      });
     } catch (e) {
       console.log(e);
     } finally {
@@ -118,12 +120,15 @@ export default class StakeButtons extends Vue {
     }
   }
 
-  async created() {
-    await this.loadMaxStakes()
+  async mounted() {
+    await this.loadMaxStakes();
+    this.interval = setInterval(async () => {
+      await this.loadMaxStakes();
+    }, 30000);
   }
 
-  get darkMode() {
-    return vxm.general.darkMode
+  destroyed() {
+    clearInterval(this.interval);
   }
 
   @Emit("click")

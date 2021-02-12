@@ -1,19 +1,28 @@
 <template>
   <div>
-    <gray-border-block @click.native="clickAction" class="cursor">
+    <gray-border-block
+      @click.native="clickAction"
+      :class="type === 'primary' ? 'cursor' : ''"
+    >
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <pool-logos v-if="token" :token="token" />
-          <span v-else class="font-size-14 font-w600">Select a token</span>
+          <pool-logos
+            v-if="token"
+            :token="token"
+            :cursor="type === 'primary'"
+          />
+          <span v-else class="font-size-14 font-w600">
+            {{ $t("select_token") }}</span
+          >
         </div>
         <div :class="darkMode ? 'text-white' : 'text-primary'">
           <span
             v-if="token && type === 'primary'"
             class="font-size-12 font-w500 text-primary cursor"
           >
-            remove
+            {{ $t("remove") }}
           </span>
-          <font-awesome-icon v-else icon="caret-down" />
+          <font-awesome-icon v-else-if="type === 'primary'" icon="caret-down" />
         </div>
       </div>
     </gray-border-block>
@@ -22,24 +31,24 @@
       v-model="modal"
       :tokens="tokens"
       @select="select"
-      :allowTokenAdd="type == 'primary'"
+      :allow-token-add="type == 'primary'"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Vue } from "vue-property-decorator";
+import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ModalTokenSelect from "@/components/modals/ModalSelects/ModalTokenSelect.vue";
-import { VModel } from "@/api/helpers";
-import { ViewModalToken, ViewToken } from "@/types/bancor";
+import { ViewToken } from "@/types/bancor";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { ModalTokenSelect, PoolLogos, GrayBorderBlock }
 })
-export default class SelectTokenBlock extends Vue {
+export default class SelectTokenBlock extends BaseComponent {
   @Prop({ default: "primary" }) type!: "primary" | "secondary";
   @VModel() token!: ViewToken | null;
 
@@ -54,6 +63,7 @@ export default class SelectTokenBlock extends Vue {
   }
 
   clickAction() {
+    if (this.type === "secondary") return;
     if (this.token && this.type === "primary") this.removeToken();
     else this.modal = true;
   }
@@ -81,10 +91,6 @@ export default class SelectTokenBlock extends Vue {
       ...x,
       logo: x.img
     }));
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

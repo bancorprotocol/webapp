@@ -18,15 +18,12 @@ import {
   ViewToken,
   LiquidityModule
 } from "@/types/bancor";
-import { vxm } from "@/store";
-import { store } from "../../../store";
+import { vxm, store } from "@/store";
 import {
   compareString,
-  fetchUsdPriceOfBntViaRelay,
-  updateArray
+  updateArray,
+  fetchBinanceUsdPriceOfBnt
 } from "@/api/helpers";
-import { fetchBinanceUsdPriceOfBnt } from "@/api/helpers";
-import wait from "waait";
 import { defaultModule } from "@/router";
 
 interface BntPrice {
@@ -78,7 +75,7 @@ export class BancorModule extends VuexModule.With({
     error: false
   }));
 
-  slippageTolerance = 0.05;
+  slippageTolerance = 0.005;
 
   @mutation setTolerance(tolerance: number) {
     this.slippageTolerance = tolerance;
@@ -298,21 +295,10 @@ export class BancorModule extends VuexModule.With({
 
   @action async getUsdPrice() {
     try {
-      const reverse = (promise: any) =>
-        new Promise((resolve, reject) =>
-          Promise.resolve(promise).then(reject, resolve)
-        );
-      const any = (arr: any[]) => reverse(Promise.all(arr.map(reverse)));
-      const res = await any([
-        fetchBinanceUsdPriceOfBnt(),
-        new Promise(resolve => {
-          wait(500).then(() => resolve(fetchUsdPriceOfBntViaRelay(undefined, this.currentNetwork)));
-        })
-      ]);
-      const usdPrice = res as number;
+      const usdPrice = await fetchBinanceUsdPriceOfBnt();
       this.setUsdPriceOfBnt({
         price: usdPrice,
-        lastChecked: new Date().getTime()
+        lastChecked: Date.now()
       });
       return usdPrice;
     } catch (e) {
@@ -337,10 +323,6 @@ export class BancorModule extends VuexModule.With({
     this.usdPriceOfBnt = usdPriceOfBnt;
   }
 
-  @action async loadMoreTokens(tokenIds?: string[]) {
-    return this.dispatcher(["loadMoreTokens", tokenIds]);
-  }
-
   @action async fetchHistoryData(relayId: string): Promise<HistoryRow[]> {
     return this.dispatcher(["fetchHistoryData", relayId]);
   }
@@ -363,10 +345,6 @@ export class BancorModule extends VuexModule.With({
 
   @action async updateOwner(owner: NewOwnerParams) {
     return this.dispatcher(["updateOwner", owner]);
-  }
-
-  @action async focusPool(poolId: string) {
-    return this.dispatcher(["focusPool", poolId]);
   }
 
   @action async getUserBalances(relayId: string): Promise<UserPoolBalances> {
@@ -424,8 +402,21 @@ export class BancorModule extends VuexModule.With({
   }
 
   @action async refreshBalances(symbols: string[] = []) {
-    if (vxm.wallet.isAuthenticated) {
+    if (vxm.wallet.currentUser) {
       return this.dispatcher(["refreshBalances", symbols]);
     }
+  }
+
+  @action async checkPriceDeviationTooHigh({
+    relayId,
+    selectedTokenAddress
+  }: {
+    relayId: string;
+    selectedTokenAddress: string;
+  }) {
+    return this.dispatcher([
+      "checkPriceDeviationTooHigh",
+      { relayId, selectedTokenAddress }
+    ]);
   }
 }

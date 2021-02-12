@@ -2,16 +2,16 @@
   <div v-if="!proposals">
     <div class="d-flex justify-content-center align-items-center my-5">
       <b-spinner
-        style="display: block; width: 2rem; height: 2rem;"
+        style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
         :class="darkMode ? 'text-primary' : 'text-primary'"
-        label="Loading..."
+        :label="`${$t('loading')}... `"
       ></b-spinner>
       <h5
         class="m-0 ml-3"
         :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
       >
-        Just a moment ...
+        {{ `${$t("just_a_moment")}...` }}
       </h5>
     </div>
   </div>
@@ -23,241 +23,300 @@
       class="m-0 ml-3"
       :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
     >
-      No Proposals yet ...
+      {{ `${$t("no_proposals_yet")}...` }}
     </h5>
   </div>
-  <data-table
+  <layout-proposals
     v-else-if="proposals"
     :items="proposals"
     :fields="fields"
+    :fields2="fields2"
     default-sort="to"
-    :hidePagination="true"
+    :hide-pagination="true"
   >
-    <template
-      v-for="proposal in proposals"
-      class="font-w500 font-size-14 aling-rows-cells"
-      :class="darkMode ? 'text-dark' : 'text-light'"
-    >
-      <tr
-        :key="'r1-' + proposal.id"
-        class="align-rows-cells cursor"
-        @click="() => openProposal(proposal)"
-      >
-        <td :class="{ 'no-border': !isNaN(opened) && proposal.id === opened }">
-          {{ proposal.id }}
-        </td>
-        <td class="font-size-14 font-w500">
-          {{ proposal.name }}
-        </td>
-        <td
-          class="result"
-          :class="'result--' + (isApproved(proposal) ? 'for' : 'against')"
-        >
-          {{ isApproved(proposal) ? "Approved" : "Rejected" }}
-        </td>
-        <td>
-          <div class="font-size-14 font-w500">
-            {{ proposal.totalVotesFor }} {{ symbol }}
-          </div>
-          <div class="font-size-12 font-w500 result result--for">
-            {{ getVotesPercentage(proposal, proposal.totalVotesFor) }}
-          </div>
-        </td>
-        <td>
-          <div class="font-size-14 font-w500">
-            {{ proposal.totalVotesAgainst }} {{ symbol }}
-          </div>
-          <div class="font-size-12 font-w500 result result--against">
-            {{ getVotesPercentage(proposal, proposal.totalVotesAgainst) }}
-          </div>
-        </td>
-        <!--       <td>
-          <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.start) }}
-          </div>
-          <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.start) }} UTC
-          </div>
-        </td> -->
-        <td>
-          <div class="font-size-14 font-w500">
-            {{ formatDate(proposal.end) }}
-          </div>
-          <div class="font-size-12 font-w500 text-muted-light">
-            {{ formatTime(proposal.end) }} UTC
-          </div>
-        </td>
-        <td>
-          <font-awesome-icon
-            :icon="
-              !isNaN(opened) && proposal.id === opened
-                ? 'caret-up'
-                : 'caret-down'
-            "
-          />
-        </td>
-      </tr>
-      <tr
-        :key="'r2-' + proposal.id"
-        class="align-rows-cells"
-        v-if="!isNaN(opened) && proposal.id === opened"
-      >
-        <td></td>
-        <td>
-          <div
-            class="font-size-12 pb-1"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-          >
-            Proposed by
-            <a
-              target="_blank"
-              class="font-size-12 font-w500 fix-a"
-              :href="getEtherscanUrl(proposal.proposer)"
-            >
-              {{ shortAddress(proposal.proposer) }}
-            </a>
-          </div>
-
-          <div
-            class="font-size-12"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-          >
-            Contract to execute
-            <a
-              target="_blank"
-              class="font-size-12 font-w500 fix-a"
-              :href="getEtherscanUrl(proposal.executor)"
-            >
-              {{ shortAddress(proposal.executor) }}
-            </a>
-          </div>
-        </td>
-        <td colspan="2">
-          <div class="pb-1">
-            <span class="font-size-12 text-muted-light">
-              Vote Start
-            </span>
-            <span class="font-size-12 font-w500 pl-1 pr-1">
-              {{ formatDate(proposal.start) }}
-            </span>
-            <span class="font-size-12 font-w500 text-muted-light">
-              {{ formatTime(proposal.start) }}
-            </span>
-          </div>
-          <div>
-            <span class="font-size-12 text-muted-light">
-              Quorum/Required
-            </span>
-            <span class="font-size-12 font-w500 pl-1 pr-1">
-              {{ proposal.quorum / 10000 }}% /
-              {{ proposal.quorumRequired / 10000 }}%
-            </span>
-          </div>
-        </td>
-        <td colspan="3">
-          <div class="buttons-container">
-            <a
-              :href="getBIPLink(proposal)"
-              target="_blank"
-              style="width: 100%; display: inline-block;"
-            >
-              <main-button
-                :small="true"
-                :active="true"
-                class="font-w400 mt-0 mb-0"
-              >
-                BIP
-                <font-awesome-icon icon="external-link-alt" />
-              </main-button>
-            </a>
-
-            <a
-              :href="getIPFSUrl(proposal.hash)"
-              target="_blank"
-              style="width: 100%; display: inline-block;"
-            >
-              <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
-                IPFS
-                <font-awesome-icon icon="external-link-alt" />
-              </main-button>
-            </a>
-          </div>
-        </td>
-      </tr>
+    <template #cell(id)="{ item, opened, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
+      <div :class="{ 'no-border': !isNaN(opened) && item.id === opened }">
+        {{ item.id }}
+      </div>
     </template>
-  </data-table>
+
+    <template #cell(details)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
+      <div class="font-size-14 font-w500">
+        {{ item.name }}
+      </div>
+    </template>
+
+    <template #cell(result)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
+      <div
+        class="result"
+        :class="'result--' + (isApproved(item) ? 'for' : 'against')"
+      >
+        {{ isApproved(item) ? $t("approved") : $t("rejected") }}
+      </div>
+    </template>
+
+    <template #cell(votesFor)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
+      <div>
+        <div class="font-size-14 font-w500">
+          {{ prettifyNumber(item.totalVotesFor) }} {{ symbol }}
+        </div>
+        <div class="font-size-12 font-w500 result result--for">
+          {{ getVotesPercentage(item, item.totalVotesFor) }}
+        </div>
+      </div>
+    </template>
+
+    <template #cell(votesAgainst)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
+      <div>
+        <div class="font-size-14 font-w500">
+          {{ prettifyNumber(item.totalVotesAgainst) }} {{ symbol }}
+        </div>
+        <div class="font-size-12 font-w500 result result--against">
+          {{ getVotesPercentage(item, item.totalVotesAgainst) }}
+        </div>
+      </div>
+    </template>
+
+    <template #cell(startDate)="{ item, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
+      <div>
+        <div class="font-size-14 font-w500">
+          {{ formatDate(item.end) }}
+        </div>
+        <div class="font-size-12 font-w500 text-muted-light">
+          {{ formatTime(item.end) }} UTC
+        </div>
+      </div>
+    </template>
+
+    <template #cell(spacer)="{ item, opened, label }">
+      <div class="d-block d-md-block d-lg-none font-w800 font-size-14">
+        {{ label }}
+      </div>
+      <div class="cursor" @click="() => openProposal(item)">
+        <font-awesome-icon
+          :icon="
+            !isNaN(opened) && item.id === opened ? 'caret-up' : 'caret-down'
+          "
+        />
+      </div>
+    </template>
+
+    <template #cell(no)="{}">
+      <div></div>
+    </template>
+
+    <template #cell(proposed)="{ item }">
+      <div
+        class="font-size-12 pb-1"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
+        {{ $t("proposed_by") }}
+        <a
+          target="_blank"
+          class="font-size-12 font-w500 fix-a"
+          :href="getEtherscanUrl(item.proposer)"
+        >
+          {{ shortAddress(item.proposer) }}
+        </a>
+      </div>
+
+      <div
+        class="font-size-12"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
+        {{ $t("contract_execute") }}
+        <a
+          target="_blank"
+          class="font-size-12 font-w500 fix-a"
+          :href="getEtherscanUrl(item.executor)"
+        >
+          {{ shortAddress(item.executor) }}
+        </a>
+      </div>
+    </template>
+
+    <template #cell(vote)="{ item }">
+      <div class="pb-1">
+        <span class="font-size-12 text-muted-light">
+          {{ $t("vote_start") }}
+        </span>
+        <span class="font-size-12 font-w500 pl-1 pr-1">
+          {{ formatDate(item.start) }}
+        </span>
+        <span class="font-size-12 font-w500 text-muted-light">
+          {{ formatTime(item.start) }}
+        </span>
+      </div>
+      <div>
+        <span class="font-size-12 text-muted-light">
+          {{ $t("quorum_Required") }}
+        </span>
+        <span class="font-size-12 font-w500 pl-1 pr-1">
+          {{ item.quorum / 10000 }}% / {{ item.quorumRequired / 10000 }}%
+        </span>
+      </div>
+    </template>
+
+    <template #cell(actions)="{ item }">
+      <div class="buttons-container">
+        <a
+          :href="getBIPLink(item)"
+          target="_blank"
+          style="width: 100%; display: inline-block"
+        >
+          <main-button :small="true" :active="true" class="font-w400 mt-0 mb-0">
+            BIP
+            <font-awesome-icon icon="external-link-alt" />
+          </main-button>
+        </a>
+
+        <a
+          :href="getIPFSUrl(item.hash)"
+          target="_blank"
+          style="width: 100%; display: inline-block"
+        >
+          <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
+            IPFS
+            <font-awesome-icon icon="external-link-alt" />
+          </main-button>
+        </a>
+      </div>
+    </template>
+  </layout-proposals>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
+import LayoutProposals from "@/components/vote/proposals/LayoutProposals.vue";
 import MainButton from "@/components/common/Button.vue";
-import DataTable from "@/components/deprecated/DataTable.vue";
-import { ViewTableFields } from "@/components/common/TableHeader.vue";
+import { ViewProposalsField } from "@/types/bancor";
 import { shortenEthAddress } from "@/api/helpers";
 import {
   ipfsViewUrl,
   Proposal
 } from "@/store/modules/governance/ethGovernance";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     ContentBlock,
-    DataTable,
+    LayoutProposals,
     MainButton
   }
 })
-export default class DoneProposals extends Vue {
+export default class DoneProposals extends BaseComponent {
   @Prop() proposals?: Proposal[];
   symbol: string = "";
   etherscanUrl: string = "";
 
-  opened: number = -1;
-
-  get fields(): ViewTableFields[] {
+  get fields(): ViewProposalsField[] {
     return [
       {
-        label: "ID",
+        id: 1,
+        label: i18n.tc("id"),
         key: "id",
         minWidth: "16px",
-        maxWidth: "16px"
+        maxWidth: "16px",
+        colRate: 1
       },
       {
-        label: "Details"
+        id: 2,
+        label: i18n.tc("details"),
+        key: "details",
+        colRate: 5
       },
       {
-        label: "Result",
+        id: 3,
+        label: i18n.tc("result"),
+        key: "result",
         maxWidth: "120px",
-        minWidth: "120px"
+        minWidth: "100px",
+        colRate: 1
       },
       {
-        label: "Votes for",
+        id: 4,
+        label: i18n.tc("votes_for"),
         key: "votesFor",
-        maxWidth: "140px",
-        minWidth: "140px"
+        minWidth: "120px",
+        colRate: 1
       },
       {
-        label: "Votes against",
+        id: 5,
+        label: i18n.tc("votes_against"),
         key: "votesAgainst",
-        maxWidth: "140px",
-        minWidth: "140px"
+        minWidth: "120px",
+        colRate: 1
       },
       {
-        label: "Vote start",
+        id: 6,
+        label: i18n.tc("votes_start"),
         key: "startDate",
-        maxWidth: "120px",
-        minWidth: "120px"
+        minWidth: "120px",
+        colRate: 1
       },
       {
+        id: 7,
         label: "",
-        maxWidth: "10px"
+        key: "spacer",
+        minWidth: "10px",
+        maxWidth: "10px",
+        colRate: 0
       }
     ];
   }
 
-  get darkMode() {
-    return vxm.general.darkMode;
+  get fields2(): ViewProposalsField[] {
+    return [
+      {
+        id: 8,
+        label: "",
+        key: "no",
+        minWidth: "16px",
+        maxWidth: "16px",
+        colRate: 1
+      },
+      {
+        id: 9,
+        label: "",
+        key: "proposed",
+        colRate: 5
+      },
+      {
+        id: 10,
+        label: "",
+        key: "vote",
+        minWidth: "140px",
+        colRate: 3
+      },
+      {
+        id: 11,
+        label: "",
+        key: "actions",
+        minWidth: "240px",
+        colRate: 3
+      }
+    ];
   }
 
   getIPFSUrl(hash: string) {
@@ -299,13 +358,8 @@ export default class DoneProposals extends Vue {
     return proposal?.metadata?.payload?.metadata?.discourse || "#";
   }
 
-  openProposal(proposal: any) {
-    this.opened = proposal.id === this.opened ? undefined : proposal.id;
-    this.$forceUpdate();
-  }
-
   async mounted() {
-    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl()
+    this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
     this.symbol = await vxm.ethGovernance.getSymbol();
   }
 }
@@ -319,17 +373,20 @@ export default class DoneProposals extends Vue {
   cursor: pointer;
   color: $primary !important;
 }
+
 .align-rows-cells {
   @at-root .table & > td {
     vertical-align: top !important;
   }
 }
+
 .fix-pie {
   circle,
   text {
     display: none;
   }
 }
+
 .pie-wrapper {
   height: 24px;
   width: 24px;
@@ -341,6 +398,7 @@ export default class DoneProposals extends Vue {
   &--for {
     color: #3ec8c8 !important;
   }
+
   &--against {
     color: #de4a5c !important;
   }

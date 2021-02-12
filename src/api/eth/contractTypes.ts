@@ -4,21 +4,25 @@ import { CallReturn } from "eth-multicall";
 import {
   ABIBancorGovernance,
   ABIContainerContract,
+  ABIContractRegistry,
   ABIConverter,
   ABIConverterRegistry,
   ABIConverterV28,
   ABILiquidityProtection,
+  ABILiquidityProtectionSettings,
   ABILiquidityProtectionStore,
   ABIMultiCallContract,
   ABINetworkContract,
   ABISmartToken,
+  ABIStakingRewards,
+  ABIStakingRewardsStore,
   ABIV2Converter,
   V2PoolsTokenContainer
 } from "@/api/eth/ethAbis";
-import { web3 } from "@/api/helpers";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import Web3 from "web3";
+import { web3 } from "@/api/web3";
 
 const buildContract = (
   abi: AbiItem[],
@@ -71,12 +75,13 @@ export const buildGovernanceContract = (
 }> => buildContract(ABIBancorGovernance, contractAddress, web3);
 
 export const buildContainerContract = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   poolTokens(): CallReturn<string[]>;
   symbol: () => CallReturn<string>;
   decimals: () => CallReturn<string>;
-}> => buildContract(ABIContainerContract, contractAddress);
+}> => buildContract(ABIContainerContract, contractAddress, web3);
 
 export const buildV2PoolsContainer = (
   contractAddress: string
@@ -167,7 +172,8 @@ export const buildV2Converter = (
 }> => buildContract(ABIV2Converter, contractAddress, web3);
 
 export const buildV28ConverterContract = (
-  contractAddress?: string
+  contractAddress?: string,
+  web3?: Web3
 ): ContractMethods<{
   acceptTokenOwnership: () => ContractSendMethod;
   acceptOwnership: () => ContractSendMethod;
@@ -196,6 +202,9 @@ export const buildV28ConverterContract = (
     toTokenAddress: string,
     wei: string
   ) => CallReturn<{ "0": string; "1": string }>;
+  recentAverageRate: (
+    tokenAddress: string
+  ) => CallReturn<{ "0": string; "1": string }>;
   owner: () => CallReturn<string>;
   version: () => CallReturn<string>;
   converterType: () => CallReturn<string>;
@@ -203,7 +212,7 @@ export const buildV28ConverterContract = (
   connectorTokens: (index: number) => CallReturn<string>;
   conversionFee: () => CallReturn<string>;
   reserveBalance: (reserveToken: string) => CallReturn<string>;
-}> => buildContract(ABIConverterV28, contractAddress);
+}> => buildContract(ABIConverterV28, contractAddress, web3);
 
 export const buildNetworkContract = (
   contractAddress: string,
@@ -254,7 +263,6 @@ export const buildLiquidityProtectionStoreContract = (
   contractAddress: string,
   web3?: Web3
 ): ContractMethods<{
-  whitelistedPools(): CallReturn<string[]>;
   lockedBalanceCount(owner: string): CallReturn<string>;
   lockedBalance(
     owner: string,
@@ -275,7 +283,6 @@ export const buildLiquidityProtectionStoreContract = (
   protectedLiquidityIds(owner: string): CallReturn<string[]>;
   protectedLiquidityId(owner: string): CallReturn<string>;
   protectedLiquidity(id: string): CallReturn<{ [key: string]: string }>;
-  isPoolWhitelisted(anchorAddress: string): CallReturn<"0" | "1">;
 }> => buildContract(ABILiquidityProtectionStore, contractAddress, web3);
 
 export const buildLiquidityProtectionContract = (
@@ -283,13 +290,7 @@ export const buildLiquidityProtectionContract = (
   web3?: Web3
 ): ContractMethods<{
   store: () => CallReturn<string>;
-  networkToken: () => CallReturn<string>;
   govToken: () => CallReturn<string>;
-  minProtectionDelay: () => CallReturn<string>;
-  maxProtectionDelay: () => CallReturn<string>;
-  maxSystemNetworkTokenAmount: () => CallReturn<string>;
-  maxSystemNetworkTokenRatio: () => CallReturn<string>;
-  lockDuration: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
   protectLiquidity: (
     anchor: string,
@@ -318,4 +319,66 @@ export const buildLiquidityProtectionContract = (
     reserveRateN: string,
     reserveRateD: string
   ) => CallReturn<string>;
+  settings: () => CallReturn<string>;
+  poolAvailableSpace: (
+    poolAnchor: string
+  ) => CallReturn<{ "0": string; "1": string }>;
 }> => buildContract(ABILiquidityProtection, contractAddress, web3);
+
+export const buildLiquidityProtectionSettingsContract = (
+  contractAddress: string,
+  web3?: Web3
+): ContractMethods<{
+  poolWhitelist(): CallReturn<string[]>;
+  addLiquidityDisabled: (
+    poolId: string,
+    reserveId: string
+  ) => CallReturn<boolean>;
+  minProtectionDelay: () => CallReturn<string>;
+  lockDuration: () => CallReturn<string>;
+  networkToken: () => CallReturn<string>;
+  maxProtectionDelay: () => CallReturn<string>;
+  maxSystemNetworkTokenRatio: () => CallReturn<string>;
+  defaultNetworkTokenMintingLimit: () => CallReturn<string>;
+  minNetworkTokenLiquidityForMinting: () => CallReturn<string>;
+  networkTokensMinted: (poolId: string) => CallReturn<string>;
+  networkTokenMintingLimits: (poolId: string) => CallReturn<string>;
+  averageRateMaxDeviation: () => CallReturn<string>;
+  isPoolWhitelisted(anchorAddress: string): CallReturn<boolean>;
+}> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);
+
+export const buildAddressLookupContract = (
+  contractAddress: string
+): ContractMethods<{
+  addressOf: (ascii: string) => CallReturn<string>;
+}> => buildContract(ABIContractRegistry, contractAddress);
+
+export const buildStakingRewardsStoreContract = (
+  contractAddress: string,
+  web3?: Web3
+): ContractMethods<{
+  poolPrograms: () => CallReturn<{
+    "0": string[]; // poolToken
+    "1": string[]; // startTimes
+    "2": string[]; // endTimes
+    "3": string[]; // rewardRates
+    "4": string[][]; // reserveTokens
+    "5": string[][]; // rewardShares
+  }>;
+}> => buildContract(ABIStakingRewardsStore, contractAddress, web3);
+
+export const buildStakingRewardsContract = (
+  contractAddress: string,
+  web3?: Web3
+): ContractMethods<{
+  stakeRewards: (maxAmount: string, poolToken: string) => ContractSendMethod;
+  claimRewards: () => ContractSendMethod;
+  totalClaimedRewards: (provider: string) => CallReturn<string>;
+  pendingRewards: (provider: string) => CallReturn<string>;
+  store: () => CallReturn<string>;
+  pendingReserveRewards: (
+    provider: string,
+    poolToken: string,
+    reserveToken: string
+  ) => CallReturn<string>;
+}> => buildContract(ABIStakingRewards, contractAddress, web3);

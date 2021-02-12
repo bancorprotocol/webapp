@@ -8,10 +8,8 @@ import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
-import DataDetailsPool from "@/components/data/details/DataDetailsPool.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
-import DataDetailsToken from "@/components/data/details/DataDetailsToken.vue";
-import LiquidityProtectionSummary from "@/views/LiquidityProtectionSummary.vue";
+import ProtectionHome from "@/views/ProtectionHome.vue";
 import AddProtectionHome from "@/views/AddProtectionHome.vue";
 import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
@@ -24,6 +22,8 @@ import WithdrawProtectionSingle from "@/components/protection/WithdrawProtection
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
 import VotePage from "@/components/vote/VotePage.vue";
+import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
+import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 
 Vue.use(Router);
 
@@ -48,7 +48,7 @@ export const router = new Router({
   mode: "history",
   base: process.env.BASE_URL,
   scrollBehavior(to, from, savedPosition) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       setTimeout(() => {
         if (savedPosition) {
           resolve(savedPosition);
@@ -115,6 +115,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -127,6 +128,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -139,6 +141,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -151,6 +154,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Liquidity"
       }
     },
@@ -159,12 +163,19 @@ export const router = new Router({
       name: "LiqProtection",
       components: {
         Nav: Navigation,
-        default: LiquidityProtectionSummary
+        default: ProtectionHome
+      },
+      meta: {
+        key: "protection",
+        feature: "Protection"
       }
     },
     {
       path: "/:service/protection/whitelistedpools",
       name: "WhitelistedPools",
+      meta: {
+        key: "protection"
+      },
       components: {
         Nav: Navigation,
         default: WhitelistedPools
@@ -178,6 +189,9 @@ export const router = new Router({
         Hero: ProtectionActions
       },
       props: true,
+      meta: {
+        key: "protection"
+      },
       children: [
         {
           path: "",
@@ -203,6 +217,16 @@ export const router = new Router({
           path: "withdraw/double/:id",
           name: "WithdrawProtectionDouble",
           component: WithdrawProtectionDouble
+        },
+        {
+          path: "rewards/restake/:id",
+          name: "RewardsRestake",
+          component: RestakeRewards
+        },
+        {
+          path: "rewards/withdraw",
+          name: "RewardsWithdraw",
+          component: WithdrawRewards
         }
       ]
     },
@@ -215,6 +239,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
+        key: "swap",
         feature: "Trade"
       }
     },
@@ -232,24 +257,7 @@ export const router = new Router({
           name: "DataSummary",
           component: DataSummary,
           meta: {
-            feature: "Data"
-          }
-        },
-        {
-          path: "token/:id",
-          name: "DetailsToken",
-          redirect: "/404",
-          component: DataDetailsToken,
-          meta: {
-            feature: "Data"
-          }
-        },
-        {
-          path: "pool/:id",
-          name: "DetailsPool",
-          redirect: "/404",
-          component: DataDetailsPool,
-          meta: {
+            key: "data",
             feature: "Data"
           }
         }
@@ -269,6 +277,7 @@ export const router = new Router({
           name: "VotePage",
           component: VotePage,
           meta: {
+            key: "vote",
             feature: "Vote"
           }
         }

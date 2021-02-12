@@ -5,23 +5,25 @@
     <div class="remaining-time__progress" :style="{ width: percentage }"></div>
     <div v-if="remainingTime !== 0" class="remaining-time__content">
       <font-awesome-icon
-        v-if="!isUnlook && remainingPercentage < 1"
+        v-if="!isUnlock && remainingPercentage < 1"
         icon="clock"
         class="remaining-time__icon"
       />
       <span class="remaining-time__progress-text">{{ remaining }}</span>
-      <span v-if="isUnlook" class="remaining-time__desc">left to unlock</span>
+      <span v-if="isUnlock" class="remaining-time__desc">
+        {{ $t("left_to_unlock") }}</span
+      >
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
-import numeral from "numeral";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
+import { i18n } from "@/i18n";
 
 @Component
-export default class RemainingTime extends Vue {
+export default class RemainingTime extends BaseComponent {
   @Prop() from?: number;
   @Prop() to?: number;
   @Prop() variant?: string;
@@ -43,7 +45,7 @@ export default class RemainingTime extends Vue {
     }
   }
 
-  get isUnlook() {
+  get isUnlock() {
     return this.variant === "unlock";
   }
 
@@ -56,9 +58,9 @@ export default class RemainingTime extends Vue {
 
   get remaining() {
     if (this.remainingTime < 0) {
-      return "Vote Ended";
+      return i18n.t("vote_ended");
     }
-    if (this.isUnlook) {
+    if (this.isUnlock) {
       const diff = (this.to || 0) - Date.now();
       const day = 24 * 60 * 60 * 1000;
       let remaining = "";
@@ -81,10 +83,6 @@ export default class RemainingTime extends Vue {
       ${this.showSeconds ? `${Math.floor(s % 60) + 1}s` : ""}
       left
     `;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   updateTime() {
@@ -189,17 +187,28 @@ $remaining-time--info---background: [#3ec8c8, #88d5d5];
   &--unlock &__content {
     position: relative;
     color: $text-muted-light;
-    display: flex;
+    display: inline-block;
     align-items: center;
+    margin: 2px;
   }
   &--unlock &__progress-text {
     padding-right: 8px;
-    font-size: 18px;
+    font-size: 0.7rem;
     color: $primary;
     font-weight: 600;
+    white-space: nowrap;
+
+    @media screen and (max-width: $breakpoint-mobile) {
+      font-size: 1rem;
+    }
   }
   &--unlock &__desc {
     padding-top: 4px;
+    font-size: 0.5rem;
+
+    @media screen and (min-width: $breakpoint-mobile) {
+      display: block;
+    }
   }
 }
 </style>

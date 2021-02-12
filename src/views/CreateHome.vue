@@ -2,21 +2,14 @@
   <div>
     <content-block
       :shadow="true"
-      title="Create a Pool"
+      :title="$t('create_Pool')"
       :back-button="true"
       @back="back"
       class="mb-3"
     >
       <div class="mt-3">
-        <div v-if="version === 1">
-          <create-v1-step1 v-if="step === 1" v-model="stepOneProps" />
-          <create-v1-step2 v-else v-model="stepTwoProps" />
-        </div>
-
-        <div v-else>
-          <create-v2-step1 v-if="step === 1" />
-          <create-v2-step2 v-else />
-        </div>
+        <create-v1-step1 v-if="step === 1" v-model="stepOneProps" />
+        <create-v1-step2 v-else v-model="stepTwoProps" />
 
         <alert-block variant="error" :msg="errorStep1" class="mt-3" />
 
@@ -32,7 +25,7 @@
     </content-block>
 
     <modal-base
-      title="You are creating a pool"
+      :title="$t('you_create_Pool')"
       v-model="modal"
       @input="setDefault"
     >
@@ -53,19 +46,19 @@
             <label-content-split
               v-for="item in selectedTokens"
               :key="item.token.id"
-              :label="item.token.symbol + ' Ratio'"
-              :value="item.percentage + '%'"
+              :label="`${item.token.symbol} ${$t('ratio')}`"
+              :value="`${item.percentage}%`"
             />
             <label-content-split
-              label="Fee"
-              :value="stepTwoProps.poolFee + '%'"
+              :label="$t('fee')"
+              :value="`${stepTwoProps.poolFee}%`"
             />
             <label-content-split
-              label="Pool Name"
+              :label="$t('pool_name')"
               :value="stepTwoProps.poolName"
             />
             <label-content-split
-              label="Token Symbol"
+              :label="$t('token_symbol')"
               :value="stepTwoProps.poolSymbol"
             />
           </gray-border-block>
@@ -92,14 +85,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import CreateV1Step1 from "@/components/pool/create/CreateV1Step1.vue";
 import CreateV1Step2 from "@/components/pool/create/CreateV1Step2.vue";
-import CreateV2Step1 from "@/components/pool/create/CreateV2Step1.vue";
-import CreateV2Step2 from "@/components/pool/create/CreateV2Step2.vue";
 import MainButton from "@/components/common/Button.vue";
 import { Step, TxResponse, ViewToken } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -110,6 +102,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BigNumber from "bignumber.js";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface CreateStep1 {
   token: ViewToken | null;
@@ -135,12 +128,10 @@ export interface CreateStep2 {
     ContentBlock,
     CreateV1Step1,
     CreateV1Step2,
-    CreateV2Step1,
-    CreateV2Step2,
     MainButton
   }
 })
-export default class CreateHomeNew extends Vue {
+export default class CreateHomeNew extends BaseComponent {
   version: 1 | 2 = 1;
   step = 1;
   modal = false;
@@ -172,17 +163,17 @@ export default class CreateHomeNew extends Vue {
   };
 
   get stepsConfirmButton() {
-    return this.step === 1 ? "Continue" : "Create a Pool";
+    return this.step === 1 ? i18n.t("continue") : i18n.t("create_Pool");
   }
 
   get modalConfirmButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 
   get stepsConfirmError() {
@@ -194,16 +185,15 @@ export default class CreateHomeNew extends Vue {
 
   get errorStep1() {
     // TMP fix
-    if (this.stepOneProps.length > 2)
-      return "Currently you can only add two tokens.";
+    if (this.stepOneProps.length > 2) return `${i18n.t("curr_two_tokens")}.`;
     if (
       this.stepOneProps[0].percentage !== "50" ||
       this.stepOneProps[1].percentage !== "50"
     )
-      return "Currently the ratio is locked to 50% / 50%";
+      return i18n.t("curr_fifty_fifty");
 
     const fee = parseFloat(this.stepTwoProps.poolFee);
-    if (fee > 5 || fee < 0) return "Fee must be between 0% and 5%";
+    if (fee > 5 || fee < 0) return i18n.t("fee_zero_five");
     // TMP fix end
 
     if (this.existingPoolWarning) return this.existingPoolWarning;
@@ -223,7 +213,7 @@ export default class CreateHomeNew extends Vue {
   }
 
   get percentageWarning() {
-    return this.totalPercentage > 100 ? "Maximum total reserve is 100%" : "";
+    return this.totalPercentage > 100 ? i18n.t("max_reserve") : "";
   }
 
   get totalPercentage() {
@@ -241,7 +231,7 @@ export default class CreateHomeNew extends Vue {
   }
 
   get existingPoolWarning() {
-    return this.existingPool ? "A pool like this already exists" : "";
+    return this.existingPool ? i18n.t("pool_exists") : "";
   }
 
   get selectedTokens() {
@@ -339,12 +329,8 @@ export default class CreateHomeNew extends Vue {
     }
   }
 
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
-  }
-
   async nextStep() {
-    if (!this.isAuthenticated) {
+    if (!this.currentUser) {
       //@ts-ignore
       await this.promptAuth();
       return;
@@ -365,10 +351,6 @@ export default class CreateHomeNew extends Vue {
     this.error = "";
     this.success = null;
     this.newPoolId = "";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

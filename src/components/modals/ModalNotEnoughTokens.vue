@@ -42,15 +42,14 @@
         class="font-size-20 mt-4"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        Insufficient {{ symbol }} Balance
+        {{ `${$t("insufficient_balance")} ${symbol}` }}
       </h3>
       <div class="font-size-16" :class="darkMode ? 'text-dark' : 'text-light'">
-        In order to vote, you need to stake {{ symbol }} tokens first. If you do
-        not have {{ symbol }}, you will need to stake BNT into a pool first.
+        {{ $t("order_to_vote", { symbol: symbol }) }}
       </div>
       <main-button
         @click="onHide"
-        label="Stake"
+        :label="$t('stake')"
         :large="true"
         :active="true"
         :block="true"
@@ -62,23 +61,19 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
-import { Component, Vue } from "vue-property-decorator";
-import { VModel } from "@/api/helpers";
+import { Component, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     MainButton
   }
 })
-export default class ModalNotEnoughTokens extends Vue {
+export default class ModalNotEnoughTokens extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
   symbol: string = "";
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
 
   onHide() {
     this.show = false;

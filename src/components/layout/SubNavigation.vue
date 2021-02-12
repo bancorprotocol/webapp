@@ -4,16 +4,25 @@
       <b-col>
         <b-button-group class="d-flex">
           <b-button
+            class="swap"
             :to="{ name: 'Swap' }"
-            :variant="$route.name !== 'Swap' ? 'outline-primary' : 'primary'"
+            :variant="
+              $route.name !== 'Swap'
+                ? 'outline-primary' + (darkMode ? '-dark' : '')
+                : 'primary'
+            "
             style="width: 50%"
-            >Swap</b-button
+            >{{ $t("swap") }}</b-button
           >
           <b-button
             :to="{ name: 'Pool' }"
-            :variant="$route.name !== 'Pool' ? 'outline-primary' : 'primary'"
+            :variant="
+              $route.name !== 'Pool'
+                ? 'outline-primary' + (darkMode ? '-dark' : '')
+                : 'primary'
+            "
             style="width: 50%"
-            >Pool</b-button
+            >{{ $t("pool") }}</b-button
           >
         </b-button-group>
       </b-col>
@@ -22,29 +31,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { vxm } from "@/store/";
-import wait from "waait";
-import { router } from "@/router";
-import { sync } from "vuex-router-sync";
-import {
-  services,
-  Feature,
-  buildTokenId,
-  compareString,
-  findOrThrow
-} from "@/api/helpers";
-import { store } from "../../store";
-import { ModuleParam } from "../../types/bancor";
-import { ethReserveAddress } from "../../api/eth/ethAbis";
-import { Route } from "vue-router";
+import { Component } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class SubNavigation extends Vue {
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-}
+export default class SubNavigation extends BaseComponent {}
 </script>
 
 <style></style>

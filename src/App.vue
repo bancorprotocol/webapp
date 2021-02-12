@@ -13,16 +13,16 @@
       <img v-else src="@/assets/media/logos/bancor-black2.png" height="85px" />
       <div class="d-flex justify-content-center align-items-center my-5">
         <b-spinner
-          style="display: block; width: 2rem; height: 2rem;"
+          style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
-          label="Loading..."
+          :label="`${$t('loading')}... `"
         ></b-spinner>
         <h5
           class="m-0 ml-3"
           :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
         >
-          Just a moment ...
+          {{ `${$t("just_a_moment")}...` }}
         </h5>
       </div>
     </div>
@@ -47,11 +47,7 @@
       darkMode ? 'bg-body-dark text-body-dark' : 'bg-body-light text-body-light'
     "
   >
-    <div
-      class="d-block mb-0 py-2 bg-primary text-white text-center font-size-12 font-w600"
-    >
-      This interface is in beta. Use it at your own risk.
-    </div>
+    <NetworkAlert />
     <div name="MainLayout" class="main-layout">
       <side-bar />
       <main
@@ -81,20 +77,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import ModalLogin from "@/components/modals/ModalLogin.vue";
 import SideBar from "@/components/layout/SideBar.vue";
 import { vxm } from "@/store/";
-import { WalletProvider } from "eos-transit";
 import wait from "waait";
+import BaseComponent from "@/components/BaseComponent.vue";
+import NetworkAlert from "@/components/layout/NetworkAlert.vue";
 
 @Component({
   components: {
+    NetworkAlert,
     ModalLogin,
     SideBar
   }
 })
-export default class App extends Vue {
+export default class App extends BaseComponent {
   loading = true;
   error = false;
 
@@ -103,13 +101,6 @@ export default class App extends Vue {
       process.env.NODE_ENV == "development" ||
       window.location.host.includes("staging")
     );
-  }
-
-  get selectedNetwork() {
-    return vxm.bancor.currentNetwork;
-  }
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   async loadBancor() {
@@ -162,17 +153,16 @@ export default class App extends Vue {
   async created() {
     console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
+    // const locale = localStorage.getItem("locale");
+    // const lang =
+    //   navigator.languages && navigator.languages.length
+    //     ? navigator.languages[0]
+    //     : navigator.language;
     if (darkMode) vxm.general.toggleDarkMode();
+    // if (locale) vxm.general.setLocale(locale);
+    // else vxm.general.setLocale(lang);
+    vxm.general.setLocale("en");
 
-    const autoLogin = localStorage.getItem("autoLogin");
-    if (autoLogin) {
-      const provider = vxm.eosWallet.walletProviders.find(
-        (p: WalletProvider) => p.id === autoLogin
-      );
-      // if (provider) vxm.eosWallet.initLogin(provider);
-    }
-    vxm.general.setLanguage();
-    vxm.general.getUserCountry();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;

@@ -1,6 +1,12 @@
-import { getNetworkVariables } from "@/store/config";
-import { EthNetworks } from "@/api/helpers";
+import { getNetworkVariables } from "@/api/config";
 import Web3 from "web3";
+
+export enum EthNetworks {
+  Mainnet = 1,
+  Ropsten = 3,
+  Rinkeby = 4,
+  Goerli = 5
+}
 
 const buildAlchemyUrl = (
   network: string,
@@ -50,9 +56,49 @@ export const getWeb3 = (
   let wssProvider = providerCache[web3Url];
 
   if (!wssProvider) {
-    wssProvider = new Web3.providers.WebsocketProvider(web3Url);
+    wssProvider = new Web3.providers.WebsocketProvider(web3Url, {
+      timeout: 100 * 1000,
+      clientConfig: {
+        keepalive: true,
+        keepaliveInterval: 60000
+      },
+      reconnect: {
+        auto: true,
+        delay: 15000,
+        onTimeout: true
+      }
+    });
     providerCache[web3Url] = wssProvider;
   }
 
   return new Web3(wssProvider);
 };
+
+const projectId = "da059c364a2f4e6eb89bfd89600bce07";
+
+const buildInfuraAddress = (
+  subdomain: string,
+  projectId: string,
+  wss: boolean = false
+) =>
+  `${wss ? "wss" : "https"}://${subdomain}.infura.io/${
+    wss ? "ws/" : ""
+  }v3/${projectId}`;
+
+export const getInfuraAddress = (
+  network: EthNetworks,
+  wss: boolean = false
+) => {
+  if (network == EthNetworks.Mainnet) {
+    return buildInfuraAddress("mainnet", projectId, wss);
+  } else if (network == EthNetworks.Ropsten) {
+    return buildInfuraAddress("ropsten", projectId, wss);
+  }
+  throw new Error("Infura address for network not supported ");
+};
+
+export const web3 = new Web3(
+  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
+);
+
+web3.eth.transactionBlockTimeout = 100;

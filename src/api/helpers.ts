@@ -17,7 +17,9 @@ import {
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken
+  ViewToken,
+  TableItem,
+  ViewReserve
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -30,12 +32,9 @@ import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
-import { PropOptions } from "vue";
-import { createDecorator } from "vue-class-component";
 import { pick, zip } from "lodash";
-import moment from "moment";
-import { getAlchemyUrl, getWeb3, Provider } from "@/api/web3";
-import { getNetworkVariables } from "@/store/config";
+import dayjs from "@/utils/dayjs";
+import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
 
 export enum PositionType {
   single,
@@ -49,58 +48,9 @@ export const rewindBlocksByDays = (
 ) => {
   if (!Number.isInteger(currentBlock))
     throw new Error("Current block should be an integer");
-  const secondsToRewind = moment.duration(days, "days").asSeconds();
+  const secondsToRewind = dayjs.duration(days, "days").asSeconds();
   const blocksToRewind = parseInt(String(secondsToRewind / secondsPerBlock));
   return currentBlock - blocksToRewind;
-};
-
-const zeroIfNegative = (big: BigNumber) =>
-  big.isNegative() ? new BigNumber(0) : big;
-
-export const calculateMaxStakes = (
-  tknReserveBalanceWei: string,
-  bntReserveBalanceWei: string,
-  poolTokenSupplyWei: string,
-  poolTokenSystemBalanceWei: string,
-  maxSystemNetworkTokenAmount: string,
-  maxSystemNetworkTokenRatioPpm: string
-) => {
-  const poolTokenSystemBalance = new BigNumber(poolTokenSystemBalanceWei);
-  const poolTokenSupply = new BigNumber(poolTokenSupplyWei);
-  const bntReserveBalance = new BigNumber(bntReserveBalanceWei);
-  const tknReserveBalance = new BigNumber(tknReserveBalanceWei);
-  const maxSystemNetworkTokenRatioDec = new BigNumber(
-    maxSystemNetworkTokenRatioPpm
-  ).div(1000000);
-
-  // calculating the systemBNT  from system pool tokens
-  const rate = bntReserveBalance.div(poolTokenSupply);
-  const systemBNT = poolTokenSystemBalance.times(rate);
-
-  // allowed BNT based on limit cap
-  const maxLimitBnt = zeroIfNegative(
-    new BigNumber(maxSystemNetworkTokenAmount).minus(systemBNT)
-  );
-
-  // allowed BNT based on ratio cap
-  const maxRatioBnt = zeroIfNegative(
-    new BigNumber(maxSystemNetworkTokenRatioDec)
-      .times(bntReserveBalance)
-      .minus(systemBNT)
-  );
-
-  const lowestAmount = BigNumber.min(maxLimitBnt, maxRatioBnt);
-
-  const maxAllowedBntInTkn = lowestAmount.times(
-    tknReserveBalance.div(bntReserveBalance)
-  );
-
-  const maxAllowedBnt = systemBNT;
-
-  return {
-    maxAllowedBntWei: maxAllowedBnt.toString(),
-    maxAllowedTknWei: maxAllowedBntInTkn.toString()
-  };
 };
 
 export interface LockedBalance {
@@ -113,22 +63,19 @@ export const traverseLockedBalances = async (
   contract: string,
   owner: string,
   expectedCount: number,
-  network: EthNetworks
+  w3: Web3
 ): Promise<LockedBalance[]> => {
   console.log("traverseHit");
-  const storeContract = buildLiquidityProtectionStoreContract(
-    contract,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const storeContract = buildLiquidityProtectionStoreContract(contract, w3);
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
-  for (var i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
 
     console.log(startIndex, endIndex, "is start and end index");
-    let lockedBalanceRes = await storeContract.methods
+    const lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
     console.log("traverseHit 33");
@@ -149,27 +96,8 @@ export const traverseLockedBalances = async (
     if (lockedBalances.length >= expectedCount) break;
   }
 
-  console.log(lockedBalances, "should be inspected");
   return lockedBalances;
 };
-
-export function VModel(propsArgs: PropOptions = {}) {
-  const valueKey: string = "value";
-  return createDecorator((componentOptions, key) => {
-    (componentOptions.props || ((componentOptions.props = {}) as any))[
-      valueKey
-    ] = propsArgs;
-    (componentOptions.computed || (componentOptions.computed = {}))[key] = {
-      get() {
-        return (this as any)[valueKey];
-      },
-      set(value: any) {
-        // @ts-ignore
-        this.$emit("input", value);
-      }
-    };
-  });
-}
 
 export const networkTokens = ["BNT", "USDB"];
 
@@ -189,7 +117,7 @@ export const multiSteps = async ({
 }) => {
   let state: any = {};
   for (const todo in items) {
-    let steps = items.map(
+    const steps = items.map(
       (todo, index): Step => ({
         name: String(index),
         description: todo.description
@@ -201,7 +129,7 @@ export const multiSteps = async ({
       throw new Error("onUpdate should be either a function or undefined");
     }
 
-    let newState = await items[todo].task(state);
+    const newState = await items[todo].task(state);
     if (typeof newState !== "undefined") {
       state = newState;
     }
@@ -248,18 +176,10 @@ export const formatNumber = (num: number | string, size: number = 4) => {
   return reduced;
 };
 
-export const prettifyNumber = (num: number | string, usd = false): string => {
-  const bigNum = new BigNumber(num);
-  if (usd) {
-    if (bigNum.eq(0)) return "$0.00";
-    else if (bigNum.lt(0.01)) return "< $0.01";
-    else return numeral(bigNum).format("$0,0.00");
-  } else {
-    if (bigNum.eq(0)) return "0";
-    else if (bigNum.gte(2)) return numeral(bigNum).format("0,0.[00]");
-    else if (bigNum.lt(0.000001)) return "< 0.000001";
-    else return numeral(bigNum).format("0.[000000]");
-  }
+export const stringifyPercentage = (percentage: number): string => {
+  if (percentage <= 0) return "0.00%";
+  else if (percentage < 0.0001) return "< 0.01%";
+  else return numeral(percentage).format("0.00%");
 };
 
 export const findChangedReserve = (
@@ -304,7 +224,7 @@ export const calculateProtectionLevel = (
   minimumDelaySeconds: number,
   maximumDelaySeconds: number
 ): number => {
-  const nowSeconds = moment().unix();
+  const nowSeconds = dayjs().unix();
 
   const timeElaspedSeconds = nowSeconds - startTimeSeconds;
 
@@ -324,7 +244,7 @@ export const calculateProgressLevel = (
   if (endTimeSeconds < startTimeSeconds)
     throw new Error("End time should be greater than start time");
   const totalWaitingTime = endTimeSeconds - startTimeSeconds;
-  const now = moment().unix();
+  const now = dayjs().unix();
   if (now >= endTimeSeconds) return 1;
   const timeWaited = now - startTimeSeconds;
   return timeWaited / totalWaitingTime;
@@ -339,6 +259,21 @@ export const compareString = (stringOne: string, stringTwo: string) => {
   return stringOne.toLowerCase() == stringTwo.toLowerCase();
 };
 
+const cryptoComparekey = process.env.VUE_APP_CRYPTO_COMPARE;
+
+export interface UsdPrices {
+  BNT: { USD: number };
+  ETH: { USD: number };
+}
+
+export const cryptoComparePrices = async () => {
+  const res = await axios.get<UsdPrices>(
+    "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BNT,ETH&tsyms=USD",
+    { headers: { authorization: `Apikey ${cryptoComparekey}` } }
+  );
+  return res.data;
+};
+
 export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
   const res = await axios.get<{ mins: number; price: string }>(
     "https://api.binance.com/api/v3/avgPrice?symbol=BNTUSDT"
@@ -347,13 +282,10 @@ export const fetchBinanceUsdPriceOfBnt = async (): Promise<number> => {
 };
 
 export const fetchUsdPriceOfBntViaRelay = async (
-  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C",
-  network: EthNetworks
+  w3: Web3,
+  relayContractAddress = "0xE03374cAcf4600F56BDDbDC82c07b375f318fc5C"
 ): Promise<number> => {
-  const contract = buildConverterContract(
-    relayContractAddress,
-    getWeb3(network, Provider.Alchemy)
-  );
+  const contract = buildConverterContract(relayContractAddress, w3);
   const res = await contract.methods
     .getReturn(
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
@@ -372,24 +304,13 @@ export const updateArray = <T>(
 
 export type Wei = string | number;
 export type Ether = string | number;
-export enum EthNetworks {
-  Mainnet = 1,
-  Ropsten = 3,
-  Rinkeby = 4,
-  Goerli = 5
-}
-
-export let web3 = new Web3(
-  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
-);
-
-web3.eth.transactionBlockTimeout = 100;
 
 export const selectedWeb3Wallet = "SELECTED_WEB3_WALLET";
 
 export interface InfuraEventResponse {
   jsonrpc: string;
   id: number;
+  error: Error;
   result: RawEventResponse[];
 }
 
@@ -449,6 +370,7 @@ export interface DecodedEvent<T> {
   blockNumber: string;
   txHash: string;
   data: T;
+  id: string;
 }
 
 export interface DecodedTimedEvent<T> extends DecodedEvent<T> {
@@ -487,10 +409,11 @@ const decodeRemoveLiquidity = (
     newSupply: string;
   };
 
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
 
   return {
+    id: txHash,
     txHash,
     blockNumber,
     data: {
@@ -518,9 +441,10 @@ const decodeAddLiquidityEvent = (
     newBalance: string;
     newSupply: string;
   };
-  const [_, trader, tokenAdded] = rawEvent.topics;
+  const [, trader, tokenAdded] = rawEvent.topics;
   console.log("decoded add liquidity event", rawEvent);
   return {
+    id: txHash,
     blockNumber,
     txHash,
     data: {
@@ -543,7 +467,7 @@ const decodeConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, fromAddress, toAddress, trader] = rawEvent.topics;
+  const [, fromAddress, toAddress, trader] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
@@ -556,6 +480,7 @@ const decodeConversionEvent = (
   const res = {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       from: {
         address: removeLeadingZeros(fromAddress),
@@ -585,7 +510,7 @@ const decodeNetworkConversionEvent = (
   const blockNumber = String(web3.utils.toDecimal(rawEvent.blockNumber));
   const txHash = rawEvent.transactionHash;
 
-  const [_, poolToken, fromAddress, toAddress] = rawEvent.topics;
+  const [, poolToken, fromAddress, toAddress] = rawEvent.topics;
   const picked = (pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
@@ -594,6 +519,7 @@ const decodeNetworkConversionEvent = (
   return {
     blockNumber,
     txHash,
+    id: txHash,
     data: {
       poolToken: removeLeadingZeros(poolToken),
       from: {
@@ -623,7 +549,9 @@ export const getConverterLogs = async (
   converterAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network, false);
+  // const address = getAlchemyUrl(network, false);
+  const address = getInfuraAddress(network);
+
   const LiquidityRemoved = web3.utils.sha3(
     "LiquidityRemoved(address,address,uint256,uint256,uint256)"
   ) as string;
@@ -636,7 +564,7 @@ export const getConverterLogs = async (
     "Conversion(address,address,address,uint256,uint256,int256)"
   ) as string;
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -648,9 +576,15 @@ export const getConverterLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "was the raw res");
+  const response = await axios.post<InfuraEventResponse>(address, request);
+
+  console.log(response, "was the raw res");
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
+  }
 
   const TokenRateUpdate = web3.utils.sha3(
     "TokenRateUpdate(address,address,uint256,uint256)"
@@ -661,7 +595,9 @@ export const getConverterLogs = async (
 
   const topicsToIgnore = [TokenRateUpdate, PriceDataUpdate];
 
-  const focusedTopics = res.data.result.filter(isNotTopics(topicsToIgnore));
+  const focusedTopics = response.data.result.filter(
+    isNotTopics(topicsToIgnore)
+  );
 
   const conversions = focusedTopics
     .filter(isTopic(Conversion))
@@ -687,9 +623,10 @@ export const getLogs = async (
   networkAddress: string,
   fromBlock: number
 ) => {
-  const address = getAlchemyUrl(network, false);
+  // const address = getAlchemyUrl(network, false);
+  const address = getInfuraAddress(network);
 
-  const res = await axios.post<InfuraEventResponse>(address, {
+  const request = {
     jsonrpc: "2.0",
     method: "eth_getLogs",
     params: [
@@ -700,38 +637,79 @@ export const getLogs = async (
       }
     ],
     id: 1
-  });
+  };
 
-  console.log(res, "is the raw return");
-  const decoded = res.data.result.map(decodeNetworkConversionEvent);
+  const response = await axios.post<InfuraEventResponse>(address, request);
+
+  if (response.data.error) {
+    console.error("eth_getLogs failed!", response.data.error, address, request);
+  }
+
+  const decoded = response.data.result.map(decodeNetworkConversionEvent);
 
   return decoded;
 };
 
 const RPC_URL = getAlchemyUrl(EthNetworks.Mainnet, false);
 const APP_NAME = "Bancor Swap";
+const FORTMATIC_KEY = process.env.VUE_APP_FORTMATIC;
+const PORTIS_KEY = process.env.VUE_APP_PORTIS;
+const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 
 const wallets = [
   { walletName: "metamask", preferred: true },
+  { walletName: "lattice", rpcUrl: RPC_URL, appName: APP_NAME },
   { walletName: "imToken", rpcUrl: RPC_URL, preferred: true },
   { walletName: "coinbase" },
   { walletName: "trust", rpcUrl: RPC_URL, preferred: true },
   { walletName: "dapper" },
-  {
-    walletName: "ledger",
-    rpcUrl: RPC_URL
-  },
+  { walletName: "ledger", rpcUrl: RPC_URL },
   { walletName: "authereum" },
   { walletName: "opera", preferred: true },
   { walletName: "operaTouch" },
   { walletName: "torus" },
   { walletName: "status" },
   { walletName: "unilogin" },
-  { walletName: "walletLink", rpcUrl: RPC_URL, appName: APP_NAME },
+  {
+    walletName: "walletLink",
+    rpcUrl: RPC_URL,
+    appName: APP_NAME,
+    preferred: true
+  },
   { walletName: "meetone", preferred: true },
   { walletName: "mykey", rpcUrl: RPC_URL },
   { walletName: "huobiwallet", rpcUrl: RPC_URL },
-  { walletName: "hyperpay" }
+  { walletName: "hyperpay" },
+  {
+    walletName: "trezor",
+    appUrl: "https://www.bancor.network",
+    email: "services@bancor.network",
+    rpcUrl: RPC_URL
+  },
+  {
+    walletName: "fortmatic",
+    apiKey: FORTMATIC_KEY,
+    preferred: true
+  },
+  {
+    walletName: "portis",
+    apiKey: PORTIS_KEY,
+    preferred: true,
+    label: "Login with Email"
+  },
+  {
+    walletName: "squarelink",
+    apiKey: SQUARELINK_KEY
+  },
+  { walletName: "authereum" },
+  {
+    walletName: "walletConnect",
+    preferred: true,
+    rpc: {
+      [EthNetworks.Mainnet]: RPC_URL
+    }
+  },
+  { walletName: "wallet.io", rpcUrl: RPC_URL }
 ];
 
 export const onboard = Onboard({
@@ -820,7 +798,7 @@ export const getBalance = async (
   symbolName: string,
   precision?: number
 ): Promise<string> => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: { rows: { balance: string }[] } = await rpc.get_table_rows({
     code: contract,
     scope: account,
@@ -992,7 +970,6 @@ export interface Relay {
   network: string;
   version: string;
   converterType: PoolType;
-  owner: string;
 }
 
 export interface RelayWithReserveBalances extends Relay {
@@ -1007,11 +984,11 @@ export interface ChainLinkRelay extends Relay {
   anchor: PoolContainer;
 }
 
-const isAuthenticatedViaModule = (module: EosTransitModule) => {
-  const isAuthenticated =
+const currentUserViaModule = (module: EosTransitModule) => {
+  const currentUser =
     module.wallet && module.wallet.auth && module.wallet.auth.accountName;
-  if (!isAuthenticated) throw new Error("Not logged in");
-  return isAuthenticated;
+  if (!currentUser) throw new Error("Not logged in");
+  return currentUser;
 };
 
 export const getBankBalance = async (): Promise<
@@ -1021,7 +998,7 @@ export const getBankBalance = async (): Promise<
     symbl: string;
   }[]
 > => {
-  const account = isAuthenticatedViaModule(vxm.eosWallet);
+  const account = currentUserViaModule(vxm.eosWallet);
   const res: {
     rows: {
       id: number;
@@ -1097,7 +1074,7 @@ export interface ConverterV2Row {
 }
 
 export const formatLockDuration = (seconds: number): string =>
-  moment.duration(seconds, "seconds").humanize();
+  dayjs.duration(seconds, "seconds").humanize();
 interface BaseSymbol {
   symbol: string;
   precision: number;
@@ -1125,7 +1102,7 @@ export const fetchMultiRelays = async (): Promise<EosMultiRelay[]> => {
     more: boolean;
   } = await rpc.get_table_rows({
     code: contractName,
-    table: "converter.v2",
+    table: "converters",
     scope: contractName,
     limit: 99
   });
@@ -1286,33 +1263,48 @@ export interface TickerPrice {
   symbol: string;
 }
 
-export const getCountryCode = async (): Promise<string> => {
-  try {
-    const res: AxiosResponse<any> = await axios.get("https://ipapi.co/json");
-    const code = res.data.country_code_iso3;
-    if (code) return code;
-    else return "UNKOWN";
-  } catch (e) {
-    console.error(e);
-    return "UNKOWN";
-  }
+export const buildPoolName = (poolId: string): string => {
+  const pool: ViewRelay = vxm.bancor.relay(poolId);
+  if (pool) {
+    return buildPoolNameFromReserves(pool.reserves);
+  } else return "N/A";
 };
 
-export const buildPoolName = (
-  poolId: string,
+export const buildPoolNameFromReserves = (
+  reserves: ViewReserve[],
   separator: string = "/"
 ): string => {
-  const pool: ViewRelay = vxm.bancor.relay(poolId);
-  const symbols = pool.reserves.map(x => x.symbol);
-  return symbols.join(separator);
+  const symbols = reserves.map(x => x.symbol);
+  return symbols.reverse().join(separator);
 };
 
 export const formatUnixTime = (
   unixTime: number
 ): { date: string; time: string; dateTime: string } => {
-  const date = moment.unix(unixTime).format("MMM D yyyy");
-  const time = moment.unix(unixTime).format("HH:mm");
+  const date = dayjs.unix(unixTime).format("MMM D YYYY");
+  const time = dayjs.unix(unixTime).format("HH:mm");
   const dateTime = `${date} ${time}`;
 
   return { date, time, dateTime };
+};
+
+export const defaultTableSort = (
+  row: TableItem,
+  sortBy: string,
+  sortZero: boolean = false
+) => {
+  const value = row[sortBy];
+  let isDefined: boolean;
+  if (!sortZero) {
+    isDefined =
+      value !== 0 && value !== "0" && value !== undefined && value !== null;
+  } else {
+    isDefined = value !== undefined && value !== null;
+  }
+  const number = new BigNumber(value);
+  const isBigNumber = BigNumber.isBigNumber(number);
+  if (isBigNumber) {
+    if (isDefined) return number.toNumber();
+    else return null;
+  } else return value;
 };

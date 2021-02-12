@@ -1,185 +1,209 @@
 <template>
-  <table-wrapper
-    primarykey="id"
-    :items="items"
+  <data-table
     :fields="fields"
+    :items="items"
     :filter="filter"
-    :filterFunction="doFilter"
-    sort-by="liqDepth"
+    :filter-function="doFilter"
+    :sort-function="customSort"
+    default-sort="liqDepth"
   >
-    <template v-slot:head(liqDepth)="data">
-      {{ data.label }}
-      <font-awesome-icon
-        v-b-popover.hover.top="toolTips.liqDepth"
-        icon="info-circle"
-      />
+    <template #head(liquidityProtection)>
+      <img :src="require(`@/assets/media/icons/liquidity.svg`)" class="mr-1" />
     </template>
 
-    <template v-slot:head(fee)="data">
-      {{ data.label }}
-      <font-awesome-icon
-        v-b-popover.hover.top="toolTips.fee"
-        icon="info-circle"
-      />
-    </template>
-
-    <template v-slot:head(feesGenerated)="data">
-      {{ data.label }}
-      <font-awesome-icon
-        v-b-popover.hover.top="toolTips.feesGenerated"
-        icon="info-circle"
-      />
-    </template>
-
-    <template v-slot:head(feesVsLiquidity)="data">
-      {{ data.label }}
-      <font-awesome-icon
-        v-b-popover.hover.top="toolTips.feesVsLiquidity"
-        icon="info-circle"
-      />
-    </template>
-
-    <template v-slot:cell(symbol)="data">
-      <pool-logos :pool="data.item" :cursor="false" />
-
-      <!-- <router-link :to="{ name: 'DetailsPool', params: { id: data.item.id } }">
-        <pool-logos :pool="data.item" :cursor="false" :version="true" />
-      </router-link>-->
-    </template>
-
-    <template v-slot:head(liquidityProtection)="data">
-      <img :src="require(`@/assets/media/icons/liquidity.svg`)" />
-    </template>
-
-    <template v-slot:cell(liquidityProtection)="data">
+    <template #cell(liquidityProtection)="{ value }">
       <img
-        v-if="data.value"
+        v-if="value"
         :src="require(`@/assets/media/icons/liquidity_active.svg`)"
       />
+      <span v-else />
     </template>
 
-    <template v-slot:cell(actionButtons)="data">
-      <action-buttons :pool="data.item" />
+    <template #cell(symbol)="{ item }">
+      <pool-logos :pool="item" :cursor="false" />
     </template>
-  </table-wrapper>
+
+    <template #cell(aprMiningRewards)="{ value }">
+      <div v-if="value && value.rewards">
+        <template v-for="reward in value.rewards">
+          <div :key="reward.address" class="font-size-12">
+            {{
+              `${reward.symbol} ${
+                reward.reward ? formatPercent(reward.reward) : "N/A"
+              }`
+            }}
+          </div>
+        </template>
+        <b-badge variant="danger">
+          <countdown-timer
+            :date-unix="value.endTime"
+            :msg-countdown-ended="$t('rewards_ended')"
+          />
+        </b-badge>
+      </div>
+    </template>
+
+    <template #cell(liqDepth)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(fee)="{ value }">
+      {{ formatPercent(value) }}
+    </template>
+
+    <template #cell(volume)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(feesGenerated)="{ value }">
+      {{ prettifyNumber(value, true) }}
+    </template>
+
+    <template #cell(feesVsLiquidity)="{ value }">
+      {{ formatPercent(value) }}
+    </template>
+
+    <template #cell(actions)="{ item }">
+      <action-buttons
+        :pool="item"
+        :small="true"
+        :loading="whiteListedPoolsLoading"
+      />
+    </template>
+  </data-table>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import TableWrapper from "@/components/common/TableWrapper.vue";
+import { Component, Prop } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 import ActionButtons from "@/components/common/ActionButtons.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import { ViewRelay } from "@/types/bancor";
-import { formatPercent } from "@/api/helpers";
+import { LiqMiningApr, ViewRelay, ViewTableField } from "@/types/bancor";
+import { defaultTableSort, formatPercent } from "@/api/helpers";
 import BigNumber from "bignumber.js";
+import DataTable from "@/components/common/DataTable.vue";
+import CountdownTimer from "@/components/common/CountdownTimer.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
+import { vxm } from "@/store";
 
 @Component({
-  components: { PoolLogos, ActionButtons, TableWrapper }
+  components: { CountdownTimer, DataTable, PoolLogos, ActionButtons }
 })
-export default class TablePools extends Vue {
+export default class TablePools extends BaseComponent {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
 
-  get aprsExist() {
-    return this.items.some(pool => pool.apr);
+  get whiteListedPoolsLoading() {
+    return vxm.ethBancor.whiteListedPoolsLoading;
   }
 
-  get toolTips() {
-    const tooltips = {
-      liqDepth: "The value of tokens in the pool.",
-      fee: "The % deducted from each swap and re-deposited into the pool.",
-      feesGenerated:
-        "The value of swap fees collected in the pool in the past 24h.",
-      feesVsLiquidity: "24h fees annualized divided by liquidity in the pool."
-    };
-    return tooltips;
+  formatPercent(percentage: string | number) {
+    return new BigNumber(percentage).gte(0) ? formatPercent(percentage) : "N/A";
   }
 
-  get fields() {
+  get fields(): ViewTableField[] {
     return [
-      {
-        key: "liquidityProtection",
-        sortable: true
-      },
-      {
-        key: "symbol",
-        label: "Name",
-        sortable: true,
-        thStyle: { "min-width": "150px" }
-      },
-      {
-        key: "liqDepth",
-        label: "Liquidity",
-        thStyle: { "min-width": "150px" },
-        sortable: true,
-        formatter: (value: number) =>
-          new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD"
-          }).format(value)
-      },
-      {
-        key: "fee",
-        label: "Fee",
-        thStyle: { "min-width": "80px" },
-        sortable: true,
-        formatter: formatPercent
-      },
       ...(this.isEth
         ? [
             {
-              key: "volume",
-              label: "Volume (24hr)",
-              sortable: true,
-              thStyle: { "min-width": "140px" },
-              formatter: (value: string) =>
-                value && new BigNumber(value).isGreaterThan(0)
-                  ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD"
-                    }).format(Number(value))
-                  : "N/A"
-            },
-            {
-              key: "feesGenerated",
-              label: "Fees (24hr)",
-              sortable: true,
-              thStyle: { "min-width": "100px" },
-              formatter: (value: string) =>
-                value && new BigNumber(value).isGreaterThan(0)
-                  ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD"
-                    }).format(Number(value))
-                  : "N/A"
-            },
-            {
-              key: "feesVsLiquidity",
-              label: "1y Fees / Liquidity",
-              sortable: true,
-              thStyle: { "min-width": "120px" },
-              formatter: (value: string) =>
-                value && new BigNumber(value).isGreaterThan(0)
-                  ? formatPercent(value)
-                  : "N/A"
+              id: 1,
+              label: "",
+              key: "liquidityProtection",
+              minWidth: "60px",
+              maxWidth: "60px"
             }
           ]
         : []),
       {
-        key: "actionButtons",
-        label: "Action",
-        thStyle: { width: "310px", "min-width": "310px" }
+        id: 2,
+        label: i18n.tc("name"),
+        key: "symbol",
+        minWidth: "160px"
+      },
+      {
+        id: 3,
+        label: i18n.tc("liquidity"),
+        key: "liqDepth",
+        tooltip: i18n.tc("value_tokens_pool"),
+        minWidth: "120px"
+      },
+      {
+        id: 4,
+        label: i18n.tc("rewards"),
+        key: "aprMiningRewards",
+        tooltip: i18n.tc("estimated_apr"),
+        minWidth: "150px"
+      },
+      {
+        id: 5,
+        label: i18n.tc("fee"),
+        key: "fee",
+        tooltip: i18n.tc("percentage_deducted"),
+        minWidth: "80px"
+      },
+      ...(this.isEth
+        ? [
+            {
+              id: 6,
+              label: i18n.tc("volume"),
+              key: "volume",
+              minWidth: "140px"
+            },
+            {
+              id: 7,
+              label: i18n.tc("fees"),
+              key: "feesGenerated",
+              tooltip: i18n.tc("value_swap"),
+              minWidth: "140px"
+            },
+            {
+              id: 8,
+              label: "APR",
+              key: "feesVsLiquidity",
+              tooltip: i18n.tc("fees_24"),
+              minWidth: "80px"
+            }
+          ]
+        : []),
+      {
+        id: 9,
+        label: i18n.tc("actions"),
+        key: "actions",
+        sortable: false,
+        minWidth: "150px",
+        maxWidth: "150px"
       }
     ];
-  }
-
-  get isEth() {
-    return this.$route.params.service == "eth";
   }
 
   doFilter(row: ViewRelay, filter: string) {
     const symbols = row.reserves.map(reserve => reserve.symbol.toLowerCase());
     return symbols.some(symbol => symbol.includes(filter.toLowerCase()));
+  }
+
+  customSort(row: ViewRelay, sortBy: string) {
+    switch (sortBy) {
+      case "liquidityProtection":
+        return row.liquidityProtection;
+      case "symbol":
+        return row.symbol;
+      case "aprMiningRewards": {
+        const rewards = row.aprMiningRewards;
+        if (rewards) {
+          const reward = rewards.rewards.find(
+            (r: LiqMiningApr) => r.symbol !== "BNT"
+          );
+          return reward ? reward.reward : null;
+        }
+        return null;
+      }
+      default:
+        return defaultTableSort(row, sortBy);
+    }
+  }
+
+  get isEth() {
+    return this.$route.params.service == "eth";
   }
 }
 </script>

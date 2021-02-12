@@ -1,7 +1,7 @@
 <template>
   <div class="mt-3">
     <token-input-field
-      label="Stake Amount"
+      :label="$t('stake_amount')"
       :pool="pool"
       v-model="amount"
       @input="amountChanged"
@@ -11,24 +11,16 @@
       @select="selectPool"
     />
 
-    <gray-border-block :gray-bg="true" class="my-3">
-      <div v-if="amount">
+    <div v-if="amount">
+      <gray-border-block :gray-bg="true" class="mt-3">
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
-          :label="index == 0 ? `Value you receive` : ``"
+          :label="index == 0 ? $t('value_receive') : ''"
           :value="`${formatNumber(output.amount)} ${output.symbol}`"
         />
-      </div>
-
-      <span
-        class="font-size-14 font-w400"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-      >
-        If pool ratio will be changed during protection period - you’ll receive
-        change value in BNT.
-      </span>
-    </gray-border-block>
+      </gray-border-block>
+    </div>
 
     <main-button
       :label="actionButtonLabel"
@@ -36,10 +28,11 @@
       :active="true"
       :large="true"
       :disabled="disableActionButton"
+      class="mt-3"
     />
 
     <modal-base
-      title="You are adding liquidity protection"
+      :title="$t('adding_liquidity_protection')"
       v-model="modal"
       @input="setDefault"
     >
@@ -49,7 +42,7 @@
             class="font-size-24 font-w600"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            {{ `${formatNumber(amount)} ${poolName}` }}
+            {{ `${formatNumber(amount)} ${pool.name}` }}
           </span>
         </b-col>
         <b-col v-if="false" cols="12">
@@ -81,25 +74,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import {
-  compareString,
-  formatUnixTime,
-  formatNumber,
-  buildPoolName
-} from "@/api/helpers";
+import { compareString, formatUnixTime, formatNumber } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
-import moment from "moment";
+import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -113,7 +103,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
     MainButton
   }
 })
-export default class AddProtectionDouble extends Vue {
+export default class AddProtectionDouble extends BaseComponent {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
@@ -133,10 +123,6 @@ export default class AddProtectionDouble extends Vue {
     return vxm.bancor.relays.filter(x => x.liquidityProtection);
   }
 
-  get poolName() {
-    return buildPoolName(this.pool.id);
-  }
-
   get balance() {
     console.log(vxm.ethBancor.poolTokenPositions, "are pool token positions");
     const poolBalance = vxm.ethBancor.poolTokenPositions.find(position =>
@@ -147,17 +133,13 @@ export default class AddProtectionDouble extends Vue {
 
   get fullCoverageDate() {
     const maxDelayTime = vxm.ethBancor.liquidityProtectionSettings.maxDelay;
-    const currentTime = moment().unix();
+    const currentTime = dayjs().unix();
     return formatUnixTime(currentTime + maxDelayTime).date;
   }
 
   get actionButtonLabel() {
-    if (!this.amount) return "Enter an Amount";
-    else return "Stake and Protect";
-  }
-
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+    if (!this.amount) return i18n.t("enter_amount");
+    else return i18n.t("stake_protect");
   }
 
   get disableActionButton() {
@@ -166,23 +148,23 @@ export default class AddProtectionDouble extends Vue {
   }
 
   get inputError() {
-    if (parseFloat(this.amount) === 0) return "Amount can not be Zero";
+    if (parseFloat(this.amount) === 0) return i18n.t("amount_not_zero");
 
     const amountNumber = new BigNumber(this.amount);
     const balanceNumber = new BigNumber(this.balance || 0);
 
-    if (amountNumber.gt(balanceNumber)) return "Insufficient balance";
+    if (amountNumber.gt(balanceNumber)) return i18n.t("insufficient_balance");
     else return "";
   }
 
   get modalConfirmButton() {
     return this.error
-      ? "Close"
+      ? i18n.t("close")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 
   async initAction() {
@@ -203,7 +185,6 @@ export default class AddProtectionDouble extends Vue {
         amount: { amount: this.amount, id: this.pool.id },
         onUpdate: this.onUpdate
       });
-      console.log(txRes, "was tx res");
       this.success = txRes;
       this.amount = "";
     } catch (e) {
@@ -214,7 +195,7 @@ export default class AddProtectionDouble extends Vue {
   }
 
   async openModal() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     // @ts-ignore
     else await this.promptAuth();
   }
@@ -248,7 +229,7 @@ export default class AddProtectionDouble extends Vue {
     });
   }
 
-  async amountChanged(tokenAmount: string) {
+  async amountChanged() {
     const res = await vxm.ethBancor.calculateProtectionDouble({
       poolTokenAmount: { amount: this.amount, id: this.pool.id }
     });
@@ -259,10 +240,6 @@ export default class AddProtectionDouble extends Vue {
     } else {
       this.error = "";
     }
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

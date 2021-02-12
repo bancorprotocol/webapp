@@ -1,6 +1,6 @@
 <template>
   <div v-if="selectedToken && !loadingTokens">
-    <label-content-split label="Pool" class="my-4">
+    <label-content-split :label="$t('pool')" class="my-4">
       <pool-logos @click="poolLogosClick" :pool="pool" :dropdown="true" />
       <modal-pool-select
         v-model="poolSelectModal"
@@ -9,7 +9,7 @@
       />
     </label-content-split>
 
-    <label-content-split label="Select a Pool Token" class="mb-3">
+    <label-content-split :label="$t('select_pool_token')" class="mb-3">
       <b-form-group class="m-0" :class="darkMode ? 'text-dark' : 'text-light'">
         <b-form-radio-group
           id="radio-group"
@@ -27,7 +27,7 @@
               <img
                 class="img-avatar img-avatar20 mr-1"
                 :src="reserve.logo"
-                alt="Token Logo"
+                :alt="$t('token_logo')"
               />
               <span class="font-w600 font-size-14">{{ reserve.symbol }}</span>
             </div>
@@ -37,7 +37,7 @@
     </label-content-split>
 
     <percentage-slider
-      label="Amount"
+      :label="$t('amount')"
       v-model="percentage"
       @input="percentageUpdate"
       :show-buttons="true"
@@ -46,7 +46,7 @@
 
     <div>
       <token-input-field
-        label="Input"
+        :label="$t('input')"
         :token="selectedPoolToken"
         v-model="amountSmartToken"
         @input="poolTokenUpdate"
@@ -62,7 +62,11 @@
         />
       </div>
 
-      <label-content-split v-if="exitFee !== 0" label="Exit Fee" class="my-3">
+      <label-content-split
+        v-if="exitFee !== 0"
+        :label="$t('exit_fee')"
+        class="my-3"
+      >
         <span
           class="font-size-12 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
@@ -71,7 +75,7 @@
         </span>
       </label-content-split>
 
-      <label-content-split label="Output" class="my-3">
+      <label-content-split :label="$t('output')" class="my-3">
         <span
           class="font-size-12 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
@@ -88,12 +92,12 @@
     <alert-block
       v-if="exitFee > 0.1"
       variant="warning"
-      msg="The pool is not balanced. It is recommended to wait until the pool is balanced."
+      :msg="$t('pool_not_balanced')"
       class="mb-3"
     />
 
     <main-button
-      label="Remove"
+      :label="$t('remove')"
       @click="initAction"
       :active="true"
       :large="true"
@@ -116,19 +120,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
-import { ViewRelay, ViewReserve } from "@/types/bancor";
+import { i18n } from "@/i18n";
+import { ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
-import { compareString } from "../../api/helpers";
+import { compareString } from "@/api/helpers";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 interface PoolTokenUI {
   disabled: boolean;
@@ -150,7 +156,7 @@ interface PoolTokenUI {
     MainButton
   }
 })
-export default class PoolActionsRemoveV2 extends Vue {
+export default class PoolActionsRemoveV2 extends BaseComponent {
   @Prop() pool!: ViewRelay;
 
   percentage: string = "50";
@@ -182,9 +188,9 @@ export default class PoolActionsRemoveV2 extends Vue {
 
   get balanceError() {
     if (this.errorMessage) return this.errorMessage;
-    if (!this.isAuthenticated) return "";
+    if (!this.currentUser) return "";
     if (this.amountSmartToken === "") return "";
-    if (this.insufficientBalance) return "Insufficient balance";
+    if (this.insufficientBalance) return i18n.t("insufficient_balance");
     else return "";
   }
 
@@ -195,16 +201,8 @@ export default class PoolActionsRemoveV2 extends Vue {
     return selectedToken!;
   }
 
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
-  }
-
   async initAction() {
-    if (this.isAuthenticated) this.modal = true;
+    if (this.currentUser) this.modal = true;
     //@ts-ignore
     else await this.promptAuth();
   }
@@ -222,20 +220,21 @@ export default class PoolActionsRemoveV2 extends Vue {
   get advancedBlockItems() {
     return [
       {
-        label: "Liquidate ",
-        value:
-          Number(this.amountSmartToken) + " " + this.selectedPoolToken.symbol
+        label: `${i18n.t("liquidate")} `,
+        value: `${Number(this.amountSmartToken)} ${
+          this.selectedPoolToken.symbol
+        }`
       },
       {
-        label: "Exit Fee",
-        value: this.exitFee + "%"
+        label: i18n.t("exit_fee"),
+        value: `${this.exitFee}%`
       }
     ];
   }
 
-  @Watch("isAuthenticated")
-  authChange(isAuthenticated: string | boolean) {
-    if (isAuthenticated) {
+  @Watch("currentUser")
+  authChange(currentUser: string | boolean) {
+    if (currentUser) {
       this.getPoolBalances();
     }
   }
@@ -245,7 +244,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   }
 
   async getPoolBalances() {
-    if (!this.isAuthenticated) return;
+    if (!this.currentUser) return;
     const res = await vxm.bancor.getUserBalances(this.pool.id);
     const contrastAgainstReserves = {
       ...res,
@@ -344,7 +343,7 @@ export default class PoolActionsRemoveV2 extends Vue {
   }
 
   @Watch("pool")
-  async updateSelection(pool: ViewRelay) {
+  async updateSelection() {
     // this.selectedToken = "";
     await this.getPoolBalances();
     // this.percentageUpdate(this.percentage);

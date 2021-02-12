@@ -1,10 +1,6 @@
 <template>
   <div>
-    <alert-block
-      class="my-3"
-      variant="info"
-      msg="Pools with 2 reserves and 50/50 weight can be voted for protection."
-    />
+    <alert-block class="my-3" variant="info" :msg="$t('pools_with_two')" />
 
     <div v-for="(props, index) in stepOneProps" :key="index">
       <create-v1-token-block
@@ -23,19 +19,18 @@
         v-else-if="stepOneProps[stepOneProps.length - 1].token"
         class="font-size-12 font-w500 text-primary text-right mt-3"
       >
-        <span class="cursor">+ Add another token</span>
+        <span class="cursor">+ {{ $t("add_another_token") }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, VModel } from "vue-property-decorator";
 import CreateV1TokenBlock from "./CreateV1TokenBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { VModel } from "@/api/helpers";
 import { CreateStep1 } from "@/views/CreateHome.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -43,7 +38,7 @@ import { CreateStep1 } from "@/views/CreateHome.vue";
     AlertBlock
   }
 })
-export default class CreateV1Step1 extends Vue {
+export default class CreateV1Step1 extends BaseComponent {
   @VModel() stepOneProps!: CreateStep1[];
 
   addToken() {
@@ -55,10 +50,6 @@ export default class CreateV1Step1 extends Vue {
     if (index > -1) {
       this.stepOneProps.splice(index, 1);
     }
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

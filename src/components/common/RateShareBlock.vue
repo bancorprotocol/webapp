@@ -35,9 +35,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop } from "vue-property-decorator";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 interface Item {
   label: string;
@@ -48,13 +48,9 @@ interface Item {
 @Component({
   components: { LabelContentSplit }
 })
-export default class RateShareBlock extends Vue {
+export default class RateShareBlock extends BaseComponent {
   @Prop() items!: Item[];
   @Prop() label!: string;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

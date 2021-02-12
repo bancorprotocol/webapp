@@ -3,10 +3,10 @@
     v-model="modal"
     :search.sync="search"
     :items="searchedPools"
-    title="Select a pool"
-    subtitle="Pools"
+    :title="$t('select_pool')"
+    :subtitle="$t('pools')"
   >
-    <template v-slot:item="{ item }">
+    <template #item="{ item }">
       <select-pool-row
         @click="selectPool(item.id)"
         :pool="item"
@@ -17,17 +17,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Emit, Prop } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import { ViewRelay } from "@/types/bancor";
-import { VModel } from "@/api/helpers";
 import SelectPoolRow from "@/components/pool/SelectPoolRow.vue";
 import ModalSelect from "@/components/modals/ModalSelects/ModalSelect.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { ModalSelect, SelectPoolRow }
 })
-export default class ModalPoolSelect extends Vue {
+export default class ModalPoolSelect extends BaseComponent {
   @VModel({ type: Boolean }) modal!: boolean;
   @Prop() pools!: ViewRelay[];
   @Prop({ default: false }) showTokenBalance!: boolean;
@@ -56,10 +55,6 @@ export default class ModalPoolSelect extends Vue {
     console.log("modal pool select is emitting itself..?", id);
     this.modal = false;
     return id;
-  }
-
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
   }
 }
 </script>

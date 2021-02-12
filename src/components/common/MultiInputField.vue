@@ -41,17 +41,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
-import { VModel } from "@/api/helpers";
+import { Component, Prop, VModel } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: { LabelContentSplit }
 })
-export default class MultiInputField extends Vue {
+export default class MultiInputField extends BaseComponent {
   @VModel() text!: string | number;
-  @Prop({ default: "Enter here" }) placeholder!: string;
+  @Prop({ default: i18n.t("enter_here") }) placeholder!: string;
   @Prop({ default: "text" }) type!: string;
   @Prop() label?: string;
   @Prop({ default: "md" }) fontSize!: "sm" | "md" | "lg";
@@ -85,10 +85,6 @@ export default class MultiInputField extends Vue {
     if (this.fontSize === "sm") return "font-size-12";
     else if (this.fontSize === "md") return "font-size-14";
     else return "font-size-16";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

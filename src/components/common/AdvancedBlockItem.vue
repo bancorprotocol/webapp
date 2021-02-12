@@ -15,17 +15,13 @@
   </div>
 </template>
 <script lang="ts">
-import { Watch, Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class AdvancedBlockItem extends Vue {
+export default class AdvancedBlockItem extends BaseComponent {
   @Prop() label!: string;
   @Prop() value!: string;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 }
 </script>
 

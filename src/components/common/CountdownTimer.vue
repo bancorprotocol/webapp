@@ -1,35 +1,50 @@
 <template>
-  <span>{{ calculateCliffTime }}</span>
+  <span>{{ remaining }}</span>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
-import moment from "moment";
+import { i18n } from "@/i18n";
 
 @Component
 export default class CountdownTimer extends Vue {
   @Prop() dateUnix!: number;
+  @Prop({ default: i18n.t("countdown_ended") }) msgCountdownEnded!: string;
 
-  now = Date.now() / 1000;
+  private now: number = Date.now() / 1000;
+  private interval: any;
 
-  get calculateCliffTime() {
-    const diffTime = this.dateUnix - this.now;
-    let duration = moment.duration(diffTime * 1000, "milliseconds");
-    const interval = 1000;
-    duration = moment.duration(Number(duration) - interval, "milliseconds");
-    const days = duration.days() + "d ";
-    const hours = duration.hours() + "h ";
-    const minutes = duration.minutes() + "m ";
-    const seconds = duration.seconds() + "s";
-    let string = days + hours + minutes + seconds;
-    return string;
+  get remaining() {
+    const remainingTime = this.dateUnix - this.now;
+    if (remainingTime < 0) {
+      return this.msgCountdownEnded;
+    }
+
+    const s = remainingTime;
+    const m = s / 60;
+    const h = m / 60;
+    const d = h / 24;
+
+    return `
+      ${Math.floor(d)}d
+      ${Math.floor(h % 24)}h
+      ${Math.floor(m % 60)}m
+      ${Math.floor(s % 60) + 1}s
+    `;
+  }
+
+  updateTime() {
+    this.now = Date.now() / 1000;
   }
 
   created() {
-    setInterval(() => {
-      this.now = Date.now() / 1000;
+    this.interval = setInterval(() => {
+      this.updateTime();
     }, 1000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 }
 </script>

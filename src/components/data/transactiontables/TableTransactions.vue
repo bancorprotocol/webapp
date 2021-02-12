@@ -1,85 +1,104 @@
 <template>
-  <table-wrapper
-    :items="items"
+  <data-table
     :fields="fields"
+    :items="items"
     :filter="filter"
-    :filterFunction="doFilter"
-    sort-by="unixTime"
+    :filter-function="doFilter"
+    :sort-function="customSort"
+    default-sort="unixTime"
   >
-    <template v-slot:cell(description)="data">
-      <a :href="data.item.txLink" target="_blank">{{ data.value }}</a>
+    <template #cell(description)="{ item }">
+      <a :href="item.txLink" target="_blank">
+        {{ `Swap ${item.data.from.symbol} for ${item.data.to.symbol}` }}
+      </a>
     </template>
 
-    <template v-slot:cell(account)="data">
-      <a :href="data.item.accountLink" target="_blank">{{ data.value }}</a>
+    <template #cell(valueTransmitted)="{ value }">
+      {{ prettifyNumber(value, true) }}
     </template>
-  </table-wrapper>
+
+    <template #cell(from)="{ item }">
+      {{ `${prettifyNumber(item.data.from.amount)} ${item.data.from.symbol}` }}
+    </template>
+
+    <template #cell(to)="{ item }">
+      {{ `${prettifyNumber(item.data.to.amount)} ${item.data.to.symbol}` }}
+    </template>
+
+    <template #cell(account)="{ item, value }">
+      <a :href="item.accountLink" target="_blank">
+        {{ value.length > 12 ? shortenEthAddress(value) : value }}
+      </a>
+    </template>
+
+    <template #cell(unixTime)="{ value }">
+      {{ dayjs.unix(value).fromNow() }}
+    </template>
+  </data-table>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { formatNumber, shortenEthAddress } from "@/api/helpers";
-import moment from "moment";
-import TableWrapper from "@/components/common/TableWrapper.vue";
-@Component({
-  components: { TableWrapper }
-})
-export default class TableTransactions extends Vue {
-  @Prop() filter!: string;
-  @Prop({ default: [] }) items!: any[];
+import { Component, Prop } from "vue-property-decorator";
+import { i18n } from "@/i18n";
+import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
+import dayjs from "@/utils/dayjs";
+import BaseComponent from "@/components/BaseComponent.vue";
+import { TableItem, ViewTableField } from "@/types/bancor";
+import DataTable from "@/components/common/DataTable.vue";
 
-  fields = [
-    {
-      key: "description",
-      label: "Description",
-      thStyle: { "min-width": "260px" },
-      sortable: false,
-      formatter: (value: any, label: string, item: any) =>
-        `Swap ${item.data.from.symbol} for ${item.data.to.symbol}`
-    },
-    {
-      key: "valueTransmitted",
-      label: "Total Value",
-      thStyle: { "min-width": "180px" },
-      sortable: true,
-      formatter: (value: number) =>
-        new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD"
-        }).format(value)
-    },
-    {
-      key: "from",
-      label: "Amount From",
-      thStyle: { "min-width": "200px" },
-      sortable: true,
-      formatter: (value: any, label: string, item: any) =>
-        `${formatNumber(item.data.from.amount)} ${item.data.from.symbol}`
-    },
-    {
-      key: "to",
-      label: "Amount To",
-      thStyle: { "min-width": "200px" },
-      sortable: true,
-      formatter: (value: any, label: string, item: any) =>
-        `${formatNumber(item.data.to.amount)} ${item.data.to.symbol}`
-    },
-    {
-      key: "account",
-      label: "Account",
-      thStyle: { "min-width": "160px" },
-      sortable: true,
-      formatter: (value: string) =>
-        value.length > 12 ? shortenEthAddress(value) : value
-    },
-    {
-      key: "unixTime",
-      label: "Time",
-      thStyle: { "min-width": "120px" },
-      sortable: true,
-      formatter: (value: number) => moment.unix(value).fromNow()
-    }
-  ];
+@Component({
+  components: { DataTable }
+})
+export default class TableTransactions extends BaseComponent {
+  @Prop() filter!: string;
+  @Prop({ default: [] }) items!: TableItem[];
+
+  shortenEthAddress = shortenEthAddress;
+  dayjs = dayjs;
+
+  get fields(): ViewTableField[] {
+    return [
+      {
+        id: 1,
+        key: "description",
+        label: i18n.tc("description"),
+        minWidth: "260px"
+      },
+      {
+        id: 2,
+        key: "valueTransmitted",
+        label: i18n.tc("total_value"),
+        minWidth: "160px"
+      },
+      {
+        id: 3,
+        key: "from",
+        label: i18n.tc("amount_from"),
+        minWidth: "200px",
+        sortable: false
+      },
+      {
+        id: 4,
+        key: "to",
+        label: i18n.tc("amount_to"),
+        minWidth: "200px",
+        sortable: false
+      },
+      {
+        id: 5,
+        key: "account",
+        label: i18n.tc("account"),
+        minWidth: "160px"
+      },
+      {
+        id: 6,
+        key: "unixTime",
+        label: i18n.tc("time"),
+        minWidth: "120px"
+      }
+    ];
+  }
+
   doFilter(row: any, filter: string) {
     const fromSymbol = row.data.from.symbol;
     const toSymbol = row.data.to.symbol;
@@ -87,6 +106,17 @@ export default class TableTransactions extends Vue {
       (fromSymbol && fromSymbol.toLowerCase().indexOf(filter) >= 0) ||
       (toSymbol && toSymbol.toLowerCase().indexOf(filter) >= 0)
     );
+  }
+
+  customSort(row: any, sortBy: string) {
+    switch (sortBy) {
+      case "description":
+        return row.data.from.symbol;
+      case "account":
+        return row.data.account;
+      default:
+        return defaultTableSort(row, sortBy, true);
+    }
   }
 }
 </script>

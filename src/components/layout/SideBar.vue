@@ -2,138 +2,146 @@
   <div class="bar-container">
     <side-bar-left
       class="d-none d-md-flex"
-      :darkMode="darkMode"
-      :data="dataObject"
-      @sideLinkClicked="sideLinkClicked"
+      :dark-mode="darkMode"
+      :links="links"
+      @linkClicked="navigateToRoute"
     />
     <side-bar-bottom
       class="d-md-none"
-      :darkMode="darkMode"
-      :data="dataObject"
-      @sideLinkClicked="sideLinkClicked"
+      :dark-mode="darkMode"
+      :links="links"
+      @linkClicked="navigateToRoute"
+      @moreClicked="showMore = !showMore"
     />
+
+    <div v-if="showMore" class="sidebar-more">
+      <side-bar-bottom-more
+        :dark-mode="darkMode"
+        :links="links"
+        @linkClicked="navigateToRoute"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, Emit, Watch } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { i18n } from "@/i18n";
+import { Component, Watch } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
+import SideBarBottomMore from "@/components/layout/SideBarBottomMore.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
+
+export interface ViewSideBarLink {
+  route: string;
+  key: string;
+  label: string;
+  newTab: boolean;
+  hideMobile: boolean;
+  svgName: string;
+  active: boolean;
+}
+
 @Component({
-  components: { SideBarBottom, SideBarLeft }
+  components: { SideBarBottom, SideBarBottomMore, SideBarLeft }
 })
-export default class SideBar extends Vue {
-  selectedLink = "swap";
-  links = [
-    {
-      route: "DataSummary",
-      key: "data",
-      label: "Data",
-      newTab: false,
-      hideMobile: false,
-      svgName: "data"
-    },
-    {
-      route: "Swap",
-      key: "swap",
-      label: "Swap",
-      newTab: false,
-      hideMobile: false,
-      svgName: "swap"
-    },
-    {
-      route: "LiqProtection",
-      key: "liquidity",
-      label: "Protection",
-      newTab: false,
-      hideMobile: false,
-      svgName: "liquidity"
-    },
-    {
-      route: "https://gov.bancor.network",
-      key: "governance",
-      label: "Governance",
-      newTab: true,
-      hideMobile: false,
-      svgName: "governance"
-    },
-    {
-      route: "VotePage",
-      key: "vote",
-      label: "Vote",
-      newTab: false,
-      hideMobile: false,
-      svgName: "vote"
-    },
-    {
-      route: "https://x.bancor.network/",
-      key: "bancorx",
-      label: "Bancor X",
-      newTab: true,
-      hideMobile: true,
-      svgName: "bancorx"
-    },
-    {
-      route: "https://wallet.bancor.network/",
-      key: "wallet",
-      label: "Bancor Wallet",
-      newTab: true,
-      hideMobile: true,
-      svgName: "bancor"
-    }
-  ];
+export default class SideBar extends BaseComponent {
+  showMore: boolean = false;
 
-  get dataObject() {
-    return {
-      selectedLink: this.selectedLink,
-      links: this.links
-    };
-  }
-  async created() {
-    this.onRouteChange();
-  }
-  detectSubdomain() {
-    const hostname = window.location.hostname;
-    const splitted = hostname.split(".");
-    const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
-    console.log(withoutStaging, "is without staging");
-    const subDomain = withoutStaging[0];
-    if (subDomain == "localhost") return;
-    if (subDomain == "data") {
-      this.selectedLink = "data";
-    } else if (subDomain == "swap") {
-      this.selectedLink = "swap";
-    }
+  get links() {
+    const currentKeys = this.$route.matched.map(
+      match => match.meta.key as string
+    );
+    return [
+      {
+        route: "DataSummary",
+        key: "data",
+        label: i18n.t("data"),
+        newTab: false,
+        hideMobile: false,
+        svgName: "data"
+      },
+      {
+        route: "Swap",
+        key: "swap",
+        label: i18n.t("swap"),
+        newTab: false,
+        hideMobile: false,
+        svgName: "swap"
+      },
+      {
+        route: "LiqProtection",
+        key: "protection",
+        label: i18n.t("protection"),
+        newTab: false,
+        hideMobile: false,
+        svgName: "liquidity"
+      },
+      {
+        route: "https://gov.bancor.network",
+        key: "governance",
+        label: i18n.t("governance"),
+        newTab: true,
+        hideMobile: false,
+        svgName: "governance"
+      },
+      {
+        route: "VotePage",
+        key: "vote",
+        label: i18n.t("vote.title"),
+        newTab: false,
+        hideMobile: true,
+        svgName: "vote"
+      },
+      {
+        route: "https://x.bancor.network/",
+        key: "bancorx",
+        label: "Bancor X",
+        newTab: true,
+        hideMobile: true,
+        svgName: "bancorx"
+      },
+      {
+        route: "https://wallet.bancor.network/",
+        key: "wallet",
+        label: "Bancor Wallet",
+        newTab: true,
+        hideMobile: true,
+        svgName: "bancor"
+      }
+    ].map(link => ({
+      ...link,
+      active: currentKeys.some(key => link.key === key)
+    })) as ViewSideBarLink[];
   }
 
-  openUrl(url: string) {
+  openNewTab(url: string) {
     window.open(url, "_blank");
   }
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 
-  sideLinkClicked(newSelected: string) {
-    if (this.selectedLink == newSelected) return;
-    const link = this.links.find(x => x.key === newSelected);
-    if (link && !link.newTab) {
+  navigateToRoute(link: ViewSideBarLink) {
+    this.showMore = false;
+    if (!link.newTab) {
       this.$router.push({ name: link.route });
-      this.selectedLink = newSelected;
-    } else if (link) {
-      this.openUrl(link.route);
+    } else {
+      this.openNewTab(link.route);
     }
-  }
-
-  @Watch("$route")
-  async onRouteChange() {
-    const path = this.$route.fullPath;
-    if (path.includes("swap")) this.selectedLink = "swap";
-    if (path.includes("pool")) this.selectedLink = "swap";
-    if (path.includes("data")) this.selectedLink = "data";
-    if (path.includes("protection")) this.selectedLink = "liquidity";
   }
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.btn-toggle {
+  position: absolute;
+  top: 60px;
+  left: 15px;
+  z-index: 999;
+}
+
+.sidebar-more {
+  position: absolute;
+  right: 10px;
+  bottom: 60px;
+  z-index: 300;
+}
+</style>

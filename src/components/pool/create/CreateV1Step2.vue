@@ -3,7 +3,7 @@
     <b-col cols="12" class="mb-3">
       <multi-input-field
         v-model="stepTwoProps.poolName"
-        label="Pool Name"
+        :label="$t('pool_name')"
         placeholder="eg. BNTDMG Smart Relay"
         height="48"
       />
@@ -11,7 +11,7 @@
     <b-col cols="6">
       <multi-input-field
         v-model="stepTwoProps.poolSymbol"
-        label="Pool Symbol"
+        :label="$t('token_symbol')"
         placeholder="eg. BNTDMG"
         height="48"
       />
@@ -20,7 +20,7 @@
       <multi-input-field
         v-model="stepTwoProps.poolDecimals"
         type="number"
-        label="Pool Decimals"
+        :label="$t('pool_decimals')"
         placeholder="eg. 18"
         height="48"
       />
@@ -28,7 +28,7 @@
     <b-col cols="12" class="mt-3">
       <multi-input-field
         v-model="stepTwoProps.poolFee"
-        label="Fee"
+        :label="$t('fee')"
         placeholder="eg. 0.02"
         height="48"
         append="%"
@@ -38,9 +38,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, VModel } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import { VModel } from "@/api/helpers";
 import { CreateStep2 } from "@/views/CreateHome.vue";
 
 @Component({

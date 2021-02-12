@@ -6,28 +6,42 @@
     :no-header="true"
   >
     <div>
-      <div
-        class="new-proposal-button cursor"
-        @click="showNewProposal = true"
-        :class="darkMode ? 'text-dark' : 'text-light'"
-      >
-        + New Proposal
+      <div class="float-right d-flex mt-3 mr-3">
+        <a href="https://discord.gg/EHK8wHbgau" target="_blank" class="mr-2">
+          <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
+            <font-awesome-icon
+              :icon="['fab', 'discord']"
+              class="text-muted-light"
+            />
+            <span class="d-none d-lg-block ml-2">Discord</span>
+          </b-btn>
+        </a>
+        <a href="https://gov.bancor.network/" target="_blank" class="mr-2">
+          <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
+            <img :src="require(`@/assets/media/icons/governance.svg`)" />
+            <span class="d-none d-lg-block ml-2">{{ $t("governance") }}</span>
+          </b-btn>
+        </a>
+        <b-btn
+          @click="showNewProposal = true"
+          variant="primary"
+          class="proposal-cta-button"
+        >
+          + <span class="d-none d-lg-block ml-2">{{ $t("new_proposal") }}</span>
+        </b-btn>
       </div>
+
       <add-proposal v-model="showNewProposal" />
 
-      <b-tabs
-        class="overlap-tabs"
-        no-fade
-        :class="darkMode ? 'tabs-dark' : 'tabs-light'"
-      >
-        <b-tab title="Open Proposals" active>
+      <b-tabs no-fade :class="darkMode ? 'tabs-dark' : 'tabs-light'">
+        <b-tab :title="$t('open_proposals')" active>
           <open-proposals
             :proposals="
               proposalsLoaded ? proposals.filter(p => p.open) : undefined
             "
           />
         </b-tab>
-        <b-tab title="History">
+        <b-tab :title="$t('history')">
           <done-proposals
             :proposals="
               proposalsLoaded ? proposals.filter(p => !p.open) : undefined
@@ -40,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
@@ -50,6 +64,7 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 import OpenProposals from "@/components/vote/proposals/OpenProposals.vue";
 import DoneProposals from "@/components/vote/proposals/DoneProposals.vue";
 import AddProposal from "@/components/vote/proposals/AddProposal.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -61,7 +76,7 @@ import AddProposal from "@/components/vote/proposals/AddProposal.vue";
     AddProposal
   }
 })
-export default class Proposals extends Vue {
+export default class Proposals extends BaseComponent {
   proposals: Proposal[] = [];
   proposalsLoaded: boolean = false;
   showNewProposal = false;
@@ -70,24 +85,20 @@ export default class Proposals extends Vue {
     return this.$route.params.service === "eth";
   }
 
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
-  get isAuthenticated() {
-    return vxm.wallet.isAuthenticated;
+  get ctaBtnVariant() {
+    return this.darkMode ? "outline-gray-dark" : "outline-gray";
   }
 
   get lastTransaction() {
     return vxm.ethGovernance.lastTransaction;
   }
 
-  @Watch("isAuthenticated")
+  @Watch("currentUser")
   @Watch("showNewProposal")
   @Watch("lastTransaction")
   async updateProposals() {
     this.proposals = await vxm.ethGovernance.getProposals({
-      voter: this.isAuthenticated
+      voter: this.currentUser
     });
     this.proposalsLoaded = true;
   }
@@ -101,36 +112,17 @@ export default class Proposals extends Vue {
 <style lang="scss">
 @import "@/assets/_scss/custom/_variables";
 
-.overlap-tabs > * > .nav.nav-tabs {
-  margin-bottom: -1px;
-  border-bottom: 1px solid $gray-border !important;
-  position: relative;
-}
-
 #proposals .nav-tabs li {
   line-height: 28px;
   padding-bottom: 0 !important;
   padding-top: 6px !important;
 }
 
-.new-proposal-button {
-  height: 24px;
-  line-height: 21px;
-  padding: 0 20px;
-  border-radius: 8px !important;
-  border: 1px solid $gray-placeholder !important;
-  color: $text-color-light !important;
+.proposal-cta-button {
+  min-height: 23px;
+  display: flex !important;
+  align-items: center !important;
+  padding: 1px 13px !important;
   font-size: 13px !important;
-  position: absolute;
-  display: inline-block;
-  top: 15px;
-  right: 26px;
-  z-index: 2;
-}
-
-@media (max-width: 450px) {
-  .new-proposal-button {
-    top: -25px;
-  }
 }
 </style>

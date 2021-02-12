@@ -4,11 +4,9 @@ import {
   TokenBalanceReturn,
   GetBalanceParam,
   TokenBalanceParam,
-  TransferParam,
-  TokenBalance
+  TransferParam
 } from "@/types/bancor";
 import {
-  getBalance,
   compareString,
   compareToken,
   assetToDecNumberString
@@ -18,8 +16,7 @@ import _, { differenceWith } from "lodash";
 import { multiContract } from "@/api/eos/multiContractTx";
 import wait from "waait";
 import { Asset, number_to_asset, Sym } from "eos-common";
-import { dfuseClient } from '@/api/eos/rpc';
-
+import { dfuseClient } from "@/api/eos/rpc";
 
 export const getTokenBalancesDfuse = async (
   accountName: string
@@ -61,9 +58,16 @@ export const getTokenBalancesDfuse = async (
       }
     );
     const tokens = res.data.accountBalances.edges.map(item => item.node);
-    const userTokens = tokens.filter(token => compareString(token.account, accountName));
+    const userTokens = tokens.filter(token =>
+      compareString(token.account, accountName)
+    );
 
-    return userTokens.map(token => ({ balance: assetToDecNumberString(new Asset(token.balance)), contract: token.contract, symbol: token.symbol, precision: token.precision }))
+    return userTokens.map(token => ({
+      balance: assetToDecNumberString(new Asset(token.balance)),
+      contract: token.contract,
+      symbol: token.symbol,
+      precision: token.precision
+    }));
   } catch (e) {
     throw new Error("Failed to fetch tokens dFuse");
   }
@@ -78,10 +82,6 @@ const pickBalanceReturn = (data: any): TokenBalanceReturn => {
   // @ts-ignore
   return res;
 };
-
-const tokenBalanceToTokenBalanceReturn = (
-  token: TokenBalance
-): TokenBalanceReturn => ({ ...token, balance: token.amount });
 
 const VuexModule = createModule({
   strict: false
@@ -109,9 +109,9 @@ export class EosNetworkModule
     };
   }
 
-  get isAuthenticated() {
+  get currentUser() {
     // @ts-ignore
-    return this.$store.rootGetters["eosWallet/isAuthenticated"];
+    return this.$store.rootGetters["eosWallet/currentUser"];
   }
 
   get networkId() {
@@ -131,7 +131,7 @@ export class EosNetworkModule
     maxPings?: number;
     interval?: number;
   }) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise<void>(async resolve => {
       for (let i = 0; i < maxPings; i++) {
         const newBalanceArray = await this.getBalances({
           tokens: originalBalances,
@@ -155,7 +155,7 @@ export class EosNetworkModule
   }
 
   @action async transfer({ to, amount, id, memo }: TransferParam) {
-    if (!this.isAuthenticated) throw new Error("Not authenticated!");
+    if (!this.currentUser) throw new Error("Not authenticated!");
     const symbol = id;
     const dirtyReserve = vxm.eosBancor.relaysList
       .flatMap(relay => relay.reserves)
@@ -182,23 +182,35 @@ export class EosNetworkModule
   @action async fetchBulkBalances(
     tokens: GetBalanceParam["tokens"]
   ): Promise<TokenBalanceReturn[]> {
-
-    const bulkBalances = await getTokenBalancesDfuse(this.isAuthenticated);
+    const bulkBalances = await getTokenBalancesDfuse(this.currentUser);
 
     const missingTokens = differenceWith(tokens, bulkBalances, compareToken);
 
     if (missingTokens.length == 0) return bulkBalances;
-    const bulkRequested = await dfuseClient.stateTablesForAccounts<{ balance: string }>(missingTokens.map(x => x.contract), this.isAuthenticated, 'accounts');
-    const dfuseParsed = bulkRequested.tables.filter(table => table.rows.length > 0).flatMap(table => ({ contract: table.account, balance: table.rows[0].json!.balance }));
-    const extraBalances = dfuseParsed.map((json): TokenBalanceReturn => {
-      const asset = new Asset(json.balance)
-      return {
-        balance: assetToDecNumberString(asset),
-        contract: json.contract,
-        symbol: asset.symbol.code().to_string(),
-        precision: asset.symbol.precision()
+    const bulkRequested = await dfuseClient.stateTablesForAccounts<{
+      balance: string;
+    }>(
+      missingTokens.map(x => x.contract),
+      this.currentUser,
+      "accounts"
+    );
+    const dfuseParsed = bulkRequested.tables
+      .filter(table => table.rows.length > 0)
+      .flatMap(table => ({
+        contract: table.account,
+        balance: table.rows[0].json!.balance
+      }));
+    const extraBalances = dfuseParsed.map(
+      (json): TokenBalanceReturn => {
+        const asset = new Asset(json.balance);
+        return {
+          balance: assetToDecNumberString(asset),
+          contract: json.contract,
+          symbol: asset.symbol.code().to_string(),
+          precision: asset.symbol.precision()
+        };
       }
-    })
+    );
 
     return [...bulkBalances, ...extraBalances];
   }
@@ -212,7 +224,7 @@ export class EosNetworkModule
   }
 
   @action public async getBalances(params?: GetBalanceParam) {
-    if (!this.isAuthenticated) throw new Error("Not logged in.");
+    if (!this.currentUser) throw new Error("Not logged in.");
 
     if (!params || params?.tokens?.length == 0) {
       const tokensToFetch = this.balances;

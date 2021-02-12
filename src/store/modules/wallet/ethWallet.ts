@@ -1,17 +1,11 @@
 import { createModule, mutation, action } from "vuex-class-component";
-import {
-  web3,
-  compareString,
-  onboard,
-  selectedWeb3Wallet,
-  EthNetworks
-} from "@/api/helpers";
+import { compareString, onboard, selectedWeb3Wallet } from "@/api/helpers";
 import { ABISmartToken, ethReserveAddress } from "@/api/eth/ethAbis";
 import { EthAddress } from "@/types/bancor";
 import { fromWei, isAddress, toHex, toWei } from "web3-utils";
 import { shrinkToken } from "@/api/eth/helpers";
 import { vxm } from "@/store";
-import { getWeb3, Provider } from "@/api/web3";
+import { EthNetworks, getWeb3, Provider, web3 } from "@/api/web3";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
@@ -35,15 +29,6 @@ const VuexModule = createModule({
   strict: false
 });
 
-interface AccountParams {
-  isUnlocked: boolean;
-  isEnabled: boolean;
-  selectedAddress: string;
-  networkVersion: string;
-  onboardingcomplete: boolean;
-  chainId: string;
-}
-
 export class EthereumModule extends VuexModule.With({
   namespaced: "ethWallet/"
 }) {
@@ -54,7 +39,7 @@ export class EthereumModule extends VuexModule.With({
     this.loggedInAccount = account;
   }
 
-  get isAuthenticated() {
+  get currentUser() {
     return this.loggedInAccount;
   }
 
@@ -89,13 +74,18 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async accountChange(loggedInAccount: string) {
-    if (loggedInAccount !== this.isAuthenticated) {
+    if (loggedInAccount !== this.currentUser) {
       this.setLoggedInAccount(loggedInAccount);
       vxm.ethBancor.onAuthChange(loggedInAccount);
     }
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
+    console.log(
+      nativeBalance,
+      "is native balance",
+      JSON.stringify(nativeBalance)
+    );
     vxm.ethBancor.updateUserBalances([
       { balance: fromWei(nativeBalance), id: ethReserveAddress }
     ]);
@@ -122,6 +112,8 @@ export class EthereumModule extends VuexModule.With({
       throw new Error(
         "Cannot get balance without both the account holder and token contract address"
       );
+    const web3View = getWeb3(this.currentNetwork, Provider.Alchemy);
+
     if (
       compareString(
         tokenContractAddress,
@@ -129,13 +121,12 @@ export class EthereumModule extends VuexModule.With({
       ) ||
       compareString(tokenContractAddress, ethReserveAddress)
     ) {
-      const weiBalance = await web3.eth.getBalance(accountHolder);
+      const weiBalance = await web3View.eth.getBalance(accountHolder);
       return fromWei(weiBalance);
     } else {
       if (!tokenContractAddress)
         throw new Error("tokenContractAddress is falsy");
 
-      const web3View = getWeb3(this.currentNetwork, Provider.Alchemy);
       const tokenContract = new web3View.eth.Contract(
         ABISmartToken,
         tokenContractAddress
@@ -168,7 +159,7 @@ export class EthereumModule extends VuexModule.With({
     const value = toHex(weiAmount);
     const params = [
       {
-        from: this.isAuthenticated,
+        from: this.currentUser,
         to: recipient,
         value
       }

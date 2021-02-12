@@ -1,7 +1,7 @@
 <template>
   <b-row>
     <b-col cols="12">
-      <content-block title="Statistics" :shadow-light="true">
+      <content-block :title="$t('statistics')" :shadow-light="true">
         <statistics class="mt-3" />
       </content-block>
     </b-col>
@@ -11,41 +11,46 @@
       </content-block>
     </b-col>
     <b-col cols="12" v-if="isEth">
-      <content-block :px0="true" :shadow-light="true" :no-header="true">
-        <transaction-tables />
+      <content-block
+        :px0="true"
+        :shadow-light="true"
+        :title="$t('swaps')"
+        :search.sync="txSearch"
+      >
+        <table-transactions :filter="txSearch" :items="itemsSwap" />
       </content-block>
     </b-col>
   </b-row>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Statistics from "@/components/data/statistics/Statistics.vue";
-import LiquidityChart from "@/components/data/charts/LiquidityChart.vue";
-import VolumeChart from "@/components/data/charts/VolumeChart.vue";
 import PoolTokenTables from "@/components/data/pooltokentables/PoolTokenTables.vue";
-import TransactionTables from "@/components/data/transactiontables/TransactionTables.vue";
-import { Chart } from "chart.js";
+import BaseComponent from "@/components/BaseComponent.vue";
+import TableTransactions from "@/components/data/transactiontables/TableTransactions.vue";
+import { vxm } from "@/store";
 
 @Component({
   components: {
-    TransactionTables,
+    TableTransactions,
     PoolTokenTables,
-    LiquidityChart,
     Statistics,
-    VolumeChart,
     ContentBlock
   }
 })
-export default class DataSummary extends Vue {
+export default class DataSummary extends BaseComponent {
+  txSearch = "";
+
   get isEth() {
     return this.$route.params.service === "eth";
   }
 
-  get darkMode() {
-    return vxm.general.darkMode;
+  get itemsSwap() {
+    const liquidityHistory = vxm.bancor.liquidityHistory;
+    if (liquidityHistory.loading) return [];
+    return liquidityHistory.data;
   }
 }
 </script>

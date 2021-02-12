@@ -14,15 +14,17 @@
       cols="12"
       class="d-flex justify-content-center align-items-center mt-3"
     >
-      <span class="text-primary font-size-24 font-w600">Page not found</span>
+      <span class="text-primary font-size-24 font-w600">{{
+        $t("page_not_found")
+      }}</span>
     </b-col>
     <b-col
       cols="12"
       class="d-flex justify-content-center align-items-center mt-3"
     >
-      <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400"
-        >The page you're looking for is not available.</span
-      >
+      <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400">
+        {{ `${$t("page_not_available")}.` }}
+      </span>
     </b-col>
     <b-col
       cols="12"
@@ -30,10 +32,10 @@
     >
       <main-button
         @click="
-          $router.push({ name: 'Swap', params: { service: selectedNetwork } })
+          $router.push({ name: 'Swap', params: { service: currentNetwork } })
         "
         class="px-5 mt-2"
-        label="Go to homepage"
+        :label="$t('go_homepage')"
         :active="true"
         :large="true"
         :block="false"
@@ -43,24 +45,16 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
     MainButton
   }
 })
-export default class PageNotFound extends Vue {
-  get selectedNetwork() {
-    return vxm.bancor.currentNetwork;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-}
+export default class PageNotFound extends BaseComponent {}
 </script>
 
 <style lang="scss" scoped></style>

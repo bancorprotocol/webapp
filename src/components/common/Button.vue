@@ -13,11 +13,11 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, Emit } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Prop, Component, Emit } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class MainButton extends Vue {
+export default class MainButton extends BaseComponent {
   @Prop({ default: "" }) label!: string;
   @Prop({ default: false }) active!: boolean;
   @Prop({ default: false }) large!: boolean;
@@ -25,10 +25,6 @@ export default class MainButton extends Vue {
   @Prop({ default: false }) small!: boolean;
   @Prop({ default: false }) loading!: boolean;
   @Prop({ default: true }) block!: boolean;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
 
   get variant() {
     return this.active

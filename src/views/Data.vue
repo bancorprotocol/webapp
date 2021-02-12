@@ -5,18 +5,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
-@Component({})
-export default class Data extends Vue {
-  selected: string = "pools";
-  filter: string = "";
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-}
+@Component
+export default class Data extends BaseComponent {}
 </script>
 
 <style lang="scss"></style>

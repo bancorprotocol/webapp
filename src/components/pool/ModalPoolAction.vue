@@ -1,5 +1,9 @@
 <template>
-  <modal-base v-model="modal" @input="setDefault" title="You will receive">
+  <modal-base
+    v-model="modal"
+    @input="setDefault"
+    :title="$t('you_will_receive')"
+  >
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)" class="w-100">
         <b-col
@@ -51,9 +55,11 @@
             class="font-size-sm font-w400 text-center mt-2"
             :class="!darkMode ? 'text-muted-light' : 'text-muted-dark'"
           >
-            Output is estimated. If the price changes by more than
-            {{ numeral(slippageTolerance).format("0.0[0]%") }} your transaction
-            will revert.
+            {{
+              $t("output_estimated", {
+                amount: numeral(slippageTolerance).format("0.0[0]%")
+              })
+            }}
           </p>
         </b-col>
 
@@ -97,8 +103,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import {
   LiquidityParams,
   Step,
@@ -113,7 +120,7 @@ import MainButton from "@/components/common/Button.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import numeral from "numeral";
-import { VModel } from "@/api/helpers";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -125,7 +132,7 @@ import { VModel } from "@/api/helpers";
     MainButton
   }
 })
-export default class ModalPoolAction extends Vue {
+export default class ModalPoolAction extends BaseComponent {
   @VModel({ type: Boolean }) modal!: boolean;
   @Prop() amountsArray!: string[];
   @Prop() selectedToken?: ViewReserve;
@@ -143,12 +150,12 @@ export default class ModalPoolAction extends Vue {
   }
   get confirmButton() {
     return this.error
-      ? "Try Again"
+      ? i18n.t("try_again")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 
   get pool(): ViewRelay {
@@ -159,18 +166,10 @@ export default class ModalPoolAction extends Vue {
     return this.$route.params.poolAction === "remove";
   }
 
-  get darkMode(): boolean {
-    return vxm.general.darkMode;
-  }
-
   setDefault() {
     this.sections = [];
     this.error = "";
     this.success = null;
-  }
-
-  get isCountryBanned() {
-    return vxm.general.isCountryBanned;
   }
 
   async initAction() {
@@ -183,12 +182,6 @@ export default class ModalPoolAction extends Vue {
 
     if (this.error) {
       this.error = "";
-      return;
-    }
-
-    if (this.isCountryBanned) {
-      this.error =
-        "This action through swap.bancor.network is not available in your country.";
       return;
     }
 

@@ -8,19 +8,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import { vxm } from "@/store/";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class SubContentBlock extends Vue {
+export default class SubContentBlock extends BaseComponent {
   @Prop() title!: string;
 
   get contentClass() {
     return this.darkMode ? "sub-content-dark" : "sub-content";
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

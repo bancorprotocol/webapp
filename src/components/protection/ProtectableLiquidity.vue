@@ -1,6 +1,6 @@
 <template>
   <collapsable-block
-    title="Assets at risk of impermanent loss"
+    :title="$t('risk_impermanent_loss')"
     header-icon="exclamation-triangle"
   >
     <div
@@ -37,7 +37,7 @@
           variant="primary"
           class="table-button"
         >
-          Add Liquidity
+          {{ $t("add_liquidity") }}
         </b-btn>
       </div>
     </div>
@@ -45,13 +45,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { buildPoolName, formatUnixTime } from "@/api/helpers";
 import CollapsableBlock from "@/components/common/CollapsableBlock.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -61,7 +61,7 @@ import CollapsableBlock from "@/components/common/CollapsableBlock.vue";
     MainButton
   }
 })
-export default class ProtectableLiquidity extends Vue {
+export default class ProtectableLiquidity extends BaseComponent {
   get protectableLiquidity() {
     return [
       {
@@ -101,10 +101,6 @@ export default class ProtectableLiquidity extends Vue {
 
   formatDate(unixTime: number) {
     return formatUnixTime(unixTime);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

@@ -12,40 +12,35 @@
       <img
         class="img-avatar img-avatar20 bg-white logo-shadow"
         :src="bntLogoSrc"
-        alt="Token Logo"
+        :title="$t('token_logo')"
       />
       <span class="mx-2">{{ `${prettifyNumber(item.amount)} BNT` }}</span>
-      <!-- <span class="text-primary font-size-12">
-        {{ `(~$${item.usdValue})` }}
-      </span> -->
     </div>
     <div v-if="!locked">
       <b-btn
         variant="primary"
         @click="click"
         class="font-size-14 font-w500 px-4"
-        >Claim BNT</b-btn
-      >
+        >{{ `${$t("claim")} BNT` }}</b-btn>
     </div>
     <div v-else class="time-left text-center">
       <div class="text-primary font-size-18">
         {{ lockDuration }}
       </div>
       <div class="font-size-12 font-w400" :class="textMutedClass">
-        left until claim
+        {{ $t("left_until_claim") }}
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from "vue-property-decorator";
-import { vxm } from "@/store";
-import moment from "moment";
-import { prettifyNumber } from "@/api/helpers";
+import { Component, Prop, Emit } from "vue-property-decorator";
+import dayjs from "@/utils/dayjs";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class ClaimBnt extends Vue {
+export default class ClaimBnt extends BaseComponent {
   @Prop() item!: any;
 
   locked = true;
@@ -55,15 +50,21 @@ export default class ClaimBnt extends Vue {
   @Emit()
   click() {}
 
+  @Emit("refresh")
+  refresh() {}
+
   countdown(eventTime: number) {
     const currentTime = Date.now() / 1000;
     const diffTime = eventTime - currentTime;
-    let duration = moment.duration(diffTime * 1000, "milliseconds");
+    let duration = dayjs.duration(diffTime * 1000, "milliseconds");    
 
     const interval = 1000;
 
-    setInterval(() => {
-      duration = moment.duration(Number(duration) - interval, "milliseconds");
+    this.locked = (diffTime > 0) ? true : false;
+
+    const runInterval = setInterval(() => {
+      duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
+
       this.lockDuration =
         duration.hours() +
         "h:" +
@@ -71,7 +72,13 @@ export default class ClaimBnt extends Vue {
         "m:" +
         duration.seconds() +
         "s";
-      this.locked = diffTime > 0;
+
+      if (duration.asMilliseconds() < 0) {
+        this.locked = false;
+
+        clearInterval(runInterval);
+        this.refresh();
+      }
     }, interval);
   }
 
@@ -81,14 +88,6 @@ export default class ClaimBnt extends Vue {
 
   get textMutedClass() {
     return this.darkMode ? "text-muted-dark" : "text-muted-light";
-  }
-
-  prettifyNumber(number: string | number): string {
-    return prettifyNumber(number);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 
   created() {

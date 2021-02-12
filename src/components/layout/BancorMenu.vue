@@ -1,27 +1,29 @@
 <template>
   <b-dropdown
-    id="dropdown-settings"
+    id="dropdown-menu"
     right
-    variant="white"
+    :variant="darkMode ? 'outline-dark' : 'outline-light'"
     size="sm"
     toggle-class="block-rounded"
-    menu-class="dropdown-dark"
+    :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
     no-caret
   >
-    <template v-slot:button-content>
+    <template #button-content>
       <font-awesome-icon icon="bars" fixed-width />
     </template>
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
       <b-dropdown-header class="text-uppercase">Bancor</b-dropdown-header>
-      <b-dropdown-item style="width: 230px;" disabled>
-        <font-awesome-icon icon="info" class="mr-2" fixed-width /> About (Coming
-        Soon)
+      <b-dropdown-item style="width: 230px" disabled>
+        <font-awesome-icon icon="info" class="mr-2" fixed-width />
+        {{ $t("about") }}
       </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group v-if="false" id="dropdown-group-2">
-      <b-dropdown-header class="text-uppercase">Apps</b-dropdown-header>
+      <b-dropdown-header class="text-uppercase">{{
+        $t("apps")
+      }}</b-dropdown-header>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
           <img
@@ -29,7 +31,7 @@
             width="16"
             :src="require(`@/assets/media/icons/swap.svg`)"
           />
-          <span class="ml-3">Swap</span>
+          <span class="ml-3">{{ $t("swap") }}</span>
         </div>
       </b-dropdown-item>
       <b-dropdown-item v-else @click="navData">
@@ -39,12 +41,12 @@
             width="16"
             :src="require(`@/assets/media/icons/data.svg`)"
           />
-          <span class="ml-3">Data</span>
+          <span class="ml-3">{{ $t("data") }}</span>
         </div>
       </b-dropdown-item>
       <b-dropdown-item :to="{ name: 'LiqProtection' }">
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
-        Liquidity Protection
+        {{ $t("liquidity_protection") }}
       </b-dropdown-item>
       <b-dropdown-item :to="{ name: 'GovernancePage' }">
         <font-awesome-icon icon="thumbs-up" class="mr-2" fixed-width />
@@ -73,35 +75,9 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header class="text-uppercase">Developers</b-dropdown-header>
-      <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
-        <font-awesome-icon
-          icon="book-open"
-          class="mr-2 menu-icon"
-          fixed-width
-        />
-        Gitbook
-      </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')">
-        <font-awesome-icon
-          :icon="['fab', 'github']"
-          class="mr-2 menu-icon"
-          fixed-width
-        />
-        GitHub
-      </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')">
-        <font-awesome-icon
-          :icon="['fab', 'telegram-plane']"
-          class="mr-2 menu-icon"
-          fixed-width
-        />
-        Chat
-      </b-dropdown-item>
-    </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header class="text-uppercase">Community</b-dropdown-header>
+      <b-dropdown-header class="text-uppercase">
+        {{ $t("community_support") }}
+      </b-dropdown-header>
       <b-dropdown-text>
         <div class="d-flex justify-content-between cursor">
           <font-awesome-icon
@@ -123,7 +99,7 @@
             fixed-width
           />
           <font-awesome-icon
-            @click="openUrl('https://discord.gg/3wJxvP')"
+            @click="openUrl('https://discord.gg/EHK8wHbgau')"
             :icon="['fab', 'discord']"
             class="mr-2 menu-icon"
             fixed-width
@@ -138,23 +114,69 @@
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-3" class="font-size-12">
-      <b-dropdown-item @click="navPrivacy"> Privacy Policy</b-dropdown-item>
-      <b-dropdown-item @click="navTermsOfUse"> Terms of Use</b-dropdown-item>
+    <b-dropdown-group id="dropdown-group-4">
+      <b-dropdown-header class="text-uppercase">{{
+        $t("developers")
+      }}</b-dropdown-header>
+      <b-dropdown-item
+        @click="openUrl('https://docs.bancor.network/')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
+        <font-awesome-icon
+          icon="book-open"
+          class="mr-2 menu-icon"
+          fixed-width
+        />
+        Gitbook
+      </b-dropdown-item>
+      <b-dropdown-item
+        @click="openUrl('https://github.com/bancorprotocol/')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
+        <font-awesome-icon
+          :icon="['fab', 'github']"
+          class="mr-2 menu-icon"
+          fixed-width
+        />
+        GitHub
+      </b-dropdown-item>
+      <b-dropdown-item
+        @click="openUrl('https://t.me/BancorDevelopers')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
+        <font-awesome-icon
+          :icon="['fab', 'telegram-plane']"
+          class="mr-2 menu-icon"
+          fixed-width
+        />
+        {{ $t("chat") }}
+      </b-dropdown-item>
+    </b-dropdown-group>
+    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-group id="dropdown-group-5" class="font-size-12">
+      <b-dropdown-item
+        @click="navPrivacy"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
+        {{ $t("privacy_policy") }}
+      </b-dropdown-item>
+      <b-dropdown-item
+        @click="navTermsOfUse"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
+        {{ $t("terms_of_use") }}
+      </b-dropdown-item>
     </b-dropdown-group>
   </b-dropdown>
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class BancorMenu extends Vue {
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
-
+export default class BancorMenu extends BaseComponent {
   get isDataPage() {
     return this.$route.fullPath.includes("data");
   }
@@ -197,10 +219,6 @@ export default class BancorMenu extends Vue {
   }
 
   toggleDarkMode() {
-    vxm.general.toggleDarkMode();
-  }
-
-  set darkMode(value: boolean) {
     vxm.general.toggleDarkMode();
   }
 }

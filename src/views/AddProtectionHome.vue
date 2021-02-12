@@ -1,6 +1,33 @@
 <template>
   <div class="mt-3">
-    <alert-block :msg="infoMsg" class="my-3" />
+    <alert-block :title="`${$t('add_liquidity_pool')}:`" class="my-3">
+      <ol class="m-0 pl-3">
+        <li>
+          <a
+            href="https://blog.bancor.network/how-to-stake-liquidity-earn-fees-on-bancor-bff8369274a1"
+            target="_blank"
+          >
+            {{ `${$t("make_money_liquidity")}?` }}
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://blog.bancor.network/beginners-guide-to-getting-rekt-by-impermanent-loss-7c9510cb2f22"
+            target="_blank"
+          >
+            {{ `${$t("impermanent_loss")}?` }}
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://bankless.substack.com/p/how-to-protect-yourself-from-impermanent"
+            target="_blank"
+          >
+            {{ `${$t("protect_impermanent_loss")}?` }}
+          </a>
+        </li>
+      </ol>
+    </alert-block>
 
     <stake-buttons @click="openModal" />
 
@@ -14,13 +41,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import StakeButtons from "@/components/protection/StakeButtons.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
+import { i18n } from "@/i18n";
 
 @Component({
   components: {
@@ -31,18 +60,15 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
     ModalPoolSelect
   }
 })
-export default class AddProtectionHome extends Vue {
+export default class AddProtectionHome extends BaseComponent {
   modal = false;
 
   singleMode: boolean | null = null;
   showTokenBalance = false;
 
   get pools() {
+    console.log(vxm.bancor.relays, "are the relays");
     return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
-  }
-
-  get infoMsg() {
-    return "By joining a pool, liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.";
   }
 
   openModal(optionId: number) {
@@ -66,10 +92,6 @@ export default class AddProtectionHome extends Vue {
         });
       }
     }, 400);
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

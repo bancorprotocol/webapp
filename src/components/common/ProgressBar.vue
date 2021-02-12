@@ -8,21 +8,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
-import numeral from "numeral";
+import { Component, Prop } from "vue-property-decorator";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component
-export default class ProgressBar extends Vue {
+export default class ProgressBar extends BaseComponent {
   @Prop() type?: "warn" | "error" | "info";
   @Prop() percentage?: number;
 
   get percentageValue() {
     return `${+(this.percentage || 0)}%`;
-  }
-
-  get darkMode() {
-    return vxm.general.darkMode;
   }
 }
 </script>

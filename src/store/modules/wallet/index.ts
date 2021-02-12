@@ -1,6 +1,5 @@
-import { createModule, mutation, action } from "vuex-class-component";
-import { vxm } from "@/store/index";
-import { store } from "../../../store";
+import { createModule, action } from "vuex-class-component";
+import { vxm, store } from "@/store";
 
 const VuexModule = createModule({
   strict: false
@@ -28,9 +27,9 @@ export class WalletModule extends VuexModule.With({ namespaced: "wallet/" }) {
     }
   }
 
-  get isAuthenticated() {
+  get currentUser() {
     // @ts-ignore
-    return vxm[`${vxm.bancor.wallet}Wallet`].isAuthenticated;
+    return vxm[`${vxm.bancor.wallet}Wallet`].currentUser;
   }
 
   @action async dispatcher(methodName: string, params: any = null) {

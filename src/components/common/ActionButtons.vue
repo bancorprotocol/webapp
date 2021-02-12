@@ -4,39 +4,45 @@
       v-if="pool"
       @click="goToPool"
       variant="primary"
-      class="mr-3 table-button"
+      class="mr-3"
+      :class="small ? 'table-button-small' : 'table-button'"
     >
-      Add Liquidity
+      <span v-if="!small"> {{ $t("add_liquidity") }} </span>
+      <font-awesome-icon v-else icon="plus" />
     </b-btn>
 
     <b-btn
       @click="goToSwap"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-      class="table-button"
+      :class="small ? 'table-button-small' : 'table-button'"
     >
-      Trade
+      <span v-if="!small">{{ $t("trade") }}</span>
+      <font-awesome-icon
+        v-else
+        icon="exchange-alt"
+        v-b-tooltip.hover
+        :title="$t('trade')"
+      />
     </b-btn>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { vxm } from "@/store";
+import { Component, Prop } from "vue-property-decorator";
 import { ViewToken, ViewRelay } from "@/types/bancor";
+import BaseComponent from "@/components/BaseComponent.vue";
+import BigNumber from "bignumber.js";
 
 @Component
-export default class ActionButtons extends Vue {
+export default class ActionButtons extends BaseComponent {
   @Prop() pool?: ViewRelay;
   @Prop() token?: ViewToken;
-
-  get darkMode() {
-    return vxm.general.darkMode;
-  }
+  @Prop({ default: false }) small!: boolean;
 
   goToPool() {
-    if (this.pool!.whitelisted) {
+    if (this.pool && this.pool.addProtectionSupported) {
       this.$router.push({
-        name: "PoolAdd",
+        name: "AddProtectionSingle",
         params: { id: this.pool!.id }
       });
     } else {
@@ -70,5 +76,11 @@ export default class ActionButtons extends Vue {
   font-weight: 500 !important;
   width: 132px;
   padding: 9px 0px 9px 0px !important;
+}
+
+.table-button-small {
+  @extend .table-button;
+
+  width: 50px;
 }
 </style>
