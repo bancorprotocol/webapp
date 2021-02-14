@@ -73,9 +73,9 @@ export default class ActionModalStatus extends BaseComponent {
   @Prop() error?: string;
   @Prop() success?: TxResponse | null;
   @Prop({ default: i18n.t("wait_for_wallet") })
+  stepDescription!: string;
   @Prop()
   msg?: string;
-  stepDescription!: string;
 
   get explorerName() {
     switch (this.currentNetwork) {
