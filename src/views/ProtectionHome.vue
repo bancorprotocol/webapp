@@ -34,7 +34,7 @@
             positions.length ? $t('protected_positions') : $t('protected')
           "
           :search.sync="searchProtected"
-          :dropDownFilters="dropDownFilters"
+          :dropDownFilters="positions.length ? dropDownFilters : []"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
@@ -94,6 +94,7 @@ import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import { groupPositionsArray } from "@/api/pureHelpers";
+import { buildPoolName } from "@/api/helpers";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 
@@ -115,19 +116,15 @@ export default class ProtectionHome extends BaseComponent {
       id: "position",
       selectedIndex: 0,
       items: [
-        { id: "1", title: "All positions" },
-        { id: "2", title: "Fully protected" },
-        { id: "3", title: "Not fully protected" }
+        { id: 0, title: "All positions" },
+        { id: 1, title: "Fully protected" },
+        { id: 2, title: "Not fully protected" }
       ]
     },
     {
       id: "pools",
       selectedIndex: 0,
-      items: [
-        { id: "1", title: "All Pools" },
-        { id: "2", title: "ETH / BNT" },
-        { id: "3", title: "WBTC / BNT " }
-      ]
+      items: [{ id: 0, title: "All Pools", poolId: "" }, ...this.poolNames]
     }
   ];
 
@@ -152,8 +149,26 @@ export default class ProtectionHome extends BaseComponent {
     } else return true;
   }
 
-  poolsFilterFunction(row: ViewProtectedLiquidity) {
-    return true;
+  poolsFilterFunction(row: ViewGroupedPositions) {
+    const pools = this.dropDownFilters[1];
+    if (pools.selectedIndex == 0) return true;
+
+    const pool = this.poolNames[pools.selectedIndex - 1];
+    return pool.poolId === row.poolId;
+  }
+
+  get poolNames() {
+    const filteredNamedPos = this.groupedPos
+      .filter(
+        (obj, index, self) =>
+          index === self.findIndex(x => x.poolId === obj.poolId)
+      )
+      .map((value, index) => ({
+        id: index + 1,
+        title: buildPoolName(value.poolId),
+        poolId: value.poolId
+      }));
+    return filteredNamedPos;
   }
 
   get positions(): ViewProtectedLiquidity[] {
@@ -170,7 +185,6 @@ export default class ProtectionHome extends BaseComponent {
     const el = this.$el.getElementsByClassName("closedPos")[0];
 
     if (el && scroll) {
-      console.log("now: " + el);
       el.scrollIntoView({ behavior: "smooth" });
     }
   }
