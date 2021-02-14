@@ -3175,9 +3175,15 @@ export class EthBancorModule
       const whitelisted = whiteListedPools.some(whitelistedAnchor =>
         compareString(whitelistedAnchor, relay.pool_dlt_id)
       );
-      const bntReserve = relay.reserves.find(reserve =>
+      const lpNetworkTokenReserve = relay.reserves.find(reserve =>
         compareString(reserve.address, liquidityProtectionNetworkToken)
       );
+
+      const hasEnoughLpNetworkToken =
+        lpNetworkTokenReserve &&
+        limit &&
+        limit.isLessThan(lpNetworkTokenReserve!.balance);
+
       const liquidityProtection =
         relay.reserveTokens.some(reserve =>
           compareString(reserve.contract, liquidityProtectionNetworkToken)
@@ -3185,10 +3191,10 @@ export class EthBancorModule
         relay.reserveTokens.length == 2 &&
         relay.reserveTokens.every(reserve => reserve.reserveWeight == 0.5) &&
         whitelisted &&
-        limit &&
-        limit.isLessThan(bntReserve!.balance);
+        hasEnoughLpNetworkToken;
 
-      const addProtectionSupported = liquidityProtection && bntReserve;
+      const addProtectionSupported =
+        liquidityProtection && lpNetworkTokenReserve;
 
       const apr = aprs.find(apr =>
         compareString(apr.poolId, relay.pool_dlt_id)
