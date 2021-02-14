@@ -92,7 +92,8 @@ import ProtectedTable from "@/components/protection/ProtectedTable.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { ViewProtectedLiquidity } from "@/types/bancor";
+import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
+import { groupPositionsArray } from "@/api/pureHelpers";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 
@@ -108,6 +109,7 @@ import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
+
   dropDownFilters = [
     {
       id: "position",
@@ -129,8 +131,27 @@ export default class ProtectionHome extends BaseComponent {
     }
   ];
 
-  positionFilterFunction(row: ViewProtectedLiquidity) {
-    return true;
+  positionFilterFunction(row: ViewGroupedPositions) {
+    const now: number = Date.now() / 1000;
+    const isFullyProtected: boolean = row.fullCoverage - now < 0;
+
+    const selectedIndex = this.dropDownFilters[0].selectedIndex;
+    if (selectedIndex == 1) {
+      row.collapsedData = row.collapsedData.filter(
+        x => x.fullCoverage - now < 0
+      );
+      return isFullyProtected;
+    } else if (selectedIndex == 2) {
+      row.collapsedData = row.collapsedData.filter(
+        x => x.fullCoverage - now > 0
+      );
+      return !isFullyProtected;
+    } else {
+      const groupedPos = groupPositionsArray(vxm.ethBancor.protectedPositions);
+      const fullRow = groupedPos.find(x => x.id === row.id);
+      if (fullRow) row.collapsedData = fullRow.collapsedData;
+      return true;
+    }
   }
 
   poolsFilterFunction(row: ViewProtectedLiquidity) {
