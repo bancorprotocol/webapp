@@ -109,7 +109,7 @@ import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
-
+  groupedPos = groupPositionsArray(vxm.ethBancor.protectedPositions);
   dropDownFilters = [
     {
       id: "position",
@@ -132,6 +132,9 @@ export default class ProtectionHome extends BaseComponent {
   ];
 
   positionFilterFunction(row: ViewGroupedPositions) {
+    const fullRow = this.groupedPos.find(x => x.id === row.id);
+    if (fullRow) row.collapsedData = fullRow.collapsedData;
+
     const now: number = Date.now() / 1000;
     const isFullyProtected: boolean = row.fullCoverage - now < 0;
 
@@ -146,12 +149,7 @@ export default class ProtectionHome extends BaseComponent {
         x => x.fullCoverage - now > 0
       );
       return !isFullyProtected;
-    } else {
-      const groupedPos = groupPositionsArray(vxm.ethBancor.protectedPositions);
-      const fullRow = groupedPos.find(x => x.id === row.id);
-      if (fullRow) row.collapsedData = fullRow.collapsedData;
-      return true;
-    }
+    } else return true;
   }
 
   poolsFilterFunction(row: ViewProtectedLiquidity) {
