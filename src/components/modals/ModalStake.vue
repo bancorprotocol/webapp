@@ -39,7 +39,7 @@
         @input="setStakeInput"
         :max="currentBalance.toNumber()"
         placeholder="0"
-        :token="gBnt"
+        :token="vBnt"
         :label="$t('stake_your_tokens')"
         v-model="stakeInput"
         :balance="currentBalance"
@@ -155,7 +155,7 @@ export default class ModalStake extends BaseComponent {
     );
   }
 
-  get gBnt() {
+  get vBnt() {
     const bntToken = vxm.bancor.tokens.find(token =>
       compareString(token.symbol, "BNT")
     );

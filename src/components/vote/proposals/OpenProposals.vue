@@ -317,22 +317,16 @@
       </template>
       <template #tooltip(votes)>
         <div class="pb-2">
-          {{ `${$t("according_to")} ` }}
-          <a
-            href="https://gov.bancor.network/t/bip3-governance-changes-bip-documentation-requirements-and-new-majority-and-quorum-rules/97"
-            target="_blank"
-            rel="noopener"
-            >BIP3</a
-          >:
+          {{ $t("vote.openProposals.tooltip1.p1") }}
         </div>
-        <ul class="pl-3">
+        <ol class="pl-3">
           <li>
-            {{ $t("required_quorum_to_pass") }}
+            {{ $t("vote.openProposals.tooltip1.list1") }}
           </li>
           <li>
-            {{ $t("third_majority") }}
+            {{ $t("vote.openProposals.tooltip1.list2") }}
           </li>
-        </ul>
+        </ol>
       </template>
     </layout-proposals>
   </div>
@@ -405,7 +399,7 @@ export default class OpenProposals extends BaseComponent {
       },
       {
         id: 3,
-        label: i18n.tc("vote"),
+        label: i18n.tc("vote.title"),
         key: "votes",
         minWidth: "200px",
         colAuto: false,
