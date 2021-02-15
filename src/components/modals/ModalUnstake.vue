@@ -39,7 +39,7 @@
         @input="setUnstakeInput"
         :max="currentStake.toNumber()"
         placeholder="0"
-        :token="gBnt"
+        :token="vBnt"
         :label="$t('unstake_your_tokens')"
         v-model="unstakeInput"
         :balance="currentStake"
@@ -133,7 +133,7 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 export default class ModalUnstake extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
-  gBnt: ViewToken = vxm.bancor.tokens[0];
+  vBnt: ViewToken = vxm.bancor.tokens[0];
   currentStake: BigNumber = new BigNumber(0);
   unstakeInput: string = "";
   unstakeValue: BigNumber = new BigNumber(0);
@@ -229,7 +229,7 @@ export default class ModalUnstake extends BaseComponent {
 
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
-    this.gBnt.symbol = this.symbol;
+    this.vBnt.symbol = this.symbol;
 
     await this.update();
   }
