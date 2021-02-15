@@ -76,12 +76,6 @@ export interface MinimalRelay {
   reserves: TokenSymbol[];
 }
 
-export interface MinimalPool {
-  anchorAddress: string;
-  converterAddress: string;
-  reserves: string[];
-}
-
 export const generateEthPath = (from: string, relays: MinimalRelay[]) =>
   relays.reduce<{ lastSymbol: string; path: string[] }>(
     (acc, item) => {

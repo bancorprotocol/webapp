@@ -1,5 +1,10 @@
 import { Contract } from "web3-eth-contract";
 
+export interface MinimalPool {
+  anchorAddress: string;
+  converterAddress: string;
+  reserves: string[];
+}
 export interface TokenWei {
   tokenContract: string;
   weiAmount: string;
@@ -25,6 +30,16 @@ export interface ProtectedLiquidity {
   reserveRateN: string;
   reserveRateD: string;
   timestamp: string;
+}
+
+export interface PoolHistoricBalance {
+  scale: TimeScale;
+  pool: MinimalPool;
+  smartTokenSupply: string;
+  reserveBalances: {
+      contract: string;
+      weiAmount: string;
+  }[];
 }
 
 export interface ProtectLiquidityParams {

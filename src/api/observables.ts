@@ -26,7 +26,7 @@ import { getTokenMeta } from "@/store/modules/swap/ethBancor";
 import { EthNetworks } from "./web3";
 import { getWelcomeData } from "./eth/bancorApi";
 import { getNetworkVariables } from "./config";
-import { RegisteredContracts } from "@/types/bancor";
+import { RegisteredContracts, MinimalPool } from "@/types/bancor";
 import { compareString } from "./helpers";
 import { buildStakingRewardsContract } from "./eth/contractTypes";
 import {
@@ -38,10 +38,11 @@ import {
   fetchPositionsMulti,
   fetchWhiteListedV1Pools,
   pendingRewardRewards,
-  removeLiquidityReturn
+  removeLiquidityReturn,
+  getHistoricBalances,
+  getPoolAprs
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
-import { MinimalPool } from "./eth/helpers";
 
 interface DataCache<T> {
   allEmissions: T[];
@@ -458,14 +459,20 @@ const pendingReserveRewards$ = combineLatest([
   startWith(undefined)
 );
 
-const poolAprs$ = combineLatest([unVerifiedPositions$, minimalPools$])
+
+const historicPoolBalances$ = combineLatest([unVerifiedPositions$, minimalPools$])
   .pipe(
     withLatestFrom(currentBlock$),
-    switchMap(([[unverified, minimal], currentBlock]) =>
-      console.log("pool aprs", x)
+    switchMapIgnoreThrow(([[unverified, minimal], currentBlock]) =>
+      getHistoricBalances(unverified, currentBlock.blockNumber, minimal)
     )
   )
-  .subscribe(x => console.log(x, "aaa"));
+
+const poolReturns$ = combineLatest([unVerifiedPositions$, historicPoolBalances$, liquidityProtection$])
+    .pipe(
+      switchMapIgnoreThrow(([positions, poolBalances, liquidityProtection]) => getPoolAprs(positions, poolBalances.flat(), liquidityProtection))
+    ).subscribe(x => console.log(x, 'was pool returns$'))
+
 
 const quickPositions = combineLatest([
   unVerifiedPositions$,
