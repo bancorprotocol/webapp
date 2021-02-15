@@ -206,5 +206,3 @@ combineLatest([authenticated$, apiData$]).subscribe(
     }
   }
 );
-// la la la
-// new commit on testy
