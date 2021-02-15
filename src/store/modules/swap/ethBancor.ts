@@ -1,3 +1,4 @@
+// ethBancor.ts
 import { createModule, mutation, action } from "vuex-class-component";
 import {
   ProposedFromTransaction,
