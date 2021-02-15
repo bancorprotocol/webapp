@@ -86,6 +86,7 @@
 </template>
 
 <script lang="ts">
+import { uniqBy } from "lodash";
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ProtectedTable from "@/components/protection/ProtectedTable.vue";
@@ -97,6 +98,7 @@ import { groupPositionsArray } from "@/api/pureHelpers";
 import { buildPoolName } from "@/api/helpers";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
+import dayjs from "@/utils/dayjs";
 
 @Component({
   components: {
@@ -116,15 +118,15 @@ export default class ProtectionHome extends BaseComponent {
       id: "position",
       selectedIndex: 0,
       items: [
-        { id: 0, title: "All positions" },
-        { id: 1, title: "Fully protected" },
-        { id: 2, title: "Not fully protected" }
+        { title: "All positions" },
+        { title: "Fully protected" },
+        { title: "Not fully protected" }
       ]
     },
     {
       id: "pools",
       selectedIndex: 0,
-      items: [{ id: 0, title: "All Pools", poolId: "" }, ...this.poolNames]
+      items: [{ title: "All Pools", poolId: "" }, ...this.poolNames]
     }
   ];
 
@@ -132,18 +134,20 @@ export default class ProtectionHome extends BaseComponent {
     const fullRow = this.groupedPos.find(x => x.id === row.id);
     if (fullRow) row.collapsedData = fullRow.collapsedData;
 
-    const now: number = Date.now() / 1000;
-    const isFullyProtected: boolean = row.fullCoverage - now < 0;
+    const now = dayjs();
+    const isFullyProtected: boolean = dayjs
+      .unix(row.fullCoverage)
+      .isBefore(now);
 
     const selectedIndex = this.dropDownFilters[0].selectedIndex;
     if (selectedIndex == 1) {
-      row.collapsedData = row.collapsedData.filter(
-        x => x.fullCoverage - now < 0
+      row.collapsedData = row.collapsedData.filter(x =>
+        dayjs.unix(x.fullCoverage).isBefore(now)
       );
       return isFullyProtected;
     } else if (selectedIndex == 2) {
       row.collapsedData = row.collapsedData.filter(
-        x => x.fullCoverage - now > 0
+        x => !dayjs.unix(x.fullCoverage).isBefore(now)
       );
       return !isFullyProtected;
     } else return true;
@@ -158,16 +162,12 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   get poolNames() {
-    const filteredNamedPos = this.groupedPos
-      .filter(
-        (obj, index, self) =>
-          index === self.findIndex(x => x.poolId === obj.poolId)
-      )
-      .map((value, index) => ({
-        id: index + 1,
+    const filteredNamedPos = uniqBy(this.groupedPos, x => x.poolId).map(
+      value => ({
         title: buildPoolName(value.poolId),
         poolId: value.poolId
-      }));
+      })
+    );
     return filteredNamedPos;
   }
 

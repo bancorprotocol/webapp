@@ -35,7 +35,7 @@
       >
         <b-dropdown-item
           v-for="(item, index) in dropdown.items"
-          :key="item.id"
+          :key="index"
           @click="() => (dropdown.selectedIndex = index)"
           >{{ item.title }}</b-dropdown-item
         >
@@ -82,7 +82,6 @@ export default class ContentBlock extends BaseComponent {
     id: string;
     selectedIndex: number;
     items: {
-      id: string;
       title: string;
     }[];
   }[];
