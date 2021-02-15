@@ -179,6 +179,7 @@ export const en = {
   dual_sided_liquidity: "Dual-Sided Liquidity",
   stake_with_two: "Stake with two tokens and receive pool tokens in return.",
   add_dual_liquidity: "Add Dual Sided Liquidity",
+  not_include_liquidity_rewards: "Claimable value does not include earned liquidity mining rewards. You can withdraw or re-stake rewards from the Protection screen, by clicking “Withdraw” in the rewards widget.",
   important: "Important",
   input: "Input",
   output_value: "Output value of",

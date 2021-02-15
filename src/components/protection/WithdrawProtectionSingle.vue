@@ -16,6 +16,13 @@
     />
 
     <alert-block
+      variant="warning"
+      class="my-3"
+      :title="$t('important')"
+      :msg="$t('not_include_liquidity_rewards')"
+    />
+
+    <alert-block
       v-if="warning"
       variant="warning"
       :title="$t('important')"
