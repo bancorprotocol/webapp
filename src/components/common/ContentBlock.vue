@@ -30,10 +30,15 @@
         v-for="dropdown in dropDownFilters"
         :key="dropdown.id"
         :text="dropdown.items[dropdown.selectedIndex].title"
-        variant="outline"
+        :variant="darkMode ? 'outline-dark' : 'outline-light'"
+        toggle-class="block-rounded"
+        :menu-class="
+          darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+        "
         class="m-2"
       >
         <b-dropdown-item
+          :variant="darkMode ? 'dark' : 'light'"
           v-for="(item, index) in dropdown.items"
           :key="index"
           @click="() => (dropdown.selectedIndex = index)"

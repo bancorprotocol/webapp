@@ -349,5 +349,10 @@ export const en = {
   creating_proposal: "Creating Proposal",
   vote_ended: "Vote Ended",
   you_withdrawing_rewards: "You are withdrawing rewards",
-  rewards_ended: "Rewards ended"
+  rewards_ended: "Rewards ended",
+  no_positions_found: "No protected positions found.",
+  all_positions: "All positions",
+  fully_protected: "Fully protected",
+  not_fully_protected: "Not Fully protected",
+  all_pools: "All Pools"
 };

@@ -47,7 +47,7 @@
             v-else-if="!positions.length"
             class="mx-3 mt-3 font-size-14 font-w500"
           >
-            No protected positions found.
+            {{ $t("no_positions_found") }}
           </div>
           <div v-else>
             <ProtectedTable
@@ -89,6 +89,7 @@
 import { uniqBy } from "lodash";
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ProtectedTable from "@/components/protection/ProtectedTable.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Claim from "@/components/protection/Claim.vue";
@@ -118,15 +119,15 @@ export default class ProtectionHome extends BaseComponent {
       id: "position",
       selectedIndex: 0,
       items: [
-        { title: "All positions" },
-        { title: "Fully protected" },
-        { title: "Not fully protected" }
+        { title: i18n.t("all_positions") },
+        { title: i18n.t("fully_protected") },
+        { title: i18n.t("not_fully_protected") }
       ]
     },
     {
       id: "pools",
       selectedIndex: 0,
-      items: [{ title: "All Pools", poolId: "" }, ...this.poolNames]
+      items: [{ title: i18n.t("all_pools"), poolId: "" }, ...this.poolNames]
     }
   ];
 
