@@ -10,7 +10,9 @@
         class="remaining-time__icon"
       />
       <span class="remaining-time__progress-text">{{ remaining }}</span>
-      <span v-if="isUnlock" class="remaining-time__desc">left to unlock</span>
+      <span v-if="isUnlock" class="remaining-time__desc">
+        {{ $t("left_to_unlock") }}</span
+      >
     </div>
   </div>
 </template>
@@ -18,6 +20,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { i18n } from "@/i18n";
 
 @Component
 export default class RemainingTime extends BaseComponent {
@@ -55,7 +58,7 @@ export default class RemainingTime extends BaseComponent {
 
   get remaining() {
     if (this.remainingTime < 0) {
-      return "Vote Ended";
+      return i18n.t("vote_ended");
     }
     if (this.isUnlock) {
       const diff = (this.to || 0) - Date.now();

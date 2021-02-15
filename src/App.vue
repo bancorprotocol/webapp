@@ -16,13 +16,13 @@
           style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
           :class="darkMode ? 'text-primary' : 'text-primary'"
-          label="Loading..."
+          :label="`${$t('loading')}... `"
         ></b-spinner>
         <h5
           class="m-0 ml-3"
           :class="darkMode ? 'text-body-dark' : 'text-muted-light'"
         >
-          Just a moment ...
+          {{ `${$t("just_a_moment")}...` }}
         </h5>
       </div>
     </div>
@@ -153,9 +153,16 @@ export default class App extends BaseComponent {
   async created() {
     console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
+    // const locale = localStorage.getItem("locale");
+    // const lang =
+    //   navigator.languages && navigator.languages.length
+    //     ? navigator.languages[0]
+    //     : navigator.language;
     if (darkMode) vxm.general.toggleDarkMode();
+    // if (locale) vxm.general.setLocale(locale);
+    // else vxm.general.setLocale(lang);
+    vxm.general.setLocale("en");
 
-    vxm.general.getUserCountry();
     await this.loadBancor();
 
     if (this.$route.name === "404") this.loading = false;

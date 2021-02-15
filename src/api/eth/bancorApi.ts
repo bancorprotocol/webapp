@@ -81,12 +81,15 @@ export const getWelcomeData = async (
   if (!(network == EthNetworks.Mainnet || network == EthNetworks.Ropsten)) {
     throw new Error("API does not support this network");
   }
-
-  const res = await axios.get<WelcomeData>(
-    network == EthNetworks.Mainnet
-      ? "https://bancor-api.nw.r.appspot.com/welcome"
-      : "https://ropsten-ptdczarhfq-nw.a.run.app/welcome"
-  );
-
-  return res.data;
+  try {
+    const res = await axios.get<WelcomeData>(
+      network == EthNetworks.Mainnet
+        ? "https://api-v2.bancor.network/welcome"
+        : "https://ropsten-ptdczarhfq-nw.a.run.app/welcome"
+    );
+    return res.data;
+  } catch (e) {
+    console.error("Failed to load data from Bancor API", e);
+    throw new Error(e);
+  }
 };

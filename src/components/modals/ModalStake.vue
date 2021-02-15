@@ -19,7 +19,7 @@
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
             >
-              <span v-if="step === 'stake'">Stake</span>
+              <span v-if="step === 'stake'">{{ $t("stake") }}</span>
             </span>
             <font-awesome-icon
               class="cursor font-size-lg"
@@ -39,21 +39,15 @@
         @input="setStakeInput"
         :max="currentBalance.toNumber()"
         placeholder="0"
-        :token="gBnt"
-        label="Stake your tokens"
+        :token="vBnt"
+        :label="$t('stake_your_tokens')"
         v-model="stakeInput"
         :balance="currentBalance"
       />
       <alert-block
         class="my-3"
         variant="warning"
-        :msg="
-          'Staking ' +
-          symbol +
-          ' enables you to vote on proposals. You will be able to unstake once the lock period is over (up to ' +
-          maxLock +
-          'h)'
-        "
+        :msg="$t('enable_vote', { symbol: symbol, hours: maxLock })"
       />
       <main-button
         @click="stake"
@@ -79,14 +73,16 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Waiting For Confirmation
+        {{ $t("waiting_for_confirmation") }}
       </h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">
+        {{ `${$t("staking")} ${stakeValue} ${symbol}` }}
+      </div>
       <div
         class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        Confirm this transaction in your wallet
+        {{ $t("confirm__transaction_in_wallet") }}
       </div>
     </div>
 
@@ -100,18 +96,20 @@
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
-        Transaction Submitted
+        {{ $t("transaction_submitted") }}
       </h3>
-      <div class="mt-2 mb-3">Staking {{ stakeValue }} {{ symbol }}</div>
+      <div class="mt-2 mb-3">
+        {{ `${$t("staking")} ${stakeValue} ${symbol}` }}
+      </div>
       <a
         target="_blank"
         class="text-primary font-w500 cursor"
         :href="getEtherscanUrl()"
-        >View on Etherscan</a
+        >{{ $t("view_etherscan") }}</a
       >
       <main-button
         @click="onHide"
-        label="Close"
+        :label="$t('close')"
         :large="true"
         :active="true"
         :block="true"
@@ -123,6 +121,7 @@
 
 <script lang="ts">
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { Component, Watch, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
 import { compareString } from "@/api/helpers";
@@ -156,7 +155,7 @@ export default class ModalStake extends BaseComponent {
     );
   }
 
-  get gBnt() {
+  get vBnt() {
     const bntToken = vxm.bancor.tokens.find(token =>
       compareString(token.symbol, "BNT")
     );
@@ -179,12 +178,12 @@ export default class ModalStake extends BaseComponent {
 
   get stakeLabel() {
     return this.stakeValue && this.stakeInput.length === 0
-      ? "Enter Amount"
+      ? i18n.t("enter_amount")
       : this.stakeValue &&
         this.stakeValue.isGreaterThan(0) &&
         this.currentBalance.isGreaterThanOrEqualTo(this.stakeValue)
-      ? "Stake Tokens"
-      : "Insufficient Amount";
+      ? i18n.t("stake_your_tokens")
+      : i18n.t("insufficient_amount");
   }
 
   setStakeInput() {

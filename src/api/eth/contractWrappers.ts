@@ -3,7 +3,8 @@ import {
   buildNetworkContract,
   buildV2Converter,
   buildRegistryContract,
-  buildLiquidityProtectionContract
+  buildLiquidityProtectionContract,
+  buildLiquidityProtectionSettingsContract
 } from "./contractTypes";
 import { zeroAddress } from "../helpers";
 import { fromPairs, toPairs } from "lodash";
@@ -175,4 +176,17 @@ export const getRemoveLiquidityReturn = async (
   // targetAmount - expected return amount in the reserve token
   // baseAmount - actual return amount in the reserve token
   // networkAmount - compensation in the network token
+};
+
+export const addLiquidityDisabled = async (
+  settingsContract: string,
+  poolId: string,
+  reserveId: string
+): Promise<boolean> => {
+  const contract = buildLiquidityProtectionSettingsContract(settingsContract);
+  const res = await contract.methods
+    .addLiquidityDisabled(poolId, reserveId)
+    .call();
+
+  return res;
 };
