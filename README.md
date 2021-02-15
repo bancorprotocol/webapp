@@ -21,7 +21,6 @@ Daily standups
 | John Williamson  | [Brisbane](https://www.timeanddate.com/worldclock/australia/)               |
 | Jan Langheimer   | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg)         |
 | Ran Cohen        | [Tel Aviv](https://www.timeanddate.com/worldclock/israel/tel-aviv)          |
-| Will             | [Seoul](https://www.timeanddate.com/worldclock/south-korea/seoul)           |
 
 ### Git Strategy
 
