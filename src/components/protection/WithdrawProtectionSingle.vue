@@ -27,14 +27,9 @@
       v-if="warning"
       variant="warning"
       :title="$t('important')"
-      :msg="warning"
-      class="my-3"
-    />
-
-    <alert-block
-      v-if="rewardsWithMultiplier"
-      variant="warning"
-      :msg="$t('withdraw_reset')"
+      :messages="
+        rewardsWithMultiplier ? [warning, $t('withdraw_reset')] : [warning]
+      "
       class="my-3"
     />
 
