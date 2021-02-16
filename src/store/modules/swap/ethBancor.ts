@@ -1903,6 +1903,22 @@ export class EthBancorModule
         })
       );
 
+      const rewardsMultiplier: {
+        id: string;
+        rewardsMultiplier: BigNumber;
+      }[] = await Promise.all(
+        uniquePoolReserveIds.map(async item => {
+          const rewardsMultiplier = await vxm.rewards.fetchRewardsMultiplier({
+            poolId: item.poolId,
+            reserveId: item.reserveId
+          });
+          return {
+            id: `${item.poolId}-${item.reserveId}`,
+            rewardsMultiplier
+          };
+        })
+      );
+
       const positions = allPositions.map(
         (position): ProtectedLiquidityCalculated => {
           const liqReturn =
@@ -1915,12 +1931,19 @@ export class EthBancorModule
             x => x.id === `${position.poolToken}-${position.reserveToken}`
           );
 
+          const multiplier = rewardsMultiplier.find(
+            x => x.id === `${position.poolToken}-${position.reserveToken}`
+          );
+
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
+              : new BigNumber(0),
+            rewardsMultiplier: multiplier
+              ? multiplier.rewardsMultiplier
               : new BigNumber(0)
           };
         }
@@ -2340,6 +2363,7 @@ export class EthBancorModule
               calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
             ),
           pendingReserveReward: singleEntry.pendingReserveReward,
+          rewardsMultiplier: singleEntry.rewardsMultiplier,
           reserveTokenPrice: reserveToken.price,
           bntTokenPrice: this.stats.bntUsdPrice
         } as ViewProtectedLiquidity;

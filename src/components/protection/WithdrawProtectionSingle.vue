@@ -26,7 +26,9 @@
       v-if="warning"
       variant="warning"
       :title="$t('important')"
-      :msg="warning"
+      :messages="
+        rewardsWithMultiplier ? [warning, $t('withdraw_reset')] : [warning]
+      "
       class="my-3"
     />
 
@@ -185,6 +187,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     );
     console.log(pos, "is the selected pos");
     return pos;
+  }
+
+  get rewardsWithMultiplier() {
+    return vxm.ethBancor.protectedPositions.some(position =>
+      position.rewardsMultiplier.gt(1)
+    );
   }
 
   get vBntWarning() {
