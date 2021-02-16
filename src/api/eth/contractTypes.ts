@@ -18,7 +18,7 @@ import {
   ABIStakingRewardsStore,
   ABIV2Converter,
   V2PoolsTokenContainer,
-  LiquidityProtectionSystemStore
+  ABILiquidityProtectionSystemStore
 } from "@/api/eth/ethAbis";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
@@ -291,6 +291,7 @@ export const buildLiquidityProtectionContract = (
   web3?: Web3
 ): ContractMethods<{
   store: () => CallReturn<string>;
+  systemStore: () => CallReturn<string>;
   govToken: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
   protectLiquidity: (
@@ -353,7 +354,7 @@ export const buildLiquidityProtectionSystemStoreContract = (
   web3?: Web3
 ): ContractMethods<{
   networkTokensMinted: (poolId: string) => CallReturn<string>;
-}> => buildContract(LiquidityProtectionSystemStore, contractAddress, web3);
+}> => buildContract(ABILiquidityProtectionSystemStore, contractAddress, web3);
 
 export const buildAddressLookupContract = (
   contractAddress: string

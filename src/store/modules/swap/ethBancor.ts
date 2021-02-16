@@ -3605,7 +3605,6 @@ export class EthBancorModule
       this.contracts.LiquidityProtection,
       w3
     );
-
     const result = await contract.methods.poolAvailableSpace(poolId).call();
 
     const maxStakes = {
@@ -3718,8 +3717,13 @@ export class EthBancorModule
         this.liquidityProtectionSettings.contract,
         w3
       );
+      const liqContract = await buildLiquidityProtectionContract(
+        this.contracts.LiquidityProtection,
+        w3
+      );
+      const systemStore = await liqContract.methods.systemStore().call();
       const liquidityProtectionSystemStore = buildLiquidityProtectionSystemStoreContract(
-        "0xc4C5634De585d43DaEC8fA2a6Fb6286cd9B87131",
+        systemStore,
         w3
       );
       const [balances, limit, tokensMintedWei] = await Promise.all([

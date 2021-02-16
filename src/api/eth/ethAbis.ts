@@ -253,29 +253,9 @@ export const ABILiquidityProtection: AbiItem[] = [
   {
     inputs: [
       {
-        internalType: "contract ILiquidityProtectionSettings",
-        name: "_settings",
-        type: "address"
-      },
-      {
-        internalType: "contract ILiquidityProtectionStore",
-        name: "_store",
-        type: "address"
-      },
-      {
-        internalType: "contract ITokenGovernance",
-        name: "_networkTokenGovernance",
-        type: "address"
-      },
-      {
-        internalType: "contract ITokenGovernance",
-        name: "_govTokenGovernance",
-        type: "address"
-      },
-      {
-        internalType: "contract ICheckpointStore",
-        name: "_lastRemoveCheckpointStore",
-        type: "address"
+        internalType: "address[8]",
+        name: "_contractAddresses",
+        type: "address[8]"
       }
     ],
     stateMutability: "nonpayable",
@@ -310,6 +290,13 @@ export const ABILiquidityProtection: AbiItem[] = [
   {
     inputs: [],
     name: "acceptStoreOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "acceptWalletOwnership",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -527,10 +514,36 @@ export const ABILiquidityProtection: AbiItem[] = [
   },
   {
     inputs: [],
+    name: "stats",
+    outputs: [
+      {
+        internalType: "contract ILiquidityProtectionStats",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
     name: "store",
     outputs: [
       {
         internalType: "contract ILiquidityProtectionStore",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "systemStore",
+    outputs: [
+      {
+        internalType: "contract ILiquidityProtectionSystemStore",
         name: "",
         type: "address"
       }
@@ -550,6 +563,22 @@ export const ABILiquidityProtection: AbiItem[] = [
     name: "transferStoreOwnership",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [{ internalType: "address", name: "_newOwner", type: "address" }],
+    name: "transferWalletOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "wallet",
+    outputs: [
+      { internalType: "contract ITokenHolder", name: "", type: "address" }
+    ],
+    stateMutability: "view",
     type: "function"
   }
 ];
@@ -8093,7 +8122,7 @@ export const ABIStakingRewards: AbiItem[] = [
   }
 ];
 
-export const LiquidityProtectionSystemStore: AbiItem[] = [
+export const ABILiquidityProtectionSystemStore: AbiItem[] = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
   {
     anonymous: false,
