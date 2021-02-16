@@ -179,9 +179,9 @@ export class RewardsModule extends VuexModule.With({
       return this.poolPrograms;
     }
 
+    const storeContract =
+      rewardsStoreContract || (await this.contract.methods.store().call());
     try {
-      const storeContract =
-        rewardsStoreContract || (await this.contract.methods.store().call());
       const store = buildStakingRewardsStoreContract(storeContract);
       const result = await store.methods.poolPrograms().call();
 
@@ -210,7 +210,7 @@ export class RewardsModule extends VuexModule.With({
 
       return poolPrograms;
     } catch (e) {
-      throw new Error(`Failed fetching pool programs ${e.message}`);
+      throw new Error(`Failed fetching pool programs ${e.message} ${storeContract}`);
     }
   }
 

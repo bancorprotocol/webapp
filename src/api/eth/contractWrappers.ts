@@ -551,85 +551,92 @@ export const getPoolAprs = async (
   historicBalances: PoolHistoricBalance[],
   liquidityProtectionContract: string
 ) => {
+  try {
+    const res = await Promise.all(
+      positions.map(position =>
+        Promise.all(
+          historicBalances.map(async historicBalance => {
+            const poolTokenSupply = historicBalance.smartTokenSupply;
 
-  return Promise.all(
-    positions.map(position =>
-      Promise.all(historicBalances.map(async historicBalance => {
+            const [
+              tknReserveBalance,
+              opposingTknBalance
+            ] = sortAlongSide(
+              historicBalance.reserveBalances,
+              balance => balance.contract,
+              [position.reserveToken]
+            );
 
-        const poolTokenSupply = historicBalance.smartTokenSupply;
+            const poolToken = position.poolToken;
+            const reserveToken = position.reserveToken;
+            const reserveAmount = position.reserveAmount;
+            const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+              .times(2)
+              .toString();
+            const poolRateD = poolTokenSupply;
 
-        const [
-          tknReserveBalance,
-          opposingTknBalance
-        ] = sortAlongSide(
-          historicBalance.reserveBalances,
-          balance => balance.contract,
-          [position.reserveToken]
-        );
+            const reserveRateN = opposingTknBalance.weiAmount;
+            const reserveRateD = tknReserveBalance.weiAmount;
 
-        const poolToken = position.poolToken;
-        const reserveToken = position.reserveToken;
-        const reserveAmount = position.reserveAmount;
-        const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
-          .times(2)
-          .toString();
-        const poolRateD = poolTokenSupply;
+            let poolRoi = "";
+            const lpContract = buildLiquidityProtectionContract(
+              liquidityProtectionContract
+            );
 
-        const reserveRateN = opposingTknBalance.weiAmount;
-        const reserveRateD = tknReserveBalance.weiAmount;
+            try {
+              poolRoi = await lpContract.methods
+                .poolROI(
+                  poolToken,
+                  reserveToken,
+                  reserveAmount,
+                  poolRateN,
+                  poolRateD,
+                  reserveRateN,
+                  reserveRateD
+                )
+                .call();
+            } catch (err) {
+              console.error("getting pool roi failed!", err, {
+                address: liquidityProtectionContract,
+                poolToken,
+                reserveToken,
+                reserveAmount,
+                poolRateN,
+                poolRateD,
+                reserveRateN,
+                reserveRateD
+              });
+            }
 
-        let poolRoi = "";
-        const lpContract = buildLiquidityProtectionContract(liquidityProtectionContract)
+            const scale = historicBalance.scale;
+            const magnitude =
+              scale.label == "day"
+                ? 365
+                : scale.label == "week"
+                ? 52
+                : 365 / scale.days;
 
-        try {
-          poolRoi = await lpContract.methods
-            .poolROI(
-              poolToken,
-              reserveToken,
-              reserveAmount,
-              poolRateN,
-              poolRateD,
-              reserveRateN,
-              reserveRateD
-            )
-            .call();
-        } catch (err) {
-          console.error("getting pool roi failed!", err, {
-            address: liquidityProtectionContract,
-            poolToken,
-            reserveToken,
-            reserveAmount,
-            poolRateN,
-            poolRateD,
-            reserveRateN,
-            reserveRateD
-          });
-        }
+            const calculatedAprDec = new BigNumber(poolRoi)
+              .div(1000000)
+              .minus(1)
+              .times(magnitude);
 
-        const scale = historicBalance.scale;
-        const magnitude =
-          scale.label == "day"
-            ? 365
-            : scale.label == "week"
-            ? 52
-            : 365 / scale.days;
+            return {
+              calculatedAprDec: calculatedAprDec.isNegative()
+                ? "0"
+                : calculatedAprDec.toString(),
+              positionId: position.id,
+              scaleId: historicBalance.scale.label
+            };
+          })
+        )
+      )
+    );
+    return res;
+  } catch(e) {
+    throw new Error(`Failed fetching pool aprs ${e}`);
+  }
 
-        const calculatedAprDec = new BigNumber(poolRoi)
-          .div(1000000)
-          .minus(1)
-          .times(magnitude);
-
-        return {
-          calculatedAprDec: calculatedAprDec.isNegative()
-            ? "0"
-            : calculatedAprDec.toString(),
-          positionId: position.id,
-          scaleId: historicBalance.scale.label
-        };
-
-      }))
-    )
-  );
 };
 
 export const getHistoricBalances = async (

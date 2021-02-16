@@ -241,8 +241,9 @@ export const minimalPools$ = pools$.pipe(
         reserves: pool.reserves.map(reserve => reserve.address)
       })
     )
-  )
+  ),
 );
+
 export const tokens$ = apiData$.pipe(pluck("tokens"), share());
 
 export const tokenMeta$ = networkVersion$.pipe(
@@ -470,14 +471,15 @@ const historicPoolBalances$ = combineLatest([unVerifiedPositions$, minimalPools$
 
 const poolReturns$ = combineLatest([unVerifiedPositions$, historicPoolBalances$, liquidityProtection$])
     .pipe(
-      switchMapIgnoreThrow(([positions, poolBalances, liquidityProtection]) => getPoolAprs(positions, poolBalances.flat(), liquidityProtection))
-    ).subscribe(x => console.log(x, 'was pool returns$'))
-
+      switchMapIgnoreThrow(([positions, poolBalances, liquidityProtection]) => getPoolAprs(positions, poolBalances.flat(), liquidityProtection)),
+      startWith(undefined),
+      )
 
 const quickPositions = combineLatest([
   unVerifiedPositions$,
   removeLiquidityReturn$,
-  pendingReserveRewards$
+  pendingReserveRewards$,
+  poolReturns$
 ]).subscribe(x => console.log(x, "was the quick positions"));
 
 const fullPositions$ = combineLatest([
