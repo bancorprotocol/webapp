@@ -26,7 +26,7 @@ import { getTokenMeta } from "@/store/modules/swap/ethBancor";
 import { EthNetworks } from "./web3";
 import { getWelcomeData } from "./eth/bancorApi";
 import { getNetworkVariables } from "./config";
-import { RegisteredContracts, MinimalPool } from "@/types/bancor";
+import { RegisteredContracts, MinimalPool, ProtectedLiquidityCalculated } from "@/types/bancor";
 import { compareString } from "./helpers";
 import { buildStakingRewardsContract } from "./eth/contractTypes";
 import {
@@ -475,29 +475,46 @@ const poolReturns$ = combineLatest([unVerifiedPositions$, historicPoolBalances$,
       startWith(undefined),
       )
 
-const quickPositions = combineLatest([
+const fullPositions$ = combineLatest([
   unVerifiedPositions$,
   removeLiquidityReturn$,
   pendingReserveRewards$,
   poolReturns$
-]).subscribe(x => console.log(x, "was the quick positions"));
-
-const fullPositions$ = combineLatest([
-  unVerifiedPositions$,
-  liquidityProtection$,
-  currentBlock$,
-  apiData$
 ]).pipe(
-  tap(() => vxm.ethBancor.setLoadingPositions(true)),
-  switchMap(([rawPositions, liquidityProtection, { blockNumber }]) => {
-    return vxm.ethBancor.buildFullPositions({
-      rawPositions,
-      liquidityProtection,
-      blockNumberNow: blockNumber
-    });
+  map(([unverifiedPositions, removeLiquidityReturn, pendingReserveRewards, poolReturns]) => {
+
+    console.log({ unverifiedPositions, removeLiquidityReturn, pendingReserveRewards, poolReturns}, 'cars')
+    return unverifiedPositions.map((position): ProtectedLiquidityCalculated => {
+      const removeLiq = removeLiquidityReturn && removeLiquidityReturn.find(r => r.positionId == position.id);
+      const scales = poolReturns && poolReturns.find(poolReturns => poolReturns.find(x => x.positionId == position.id))
+
+      const week = scales && scales.find(scale => compareString(scale.scaleId, 'week'));
+      const day = scales && scales.find(scale => compareString(scale.scaleId, 'day'));
+
+      const reserveReward = pendingReserveRewards && pendingReserveRewards.find(r => compareString(r.poolId, position.id) && compareString(r.reserveId, position.reserveToken))
+
+      return {
+        ...position,
+        ...(reserveReward && { pendingReserveReward: reserveReward.decBnt }),
+        ...(removeLiq && { fullLiquidityReturn: removeLiq.fullLiquidityReturn }),
+        ...(removeLiq && { currentLiquidityReturn: removeLiq.currentLiquidityReturn }),
+        ...(removeLiq && { roiDec: removeLiq.roiDec }),
+        ...(day && { oneDayDec: day.calculatedAprDec }),
+        ...(week && { oneWeekDec: week.calculatedAprDec }),
+      }
+    })
   }),
-  logger("build full positions fetched")
-);
+  tap(x => console.log(x, 'pop culture'))
+)
+
+const now = Date.now();
+
+combineLatest([fullPositions$, ]).subscribe(x => {
+  console.log('came out!', x, Date.now() - now)
+})
+
+combineLatest([fullPositions$, authenticated$, minimalPools$]).subscribe(x => console.log('came out 2', x, Date.now() - now))
+
 
 combineLatest([fullPositions$, authenticated$, minimalPools$])
   .pipe(logger("with authentication"))
