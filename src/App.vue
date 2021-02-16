@@ -48,6 +48,7 @@
     "
   >
     <NetworkAlert />
+    <NotificationAlerts />
     <div name="MainLayout" class="main-layout">
       <side-bar />
       <main
@@ -84,10 +85,14 @@ import { vxm } from "@/store/";
 import wait from "waait";
 import BaseComponent from "@/components/BaseComponent.vue";
 import NetworkAlert from "@/components/layout/NetworkAlert.vue";
+import NotificationAlerts from "@/components/compositions/notifications/NotificationAlerts.vue";
+import NotificationHistory from "@/components/compositions/notifications/NotificationHistory.vue";
 
 @Component({
   components: {
     NetworkAlert,
+    NotificationAlerts,
+    NotificationHistory,
     ModalLogin,
     SideBar
   }

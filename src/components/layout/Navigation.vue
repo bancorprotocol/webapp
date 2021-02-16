@@ -12,6 +12,7 @@
       </b-btn>
       <settings-menu />
       <bancor-menu />
+      <Notifications />
     </div>
   </div>
 </template>
@@ -24,9 +25,10 @@ import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import Notifications from "@/components/compositions/notifications/Notifications.vue";
 
 @Component({
-  components: { BancorMenu, SettingsMenu }
+  components: { BancorMenu, SettingsMenu, Notifications }
 })
 export default class Navigation extends BaseComponent {
   get selectedWallet() {
