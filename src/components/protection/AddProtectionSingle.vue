@@ -77,7 +77,7 @@
     <alert-block
       v-if="focusedReserveIsDisabled"
       variant="error"
-      :msg="$t(`available_reserve_only`, { availableReserveSymbol })"
+      :msg="$t(`available_reserve_only`, { symbol: opposingTokenSymbol })"
       class="mt-3 mb-3"
     />
 
@@ -260,6 +260,10 @@ export default class AddProtectionSingle extends BaseComponent {
     );
   }
 
+  get opposingTokenSymbol() {
+    return this.opposingToken ? this.opposingToken.symbol : "";
+  }
+
   disabledReserves: string[] = [];
 
   get tokens() {
@@ -271,16 +275,6 @@ export default class AddProtectionSingle extends BaseComponent {
       compareString(reserveId, this.token.id)
     );
   }
-
-  get availableReserveSymbol() {
-    return this.pool.reserves.find(
-      reserve =>
-        !this.disabledReserves.some(reserveId =>
-          compareString(reserveId, reserve.id)
-        )
-    )!.symbol;
-  }
-
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
   }
