@@ -19,16 +19,16 @@ const oneMillion = new BigNumber(1000000);
 export const calculateAmountToGetSpace = (
   bntAmount: string,
   tknAmount: string,
-  bntSpaceAvailable: string,
+  networkTokensMinted: string,
   limit: string
 ): string => {
   const bntAmountDecimal = new BigNumber(bntAmount);
   const tknAmountDecimal = new BigNumber(tknAmount);
-  const bntSpaceAvailableAmount = new BigNumber(bntSpaceAvailable);
+  const networkTokensMintedDecimal = new BigNumber(networkTokensMinted);
   const limitAmount = new BigNumber(limit);
   return bntAmountDecimal
     .div(tknAmountDecimal)
-    .plus(bntSpaceAvailableAmount)
+    .plus(networkTokensMintedDecimal)
     .minus(limitAmount)
     .toString();
 };
