@@ -2482,6 +2482,17 @@ export class EthBancorModule
       recentAverageRateResult["0"]
     );
 
+    console.log("/// PRICE DEVIATION DEBUG START");
+    console.log("relayId", relayId);
+    console.log("selectedTokenAddress", selectedTokenAddress);
+    console.log("primaryReserveContract", primaryReserveContract);
+    console.log("secondaryReserveContract", secondaryReserveContract);
+    console.log("recentAverageRate", recentAverageRateResult);
+    console.log("averageRateMaxDeviationResult", averageRateMaxDeviationResult);
+    console.log("primaryReserveBalanceResult", primaryReserveBalanceResult);
+    console.log("secondaryReserveBalanceResult", secondaryReserveBalanceResult);
+    console.log("/// PRICE DEVIATION DEBUG END");
+
     if (averageRate.isNaN()) {
       throw new Error(
         "Price deviation calculation failed. Please contact support."
