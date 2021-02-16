@@ -53,7 +53,7 @@ export const addToQueue = (notification: INotificationView) => {
   alertQueue.value.push(notification);
   setTimeout(() => {
     alertQueue.value.shift();
-  }, 5000);
+  }, 10000);
 };
 
 export const clearAllNotifications = () => {

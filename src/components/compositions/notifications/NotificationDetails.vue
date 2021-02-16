@@ -1,5 +1,5 @@
 <template>
-  <div>{{ notificationData.status }}</div>
+  <pre :class="`bg-${notificationData.status}`">{{ notificationData }}</pre>
 </template>
 
 <script lang="ts">
