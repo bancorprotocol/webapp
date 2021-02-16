@@ -117,7 +117,8 @@ import {
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSettingsContract,
-  buildAddressLookupContract
+  buildAddressLookupContract,
+  buildLiquidityProtectionSystemStoreContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -3611,7 +3612,6 @@ export class EthBancorModule
       this.contracts.LiquidityProtection,
       w3
     );
-
     const result = await contract.methods.poolAvailableSpace(poolId).call();
 
     const maxStakes = {
@@ -3724,10 +3724,22 @@ export class EthBancorModule
         this.liquidityProtectionSettings.contract,
         w3
       );
-      const [balances, limit] = await Promise.all([
+      const liqContract = await buildLiquidityProtectionContract(
+        this.contracts.LiquidityProtection,
+        w3
+      );
+      const systemStore = await liqContract.methods.systemStore().call();
+      const liquidityProtectionSystemStore = buildLiquidityProtectionSystemStoreContract(
+        systemStore,
+        w3
+      );
+      const [balances, limit, tokensMintedWei] = await Promise.all([
         this.fetchRelayBalances({ poolId }),
         liquidityProtectionSettings.methods
           .networkTokenMintingLimits(poolId)
+          .call(),
+        liquidityProtectionSystemStore.methods
+          .networkTokensMinted(poolId)
           .call()
       ]);
       const [bntReserve, tknReserve] = sortAlongSide(
@@ -3738,18 +3750,16 @@ export class EthBancorModule
 
       const bntAmount = shrinkToken(bntReserve.weiAmount, bntReserve.decimals);
       const tknAmount = shrinkToken(tknReserve.weiAmount, tknReserve.decimals);
-      const spaceAvailAble = shrinkToken(
-        maxStakes.maxAllowedBntWei,
-        bntReserve.decimals
-      );
+      const tokensMinted = shrinkToken(tokensMintedWei, bntReserve.decimals);
       const limitShrinked = shrinkToken(limit, bntReserve.decimals);
 
       const amountToGetSpace = calculateAmountToGetSpace(
         bntAmount,
         tknAmount,
-        spaceAvailAble,
+        tokensMinted,
         limitShrinked
       );
+
       return {
         availableSpace,
         amountToGetSpace: amountToGetSpace
