@@ -1211,17 +1211,21 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
   return { smartTokens, poolTokenAddresses };
 };
 
-const percentageOfReserve = (percent: number, existingSupply: string): string =>
-  new Decimal(percent).times(existingSupply).toFixed(0);
+const percentageOfReserve = (
+  percent: BigNumber,
+  existingSupply: string
+): BigNumber => new BigNumber(percent).times(existingSupply);
 
-const percentageIncrease = (deposit: string, existingSupply: string): number =>
-  new Decimal(deposit).div(existingSupply).toNumber();
+const percentageIncrease = (
+  deposit: string,
+  existingSupply: string
+): BigNumber => new BigNumber(deposit).div(existingSupply);
 
 const calculateOppositeFundRequirement = (
   deposit: string,
   depositsSupply: string,
   oppositesSupply: string
-): string => {
+): BigNumber => {
   const increase = percentageIncrease(deposit, depositsSupply);
   return percentageOfReserve(increase, oppositesSupply);
 };
@@ -1230,7 +1234,7 @@ const calculateOppositeLiquidateRequirement = (
   reserveAmount: string,
   reserveBalance: string,
   oppositeReserveBalance: string
-) => {
+): BigNumber => {
   const increase = percentageIncrease(reserveAmount, reserveBalance);
   return percentageOfReserve(increase, oppositeReserveBalance);
 };
@@ -3438,7 +3442,10 @@ export class EthBancorModule
     );
 
     const res = {
-      opposingAmount: shrinkToken(opposingAmount, opposingReserve.decimals),
+      opposingAmount: shrinkToken(
+        opposingAmount.toString(),
+        opposingReserve.decimals
+      ),
       smartTokenAmountWei: { id: smartTokenAddress, amount: fundReward },
       shareOfPool,
       singleUnitCosts: sortAlongSide(
@@ -4371,14 +4378,14 @@ export class EthBancorModule
     });
 
     const percentDifferenceBetweenSmartBalance = percentDifference(
-      liquidateCostWei,
+      liquidateCostWei.toString(),
       String(smartUserBalanceWei)
     );
     let smartTokenAmount: string;
     if (percentDifferenceBetweenSmartBalance > 0.99) {
       smartTokenAmount = String(smartUserBalanceWei);
     } else {
-      smartTokenAmount = liquidateCostWei;
+      smartTokenAmount = liquidateCostWei.toString();
     }
 
     const sameReserveCost = shrinkToken(
@@ -4396,9 +4403,8 @@ export class EthBancorModule
 
     return {
       opposingAmount: shrinkToken(
-        opposingValue,
-        opposingReserve.decimals,
-        true
+        opposingValue.toString(),
+        opposingReserve.decimals
       ),
       shareOfPool,
       smartTokenAmountWei: {
