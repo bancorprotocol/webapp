@@ -3808,7 +3808,7 @@ export class EthBancorModule
 
     return {
       outputs: [],
-      ...(overMaxLimit && { error: "balance" })
+      ...(overMaxLimit && { error: "overMaxLimit" })
     };
   }
 
