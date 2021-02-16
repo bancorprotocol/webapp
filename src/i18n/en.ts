@@ -123,7 +123,7 @@ export const en = {
   staking_protecting: "You are staking and protecting",
   price_deviation_high: "Price Deviation too High",
   pool_not_approved:
-    "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.",
+    "Pool you have selected is not approved for protection. Your stake will provide you with vBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.",
   limit_reached:
     "{token} limit reached. Additional {opposingToken} liquidity should be staked to allow for {token} single-sided staking.",
   insufficient_store_balance: "Insufficient store balance",
