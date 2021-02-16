@@ -5695,7 +5695,12 @@ export class EthBancorModule
     const tokens = this.apiData!.tokens;
     const meta = this.tokenMeta;
 
-    const trades = this.apiData!.swaps.map(
+    const validSwaps = this.apiData!.swaps.filter(swap => {
+      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id]
+      return tradedTokens.every(tokenAddress => tokens.some(token => compareString(token.dlt_id, tokenAddress)))
+    })
+
+    const trades = validSwaps.map(
       (x): ViewLiquidityEvent<ViewTradeEvent> => {
         const fromToken = tokens.find(token =>
           compareString(x.source_token_dlt_id, token.dlt_id)
