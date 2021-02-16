@@ -423,8 +423,11 @@ export default class ProtectedTable extends BaseComponent {
   stringifyPercentage = stringifyPercentage;
 
   get groupedPositions() {
-    if (this.positions.length > 0) return groupPositionsArray(this.positions);
-    else return [];
+    if (this.positions.length > 0) {
+      const groupedPositions = groupPositionsArray(this.positions);
+      console.log({ positions: this.positions, groupedPositions }, "xxx");
+      return groupedPositions;
+    } else return [];
   }
 
   poolName(id: string): string {
