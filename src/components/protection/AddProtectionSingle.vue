@@ -390,9 +390,9 @@ export default class AddProtectionSingle extends BaseComponent {
 
       if (res.error) {
         this.preTxError =
-          res.error == "balance"
-            ? i18n.tc("insufficient_store_balance")
-            : errorMsg;
+          res.error == "overMaxLimit"
+            ? errorMsg
+            : i18n.tc("insufficient_store_balance");
       } else {
         this.preTxError = "";
       }
