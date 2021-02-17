@@ -37,7 +37,7 @@
         >
           {{ detailModeProp ? $t("simple") : $t("detailed") }}
         </span>
-        <version-badge v-if="version !== null" :version="version" />
+        <!-- <version-badge v-if="version !== null" :version="version" /> -->
       </div>
 
       <div v-if="searchInput !== null" class="float-right">

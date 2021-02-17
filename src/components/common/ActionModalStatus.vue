@@ -51,8 +51,11 @@
             })
           }}
         </a>
-        <div :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">
-          {{ $t("bnt_withdrawls") }}
+        <div
+          v-if="msg"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ msg }}
         </div>
       </h6>
     </b-col>
@@ -71,6 +74,8 @@ export default class ActionModalStatus extends BaseComponent {
   @Prop() success?: TxResponse | null;
   @Prop({ default: i18n.t("wait_for_wallet") })
   stepDescription!: string;
+  @Prop()
+  msg?: string;
 
   get explorerName() {
     switch (this.currentNetwork) {

@@ -1,6 +1,9 @@
 <template>
   <div class="mt-3">
-    <label-content-split :label="$t('claimable_rewards')">
+    <label-content-split
+      :label="$t('claimable_rewards')"
+      :tooltip="$t('not_include_liquidity_rewards')"
+    >
       <logo-amount-symbol
         :token-id="bntAddress"
         :amount="prettifyNumber(pendingRewards.bnt)"
@@ -12,7 +15,7 @@
       class="my-3"
       :variant="warning.variant"
       :title="warning.title"
-      :msg="warning.msg"
+      :messages="[warning.msg]"
     />
 
     <main-button
