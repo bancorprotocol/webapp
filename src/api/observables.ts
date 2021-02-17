@@ -4,7 +4,9 @@ import {
   combineLatest,
   Observable,
   EMPTY,
-  PartialObserver
+  PartialObserver,
+  interval,
+  timer
 } from "rxjs";
 import {
   distinctUntilChanged,
@@ -326,8 +328,10 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
   shareReplay(1)
 );
 
-export const apiData$ = networkVersion$.pipe(
-  switchMap(networkVersion => getWelcomeData(networkVersion)),
+const fifteenSeconds = timer(0,15000)
+
+export const apiData$ = combineLatest([networkVersion$, fifteenSeconds]).pipe(
+  switchMap(([networkVersion]) => getWelcomeData(networkVersion)),
   logger("api data", true),
   share()
 );
