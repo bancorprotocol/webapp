@@ -206,7 +206,6 @@ export default class ModalVoteDetails extends BaseComponent {
 
   @Emit("hide")
   onHide() {
-    console.log("fa");
     this.show = false;
   }
 

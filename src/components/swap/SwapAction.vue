@@ -340,7 +340,7 @@ export default class SwapAction extends BaseComponent {
       });
       this.initialRate = reward.amount;
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
     this.rateLoading = false;
   }

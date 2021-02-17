@@ -104,9 +104,6 @@ export default class App extends BaseComponent {
   }
 
   async loadBancor() {
-    console.log("feature:", this.$route.meta.feature);
-    console.log("service:", this.$route.params.service);
-    console.log("query:", this.$route.query);
     const trade = this.$route.meta.feature == "Trade";
 
     const service = this.$route.params && this.$route.params.service;
@@ -124,11 +121,9 @@ export default class App extends BaseComponent {
       })
     };
 
-    console.log({ service, feature, query, initParams, paramsSatisfied });
     try {
       await vxm.bancor.init(initParams);
       // @ts-ignore
-      console.log(new Date() / 1, "stopped loading");
       this.loading = false;
       // @ts-ignore
       this.$gtag.event("initBancor", {
@@ -151,7 +146,6 @@ export default class App extends BaseComponent {
   }
 
   async created() {
-    console.log(this.$route, "initial route on render");
     const darkMode = localStorage.getItem("darkMode") === "true";
     // const locale = localStorage.getItem("locale");
     // const lang =

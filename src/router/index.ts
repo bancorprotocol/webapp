@@ -31,7 +31,6 @@ const detectSubdomain = () => {
   const hostname = window.location.hostname;
   const splitted = hostname.split(".");
   const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
-  console.log(withoutStaging, "is without staging");
   const subDomain = withoutStaging[0];
   if (subDomain == "localhost") return;
   if (subDomain == "data") {

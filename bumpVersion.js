@@ -15,7 +15,6 @@ const newVersionString = [major, minor, lastVersion].join(".");
 const newString = raw.replace(versionString, newVersionString);
 
 fs.writeFileSync("./package.json", newString);
-console.log("Bumped package.json version to", newVersionString);
 
 exec("git add package.json", () => {
   exec("git commit -m 'bump version'");

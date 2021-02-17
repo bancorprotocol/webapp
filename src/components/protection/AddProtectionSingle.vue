@@ -371,16 +371,12 @@ export default class AddProtectionSingle extends BaseComponent {
   async amountChanged(tokenAmount: string) {
     const input = new BigNumber(tokenAmount);
     const inputIsNumber = !input.isNaN() && input.isGreaterThan(0);
-
-    console.log(inputIsNumber);
     if (inputIsNumber) {
       const res = await vxm.ethBancor.calculateProtectionSingle({
         poolId: this.pool.id,
         reserveAmount: { id: this.token.id, amount: this.amount }
       });
       this.outputs = res.outputs;
-
-      console.log(res, "was res");
 
       const errorMsg = `${this.token.symbol} limit reached. Additional ${
         this.opposingToken!.symbol

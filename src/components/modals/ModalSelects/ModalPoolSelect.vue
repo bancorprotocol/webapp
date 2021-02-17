@@ -52,7 +52,6 @@ export default class ModalPoolSelect extends BaseComponent {
 
   @Emit("select")
   selectPool(id: string) {
-    console.log("modal pool select is emitting itself..?", id);
     this.modal = false;
     return id;
   }

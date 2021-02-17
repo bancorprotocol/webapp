@@ -1286,7 +1286,6 @@ export class EosBancorModule
   }
 
   @action async refresh() {
-    console.log("refresh called, nothing");
     return;
   }
 
@@ -1368,8 +1367,6 @@ export class EosBancorModule
   }
 
   @mutation setLiquidityHistory(trades: DFuseTrade[]) {
-    console.log(trades, "are the trades to be set");
-
     this.liquidityHistoryArr = trades;
     this.liquidityHistoryLoading = false;
   }
@@ -1431,10 +1428,7 @@ export class EosBancorModule
               compareString(x.from, "thisisbancor"));
           return res;
         });
-        if (!rewardTransferAction) {
-          console.log(executedActions, "could not be found");
-          return;
-        }
+        if (!rewardTransferAction) return;
 
         const enteringRelay = findOrThrow(relays, relay =>
           compareEosMultiRelayToStringPool(relay, trade.enteringPool)
@@ -1517,14 +1511,11 @@ export class EosBancorModule
   @action async init(param?: ModuleParam) {
     console.count("eosInit");
     console.time("eosResolved");
-    console.log("eosInit received", param);
 
     this.pullEvents();
 
-    if (this.initialised) {
-      console.log("eos refreshing instead");
-      return this.refresh();
-    }
+    if (this.initialised) return this.refresh();
+
     try {
       console.time("eos1");
       const [usdPriceOfBnt, v2Relays, tokenMeta] = await Promise.all([
@@ -1558,7 +1549,6 @@ export class EosBancorModule
 
       console.time("eos22");
       if (quickTrade) {
-        console.log("quick trade triggered");
         const { base: fromId, quote: toId } = param!.tradeQuery!;
         await this.bareMinimumForTrade({
           fromId,
@@ -1568,7 +1558,6 @@ export class EosBancorModule
           tokenMeta
         });
       } else {
-        console.log("adding bulk pools");
         await this.addPools({
           multiRelays: v2Relays,
           dryDelays: v1Relays,
@@ -1579,7 +1568,6 @@ export class EosBancorModule
 
       this.setInitialised(true);
       this.setLoadingPools(false);
-      console.log("EOS resolving at", Date.now());
       console.timeEnd("eosResolved");
     } catch (e) {
       throw new Error(`Threw inside eosBancor: ${e.message}`);
@@ -1615,8 +1603,6 @@ export class EosBancorModule
         bancorApi.getTokens(),
         ethBancorApi.getTokens()
       ]);
-
-      console.log(tokenPrices, "token prices,x");
 
       const bntToken = findOrThrow(tokenPrices, token =>
         compareString(token.code, "BNT")
@@ -2308,9 +2294,10 @@ export class EosBancorModule
     const [reserves, supply, smartUserBalanceString] = await Promise.all([
       this.fetchRelayReservesAsAssets(suggestWithdraw.id),
       fetchTokenStats(relay.smartToken.contract, relay.smartToken.symbol),
-      getBalance(relay.smartToken.contract, relay.smartToken.symbol) as Promise<
-        string
-      >
+      getBalance(
+        relay.smartToken.contract,
+        relay.smartToken.symbol
+      ) as Promise<string>
     ]);
 
     const smartUserBalance = new Asset(smartUserBalanceString);
@@ -2405,7 +2392,7 @@ export class EosBancorModule
           .some(balance => balance.includes(symbol))
       );
     } catch (e) {
-      console.log("Balance error", e);
+      console.error("Balance error", e);
       return false;
     }
   }

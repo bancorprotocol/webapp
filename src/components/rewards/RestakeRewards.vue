@@ -166,7 +166,6 @@ export default class RestakeRewards extends BaseTxAction {
       poolId: this.pool.id
     });
     let stake = result.filter(x => x.token === this.token.symbol);
-    console.log(stake);
     if (stake.length === 1) {
       this.maxStakeAmount = stake[0].amount;
       this.maxStakeSymbol = stake[0].token;
@@ -179,7 +178,7 @@ export default class RestakeRewards extends BaseTxAction {
       await this.loadMaxStakes();
       await vxm.rewards.fetchAndSetPendingRewards();
     } catch (e) {
-      console.log(e);
+      console.error(e);
     } finally {
       this.loading = false;
     }
