@@ -390,4 +390,9 @@ export const buildStakingRewardsContract = (
     poolToken: string,
     reserveToken: string
   ) => CallReturn<string>;
+  rewardsMultiplier: (
+    provider: string,
+    poolToken: string,
+    reserveToken: string
+  ) => CallReturn<string>;
 }> => buildContract(ABIStakingRewards, contractAddress, web3);

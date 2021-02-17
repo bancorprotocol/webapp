@@ -1,6 +1,9 @@
 <template>
   <div class="mt-3">
-    <label-content-split :label="$t('claimable_amount')">
+    <label-content-split
+      :label="$t('claimable_amount')"
+      :tooltip="$t('not_include_liquidity_rewards')"
+    >
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
         :amount="prettifyNumber(position.protectedAmount.amount)"
@@ -16,17 +19,12 @@
     />
 
     <alert-block
-      variant="warning"
-      class="my-3"
-      :title="$t('important')"
-      :msg="$t('not_include_liquidity_rewards')"
-    />
-
-    <alert-block
       v-if="warning"
       variant="warning"
       :title="$t('important')"
-      :msg="warning"
+      :messages="
+        rewardsWithMultiplier ? [warning, $t('withdraw_reset')] : [warning]
+      "
       class="my-3"
     />
 
@@ -185,6 +183,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     );
     console.log(pos, "is the selected pos");
     return pos;
+  }
+
+  get rewardsWithMultiplier() {
+    return vxm.ethBancor.protectedPositions.some(position =>
+      position.rewardsMultiplier.gt(1)
+    );
   }
 
   get vBntWarning() {
