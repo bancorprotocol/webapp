@@ -13,6 +13,10 @@ import { shrinkToken } from "@/api/eth/helpers";
 import { expandToken } from "@/api/pureHelpers";
 import { zip } from "lodash";
 
+const oneMillion = new BigNumber(1000000);
+const ppmToBigNumber = (ppm: number | string): BigNumber =>
+  new BigNumber(ppm).dividedBy(oneMillion);
+
 const VuexModule = createModule({
   strict: false
 });
@@ -253,6 +257,6 @@ export class RewardsModule extends VuexModule.With({
       .rewardsMultiplier(this.currentUser, poolId, reserveId)
       .call();
 
-    return new BigNumber(shrinkToken(result, 6));
+    return ppmToBigNumber(result);
   }
 }
