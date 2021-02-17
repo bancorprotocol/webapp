@@ -661,3 +661,17 @@ export const getHistoricBalances = async (
   );
   return fetchHistoricBalances(timeScales, relevantPools);
 };
+
+export const fetchRewardsMultiplier =async (
+  poolId: string,
+  reserveId: string,
+  stakingRewardsContract: string,
+  currentUser: string
+): Promise<BigNumber> => {
+  const contract = buildStakingRewardsContract(stakingRewardsContract);
+  const result = await contract.methods
+    .rewardsMultiplier(currentUser, poolId, reserveId)
+    .call();
+
+  return new BigNumber(shrinkToken(result, 6));
+}

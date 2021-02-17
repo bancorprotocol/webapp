@@ -77,8 +77,8 @@ export interface ProtectedLiquidityCalculated {
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
-  pendingReserveReward: BigNumber;
-  rewardsMultiplier: BigNumber;
+  pendingReserveReward?: BigNumber;
+  rewardsMultiplier?: BigNumber;
 }
 
 export interface TokenPrice {
