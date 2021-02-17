@@ -1,6 +1,9 @@
 <template>
   <div class="mt-3">
-    <label-content-split :label="$t('claimable_amount')">
+    <label-content-split
+      :label="$t('claimable_amount')"
+      :tooltip="$t('not_include_liquidity_rewards')"
+    >
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
         :amount="prettifyNumber(position.protectedAmount.amount)"
@@ -13,13 +16,6 @@
       variant="error"
       class="mb-3"
       msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds."
-    />
-
-    <alert-block
-      variant="warning"
-      class="my-3"
-      :title="$t('important')"
-      :msg="$t('not_include_liquidity_rewards')"
     />
 
     <alert-block
