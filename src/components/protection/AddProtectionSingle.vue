@@ -77,7 +77,11 @@
     <alert-block
       v-if="focusedReserveIsDisabled"
       variant="error"
-      :msg="$t(`available_reserve_only`, { symbol: opposingTokenSymbol })"
+      :msg="
+        disabledReserves.length > 1
+          ? $t('pool_not_accepting')
+          : $t(`available_reserve_only`, { symbol: opposingTokenSymbol })
+      "
       class="mt-3 mb-3"
     />
 
@@ -275,6 +279,7 @@ export default class AddProtectionSingle extends BaseComponent {
       compareString(reserveId, this.token.id)
     );
   }
+
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
   }
