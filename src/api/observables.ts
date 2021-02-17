@@ -10,7 +10,8 @@ import {
   shareReplay,
   pluck,
   scan,
-  share
+  share,
+  withLatestFrom
 } from "rxjs/operators";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
@@ -185,13 +186,14 @@ combineLatest([
   authenticated$,
   liquidityProtectionStore$,
   currentBlock$,
-  apiData$
-]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
+]).pipe(
+  withLatestFrom(apiData$)
+).subscribe(([[currentUser, storeAddress, { blockNumber }], apiData]) => {
   const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
   vxm.ethBancor.fetchProtectionPositions({
     storeAddress,
     blockNumberNow: blockNumber,
-    userAddress: userAddress as string,
+    userAddress: currentUser,
     supportedAnchors
   });
 });
