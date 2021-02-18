@@ -94,7 +94,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import { ViewProtectedLiquidity } from "@/types/bancor";
-import { stringifyPercentage } from "@/api/helpers";
+import { stringifyPercentage, compareString } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
@@ -119,13 +119,26 @@ export default class RewardsSummary extends BaseComponent {
   modal = false;
   interval: any = null;
   oldrewards: ViewRewardsSummaryItem[] = [];
+  disabledPools: string[] = [];
+
+  get bntID() {
+    const bnt = vxm.bancor.tokens.find(token =>
+      compareString(token.symbol, "BNT")
+    );
+    return bnt ? bnt.id : "";
+  }
 
   get rewardsBalance() {
     return vxm.rewards.balance;
   }
 
   get pools() {
-    return vxm.bancor.relays.filter(pool => pool.liquidityProtection);
+    console.log("disabledPools", this.disabledPools.join(" ,"));
+    return vxm.bancor.relays.filter(
+      pool =>
+        pool.liquidityProtection &&
+        !this.disabledPools.some(disablePoolID => disablePoolID === pool.id)
+    );
   }
 
   get summarizedRewards(): ViewRewardsSummaryItem[] {
@@ -160,6 +173,17 @@ export default class RewardsSummary extends BaseComponent {
   async mounted() {
     try {
       await vxm.rewards.loadData();
+      this.pools.forEach(async x => {
+        const disabledReserves = await vxm.ethBancor.fetchDisabledReserves(
+          x.id
+        );
+        if (
+          disabledReserves.some(reserveId =>
+            compareString(reserveId, this.bntID)
+          )
+        )
+          this.disabledPools.push(x.id);
+      });
     } catch (e) {
       console.error("Load Rewards Data error: ", e);
     }

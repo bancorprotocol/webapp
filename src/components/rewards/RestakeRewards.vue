@@ -53,6 +53,7 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import { compareString } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BigNumber from "bignumber.js";
@@ -80,6 +81,8 @@ export default class RestakeRewards extends BaseTxAction {
   maxStakeSymbol: string = "";
   loading = false;
 
+  disabledPools: string[] = [];
+
   private interval: any;
 
   get token() {
@@ -91,7 +94,11 @@ export default class RestakeRewards extends BaseTxAction {
   }
 
   get pools() {
-    return vxm.bancor.relays.filter(x => x.whitelisted);
+    return vxm.bancor.relays.filter(
+      x =>
+        x.whitelisted &&
+        !this.disabledPools.some(disablePoolID => disablePoolID === x.id)
+    );
   }
 
   get pendingRewards() {
@@ -176,8 +183,21 @@ export default class RestakeRewards extends BaseTxAction {
   async loadData() {
     this.loading = true;
     try {
-      await this.loadMaxStakes();
-      await vxm.rewards.fetchAndSetPendingRewards();
+      await Promise.all([
+        this.loadMaxStakes(),
+        vxm.rewards.fetchAndSetPendingRewards(),
+        this.pools.forEach(async x => {
+          const disabledReserves = await vxm.ethBancor.fetchDisabledReserves(
+            x.id
+          );
+          if (
+            disabledReserves.some(reserveId =>
+              compareString(reserveId, this.token.id)
+            )
+          )
+            this.disabledPools.push(x.id);
+        })
+      ]);
     } catch (e) {
       console.log(e);
     } finally {
