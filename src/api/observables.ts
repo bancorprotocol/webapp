@@ -1,5 +1,5 @@
 import { differenceWith, isEqual } from "lodash";
-import { Subject, combineLatest, Observable } from "rxjs";
+import { Subject, combineLatest, Observable, timer } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -55,13 +55,18 @@ export const distinctArrayItem = <T>(
 export const authenticated$ = new Subject<string>();
 export const networkVersionReceiver$ = new Subject<EthNetworks>();
 
+const onLogin$ = authenticated$.pipe(filter(x => Boolean(x)), share())
+const onLogout$ = authenticated$.pipe(filter(x => !Boolean(x)), share())
+
+const fifteenSeconds$ = timer(0, 15000)
+
 export const networkVersion$ = networkVersionReceiver$.pipe(
   distinctUntilChanged(),
   shareReplay(1)
 );
 
-export const apiData$ = networkVersion$.pipe(
-  switchMap(networkVersion => getWelcomeData(networkVersion)),
+export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
+  switchMap(([networkVersion]) => getWelcomeData(networkVersion)),
   share()
 );
 
@@ -145,7 +150,7 @@ networkVars$.subscribe(networkVariables =>
 
 combineLatest([
   liquidityProtectionStore$,
-  authenticated$
+  onLogin$
 ]).subscribe(([storeAddress, currentUser]) =>
   vxm.ethBancor.fetchAndSetLockedBalances({ storeAddress, currentUser })
 );
@@ -183,7 +188,7 @@ settingsContractAddress$
   );
 
 combineLatest([
-  authenticated$,
+  onLogin$,
   liquidityProtectionStore$,
   currentBlock$,
 ]).pipe(
@@ -198,7 +203,9 @@ combineLatest([
   });
 });
 
-combineLatest([authenticated$, apiData$]).subscribe(
+onLogin$.pipe(
+  withLatestFrom(apiData$)
+).subscribe(
   ([userAddress, apiData]) => {
     if (userAddress) {
       const reserveTokens = apiData.tokens.map(token => token.dlt_id);
