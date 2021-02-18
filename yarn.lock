@@ -5715,10 +5715,10 @@ bn.js@^5.0.0, bn.js@^5.1.1, bn.js@^5.1.2, bn.js@^5.1.3:
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.1.3.tgz#beca005408f642ebebea80b042b4d18d2ac0ee6b"
   integrity sha512-GkTiFpjFtUzU9CbMeJ5iazkCzGL3jrhzerzZIuqLABjbwRaFt33I9tUdSNryIptM+RxDet6OKm2WnLXzW51KsQ==
 
-bnc-onboard@^1.19.1:
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.19.1.tgz#84e2aceeec1dcf48962b4a0bcc01dbd6407637c3"
-  integrity sha512-sy3axyKNb6BUUQs9PF0aDztJidcR1gBvIVnabRymRpaUGkvflk6cZsGqolR2Lb/aoFYP9yL4PJd0DpnboSUpQA==
+bnc-onboard@^1.19.2:
+  version "1.19.2"
+  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.19.2.tgz#bc293dfebfeadc834c4219b3eae7ff827f9ff9f9"
+  integrity sha512-+vsc70ViYz2mJbhTXhIuVMHIqlmvGVKZVWTkI8+5xnUVoFh65GubdxuN55l/J+kgEodUHejPecswgYWUTElz8A==
   dependencies:
     "@ledgerhq/hw-app-eth" "^5.21.0"
     "@ledgerhq/hw-transport-u2f" "^5.21.0"
