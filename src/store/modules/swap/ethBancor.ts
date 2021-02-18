@@ -1214,7 +1214,8 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
 const percentageOfReserve = (
   percent: BigNumber,
   existingSupply: string
-): BigNumber => new BigNumber(percent).times(existingSupply);
+): string =>
+  new BigNumber(percent).times(existingSupply).toFixed(0, BigNumber.ROUND_DOWN);
 
 const percentageIncrease = (
   deposit: string,
@@ -1225,7 +1226,7 @@ const calculateOppositeFundRequirement = (
   deposit: string,
   depositsSupply: string,
   oppositesSupply: string
-): BigNumber => {
+): string => {
   const increase = percentageIncrease(deposit, depositsSupply);
   return percentageOfReserve(increase, oppositesSupply);
 };
@@ -1234,7 +1235,7 @@ const calculateOppositeLiquidateRequirement = (
   reserveAmount: string,
   reserveBalance: string,
   oppositeReserveBalance: string
-): BigNumber => {
+): string => {
   const increase = percentageIncrease(reserveAmount, reserveBalance);
   return percentageOfReserve(increase, oppositeReserveBalance);
 };
@@ -5696,9 +5697,11 @@ export class EthBancorModule
     const meta = this.tokenMeta;
 
     const validSwaps = this.apiData!.swaps.filter(swap => {
-      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id]
-      return tradedTokens.every(tokenAddress => tokens.some(token => compareString(token.dlt_id, tokenAddress)))
-    })
+      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id];
+      return tradedTokens.every(tokenAddress =>
+        tokens.some(token => compareString(token.dlt_id, tokenAddress))
+      );
+    });
 
     const trades = validSwaps.map(
       (x): ViewLiquidityEvent<ViewTradeEvent> => {
