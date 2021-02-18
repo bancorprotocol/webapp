@@ -200,7 +200,8 @@ import {
   authenticated$,
   networkVersion$,
   tokenMeta$,
-  poolPrograms$
+  poolPrograms$,
+  newPools$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -429,7 +430,7 @@ interface RefinedAbiRelay {
   owner: string;
 }
 
-const ppmToDec = (ppm: number | string): number =>
+export const ppmToDec = (ppm: number | string): number =>
   new BigNumber(ppm).dividedBy(oneMillion).toNumber();
 
 const determineConverterType = (
@@ -6243,60 +6244,9 @@ export class EthBancorModule
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
-      await combineLatest([apiData$, tokenMeta$])
+      await newPools$
         .pipe(
-          switchMap(([apiData, tokenMeta]) => {
-            const pools = apiData.pools;
-            const tokens = apiData.tokens;
-
-            const betterPools = pools.map(pool => {
-              const reserveTokens = pool.reserves
-                .map(
-                  (reserve): TokenMetaWithReserve => {
-                    const meta = tokenMeta.find(meta =>
-                      compareString(meta.contract, reserve.address)
-                    );
-                    const token = findOrThrow(
-                      tokens,
-                      token => compareString(token.dlt_id, reserve.address),
-                      "was expecting a token for a known reserve in API data"
-                    );
-
-                    return {
-                      id: reserve.address,
-                      contract: reserve.address,
-                      reserveWeight: ppmToDec(reserve.weight),
-                      decBalance: reserve.balance,
-                      name: token.symbol,
-                      symbol: token.symbol,
-                      image: (meta && meta.image) || defaultImage,
-                      precision: token.decimals
-                    };
-                  }
-                )
-                .filter(pool => pool.contract);
-              const decFee = ppmToDec(pool.fee);
-              return {
-                ...pool,
-                decFee,
-                reserveTokens
-              };
-            });
-
-            const passedPools = filterAndWarn(
-              betterPools,
-              pool => pool.reserveTokens.length == 2,
-              "lost pools due to lack of meta data"
-            ) as NewPool[];
-
-            return passedPools;
-          }),
-          bufferTime(50),
-          filter(x => x.length > 0),
-          firstItem(),
-          tap(pools => {
-            this.updatePools(pools);
-          })
+          firstItem()
         )
         .toPromise();
     } catch (e) {
