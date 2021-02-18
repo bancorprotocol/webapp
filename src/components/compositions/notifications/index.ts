@@ -1,12 +1,13 @@
-import { computed, ref } from "@vue/composition-api";
+import { computed, ref, watch } from "@vue/composition-api";
 import { web3 } from "@/api/web3";
+import { count } from "rxjs/operators";
 
 export enum ENotificationStatus {
-  error = "error",
   success = "success",
   info = "info",
-  pending = "pending",
-  loading = "loading"
+  warning = "warning",
+  error = "error",
+  pending = "pending"
 }
 
 export interface INotificationView {
@@ -16,31 +17,39 @@ export interface INotificationView {
   description: string;
   txHash?: string;
   timestamp: Date;
+  showSeconds?: number;
+  alertOnly?: boolean;
 }
 
 export const history = ref<INotificationView[]>([]);
-export const alertQueue = ref<INotificationView[]>([]);
+// export const alertQueue = ref<INotificationView[]>([]);
+
+export const alertQueue = computed(() =>
+  history.value.filter(n => n.showSeconds).reverse()
+);
+
 export const pendingQueue = computed(() =>
   history.value.filter(n => n.status === ENotificationStatus.pending)
 );
 
-export const addNotification = async (
+export const addNotification = (
   title: string,
-  description: string,
-  status: ENotificationStatus = ENotificationStatus.info,
+  description = "",
+  status = ENotificationStatus.info,
   txHash?: string,
-  showToast: boolean = true
+  showSeconds = 8,
+  alertOnly?: boolean
 ) => {
   const notification: INotificationView = {
-    id: history.value.length,
+    id: Date.now(),
     status,
     title,
     description,
     txHash,
+    showSeconds,
+    alertOnly,
     timestamp: new Date()
   };
-
-  if (showToast) addToQueue(notification);
 
   if (txHash) {
     notification.status = ENotificationStatus.pending;
@@ -49,16 +58,32 @@ export const addNotification = async (
   history.value.unshift(notification);
 };
 
-export const addToQueue = (notification: INotificationView) => {
-  alertQueue.value.push(notification);
-  setTimeout(() => {
-    alertQueue.value.shift();
-  }, 10000);
+export const removeNotification = (id: number) => {
+  const index = history.value
+    .map(n => {
+      return n.id;
+    })
+    .indexOf(id);
+
+  if (index >= 0) history.value.splice(index, 1);
+  else console.error("Error: Remove Notification - ID not found.");
+};
+
+export const hideAlert = (id: number) => {
+  const index = history.value
+    .map(n => {
+      return n.id;
+    })
+    .indexOf(id);
+
+  if (index >= 0) {
+    if (history.value[index].alertOnly) history.value.splice(index, 1);
+    else history.value[index].showSeconds = undefined;
+  } else console.error("Error: Hide Alert - ID not found.");
 };
 
 export const clearAllNotifications = () => {
   history.value = [];
-  alertQueue.value = [];
 };
 
 export const getTxStatus = async (hash: string) => {
@@ -73,19 +98,40 @@ export const getTxStatus = async (hash: string) => {
 };
 
 export const updatePendingTx = async (notification: INotificationView) => {
-  const status = await getTxStatus(notification.txHash!);
+  try {
+    const status = await getTxStatus(notification.txHash!);
+    if (status !== null) {
+      // set status
+      if (status) notification.status = ENotificationStatus.success;
+      else notification.status = ENotificationStatus.error;
 
-  if (status !== null) {
-    // set status
-    if (status) notification.status = ENotificationStatus.success;
-    else notification.status = ENotificationStatus.error;
+      // find history index
+      const index = history.value
+        .map(n => {
+          return n.txHash;
+        })
+        .indexOf(notification.txHash);
 
-    // update history
-    const historyIndex = history.value
-      .map(n => {
-        return n.txHash;
-      })
-      .indexOf(notification.txHash);
-    history.value[historyIndex] = notification;
+      // update history
+      history.value[index].status = notification.status;
+    }
+  } catch (e) {
+    console.error(" - Error in: updatePendingTx - ", e);
+    throw e;
   }
 };
+
+export const loadLocalHistory = () => {
+  const raw = localStorage.getItem("notification_history");
+  if (!raw) return;
+  const restored = JSON.parse(raw);
+  if (restored.length) history.value = restored;
+};
+
+watch(
+  history,
+  history => {
+    localStorage.setItem("notification_history", JSON.stringify(history));
+  },
+  { deep: true }
+);
