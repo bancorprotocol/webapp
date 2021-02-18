@@ -429,7 +429,7 @@ interface RefinedAbiRelay {
   owner: string;
 }
 
-const ppmToDec = (ppm: number | string): number =>
+export const ppmToDec = (ppm: number | string): number =>
   new BigNumber(ppm).dividedBy(oneMillion).toNumber();
 
 const determineConverterType = (
@@ -1905,7 +1905,7 @@ export class EthBancorModule
 
       const rewardsMultiplier: {
         id: string;
-        rewardsMultiplier: BigNumber;
+        rewardsMultiplier: number;
       }[] = await Promise.all(
         uniquePoolReserveIds.map(async item => {
           const rewardsMultiplier = await vxm.rewards.fetchRewardsMultiplier({
@@ -1942,9 +1942,7 @@ export class EthBancorModule
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
               : new BigNumber(0),
-            rewardsMultiplier: multiplier
-              ? multiplier.rewardsMultiplier
-              : new BigNumber(0)
+            rewardsMultiplier: multiplier ? multiplier.rewardsMultiplier : 0
           };
         }
       );
@@ -5696,9 +5694,11 @@ export class EthBancorModule
     const meta = this.tokenMeta;
 
     const validSwaps = this.apiData!.swaps.filter(swap => {
-      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id]
-      return tradedTokens.every(tokenAddress => tokens.some(token => compareString(token.dlt_id, tokenAddress)))
-    })
+      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id];
+      return tradedTokens.every(tokenAddress =>
+        tokens.some(token => compareString(token.dlt_id, tokenAddress))
+      );
+    });
 
     const trades = validSwaps.map(
       (x): ViewLiquidityEvent<ViewTradeEvent> => {
