@@ -15,13 +15,14 @@ import {
 } from "rxjs/operators";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
-import { getWelcomeData } from "./eth/bancorApi";
-import { getTokenMeta } from "@/store/modules/swap/ethBancor";
+import { getWelcomeData, NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
+import { getTokenMeta, ppmToDec, defaultImage } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
 import dayjs from "dayjs";
 import { RegisteredContracts } from "@/types/bancor";
-import { compareString } from "./helpers";
+import { compareString, findOrThrow } from "./helpers";
 import { buildStakingRewardsContract } from "./eth/contractTypes";
+import { filterAndWarn } from './pureHelpers';
 
 interface DataCache<T> {
   allEmissions: T[];
@@ -140,6 +141,62 @@ export const liquidityProtectionStore$ = contractAddresses$.pipe(
   distinctUntilChanged(compareString),
   shareReplay(1)
 );
+
+
+export const newPools$ = combineLatest([apiData$, tokenMeta$]).pipe(
+  map(([apiData, tokenMeta]) => {
+    {
+      const pools = apiData.pools;
+      const tokens = apiData.tokens;
+
+      const betterPools = pools.map(pool => {
+        const reserveTokens = pool.reserves
+          .map(
+            (reserve): TokenMetaWithReserve => {
+              const meta = tokenMeta.find(meta =>
+                compareString(meta.contract, reserve.address)
+              );
+              const token = findOrThrow(
+                tokens,
+                token => compareString(token.dlt_id, reserve.address),
+                "was expecting a token for a known reserve in API data"
+              );
+
+              return {
+                id: reserve.address,
+                contract: reserve.address,
+                reserveWeight: ppmToDec(reserve.weight),
+                decBalance: reserve.balance,
+                name: token.symbol,
+                symbol: token.symbol,
+                image: (meta && meta.image) || defaultImage,
+                precision: token.decimals
+              };
+            }
+          )
+          .filter(pool => pool.contract);
+        const decFee = ppmToDec(pool.fee);
+        return {
+          ...pool,
+          decFee,
+          reserveTokens
+        };
+      });
+
+      const passedPools = filterAndWarn(
+        betterPools,
+        pool => pool.reserveTokens.length == 2,
+        "lost pools"
+      ) as NewPool[];
+
+      return passedPools;
+    }
+  }),
+  filter(pools => pools.length > 0)
+)
+
+
+newPools$.subscribe(pools => vxm.ethBancor.setPools(pools))
 
 networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
 apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
