@@ -196,7 +196,7 @@ export const newPools$ = combineLatest([apiData$, tokenMeta$]).pipe(
 )
 
 
-newPools$.subscribe(pools => vxm.ethBancor.updatePools(pools))
+newPools$.subscribe(pools => vxm.ethBancor.setPools(pools))
 
 networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
 apiData$.subscribe(data => vxm.ethBancor.setApiData(data));

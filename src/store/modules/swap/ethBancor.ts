@@ -6010,20 +6010,8 @@ export class EthBancorModule
     console.log(data, "data is here!");
   }
 
-  @mutation updatePools(pools: NewPool[]) {
+  @mutation setPools(pools: NewPool[]) {
     this.newPools = pools;
-
-    const existingPools = this.newPools;
-    const poolsNotBeingUpdated = existingPools.filter(
-      pool => !pools.some(p => compareString(p.pool_dlt_id, pool.pool_dlt_id))
-    );
-    this.newPools = filterAndWarn(
-      [...pools, ...poolsNotBeingUpdated],
-      pool =>
-        pool.reserves.every(reserve => typeof reserve.address == "string") &&
-        pool.reserves.length == 2,
-      "lost a pool..."
-    );
   }
 
   @action async init() {
