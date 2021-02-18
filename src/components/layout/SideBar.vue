@@ -54,7 +54,7 @@ export default class SideBar extends BaseComponent {
     );
     return [
       {
-        route: "DataSummary",
+        route: "Data",
         key: "data",
         label: i18n.t("data"),
         newTab: false,
@@ -86,7 +86,7 @@ export default class SideBar extends BaseComponent {
         svgName: "governance"
       },
       {
-        route: "VotePage",
+        route: "Vote",
         key: "vote",
         label: i18n.t("vote.title"),
         newTab: false,

@@ -516,7 +516,7 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 6,
         key: "apr",
-        label: i18n.tc("apr"),
+        label: "APR",
         tooltip: i18n.tc("estimated_calculation_annual_returns"),
         sortable: true,
         minWidth: "115px"

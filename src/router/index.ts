@@ -182,7 +182,6 @@ export const router = new Router({
     },
     {
       path: "/:service/protection/stake",
-      name: "ProtectionAction",
       components: {
         Nav: Navigation,
         Hero: ProtectionActions
@@ -194,7 +193,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          name: "AddProtectionHome",
+          name: "ProtectionAction",
           component: AddProtectionHome
         },
         {
@@ -244,7 +243,6 @@ export const router = new Router({
     },
     {
       path: "/:service/data",
-      name: "Data",
       components: {
         Nav: Navigation,
         default: Data
@@ -253,7 +251,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          name: "DataSummary",
+          name: "Data",
           component: DataSummary,
           meta: {
             key: "data",
@@ -264,7 +262,6 @@ export const router = new Router({
     },
     {
       path: "/:service/vote",
-      name: "Vote",
       components: {
         Nav: Navigation,
         default: Vote
@@ -273,7 +270,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          name: "VotePage",
+          name: "Vote",
           component: VotePage,
           meta: {
             key: "vote",
