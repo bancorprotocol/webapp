@@ -5,7 +5,7 @@
   >
     <notification-details
       v-for="notification in alertQueue"
-      :key="notification.id"
+      :key="`alerts-${notification.id}`"
       :notification="notification"
       class="mb-2"
       style="width: 100%"
@@ -25,7 +25,6 @@ import NotificationDetails from "@/components/compositions/notifications/Notific
 export default defineComponent({
   props: { position: { type: String, default: "right" } },
   components: { NotificationDetails },
-
   setup() {
     return {
       alertQueue,
