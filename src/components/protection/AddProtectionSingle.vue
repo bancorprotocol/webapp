@@ -162,17 +162,12 @@
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
+import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import {
-  formatUnixTime,
-  formatNumber,
-  compareString,
-  findOrThrow
-} from "@/api/helpers";
+import { compareString, findOrThrow, formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -183,6 +178,10 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import BaseComponent from "@/components/BaseComponent.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
+import {
+  addNotification,
+  ENotificationStatus
+} from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -360,9 +359,27 @@ export default class AddProtectionSingle extends BaseComponent {
         onUpdate: this.onUpdate
       });
       this.success = txRes;
+      addNotification(
+        "Add Single-Sided Liquidity",
+        `Add ${this.prettifyNumber(this.amount)} ${this.token.symbol} to ${
+          this.pool.name
+        } pool,`,
+        undefined,
+        txRes.txId
+      );
       this.amount = "";
     } catch (e) {
       this.error = e.message;
+      addNotification(
+        "Add Single-Sided Liquidity",
+        `Add ${this.prettifyNumber(this.amount)} ${this.token.symbol} to ${
+          this.pool.name
+        } pool,`,
+        ENotificationStatus.error,
+        undefined,
+        undefined,
+        true
+      );
     } finally {
       this.txBusy = false;
     }
