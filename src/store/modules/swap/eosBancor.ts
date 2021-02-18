@@ -1372,7 +1372,6 @@ export class EosBancorModule
   }
 
   get liquidityHistory() {
-    console.time("HULK");
     const relays = this.relaysList;
 
     const parsedPools = this.liquidityHistoryArr.map(trade => {
@@ -1481,8 +1480,6 @@ export class EosBancorModule
       })
       .filter(Boolean);
 
-    console.timeEnd("HULK");
-
     return {
       // error: '',
       loading: this.liquidityHistoryLoading,
@@ -1509,21 +1506,16 @@ export class EosBancorModule
   }
 
   @action async init(param?: ModuleParam) {
-    console.count("eosInit");
-    console.time("eosResolved");
-
     this.pullEvents();
 
     if (this.initialised) return this.refresh();
 
     try {
-      console.time("eos1");
       const [usdPriceOfBnt, v2Relays, tokenMeta] = await Promise.all([
         vxm.bancor.fetchUsdPriceOfBnt(),
         fetchMultiRelays(),
         getTokenMeta()
       ]);
-      console.timeEnd("eos1");
       this.setTokenMeta(tokenMeta);
       this.setBntPrice(usdPriceOfBnt);
 
@@ -1546,8 +1538,6 @@ export class EosBancorModule
         param.tradeQuery &&
         param.tradeQuery.base &&
         param.tradeQuery.quote;
-
-      console.time("eos22");
       if (quickTrade) {
         const { base: fromId, quote: toId } = param!.tradeQuery!;
         await this.bareMinimumForTrade({
@@ -1564,11 +1554,9 @@ export class EosBancorModule
           tokenMeta
         });
       }
-      console.timeEnd("eos22");
 
       this.setInitialised(true);
       this.setLoadingPools(false);
-      console.timeEnd("eosResolved");
     } catch (e) {
       throw new Error(`Threw inside eosBancor: ${e.message}`);
     }

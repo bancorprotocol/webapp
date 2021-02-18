@@ -176,6 +176,13 @@ export default class DataTable extends BaseComponent {
     const endIndex = this.currentPage * perPage;
     const startIndex = endIndex - perPage;
     const items = this.sortedItems.slice(startIndex, endIndex);
+    const itemsWithoutId = items.filter(x => !x.id);
+    if (itemsWithoutId.length > 0) {
+      console.warn(
+        "The following paginated items dont have an id: ",
+        itemsWithoutId
+      );
+    }
     return items;
   }
 

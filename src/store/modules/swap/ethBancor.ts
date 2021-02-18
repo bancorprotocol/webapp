@@ -1622,20 +1622,16 @@ export class EthBancorModule
         w3
       );
       const owner = userAddress || this.currentUser;
-      console.time("time to get ID count");
       const idCount = Number(
         await contract.methods.protectedLiquidityCount(owner).call()
       );
-      console.timeEnd("time to get ID count");
       if (idCount == 0) {
         this.setLoadingPositions(false);
         return;
       }
-      console.time("timeToGetIds");
       const positionIds = await contract.methods
         .protectedLiquidityIds(owner)
         .call();
-      console.timeEnd("timeToGetIds");
 
       const [rawPositions, currentBlockNumber] = await Promise.all([
         this.fetchPositionsMulti({
@@ -2981,8 +2977,6 @@ export class EthBancorModule
   }
 
   get tokens(): ViewToken[] {
-    console.time("tokens");
-
     const whitelistedPools = this.whiteListedPools;
     if (!this.apiData) {
       return [];
@@ -3066,7 +3060,6 @@ export class EthBancorModule
       })
       .sort(sortByLiqDepth);
 
-    console.timeEnd("tokens");
     return finalTokens;
   }
 
@@ -3928,7 +3921,6 @@ export class EthBancorModule
     userAddress?: string;
     keepWei?: boolean;
   }) {
-    console.count("getUserBalanceDirect");
     if (!tokenContractAddress)
       throw new Error("Token contract address cannot be falsy");
     const balance = await vxm.ethWallet.getBalance({
@@ -5355,8 +5347,6 @@ export class EthBancorModule
       compareString
     );
 
-    console.time("secondWaterfall");
-
     const tokenInMeta = (tokenMeta: TokenMeta[]) => (address: string) =>
       tokenMeta.find(
         meta => compareString(address, meta.contract) && meta.precision
@@ -5449,8 +5439,6 @@ export class EthBancorModule
       relays: confirmedTokenMatch,
       usdPriceOfBnt: this.bntUsdPrice
     });
-
-    console.timeEnd("secondWaterfall");
 
     const v2Pools = verifiedV2Pools.map(
       (pool): ChainLinkRelay => {
