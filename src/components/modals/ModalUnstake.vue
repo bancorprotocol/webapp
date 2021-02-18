@@ -119,10 +119,10 @@ import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
 import { Component, Watch, VModel } from "vue-property-decorator";
 import MainButton from "@/components/common/Button.vue";
-import { ViewToken } from "@/types/bancor";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
+import { compareString } from "@/api/helpers";
 
 @Component({
   components: {
@@ -133,7 +133,6 @@ import TokenInputField from "@/components/common/TokenInputField.vue";
 export default class ModalUnstake extends BaseComponent {
   @VModel({ type: Boolean }) show!: boolean;
 
-  vBnt: ViewToken = vxm.bancor.tokens[0];
   currentStake: BigNumber = new BigNumber(0);
   unstakeInput: string = "";
   unstakeValue: BigNumber = new BigNumber(0);
@@ -147,6 +146,17 @@ export default class ModalUnstake extends BaseComponent {
       this.unstakeValue.isGreaterThan(0) &&
       this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
     );
+  }
+
+  get vBnt() {
+    const bntToken = vxm.bancor.tokens.find(token =>
+      compareString(token.symbol, "BNT")
+    );
+    return {
+      id: -1,
+      symbol: this.symbol,
+      logo: bntToken ? bntToken.logo : ""
+    };
   }
 
   get state() {
@@ -229,8 +239,6 @@ export default class ModalUnstake extends BaseComponent {
 
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
-    this.vBnt.symbol = this.symbol;
-
     await this.update();
   }
 }

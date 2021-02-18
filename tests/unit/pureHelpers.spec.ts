@@ -623,4 +623,15 @@ describe("calculate how much bnt you need to stake in order to have room for 1tk
     const res = calculateAmountToGetSpace(bnt, tkn, networkTokensMinted, limit);
     expect(res).toBe("403404.28507084303840483049");
   });
+  test("Amount to get space", async () => {
+    const { bnt, tkn, networkTokensMinted, limit } = {
+      bnt: "17231379.679880050707841059",
+      tkn: "28640.948892010240170099",
+      networkTokensMinted: "8019890.870870961053410978",
+      limit: "8000000"
+    };
+
+    const res = calculateAmountToGetSpace(bnt, tkn, networkTokensMinted, limit);
+    expect(res).toBe("20492.5052562200894672684");
+  });
 });
