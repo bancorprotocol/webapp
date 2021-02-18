@@ -1,4 +1,10 @@
-/* free-solid-svg-icons */
+import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
+import { faDiscourse } from "@fortawesome/free-brands-svg-icons/faDiscourse";
+import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
+import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
+import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
+import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
+import { faSync } from "@fortawesome/free-solid-svg-icons/faSync";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
 import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
 import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
@@ -80,16 +86,9 @@ export const fas = [
   faUpload,
   faArrowLeft,
   faArrowRight,
-  faCheck
+  faCheck,
+  faSync
 ];
-
-/* free-brands-svg-icons */
-import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
-import { faDiscourse } from "@fortawesome/free-brands-svg-icons/faDiscourse";
-import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
-import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
-import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
-import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
 
 export const fab = [
   faDiscord,
