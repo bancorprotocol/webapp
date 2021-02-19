@@ -8,10 +8,7 @@
     <div class="bancor-icon-wrapper">
       <b-navbar-brand class="pb-1 brand-icon mb-1">
         <router-link :to="{ name: 'Data' }">
-          <img
-            :src="imgLogo()"
-            height="35px"
-          />
+          <img :src="imgLogo()" height="35px" />
         </router-link>
       </b-navbar-brand>
     </div>
@@ -37,7 +34,7 @@
         >
           <img
             class="side-bar-link-icon"
-            :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
+            :src="require(`@/assets/media/icons/${link.icon}`)"
           />
           <transition name="fade">
             <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
@@ -82,16 +79,16 @@ export default class SideBarLeft extends Vue {
   imgLogo(): string {
     if (this.darkMode) {
       if (this.showMinimize) {
-        return require('@/assets/media/logos/bancor-white2.png');
+        return require("@/assets/media/logos/bancor-white2.png");
       } else {
-        return require('@/assets/media/logos/bancor-white.png');
-      }      
+        return require("@/assets/media/logos/bancor-white.png");
+      }
     } else {
       if (this.showMinimize) {
-        return require('@/assets/media/logos/bancor-black2.png');
+        return require("@/assets/media/logos/bancor-black2.png");
       } else {
-        return require('@/assets/media/logos/bancor-black.png');
-      }      
+        return require("@/assets/media/logos/bancor-black.png");
+      }
     }
   }
 
@@ -110,14 +107,14 @@ export default class SideBarLeft extends Vue {
   }
 
   showLabel(visible: boolean) {
-    let timeout
+    let timeout;
     if (visible) {
       timeout = setTimeout(() => {
         this.visibleLabel = true;
       }, 250);
     } else {
       this.visibleLabel = false;
-      clearTimeout(timeout)
+      clearTimeout(timeout);
     }
   }
 
@@ -213,13 +210,14 @@ export default class SideBarLeft extends Vue {
     .side-bar-link-icon {
       align-self: center;
       width: 14px;
-      height: 43px;
+      height: 14px;
       margin-right: 12px;
     }
     .fade-enter-active {
-      transition: opacity .35s;
+      transition: opacity 0.35s;
     }
-    .fade-enter, .fade-leave-to {
+    .fade-enter,
+    .fade-leave-to {
       opacity: 0;
     }
   }
