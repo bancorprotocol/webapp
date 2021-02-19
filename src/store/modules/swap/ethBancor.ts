@@ -3790,7 +3790,6 @@ export class EthBancorModule
 
       console.log("bntAmount", bntAmount);
       console.log("tknAmount", tknAmount);
-      console.log("spaceAvailAble", spaceAvailAble);
       console.log("limitShrinked", limitShrinked);
 
       const amountToGetSpace = calculateAmountToGetSpace(
@@ -5703,9 +5702,11 @@ export class EthBancorModule
     const meta = this.tokenMeta;
 
     const validSwaps = this.apiData!.swaps.filter(swap => {
-      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id]
-      return tradedTokens.every(tokenAddress => tokens.some(token => compareString(token.dlt_id, tokenAddress)))
-    })
+      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id];
+      return tradedTokens.every(tokenAddress =>
+        tokens.some(token => compareString(token.dlt_id, tokenAddress))
+      );
+    });
 
     const trades = validSwaps.map(
       (x): ViewLiquidityEvent<ViewTradeEvent> => {

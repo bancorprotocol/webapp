@@ -11,7 +11,7 @@
         />
       </div>
       <div class="flex-fill font-w600">
-        {{ notification.title }}-{{ notification.id }}
+        {{ notification.title }}
       </div>
       <div @click="removeNotification(notification.id)">x</div>
     </div>

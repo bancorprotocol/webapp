@@ -372,14 +372,13 @@ export default class AddProtectionSingle extends BaseComponent {
       this.error = e.message;
       addNotification(
         "Add Single-Sided Liquidity",
-        `Add ${this.prettifyNumber(this.amount)} ${this.token.symbol} to ${
-          this.pool.name
-        } pool,`,
+        e.message,
         ENotificationStatus.error,
         undefined,
         undefined,
         true
       );
+      this.modal = false;
     } finally {
       this.txBusy = false;
     }
