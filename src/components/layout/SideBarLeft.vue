@@ -32,10 +32,13 @@
             link.hideMobile ? 'hide-on-mobile' : ''
           ]"
         >
-          <img
-            class="side-bar-link-icon"
-            :src="require(`@/assets/media/icons/${link.icon}`)"
-          />
+          <span class="side-bar-link-icon">
+            <img
+              width="14"
+              height="14"
+              :src="require(`@/assets/media/icons/${link.icon}`)"
+            />
+          </span>
           <transition name="fade">
             <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
           </transition>
@@ -189,15 +192,14 @@ export default class SideBarLeft extends Vue {
     }
   }
   .side-bar-link {
+    display: flex;
+    align-items: center;
     padding-left: 25px;
     width: 100%;
-    cursor: pointer;
     height: 40px;
+    cursor: pointer;
     position: relative;
     span {
-      height: 40px;
-      display: inline-flex;
-      align-items: center;
       font-family: Inter;
       font-size: 14px;
       font-weight: 500;
@@ -210,7 +212,6 @@ export default class SideBarLeft extends Vue {
     .side-bar-link-icon {
       align-self: center;
       width: 14px;
-      height: 14px;
       margin-right: 12px;
     }
     .fade-enter-active {
