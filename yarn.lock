@@ -1469,10 +1469,10 @@
   resolved "https://registry.yarnpkg.com/@firebase/analytics-types/-/analytics-types-0.4.0.tgz#d6716f9fa36a6e340bc0ecfe68af325aa6f60508"
   integrity sha512-Jj2xW+8+8XPfWGkv9HPv/uR+Qrmq37NPYT352wf7MvE9LrstpLVmFg3LqG6MCRr5miLAom5sen2gZ+iOhVDeRA==
 
-"@firebase/analytics@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/@firebase/analytics/-/analytics-0.6.2.tgz#7f45675a1b524fff4d9e9fe318fd6e2ed067a325"
-  integrity sha512-4Ceov+rPfOEPIdbjlpTim/wbcUUneIesHag4UOzvmFsRRXqbxLwQpyZQWEbTSriUeU8uTKj9yOW32hsskV9Klg==
+"@firebase/analytics@^0.6.3":
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/@firebase/analytics/-/analytics-0.6.3.tgz#2e6d819f1bc9c55a1d4648547a314c7c4d80e03d"
+  integrity sha512-W+H1PbhDtxKJMPfb2/Iy0wZiTpf5xZ33rKTakeVd8j2p1emm2lwrlrv0+/qg7BUqeuxgma5AB3U0bwS0iSSaww==
   dependencies:
     "@firebase/analytics-types" "0.4.0"
     "@firebase/component" "0.1.21"
