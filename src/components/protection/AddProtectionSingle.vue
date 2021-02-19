@@ -77,7 +77,11 @@
     <alert-block
       v-if="focusedReserveIsDisabled"
       variant="error"
-      :msg="$t(`available_reserve_only`, { availableReserveSymbol })"
+      :msg="
+        disabledReserves.length > 1
+          ? $t('pool_not_accepting')
+          : $t(`available_reserve_only`, { symbol: opposingTokenSymbol })
+      "
       class="mt-3 mb-3"
     />
 
@@ -260,6 +264,10 @@ export default class AddProtectionSingle extends BaseComponent {
     );
   }
 
+  get opposingTokenSymbol() {
+    return this.opposingToken ? this.opposingToken.symbol : "";
+  }
+
   disabledReserves: string[] = [];
 
   get tokens() {
@@ -270,15 +278,6 @@ export default class AddProtectionSingle extends BaseComponent {
     return this.disabledReserves.some(reserveId =>
       compareString(reserveId, this.token.id)
     );
-  }
-
-  get availableReserveSymbol() {
-    return this.pool.reserves.find(
-      reserve =>
-        !this.disabledReserves.some(reserveId =>
-          compareString(reserveId, reserve.id)
-        )
-    )!.symbol;
   }
 
   get pools() {
@@ -396,9 +395,9 @@ export default class AddProtectionSingle extends BaseComponent {
 
       if (res.error) {
         this.preTxError =
-          res.error == "balance"
-            ? i18n.tc("insufficient_store_balance")
-            : errorMsg;
+          res.error == "overMaxLimit"
+            ? errorMsg
+            : i18n.tc("insufficient_store_balance");
       } else {
         this.preTxError = "";
       }

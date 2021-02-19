@@ -39,7 +39,7 @@ export const shrinkToken = (
     );
   const res = new BigNumber(amount)
     .div(new BigNumber(10).pow(precision))
-    .toFixed(precision);
+    .toFixed(precision, BigNumber.ROUND_DOWN);
 
   return chopZeros ? new BigNumber(res).toString() : res;
 };

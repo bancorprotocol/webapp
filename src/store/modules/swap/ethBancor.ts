@@ -117,7 +117,8 @@ import {
   buildLiquidityProtectionContract,
   buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSettingsContract,
-  buildAddressLookupContract
+  buildAddressLookupContract,
+  buildLiquidityProtectionSystemStoreContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -199,7 +200,8 @@ import {
   authenticated$,
   networkVersion$,
   tokenMeta$,
-  poolPrograms$
+  poolPrograms$,
+  newPools$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -428,7 +430,7 @@ interface RefinedAbiRelay {
   owner: string;
 }
 
-const ppmToDec = (ppm: number | string): number =>
+export const ppmToDec = (ppm: number | string): number =>
   new BigNumber(ppm).dividedBy(oneMillion).toNumber();
 
 const determineConverterType = (
@@ -1210,11 +1212,16 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
   return { smartTokens, poolTokenAddresses };
 };
 
-const percentageOfReserve = (percent: number, existingSupply: string): string =>
-  new Decimal(percent).times(existingSupply).toFixed(0);
+const percentageOfReserve = (
+  percent: BigNumber,
+  existingSupply: string
+): string =>
+  new BigNumber(percent).times(existingSupply).toFixed(0, BigNumber.ROUND_DOWN);
 
-const percentageIncrease = (deposit: string, existingSupply: string): number =>
-  new Decimal(deposit).div(existingSupply).toNumber();
+const percentageIncrease = (
+  deposit: string,
+  existingSupply: string
+): BigNumber => new BigNumber(deposit).div(existingSupply);
 
 const calculateOppositeFundRequirement = (
   deposit: string,
@@ -1229,7 +1236,7 @@ const calculateOppositeLiquidateRequirement = (
   reserveAmount: string,
   reserveBalance: string,
   oppositeReserveBalance: string
-) => {
+): string => {
   const increase = percentageIncrease(reserveAmount, reserveBalance);
   return percentageOfReserve(increase, oppositeReserveBalance);
 };
@@ -1460,30 +1467,36 @@ export class EthBancorModule
   }
 
   get stats() {
-    const ethToken = this.tokens.find(token =>
-      compareString("ETH", token.symbol)
-    );
-    const totalVolume24h = this.relays
-      .filter(
-        x => x && !x.v2 && x.volume !== undefined && !isNaN(Number(x.volume))
-      )
-      .map(x => new BigNumber(x.volume || 0))
-      .reduce((sum, current) => sum.plus(current), new BigNumber(0));
+    const apiData = this.apiData!
+    const bntUsdPrice = Number(apiData.bnt_price.usd);
+    const bntSupply = this.bntSupply;
+
+    const { pools, tokens } = apiData;
+    const ethToken = findOrThrow(tokens, token => compareString(token.symbol, 'ETH'), 'failed finding ETH token in API data');
+    const bntToken = findOrThrow(tokens, token => compareString(token.symbol, 'BNT'), 'failed finding BNT token in API data');
+    const totalVolume24h = pools.reduce((acc, item) => Number(item.volume_24h.usd || 0) + acc, 0);
+    const totalLiquidityDepth = pools.reduce((acc, item) => Number(item.liquidity.usd || 0) + acc, 0);
+
+    const totalBntStaked = pools.reduce((acc, item) => {
+      const bntReserve = item.reserves.find(reserve => compareString(reserve.address, bntToken.dlt_id))
+      if (!bntReserve) return acc;
+      return new BigNumber(bntReserve.balance).plus(acc)
+    }, new BigNumber(0))
+
+    const stakedBntPercent = totalBntStaked.div(shrinkToken(bntSupply, bntToken.decimals)).toNumber()
 
     return {
-      totalLiquidityDepth: this.relays
-        .map(x => Number(x.liqDepth || 0))
-        .reduce((sum, current) => sum + current),
-      totalPoolCount: this.relays.length,
-      totalTokenCount: this.tokens.length,
-      stakedBntPercent: this.stakedBntPercent,
+      totalLiquidityDepth,
+      totalPoolCount: pools.length,
+      totalTokenCount: tokens.length,
+      stakedBntPercent,
       nativeTokenPrice: {
         symbol: "ETH",
-        price: (ethToken && ethToken.price) || 0
+        price: Number(ethToken.rate.usd)
       },
-      twentyFourHourTradeCount: this.liquidityHistory.data.length,
-      totalVolume24h: totalVolume24h.toNumber(),
-      bntUsdPrice: (this.apiData && Number(this.apiData.bnt_price.usd)) || 0
+      twentyFourHourTradeCount: apiData.swaps.length,
+      totalVolume24h,
+      bntUsdPrice
     };
   }
 
@@ -1898,6 +1911,22 @@ export class EthBancorModule
         })
       );
 
+      const rewardsMultiplier: {
+        id: string;
+        rewardsMultiplier: BigNumber;
+      }[] = await Promise.all(
+        uniquePoolReserveIds.map(async item => {
+          const rewardsMultiplier = await vxm.rewards.fetchRewardsMultiplier({
+            poolId: item.poolId,
+            reserveId: item.reserveId
+          });
+          return {
+            id: `${item.poolId}-${item.reserveId}`,
+            rewardsMultiplier
+          };
+        })
+      );
+
       const positions = allPositions.map(
         (position): ProtectedLiquidityCalculated => {
           const liqReturn =
@@ -1910,12 +1939,19 @@ export class EthBancorModule
             x => x.id === `${position.poolToken}-${position.reserveToken}`
           );
 
+          const multiplier = rewardsMultiplier.find(
+            x => x.id === `${position.poolToken}-${position.reserveToken}`
+          );
+
           return {
             ...position,
             ...(liqReturn && omit(liqReturn, ["positionId"])),
             ...(roiReturn && omit(roiReturn, ["positionId"])),
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
+              : new BigNumber(0),
+            rewardsMultiplier: multiplier
+              ? multiplier.rewardsMultiplier
               : new BigNumber(0)
           };
         }
@@ -2335,6 +2371,7 @@ export class EthBancorModule
               calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
             ),
           pendingReserveReward: singleEntry.pendingReserveReward,
+          rewardsMultiplier: singleEntry.rewardsMultiplier,
           reserveTokenPrice: reserveToken.price,
           bntTokenPrice: this.stats.bntUsdPrice
         } as ViewProtectedLiquidity;
@@ -2476,6 +2513,17 @@ export class EthBancorModule
     const averageRate = new BigNumber(recentAverageRateResult["1"]).dividedBy(
       recentAverageRateResult["0"]
     );
+
+    console.log("/// PRICE DEVIATION DEBUG START");
+    console.log("relayId", relayId);
+    console.log("selectedTokenAddress", selectedTokenAddress);
+    console.log("primaryReserveContract", primaryReserveContract);
+    console.log("secondaryReserveContract", secondaryReserveContract);
+    console.log("recentAverageRate", recentAverageRateResult);
+    console.log("averageRateMaxDeviationResult", averageRateMaxDeviationResult);
+    console.log("primaryReserveBalanceResult", primaryReserveBalanceResult);
+    console.log("secondaryReserveBalanceResult", secondaryReserveBalanceResult);
+    console.log("/// PRICE DEVIATION DEBUG END");
 
     if (averageRate.isNaN()) {
       throw new Error(
@@ -3443,7 +3491,10 @@ export class EthBancorModule
     );
 
     const res = {
-      opposingAmount: shrinkToken(opposingAmount, opposingReserve.decimals),
+      opposingAmount: shrinkToken(
+        opposingAmount.toString(),
+        opposingReserve.decimals
+      ),
       smartTokenAmountWei: { id: smartTokenAddress, amount: fundReward },
       shareOfPool,
       singleUnitCosts: sortAlongSide(
@@ -3610,7 +3661,6 @@ export class EthBancorModule
       this.contracts.LiquidityProtection,
       w3
     );
-
     const result = await contract.methods.poolAvailableSpace(poolId).call();
 
     const maxStakes = {
@@ -3723,10 +3773,22 @@ export class EthBancorModule
         this.liquidityProtectionSettings.contract,
         w3
       );
-      const [balances, limit] = await Promise.all([
+      const liqContract = await buildLiquidityProtectionContract(
+        this.contracts.LiquidityProtection,
+        w3
+      );
+      const systemStore = await liqContract.methods.systemStore().call();
+      const liquidityProtectionSystemStore = buildLiquidityProtectionSystemStoreContract(
+        systemStore,
+        w3
+      );
+      const [balances, limit, tokensMintedWei] = await Promise.all([
         this.fetchRelayBalances({ poolId }),
         liquidityProtectionSettings.methods
           .networkTokenMintingLimits(poolId)
+          .call(),
+        liquidityProtectionSystemStore.methods
+          .networkTokensMinted(poolId)
           .call()
       ]);
       const [bntReserve, tknReserve] = sortAlongSide(
@@ -3737,18 +3799,16 @@ export class EthBancorModule
 
       const bntAmount = shrinkToken(bntReserve.weiAmount, bntReserve.decimals);
       const tknAmount = shrinkToken(tknReserve.weiAmount, tknReserve.decimals);
-      const spaceAvailAble = shrinkToken(
-        maxStakes.maxAllowedBntWei,
-        bntReserve.decimals
-      );
+      const tokensMinted = shrinkToken(tokensMintedWei, bntReserve.decimals);
       const limitShrinked = shrinkToken(limit, bntReserve.decimals);
 
       const amountToGetSpace = calculateAmountToGetSpace(
         bntAmount,
         tknAmount,
-        spaceAvailAble,
+        tokensMinted,
         limitShrinked
       );
+
       return {
         availableSpace,
         amountToGetSpace: amountToGetSpace
@@ -3786,7 +3846,7 @@ export class EthBancorModule
 
     return {
       outputs: [],
-      ...(overMaxLimit && { error: "balance" })
+      ...(overMaxLimit && { error: "overMaxLimit" })
     };
   }
 
@@ -4367,14 +4427,14 @@ export class EthBancorModule
     });
 
     const percentDifferenceBetweenSmartBalance = percentDifference(
-      liquidateCostWei,
+      liquidateCostWei.toString(),
       String(smartUserBalanceWei)
     );
     let smartTokenAmount: string;
     if (percentDifferenceBetweenSmartBalance > 0.99) {
       smartTokenAmount = String(smartUserBalanceWei);
     } else {
-      smartTokenAmount = liquidateCostWei;
+      smartTokenAmount = liquidateCostWei.toString();
     }
 
     const sameReserveCost = shrinkToken(
@@ -4392,9 +4452,8 @@ export class EthBancorModule
 
     return {
       opposingAmount: shrinkToken(
-        opposingValue,
-        opposingReserve.decimals,
-        true
+        opposingValue.toString(),
+        opposingReserve.decimals
       ),
       shareOfPool,
       smartTokenAmountWei: {
@@ -5650,7 +5709,14 @@ export class EthBancorModule
     const tokens = this.apiData!.tokens;
     const meta = this.tokenMeta;
 
-    const trades = this.apiData!.swaps.map(
+    const validSwaps = this.apiData!.swaps.filter(swap => {
+      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id];
+      return tradedTokens.every(tokenAddress =>
+        tokens.some(token => compareString(token.dlt_id, tokenAddress))
+      );
+    });
+
+    const trades = validSwaps.map(
       (x): ViewLiquidityEvent<ViewTradeEvent> => {
         const fromToken = tokens.find(token =>
           compareString(x.source_token_dlt_id, token.dlt_id)
@@ -5953,23 +6019,10 @@ export class EthBancorModule
 
   @mutation setApiData(data: WelcomeData) {
     this.apiData = data;
-    console.log(data, "data is here!");
   }
 
-  @mutation updatePools(pools: NewPool[]) {
+  @mutation setPools(pools: NewPool[]) {
     this.newPools = pools;
-
-    const existingPools = this.newPools;
-    const poolsNotBeingUpdated = existingPools.filter(
-      pool => !pools.some(p => compareString(p.pool_dlt_id, pool.pool_dlt_id))
-    );
-    this.newPools = filterAndWarn(
-      [...pools, ...poolsNotBeingUpdated],
-      pool =>
-        pool.reserves.every(reserve => typeof reserve.address == "string") &&
-        pool.reserves.length == 2,
-      "lost a pool..."
-    );
   }
 
   @action async init() {
@@ -6190,60 +6243,9 @@ export class EthBancorModule
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
-      await combineLatest([apiData$, tokenMeta$])
+      await newPools$
         .pipe(
-          switchMap(([apiData, tokenMeta]) => {
-            const pools = apiData.pools;
-            const tokens = apiData.tokens;
-
-            const betterPools = pools.map(pool => {
-              const reserveTokens = pool.reserves
-                .map(
-                  (reserve): TokenMetaWithReserve => {
-                    const meta = tokenMeta.find(meta =>
-                      compareString(meta.contract, reserve.address)
-                    );
-                    const token = findOrThrow(
-                      tokens,
-                      token => compareString(token.dlt_id, reserve.address),
-                      "was expecting a token for a known reserve in API data"
-                    );
-
-                    return {
-                      id: reserve.address,
-                      contract: reserve.address,
-                      reserveWeight: ppmToDec(reserve.weight),
-                      decBalance: reserve.balance,
-                      name: token.symbol,
-                      symbol: token.symbol,
-                      image: (meta && meta.image) || defaultImage,
-                      precision: token.decimals
-                    };
-                  }
-                )
-                .filter(pool => pool.contract);
-              const decFee = ppmToDec(pool.fee);
-              return {
-                ...pool,
-                decFee,
-                reserveTokens
-              };
-            });
-
-            const passedPools = filterAndWarn(
-              betterPools,
-              pool => pool.reserveTokens.length == 2,
-              "lost pools due to lack of meta data"
-            ) as NewPool[];
-
-            return passedPools;
-          }),
-          bufferTime(50),
-          filter(x => x.length > 0),
-          firstItem(),
-          tap(pools => {
-            this.updatePools(pools);
-          })
+          firstItem()
         )
         .toPromise();
     } catch (e) {
@@ -6749,25 +6751,6 @@ export class EthBancorModule
       )
     }));
 
-    const bntSupply = this.bntSupply;
-    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
-
-    const totalBntInRelays = meshedRelays
-      .filter(relay =>
-        relay.reserves.some(reserve => reserve.contract, bntTokenAddress)
-      )
-      .reduce((acc, relay) => {
-        const relayBalances = relay as RelayWithReserveBalances;
-        const bntReserveBalance =
-          relayBalances.reserveBalances?.find(reserve =>
-            compareString(reserve.id, bntTokenAddress)
-          )?.amount || "0";
-        return new BigNumber(acc).plus(bntReserveBalance).toString();
-      }, "0");
-
-    const percent = new BigNumber(totalBntInRelays).div(bntSupply).toNumber();
-
-    this.stakedBntPercent = percent;
     this.relaysList = Object.freeze(meshedRelays);
 
     const staticRelays: StaticRelay[] = meshedRelays
@@ -6807,8 +6790,6 @@ export class EthBancorModule
       "is the latest cacheable data"
     );
   }
-
-  stakedBntPercent: number = 0;
 
   @mutation wipeTokenBalances() {
     this.tokenBalances = [];

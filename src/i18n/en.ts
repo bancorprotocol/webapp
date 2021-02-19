@@ -123,7 +123,7 @@ export const en = {
   staking_protecting: "You are staking and protecting",
   price_deviation_high: "Price Deviation too High",
   pool_not_approved:
-    "Pool you have selected is not approved for protection. Your stake will provide you with gBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.",
+    "Pool you have selected is not approved for protection. Your stake will provide you with vBNT voting power which can be used to propose including it. If is approved, your original stake time will be used for vesting.",
   limit_reached:
     "{token} limit reached. Additional {opposingToken} liquidity should be staked to allow for {token} single-sided staking.",
   insufficient_store_balance: "Insufficient store balance",
@@ -179,6 +179,8 @@ export const en = {
   dual_sided_liquidity: "Dual-Sided Liquidity",
   stake_with_two: "Stake with two tokens and receive pool tokens in return.",
   add_dual_liquidity: "Add Dual Sided Liquidity",
+  not_include_liquidity_rewards:
+    "Claimable value does not include earned liquidity mining rewards. You can withdraw or re-stake rewards from the Protection screen, by clicking “Withdraw” in the rewards widget.",
   important: "Important",
   input: "Input",
   output_value: "Output value of",
@@ -324,6 +326,7 @@ export const en = {
   provider_logo: "Provider Logo",
   protected_value: "Protected Value",
   claimable_value: "Claimable Value",
+  claimable_amount: "Claimable Amount",
   fees_rewards: "Fees & Rewards",
   add_single_sided_liquidity: "Add Single-Sided Liquidity",
   stake__bnt_protection: "Stake BNT for Protection",
@@ -344,10 +347,13 @@ export const en = {
   click_here: "click here",
   needed_open_space: "{bnt} needed to open up {tkn} space",
   available_reserve_only:
-    "The selected pool supports adding liquidity using {availableReserveSymbol} only. In order to add liquidity, please select the other reserve.",
+    "The selected pool supports adding liquidity using {symbol} only. In order to add liquidity, please select the other reserve.",
   total_fees: "Total Fees",
   creating_proposal: "Creating Proposal",
   vote_ended: "Vote Ended",
   you_withdrawing_rewards: "You are withdrawing rewards",
-  rewards_ended: "Rewards ended"
+  rewards_ended: "Rewards ended",
+  withdraw_reset:
+    "Withdrawing will reset your rewards multiplier for all active positions back to x1",
+  pool_not_accepting: "This pool is not accepting additional liquidity."
 };
