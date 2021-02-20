@@ -71,20 +71,6 @@ export const groupPositionsArray = (
           .map(x => Number(x.protectedAmount ? x.protectedAmount.amount : 0))
           .reduce((sum, current) => sum + current);
 
-        let sumFullyProtectedWithReward: BigNumber;
-        if (compareString(symbol, "BNT")) {
-          sumFullyProtectedWithReward = item.pendingReserveReward.plus(
-            sumFullyProtected
-          );
-        } else {
-          const bntRewardUsd = item.pendingReserveReward.times(
-            val.bntTokenPrice
-          );
-          sumFullyProtectedWithReward = bntRewardUsd
-            .div(val.reserveTokenPrice)
-            .plus(sumFullyProtected);
-        }
-
         const sumFullyProtectedUSD =
           sumFullyProtected * val.reserveTokenPrice;
 
@@ -108,9 +94,12 @@ export const groupPositionsArray = (
           amount: sumProtectedAmount,
           usdValue: sumProtectedUSD
         };
-        item.roi =
-          (Number(sumFullyProtectedWithReward) - sumStakeAmount) /
-          sumStakeAmount;
+        item.roi = {
+          fees: sumFees / sumStakeAmount,
+          reserveRewards: item.pendingReserveReward
+            .times(val.bntTokenPrice)
+            .div(item.stake.usdValue),
+        };
         item.fees = sumFees;
 
         obj.set(id, item);

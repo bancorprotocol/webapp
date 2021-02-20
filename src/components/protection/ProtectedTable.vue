@@ -208,9 +208,18 @@
 
       <template #cell(roi)="{ value }">
         <div class="text-center">
+          <div>
           {{
-            typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
+              value && typeof value.fees !== "undefined" ? stringifyPercentage(value.fees) : "N/A"
           }}
+        </div>
+          <b-badge
+            v-if="value.reserveRewards.gt(0)"
+            variant="primary"
+            class="px-2"
+          >
+            + {{ stringifyPercentage(value.reserveRewards) }}
+          </b-badge>
         </div>
       </template>
       <template #cellCollapsed(roi)="{ value }">
