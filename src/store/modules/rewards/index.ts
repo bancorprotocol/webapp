@@ -91,7 +91,6 @@ export class RewardsModule extends VuexModule.With({
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions({});
                 vxm.ethBancor.fetchAndSetLockedBalances({});
-                console.log("tx confirmed");
               },
               resolveImmediately: true
             });
@@ -118,7 +117,6 @@ export class RewardsModule extends VuexModule.With({
               tx: this.contract.methods.claimRewards(),
               onConfirmation: async () => {
                 await wait(3000);
-                console.log("tx confirmed");
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions({});
                 vxm.ethBancor.fetchAndSetLockedBalances({});
@@ -207,8 +205,6 @@ export class RewardsModule extends VuexModule.With({
         });
       }
       this.setPoolPrograms(poolPrograms);
-
-      console.log("Pool Programs", poolPrograms);
 
       return poolPrograms;
     } catch (e) {

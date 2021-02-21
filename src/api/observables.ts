@@ -99,7 +99,6 @@ export const contractAddresses$ = networkVars$.pipe(
     vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
   ),
   distinctUntilChanged<RegisteredContracts>(isEqual),
-  tap(x => console.log("sending out contracts...", x)),
   share()
 );
 
