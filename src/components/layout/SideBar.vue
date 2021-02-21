@@ -38,7 +38,7 @@ export interface ViewSideBarLink {
   label: string;
   newTab: boolean;
   hideMobile: boolean;
-  svgName: string;
+  icon: string;
   active: boolean;
 }
 
@@ -59,7 +59,7 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("data"),
         newTab: false,
         hideMobile: false,
-        svgName: "data"
+        icon: "data.svg"
       },
       {
         route: "Swap",
@@ -67,7 +67,7 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("swap"),
         newTab: false,
         hideMobile: false,
-        svgName: "swap"
+        icon: "swap.svg"
       },
       {
         route: "LiqProtection",
@@ -75,7 +75,7 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("protection"),
         newTab: false,
         hideMobile: false,
-        svgName: "liquidity"
+        icon: "liquidity.svg"
       },
       {
         route: "https://gov.bancor.network",
@@ -83,7 +83,7 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("governance"),
         newTab: true,
         hideMobile: false,
-        svgName: "governance"
+        icon: "governance.svg"
       },
       {
         route: "Vote",
@@ -91,7 +91,7 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("vote.title"),
         newTab: false,
         hideMobile: true,
-        svgName: "vote"
+        icon: "vote.svg"
       },
       {
         route: "https://x.bancor.network/",
@@ -99,7 +99,7 @@ export default class SideBar extends BaseComponent {
         label: "Bancor X",
         newTab: true,
         hideMobile: true,
-        svgName: "bancorx"
+        icon: "bancorx.svg"
       },
       {
         route: "https://wallet.bancor.network/",
@@ -107,7 +107,15 @@ export default class SideBar extends BaseComponent {
         label: "Bancor Wallet",
         newTab: true,
         hideMobile: true,
-        svgName: "bancor"
+        icon: "bancor.svg"
+      },
+      {
+        route: "https://www.bntee.shop/",
+        key: "bntee",
+        label: "BNTEE Shop",
+        newTab: true,
+        hideMobile: false,
+        icon: "bntee.png"
       }
     ].map(link => ({
       ...link,

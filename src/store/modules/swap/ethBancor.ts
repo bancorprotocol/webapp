@@ -200,7 +200,8 @@ import {
   authenticated$,
   networkVersion$,
   tokenMeta$,
-  poolPrograms$
+  poolPrograms$,
+  newPools$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -429,7 +430,7 @@ interface RefinedAbiRelay {
   owner: string;
 }
 
-const ppmToDec = (ppm: number | string): number =>
+export const ppmToDec = (ppm: number | string): number =>
   new BigNumber(ppm).dividedBy(oneMillion).toNumber();
 
 const determineConverterType = (
@@ -1214,7 +1215,8 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
 const percentageOfReserve = (
   percent: BigNumber,
   existingSupply: string
-): BigNumber => new BigNumber(percent).times(existingSupply);
+): string =>
+  new BigNumber(percent).times(existingSupply).toFixed(0, BigNumber.ROUND_DOWN);
 
 const percentageIncrease = (
   deposit: string,
@@ -1225,7 +1227,7 @@ const calculateOppositeFundRequirement = (
   deposit: string,
   depositsSupply: string,
   oppositesSupply: string
-): BigNumber => {
+): string => {
   const increase = percentageIncrease(deposit, depositsSupply);
   return percentageOfReserve(increase, oppositesSupply);
 };
@@ -1234,7 +1236,7 @@ const calculateOppositeLiquidateRequirement = (
   reserveAmount: string,
   reserveBalance: string,
   oppositeReserveBalance: string
-): BigNumber => {
+): string => {
   const increase = percentageIncrease(reserveAmount, reserveBalance);
   return percentageOfReserve(increase, oppositeReserveBalance);
 };
@@ -1465,30 +1467,36 @@ export class EthBancorModule
   }
 
   get stats() {
-    const ethToken = this.tokens.find(token =>
-      compareString("ETH", token.symbol)
-    );
-    const totalVolume24h = this.relays
-      .filter(
-        x => x && !x.v2 && x.volume !== undefined && !isNaN(Number(x.volume))
-      )
-      .map(x => new BigNumber(x.volume || 0))
-      .reduce((sum, current) => sum.plus(current), new BigNumber(0));
+    const apiData = this.apiData!
+    const bntUsdPrice = Number(apiData.bnt_price.usd);
+    const bntSupply = this.bntSupply;
+
+    const { pools, tokens } = apiData;
+    const ethToken = findOrThrow(tokens, token => compareString(token.symbol, 'ETH'), 'failed finding ETH token in API data');
+    const bntToken = findOrThrow(tokens, token => compareString(token.symbol, 'BNT'), 'failed finding BNT token in API data');
+    const totalVolume24h = pools.reduce((acc, item) => Number(item.volume_24h.usd || 0) + acc, 0);
+    const totalLiquidityDepth = pools.reduce((acc, item) => Number(item.liquidity.usd || 0) + acc, 0);
+
+    const totalBntStaked = pools.reduce((acc, item) => {
+      const bntReserve = item.reserves.find(reserve => compareString(reserve.address, bntToken.dlt_id))
+      if (!bntReserve) return acc;
+      return new BigNumber(bntReserve.balance).plus(acc)
+    }, new BigNumber(0))
+
+    const stakedBntPercent = totalBntStaked.div(shrinkToken(bntSupply, bntToken.decimals)).toNumber()
 
     return {
-      totalLiquidityDepth: this.relays
-        .map(x => Number(x.liqDepth || 0))
-        .reduce((sum, current) => sum + current),
-      totalPoolCount: this.relays.length,
-      totalTokenCount: this.tokens.length,
-      stakedBntPercent: this.stakedBntPercent,
+      totalLiquidityDepth,
+      totalPoolCount: pools.length,
+      totalTokenCount: tokens.length,
+      stakedBntPercent,
       nativeTokenPrice: {
         symbol: "ETH",
-        price: (ethToken && ethToken.price) || 0
+        price: Number(ethToken.rate.usd)
       },
-      twentyFourHourTradeCount: this.liquidityHistory.data.length,
-      totalVolume24h: totalVolume24h.toNumber(),
-      bntUsdPrice: (this.apiData && Number(this.apiData.bnt_price.usd)) || 0
+      twentyFourHourTradeCount: apiData.swaps.length,
+      totalVolume24h,
+      bntUsdPrice
     };
   }
 
@@ -5909,20 +5917,8 @@ export class EthBancorModule
     this.apiData = data;
   }
 
-  @mutation updatePools(pools: NewPool[]) {
+  @mutation setPools(pools: NewPool[]) {
     this.newPools = pools;
-
-    const existingPools = this.newPools;
-    const poolsNotBeingUpdated = existingPools.filter(
-      pool => !pools.some(p => compareString(p.pool_dlt_id, pool.pool_dlt_id))
-    );
-    this.newPools = filterAndWarn(
-      [...pools, ...poolsNotBeingUpdated],
-      pool =>
-        pool.reserves.every(reserve => typeof reserve.address == "string") &&
-        pool.reserves.length == 2,
-      "lost a pool..."
-    );
   }
 
   @action async init() {
@@ -6138,60 +6134,9 @@ export class EthBancorModule
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
-      await combineLatest([apiData$, tokenMeta$])
+      await newPools$
         .pipe(
-          switchMap(([apiData, tokenMeta]) => {
-            const pools = apiData.pools;
-            const tokens = apiData.tokens;
-
-            const betterPools = pools.map(pool => {
-              const reserveTokens = pool.reserves
-                .map(
-                  (reserve): TokenMetaWithReserve => {
-                    const meta = tokenMeta.find(meta =>
-                      compareString(meta.contract, reserve.address)
-                    );
-                    const token = findOrThrow(
-                      tokens,
-                      token => compareString(token.dlt_id, reserve.address),
-                      "was expecting a token for a known reserve in API data"
-                    );
-
-                    return {
-                      id: reserve.address,
-                      contract: reserve.address,
-                      reserveWeight: ppmToDec(reserve.weight),
-                      decBalance: reserve.balance,
-                      name: token.symbol,
-                      symbol: token.symbol,
-                      image: (meta && meta.image) || defaultImage,
-                      precision: token.decimals
-                    };
-                  }
-                )
-                .filter(pool => pool.contract);
-              const decFee = ppmToDec(pool.fee);
-              return {
-                ...pool,
-                decFee,
-                reserveTokens
-              };
-            });
-
-            const passedPools = filterAndWarn(
-              betterPools,
-              pool => pool.reserveTokens.length == 2,
-              "lost pools due to lack of meta data"
-            ) as NewPool[];
-
-            return passedPools;
-          }),
-          bufferTime(50),
-          filter(x => x.length > 0),
-          firstItem(),
-          tap(pools => {
-            this.updatePools(pools);
-          })
+          firstItem()
         )
         .toPromise();
     } catch (e) {
@@ -6673,25 +6618,6 @@ export class EthBancorModule
       )
     }));
 
-    const bntSupply = this.bntSupply;
-    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
-
-    const totalBntInRelays = meshedRelays
-      .filter(relay =>
-        relay.reserves.some(reserve => reserve.contract, bntTokenAddress)
-      )
-      .reduce((acc, relay) => {
-        const relayBalances = relay as RelayWithReserveBalances;
-        const bntReserveBalance =
-          relayBalances.reserveBalances?.find(reserve =>
-            compareString(reserve.id, bntTokenAddress)
-          )?.amount || "0";
-        return new BigNumber(acc).plus(bntReserveBalance).toString();
-      }, "0");
-
-    const percent = new BigNumber(totalBntInRelays).div(bntSupply).toNumber();
-
-    this.stakedBntPercent = percent;
     this.relaysList = Object.freeze(meshedRelays);
 
     const staticRelays: StaticRelay[] = meshedRelays
@@ -6727,8 +6653,6 @@ export class EthBancorModule
       compareStaticRelay
     );
   }
-
-  stakedBntPercent: number = 0;
 
   @mutation wipeTokenBalances() {
     this.tokenBalances = [];
