@@ -133,7 +133,6 @@ export default class RewardsSummary extends BaseComponent {
   }
 
   get pools() {
-    console.log("disabledPools", this.disabledPools.join(" ,"));
     return vxm.bancor.relays.filter(
       pool =>
         pool.liquidityProtection &&

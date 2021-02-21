@@ -20,7 +20,6 @@ class MultiContractTx {
   constructor(contractName: string, getAuth: GetAuth) {
     this.contractName = contractName;
     this.getAuth = getAuth;
-    this.triggerTx = () => console.log("MultiContract needs to be updated");
   }
 
   async tx(actions: SemiAction[]) {
@@ -96,7 +95,6 @@ class MultiContractTx {
         memo
       }
     };
-    console.log(action, "is the action...");
     return this.tx([action]);
   }
 
@@ -206,7 +204,6 @@ class MultiContractTx {
       actions.push(this.updateFeeAction(symbolCode, fee));
     }
 
-    console.log(actions, "were actions");
     return this.tx(actions);
   }
 
@@ -218,7 +215,6 @@ class MultiContractTx {
       amount.to_string(),
       symbolCode
     ) as SemiAction;
-    console.log(action, "was the action");
     return action;
   }
 

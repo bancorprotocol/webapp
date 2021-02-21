@@ -136,11 +136,9 @@ export default class WithdrawProtectionDouble extends BaseComponent {
 
   get position() {
     const positions = vxm.ethBancor.protectedPositions;
-    console.log(positions, "x");
     const pos = findOrThrow(positions, position =>
       compareString(position.id, this.$route.params.id)
     );
-    console.log(pos, "is the selected pos", this.pool, "is the pass pool");
     return pos;
   }
 
@@ -170,8 +168,6 @@ export default class WithdrawProtectionDouble extends BaseComponent {
     this.setDefault();
     this.modal = true;
     this.txBusy = true;
-    const { poolId, first, second } = this.poolIds;
-    console.log({ poolId, first, second });
     try {
       const txRes = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,

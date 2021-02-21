@@ -196,7 +196,6 @@ export default class BancorMenu extends BaseComponent {
     } else if (isProd) {
       this.openUrl(`https://swap.bancor.network/${service}/data`);
     } else {
-      console.log("failed to determine route...");
       this.openUrl(`https://swap.bancor.network/${service}/data`);
     }
   }

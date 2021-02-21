@@ -117,10 +117,7 @@ export default class ProtectionHome extends BaseComponent {
     const scroll = this.$route.params.scroll;
     const el = this.$el.getElementsByClassName("closedPos")[0];
 
-    if (el && scroll) {
-      console.log("now: " + el);
-      el.scrollIntoView({ behavior: "smooth" });
-    }
+    if (el && scroll) el.scrollIntoView({ behavior: "smooth" });
   }
 }
 </script>

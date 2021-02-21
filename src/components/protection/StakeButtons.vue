@@ -114,7 +114,7 @@ export default class StakeButtons extends BaseComponent {
         return `${this.prettifyNumber(x.amount)} ${x.token}`;
       });
     } catch (e) {
-      console.log(e);
+      console.error(e);
     } finally {
       this.loadingMaxStakes = false;
     }

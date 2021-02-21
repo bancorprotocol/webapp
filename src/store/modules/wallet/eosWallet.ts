@@ -159,11 +159,11 @@ export class EosTransitModule extends VuexModule.With({
           wallet && wallet.auth! && wallet.auth!.accountName!
         );
       } catch (e) {
-        console.log("auth error");
+        console.error("auth error");
         throw e;
       }
     } catch (e) {
-      console.log("connection error");
+      console.error("connection error");
       throw e;
     }
   }

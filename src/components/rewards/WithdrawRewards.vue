@@ -135,7 +135,7 @@ export default class WithdrawRewards extends BaseTxAction {
     try {
       await vxm.rewards.loadData();
     } catch (e) {
-      console.log(e);
+      console.error(e);
     } finally {
       this.loading = false;
     }
