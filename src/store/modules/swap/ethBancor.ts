@@ -1467,23 +1467,41 @@ export class EthBancorModule
   }
 
   get stats() {
-    const apiData = this.apiData!
+    const apiData = this.apiData!;
     const bntUsdPrice = Number(apiData.bnt_price.usd);
     const bntSupply = this.bntSupply;
 
     const { pools, tokens } = apiData;
-    const ethToken = findOrThrow(tokens, token => compareString(token.symbol, 'ETH'), 'failed finding ETH token in API data');
-    const bntToken = findOrThrow(tokens, token => compareString(token.symbol, 'BNT'), 'failed finding BNT token in API data');
-    const totalVolume24h = pools.reduce((acc, item) => Number(item.volume_24h.usd || 0) + acc, 0);
-    const totalLiquidityDepth = pools.reduce((acc, item) => Number(item.liquidity.usd || 0) + acc, 0);
+    const ethToken = findOrThrow(
+      tokens,
+      token => compareString(token.symbol, "ETH"),
+      "failed finding ETH token in API data"
+    );
+    const bntToken = findOrThrow(
+      tokens,
+      token => compareString(token.symbol, "BNT"),
+      "failed finding BNT token in API data"
+    );
+    const totalVolume24h = pools.reduce(
+      (acc, item) => Number(item.volume_24h.usd || 0) + acc,
+      0
+    );
+    const totalLiquidityDepth = pools.reduce(
+      (acc, item) => Number(item.liquidity.usd || 0) + acc,
+      0
+    );
 
     const totalBntStaked = pools.reduce((acc, item) => {
-      const bntReserve = item.reserves.find(reserve => compareString(reserve.address, bntToken.dlt_id))
+      const bntReserve = item.reserves.find(reserve =>
+        compareString(reserve.address, bntToken.dlt_id)
+      );
       if (!bntReserve) return acc;
-      return new BigNumber(bntReserve.balance).plus(acc)
-    }, new BigNumber(0))
+      return new BigNumber(bntReserve.balance).plus(acc);
+    }, new BigNumber(0));
 
-    const stakedBntPercent = totalBntStaked.div(shrinkToken(bntSupply, bntToken.decimals)).toNumber()
+    const stakedBntPercent = totalBntStaked
+      .div(shrinkToken(bntSupply, bntToken.decimals))
+      .toNumber();
 
     return {
       totalLiquidityDepth,
@@ -1864,7 +1882,7 @@ export class EthBancorModule
             };
           })
         ).catch(e => {
-          console.warn("Error fetching ROIs", e);
+          console.error("Error fetching ROIs", e);
         })
       ]);
 
@@ -2934,7 +2952,7 @@ export class EthBancorModule
       try {
         adjustedGas = await this.determineTxGas(tx);
       } catch (e) {
-        console.warn("Failed to estimate gas");
+        console.error("Failed to estimate gas");
       }
     }
 
@@ -5061,7 +5079,7 @@ export class EthBancorModule
 
       return [...newBancorCovered, ...notCovered];
     } catch (e) {
-      console.warn(`Failed utilising Bancor API: ${e.message}`);
+      console.error(`Failed utilising Bancor API: ${e.message}`);
       return reserveFeeds;
     }
   }
@@ -6134,11 +6152,7 @@ export class EthBancorModule
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
-      await newPools$
-        .pipe(
-          firstItem()
-        )
-        .toPromise();
+      await newPools$.pipe(firstItem()).toPromise();
     } catch (e) {
       console.error("thrown in x", e);
     }
@@ -7067,7 +7081,7 @@ export class EthBancorModule
           slippage = slippageNumber.toNumber();
         }
       } catch (e) {
-        console.warn("Failed calculating slippage", e.message);
+        console.error("Failed calculating slippage", e.message);
       }
 
       return {
