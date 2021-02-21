@@ -40,10 +40,10 @@
         <b-dropdown-item
           :variant="darkMode ? 'dark' : 'light'"
           v-for="(item, index) in dropdown.items"
-          :key="index"
-          @click="() => (dropdown.selectedIndex = index)"
-          >{{ item.title }}</b-dropdown-item
-        >
+          :key="item.id"
+          @click="dropdown.selectedIndex = index"
+          >{{ item.title }}
+        </b-dropdown-item>
       </b-dropdown>
 
       <div v-if="searchInput !== null">

@@ -119,15 +119,15 @@ export default class ProtectionHome extends BaseComponent {
       id: "position",
       selectedIndex: 0,
       items: [
-        { title: i18n.t("all_positions") },
-        { title: i18n.t("fully_protected") },
-        { title: i18n.t("not_fully_protected") }
+        { id: "0", title: i18n.t("all_positions") },
+        { id: "1", title: i18n.t("fully_protected") },
+        { id: "2", title: i18n.t("not_fully_protected") }
       ]
     },
     {
       id: "pools",
       selectedIndex: 0,
-      items: [{ title: i18n.t("all_pools"), poolId: "" }, ...this.poolNames]
+      items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
     }
   ];
 
@@ -159,14 +159,14 @@ export default class ProtectionHome extends BaseComponent {
     if (pools.selectedIndex == 0) return true;
 
     const pool = this.poolNames[pools.selectedIndex - 1];
-    return pool.poolId === row.poolId;
+    return pool.id === row.poolId;
   }
 
   get poolNames() {
     const filteredNamedPos = uniqBy(this.groupedPos, x => x.poolId).map(
       value => ({
-        title: buildPoolName(value.poolId),
-        poolId: value.poolId
+        id: value.poolId,
+        title: buildPoolName(value.poolId)
       })
     );
     return filteredNamedPos;
