@@ -46,6 +46,8 @@
         </b-dropdown-item>
       </b-dropdown>
 
+      <slot name="date"></slot>
+
       <div v-if="searchInput !== null">
         <multi-input-field
           v-model="searchInput"

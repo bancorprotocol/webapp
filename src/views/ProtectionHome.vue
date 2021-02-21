@@ -56,6 +56,21 @@
               :filter-functions="[positionFilterFunction, poolsFilterFunction]"
             />
           </div>
+          <template v-if="positions.length" #date>
+            <date-range-picker
+              ref="picker"
+              :autoApply="true"
+              :ranges="false"
+              singleDatePicker="range"
+              v-model="dateRange"
+              @update="updateDateRange"
+            >
+              <template #input="picker">
+                {{ formatDate(picker.startDate) }} -
+                {{ formatDate(picker.endDate) }}
+              </template>
+            </date-range-picker>
+          </template>
         </content-block>
       </b-col>
     </b-row>
@@ -88,6 +103,8 @@
 <script lang="ts">
 import { uniqBy } from "lodash";
 import { Component } from "vue-property-decorator";
+import DateRangePicker from "vue2-daterange-picker";
+import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import ProtectedTable from "@/components/protection/ProtectedTable.vue";
@@ -107,7 +124,8 @@ import dayjs from "@/utils/dayjs";
     ProtectedSummary,
     Claim,
     ContentBlock,
-    ProtectedTable
+    ProtectedTable,
+    DateRangePicker
   }
 })
 export default class ProtectionHome extends BaseComponent {
@@ -130,6 +148,11 @@ export default class ProtectionHome extends BaseComponent {
       items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
     }
   ];
+  today = dayjs();
+  dateRange = {
+    startDate: this.today.subtract(30, "days"),
+    endDate: this.today
+  };
 
   positionFilterFunction(row: ViewGroupedPositions) {
     const fullRow = this.groupedPos.find(x => x.id === row.id);
@@ -160,6 +183,15 @@ export default class ProtectionHome extends BaseComponent {
 
     const pool = this.poolNames[pools.selectedIndex - 1];
     return pool.id === row.poolId;
+  }
+
+  updateDateRange(values: { startDate: string; endDate: string }) {
+    this.dateRange.startDate = dayjs(values.startDate);
+    this.dateRange.endDate = dayjs(values.endDate);
+  }
+
+  formatDate(date: number) {
+    return new Intl.DateTimeFormat("en-GB").format(date);
   }
 
   get poolNames() {
