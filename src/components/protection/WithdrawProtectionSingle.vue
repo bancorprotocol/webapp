@@ -1,20 +1,15 @@
 <template>
   <div class="mt-3">
-    <label-content-split :label="$t('initial_stake')">
+    <label-content-split
+      :label="$t('claimable_amount')"
+      :tooltip="$t('not_include_liquidity_rewards')"
+    >
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
-        :amount="prettifyNumber(position.stake.amount)"
+        :amount="prettifyNumber(position.protectedAmount.amount)"
         :symbol="position.stake.symbol"
       />
     </label-content-split>
-
-    <label-content-split
-      :label="$t('fully_protected_value')"
-      :value="`${prettifyNumber(position.protectedAmount.amount)} ${
-        position.stake.symbol
-      }`"
-      class="my-3"
-    />
 
     <alert-block
       v-if="priceDeviationTooHigh && !inputError"
@@ -27,7 +22,9 @@
       v-if="warning"
       variant="warning"
       :title="$t('important')"
-      :msg="warning"
+      :messages="
+        rewardsWithMultiplier ? [warning, $t('withdraw_reset')] : [warning]
+      "
       class="my-3"
     />
 
@@ -184,8 +181,13 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
       compareString(position.id, this.$route.params.id)
     );
-    console.log(pos, "is the selected pos");
     return pos;
+  }
+
+  get rewardsWithMultiplier() {
+    return vxm.ethBancor.protectedPositions.some(position =>
+      position.rewardsMultiplier.gt(1)
+    );
   }
 
   get vBntWarning() {
@@ -231,7 +233,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     this.modal = true;
     this.txBusy = true;
     const [poolId, first, second] = this.$route.params.id.split(":");
-    console.log({ poolId, first, second });
     try {
       const txRes = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
@@ -263,7 +264,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   async onPercentUpdate(newPercent: string) {
-    console.log(newPercent, "is the new percent");
     const percentage = Number(this.percentage) / 100;
     if (!percentage) return;
     const res = await vxm.ethBancor.calculateSingleWithdraw({
@@ -274,8 +274,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
     this.expectedValue = res.expectedValue;
     this.outputs = res.outputs;
-
-    console.log(res, "was the res");
   }
 
   get tokenContract() {
@@ -291,7 +289,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       relayId: this.pool.id,
       selectedTokenAddress: this.tokenContract
     });
-    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
   }
 
   private interval: any;

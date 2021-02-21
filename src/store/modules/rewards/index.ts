@@ -91,7 +91,6 @@ export class RewardsModule extends VuexModule.With({
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions({});
                 vxm.ethBancor.fetchAndSetLockedBalances({});
-                console.log("tx confirmed");
               },
               resolveImmediately: true
             });
@@ -118,7 +117,6 @@ export class RewardsModule extends VuexModule.With({
               tx: this.contract.methods.claimRewards(),
               onConfirmation: async () => {
                 await wait(3000);
-                console.log("tx confirmed");
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions({});
                 vxm.ethBancor.fetchAndSetLockedBalances({});
@@ -208,8 +206,6 @@ export class RewardsModule extends VuexModule.With({
       }
       this.setPoolPrograms(poolPrograms);
 
-      console.log("Pool Programs", poolPrograms);
-
       return poolPrograms;
     } catch (e) {
       throw new Error(`Failed fetching pool programs ${e.message}`);
@@ -240,5 +236,19 @@ export class RewardsModule extends VuexModule.With({
       .call();
 
     return new BigNumber(shrinkToken(result, 18));
+  }
+
+  @action async fetchRewardsMultiplier({
+    poolId,
+    reserveId
+  }: {
+    poolId: string;
+    reserveId: string;
+  }): Promise<BigNumber> {
+    const result = await this.contract.methods
+      .rewardsMultiplier(this.currentUser, poolId, reserveId)
+      .call();
+
+    return new BigNumber(shrinkToken(result, 6));
   }
 }

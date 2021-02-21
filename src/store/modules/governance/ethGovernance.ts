@@ -129,12 +129,6 @@ export class EthereumGovernance extends VuexModule.With({
     this.tokenContract = token;
     this.governanceContract = governance;
     this.isLoaded = true;
-    console.log(
-      "contracts set",
-      Date.now(),
-      this.tokenContract,
-      this.governanceContract
-    );
   }
 
   @mutation setLastTransaction(time: number) {
@@ -155,7 +149,6 @@ export class EthereumGovernance extends VuexModule.With({
 
   @action async getNetwork(): Promise<EthNetworks> {
     const currentNetwork: EthNetworks = await web3.eth.getChainId();
-    console.log(`current network is: ${EthNetworks[currentNetwork]}`);
     return currentNetwork;
   }
 
@@ -177,7 +170,6 @@ export class EthereumGovernance extends VuexModule.With({
     );
 
     const tokenAddress = await governanceContract.methods.govToken().call();
-    console.log("vote token address", tokenAddress);
 
     this.setContracts({
       governance: governanceContract,
@@ -239,8 +231,6 @@ export class EthereumGovernance extends VuexModule.With({
       this.governanceContract.methods.votesOf(voter).call()
     ]);
 
-    console.log(`votes: ${weiVotes}`);
-
     return new BigNumber(weiVotes).dividedBy(new BigNumber(10).pow(decimals));
   }
 
@@ -255,8 +245,6 @@ export class EthereumGovernance extends VuexModule.With({
       this.getDecimals(),
       this.tokenContract.methods.balanceOf(account).call()
     ]);
-
-    console.log(`balance: ${weiBalance}`);
 
     return new BigNumber(weiBalance).dividedBy(new BigNumber(10).pow(decimals));
   }
@@ -279,7 +267,6 @@ export class EthereumGovernance extends VuexModule.With({
       for: lockedFor > 0 ? lockedFor : 0
     };
 
-    console.log(lock);
     return lock;
   }
 
@@ -296,9 +283,6 @@ export class EthereumGovernance extends VuexModule.With({
     const allowance = await this.tokenContract.methods
       .allowance(account, await this.getGovernanceContractAddress())
       .call();
-
-    console.log("staking", amount);
-    console.log("allowance", allowance);
 
     const txContract = buildGovernanceContract(
       await this.getGovernanceContractAddress()
@@ -454,7 +438,7 @@ export class EthereumGovernance extends VuexModule.With({
         timeoutInSeconds: 5
       });
     } catch (err) {
-      console.log("Getting metadata failed!", err, proposal.hash);
+      console.error("Getting metadata failed!", err, proposal.hash);
     }
 
     const prop: Proposal = {
@@ -527,13 +511,6 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     voter?: string;
   }): Promise<Proposal[]> {
-    console.log(
-      "getting proposals",
-      Date.now(),
-      this.isLoaded,
-      this.governanceContract,
-      this.tokenContract
-    );
     const proposalCount = await this.governanceContract.methods
       .proposalCount()
       .call();
@@ -550,8 +527,6 @@ export class EthereumGovernance extends VuexModule.With({
     }
 
     const proposals: Proposal[] = await Promise.all(p);
-
-    console.log("proposals", proposals);
 
     return proposals.reverse();
   }

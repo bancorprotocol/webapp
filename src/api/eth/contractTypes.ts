@@ -17,7 +17,8 @@ import {
   ABIStakingRewards,
   ABIStakingRewardsStore,
   ABIV2Converter,
-  V2PoolsTokenContainer
+  V2PoolsTokenContainer,
+  ABILiquidityProtectionSystemStore
 } from "@/api/eth/ethAbis";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
@@ -290,6 +291,7 @@ export const buildLiquidityProtectionContract = (
   web3?: Web3
 ): ContractMethods<{
   store: () => CallReturn<string>;
+  systemStore: () => CallReturn<string>;
   govToken: () => CallReturn<string>;
   isPoolSupported: (anchor: string) => CallReturn<boolean>;
   protectLiquidity: (
@@ -347,6 +349,13 @@ export const buildLiquidityProtectionSettingsContract = (
   isPoolWhitelisted(anchorAddress: string): CallReturn<boolean>;
 }> => buildContract(ABILiquidityProtectionSettings, contractAddress, web3);
 
+export const buildLiquidityProtectionSystemStoreContract = (
+  contractAddress: string,
+  web3?: Web3
+): ContractMethods<{
+  networkTokensMinted: (poolId: string) => CallReturn<string>;
+}> => buildContract(ABILiquidityProtectionSystemStore, contractAddress, web3);
+
 export const buildAddressLookupContract = (
   contractAddress: string
 ): ContractMethods<{
@@ -377,6 +386,11 @@ export const buildStakingRewardsContract = (
   pendingRewards: (provider: string) => CallReturn<string>;
   store: () => CallReturn<string>;
   pendingReserveRewards: (
+    provider: string,
+    poolToken: string,
+    reserveToken: string
+  ) => CallReturn<string>;
+  rewardsMultiplier: (
     provider: string,
     poolToken: string,
     reserveToken: string

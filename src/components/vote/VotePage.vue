@@ -50,8 +50,8 @@ export default class VotePage extends BaseComponent {
   async mounted() {
     try {
       await vxm.ethGovernance.init();
-    } catch {
-      console.error("unable to load vote");
+    } catch (e) {
+      console.error("unable to load vote", e);
     }
   }
 }

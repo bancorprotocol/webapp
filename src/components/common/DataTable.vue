@@ -180,7 +180,10 @@ export default class DataTable extends BaseComponent {
     const items = this.sortedItems.slice(startIndex, endIndex);
     const itemsWithoutId = items.filter(x => !x.id);
     if (itemsWithoutId.length > 0) {
-      console.log(itemsWithoutId, "are without an ID");
+      console.warn(
+        "The following paginated items dont have an id: ",
+        itemsWithoutId
+      );
     }
     return items;
   }
