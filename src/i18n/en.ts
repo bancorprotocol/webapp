@@ -178,6 +178,8 @@ export const en = {
     "Stake pools tokens of any 50/50 pool holding BNT to protect them from impermanent loss.",
   dual_sided_liquidity: "Dual-Sided Liquidity",
   stake_with_two: "Stake with two tokens and receive pool tokens in return.",
+  not_include_liquidity_rewards:
+    "Claimable value does not include earned liquidity mining rewards. You can withdraw or re-stake rewards from the Protection screen, by clicking “Withdraw” in the rewards widget.",
   add_dual_liquidity: "Add Dual Sided Liquidity",
   important: "Important",
   input: "Input",
@@ -324,6 +326,7 @@ export const en = {
   provider_logo: "Provider Logo",
   protected_value: "Protected Value",
   claimable_value: "Claimable Value",
+  claimable_amount: "Claimable Amount",
   fees_rewards: "Fees & Rewards",
   add_single_sided_liquidity: "Add Single-Sided Liquidity",
   stake__bnt_protection: "Stake BNT for Protection",
@@ -350,6 +353,9 @@ export const en = {
   vote_ended: "Vote Ended",
   you_withdrawing_rewards: "You are withdrawing rewards",
   rewards_ended: "Rewards ended",
+  withdraw_reset:
+    "Withdrawing will reset your rewards multiplier for all active positions back to x1",
+  pool_not_accepting: "This pool is not accepting additional liquidity.",
   no_positions_found: "No protected positions found.",
   all_positions: "All positions",
   fully_protected: "Fully protected",
