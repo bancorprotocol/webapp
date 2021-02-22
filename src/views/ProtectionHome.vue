@@ -53,23 +53,40 @@
             <ProtectedTable
               :positions="positions"
               :search="searchProtected"
-              :filter-functions="[positionFilterFunction, poolsFilterFunction]"
+              :filter-functions="[
+                positionFilterFunction,
+                poolsFilterFunction,
+                dateFilterFunction
+              ]"
             />
           </div>
           <template v-if="positions.length" #date>
-            <date-range-picker
-              ref="picker"
-              :autoApply="true"
-              :ranges="false"
-              singleDatePicker="range"
-              v-model="dateRange"
-              @update="updateDateRange"
-            >
-              <template #input="picker">
-                {{ formatDate(picker.startDate) }} -
-                {{ formatDate(picker.endDate) }}
-              </template>
-            </date-range-picker>
+            <div>
+              <date-range-picker
+                ref="picker"
+                :autoApply="true"
+                :ranges="false"
+                singleDatePicker="range"
+                v-model="dateRange"
+                @update="updateDateRange"
+              >
+                <template #input="picker">
+                  {{
+                    hasRange
+                      ? `${formatDate(picker.startDate)} - ${formatDate(
+                          picker.endDate
+                        )}`
+                      : $t("select_date")
+                  }}
+                </template>
+              </date-range-picker>
+              <font-awesome-icon
+                v-if="hasRange"
+                icon="times"
+                class="ml-2"
+                @click="clearDateRange"
+              />
+            </div>
           </template>
         </content-block>
       </b-col>
@@ -149,7 +166,10 @@ export default class ProtectionHome extends BaseComponent {
     }
   ];
   today = dayjs();
-  dateRange = {
+  dateRange: {
+    startDate: dayjs.Dayjs | null;
+    endDate: dayjs.Dayjs | null;
+  } = {
     startDate: this.today.subtract(30, "days"),
     endDate: this.today
   };
@@ -185,9 +205,41 @@ export default class ProtectionHome extends BaseComponent {
     return pool.id === row.poolId;
   }
 
+  dateFilterFunction(row: ViewGroupedPositions) {
+    const fullRow = this.groupedPos.find(x => x.id === row.id);
+    if (fullRow) row.collapsedData = fullRow.collapsedData;
+
+    let isInRange: boolean = false;
+    //cant use hasRange cause TS
+    if (this.dateRange.startDate && this.dateRange.endDate) {
+      const date = dayjs.unix(row.stake.unixTime);
+      isInRange =
+        date.isBefore(this.dateRange.endDate) &&
+        date.isAfter(this.dateRange.startDate);
+
+      row.collapsedData = row.collapsedData.filter(x => {
+        const date = dayjs.unix(x.stake.unixTime);
+        if (this.dateRange.startDate && this.dateRange.endDate)
+          return (isInRange =
+            date.isBefore(this.dateRange.endDate) &&
+            date.isAfter(this.dateRange.startDate));
+        else return true;
+      });
+    } else return true;
+    return isInRange;
+  }
+  get hasRange() {
+    return this.dateRange.startDate && this.dateRange.endDate;
+  }
+
   updateDateRange(values: { startDate: string; endDate: string }) {
     this.dateRange.startDate = dayjs(values.startDate);
     this.dateRange.endDate = dayjs(values.endDate);
+  }
+
+  clearDateRange() {
+    this.dateRange.startDate = null;
+    this.dateRange.endDate = null;
   }
 
   formatDate(date: number) {

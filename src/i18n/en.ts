@@ -360,5 +360,6 @@ export const en = {
   all_positions: "All positions",
   fully_protected: "Fully protected",
   not_fully_protected: "Not Fully protected",
-  all_pools: "All Pools"
+  all_pools: "All Pools",
+  select_date:"Select a date range"
 };
