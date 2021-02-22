@@ -303,7 +303,10 @@ export interface ViewGroupedPositions {
     // month: number;
   };
   fees: number;
-  roi: number;
+  roi: {
+    fees: number;
+    reserveRewards: BigNumber;
+  };
   insuranceStart: number;
   coverageDecPercent: number;
   fullCoverage: number;
