@@ -118,7 +118,7 @@ export const en = {
   insufficient_balance: "Insufficient balance",
   stake_pool: "Stake in Pool",
   price_volatility:
-    "Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds.",
+    "Due to price volatility, protecting your tokens is currently not available. Please try again in a few minutes.",
   space_available: "Space Available",
   staking_protecting: "You are staking and protecting",
   price_deviation_high: "Price Deviation too High",
