@@ -1,5 +1,5 @@
 import { differenceWith, isEqual, uniqWith } from "lodash";
-import { Subject, combineLatest, Observable, EMPTY, of, timer } from "rxjs";
+import { Subject, combineLatest, Observable, timer } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -11,8 +11,7 @@ import {
   pluck,
   scan,
   share,
-  withLatestFrom,
-  catchError
+  withLatestFrom
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
@@ -429,7 +428,9 @@ export const liquidityProtectionStore$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
-export const newPools$ = combineLatest([apiData$, tokenMeta$]).pipe(
+const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
+
+export const newPools$ = combineLatest([apiData$, immediateTokenMeta$]).pipe(
   map(([apiData, tokenMeta]) => {
     {
       const pools = apiData.pools;
@@ -439,9 +440,11 @@ export const newPools$ = combineLatest([apiData$, tokenMeta$]).pipe(
         const reserveTokens = pool.reserves
           .map(
             (reserve): TokenMetaWithReserve => {
-              const meta = tokenMeta.find(meta =>
-                compareString(meta.contract, reserve.address)
-              );
+              const meta =
+                tokenMeta &&
+                tokenMeta.find(meta =>
+                  compareString(meta.contract, reserve.address)
+                );
               const token = findOrThrow(
                 tokens,
                 token => compareString(token.dlt_id, reserve.address),
@@ -483,7 +486,6 @@ export const newPools$ = combineLatest([apiData$, tokenMeta$]).pipe(
 
 newPools$.subscribe(pools => vxm.ethBancor.setPools(pools));
 
-networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
 networkVersion$.subscribe(network => {
   if (vxm && vxm.ethBancor) {
     vxm.ethBancor.setNetwork(network);
@@ -626,36 +628,11 @@ const pendingReserveRewards$ = combineLatest([
   startWith(undefined)
 );
 
-const poolAprs$ = combineLatest([unVerifiedPositions$, minimalPools$])
-  .pipe(
-    withLatestFrom(currentBlock$),
-    switchMap(([[unverified, minimal], currentBlock]) =>
-      console.log("pool aprs", x)
-    )
-  )
-  .subscribe(x => console.log(x, "aaa"));
-
-const quickPositions = combineLatest([
-  unVerifiedPositions$,
-  removeLiquidityReturn$,
-  pendingReserveRewards$
-]).subscribe(x => console.log(x, "was the quick positions"));
-
-const fullPositions$ = combineLatest([
-  unVerifiedPositions$,
-  liquidityProtection$,
-  currentBlock$,
-  apiData$
-]).pipe(
-  tap(() => vxm.ethBancor.setLoadingPositions(true)),
-  switchMap(([rawPositions, liquidityProtection, { blockNumber }]) => {
-    return vxm.ethBancor.buildFullPositions({
-      rawPositions,
-      liquidityProtection,
-      blockNumberNow: blockNumber
-    });
-  }),
-  logger("build full positions fetched")
+const poolAprs$ = combineLatest([unVerifiedPositions$, minimalPools$]).pipe(
+  withLatestFrom(currentBlock$),
+  switchMap(([[unverified, minimal], currentBlock]) => {
+    return Promise.resolve(currentBlock.blockNumber);
+  })
 );
 
 const historicPoolBalances$ = combineLatest([
@@ -740,6 +717,7 @@ const fullPositions$ = combineLatest([
                 compareString(r.poolId, position.id) &&
                 compareString(r.reserveId, position.reserveToken)
             );
+
           const rewardMultiplier =
             rewardMultipliers &&
             rewardMultipliers.find(
