@@ -1,5 +1,12 @@
 import { differenceWith, isEqual, uniqWith } from "lodash";
-import { Subject, combineLatest, Observable, timer } from "rxjs";
+import {
+  Subject,
+  combineLatest,
+  Observable,
+  timer,
+  fromEvent,
+  fromEventPattern
+} from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -320,7 +327,9 @@ const onLogout$ = authenticated$.pipe(
   share()
 );
 
-const fifteenSeconds$ = timer(0, 15000);
+fromEvent(window, "focus").subscribe(() => {
+  console.log("minor part");
+});
 
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
@@ -329,7 +338,7 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
   shareReplay(1)
 );
 
-export const apiData$ = networkVersion$.pipe(
+export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
   switchMap(networkVersion => getWelcomeData(networkVersion)),
   logger("api data", true),
   share()
