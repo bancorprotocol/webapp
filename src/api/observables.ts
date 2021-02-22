@@ -322,34 +322,6 @@ const onLogout$ = authenticated$.pipe(
 );
 
 const fifteenSeconds$ = timer(0, 15000);
-let networkVersionCount: number = 0;
-
-export const catchOptimisticNetwork = (label?: string) => (
-  source: Observable<any>
-) =>
-  source.pipe(
-    catchError(err => {
-      console.log(`CaughtError: ${label} catch optimistic received`, err);
-      return of(false);
-      if (networkVersionCount >= 2) {
-        console.log(
-          "throwing because the network version count is",
-          networkVersionCount
-        );
-        return EMPTY;
-        throw new Error(err);
-      } else {
-        console.log(
-          "deciding not to throw because network version count is",
-          networkVersionCount
-        );
-        return EMPTY;
-      }
-    }),
-    filter(x => false)
-  );
-
-authenticated$.pipe(logger("authenticated")).subscribe(x => {});
 
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
