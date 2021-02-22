@@ -741,7 +741,7 @@ const fullPositions$ = combineLatest([
             ...(day && { oneDayDec: day.calculatedAprDec }),
             ...(week && { oneWeekDec: week.calculatedAprDec }),
             ...(rewardMultiplier && {
-              rewardsMultiplier: rewardMultiplier.multiplier
+              rewardsMultiplier: rewardMultiplier.multiplier.toNumber()
             })
           };
         }
