@@ -1910,7 +1910,7 @@ export class EthBancorModule
 
       const rewardsMultiplier: {
         id: string;
-        rewardsMultiplier: BigNumber;
+        rewardsMultiplier: number;
       }[] = await Promise.all(
         uniquePoolReserveIds.map(async item => {
           const rewardsMultiplier = await vxm.rewards.fetchRewardsMultiplier({
@@ -1947,9 +1947,7 @@ export class EthBancorModule
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
               : new BigNumber(0),
-            rewardsMultiplier: multiplier
-              ? multiplier.rewardsMultiplier
-              : new BigNumber(0)
+            rewardsMultiplier: multiplier ? multiplier.rewardsMultiplier : 0
           };
         }
       );
