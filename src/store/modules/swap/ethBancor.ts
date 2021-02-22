@@ -1292,85 +1292,6 @@ const metaToTokenAssumedPrecision = (token: TokenMeta): Token => ({
   symbol: token.symbol
 });
 
-export const getTokenMeta = async (currentNetwork: EthNetworks) => {
-  const networkVars = getNetworkVariables(currentNetwork);
-  if (currentNetwork == EthNetworks.Ropsten) {
-    return [
-      {
-        symbol: "BNT",
-        contract: networkVars.bntToken,
-        precision: 18
-      },
-      {
-        symbol: "DAI",
-        contract: "0xc2118d4d90b274016cb7a54c03ef52e6c537d957",
-        precision: 18
-      },
-      {
-        symbol: "WBTC",
-        contract: "0xbde8bb00a7ef67007a96945b3a3621177b615c44",
-        precision: 8
-      },
-      {
-        symbol: "BAT",
-        contract: "0x443fd8d5766169416ae42b8e050fe9422f628419",
-        precision: 18
-      },
-      {
-        symbol: "LINK",
-        contract: "0x20fe562d797a42dcb3399062ae9546cd06f63280",
-        precision: 18
-      },
-      {
-        contract: "0x4F5e60A76530ac44e0A318cbc9760A2587c34Da6",
-        symbol: "YYYY"
-      },
-      {
-        contract: "0x63B75DfA4E87d3B949e876dF2Cd2e656Ec963466",
-        symbol: "YYY"
-      },
-      {
-        contract: "0xAa2A908Ca3E38ECEfdbf8a14A3bbE7F2cA2a1BE4",
-        symbol: "XXX"
-      },
-      {
-        contract: "0xe4158797A5D87FB3080846e019b9Efc4353F58cC",
-        symbol: "XXX"
-      }
-    ].map(
-      (x): TokenMeta => ({
-        ...x,
-        id: x.contract,
-        image: defaultImage,
-        name: x.symbol
-      })
-    );
-  }
-  if (currentNetwork !== EthNetworks.Mainnet)
-    throw new Error("Ropsten and Mainnet supported only.");
-
-  const res: AxiosResponse<TokenMeta[]> = await axios.get(
-    tokenMetaDataEndpoint
-  );
-
-  const drafted = res.data
-    .filter(({ symbol, contract, image }) =>
-      [symbol, contract, image].every(Boolean)
-    )
-    .map(x => ({ ...x, id: x.contract }));
-
-  const existingEth = drafted.find(x => compareString(x.symbol, "eth"))!;
-
-  const withoutEth = drafted.filter(meta => !compareString(meta.symbol, "eth"));
-  const addedEth = {
-    ...existingEth,
-    id: ethReserveAddress,
-    contract: ethReserveAddress
-  };
-  const final = [addedEth, existingEth, ...withoutEth];
-  return uniqWith(final, (a, b) => compareString(a.id, b.id));
-};
-
 const compareRelayById = (a: Relay, b: Relay) => compareString(a.id, b.id);
 
 const VuexModule = createModule({
@@ -1872,11 +1793,11 @@ export class EthBancorModule
             ...(roiReturn && omit(roiReturn, ["positionId"])),
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward.toString()
-              : '0',
+              : "0",
             rewardsMultiplier: multiplier
               ? multiplier.rewardsMultiplier
               : new BigNumber(0)
-          }
+          };
         }
       );
 
@@ -2294,10 +2215,7 @@ export class EthBancorModule
         } as ViewProtectedLiquidity;
       }
     );
-<<<<<<< dcfedb2333d0057507e16a191cb0a4fa39d0796c
-=======
 
->>>>>>> remove logs
     return viewPositions;
   }
 

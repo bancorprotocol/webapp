@@ -1,26 +1,11 @@
-import {
-  buildTokenContract,
-  buildNetworkContract,
-  buildV2Converter,
-  buildRegistryContract,
-  buildLiquidityProtectionContract,
-  buildAddressLookupContract,
-  buildLiquidityProtectionStoreContract,
-  buildLiquidityProtectionSettingsContract,
-  buildStakingRewardsContract
-} from "./contractTypes";
-import { zeroAddress } from "../helpers";
-import { fromPairs, toPairs } from "lodash";
+import { fromPairs, toPairs, uniqWith } from "lodash";
 import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import Web3 from "web3";
-import {
-  liquidityProtectionSettingsShape,
-  liquidityProtectionShape,
-  protectedPositionShape
-} from "./shapes";
 import { MultiCall } from "eth-multicall";
 import {
   LiquidityProtectionSettings,
+  MinimalPool,
+  PoolHistoricBalance,
   PositionReturn,
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
@@ -30,6 +15,29 @@ import {
 import { asciiToHex } from "web3-utils";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
+import {
+  buildTokenContract,
+  buildNetworkContract,
+  buildV2Converter,
+  buildRegistryContract,
+  buildLiquidityProtectionContract,
+  buildAddressLookupContract,
+  buildLiquidityProtectionStoreContract,
+  buildLiquidityProtectionSettingsContract,
+  buildStakingRewardsContract,
+  buildConverterContract
+} from "./contractTypes";
+import {
+  compareString,
+  rewindBlocksByDays,
+  sortAlongSide,
+  zeroAddress
+} from "../helpers";
+import {
+  liquidityProtectionSettingsShape,
+  liquidityProtectionShape,
+  protectedPositionShape
+} from "./shapes";
 import { shrinkToken } from "./helpers";
 
 export const getApprovedBalanceWei = async ({
@@ -208,102 +216,6 @@ export const getRemoveLiquidityReturn = async (
   // networkAmount - compensation in the network token
 };
 
-export const addLiquidityDisabled = async (
-  settingsContract: string,
-  poolId: string,
-  reserveId: string
-): Promise<boolean> => {
-  const contract = buildLiquidityProtectionSettingsContract(settingsContract);
-  const res = await contract.methods
-    .addLiquidityDisabled(poolId, reserveId)
-    .call();
-
-  return res;
-};
-
-export const fetchLiquidityProtectionSettings = async ({
-  settingsContractAddress,
-  protectionContractAddress
-}: {
-  settingsContractAddress: string;
-  protectionContractAddress: string;
-}) => {
-  // @ts-ignore
-  const ethMulti = new MultiCall(web3);
-
-  const [[settings], [protection]] = ((await ethMulti.all([
-    [liquidityProtectionSettingsShape(settingsContractAddress)],
-    [liquidityProtectionShape(protectionContractAddress)]
-  ])) as [unknown, unknown]) as [
-    RawLiquidityProtectionSettings[],
-    { govToken: string }[]
-  ];
-
-  const newSettings = {
-    contract: settingsContractAddress,
-    minDelay: Number(settings.minProtectionDelay),
-    maxDelay: Number(settings.maxProtectionDelay),
-    lockedDelay: Number(settings.lockDuration),
-    govToken: protection.govToken,
-    networkToken: settings.networkToken,
-    defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
-  } as LiquidityProtectionSettings;
-  return newSettings;
-};
-
-export const fetchContracts = async () => {};
-
-export const fetchContractAddresses = async (
-  contractRegistry: string
-): Promise<RegisteredContracts> => {
-  if (!contractRegistry || !web3.utils.isAddress(contractRegistry))
-    throw new Error("Must pass valid address");
-
-  // @ts-ignore
-  const ethMulti = new MultiCall(web3);
-
-  const hardCodedBytes: RegisteredContracts = {
-    BancorNetwork: asciiToHex("BancorNetwork"),
-    BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
-    LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
-    LiquidityProtection: asciiToHex("LiquidityProtection"),
-    StakingRewards: asciiToHex("StakingRewards")
-  };
-
-  const hardCodedShape = (
-    contractAddress: string,
-    label: string,
-    ascii: string
-  ) => {
-    const contract = buildAddressLookupContract(contractAddress);
-    return {
-      [label]: contract.methods.addressOf(ascii)
-    };
-  };
-
-  const arrBytes = toPairs(hardCodedBytes) as [string, string][];
-
-  try {
-    const hardCodedShapes = arrBytes.map(([label, ascii]) =>
-      hardCodedShape(contractRegistry, label, ascii)
-    );
-    const [contractAddresses] = await ethMulti.all([hardCodedShapes]);
-
-    const registeredContracts = Object.assign(
-      {},
-      ...contractAddresses
-    ) as RegisteredContracts;
-    const allUndefined = toPairs(registeredContracts).some(
-      ([key, data]) => data == undefined
-    );
-    if (allUndefined) throw new Error("All requests returned undefined");
-
-    return registeredContracts;
-  } catch (e) {
-    throw new Error(e.message);
-  }
-};
-
 export const fetchLiquidityProtectionSettingsContract = async (
   liquidityProtectionContract: string
 ): Promise<string> => {
@@ -316,36 +228,6 @@ export const fetchLiquidityProtectionSettingsContract = async (
     const error = `Failed fetching settings contract via address ${liquidityProtectionContract}`;
     console.error(error);
     throw new Error(error);
-  }
-};
-
-export const fetchMinLiqForMinting = async (
-  protectionSettingsContract: string
-) => {
-  const contract = buildLiquidityProtectionSettingsContract(
-    protectionSettingsContract
-  );
-
-  return contract.methods.minNetworkTokenLiquidityForMinting().call();
-};
-
-export const fetchWhiteListedV1Pools = async (
-  liquidityProtectionSettingsAddress: string
-) => {
-  try {
-    throwIfNotContract(liquidityProtectionSettingsAddress);
-    const liquidityProtection = buildLiquidityProtectionSettingsContract(
-      liquidityProtectionSettingsAddress
-    );
-    const whitelistedPools = await liquidityProtection.methods
-      .poolWhitelist()
-      .call();
-
-    return whitelistedPools;
-  } catch (e) {
-    throw new Error(
-      `Failed fetching whitelisted pools with address ${liquidityProtectionSettingsAddress}`
-    );
   }
 };
 
@@ -413,6 +295,130 @@ export const fetchPositionsMulti = async (
     ) as ProtectedLiquidity[];
 
   return protectedLiquidity;
+};
+
+export const addLiquidityDisabled = async (
+  settingsContract: string,
+  poolId: string,
+  reserveId: string
+): Promise<boolean> => {
+  const contract = buildLiquidityProtectionSettingsContract(settingsContract);
+  const res = await contract.methods
+    .addLiquidityDisabled(poolId, reserveId)
+    .call();
+
+  return res;
+};
+
+export const fetchLiquidityProtectionSettings = async ({
+  settingsContractAddress,
+  protectionContractAddress
+}: {
+  settingsContractAddress: string;
+  protectionContractAddress: string;
+}) => {
+  // @ts-ignore
+  const ethMulti = new MultiCall(web3);
+
+  const [[settings], [protection]] = ((await ethMulti.all([
+    [liquidityProtectionSettingsShape(settingsContractAddress)],
+    [liquidityProtectionShape(protectionContractAddress)]
+  ])) as [unknown, unknown]) as [
+    RawLiquidityProtectionSettings[],
+    { govToken: string }[]
+  ];
+
+  const newSettings = {
+    contract: settingsContractAddress,
+    minDelay: Number(settings.minProtectionDelay),
+    maxDelay: Number(settings.maxProtectionDelay),
+    lockedDelay: Number(settings.lockDuration),
+    govToken: protection.govToken,
+    networkToken: settings.networkToken,
+    defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
+  } as LiquidityProtectionSettings;
+  return newSettings;
+};
+
+export const fetchContractAddresses = async (
+  contractRegistry: string
+): Promise<RegisteredContracts> => {
+  if (!contractRegistry || !web3.utils.isAddress(contractRegistry))
+    throw new Error("Must pass valid address");
+
+  // @ts-ignore
+  const ethMulti = new MultiCall(web3);
+
+  const hardCodedBytes: RegisteredContracts = {
+    BancorNetwork: asciiToHex("BancorNetwork"),
+    BancorConverterRegistry: asciiToHex("BancorConverterRegistry"),
+    LiquidityProtectionStore: asciiToHex("LiquidityProtectionStore"),
+    LiquidityProtection: asciiToHex("LiquidityProtection"),
+    StakingRewards: asciiToHex("StakingRewards")
+  };
+
+  const hardCodedShape = (
+    contractAddress: string,
+    label: string,
+    ascii: string
+  ) => {
+    const contract = buildAddressLookupContract(contractAddress);
+    return {
+      [label]: contract.methods.addressOf(ascii)
+    };
+  };
+
+  const arrBytes = toPairs(hardCodedBytes) as [string, string][];
+
+  try {
+    const hardCodedShapes = arrBytes.map(([label, ascii]) =>
+      hardCodedShape(contractRegistry, label, ascii)
+    );
+    const [contractAddresses] = await ethMulti.all([hardCodedShapes]);
+
+    const registeredContracts = Object.assign(
+      {},
+      ...contractAddresses
+    ) as RegisteredContracts;
+    const allUndefined = toPairs(registeredContracts).some(
+      ([key, data]) => data == undefined
+    );
+    if (allUndefined) throw new Error("All requests returned undefined");
+
+    return registeredContracts;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
+
+export const fetchMinLiqForMinting = async (
+  protectionSettingsContract: string
+) => {
+  const contract = buildLiquidityProtectionSettingsContract(
+    protectionSettingsContract
+  );
+
+  return contract.methods.minNetworkTokenLiquidityForMinting().call();
+};
+
+export const fetchWhiteListedV1Pools = async (
+  liquidityProtectionSettingsAddress: string
+) => {
+  throwIfNotContract(liquidityProtectionSettingsAddress);
+  try {
+    const liquidityProtection = buildLiquidityProtectionSettingsContract(
+      liquidityProtectionSettingsAddress
+    );
+    const whitelistedPools = await liquidityProtection.methods
+      .poolWhitelist()
+      .call();
+
+    return whitelistedPools;
+  } catch (e) {
+    throw new Error(
+      `Failed fetching whitelisted pools with address ${liquidityProtectionSettingsAddress}`
+    );
+  }
 };
 
 const calculateReturnOnInvestment = (
@@ -491,28 +497,182 @@ export const pendingRewardRewards = async (
   };
 };
 
-export const fetchHistoricBalances = async (timeScales: TimeScale[]) => {
-  const poolHistoricalBalances = await Promise.all(
-    uniqueAnchors.map(async anchor => {
-      const historicalBalances = await Promise.all(
-        timeScales.map(async scale => {
-          const balance = await this.fetchRelayBalances({
-            poolId: anchor,
-            blockHeight: scale.blockHeight
-          });
-          return {
-            balance,
-            scale: scale.label
-          };
-        })
-      );
-
-      return {
-        poolId: anchor,
-        historicalBalances
-      };
-    })
+export const fetchRelayReserveBalances = async (
+  pool: MinimalPool,
+  blockHeight?: number
+) => {
+  const contract = buildConverterContract(pool.converterAddress);
+  return Promise.all(
+    pool.reserves.map(async reserve => ({
+      contract: reserve,
+      weiAmount: await contract.methods
+        .getConnectorBalance(reserve)
+        .call(undefined, blockHeight)
+    }))
   );
 };
 
-export const aprRewardPositions = async (positions: ProtectedLiquidity[]) => {};
+export const fetchTokenSupply = async (
+  tokenAddress: string,
+  blockHeight?: number
+) => {
+  const smartTokenContract = buildTokenContract(tokenAddress);
+  return smartTokenContract.methods.totalSupply().call(undefined, blockHeight);
+};
+
+export const fetchHistoricBalances = async (
+  timeScales: TimeScale[],
+  pools: MinimalPool[]
+) => {
+  const atLeastOneAnchorAndScale = timeScales.length > 0 && pools.length > 0;
+  if (!atLeastOneAnchorAndScale)
+    throw new Error("Must pass at least one time scale and anchor");
+  return Promise.all(
+    timeScales.map(scale =>
+      Promise.all(
+        pools.map(async pool => {
+          const blockHeight = scale.blockHeight;
+          const [smartTokenSupply, reserveBalances] = await Promise.all([
+            fetchTokenSupply(pool.anchorAddress, blockHeight),
+            fetchRelayReserveBalances(pool, blockHeight)
+          ]);
+          return {
+            scale,
+            pool,
+            smartTokenSupply,
+            reserveBalances
+          };
+        })
+      )
+    )
+  );
+};
+
+export const getPoolAprs = async (
+  positions: ProtectedLiquidity[],
+  historicBalances: PoolHistoricBalance[],
+  liquidityProtectionContract: string
+) => {
+  try {
+    const res = await Promise.all(
+      positions.map(position =>
+        Promise.all(
+          historicBalances.map(async historicBalance => {
+            const poolTokenSupply = historicBalance.smartTokenSupply;
+
+            const [
+              tknReserveBalance,
+              opposingTknBalance
+            ] = sortAlongSide(
+              historicBalance.reserveBalances,
+              balance => balance.contract,
+              [position.reserveToken]
+            );
+
+            const poolToken = position.poolToken;
+            const reserveToken = position.reserveToken;
+            const reserveAmount = position.reserveAmount;
+            const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+              .times(2)
+              .toString();
+            const poolRateD = poolTokenSupply;
+
+            const reserveRateN = opposingTknBalance.weiAmount;
+            const reserveRateD = tknReserveBalance.weiAmount;
+
+            let poolRoi = "";
+            const lpContract = buildLiquidityProtectionContract(
+              liquidityProtectionContract
+            );
+
+            try {
+              poolRoi = await lpContract.methods
+                .poolROI(
+                  poolToken,
+                  reserveToken,
+                  reserveAmount,
+                  poolRateN,
+                  poolRateD,
+                  reserveRateN,
+                  reserveRateD
+                )
+                .call();
+            } catch (err) {
+              console.error("getting pool roi failed!", err, {
+                address: liquidityProtectionContract,
+                poolToken,
+                reserveToken,
+                reserveAmount,
+                poolRateN,
+                poolRateD,
+                reserveRateN,
+                reserveRateD
+              });
+            }
+
+            const scale = historicBalance.scale;
+            const magnitude =
+              scale.label == "day"
+                ? 365
+                : scale.label == "week"
+                ? 52
+                : 365 / scale.days;
+
+            const calculatedAprDec = new BigNumber(poolRoi)
+              .div(1000000)
+              .minus(1)
+              .times(magnitude);
+
+            return {
+              calculatedAprDec: calculatedAprDec.isNegative()
+                ? "0"
+                : calculatedAprDec.toString(),
+              positionId: position.id,
+              scaleId: historicBalance.scale.label
+            };
+          })
+        )
+      )
+    );
+    return res;
+  } catch (e) {
+    throw new Error(`Failed fetching pool aprs ${e}`);
+  }
+};
+
+export const getHistoricBalances = async (
+  positions: ProtectedLiquidity[],
+  blockNow: number,
+  pools: MinimalPool[]
+): Promise<PoolHistoricBalance[][]> => {
+  const timeScales: TimeScale[] = ([
+    [1, "day"],
+    [7, "week"]
+  ] as [number, string][]).map(([days, label]) => ({
+    blockHeight: rewindBlocksByDays(blockNow, days),
+    days,
+    label
+  }));
+  const uniqueAnchors = uniqWith(
+    positions.map(pos => pos.poolToken),
+    compareString
+  );
+  const relevantPools = pools.filter(pool =>
+    uniqueAnchors.some(anchor => compareString(pool.anchorAddress, anchor))
+  );
+  return fetchHistoricBalances(timeScales, relevantPools);
+};
+
+export const fetchRewardsMultiplier = async (
+  poolId: string,
+  reserveId: string,
+  stakingRewardsContract: string,
+  currentUser: string
+): Promise<BigNumber> => {
+  const contract = buildStakingRewardsContract(stakingRewardsContract);
+  const result = await contract.methods
+    .rewardsMultiplier(currentUser, poolId, reserveId)
+    .call();
+
+  return new BigNumber(shrinkToken(result, 6));
+};

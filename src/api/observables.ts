@@ -1,13 +1,5 @@
 import { differenceWith, isEqual, uniqWith } from "lodash";
-import {
-  Subject,
-  combineLatest,
-  Observable,
-  EMPTY,
-  of,
-  PartialObserver,
-  timer
-} from "rxjs";
+import { Subject, combineLatest, Observable, EMPTY, of, timer } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -26,16 +18,17 @@ import dayjs from "dayjs";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
 import { getWelcomeData, NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
-import {
-  getTokenMeta,
-  ppmToDec,
-  defaultImage
-} from "@/store/modules/swap/ethBancor";
+import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
-import { RegisteredContracts } from "@/types/bancor";
 import { compareString, findOrThrow } from "./helpers";
 import { buildStakingRewardsContract } from "./eth/contractTypes";
 import { filterAndWarn } from "./pureHelpers";
+import {
+  RegisteredContracts,
+  MinimalPool,
+  ProtectedLiquidityCalculated,
+  ProtectedLiquidity
+} from "@/types/bancor";
 import {
   fetchContractAddresses,
   fetchLiquidityProtectionSettings,
@@ -45,10 +38,107 @@ import {
   fetchPositionsMulti,
   fetchWhiteListedV1Pools,
   pendingRewardRewards,
-  removeLiquidityReturn
+  removeLiquidityReturn,
+  getHistoricBalances,
+  getPoolAprs,
+  fetchRewardsMultiplier
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
-import { MinimalPool } from "./eth/helpers";
+import axios, { AxiosResponse } from "axios";
+import { ethReserveAddress } from "./eth/ethAbis";
+
+const tokenMetaDataEndpoint =
+  "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
+
+interface TokenMeta {
+  id: string;
+  image: string;
+  contract: string;
+  symbol: string;
+  name: string;
+  precision?: number;
+}
+export const defaultImage =
+  "https://ropsten.etherscan.io/images/main/empty-token.png";
+
+export const getTokenMeta = async (currentNetwork: EthNetworks) => {
+  const networkVars = getNetworkVariables(currentNetwork);
+  if (currentNetwork == EthNetworks.Ropsten) {
+    return [
+      {
+        symbol: "BNT",
+        contract: networkVars.bntToken,
+        precision: 18
+      },
+      {
+        symbol: "DAI",
+        contract: "0xc2118d4d90b274016cb7a54c03ef52e6c537d957",
+        precision: 18
+      },
+      {
+        symbol: "WBTC",
+        contract: "0xbde8bb00a7ef67007a96945b3a3621177b615c44",
+        precision: 8
+      },
+      {
+        symbol: "BAT",
+        contract: "0x443fd8d5766169416ae42b8e050fe9422f628419",
+        precision: 18
+      },
+      {
+        symbol: "LINK",
+        contract: "0x20fe562d797a42dcb3399062ae9546cd06f63280",
+        precision: 18
+      },
+      {
+        contract: "0x4F5e60A76530ac44e0A318cbc9760A2587c34Da6",
+        symbol: "YYYY"
+      },
+      {
+        contract: "0x63B75DfA4E87d3B949e876dF2Cd2e656Ec963466",
+        symbol: "YYY"
+      },
+      {
+        contract: "0xAa2A908Ca3E38ECEfdbf8a14A3bbE7F2cA2a1BE4",
+        symbol: "XXX"
+      },
+      {
+        contract: "0xe4158797A5D87FB3080846e019b9Efc4353F58cC",
+        symbol: "XXX"
+      }
+    ].map(
+      (x): TokenMeta => ({
+        ...x,
+        id: x.contract,
+        image: defaultImage,
+        name: x.symbol
+      })
+    );
+  }
+  if (currentNetwork !== EthNetworks.Mainnet)
+    throw new Error("Ropsten and Mainnet supported only.");
+
+  const res: AxiosResponse<TokenMeta[]> = await axios.get(
+    tokenMetaDataEndpoint
+  );
+
+  const drafted = res.data
+    .filter(({ symbol, contract, image }) =>
+      [symbol, contract, image].every(Boolean)
+    )
+    .map(x => ({ ...x, id: x.contract }));
+
+  const existingEth = drafted.find(x => compareString(x.symbol, "eth"))!;
+
+  const withoutEth = drafted.filter(meta => !compareString(meta.symbol, "eth"));
+  const addedEth = {
+    ...existingEth,
+    id: ethReserveAddress,
+    contract: ethReserveAddress
+  };
+  const final = [addedEth, existingEth, ...withoutEth];
+  return uniqWith(final, (a, b) => compareString(a.id, b.id));
+};
 
 interface DataCache<T> {
   allEmissions: T[];
@@ -259,6 +349,8 @@ export const catchOptimisticNetwork = (label?: string) => (
     filter(x => false)
   );
 
+authenticated$.pipe(logger("authenticated")).subscribe(x => {});
+
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
   distinctUntilChanged(),
@@ -266,8 +358,9 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
   shareReplay(1)
 );
 
-export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
-  switchMap(([networkVersion]) => getWelcomeData(networkVersion)),
+export const apiData$ = networkVersion$.pipe(
+  switchMap(networkVersion => getWelcomeData(networkVersion)),
+  logger("api data", true),
   share()
 );
 
@@ -283,11 +376,11 @@ export const minimalPools$ = pools$.pipe(
     )
   )
 );
+
 export const tokens$ = apiData$.pipe(pluck("tokens"), share());
 
 export const tokenMeta$ = networkVersion$.pipe(
-  switchMap(network => getTokenMeta(network)),
-  catchError(() => EMPTY),
+  switchMapIgnoreThrow(network => getTokenMeta(network)),
   share()
 );
 
@@ -312,7 +405,6 @@ export const networkVars$ = networkVersion$.pipe(
 
 export const contractAddresses$ = networkVars$.pipe(
   switchMapIgnoreThrow(networkVariables => {
-    console.log("network vars got..", networkVariables);
     return fetchContractAddresses(networkVariables.contractRegistry).catch(() =>
       vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
     );
@@ -527,18 +619,26 @@ const removeLiquidityReturn$ = combineLatest([
   logger("simple")
 );
 
+const uniquePoolReserves = (
+  positions: ProtectedLiquidity[]
+): { poolToken: string; reserveToken: string }[] =>
+  uniqWith(
+    positions,
+    (a, b) =>
+      compareString(a.poolToken, b.poolToken) &&
+      compareString(a.reserveToken, b.reserveToken)
+  ).map(position => ({
+    reserveToken: position.reserveToken,
+    poolToken: position.poolToken
+  }));
+
 const pendingReserveRewards$ = combineLatest([
   stakingRewards$,
   unVerifiedPositions$,
   authenticated$
 ]).pipe(
   switchMapIgnoreThrow(([stakingRewards, positions, currentUser]) => {
-    const uniquePoolReserveIds = uniqWith(
-      positions,
-      (a, b) =>
-        compareString(a.poolToken, b.poolToken) &&
-        compareString(a.reserveToken, b.reserveToken)
-    );
+    const uniquePoolReserveIds = uniquePoolReserves(positions);
 
     return Promise.all(
       uniquePoolReserveIds.map(poolReserve =>
@@ -584,6 +684,120 @@ const fullPositions$ = combineLatest([
     });
   }),
   logger("build full positions fetched")
+);
+
+const historicPoolBalances$ = combineLatest([
+  unVerifiedPositions$,
+  minimalPools$
+]).pipe(
+  withLatestFrom(currentBlock$),
+  switchMapIgnoreThrow(([[unverified, minimal], currentBlock]) =>
+    getHistoricBalances(unverified, currentBlock.blockNumber, minimal)
+  )
+);
+
+const poolReturns$ = combineLatest([
+  unVerifiedPositions$,
+  historicPoolBalances$,
+  liquidityProtection$
+]).pipe(
+  switchMapIgnoreThrow(([positions, poolBalances, liquidityProtection]) =>
+    getPoolAprs(positions, poolBalances.flat(), liquidityProtection)
+  ),
+  startWith(undefined)
+);
+
+const rewardMultipliers$ = combineLatest([
+  unVerifiedPositions$,
+  authenticated$,
+  stakingRewards$
+]).pipe(
+  switchMapIgnoreThrow(([unVerifiedPositions, currentUser, stakingReward]) => {
+    const poolReserves = uniquePoolReserves(unVerifiedPositions);
+    return Promise.all(
+      poolReserves.map(async poolReserve => ({
+        ...poolReserve,
+        multiplier: await fetchRewardsMultiplier(
+          poolReserve.poolToken,
+          poolReserve.reserveToken,
+          stakingReward,
+          currentUser
+        )
+      }))
+    );
+  }),
+  startWith(undefined)
+);
+
+const fullPositions$ = combineLatest([
+  unVerifiedPositions$,
+  removeLiquidityReturn$,
+  pendingReserveRewards$,
+  poolReturns$,
+  rewardMultipliers$
+]).pipe(
+  map(
+    ([
+      unverifiedPositions,
+      removeLiquidityReturn,
+      pendingReserveRewards,
+      poolReturns,
+      rewardMultipliers
+    ]) => {
+      return unverifiedPositions.map(
+        (position): ProtectedLiquidityCalculated => {
+          const removeLiq =
+            removeLiquidityReturn &&
+            removeLiquidityReturn.find(r => r.positionId == position.id);
+          const scales =
+            poolReturns &&
+            poolReturns.find(poolReturns =>
+              poolReturns.find(x => x.positionId == position.id)
+            );
+
+          const week =
+            scales &&
+            scales.find(scale => compareString(scale.scaleId, "week"));
+          const day =
+            scales && scales.find(scale => compareString(scale.scaleId, "day"));
+
+          const reserveReward =
+            pendingReserveRewards &&
+            pendingReserveRewards.find(
+              r =>
+                compareString(r.poolId, position.id) &&
+                compareString(r.reserveId, position.reserveToken)
+            );
+          const rewardMultiplier =
+            rewardMultipliers &&
+            rewardMultipliers.find(
+              r =>
+                compareString(r.poolToken, position.poolToken) &&
+                compareString(r.reserveToken, position.reserveToken)
+            );
+
+          return {
+            ...position,
+            ...(reserveReward && {
+              pendingReserveReward: reserveReward.decBnt
+            }),
+            ...(removeLiq && {
+              fullLiquidityReturn: removeLiq.fullLiquidityReturn
+            }),
+            ...(removeLiq && {
+              currentLiquidityReturn: removeLiq.currentLiquidityReturn
+            }),
+            ...(removeLiq && { roiDec: removeLiq.roiDec }),
+            ...(day && { oneDayDec: day.calculatedAprDec }),
+            ...(week && { oneWeekDec: week.calculatedAprDec }),
+            ...(rewardMultiplier && {
+              rewardsMultiplier: rewardMultiplier.multiplier
+            })
+          };
+        }
+      );
+    }
+  )
 );
 
 combineLatest([fullPositions$, authenticated$, minimalPools$])
