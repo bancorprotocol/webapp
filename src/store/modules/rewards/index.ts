@@ -11,6 +11,7 @@ import { multiSteps } from "@/api/helpers";
 import wait from "waait";
 import { shrinkToken } from "@/api/eth/helpers";
 import { expandToken } from "@/api/pureHelpers";
+import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { zip } from "lodash";
 
 const VuexModule = createModule({
@@ -244,11 +245,11 @@ export class RewardsModule extends VuexModule.With({
   }: {
     poolId: string;
     reserveId: string;
-  }): Promise<BigNumber> {
+  }): Promise<number> {
     const result = await this.contract.methods
       .rewardsMultiplier(this.currentUser, poolId, reserveId)
       .call();
 
-    return new BigNumber(shrinkToken(result, 6));
+    return ppmToDec(result);
   }
 }

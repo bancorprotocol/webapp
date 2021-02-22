@@ -78,7 +78,7 @@ export interface ProtectedLiquidityCalculated {
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
   pendingReserveReward?: BigNumber;
-  rewardsMultiplier?: BigNumber;
+  rewardsMultiplier?: number;
 }
 
 export interface TokenPrice {
@@ -812,8 +812,8 @@ export interface ViewProtectedLiquidity {
   coverageDecPercent: number;
   fullCoverage: number;
   givenVBnt?: string;
-  rewardsMultiplier: BigNumber;
-  pendingReserveReward: string;
+  pendingReserveReward: BigNumber;
+  rewardsMultiplier: number;
   reserveTokenPrice: number;
   bntTokenPrice: number;
 }
