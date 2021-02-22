@@ -615,4 +615,4 @@ combineLatest([authenticated$, minimalPools$]).subscribe(
       } catch (e) {}
     }
   }
-});
+);
