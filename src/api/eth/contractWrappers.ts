@@ -289,12 +289,14 @@ export const fetchPositionsMulti = async (
   ];
 
   const protectedLiquidity = multiPositions
+    // @ts-ignore
     .map(res => ({ ...res.position, "8": res.positionId }))
+    // @ts-ignore
     .map(res =>
       fromPairs(keys.map((key, index) => [key, res[index]]))
     ) as ProtectedLiquidity[];
 
-  return protectedLiquidity;
+  return protectedLiquidity.filter(pos => typeof pos.owner == 'string');
 };
 
 export const addLiquidityDisabled = async (
