@@ -10,6 +10,7 @@
         <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
         <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
       </b-btn>
+      <Notifications />
       <settings-menu />
       <bancor-menu />
     </div>
@@ -24,9 +25,10 @@ import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import Notifications from "@/components/compositions/notifications/Notifications.vue";
 
 @Component({
-  components: { BancorMenu, SettingsMenu }
+  components: { BancorMenu, SettingsMenu, Notifications }
 })
 export default class Navigation extends BaseComponent {
   get selectedWallet() {

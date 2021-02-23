@@ -3773,6 +3773,10 @@ export class EthBancorModule
       const tokensMinted = shrinkToken(tokensMintedWei, bntReserve.decimals);
       const limitShrinked = shrinkToken(limit, bntReserve.decimals);
 
+      console.log("bntAmount", bntAmount);
+      console.log("tknAmount", tknAmount);
+      console.log("limitShrinked", limitShrinked);
+
       const amountToGetSpace = calculateAmountToGetSpace(
         bntAmount,
         tknAmount,
@@ -3808,6 +3812,8 @@ export class EthBancorModule
       reserveAmount.amount,
       inputToken.precision
     );
+    console.log("inputAmountWei", inputAmountWei);
+    console.log("maxStakes", maxStakes);
 
     const overMaxLimit = new BigNumber(inputAmountWei).isGreaterThan(
       depositingNetworkToken

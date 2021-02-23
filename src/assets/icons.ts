@@ -1,4 +1,10 @@
-/* free-solid-svg-icons */
+import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
+import { faDiscourse } from "@fortawesome/free-brands-svg-icons/faDiscourse";
+import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
+import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
+import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
+import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
+import { faSync } from "@fortawesome/free-solid-svg-icons/faSync";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
 import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
 import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
@@ -39,6 +45,7 @@ import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
 import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
+import { faBell } from "@fortawesome/free-solid-svg-icons/faBell";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -80,16 +87,10 @@ export const fas = [
   faUpload,
   faArrowLeft,
   faArrowRight,
-  faCheck
+  faCheck,
+  faSync,
+  faBell
 ];
-
-/* free-brands-svg-icons */
-import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
-import { faDiscourse } from "@fortawesome/free-brands-svg-icons/faDiscourse";
-import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
-import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
-import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
-import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
 
 export const fab = [
   faDiscord,
