@@ -10,7 +10,12 @@
       no-caret
     >
       <template #button-content>
-        <font-awesome-icon icon="cog" fixed-width />
+        <font-awesome-icon
+          v-if="!pendingQueue.length"
+          icon="bell"
+          fixed-width
+        />
+        <font-awesome-icon v-else icon="circle-notch" spin fixed-width />
       </template>
 
       <b-dropdown-text
@@ -26,12 +31,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "@vue/composition-api";
+import { computed, defineComponent } from "@vue/composition-api";
 import {
-  alertQueue,
   addNotification,
   ENotificationStatus,
-  loadLocalHistory
+  history,
+  loadLocalHistory,
+  pendingQueue
 } from "@/components/compositions/notifications/index";
 import NotificationHistory from "@/components/compositions/notifications/NotificationHistory.vue";
 import { vxm } from "@/store";
@@ -48,7 +54,7 @@ export default defineComponent({
   setup() {
     loadLocalHistory();
     return {
-      alertQueue,
+      pendingQueue,
       addNotification,
       ENotificationStatus
     };
