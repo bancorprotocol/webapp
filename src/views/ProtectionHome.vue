@@ -1,6 +1,5 @@
 <template>
   <b-container fluid="xl" class="px-xl-0">
-    <TestComponent />
     <b-row>
       <b-col cols="12">
         <div>
@@ -91,7 +90,6 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewProtectedLiquidity } from "@/types/bancor";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
-import TestComponent from "@/components/compositions/TestComponent.vue";
 
 @Component({
   components: {
@@ -99,8 +97,7 @@ import TestComponent from "@/components/compositions/TestComponent.vue";
     ProtectedSummary,
     Claim,
     ContentBlock,
-    ProtectedTable,
-    TestComponent
+    ProtectedTable
   }
 })
 export default class ProtectionHome extends BaseComponent {

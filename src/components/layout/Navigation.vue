@@ -10,9 +10,9 @@
         <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
         <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
       </b-btn>
+      <Notifications />
       <settings-menu />
       <bancor-menu />
-      <Notifications />
     </div>
   </div>
 </template>

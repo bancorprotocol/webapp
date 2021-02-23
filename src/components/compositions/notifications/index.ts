@@ -1,6 +1,5 @@
 import { computed, ref, watch } from "@vue/composition-api";
 import { web3 } from "@/api/web3";
-import { count } from "rxjs/operators";
 
 export enum ENotificationStatus {
   success = "success",
@@ -22,7 +21,6 @@ export interface INotificationView {
 }
 
 export const history = ref<INotificationView[]>([]);
-// export const alertQueue = ref<INotificationView[]>([]);
 
 export const alertQueue = computed(() =>
   history.value.filter(n => n.showSeconds).reverse()
