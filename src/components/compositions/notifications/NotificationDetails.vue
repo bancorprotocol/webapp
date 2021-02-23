@@ -1,5 +1,8 @@
 <template>
-  <div class="notification">
+  <div
+    class="notification py-2 px-3 font-w400"
+    :class="darkMode ? 'text-dark' : 'text-light'"
+  >
     <div class="d-flex justify-content-start">
       <div>
         <font-awesome-icon
@@ -13,15 +16,16 @@
       <div class="flex-fill font-w600">
         {{ notification.title }}
       </div>
-      <div @click="removeNotification(notification.id)">x</div>
+      <div @click="removeNotification(notification.id)">
+        <font-awesome-icon icon="times" />
+      </div>
     </div>
-    <div>
+    <div class="mt-1">
       {{ notification.description }}
     </div>
     <div v-if="notification.txHash">
       <a :href="getEtherscanUrl" target="_blank">View on Etherscan</a>
     </div>
-    <hr />
   </div>
 </template>
 
@@ -44,6 +48,15 @@ export default defineComponent({
     notification: {
       type: Object as PropType<INotificationView>,
       required: true
+    },
+    isAlert: {
+      type: Boolean,
+      default: false
+    }
+  },
+  computed: {
+    darkMode() {
+      return vxm.general.darkMode;
     }
   },
   mounted() {
@@ -121,4 +134,11 @@ export default defineComponent({
   }
 });
 </script>
-<style scoped></style>
+<style scoped>
+.notification {
+  background: #ffffff;
+  box-shadow: 0px 2px 19px rgba(82, 105, 141, 0.12),
+    0px 2px 22px rgba(15, 89, 209, 0.12);
+  border-radius: 8px;
+}
+</style>
