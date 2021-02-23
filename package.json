@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@dfuse/client": "^0.3.17",
-    "@firebase/analytics": "^0.6.3",
+    "@firebase/analytics": "^0.6.4",
     "@firebase/app": "^0.6.15",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-brands-svg-icons": "^5.15.2",
@@ -54,7 +54,7 @@
     "eth-multicall": "^1.3.13",
     "fast-sort": "^2.2.0",
     "ipfs-http-client": "^49.0.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "lodash-webpack-plugin": "^0.11.6",
     "lodash.debounce": "^4.0.8",
     "numeral": "^2.0.6",

@@ -338,8 +338,7 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
 const fifteenSeconds$ = timer(0, 15000);
 
 export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
-  switchMap(([networkVersion]) => getWelcomeData(networkVersion)),
-  logger("api data", true),
+  switchMapIgnoreThrow(([networkVersion]) => getWelcomeData(networkVersion)),
   share()
 );
 
@@ -636,13 +635,6 @@ const pendingReserveRewards$ = combineLatest([
   startWith(undefined)
 );
 
-const poolAprs$ = combineLatest([unVerifiedPositions$, minimalPools$]).pipe(
-  withLatestFrom(currentBlock$),
-  switchMap(([[unverified, minimal], currentBlock]) => {
-    return Promise.resolve(currentBlock.blockNumber);
-  })
-);
-
 const historicPoolBalances$ = combineLatest([
   unVerifiedPositions$,
   minimalPools$
@@ -775,16 +767,11 @@ combineLatest([fullPositions$, authenticated$, minimalPools$])
     vxm.ethBancor.setLoadingPositions(false);
   });
 
-combineLatest([authenticated$, minimalPools$]).subscribe(
-  ([userAddress, pools]) => {
-    if (userAddress) {
-      const allTokens = pools.flatMap(pool => [
-        ...pool.reserves,
-        pool.anchorAddress
-      ]);
-      try {
-        vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
-      } catch (e) {}
-    }
+onLogin$.pipe(withLatestFrom(apiData$)).subscribe(([userAddress, apiData]) => {
+  if (userAddress) {
+    const reserveTokens = apiData.tokens.map(token => token.dlt_id);
+    const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
+    const allTokens = [...poolTokens, ...reserveTokens];
+    vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
   }
-);
+});
