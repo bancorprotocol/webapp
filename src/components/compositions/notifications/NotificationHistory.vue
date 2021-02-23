@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="notification-history">
     <b-btn
       @click="addNotification('Test Title', 'Description goes here', 'success')"
       size="sm"
@@ -86,3 +86,10 @@ export default defineComponent({
   }
 });
 </script>
+
+<style scoped>
+.notification-history {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+</style>
