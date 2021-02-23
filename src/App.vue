@@ -84,12 +84,10 @@ import { vxm } from "@/store/";
 import wait from "waait";
 import BaseComponent from "@/components/BaseComponent.vue";
 import NetworkAlert from "@/components/layout/NetworkAlert.vue";
-import NotificationHistory from "@/components/compositions/notifications/NotificationHistory.vue";
 
 @Component({
   components: {
     NetworkAlert,
-    NotificationHistory,
     ModalLogin,
     SideBar
   }
