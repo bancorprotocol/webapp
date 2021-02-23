@@ -98,7 +98,7 @@
         }}</span>
       </label-content-split>
       <label-content-split
-        v-if="amountToMakeSpace"
+        v-if="amountToMakeSpace && !opposingReserveIsDisabled"
         class="mt-2"
         :label="
           $t('needed_open_space', { bnt: bnt.symbol, tkn: otherTkn.symbol })
@@ -280,6 +280,16 @@ export default class AddProtectionSingle extends BaseComponent {
     );
   }
 
+  get opposingReserveIsDisabled() {
+    return this.disabledReserves.some(reserveId =>
+      compareString(reserveId, this.opposingToken ? this.opposingToken.id : "")
+    );
+  }
+
+  get spaceAvailableLTOne() {
+    return new BigNumber(this.maxStakeAmount).lt(1);
+  }
+
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
   }
@@ -383,11 +393,14 @@ export default class AddProtectionSingle extends BaseComponent {
       });
       this.outputs = res.outputs;
 
-      const errorMsg = `${this.token.symbol} limit reached. Additional ${
-        this.opposingToken!.symbol
-      } liquidity should be staked to allow for ${
-        this.token.symbol
-      } single-sided staking.`;
+      const errorMsg = this.opposingReserveIsDisabled
+        ? i18n.tc("wait_until_space_opens", 0, {
+            token: this.token.symbol
+          })
+        : i18n.tc("limit_reached", 0, {
+            token: this.token.symbol,
+            opposingToken: this.opposingToken!.symbol
+          });
 
       if (res.error) {
         this.preTxError =
