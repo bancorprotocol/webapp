@@ -7,7 +7,7 @@
       v-for="notification in alertQueue"
       :key="`alerts-${notification.id}`"
       :notification="notification"
-      :is-alert="false"
+      :is-alert="true"
       class="mb-3"
     />
   </div>

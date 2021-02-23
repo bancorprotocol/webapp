@@ -16,7 +16,7 @@
       <div class="flex-fill font-w600">
         {{ notification.title }}
       </div>
-      <div @click="removeNotification(notification.id)">
+      <div @click="remove(notification.id)">
         <font-awesome-icon icon="times" />
       </div>
     </div>
@@ -79,6 +79,11 @@ export default defineComponent({
         }`
     );
 
+    const remove = (id: number) => {
+      if (props.isAlert) hideAlert(id);
+      else removeNotification(id);
+    };
+
     let interval: any;
 
     if (notificationData.status === ENotificationStatus.pending) {
@@ -127,7 +132,7 @@ export default defineComponent({
       notificationData,
       interval,
       getEtherscanUrl,
-      removeNotification,
+      remove,
       statusIcon,
       hideAlert
     };
