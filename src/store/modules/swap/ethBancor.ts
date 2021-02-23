@@ -6421,7 +6421,7 @@ export class EthBancorModule
         const weiBalance = await web3.eth.getBalance(this.currentUser);
         return fromWei(weiBalance);
       })()
-    ]);
+    ]) as [Balance[], string | undefined]
 
     if (ethBalance) {
       this.updateUserBalances([
