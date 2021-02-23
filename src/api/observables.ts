@@ -19,22 +19,23 @@ import {
   pluck,
   scan,
   share,
-  catchError,
   withLatestFrom
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
-import { getWelcomeData } from "./eth/bancorApi";
+import { getWelcomeData, NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
+import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
+import { compareString, findOrThrow } from "./helpers";
+import { buildStakingRewardsContract } from "./eth/contractTypes";
+import { filterAndWarn } from "./pureHelpers";
 import {
   RegisteredContracts,
   MinimalPool,
   ProtectedLiquidityCalculated,
   ProtectedLiquidity
 } from "@/types/bancor";
-import { compareString } from "./helpers";
-import { buildStakingRewardsContract } from "./eth/contractTypes";
 import {
   fetchContractAddresses,
   fetchLiquidityProtectionSettings,
@@ -50,8 +51,8 @@ import {
   fetchRewardsMultiplier
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
-import axios, { AxiosResponse } from 'axios';
-import { ethReserveAddress } from './eth/ethAbis';
+import axios, { AxiosResponse } from "axios";
+import { ethReserveAddress } from "./eth/ethAbis";
 
 const tokenMetaDataEndpoint =
   "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
@@ -66,7 +67,6 @@ interface TokenMeta {
 }
 export const defaultImage =
   "https://ropsten.etherscan.io/images/main/empty-token.png";
-
 
 export const getTokenMeta = async (currentNetwork: EthNetworks) => {
   const networkVars = getNetworkVariables(currentNetwork);
@@ -319,7 +319,14 @@ export const networkVersionReceiver$ = new Subject<EthNetworks>();
 export const fetchPositionsTrigger$ = new Subject<null>();
 fetchPositionsTrigger$.next(null);
 
-authenticated$.pipe(logger("authenticated")).subscribe(x => {});
+const onLogin$ = authenticated$.pipe(
+  filter(x => Boolean(x)),
+  share()
+);
+const onLogout$ = authenticated$.pipe(
+  filter(x => !Boolean(x)),
+  share()
+);
 
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
@@ -328,9 +335,9 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
   shareReplay(1)
 );
 
-const fifteenSeconds = timer(0,15000)
+const fifteenSeconds$ = timer(0, 15000);
 
-export const apiData$ = combineLatest([networkVersion$, fifteenSeconds]).pipe(
+export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
   switchMap(([networkVersion]) => getWelcomeData(networkVersion)),
   logger("api data", true),
   share()
@@ -366,6 +373,7 @@ export const currentBlockReceiver$ = new Subject<number>();
 export const currentBlock$ = currentBlockReceiver$.pipe(
   distinctUntilChanged(),
   map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
+  // logger("current block"),
   shareReplay(1)
 );
 
@@ -428,6 +436,64 @@ export const liquidityProtectionStore$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
+const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
+
+export const newPools$ = combineLatest([apiData$, immediateTokenMeta$]).pipe(
+  map(([apiData, tokenMeta]) => {
+    {
+      const pools = apiData.pools;
+      const tokens = apiData.tokens;
+
+      const betterPools = pools.map(pool => {
+        const reserveTokens = pool.reserves
+          .map(
+            (reserve): TokenMetaWithReserve => {
+              const meta =
+                tokenMeta &&
+                tokenMeta.find(meta =>
+                  compareString(meta.contract, reserve.address)
+                );
+              const token = findOrThrow(
+                tokens,
+                token => compareString(token.dlt_id, reserve.address),
+                "was expecting a token for a known reserve in API data"
+              );
+
+              return {
+                id: reserve.address,
+                contract: reserve.address,
+                reserveWeight: ppmToDec(reserve.weight),
+                decBalance: reserve.balance,
+                name: token.symbol,
+                symbol: token.symbol,
+                image: (meta && meta.image) || defaultImage,
+                precision: token.decimals
+              };
+            }
+          )
+          .filter(pool => pool.contract);
+        const decFee = ppmToDec(pool.fee);
+        return {
+          ...pool,
+          decFee,
+          reserveTokens
+        };
+      });
+
+      const passedPools = filterAndWarn(
+        betterPools,
+        pool => pool.reserveTokens.length == 2,
+        "lost pools"
+      ) as NewPool[];
+
+      return passedPools;
+    }
+  }),
+  filter(pools => pools.length > 0)
+);
+
+newPools$.subscribe(pools => vxm.ethBancor.setPools(pools));
+
 networkVersion$.subscribe(network => {
   if (vxm && vxm.ethBancor) {
     vxm.ethBancor.setNetwork(network);
@@ -444,7 +510,7 @@ tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
 
 combineLatest([
   liquidityProtectionStore$,
-  authenticated$
+  onLogin$
 ]).subscribe(([storeAddress, currentUser]) =>
   vxm.ethBancor
     .fetchAndSetLockedBalances({ storeAddress, currentUser })
@@ -570,6 +636,13 @@ const pendingReserveRewards$ = combineLatest([
   startWith(undefined)
 );
 
+const poolAprs$ = combineLatest([unVerifiedPositions$, minimalPools$]).pipe(
+  withLatestFrom(currentBlock$),
+  switchMap(([[unverified, minimal], currentBlock]) => {
+    return Promise.resolve(currentBlock.blockNumber);
+  })
+);
+
 const historicPoolBalances$ = combineLatest([
   unVerifiedPositions$,
   minimalPools$
@@ -652,6 +725,7 @@ const fullPositions$ = combineLatest([
                 compareString(r.poolId, position.id) &&
                 compareString(r.reserveId, position.reserveToken)
             );
+
           const rewardMultiplier =
             rewardMultipliers &&
             rewardMultipliers.find(
@@ -675,7 +749,7 @@ const fullPositions$ = combineLatest([
             ...(day && { oneDayDec: day.calculatedAprDec }),
             ...(week && { oneWeekDec: week.calculatedAprDec }),
             ...(rewardMultiplier && {
-              rewardsMultiplier: rewardMultiplier.multiplier
+              rewardsMultiplier: rewardMultiplier.multiplier.toNumber()
             })
           };
         }

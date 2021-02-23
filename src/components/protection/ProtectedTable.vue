@@ -427,7 +427,6 @@ export default class ProtectedTable extends BaseComponent {
   get groupedPositions() {
     if (this.positions.length > 0) {
       const groupedPositions = groupPositionsArray(this.positions);
-      console.log({ positions: this.positions, groupedPositions }, "xxx");
       return groupedPositions;
     } else return [];
   }
@@ -519,7 +518,7 @@ export default class ProtectedTable extends BaseComponent {
       {
         id: 6,
         key: "apr",
-        label: i18n.tc("apr"),
+        label: "APR",
         tooltip: i18n.tc("estimated_calculation_annual_returns"),
         sortable: true,
         minWidth: "115px"

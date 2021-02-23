@@ -19,7 +19,7 @@
       >
         <img
           class="side-bar-link-icon"
-          :src="require(`@/assets/media/icons/${link.svgName}.svg`)"
+          :src="require(`@/assets/media/icons/${link.icon}`)"
         />
         <div>{{ link.label }}</div>
       </div>

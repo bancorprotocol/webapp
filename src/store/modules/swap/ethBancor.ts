@@ -196,11 +196,10 @@ import {
   currentBlock$,
   liquidityProtectionStore$,
   usdPriceOfBnt$,
-  apiData$,
   bancorConverterRegistry$,
   authenticated$,
   networkVersion$,
-  tokenMeta$,
+  newPools$,
   poolPrograms$,
   fetchPositionsTrigger$
 } from "@/api/observables";
@@ -431,7 +430,7 @@ interface RefinedAbiRelay {
   owner: string;
 }
 
-const ppmToDec = (ppm: number | string): number =>
+export const ppmToDec = (ppm: number | string): number =>
   new BigNumber(ppm).dividedBy(oneMillion).toNumber();
 
 const determineConverterType = (
@@ -1216,7 +1215,8 @@ const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
 const percentageOfReserve = (
   percent: BigNumber,
   existingSupply: string
-): BigNumber => new BigNumber(percent).times(existingSupply);
+): string =>
+  new BigNumber(percent).times(existingSupply).toFixed(0, BigNumber.ROUND_DOWN);
 
 const percentageIncrease = (
   deposit: string,
@@ -1227,7 +1227,7 @@ const calculateOppositeFundRequirement = (
   deposit: string,
   depositsSupply: string,
   oppositesSupply: string
-): BigNumber => {
+): string => {
   const increase = percentageIncrease(deposit, depositsSupply);
   return percentageOfReserve(increase, oppositesSupply);
 };
@@ -1236,7 +1236,7 @@ const calculateOppositeLiquidateRequirement = (
   reserveAmount: string,
   reserveBalance: string,
   oppositeReserveBalance: string
-): BigNumber => {
+): string => {
   const increase = percentageIncrease(reserveAmount, reserveBalance);
   return percentageOfReserve(increase, oppositeReserveBalance);
 };
@@ -1369,30 +1369,54 @@ export class EthBancorModule
   }
 
   get stats() {
-    const ethToken = this.tokens.find(token =>
-      compareString("ETH", token.symbol)
+    const apiData = this.apiData!;
+    const bntUsdPrice = Number(apiData.bnt_price.usd);
+    const bntSupply = this.bntSupply;
+
+    const { pools, tokens } = apiData;
+    const ethToken = findOrThrow(
+      tokens,
+      token => compareString(token.symbol, "ETH"),
+      "failed finding ETH token in API data"
     );
-    const totalVolume24h = this.relays
-      .filter(
-        x => x && !x.v2 && x.volume !== undefined && !isNaN(Number(x.volume))
-      )
-      .map(x => new BigNumber(x.volume || 0))
-      .reduce((sum, current) => sum.plus(current), new BigNumber(0));
+    const bntToken = findOrThrow(
+      tokens,
+      token => compareString(token.symbol, "BNT"),
+      "failed finding BNT token in API data"
+    );
+    const totalVolume24h = pools.reduce(
+      (acc, item) => Number(item.volume_24h.usd || 0) + acc,
+      0
+    );
+    const totalLiquidityDepth = pools.reduce(
+      (acc, item) => Number(item.liquidity.usd || 0) + acc,
+      0
+    );
+
+    const totalBntStaked = pools.reduce((acc, item) => {
+      const bntReserve = item.reserves.find(reserve =>
+        compareString(reserve.address, bntToken.dlt_id)
+      );
+      if (!bntReserve) return acc;
+      return new BigNumber(bntReserve.balance).plus(acc);
+    }, new BigNumber(0));
+
+    const stakedBntPercent = totalBntStaked
+      .div(shrinkToken(bntSupply, bntToken.decimals))
+      .toNumber();
 
     return {
-      totalLiquidityDepth: this.relays
-        .map(x => Number(x.liqDepth || 0))
-        .reduce((sum, current) => sum + current, 0),
-      totalPoolCount: this.relays.length,
-      totalTokenCount: this.tokens.length,
-      stakedBntPercent: this.stakedBntPercent,
+      totalLiquidityDepth,
+      totalPoolCount: pools.length,
+      totalTokenCount: tokens.length,
+      stakedBntPercent,
       nativeTokenPrice: {
         symbol: "ETH",
-        price: (ethToken && ethToken.price) || 0
+        price: Number(ethToken.rate.usd)
       },
-      twentyFourHourTradeCount: this.liquidityHistory.data.length,
-      totalVolume24h: totalVolume24h.toNumber(),
-      bntUsdPrice: (this.apiData && Number(this.apiData.bnt_price.usd)) || 0
+      twentyFourHourTradeCount: apiData.swaps.length,
+      totalVolume24h,
+      bntUsdPrice
     };
   }
 
@@ -1419,8 +1443,6 @@ export class EthBancorModule
       const whiteListedPools = await liquidityProtection.methods
         .poolWhitelist()
         .call();
-
-      console.log(whiteListedPools, "are the white listed pools");
 
       return whiteListedPools;
     } catch (e) {
@@ -1707,7 +1729,7 @@ export class EthBancorModule
             };
           })
         ).catch(e => {
-          console.warn("Error fetching ROIs", e);
+          console.error("Error fetching ROIs", e);
         })
       ]);
 
@@ -1735,7 +1757,7 @@ export class EthBancorModule
 
       const rewardsMultiplier: {
         id: string;
-        rewardsMultiplier: BigNumber;
+        rewardsMultiplier: number;
       }[] = await Promise.all(
         uniquePoolReserveIds.map(async item => {
           const rewardsMultiplier = await vxm.rewards.fetchRewardsMultiplier({
@@ -1772,9 +1794,7 @@ export class EthBancorModule
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
               : new BigNumber(0),
-            rewardsMultiplier: multiplier
-              ? multiplier.rewardsMultiplier
-              : new BigNumber(0)
+            rewardsMultiplier: multiplier ? multiplier.rewardsMultiplier : 0
           };
         }
       );
@@ -2749,9 +2769,6 @@ export class EthBancorModule
       }
     }
     const bufferedResult = adjustedGas * buffer;
-    console.log(
-      `Web3 estimated is ${bufferedResult} times by ${buffer} is ${bufferedResult} being sent to tx.`
-    );
     return new BigNumber(bufferedResult.toFixed(0)).toNumber();
   }
 
@@ -2770,8 +2787,6 @@ export class EthBancorModule
     onHash?: (hash: string) => void;
     onConfirmation?: (hash: string) => void;
   }): Promise<string> {
-    console.log("received", tx);
-
     let adjustedGas: number | boolean = false;
     if (gas) {
       adjustedGas = gas;
@@ -2779,7 +2794,7 @@ export class EthBancorModule
       try {
         adjustedGas = await this.determineTxGas(tx);
       } catch (e) {
-        console.warn("Failed to estimate gas");
+        console.error("Failed to estimate gas");
       }
     }
 
@@ -2914,7 +2929,6 @@ export class EthBancorModule
       })
       .sort(sortByLiqDepth);
 
-    console.timeEnd("tokens");
     return finalTokens;
   }
 
@@ -3030,9 +3044,15 @@ export class EthBancorModule
       const whitelisted = whiteListedPools.some(whitelistedAnchor =>
         compareString(whitelistedAnchor, relay.pool_dlt_id)
       );
-      const bntReserve = relay.reserves.find(reserve =>
+      const lpNetworkTokenReserve = relay.reserves.find(reserve =>
         compareString(reserve.address, liquidityProtectionNetworkToken)
       );
+
+      const hasEnoughLpNetworkToken =
+        lpNetworkTokenReserve &&
+        limit &&
+        limit.isLessThan(lpNetworkTokenReserve!.balance);
+
       const liquidityProtection =
         relay.reserveTokens.some(reserve =>
           compareString(reserve.contract, liquidityProtectionNetworkToken)
@@ -3040,9 +3060,11 @@ export class EthBancorModule
         relay.reserveTokens.length == 2 &&
         relay.reserveTokens.every(reserve => reserve.reserveWeight == 0.5) &&
         whitelisted &&
-        limit &&
-        limit.isLessThan(bntReserve!.balance);
+        hasEnoughLpNetworkToken;
 
+      const bntReserve = relay.reserves.find(reserve =>
+        compareString(reserve.address, liquidityProtectionNetworkToken)
+      );
       const addProtectionSupported = liquidityProtection && bntReserve;
 
       const apr = aprs.find(apr =>
@@ -3260,7 +3282,6 @@ export class EthBancorModule
         expandToken(input.decAmount, input.decimals)
       );
       const fundReward = await this.getGeometricMean(weiInputs);
-      console.log(fundReward, "was returned with geometric mean");
 
       const shareOfPool = calculateShareOfPool(
         fundReward,
@@ -3429,13 +3450,11 @@ export class EthBancorModule
     const maxStakingEnabled = await v2Converter.methods
       .maxStakedBalanceEnabled()
       .call();
-    console.log({ maxStakingEnabled });
     if (maxStakingEnabled) {
       const maxStakedBalance = await v2Converter.methods
         .maxStakedBalances(sameReserve.reserveAddress)
         .call();
 
-      console.log({ maxStakedBalance });
       if (maxStakedBalance !== "0") {
         const currentBalance = new BigNumber(sameReserve.stakedBalance);
         const proposedTotalBalance = new BigNumber(suggestedDepositWei).plus(
@@ -3464,7 +3483,6 @@ export class EthBancorModule
       shareOfPool,
       singleUnitCosts
     };
-    console.log(result, "was the result");
     return result;
   }
 
@@ -3803,7 +3821,6 @@ export class EthBancorModule
     userAddress?: string;
     keepWei?: boolean;
   }) {
-    console.count("getUserBalanceDirect");
     if (!tokenContractAddress)
       throw new Error("Token contract address cannot be falsy");
     const balance = await vxm.ethWallet.getBalance({
@@ -4011,8 +4028,6 @@ export class EthBancorModule
       })
     );
 
-    console.log({ iouBalances, maxWithdrawals });
-
     return { iouBalances, maxWithdrawals };
   }
 
@@ -4021,7 +4036,6 @@ export class EthBancorModule
       throw new Error("Cannot find users .currentUser");
 
     const poolType = await this.getPoolType(relayId);
-    console.log("detected pool type is", poolType);
     return poolType == PoolType.Traditional
       ? this.getUserBalancesTraditional({ relayId })
       : this.getUserBalancesChainLink(relayId);
@@ -4168,7 +4182,6 @@ export class EthBancorModule
         amount: removeLiquidityReturnDec
       }
     };
-    console.log(result, "was the result");
     return result;
   }
 
@@ -4602,7 +4615,6 @@ export class EthBancorModule
       throw new Error("Error finding slippage tolerance");
     const percent = new BigNumber(1).minus(slippageTolerance);
     const newWei = new BigNumber(wei).times(percent).toFixed(0);
-    console.log(newWei, "is new wei");
     return newWei;
   }
 
@@ -4624,7 +4636,6 @@ export class EthBancorModule
     const tokenAddressesMatch = compareString(token.contract, tokenAddress);
     if (!tokenAddressesMatch) throw new Error("RPC return was not expected");
 
-    console.log(token, "was was return");
     if (!(token.symbol && token.decimals))
       throw new Error(
         "Failed parsing token information, please ensure this is an ERC-20 token"
@@ -4748,7 +4759,6 @@ export class EthBancorModule
     let txHash: string;
 
     if (postV28 && relay.converterType == PoolType.Traditional) {
-      console.log("treating as a traditional relay");
       const {
         smartTokenAmountWei,
         reserveBalancesAboveZero
@@ -4776,7 +4786,6 @@ export class EthBancorModule
         resolveImmediately: true
       });
     } else if (postV28 && relay.converterType == PoolType.ChainLink) {
-      console.log("treating as a chainlink v2 relay");
       const chainLinkRelay = await this.chainLinkRelayById(relay.id);
       const reserveToken = matchedBalances.map(balance => ({
         tokenContract: balance.contract,
@@ -4815,7 +4824,6 @@ export class EthBancorModule
         resolveImmediately: true
       });
     } else {
-      console.log("treating as an old tradtional relay");
       const { smartTokenAmountWei } = await this.calculateOpposingDepositInfo({
         reserves,
         changedReserveId: reserves[0].id,
@@ -4901,7 +4909,6 @@ export class EthBancorModule
 
   @action async warmEthApi() {
     const tokens = await ethBancorApi.getTokens();
-    console.log(tokens, "are the tokens");
     this.setBancorApiTokens(tokens);
     return tokens;
   }
@@ -4915,13 +4922,6 @@ export class EthBancorModule
         return reserveFeeds;
         // throw new Error("There are no cached Bancor API tokens.");
       }
-      const ethUsdPrice = findOrThrow(
-        tokens,
-        token => token.code == "ETH",
-        "failed finding price of ETH from tokens request"
-      ).price;
-      console.log(ethUsdPrice, "is the eth USD price");
-
       const [bancorCovered, notCovered] = partition(reserveFeeds, feed => {
         const inDictionary = ethBancorApiDictionary.find(
           matchReserveFeed(feed)
@@ -4950,7 +4950,7 @@ export class EthBancorModule
 
       return [...newBancorCovered, ...notCovered];
     } catch (e) {
-      console.warn(`Failed utilising Bancor API: ${e.message}`);
+      console.error(`Failed utilising Bancor API: ${e.message}`);
       return reserveFeeds;
     }
   }
@@ -5022,9 +5022,7 @@ export class EthBancorModule
     return this.morePoolsAvailable;
   }
 
-  @action async refresh() {
-    console.log("refresh called on eth bancor, doing nothing");
-  }
+  @action async refresh() {}
 
   @action async conversionPathFromNetworkContract({
     from,
@@ -5161,15 +5159,6 @@ export class EthBancorModule
   ): Promise<V2Response> {
     const smallLoad = convertersAndAnchors.length < 5;
 
-    const timeStart = Date.now();
-    console.log(
-      "started at",
-      parseInt(String(timeStart / 1000)),
-      "for",
-      convertersAndAnchors.length,
-      timeStart
-    );
-
     const allAnchors = convertersAndAnchors.map(item => item.anchorAddress);
     const allConverters = convertersAndAnchors.map(
       item => item.converterAddress
@@ -5245,14 +5234,10 @@ export class EthBancorModule
       half => half.converterType == PoolType.ChainLink
     );
 
-    console.log({ verifiedV1Pools, verifiedV2Pools });
-
     const reserveTokens = uniqWith(
       passedFirstHalfs.flatMap(half => half.reserves),
       compareString
     );
-
-    console.time("secondWaterfall");
 
     const tokenInMeta = (tokenMeta: TokenMeta[]) => (address: string) =>
       tokenMeta.find(
@@ -5348,8 +5333,6 @@ export class EthBancorModule
       usdPriceOfBnt: this.bntUsdPrice
     });
 
-    console.timeEnd("secondWaterfall");
-
     const v2Pools = verifiedV2Pools.map(
       (pool): ChainLinkRelay => {
         const rawPool = findOrThrow(
@@ -5408,13 +5391,8 @@ export class EthBancorModule
       const reserveBalances = v1ReserveBalances.find(reserve =>
         compareString(reserve.converterAddress, converterAddress)
       )!;
-      if (!reserveBalances) {
-        console.log(
-          pool.anchorAddress,
-          "was dropped because it has no reserve balances"
-        );
-        return;
-      }
+      if (!reserveBalances) return;
+
       const zippedReserveBalances = [
         {
           contract: polishedHalf.connectorToken1,
@@ -5483,16 +5461,6 @@ export class EthBancorModule
     }
 
     // end debug
-
-    const timeEnd = Date.now();
-    const timeTaken = timeEnd - timeStart;
-    console.log(
-      timeTaken,
-      `was time to load ${convertersAndAnchors.length} finishing with ${
-        pools.length
-      } in mode ${smallLoad ? "small" : "normal"}`
-    );
-
     return {
       reserveFeeds,
       pools
@@ -5526,9 +5494,11 @@ export class EthBancorModule
     const meta = this.tokenMeta;
 
     const validSwaps = this.apiData!.swaps.filter(swap => {
-      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id]
-      return tradedTokens.every(tokenAddress => tokens.some(token => compareString(token.dlt_id, tokenAddress)))
-    })
+      const tradedTokens = [swap.source_token_dlt_id, swap.target_token_dlt_id];
+      return tradedTokens.every(tokenAddress =>
+        tokens.some(token => compareString(token.dlt_id, tokenAddress))
+      );
+    });
 
     const trades = validSwaps.map(
       (x): ViewLiquidityEvent<ViewTradeEvent> => {
@@ -5621,7 +5591,6 @@ export class EthBancorModule
         );
         if (!toToken) {
           console.error("Unable to find terminating token...");
-          console.log(lowestTwoCounts, terminatingTokens, terminatingTrades);
           return false;
         }
 
@@ -5835,23 +5804,10 @@ export class EthBancorModule
 
   @mutation setApiData(data: WelcomeData) {
     this.apiData = data;
-    console.log(data, "data is here!");
   }
 
-  @mutation updatePools(pools: NewPool[]) {
+  @mutation setPools(pools: NewPool[]) {
     this.newPools = pools;
-
-    const existingPools = this.newPools;
-    const poolsNotBeingUpdated = existingPools.filter(
-      pool => !pools.some(p => compareString(p.pool_dlt_id, pool.pool_dlt_id))
-    );
-    this.newPools = filterAndWarn(
-      [...pools, ...poolsNotBeingUpdated],
-      pool =>
-        pool.reserves.every(reserve => typeof reserve.address == "string") &&
-        pool.reserves.length == 2,
-      "lost a pool..."
-    );
   }
 
   @action async init() {
@@ -5891,10 +5847,6 @@ export class EthBancorModule
     ]).pipe(
       mergeMap(([anchorAddresses, converterRegistryAddress]) =>
         (async () => {
-          console.log("fetching...", {
-            anchorAddresses,
-            converterRegistryAddress
-          });
           const converters = await getConvertersByAnchors({
             anchorAddresses,
             converterRegistryAddress,
@@ -6075,62 +6027,7 @@ export class EthBancorModule
         )
         .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
 
-      await combineLatest([apiData$, tokenMeta$])
-        .pipe(
-          switchMap(([apiData, tokenMeta]) => {
-            const pools = apiData.pools;
-            const tokens = apiData.tokens;
-
-            const betterPools = pools.map(pool => {
-              const reserveTokens = pool.reserves
-                .map(
-                  (reserve): TokenMetaWithReserve => {
-                    const meta = tokenMeta.find(meta =>
-                      compareString(meta.contract, reserve.address)
-                    );
-                    const token = findOrThrow(
-                      tokens,
-                      token => compareString(token.dlt_id, reserve.address),
-                      "was expecting a token for a known reserve in API data"
-                    );
-
-                    return {
-                      id: reserve.address,
-                      contract: reserve.address,
-                      reserveWeight: ppmToDec(reserve.weight),
-                      decBalance: reserve.balance,
-                      name: token.symbol,
-                      symbol: token.symbol,
-                      image: (meta && meta.image) || defaultImage,
-                      precision: token.decimals
-                    };
-                  }
-                )
-                .filter(pool => pool.contract);
-              const decFee = ppmToDec(pool.fee);
-              return {
-                ...pool,
-                decFee,
-                reserveTokens
-              };
-            });
-
-            const passedPools = filterAndWarn(
-              betterPools,
-              pool => pool.reserveTokens.length == 2,
-              "lost pools due to lack of meta data"
-            ) as NewPool[];
-
-            return passedPools;
-          }),
-          bufferTime(50),
-          filter(x => x.length > 0),
-          firstItem(),
-          tap(pools => {
-            this.updatePools(pools);
-          })
-        )
-        .toPromise();
+      await newPools$.pipe(firstItem()).toPromise();
     } catch (e) {
       console.error("thrown in x", e);
     }
@@ -6342,13 +6239,10 @@ export class EthBancorModule
       RawAbiReserveBalance[]
     ];
 
-    console.log(poolsToCalculate, "are pools to calculate");
     const [passedReserveBalances, failedReserveBalances] = partition(
       reserveBalances,
       balance => balance.reserveOne && balance.reserveTwo
     );
-
-    console.log({ failedReserveBalances });
 
     const poolRoiShapes = tokenSupplys
       .filter(supply => {
@@ -6404,7 +6298,6 @@ export class EthBancorModule
           twoRoi: string;
         }[]
       ];
-      console.log("PoolROI Success:", poolRois);
 
       const successfulPoolRois = poolRois
         .filter(roi => roi.oneRoi && roi.twoRoi)
@@ -6426,12 +6319,6 @@ export class EthBancorModule
           mean: calculateMean(roi.oneRoiCalculated, roi.twoRoiCalculated)
         }));
 
-      console.log(
-        successfulPoolRois,
-        "allROIS",
-        successfulPoolRois.map(x => x.anchor),
-        "anchors"
-      );
       this.updatePoolAprs(
         successfulPoolRois.map(
           (x): PoolApr => ({ poolId: x.anchor, oneWeekApr: x.mean })
@@ -6472,13 +6359,6 @@ export class EthBancorModule
   }
 
   @action async addPoolsBulk(convertersAndAnchors: ConverterAndAnchor[]) {
-    console.log(
-      "bulkGot",
-      convertersAndAnchors.length,
-      "at",
-      parseInt(String(Date.now() / 1000)),
-      Date.now()
-    );
     if (!convertersAndAnchors || convertersAndAnchors.length == 0) return;
 
     const { pools, reserveFeeds } = await this.addPoolsV2(convertersAndAnchors);
@@ -6502,13 +6382,6 @@ export class EthBancorModule
       .flatMap(tokensInRelay)
       .map(token => token.contract);
 
-    console.log(
-      "bulkGotResolved",
-      convertersAndAnchors.length,
-      "at",
-      parseInt(String(Date.now() / 1000)),
-      Date.now()
-    );
     void this.checkFees(allPools);
 
     return tokenAddresses;
@@ -6632,29 +6505,8 @@ export class EthBancorModule
       )
     }));
 
-    const bntSupply = this.bntSupply;
-    const bntTokenAddress = getNetworkVariables(this.currentNetwork).bntToken;
-
-    const totalBntInRelays = meshedRelays
-      .filter(relay =>
-        relay.reserves.some(reserve => reserve.contract, bntTokenAddress)
-      )
-      .reduce((acc, relay) => {
-        const relayBalances = relay as RelayWithReserveBalances;
-        const bntReserveBalance =
-          relayBalances.reserveBalances?.find(reserve =>
-            compareString(reserve.id, bntTokenAddress)
-          )?.amount || "0";
-        return new BigNumber(acc).plus(bntReserveBalance).toString();
-      }, "0");
-
-    const percent = new BigNumber(totalBntInRelays).div(bntSupply).toNumber();
-
-    this.stakedBntPercent = percent;
     this.relaysList = Object.freeze(meshedRelays);
   }
-
-  stakedBntPercent: number = 0;
 
   @mutation wipeTokenBalances() {
     this.tokenBalances = [];
@@ -7025,8 +6877,6 @@ export class EthBancorModule
 
     const path = generateEthPath(fromToken.symbol, relays);
 
-    console.log(path, "is the path");
-
     const fromWei = expandToken(amount, fromTokenDecimals);
     try {
       const wei = await this.getReturnByPath({
@@ -7071,7 +6921,7 @@ export class EthBancorModule
           slippage = slippageNumber.toNumber();
         }
       } catch (e) {
-        console.warn("Failed calculating slippage", e.message);
+        console.error("Failed calculating slippage", e.message);
       }
 
       return {
@@ -7079,7 +6929,7 @@ export class EthBancorModule
         slippage
       };
     } catch (e) {
-      console.log(e, "was caught in here...");
+      console.error(e, "was caught in here...");
       if (
         e.message.includes(
           `Returned values aren't valid, did it run Out of Gas? You might also see this error if you are not using the correct ABI for the contract you are retrieving data from`
@@ -7097,7 +6947,6 @@ export class EthBancorModule
           relay =>
             !relay.balances.reserves.every(reserve => reserve.weiAmount !== "0")
         );
-        console.log(relayBalances, "is the relay balances");
         if (relaysWithNoBalances.length > 0) {
           const moreThanOne = relayBalances.length > 1;
           throw new Error(

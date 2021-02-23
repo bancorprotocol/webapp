@@ -124,7 +124,6 @@ export default class AddProtectionDouble extends BaseComponent {
   }
 
   get balance() {
-    console.log(vxm.ethBancor.poolTokenPositions, "are pool token positions");
     const poolBalance = vxm.ethBancor.poolTokenPositions.find(position =>
       compareString(position.relay.id as string, this.pool.id)
     );

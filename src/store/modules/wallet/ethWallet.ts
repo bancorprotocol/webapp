@@ -9,19 +9,12 @@ import { EthNetworks, getWeb3, Provider, web3 } from "@/api/web3";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
-    console.log("pumping into web3.eth.sendTransaction is...", data);
     web3.eth
       .sendTransaction(data)
       .on("transactionHash", hash => {
-        console.log("returning a tx hash!", hash);
         resolve(hash);
       })
-      .on("receipt", (receipt: any) => {
-        console.log("receipt received", receipt);
-      })
-      .on("confirmation", (confirmationNumber: any, receipt: any) => {
-        console.log({ confirmationNumber, receipt });
-      })
+      .on("receipt", (receipt: any) => {})
       .on("error", error => reject(error));
   });
 
@@ -68,7 +61,7 @@ export class EthereumModule extends VuexModule.With({
       await onboard.walletSelect();
       await onboard.walletCheck();
     } catch (e) {
-      console.log(e, "was the error");
+      console.error(e, "was the error");
       throw new Error(`error: ${e}`);
     }
   }
@@ -81,11 +74,6 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    console.log(
-      nativeBalance,
-      "is native balance",
-      JSON.stringify(nativeBalance)
-    );
     vxm.ethBancor.updateUserBalances([
       { balance: fromWei(nativeBalance), id: ethReserveAddress }
     ]);

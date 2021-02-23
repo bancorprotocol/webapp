@@ -1,6 +1,9 @@
 <template>
   <div class="mt-3">
-    <label-content-split :label="$t('claimable_amount')">
+    <label-content-split
+      :label="$t('claimable_amount')"
+      :tooltip="$t('not_include_liquidity_rewards')"
+    >
       <logo-amount-symbol
         :pool-id="position.stake.poolId"
         :amount="prettifyNumber(position.protectedAmount.amount)"
@@ -13,13 +16,6 @@
       variant="error"
       class="mb-3"
       msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few seconds."
-    />
-
-    <alert-block
-      variant="warning"
-      class="my-3"
-      :title="$t('important')"
-      :msg="$t('not_include_liquidity_rewards')"
     />
 
     <alert-block
@@ -185,13 +181,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
       compareString(position.id, this.$route.params.id)
     );
-    console.log(pos, "is the selected pos");
     return pos;
   }
 
   get rewardsWithMultiplier() {
-    return vxm.ethBancor.protectedPositions.some(position =>
-      position.rewardsMultiplier.gt(1)
+    return vxm.ethBancor.protectedPositions.some(
+      position => position.rewardsMultiplier > 1
     );
   }
 
@@ -238,7 +233,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     this.modal = true;
     this.txBusy = true;
     const [poolId, first, second] = this.$route.params.id.split(":");
-    console.log({ poolId, first, second });
     try {
       const txRes = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
@@ -270,7 +264,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   async onPercentUpdate(newPercent: string) {
-    console.log(newPercent, "is the new percent");
     const percentage = Number(this.percentage) / 100;
     if (!percentage) return;
     const res = await vxm.ethBancor.calculateSingleWithdraw({
@@ -281,8 +274,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
     this.expectedValue = res.expectedValue;
     this.outputs = res.outputs;
-
-    console.log(res, "was the res");
   }
 
   get tokenContract() {
@@ -298,7 +289,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       relayId: this.pool.id,
       selectedTokenAddress: this.tokenContract
     });
-    console.log("priceDeviationTooHigh", this.priceDeviationTooHigh);
   }
 
   private interval: any;

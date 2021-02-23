@@ -37,8 +37,8 @@ export interface PoolHistoricBalance {
   pool: MinimalPool;
   smartTokenSupply: string;
   reserveBalances: {
-      contract: string;
-      weiAmount: string;
+    contract: string;
+    weiAmount: string;
   }[];
 }
 
@@ -78,7 +78,7 @@ export interface ProtectedLiquidityCalculated {
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
   pendingReserveReward?: BigNumber;
-  rewardsMultiplier?: BigNumber;
+  rewardsMultiplier?: number;
 }
 
 export interface TokenPrice {
@@ -813,7 +813,7 @@ export interface ViewProtectedLiquidity {
   fullCoverage: number;
   givenVBnt?: string;
   pendingReserveReward: BigNumber;
-  rewardsMultiplier: BigNumber;
+  rewardsMultiplier: number;
   reserveTokenPrice: number;
   bntTokenPrice: number;
 }
