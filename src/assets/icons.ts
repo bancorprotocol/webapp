@@ -45,6 +45,7 @@ import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
 import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
+import { faBell } from "@fortawesome/free-solid-svg-icons/faBell";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -87,7 +88,8 @@ export const fas = [
   faArrowLeft,
   faArrowRight,
   faCheck,
-  faSync
+  faSync,
+  faBell
 ];
 
 export const fab = [
