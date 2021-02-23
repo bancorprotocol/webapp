@@ -35,6 +35,7 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
+import { authenticatedReceiver$ } from './observables';
 
 export enum PositionType {
   single,
@@ -705,6 +706,15 @@ const wallets = [
   { walletName: "wallet.io", rpcUrl: RPC_URL }
 ];
 
+export const calculatePercentIncrease = (
+  small: number | string,
+  big: number | string
+): string => {
+  const profit = new BigNumber(big).minus(small);
+  return profit.div(small).toString();
+};
+
+
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
   networkId: 1,
@@ -712,6 +722,7 @@ export const onboard = Onboard({
   subscriptions: {
     address: address => {
       vxm.ethWallet.accountChange(address);
+      authenticatedReceiver$.next(address);
     },
     balance: balance => vxm.ethWallet.nativeBalanceChange(balance),
     network: (network: EthNetworks) => {

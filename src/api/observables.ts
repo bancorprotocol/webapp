@@ -25,17 +25,28 @@ import {
 import dayjs from "dayjs";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
-import { getWelcomeData, NewPool, TokenMetaWithReserve, WelcomeData } from "./eth/bancorApi";
+import {
+  getWelcomeData,
+  NewPool,
+  TokenMetaWithReserve,
+  WelcomeData
+} from "./eth/bancorApi";
 import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
-import { compareString, findOrThrow } from "./helpers";
+import {
+  compareString,
+  findOrThrow,
+  calculateProgressLevel,
+  calculatePercentIncrease
+} from "./helpers";
 import { buildStakingRewardsContract } from "./eth/contractTypes";
 import { filterAndWarn } from "./pureHelpers";
 import {
   RegisteredContracts,
   MinimalPool,
   ProtectedLiquidityCalculated,
-  ProtectedLiquidity
+  ProtectedLiquidity,
+  ViewProtectedLiquidity
 } from "@/types/bancor";
 import {
   fetchContractAddresses,
@@ -54,6 +65,8 @@ import {
 import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
 import { ethReserveAddress } from "./eth/ethAbis";
+import { shrinkToken } from "./eth/helpers";
+import BigNumber from "bignumber.js";
 
 const tokenMetaDataEndpoint =
   "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
@@ -315,15 +328,28 @@ const logger = <T>(label: string, hideReturn = false) => (
     })
   );
 
-export const authenticated$ = new Subject<string | false>();
+export const authenticatedReceiver$ = new Subject<string | false>();
 export const networkVersionReceiver$ = new Subject<EthNetworks>();
 export const fetchPositionsTrigger$ = new Subject<null>();
 fetchPositionsTrigger$.next(null);
 
-const [onLoginNoType$, onLogoutNoType$]  = partition(authenticated$, (currentUser) => Boolean(currentUser))
-const onLogin$ = onLoginNoType$.pipe(map(currentUser => currentUser as string), share());
-const onLogout$ = onLogoutNoType$.pipe(map(currentUser => currentUser as false), share());
+const authenticated$ = authenticatedReceiver$.pipe(
+  distinctUntilChanged(),
+  share()
+);
 
+const [onLoginNoType$, onLogoutNoType$] = partition(
+  authenticated$,
+  currentUser => Boolean(currentUser)
+);
+const onLogin$ = onLoginNoType$.pipe(
+  map(currentUser => currentUser as string),
+  share()
+);
+const onLogout$ = onLogoutNoType$.pipe(
+  map(currentUser => currentUser as false),
+  share()
+);
 
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
@@ -351,10 +377,14 @@ export const minimalPools$ = pools$.pipe(
       })
     )
   ),
-  distinctUntilChanged<MinimalPool[]>(isEqual),
+  distinctUntilChanged<MinimalPool[]>(isEqual)
 );
 
-export const tokens$ = apiData$.pipe(pluck("tokens"), distinctUntilChanged<WelcomeData['tokens']>(isEqual), share());
+export const tokens$ = apiData$.pipe(
+  pluck("tokens"),
+  distinctUntilChanged<WelcomeData["tokens"]>(isEqual),
+  share()
+);
 
 export const tokenMeta$ = networkVersion$.pipe(
   switchMapIgnoreThrow(network => getTokenMeta(network)),
@@ -534,31 +564,38 @@ settingsContractAddress$
     vxm.minting.setMinNetworkTokenLiquidityForMinting(settingsContract)
   );
 
-combineLatest([liquidityProtection$, settingsContractAddress$])
-  .pipe(
-    switchMapIgnoreThrow(
-      ([protectionContractAddress, settingsContractAddress]) =>
-        fetchLiquidityProtectionSettings({
-          settingsContractAddress,
-          protectionContractAddress
-        }).catch(e =>
-          vxm.ethBancor.fetchLiquidityProtectionSettings({
-            protectionContractAddress,
-            settingsContractAddress
-          })
-        )
+const liquiditySettings$ = combineLatest([
+  liquidityProtection$,
+  settingsContractAddress$
+]).pipe(
+  switchMapIgnoreThrow(([protectionContractAddress, settingsContractAddress]) =>
+    fetchLiquidityProtectionSettings({
+      settingsContractAddress,
+      protectionContractAddress
+    }).catch(e =>
+      vxm.ethBancor.fetchLiquidityProtectionSettings({
+        protectionContractAddress,
+        settingsContractAddress
+      })
     )
-  )
-  .subscribe(settings => {
-    vxm.ethBancor.setLiquidityProtectionSettings(settings);
-    vxm.ethBancor.fetchAndSetTokenBalances([settings.govToken]);
-  });
+  ),
+  share()
+);
 
-settingsContractAddress$
-  .pipe(switchMapIgnoreThrow(address => fetchWhiteListedV1Pools(address)))
-  .subscribe(whitelistedPools =>
-    vxm.ethBancor.setWhiteListedPools(whitelistedPools)
-  );
+liquiditySettings$.subscribe(settings => {
+  console.log("settings are...", settings);
+  vxm.ethBancor.setLiquidityProtectionSettings(settings);
+  vxm.ethBancor.fetchAndSetTokenBalances([settings.govToken]);
+});
+
+const whitelistedPools$ = settingsContractAddress$.pipe(
+  switchMapIgnoreThrow(address => fetchWhiteListedV1Pools(address)),
+  share()
+);
+
+whitelistedPools$.subscribe(whitelistedPools =>
+  vxm.ethBancor.setWhiteListedPools(whitelistedPools)
+);
 
 const localAndRemotePositionIds$ = combineLatest([
   onLogin$,
@@ -640,10 +677,9 @@ const historicPoolBalances$ = combineLatest([
 ]).pipe(
   withLatestFrom(currentBlock$),
   switchMapIgnoreThrow(([[unverified, minimal], currentBlock]) => {
-    console.count('getting balance')
-    return getHistoricBalances(unverified, currentBlock.blockNumber, minimal)
-  }
-  )
+    console.count("getting balance");
+    return getHistoricBalances(unverified, currentBlock.blockNumber, minimal);
+  })
 );
 
 const poolReturns$ = combineLatest([
@@ -751,6 +787,154 @@ const fullPositions$ = combineLatest([
   )
 );
 
+const whitelistedImmediate$ = whitelistedPools$.pipe(startWith(undefined));
+
+combineLatest([
+  fullPositions$,
+  onLogin$,
+  liquiditySettings$,
+  whitelistedImmediate$,
+  tokens$,
+  usdPriceOfBnt$
+])
+  .pipe(
+    logger('newww positions'),
+    map(
+      ([
+        positions,
+        currentUser,
+        liquiditySettings,
+        whitelistedPools,
+        tokens,
+        usdPriceOfBnt
+      ]) => {
+        const { minDelay, maxDelay, networkToken } = liquiditySettings;
+
+        const whitelistedPositions = whitelistedPools
+          ? positions.filter(pos =>
+              whitelistedPools.some(whitelistedPool =>
+                compareString(whitelistedPool, pos.poolToken)
+              )
+            )
+          : positions;
+        const knownTokenPrecision = whitelistedPositions.filter(pos =>
+          tokens.some(token => compareString(token.dlt_id, pos.reserveToken))
+        );
+
+        const passedPositions = knownTokenPrecision;
+
+        return passedPositions.map(
+          (singleEntry): ViewProtectedLiquidity => {
+            const isWhiteListed = true;
+
+            const startTime = Number(singleEntry.timestamp);
+
+            const reserveToken = findOrThrow(tokens, token =>
+              compareString(token.dlt_id, singleEntry.reserveToken)
+            );
+            const reservePrecision = Number(reserveToken.decimals);
+
+            const reserveTokenDec = shrinkToken(
+              singleEntry.reserveAmount,
+              reservePrecision
+            );
+
+            const fullyProtectedDec =
+              singleEntry.fullLiquidityReturn &&
+              shrinkToken(
+                singleEntry.fullLiquidityReturn.targetAmount,
+                reservePrecision
+              );
+
+            const currentProtectedDec =
+              singleEntry.currentLiquidityReturn &&
+              shrinkToken(
+                singleEntry.currentLiquidityReturn.targetAmount,
+                reservePrecision
+              );
+
+            const progressPercent = calculateProgressLevel(
+              startTime,
+              startTime + maxDelay
+            );
+
+            const givenVBnt =
+              compareString(reserveToken.dlt_id, networkToken) &&
+              reserveTokenDec;
+
+            const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
+              reserveTokenDec
+            );
+
+            const reserveTokenPrice = Number(reserveToken.rate.usd);
+
+            return {
+              id: `${singleEntry.poolToken}:${singleEntry.id}`,
+              whitelisted: isWhiteListed,
+              ...(givenVBnt && { givenVBnt }),
+              single: true,
+              apr: {
+                day: Number(singleEntry.oneDayDec),
+                week: Number(singleEntry.oneWeekDec)
+              },
+              insuranceStart: startTime + minDelay,
+              fullCoverage: startTime + maxDelay,
+              stake: {
+                amount: reserveTokenDec,
+                symbol: reserveToken.symbol,
+                poolId: singleEntry.poolToken,
+                unixTime: startTime,
+                usdValue: new BigNumber(reserveTokenDec)
+                  .times(reserveTokenPrice)
+                  .toNumber()
+              },
+              ...(fullyProtectedDec && {
+                fullyProtected: {
+                  amount: fullyProtectedDec,
+                  symbol: reserveToken.symbol,
+                  id: reserveToken.dlt_id,
+                  usdValue: new BigNumber(fullyProtectedDec)
+                    .times(reserveTokenPrice)
+                    .toNumber()
+                }
+              }),
+              ...(currentProtectedDec && {
+                protectedAmount: {
+                  amount: currentProtectedDec,
+                  id: reserveToken.dlt_id,
+                  symbol: reserveToken.symbol,
+                  ...(fullyProtectedDec && {
+                    usdValue: new BigNumber(currentProtectedDec)
+                      .times(reserveTokenPrice)
+                      .toNumber()
+                  })
+                }
+              }),
+              coverageDecPercent: progressPercent,
+              fees: {
+                amount: feeGenerated.toString(),
+                symbol: reserveToken.symbol,
+                id: reserveToken.dlt_id
+              },
+              roi:
+                fullyProtectedDec &&
+                Number(
+                  calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+                ),
+              pendingReserveReward: singleEntry.pendingReserveReward,
+              rewardsMultiplier: singleEntry.rewardsMultiplier,
+              reserveTokenPrice,
+              bntTokenPrice: usdPriceOfBnt
+            } as ViewProtectedLiquidity;
+          }
+        );
+      }
+    )
+  )
+  .subscribe(positions => {
+    vxm.ethBancor.setProtectedViewPositions(positions)
+  });
+
 combineLatest([fullPositions$, onLogin$, minimalPools$])
   .pipe(logger("with authentication"))
   .subscribe(([positions, currentUser, pools]) => {
@@ -768,9 +952,14 @@ combineLatest([fullPositions$, onLogin$, minimalPools$])
     vxm.ethBancor.setLoadingPositions(false);
   });
 
-combineLatest([onLogin$, minimalPools$]).subscribe(([userAddress, minimalPools]) => {
-  if (userAddress) {
-    const allTokens = minimalPools.flatMap(pool => [...pool.reserves, pool.anchorAddress])
-    vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+combineLatest([onLogin$, minimalPools$]).subscribe(
+  ([userAddress, minimalPools]) => {
+    if (userAddress) {
+      const allTokens = minimalPools.flatMap(pool => [
+        ...pool.reserves,
+        pool.anchorAddress
+      ]);
+      vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+    }
   }
-});
+);

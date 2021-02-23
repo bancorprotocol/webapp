@@ -784,6 +784,7 @@ export interface Service {
 }
 
 export interface TokenReward {
+  id: string;
   amount: string;
   symbol: string;
   usdValue?: string | number;

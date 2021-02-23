@@ -197,7 +197,7 @@ import {
   liquidityProtectionStore$,
   usdPriceOfBnt$,
   bancorConverterRegistry$,
-  authenticated$,
+  authenticatedReceiver$,
   networkVersion$,
   newPools$,
   poolPrograms$,
@@ -758,14 +758,6 @@ const buildReserveFeedsChainlink = (
 export const defaultImage =
   "https://ropsten.etherscan.io/images/main/empty-token.png";
 const ORIGIN_ADDRESS = DataTypes.originAddress;
-
-const calculatePercentIncrease = (
-  small: number | string,
-  big: number | string
-): string => {
-  const profit = new BigNumber(big).minus(small);
-  return profit.div(small).toString();
-};
 
 interface RawV2Pool {
   reserves: {
@@ -1475,17 +1467,6 @@ export class EthBancorModule
     });
   }
 
-  protectedPositionsArr: ProtectedLiquidityCalculated[] = [];
-
-  @mutation setProtectedPositions(positions: ProtectedLiquidityCalculated[]) {
-    console.log(positions, "are the positions getting set!");
-
-    const timeEnd = Date.now();
-    const difference = timeEnd - timeStart;
-    console.log("difference", difference, difference / 1000);
-    this.protectedPositionsArr = positions;
-  }
-
   @action async fetchPositionsMulti({
     positionIds,
     liquidityStore
@@ -1613,13 +1594,13 @@ export class EthBancorModule
     );
 
     const position = findOrThrow(
-      this.protectedPositionsArr,
+      this.protectedViewPositions,
       position => compareString(position.id, dbId),
       `failed to find the referenced position of ${dbId}`
     );
     const isDissolvingNetworkToken = compareString(
       this.liquidityProtectionSettings.networkToken,
-      position.reserveToken
+      position.protectedAmount.id
     );
     const ppmPercent = decToPpm(decPercent);
 
@@ -1627,8 +1608,8 @@ export class EthBancorModule
       const dissolvingFullPosition = decPercent === 1;
       const roundingBuffer = 0.01;
       const weiApprovalAmount = dissolvingFullPosition
-        ? position.reserveAmount
-        : new BigNumber(position.reserveAmount)
+        ? // where can we get the wei?
+        : new BigNumber(position.)
             .times(decPercent + roundingBuffer)
             .toFixed(0);
       await this.triggerApprovalIfRequired({
@@ -1781,159 +1762,17 @@ export class EthBancorModule
   }
 
   loadingProtectedPositions = true;
+  protectedViewPositions: ViewProtectedLiquidity[] = [];
+
+  @mutation setProtectedViewPositions(positions: ViewProtectedLiquidity[]) {
+    this.protectedViewPositions = positions;
+  }
 
   get protectedPositions(): ViewProtectedLiquidity[] {
-    const owner = this.currentUser;
-    if (!owner) return [];
+    const positions =  this.protectedViewPositions;
 
-    const { minDelay, maxDelay } = this.liquidityProtectionSettings;
-
-    const whiteListedPools = this.whiteListedPools;
-
-    const allPositions = this.protectedPositionsArr
-      .filter(position => compareString(position.owner, owner))
-      .filter(position =>
-        whiteListedPools.some(anchor =>
-          compareString(position.poolToken, anchor)
-        )
-      );
-
-    const allRelays = this.relays;
-    const uniqueAnchors = uniqWith(
-      allPositions.map(pos => pos.poolToken),
-      compareString
-    );
-
-    const relays = filterAndWarn(
-      uniqueAnchors,
-      anchor => allRelays.some(relay => compareString(relay.id, anchor)),
-      "positions were lost as relays were not found"
-    ).map(anchor =>
-      findOrThrow(
-        allRelays,
-        relay => compareString(relay.id, anchor),
-        "failed here..."
-      )
-    );
-
-    const viewPositions = allPositions.map(
-      (singleEntry): ViewProtectedLiquidity => {
-        const isWhiteListed = true;
-
-        const startTime = Number(singleEntry.timestamp);
-
-        const relay = findOrThrow(
-          relays,
-          relay => compareString(relay.id, singleEntry.poolToken),
-          "failed to find relay in view positions"
-        );
-
-        const reserveToken = this.token(singleEntry.reserveToken);
-        const reservePrecision = reserveToken.precision;
-
-        const reserveTokenDec = shrinkToken(
-          singleEntry.reserveAmount,
-          reservePrecision
-        );
-
-        const fullyProtectedDec =
-          singleEntry.fullLiquidityReturn &&
-          shrinkToken(
-            singleEntry.fullLiquidityReturn.targetAmount,
-            reservePrecision
-          );
-
-        const currentProtectedDec =
-          singleEntry.currentLiquidityReturn &&
-          shrinkToken(
-            singleEntry.currentLiquidityReturn.targetAmount,
-            reservePrecision
-          );
-
-        const progressPercent = calculateProgressLevel(
-          startTime,
-          startTime + maxDelay
-        );
-
-        const givenVBnt =
-          compareString(
-            reserveToken.id,
-            this.liquidityProtectionSettings.networkToken
-          ) && reserveTokenDec;
-
-        // stake - original
-        // full coverage - full wait time
-        // protectedAmount - current wait time
-
-        const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
-          reserveTokenDec
-        );
-
-        return {
-          id: `${singleEntry.poolToken}:${singleEntry.id}`,
-          whitelisted: isWhiteListed,
-          ...(givenVBnt && { givenVBnt }),
-          single: true,
-          apr: {
-            day: Number(singleEntry.oneDayDec),
-            // month: Number(singleEntry.on)
-            week: Number(singleEntry.oneWeekDec)
-          },
-          insuranceStart: startTime + minDelay,
-          fullCoverage: startTime + maxDelay,
-          stake: {
-            amount: reserveTokenDec,
-            symbol: reserveToken.symbol,
-            poolId: relay.id,
-            unixTime: startTime,
-            ...(reserveToken.price && {
-              usdValue: new BigNumber(reserveTokenDec)
-                .times(reserveToken.price)
-                .toNumber()
-            })
-          },
-          ...(fullyProtectedDec && {
-            fullyProtected: {
-              amount: fullyProtectedDec,
-              symbol: reserveToken.symbol,
-              ...(reserveToken.price && {
-                usdValue: new BigNumber(fullyProtectedDec)
-                  .times(reserveToken.price)
-                  .toNumber()
-              })
-            }
-          }),
-          ...(currentProtectedDec && {
-            protectedAmount: {
-              amount: currentProtectedDec,
-              symbol: reserveToken.symbol,
-              ...(reserveToken.price &&
-                fullyProtectedDec && {
-                  usdValue: new BigNumber(currentProtectedDec)
-                    .times(reserveToken.price!)
-                    .toNumber()
-                })
-            }
-          }),
-          coverageDecPercent: progressPercent,
-          fees: {
-            amount: feeGenerated.toString(),
-            symbol: reserveToken.symbol
-          },
-          roi:
-            fullyProtectedDec &&
-            Number(
-              calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-            ),
-          pendingReserveReward: singleEntry.pendingReserveReward,
-          rewardsMultiplier: singleEntry.rewardsMultiplier,
-          reserveTokenPrice: reserveToken.price,
-          bntTokenPrice: this.stats.bntUsdPrice
-        } as ViewProtectedLiquidity;
-      }
-    );
-
-    return viewPositions;
+    console.log('getter positions', positions)
+    return positions;
   }
 
   get poolTokenPositions(): PoolTokenPosition[] {
@@ -5583,7 +5422,7 @@ export class EthBancorModule
     );
 
     if (this.currentUser) {
-      authenticated$.next(this.currentUser);
+      authenticatedReceiver$.next(this.currentUser);
     }
 
     const individualAnchorsAndConverters$ = anchorAndConverters$.pipe(
@@ -6243,7 +6082,7 @@ export class EthBancorModule
           this.liquidityProtectionSettings.govToken
         ]);
       }
-      authenticated$.next(userAddress);
+      authenticatedReceiver$.next(userAddress);
       if (this.apiData && this.apiData.tokens) {
         const uniqueTokenAddresses = uniqWith(
           [
@@ -6537,21 +6376,22 @@ export class EthBancorModule
     );
 
     const position = findOrThrow(
-      this.protectedPositionsArr,
+      this.protectedViewPositions,
       pos => compareString(pos.id, posId),
       "failed finding protected position"
     );
-    const { reserveToken } = position;
+
+    const reserveTokenAddress = position.protectedAmount.id;
 
     const reserveTokenObj = findOrThrow(this.apiData!.tokens, token =>
-      compareString(reserveToken, token.dlt_id)
+      compareString(reserveTokenAddress, token.dlt_id)
     );
 
     return {
       outputs: [
         {
           amount: shrinkToken(res.baseAmount, reserveTokenObj.decimals),
-          id: reserveToken,
+          id: reserveTokenAddress,
           symbol: reserveTokenObj.symbol
         },
         {
@@ -6562,7 +6402,7 @@ export class EthBancorModule
       ].filter(output => new BigNumber(output.amount).isGreaterThan(0)),
       expectedValue: {
         amount: shrinkToken(res.targetAmount, reserveTokenObj.decimals),
-        id: reserveToken,
+        id: reserveTokenAddress,
         symbol: reserveTokenObj.symbol
       }
     };
