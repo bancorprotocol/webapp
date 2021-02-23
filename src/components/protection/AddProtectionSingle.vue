@@ -85,7 +85,11 @@
       class="mt-3 mb-3"
     />
 
-    <gray-border-block :gray-bg="true" class="my-3">
+    <gray-border-block
+      :gray-bg="true"
+      class="my-3"
+      v-if="!focusedReserveIsDisabled"
+    >
       <label-content-split
         :label="$t('space_available')"
         :loading="loading"
@@ -98,7 +102,11 @@
         }}</span>
       </label-content-split>
       <label-content-split
-        v-if="amountToMakeSpace && !opposingReserveIsDisabled"
+        v-if="
+          amountToMakeSpace &&
+          !opposingReserveIsDisabled &&
+          !focusedReserveIsDisabled
+        "
         class="mt-2"
         :label="
           $t('needed_open_space', { bnt: bnt.symbol, tkn: otherTkn.symbol })
@@ -284,10 +292,6 @@ export default class AddProtectionSingle extends BaseComponent {
     return this.disabledReserves.some(reserveId =>
       compareString(reserveId, this.opposingToken ? this.opposingToken.id : "")
     );
-  }
-
-  get spaceAvailableLTOne() {
-    return new BigNumber(this.maxStakeAmount).lt(1);
   }
 
   get pools() {
