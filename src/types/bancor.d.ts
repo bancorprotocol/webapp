@@ -29,6 +29,7 @@ export interface ProtectedLiquidity {
 export interface ProtectLiquidityParams {
   amount: ViewAmount;
   onUpdate?: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface PositionReturn {
@@ -147,6 +148,7 @@ export interface LiquidityParams {
   id: string;
   reserves: ViewAmount[];
   onUpdate?: OnUpdate;
+  onPrompt?: OnPrompt;
 }
 
 export interface OpposingLiquidParams {

@@ -1980,11 +1980,13 @@ export class EthBancorModule
   @action async addProtection({
     poolId,
     reserveAmount,
-    onUpdate
+    onUpdate,
+    onPrompt
   }: {
     poolId: string;
     reserveAmount: ViewAmount;
     onUpdate: OnUpdate;
+    onPrompt: OnPrompt;
   }): Promise<TxResponse> {
     const pool = this.relay(poolId);
 
@@ -2014,7 +2016,8 @@ export class EthBancorModule
                 owner: this.currentUser,
                 spender: liqudityProtectionContractAddress,
                 amount: reserveAmountWei,
-                tokenAddress: reserveTokenAddress
+                tokenAddress: reserveTokenAddress,
+                onPrompt
               });
             }
           }
@@ -2051,10 +2054,12 @@ export class EthBancorModule
 
   @action async removeProtection({
     decPercent,
-    id
+    id,
+    onPrompt
   }: {
     decPercent: number;
     id: string;
+    onPrompt: OnPrompt
   }): Promise<TxResponse> {
     const dbId = id.split(":")[1];
 
@@ -2086,7 +2091,8 @@ export class EthBancorModule
         owner: this.currentUser,
         spender: liquidityProtectionContract,
         amount: weiApprovalAmount,
-        tokenAddress: this.liquidityProtectionSettings.govToken
+        tokenAddress: this.liquidityProtectionSettings.govToken,
+        onPrompt
       });
     }
 
@@ -2108,7 +2114,8 @@ export class EthBancorModule
 
   @action async protectLiquidity({
     amount,
-    onUpdate
+    onUpdate,
+    onPrompt
   }: ProtectLiquidityParams): Promise<TxResponse> {
     const liquidityProtectionContractAddress = this.contracts
       .LiquidityProtection;
@@ -2128,7 +2135,8 @@ export class EthBancorModule
               amount: poolTokenWei,
               owner: this.currentUser,
               spender: liquidityProtectionContractAddress,
-              tokenAddress: poolToken.contract
+              tokenAddress: poolToken.contract,
+              onPrompt
             });
           }
         },
@@ -4822,7 +4830,8 @@ export class EthBancorModule
   @action async addLiquidity({
     id: relayId,
     reserves,
-    onUpdate
+    onUpdate,
+    onPrompt
   }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
 
@@ -4892,7 +4901,8 @@ export class EthBancorModule
           owner: this.currentUser,
           amount: expandToken(balance.amount!, balance.decimals),
           spender: converterAddress,
-          tokenAddress: balance.contract
+          tokenAddress: balance.contract,
+          onPrompt
         });
       })
     );
