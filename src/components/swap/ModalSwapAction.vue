@@ -137,10 +137,11 @@ export default class ModalSwapAction extends BaseComponent {
   }
 
   async onPrompt(prompt: Prompt) {
+    // present the questions to the user in prompt.questions
+    // once they've selected, pass the question id to selectedPromptReceiver$.next
     console.log(prompt, 'received on the view layer');
     await wait(2000);
     selectedPromptReceiver$.next(prompt.questions[1].id)
-    console.log('dispatched', prompt.questions[1].id);
   }
 
   async initAction() {
