@@ -1,5 +1,6 @@
 <template>
   <modal-base :title="title" v-model="txMeta.showTxModal" @input="close">
+    <slot></slot>
     <action-modal-status
       :error="txMeta.txError"
       :success="txMeta.success"
