@@ -78,7 +78,7 @@
       v-if="focusedReserveIsDisabled"
       variant="error"
       :msg="
-        disabledReserves.length > 1
+        bothReservesAreDisabled
           ? $t('pool_not_accepting')
           : $t(`available_reserve_only`, { symbol: opposingTokenSymbol })
       "
@@ -120,6 +120,7 @@
     </gray-border-block>
 
     <price-deviation-error
+      v-if="!bothReservesAreDisabled"
       v-model="priceDeviationTooHigh"
       :pool-id="pool.id"
       :token-contract="token.contract"
@@ -286,6 +287,10 @@ export default class AddProtectionSingle extends BaseComponent {
     return this.disabledReserves.some(reserveId =>
       compareString(reserveId, this.token.id)
     );
+  }
+
+  get bothReservesAreDisabled() {
+    return this.disabledReserves.length > 1;
   }
 
   get opposingReserveIsDisabled() {
