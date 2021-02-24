@@ -1469,6 +1469,11 @@ export class EthBancorModule
   get stats() {
     const apiData = this.apiData!;
     const bntUsdPrice = Number(apiData.bnt_price.usd);
+    const bntPrice24Change = Number(
+      ((bntUsdPrice / Number(apiData.bnt_price_24h_ago.usd) - 1) * 100).toFixed(
+        2
+      )
+    );
     const bntSupply = this.bntSupply;
 
     const { pools, tokens } = apiData;
@@ -1514,7 +1519,8 @@ export class EthBancorModule
       },
       twentyFourHourTradeCount: apiData.swaps.length,
       totalVolume24h,
-      bntUsdPrice
+      bntUsdPrice,
+      bntPrice24Change
     };
   }
 
@@ -5727,7 +5733,11 @@ export class EthBancorModule
           lowestTwoCounts.some(([t]) => compareString(token, t))
         );
         if (!toToken) {
-          console.warn("Unable to find terminating token in swap for hash", x.hash, {trades: x.trades});
+          console.warn(
+            "Unable to find terminating token in swap for hash",
+            x.hash,
+            { trades: x.trades }
+          );
           return false;
         }
 

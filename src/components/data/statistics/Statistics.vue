@@ -19,6 +19,7 @@
       <statistics-data-block
         :title="`${$t('price')} BNT`"
         :value="bntPriceUsd"
+        :percentage="bntPrice24Change"
       />
     </b-col>
 
@@ -95,6 +96,10 @@ export default class Statistics extends BaseComponent {
   get bntPriceUsd() {
     const price = this.stats.bntUsdPrice;
     return price ? this.prettifyNumber(price, true) : "N/A";
+  }
+
+  get bntPrice24Change() {
+    return this.stats.bntPrice24Change;
   }
 
   get volume24h() {
