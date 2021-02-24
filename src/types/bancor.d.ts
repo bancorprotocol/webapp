@@ -168,10 +168,23 @@ export interface Section {
   description: string;
 }
 
+
+export interface Prompt {
+  questions: {
+    id: string;
+    label: string;
+  }[]
+}
+
+export type OnPrompt = (prompt: Prompt) => void;
+export type OnSelection = (id: string) => void;
+
+
 export interface ProposedConvertTransaction {
   from: ViewAmount;
   to: ViewAmount;
   onUpdate?: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface TokenDetail {

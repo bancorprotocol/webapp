@@ -83,13 +83,15 @@
 import { Component, Prop, VModel } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
-import { Step, TxResponse, ViewToken } from "@/types/bancor";
+import { Step, TxResponse, ViewToken, Prompt } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import numeral from "numeral";
 import BaseComponent from "@/components/BaseComponent.vue";
+import wait from 'waait';
+import { selectedPromptReceiver$ } from '../../api/observables';
 
 @Component({
   components: {
@@ -134,6 +136,13 @@ export default class ModalSwapAction extends BaseComponent {
     this.success = null;
   }
 
+  async onPrompt(prompt: Prompt) {
+    console.log(prompt, 'received on the view layer');
+    await wait(2000);
+    selectedPromptReceiver$.next(prompt.questions[1].id)
+    console.log('dispatched', prompt.questions[1].id);
+  }
+
   async initAction() {
     if (this.success) {
       this.show = false;
@@ -159,7 +168,8 @@ export default class ModalSwapAction extends BaseComponent {
           id: this.token2.id,
           amount: this.amount2
         },
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt,
       });
 
       this.success = result;

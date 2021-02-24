@@ -41,7 +41,8 @@ import {
   ProtectedLiquidity,
   ConverterAndAnchor,
   ViewReserve,
-  RegisteredContracts
+  RegisteredContracts,
+  OnPrompt
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -171,7 +172,8 @@ import {
   bufferTime,
   delay,
   buffer,
-  share
+  share,
+  take
 } from "rxjs/operators";
 import {
   decToPpm,
@@ -201,7 +203,8 @@ import {
   networkVersion$,
   tokenMeta$,
   poolPrograms$,
-  newPools$
+  newPools$,
+  selectedPromptReceiver$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -796,6 +799,8 @@ interface NewRelay {
   };
 }
 
+const unlimitedWei = new BigNumber(2).pow(256).minus(1).div(new BigNumber(10).pow(18)).toString().split('.')[0]
+
 const calculateMean = (a: string, b: string) =>
   new BigNumber(a).plus(b).div(2).toString();
 
@@ -1056,6 +1061,14 @@ const sortSmartTokenAddressesByHighestLiquidity = (
     );
   return res;
 };
+
+interface TokenWithdrawParam {
+  owner: string;
+  spender: string;
+  tokenAddress: string;
+  amount: string;
+  currentApprovedBalance?: string;
+}
 
 interface EthOpposingLiquid {
   smartTokenAmountWei: ViewAmount;
@@ -5727,7 +5740,11 @@ export class EthBancorModule
           lowestTwoCounts.some(([t]) => compareString(token, t))
         );
         if (!toToken) {
-          console.warn("Unable to find terminating token in swap for hash", x.hash, {trades: x.trades});
+          console.warn(
+            "Unable to find terminating token in swap for hash",
+            x.hash,
+            { trades: x.trades }
+          );
           return false;
         }
 
@@ -6767,10 +6784,45 @@ export class EthBancorModule
     );
   }
 
+  @action async promptUserForApprovalType(onPrompt: OnPrompt): Promise<{ unlimitedApproval: boolean }> {
+    const promptId = String(Date.now());
+
+    enum ApproveTypes {
+      unlimited = "unlimited",
+      limited = "limited"
+    }
+    const questions = [
+      ApproveTypes.limited,
+      ApproveTypes.unlimited
+    ].map(label => ({ id: [promptId, label].join(":"), label }));
+
+    onPrompt({ questions });
+
+    const receivedPromptId = await selectedPromptReceiver$
+      .pipe(
+        filter(id => {
+          const [pId] = id.split(":");
+          return pId == promptId;
+        }),
+        take(1)
+      )
+      .toPromise();
+
+    const selectedQuestion = findOrThrow(
+      questions,
+      question => question.id == receivedPromptId,
+      "failed finding selected question"
+    );
+
+    const unlimitedApproval = selectedQuestion.label == ApproveTypes.unlimited;
+    return { unlimitedApproval }
+  }
+
   @action async convert({
     from,
     to,
-    onUpdate
+    onUpdate,
+    onPrompt
   }: ProposedConvertTransaction): Promise<TxResponse> {
     if (compareString(from.id, to.id))
       throw new Error("Cannot convert a token to itself.");
@@ -6830,7 +6882,8 @@ export class EthBancorModule
         owner: this.currentUser,
         amount: fromWei,
         spender: this.contracts.BancorNetwork,
-        tokenAddress: fromTokenContract
+        tokenAddress: fromTokenContract,
+        onPrompt
       });
     }
 
@@ -6861,17 +6914,12 @@ export class EthBancorModule
     return this.createTxResponse(confirmedHash);
   }
 
-  @action async triggerApprovalIfRequired({
+  @action async isApprovalRequired({
     owner,
     spender,
     amount,
     tokenAddress
-  }: {
-    owner: string;
-    spender: string;
-    tokenAddress: string;
-    amount: string;
-  }) {
+  }: TokenWithdrawParam): Promise<{ approvalIsRequired: boolean, currentApprovedBalance: string }> {
     const currentApprovedBalance = await getApprovedBalanceWei({
       owner,
       spender,
@@ -6882,14 +6930,33 @@ export class EthBancorModule
       currentApprovedBalance
     ).isGreaterThanOrEqualTo(amount);
 
-    if (sufficientBalanceAlreadyApproved) return;
+    return {
+      approvalIsRequired: !sufficientBalanceAlreadyApproved,
+      currentApprovedBalance
+    }
+  }
 
+  @action async approveTokenWithdrawal({
+    owner,
+    spender,
+    amount,
+    tokenAddress,
+    currentApprovedBalance
+  }: TokenWithdrawParam) {
     const isNullApprovalTokenContract = nullApprovals.some(contract =>
       compareString(tokenAddress, contract)
     );
 
     const nullingTxRequired =
-      fromWei(currentApprovedBalance) !== "0" && isNullApprovalTokenContract;
+      isNullApprovalTokenContract &&
+      fromWei(
+        currentApprovedBalance || 
+        await getApprovedBalanceWei({
+          owner,
+          spender,
+          tokenAddress
+        })
+      ) !== "0";
 
     if (nullingTxRequired) {
       await this.approveTokenWithdrawals([
@@ -6911,6 +6978,28 @@ export class EthBancorModule
         );
       }
       throw new Error(e.message);
+    }
+  }
+
+  @action async triggerApprovalIfRequired(tokenWithdrawal: {
+    owner: string;
+    spender: string;
+    tokenAddress: string;
+    amount: string;
+    onPrompt?: OnPrompt
+  }) {
+    const { approvalIsRequired, currentApprovedBalance } = await this.isApprovalRequired(tokenWithdrawal);
+    if (!approvalIsRequired) return;
+
+    const withCurrentApprovedBalance = { ...tokenWithdrawal, currentApprovedBalance };
+    if (tokenWithdrawal.onPrompt) {
+      const { unlimitedApproval } = await this.promptUserForApprovalType(tokenWithdrawal.onPrompt);
+      return this.approveTokenWithdrawal({
+        ...withCurrentApprovedBalance,
+        ...(unlimitedApproval && { amount: unlimitedWei })
+      })
+    } else {
+      return this.approveTokenWithdrawal(withCurrentApprovedBalance)
     }
   }
 
