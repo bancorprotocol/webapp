@@ -5189,7 +5189,9 @@ export class EthBancorModule
         to,
         networkContractAddress
       });
-      const smartTokenAddresses = path.filter((_, index) => isOdd(index));
+      const smartTokenAddresses = path.filter((_, index) =>
+        isOdd(index)
+      );
       if (smartTokenAddresses.length == 0)
         throw new Error("Failed to find any smart token addresses for path.");
       return smartTokenAddresses;
@@ -5727,7 +5729,11 @@ export class EthBancorModule
           lowestTwoCounts.some(([t]) => compareString(token, t))
         );
         if (!toToken) {
-          console.warn("Unable to find terminating token in swap for hash", x.hash, {trades: x.trades});
+          console.warn(
+            "Unable to find terminating token in swap for hash",
+            x.hash,
+            { trades: x.trades }
+          );
           return false;
         }
 
