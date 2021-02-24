@@ -1936,9 +1936,13 @@ export class EthBancorModule
             x => x.id === `${position.poolToken}-${position.reserveToken}`
           );
 
-          const multiplier = rewardsMultiplier.find(
-            x => x.id === `${position.poolToken}-${position.reserveToken}`
-          );
+          const multiplier = vxm.rewards.poolPrograms?.some(
+            x => x.poolToken === position.poolToken
+          )
+            ? rewardsMultiplier.find(
+                x => x.id === `${position.poolToken}-${position.reserveToken}`
+              )
+            : null;
 
           return {
             ...position,
@@ -1947,7 +1951,10 @@ export class EthBancorModule
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
               : new BigNumber(0),
-            rewardsMultiplier: multiplier ? multiplier.rewardsMultiplier : 0
+            rewardsMultiplier:
+              multiplier && pendingReserveReward
+                ? multiplier.rewardsMultiplier
+                : 0
           };
         }
       );

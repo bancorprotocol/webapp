@@ -199,9 +199,9 @@
           >
             + {{ prettifyNumber(item.pendingReserveReward) }} BNT
           </b-badge>
-          <div>
+          <div v-if="item.rewardsMultiplier > 0">
             <b-badge variant="primary">
-              X {{ prettifyNumber(item.rewardsMultiplier) }}
+              X{{ prettifyNumber(item.rewardsMultiplier) }}
             </b-badge>
           </div>
         </div>
@@ -211,8 +211,8 @@
           <div>
             {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
           </div>
-          <b-badge variant="primary">
-            X {{ prettifyNumber(item.rewardsMultiplier) }}
+          <b-badge variant="primary" v-if="item.rewardsMultiplier > 0">
+            X{{ prettifyNumber(item.rewardsMultiplier) }}
           </b-badge>
         </div>
       </template>
