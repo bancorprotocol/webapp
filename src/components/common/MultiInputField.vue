@@ -26,6 +26,7 @@
         :placeholder="placeholder"
         :type="type"
         :style="styleInput"
+        :autofocus="autofocusInput"
       />
       <b-input-group-append v-if="append">
         <div
@@ -58,6 +59,11 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: 32 }) height!: number;
   @Prop() append?: string;
   @Prop() prepend?: string;
+  @Prop() autofocus?: boolean;
+
+  get autofocusInput() {
+    return this.autofocus ? "autofocus" : null;
+  }
 
   get styleInput() {
     const height = "height: " + this.height + "px;";
