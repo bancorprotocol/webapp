@@ -16,6 +16,7 @@
           :target-value="value"
           :usd="usd"
           :percentage="stringifyPercentage"
+          :watch="true"
         />
         <div v-else>
           {{ replacmentTxt }}

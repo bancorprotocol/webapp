@@ -42,10 +42,10 @@ export default class AnimationNumber extends BaseComponent {
 
   async mounted() {
     if (this.animateOnMount) this.tween(this.startingValue, this.targetValue);
-    if (this.intervalFunction)
+    if (this.watch)
       this.interval = setInterval(async () => {
         this.oldValue = this.targetValue;
-        await this.intervalFunction();
+        if (this.intervalFunction) await this.intervalFunction();
       }, this.intervalTime);
   }
 
