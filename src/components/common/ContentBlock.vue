@@ -35,8 +35,17 @@
         :menu-class="
           darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
         "
+        no-caret
         class="m-2"
       >
+        <template #button-content>
+          <div class="d-lg-none">
+            <font-awesome-icon icon="filter" fixed-width />
+          </div>
+          <div class="d-none d-lg-inline">
+            {{ dropdown.items[dropdown.selectedIndex].title }}
+          </div>
+        </template>
         <b-dropdown-item
           :variant="darkMode ? 'dark' : 'light'"
           v-for="(item, index) in dropdown.items"

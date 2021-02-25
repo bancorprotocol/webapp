@@ -71,13 +71,18 @@
                 @update="updateDateRange"
               >
                 <template #input="picker">
-                  {{
-                    hasRange
-                      ? `${formatDate(picker.startDate)} - ${formatDate(
-                          picker.endDate
-                        )}`
-                      : $t("select_date")
-                  }}
+                  <div class="d-lg-none">
+                    {{
+                      formatDateRange(picker.startDate, picker.endDate, true)
+                    }}
+                  </div>
+                  <div class="d-none d-lg-inline">
+                    {{
+                      hasRange
+                        ? formatDateRange(picker.startDate, picker.endDate)
+                        : $t("select_date")
+                    }}
+                  </div>
                 </template>
               </date-range-picker>
               <font-awesome-icon
@@ -242,8 +247,14 @@ export default class ProtectionHome extends BaseComponent {
     this.dateRange.endDate = null;
   }
 
-  formatDate(date: number) {
-    return new Intl.DateTimeFormat("en-GB").format(date);
+  formatDateRange(startDate: number, endDate: number, short: boolean = false) {
+    let start = new Intl.DateTimeFormat("en-GB").format(startDate);
+    let end = new Intl.DateTimeFormat("en-GB").format(endDate);
+    if (short) {
+      start = start.slice(0, start.length - 5); //4 numbers in a year
+      end = end.slice(0, end.length - 5);
+    }
+    return `${start} - ${end}`;
   }
 
   get poolNames() {
