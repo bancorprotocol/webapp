@@ -20,6 +20,11 @@ export default class AnimationNumber extends BaseComponent {
   @Prop({ default: 0 }) startingValue!: number;
   @Prop() targetValue!: number;
   @Prop({ default: 3000 }) animationTime!: number; //ms
+  @Prop({ default: 15000 }) intervalTime!: number; //ms
+  @Prop() intervalFunction!: Function;
+
+  interval: any = null;
+  oldValue: number = -1;
 
   currentNumber: number = 0;
 
@@ -29,13 +34,22 @@ export default class AnimationNumber extends BaseComponent {
 
   async mounted() {
     if (this.animateOnMount) this.tween(this.startingValue, this.targetValue);
+    if (this.intervalFunction)
+      this.interval = setInterval(async () => {
+        this.oldValue = this.targetValue;
+        await this.intervalFunction();
+      }, this.intervalTime);
   }
 
-  @Watch("startingValue")
   @Watch("targetValue")
   @Watch("animationTime")
   onValueChange() {
-    if (this.watch) this.tween(this.startingValue, this.targetValue);
+    if (this.watch) {
+      this.tween(
+        this.oldValue === -1 ? this.startingValue : this.oldValue,
+        this.targetValue
+      );
+    }
   }
 
   tween(startValue: number, endValue: number) {
@@ -58,6 +72,7 @@ export default class AnimationNumber extends BaseComponent {
 
   destroyed() {
     TWEEN.removeAll();
+    clearInterval(this.interval);
   }
 }
 </script>
