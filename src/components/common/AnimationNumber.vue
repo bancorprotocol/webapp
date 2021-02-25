@@ -1,6 +1,11 @@
 <template>
   <div>
-    {{ leadingText }} {{ prettifyNumber(currentNumber, usd) }}
+    {{ leadingText }}
+    {{
+      percentage
+        ? stringifyPercentage(currentNumber)
+        : prettifyNumber(currentNumber, usd)
+    }}
     {{ trailingText }}
   </div>
 </template>
@@ -9,12 +14,14 @@
 import { Component, Prop, Watch } from "vue-property-decorator";
 import TWEEN from "@tweenjs/tween.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { stringifyPercentage } from "@/api/helpers";
 
 @Component
 export default class AnimationNumber extends BaseComponent {
   @Prop({ default: "" }) trailingText!: string;
   @Prop({ default: "" }) leadingText!: string;
   @Prop({ default: false }) usd!: boolean;
+  @Prop({ default: false }) percentage!: boolean;
   @Prop({ default: true }) animateOnMount!: boolean;
   @Prop({ default: false }) watch!: boolean;
   @Prop({ default: 0 }) startingValue!: number;
@@ -23,6 +30,7 @@ export default class AnimationNumber extends BaseComponent {
   @Prop({ default: 15000 }) intervalTime!: number; //ms
   @Prop() intervalFunction!: Function;
 
+  stringifyPercentage = stringifyPercentage;
   interval: any = null;
   oldValue: number = -1;
 
