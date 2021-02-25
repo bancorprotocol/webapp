@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { Contract } from "web3-eth-contract";
 
 export interface MinimalPool {
@@ -77,7 +78,7 @@ export interface ProtectedLiquidityCalculated {
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
-  pendingReserveReward?: BigNumber;
+  pendingReserveReward?: string;
   rewardsMultiplier?: number;
 }
 
@@ -791,6 +792,7 @@ export interface TokenReward {
 }
 export interface ViewProtectedLiquidity {
   id: string;
+  initialProtectedWei: string;
   stake: {
     amount: string;
     poolId: string;
@@ -813,7 +815,7 @@ export interface ViewProtectedLiquidity {
   coverageDecPercent: number;
   fullCoverage: number;
   givenVBnt?: string;
-  pendingReserveReward: BigNumber;
+  pendingReserveReward?: string;
   rewardsMultiplier: number;
   reserveTokenPrice: number;
   bntTokenPrice: number;

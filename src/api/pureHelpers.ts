@@ -57,7 +57,7 @@ export const groupPositionsArray = (
         item.insuranceStart = val.insuranceStart;
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
-        item.pendingReserveReward = val.pendingReserveReward;
+        item.pendingReserveReward = val.pendingReserveReward!;
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))

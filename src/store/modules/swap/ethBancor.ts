@@ -1608,8 +1608,8 @@ export class EthBancorModule
       const dissolvingFullPosition = decPercent === 1;
       const roundingBuffer = 0.01;
       const weiApprovalAmount = dissolvingFullPosition
-        ? // where can we get the wei?
-        : new BigNumber(position.)
+        ? position.initialProtectedWei
+        : new BigNumber(position.initialProtectedWei)
             .times(decPercent + roundingBuffer)
             .toFixed(0);
       await this.triggerApprovalIfRequired({
@@ -1769,9 +1769,9 @@ export class EthBancorModule
   }
 
   get protectedPositions(): ViewProtectedLiquidity[] {
-    const positions =  this.protectedViewPositions;
+    const positions = this.protectedViewPositions;
 
-    console.log('getter positions', positions)
+    console.log("getter positions", positions);
     return positions;
   }
 
@@ -4614,9 +4614,7 @@ export class EthBancorModule
         to,
         networkContractAddress
       });
-      const smartTokenAddresses = path.filter((_, index) =>
-        isOdd(index)
-      );
+      const smartTokenAddresses = path.filter((_, index) => isOdd(index));
       if (smartTokenAddresses.length == 0)
         throw new Error("Failed to find any smart token addresses for path.");
       return smartTokenAddresses;
@@ -5978,14 +5976,14 @@ export class EthBancorModule
       address => !ethAddresses.some(a => compareString(address, a))
     );
 
-    const [balances, ethBalance] = await Promise.all([
+    const [balances, ethBalance] = (await Promise.all([
       this.fetchTokenBalances(withoutEth),
       (async () => {
         if (!includesEth) return;
         const weiBalance = await web3.eth.getBalance(this.currentUser);
         return fromWei(weiBalance);
       })()
-    ]) as [Balance[], string | undefined]
+    ])) as [Balance[], string | undefined];
 
     if (ethBalance) {
       this.updateUserBalances([

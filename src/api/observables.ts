@@ -351,6 +351,10 @@ const onLogout$ = onLogoutNoType$.pipe(
   share()
 );
 
+onLogout$.subscribe(() => {
+  vxm.ethBancor.setProtectedViewPositions([]);
+});
+
 export const networkVersion$ = networkVersionReceiver$.pipe(
   startWith(EthNetworks.Mainnet),
   distinctUntilChanged(),
@@ -601,7 +605,6 @@ const localAndRemotePositionIds$ = combineLatest([
   onLogin$,
   liquidityProtectionStore$
 ]).pipe(
-  tap(() => vxm.ethBancor.setLoadingPositions(true)),
   switchMapIgnoreThrow(([currentUser, storeAddress]) =>
     fetchPositionIds(currentUser, storeAddress)
   ),
@@ -766,7 +769,7 @@ const fullPositions$ = combineLatest([
           return {
             ...position,
             ...(reserveReward && {
-              pendingReserveReward: reserveReward.decBnt
+              pendingReserveReward: reserveReward.decBnt.toString()
             }),
             ...(removeLiq && {
               fullLiquidityReturn: removeLiq.fullLiquidityReturn
@@ -798,7 +801,6 @@ combineLatest([
   usdPriceOfBnt$
 ])
   .pipe(
-    logger('newww positions'),
     map(
       ([
         positions,
@@ -823,132 +825,123 @@ combineLatest([
 
         const passedPositions = knownTokenPrecision;
 
-        return passedPositions.map(
-          (singleEntry): ViewProtectedLiquidity => {
-            const isWhiteListed = true;
+        return passedPositions
+          .filter(entry => compareString(entry.owner, currentUser))
+          .map(
+            (singleEntry): ViewProtectedLiquidity => {
+              const isWhiteListed = true;
 
-            const startTime = Number(singleEntry.timestamp);
+              const startTime = Number(singleEntry.timestamp);
 
-            const reserveToken = findOrThrow(tokens, token =>
-              compareString(token.dlt_id, singleEntry.reserveToken)
-            );
-            const reservePrecision = Number(reserveToken.decimals);
+              const reserveToken = findOrThrow(tokens, token =>
+                compareString(token.dlt_id, singleEntry.reserveToken)
+              );
+              const reservePrecision = Number(reserveToken.decimals);
 
-            const reserveTokenDec = shrinkToken(
-              singleEntry.reserveAmount,
-              reservePrecision
-            );
-
-            const fullyProtectedDec =
-              singleEntry.fullLiquidityReturn &&
-              shrinkToken(
-                singleEntry.fullLiquidityReturn.targetAmount,
+              const reserveTokenDec = shrinkToken(
+                singleEntry.reserveAmount,
                 reservePrecision
               );
 
-            const currentProtectedDec =
-              singleEntry.currentLiquidityReturn &&
-              shrinkToken(
-                singleEntry.currentLiquidityReturn.targetAmount,
-                reservePrecision
+              const pendingReserveReward =
+                singleEntry.pendingReserveReward &&
+                singleEntry.pendingReserveReward.toString();
+
+              const fullyProtectedDec =
+                singleEntry.fullLiquidityReturn &&
+                shrinkToken(
+                  singleEntry.fullLiquidityReturn.targetAmount,
+                  reservePrecision
+                );
+
+              const currentProtectedDec =
+                singleEntry.currentLiquidityReturn &&
+                shrinkToken(
+                  singleEntry.currentLiquidityReturn.targetAmount,
+                  reservePrecision
+                );
+
+              const progressPercent = calculateProgressLevel(
+                startTime,
+                startTime + maxDelay
               );
 
-            const progressPercent = calculateProgressLevel(
-              startTime,
-              startTime + maxDelay
-            );
+              const givenVBnt =
+                compareString(reserveToken.dlt_id, networkToken) &&
+                reserveTokenDec;
 
-            const givenVBnt =
-              compareString(reserveToken.dlt_id, networkToken) &&
-              reserveTokenDec;
+              const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
+                reserveTokenDec
+              );
 
-            const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
-              reserveTokenDec
-            );
+              const reserveTokenPrice = Number(reserveToken.rate.usd);
 
-            const reserveTokenPrice = Number(reserveToken.rate.usd);
-
-            return {
-              id: `${singleEntry.poolToken}:${singleEntry.id}`,
-              whitelisted: isWhiteListed,
-              ...(givenVBnt && { givenVBnt }),
-              single: true,
-              apr: {
-                day: Number(singleEntry.oneDayDec),
-                week: Number(singleEntry.oneWeekDec)
-              },
-              insuranceStart: startTime + minDelay,
-              fullCoverage: startTime + maxDelay,
-              stake: {
-                amount: reserveTokenDec,
-                symbol: reserveToken.symbol,
-                poolId: singleEntry.poolToken,
-                unixTime: startTime,
-                usdValue: new BigNumber(reserveTokenDec)
-                  .times(reserveTokenPrice)
-                  .toNumber()
-              },
-              ...(fullyProtectedDec && {
-                fullyProtected: {
-                  amount: fullyProtectedDec,
+              return {
+                id: `${singleEntry.poolToken}:${singleEntry.id}`,
+                initialProtectedWei: singleEntry.reserveAmount,
+                whitelisted: isWhiteListed,
+                ...(givenVBnt && { givenVBnt }),
+                single: true,
+                apr: {
+                  day: Number(singleEntry.oneDayDec),
+                  week: Number(singleEntry.oneWeekDec)
+                },
+                insuranceStart: startTime + minDelay,
+                fullCoverage: startTime + maxDelay,
+                stake: {
+                  amount: reserveTokenDec,
                   symbol: reserveToken.symbol,
-                  id: reserveToken.dlt_id,
-                  usdValue: new BigNumber(fullyProtectedDec)
+                  poolId: singleEntry.poolToken,
+                  unixTime: startTime,
+                  usdValue: new BigNumber(reserveTokenDec)
                     .times(reserveTokenPrice)
                     .toNumber()
-                }
-              }),
-              ...(currentProtectedDec && {
-                protectedAmount: {
-                  amount: currentProtectedDec,
-                  id: reserveToken.dlt_id,
-                  symbol: reserveToken.symbol,
-                  ...(fullyProtectedDec && {
-                    usdValue: new BigNumber(currentProtectedDec)
+                },
+                ...(fullyProtectedDec && {
+                  fullyProtected: {
+                    amount: fullyProtectedDec,
+                    symbol: reserveToken.symbol,
+                    id: reserveToken.dlt_id,
+                    usdValue: new BigNumber(fullyProtectedDec)
                       .times(reserveTokenPrice)
                       .toNumber()
-                  })
-                }
-              }),
-              coverageDecPercent: progressPercent,
-              fees: {
-                amount: feeGenerated.toString(),
-                symbol: reserveToken.symbol,
-                id: reserveToken.dlt_id
-              },
-              roi:
-                fullyProtectedDec &&
-                Number(
-                  calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-                ),
-              pendingReserveReward: singleEntry.pendingReserveReward,
-              rewardsMultiplier: singleEntry.rewardsMultiplier,
-              reserveTokenPrice,
-              bntTokenPrice: usdPriceOfBnt
-            } as ViewProtectedLiquidity;
-          }
-        );
+                  }
+                }),
+                ...(currentProtectedDec && {
+                  protectedAmount: {
+                    amount: currentProtectedDec,
+                    id: reserveToken.dlt_id,
+                    symbol: reserveToken.symbol,
+                    ...(fullyProtectedDec && {
+                      usdValue: new BigNumber(currentProtectedDec)
+                        .times(reserveTokenPrice)
+                        .toNumber()
+                    })
+                  }
+                }),
+                coverageDecPercent: progressPercent,
+                fees: {
+                  amount: feeGenerated.toString(),
+                  symbol: reserveToken.symbol,
+                  id: reserveToken.dlt_id
+                },
+                roi:
+                  fullyProtectedDec &&
+                  Number(
+                    calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+                  ),
+                ...(pendingReserveReward && { pendingReserveReward }),
+                rewardsMultiplier: singleEntry.rewardsMultiplier,
+                reserveTokenPrice,
+                bntTokenPrice: usdPriceOfBnt
+              } as ViewProtectedLiquidity;
+            }
+          );
       }
     )
   )
   .subscribe(positions => {
-    vxm.ethBancor.setProtectedViewPositions(positions)
-  });
-
-combineLatest([fullPositions$, onLogin$, minimalPools$])
-  .pipe(logger("with authentication"))
-  .subscribe(([positions, currentUser, pools]) => {
-    const supportedAnchors = pools.map(pool => pool.anchorAddress);
-
-    vxm.ethBancor.setProtectedPositions(
-      positions
-        .filter(position => compareString(position.owner, currentUser))
-        .filter(position =>
-          supportedAnchors.some(anchor =>
-            compareString(anchor, position.poolToken)
-          )
-        )
-    );
+    vxm.ethBancor.setProtectedViewPositions(positions);
     vxm.ethBancor.setLoadingPositions(false);
   });
 
