@@ -504,7 +504,7 @@ export interface LiquidityModule {
     twentyFourHourTradeCount: number;
     totalVolume24h: number;
     bntUsdPrice?: number;
-    bntPrice24Change: number;
+    bntPrice24Change?: number;
     stakedBntPercent?: number;
     totalPoolCount?: number;
     totalTokenCount?: number;
