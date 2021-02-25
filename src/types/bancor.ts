@@ -283,7 +283,7 @@ export interface ViewToken {
   precision: number;
 }
 
-interface TokenWithLogo extends AgnosticToken {
+export interface TokenWithLogo extends AgnosticToken {
   logo: string[];
 }
 
@@ -507,7 +507,7 @@ export interface RegisteredContracts {
   LiquidityProtectionStore: string;
   StakingRewards: string;
 }
-interface PoolTokenPosition {
+export interface PoolTokenPosition {
   relay: ViewRelay;
   smartTokenAmount?: string;
   poolTokens?: {
@@ -667,19 +667,19 @@ export interface PromiseSequence {
   title: string;
 }
 
-interface GetBalanceParam {
+export interface GetBalanceParam {
   tokens: TokenBalanceParam[];
   slow?: boolean;
   disableSetting?: boolean;
 }
 
-interface TokenBalanceParam {
+export interface TokenBalanceParam {
   contract: string;
   symbol: string;
   precision?: number;
 }
 
-interface TransferParam {
+export interface TransferParam {
   to: string;
   id: string;
   amount: number;
@@ -690,7 +690,7 @@ export interface TokenBalanceReturn extends TokenBalanceParam {
   balance: string;
 }
 
-interface TokenQueries extends TokenBalanceParam {
+export interface TokenQueries extends TokenBalanceParam {
   balance?: number;
 }
 
