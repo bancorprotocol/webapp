@@ -29,7 +29,10 @@ import {
   calculateProgressLevel,
   calculatePercentIncrease
 } from "./helpers";
-import { buildStakingRewardsContract } from "./eth/contractTypes";
+import {
+  buildStakingRewardsContract,
+  buildTokenContract
+} from "./eth/contractTypes";
 import { filterAndWarn } from "./pureHelpers";
 import {
   RegisteredContracts,
@@ -278,6 +281,13 @@ apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
 const bntSupplyApi$ = apiData$.pipe(
   pluck("bnt_supply"),
   map(decSupply => expandToken(decSupply, 18))
+);
+
+networkVars$.pipe(
+  switchMapIgnoreThrow(vars => {
+    const contract = buildTokenContract(vars.bntToken);
+    return contract.methods.totalSupply().call();
+  })
 );
 
 bntSupplyApi$.subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
