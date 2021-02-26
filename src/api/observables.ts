@@ -1,26 +1,18 @@
-import { differenceWith, isEqual, uniqWith } from "lodash";
-import { Subject, combineLatest, Observable, timer, partition } from "rxjs";
+import { uniqWith } from "lodash";
+import { Subject, combineLatest, merge } from "rxjs";
 import {
   distinctUntilChanged,
   map,
-  filter,
   startWith,
-  tap,
   shareReplay,
   pluck,
-  scan,
   share,
   withLatestFrom
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
-import {
-  getWelcomeData,
-  NewPool,
-  TokenMetaWithReserve,
-  WelcomeData
-} from "./eth/bancorApi";
+import { NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
 import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
 import {
@@ -62,12 +54,13 @@ import { ethReserveAddress } from "./eth/ethAbis";
 import { shrinkToken } from "./eth/helpers";
 import BigNumber from "bignumber.js";
 import {
-  optimisticContract,
   optimisticPositionIds,
   switchMapIgnoreThrow,
   compareIdArray,
   optimisticObservable,
-  logger
+  logger,
+  RankItem,
+  rankPriority
 } from "./observables/customOperators";
 import { networkVars$, networkVersion$ } from "./observables/network";
 import { apiData$, minimalPools$, tokens$ } from "./observables/pools";
@@ -215,58 +208,73 @@ export const poolPrograms$ = storeRewards$.pipe(
 
 const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
 
-export const newPools$ = combineLatest([apiData$, immediateTokenMeta$]).pipe(
-  map(([apiData, tokenMeta]) => {
-    {
-      const pools = apiData.pools;
-      const tokens = apiData.tokens;
+export const newApiPools$ = apiData$.pipe(
+  map(apiData => {
+    const pools = apiData.pools;
+    const tokens = apiData.tokens;
 
-      const betterPools = pools.map(pool => {
-        const reserveTokens = pool.reserves
-          .map(
-            (reserve): TokenMetaWithReserve => {
-              const meta =
-                tokenMeta &&
-                tokenMeta.find(meta =>
-                  compareString(meta.contract, reserve.address)
-                );
-              const token = findOrThrow(
-                tokens,
-                token => compareString(token.dlt_id, reserve.address),
-                "was expecting a token for a known reserve in API data"
-              );
+    const betterPools = pools.map(pool => {
+      const reserveTokens = pool.reserves.map(
+        (reserve): TokenMetaWithReserve => {
+          const token = findOrThrow(
+            tokens,
+            token => compareString(token.dlt_id, reserve.address),
+            "was expecting a token for a known reserve in API data"
+          );
 
-              return {
-                id: reserve.address,
-                contract: reserve.address,
-                reserveWeight: ppmToDec(reserve.weight),
-                decBalance: reserve.balance,
-                name: token.symbol,
-                symbol: token.symbol,
-                image: (meta && meta.image) || defaultImage,
-                precision: token.decimals
-              };
-            }
-          )
-          .filter(pool => pool.contract);
-        const decFee = ppmToDec(pool.fee);
-        return {
-          ...pool,
-          decFee,
-          reserveTokens
-        };
-      });
+          return {
+            id: reserve.address,
+            contract: reserve.address,
+            reserveWeight: ppmToDec(reserve.weight),
+            decBalance: reserve.balance,
+            name: token.symbol,
+            symbol: token.symbol,
+            image: defaultImage,
+            precision: token.decimals
+          };
+        }
+      );
+      const decFee = ppmToDec(pool.fee);
+      return {
+        ...pool,
+        decFee,
+        reserveTokens
+      };
+    });
 
-      const passedPools = filterAndWarn(
-        betterPools,
-        pool => pool.reserveTokens.length == 2,
-        "lost pools"
-      ) as NewPool[];
+    const passedPools = filterAndWarn(
+      betterPools,
+      pool => pool.reserveTokens.length == 2,
+      "lost pools"
+    ) as NewPool[];
 
-      return passedPools;
-    }
-  }),
-  filter(pools => pools.length > 0)
+    return passedPools;
+  })
+);
+
+export const newPools$ = combineLatest([
+  newApiPools$,
+  immediateTokenMeta$
+]).pipe(
+  map(([pools, tokenMeta]) =>
+    pools.map(
+      (pool): NewPool => ({
+        ...pool,
+        reserves: pool.reserves.map(reserve => {
+          const meta =
+            tokenMeta &&
+            tokenMeta.find(meta =>
+              compareString(meta.contract, reserve.address)
+            );
+
+          return {
+            ...reserve,
+            ...(meta && meta.image && { image: meta.image })
+          };
+        })
+      })
+    )
+  )
 );
 
 newPools$.subscribe(pools => vxm.ethBancor.setPools(pools));
@@ -280,17 +288,24 @@ apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
 
 const bntSupplyApi$ = apiData$.pipe(
   pluck("bnt_supply"),
-  map(decSupply => expandToken(decSupply, 18))
+  map(decSupply => expandToken(decSupply, 18)),
+  map((supplyWei): RankItem<string> => ({ data: supplyWei, priority: 5 }))
 );
 
-networkVars$.pipe(
+const bntSupplyChain$ = networkVars$.pipe(
   switchMapIgnoreThrow(vars => {
     const contract = buildTokenContract(vars.bntToken);
     return contract.methods.totalSupply().call();
-  })
+  }),
+  map((supplyWei): RankItem<string> => ({ data: supplyWei, priority: 3 }))
 );
 
-bntSupplyApi$.subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
+const bntSupply$ = merge(bntSupplyApi$, bntSupplyChain$).pipe(
+  rankPriority(),
+  distinctUntilChanged()
+);
+
+bntSupply$.subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
 
 tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
 

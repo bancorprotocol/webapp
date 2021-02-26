@@ -11,7 +11,7 @@ import {
 } from "rxjs/operators";
 import { compareString } from "../helpers";
 
-interface RankItem<T> {
+export interface RankItem<T> {
   priority: number;
   data: T;
 }
