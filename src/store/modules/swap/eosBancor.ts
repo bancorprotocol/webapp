@@ -1059,7 +1059,8 @@ export class EosBancorModule
         return {
           ...token,
           name: meta.name,
-          logo: meta.logo
+          logo: meta.logo,
+          tradeSupported: true
         };
       }
     };
