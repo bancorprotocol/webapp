@@ -15,7 +15,7 @@
     "build-report": "vue-cli-service build --report"
   },
   "dependencies": {
-    "@dfuse/client": "^0.3.17",
+    "@dfuse/client": "^0.3.19",
     "@firebase/analytics": "^0.6.4",
     "@firebase/app": "^0.6.15",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
