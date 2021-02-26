@@ -273,12 +273,14 @@ networkVersion$.subscribe(network => {
   }
 });
 apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
-apiData$
-  .pipe(
-    pluck("bnt_supply"),
-    map(decSupply => expandToken(decSupply, 18))
-  )
-  .subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
+
+const bntSupplyApi$ = apiData$.pipe(
+  pluck("bnt_supply"),
+  map(decSupply => expandToken(decSupply, 18))
+);
+
+bntSupplyApi$.subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
+
 tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
 
 combineLatest([
