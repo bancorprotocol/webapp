@@ -1,21 +1,11 @@
 import { differenceWith, isEqual, uniqWith } from "lodash";
-import {
-  Subject,
-  combineLatest,
-  Observable,
-  EMPTY,
-  PartialObserver,
-  interval,
-  timer,
-  partition
-} from "rxjs";
+import { Subject, combineLatest, Observable, timer, partition } from "rxjs";
 import {
   distinctUntilChanged,
   map,
   filter,
   startWith,
   tap,
-  switchMap,
   shareReplay,
   pluck,
   scan,
@@ -67,6 +57,23 @@ import axios, { AxiosResponse } from "axios";
 import { ethReserveAddress } from "./eth/ethAbis";
 import { shrinkToken } from "./eth/helpers";
 import BigNumber from "bignumber.js";
+import {
+  optimisticContract,
+  optimisticPositionIds,
+  switchMapIgnoreThrow,
+  compareIdArray,
+  optimisticObservable,
+  logger
+} from "./observables/customOperators";
+import { networkVars$, networkVersion$ } from "./observables/network";
+import { apiData$, minimalPools$, tokens$ } from "./observables/pools";
+import { onLogin$, onLogout$ } from "./observables/auth";
+import {
+  liquidityProtection$,
+  liquidityProtectionStore$,
+  settingsContractAddress$,
+  stakingRewards$
+} from "./observables/contracts";
 
 const tokenMetaDataEndpoint =
   "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
@@ -161,234 +168,12 @@ export const getTokenMeta = async (currentNetwork: EthNetworks) => {
   return uniqWith(final, (a, b) => compareString(a.id, b.id));
 };
 
-interface DataCache<T> {
-  allEmissions: T[];
-  newData: T[];
-}
-
-export const distinctArrayItem = <T>(
-  initialValue: T[],
-  comparator?: (a: T, b: T) => boolean
-) => (source: Observable<T[]>) =>
-  source.pipe(
-    scan(
-      (acc, item) => {
-        const difference = differenceWith(
-          item,
-          acc.allEmissions,
-          comparator || isEqual
-        );
-        return {
-          allEmissions: [...acc.allEmissions, ...difference],
-          newData: difference
-        };
-      },
-      { allEmissions: initialValue, newData: [] } as DataCache<T>
-    ),
-    filter(dataCache => dataCache.newData.length > 0),
-    pluck("newData"),
-    startWith(initialValue)
-  );
-
-// Will emit stale data from cache
-// Will overwrite cache with remote data
-
-const optimisticObservable = <T, Y>(
-  localKey: string,
-  remoteCall: (param: Y) => Promise<T>
-) => (source: Observable<Y>): Observable<T> => {
-  const localData = localStorage.getItem(localKey);
-  if (localData) {
-    const parsedData = JSON.parse(localData) as T;
-
-    return source.pipe(
-      switchMapIgnoreThrow(remoteCall),
-      filter(remoteData => !isEqual(remoteData, parsedData)),
-      startWith(parsedData),
-      tap(data => {
-        const isSame = isEqual(parsedData, data);
-        if (!isSame) {
-          console.log("data is not the same! setting...", JSON.stringify(data));
-          localStorage.setItem(localKey, JSON.stringify(data));
-        } else {
-          console.log("data is the same, setting");
-        }
-      })
-    );
-  } else {
-    return source.pipe(
-      switchMapIgnoreThrow(remoteCall),
-      tap(data => {
-        localStorage.setItem(localKey, JSON.stringify(data));
-      })
-    );
-  }
-};
-
-export const optimisticContract = (key: string) => (
-  source: Observable<string>
-) => {
-  const cachedData = localStorage.getItem(key);
-
-  if (cachedData) {
-    return source.pipe(
-      startWith(cachedData),
-      distinctUntilChanged(compareString),
-      tap(data => {
-        const isSame = cachedData === data;
-        if (!isSame) {
-          localStorage.setItem(key, data);
-        }
-      })
-    );
-  } else {
-    return source.pipe(
-      distinctUntilChanged(compareString),
-      tap(data => localStorage.setItem(key, data))
-    );
-  }
-};
-
-const getCachedPositions = (): string[] | false => {
-  const cachedPositionIdsString = localStorage.getItem("positionIds");
-  return cachedPositionIdsString
-    ? (JSON.parse(cachedPositionIdsString) as string[])
-    : false;
-};
-
-const compareIdArray = (a: string[], b: string[]) => {
-  const sameLength = a.length == b.length;
-  const allFound = a.every(id => b.some(i => id == i));
-  return sameLength && allFound;
-};
-
-export const optimisticPositionIds = () => (source: Observable<string[]>) => {
-  const cachedPositionIds = getCachedPositions();
-  if (cachedPositionIds) {
-    return source.pipe(
-      startWith(cachedPositionIds),
-      tap(data => {
-        const isSame = compareIdArray(data, cachedPositionIds);
-        if (!isSame) {
-          const hasContent = data.length > 0;
-          if (hasContent) {
-            localStorage.setItem("positionIds", JSON.stringify(data));
-          } else {
-            localStorage.removeItem("positionIds");
-          }
-        }
-      })
-    );
-  } else {
-    return source.pipe(
-      tap(data => {
-        const hasData = data.length > 0;
-        if (hasData) {
-          localStorage.setItem("positionIds", JSON.stringify(data));
-        }
-      })
-    );
-  }
-};
-
-export const switchMapIgnoreThrow = <T, Y>(
-  switchMapProm: (data: T) => Promise<Y>
-) => (source: Observable<T>): Observable<Y> =>
-  source.pipe(
-    switchMap(whatever =>
-      switchMapProm(whatever).catch(() => ("DONT THROW" as unknown) as Y)
-    ),
-    filter(x => !(typeof x == "string" && x === "DONT THROW"))
-  );
-
-let difference = Date.now();
-
-const logger = <T>(label: string, hideReturn = false) => (
-  source: Observable<T>
-) =>
-  source.pipe(
-    tap({
-      next: data => {
-        if (difference) {
-          difference = Date.now() - difference;
-        }
-        console.log(
-          `Logger (Next): (${difference} ms): ${label} returned ${
-            hideReturn ? "" : JSON.stringify(data)
-          }`
-        );
-        difference = Date.now();
-      },
-      error: error => {
-        console.error(
-          `Logger (Error): ${label} has received an error in ${error}`
-        );
-      },
-      complete: () => console.log(`Logger (Complete): ${label} has completed`)
-    })
-  );
-
-export const authenticatedReceiver$ = new Subject<string | false>();
-export const networkVersionReceiver$ = new Subject<EthNetworks>();
 export const fetchPositionsTrigger$ = new Subject<null>();
 fetchPositionsTrigger$.next(null);
-
-const authenticated$ = authenticatedReceiver$.pipe(
-  distinctUntilChanged(),
-  share()
-);
-
-const [onLoginNoType$, onLogoutNoType$] = partition(
-  authenticated$,
-  currentUser => Boolean(currentUser)
-);
-const onLogin$ = onLoginNoType$.pipe(
-  map(currentUser => currentUser as string),
-  share()
-);
-const onLogout$ = onLogoutNoType$.pipe(
-  map(currentUser => currentUser as false),
-  share()
-);
 
 onLogout$.subscribe(() => {
   vxm.ethBancor.setProtectedViewPositions([]);
 });
-
-export const networkVersion$ = networkVersionReceiver$.pipe(
-  startWith(EthNetworks.Mainnet),
-  distinctUntilChanged(),
-  logger("network version"),
-  shareReplay(1)
-);
-
-const fifteenSeconds$ = timer(0, 15000);
-
-export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
-  switchMapIgnoreThrow(([networkVersion]) => getWelcomeData(networkVersion)),
-  distinctUntilChanged<WelcomeData>(isEqual),
-  share()
-);
-
-export const pools$ = apiData$.pipe(pluck("pools"), share());
-export const minimalPools$ = pools$.pipe(
-  map(pools =>
-    pools.map(
-      (pool): MinimalPool => ({
-        anchorAddress: pool.pool_dlt_id,
-        converterAddress: pool.converter_dlt_id,
-        reserves: pool.reserves.map(reserve => reserve.address)
-      })
-    )
-  ),
-  distinctUntilChanged<MinimalPool[]>(isEqual)
-);
-
-export const tokens$ = apiData$.pipe(
-  pluck("tokens"),
-  distinctUntilChanged<WelcomeData["tokens"]>(isEqual),
-  share()
-);
 
 export const tokenMeta$ = networkVersion$.pipe(
   switchMapIgnoreThrow(network => getTokenMeta(network)),
@@ -409,38 +194,6 @@ export const currentBlock$ = currentBlockReceiver$.pipe(
   shareReplay(1)
 );
 
-export const networkVars$ = networkVersion$.pipe(
-  map(getNetworkVariables),
-  shareReplay(1)
-);
-
-export const contractAddresses$ = networkVars$.pipe(
-  switchMapIgnoreThrow(networkVariables => {
-    return fetchContractAddresses(networkVariables.contractRegistry).catch(() =>
-      vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
-    );
-  }),
-  tap(x => {
-    if (vxm && vxm.ethBancor) {
-      vxm.ethBancor.setContractAddresses(x);
-    }
-  }),
-  distinctUntilChanged<RegisteredContracts>(isEqual),
-  shareReplay(1)
-);
-
-export const bancorConverterRegistry$ = contractAddresses$.pipe(
-  pluck("BancorConverterRegistry"),
-  optimisticContract("BancorConverterRegistry"),
-  share()
-);
-
-export const stakingRewards$ = contractAddresses$.pipe(
-  pluck("StakingRewards"),
-  optimisticContract("StakingRewards"),
-  shareReplay(1)
-);
-
 export const storeRewards$ = stakingRewards$.pipe(
   switchMapIgnoreThrow(stakingRewardsContract => {
     const contract = buildStakingRewardsContract(stakingRewardsContract);
@@ -454,18 +207,6 @@ export const poolPrograms$ = storeRewards$.pipe(
     vxm.rewards.fetchPoolPrograms(storeRewardContract)
   ),
   share()
-);
-
-export const liquidityProtection$ = contractAddresses$.pipe(
-  pluck("LiquidityProtection"),
-  optimisticContract("LiquidityProtection"),
-  shareReplay(1)
-);
-
-export const liquidityProtectionStore$ = contractAddresses$.pipe(
-  pluck("LiquidityProtectionStore"),
-  optimisticContract("LiquidityProtectionStore"),
-  shareReplay(1)
 );
 
 const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
@@ -547,15 +288,6 @@ combineLatest([
   vxm.ethBancor
     .fetchAndSetLockedBalances({ storeAddress, currentUser })
     .catch(e => console.warn("fetch and set locked balances threw..."))
-);
-
-const settingsContractAddress$ = liquidityProtection$.pipe(
-  switchMapIgnoreThrow(protectionAddress =>
-    fetchLiquidityProtectionSettingsContract(protectionAddress)
-  ),
-  optimisticContract("LiquiditySettings"),
-  logger("logger liquidity settings"),
-  shareReplay<string>(1)
 );
 
 settingsContractAddress$

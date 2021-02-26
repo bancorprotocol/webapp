@@ -190,15 +190,9 @@ import {
   calculateAmountToGetSpace
 } from "@/api/pureHelpers";
 import {
-  distinctArrayItem,
-  networkVersionReceiver$,
   currentBlockReceiver$,
   currentBlock$,
-  liquidityProtectionStore$,
   usdPriceOfBnt$,
-  bancorConverterRegistry$,
-  authenticatedReceiver$,
-  networkVersion$,
   newPools$,
   poolPrograms$,
   fetchPositionsTrigger$
@@ -229,6 +223,16 @@ import {
   TokenMetaWithReserve
 } from "@/api/eth/bancorApi";
 import { PoolProgram } from "../rewards";
+import { distinctArrayItem } from "@/api/observables/customOperators";
+import {
+  networkVersion$,
+  networkVersionReceiver$
+} from "@/api/observables/network";
+import {
+  bancorConverterRegistry$,
+  liquidityProtectionStore$
+} from "@/api/observables/contracts";
+import { authenticatedReceiver$ } from "@/api/observables/auth";
 
 const timeStart = Date.now();
 

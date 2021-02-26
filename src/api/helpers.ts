@@ -35,7 +35,7 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
-import { authenticatedReceiver$ } from './observables';
+import { authenticatedReceiver$ } from "./observables/auth";
 
 export enum PositionType {
   single,
@@ -713,7 +713,6 @@ export const calculatePercentIncrease = (
   const profit = new BigNumber(big).minus(small);
   return profit.div(small).toString();
 };
-
 
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
