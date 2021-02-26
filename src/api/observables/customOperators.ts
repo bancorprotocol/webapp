@@ -11,6 +11,48 @@ import {
 } from "rxjs/operators";
 import { compareString } from "../helpers";
 
+interface RankItem<T> {
+  priority: number;
+  data: T;
+}
+
+export const rankPriority = () => <T>(source: Observable<RankItem<T>>) =>
+  source.pipe(
+    scan(
+      (lastEmitted, value) => {
+        const betterPriority =
+          !lastEmitted.emittedOnce || value.priority < lastEmitted.lastPriority;
+
+        return betterPriority
+          ? {
+              emit: true,
+              emittedOnce: true,
+              lastPriority: value.priority,
+              toEmit: value.data
+            }
+          : {
+              emit: false,
+              emittedOnce: true,
+              lastPriority: lastEmitted.lastPriority,
+              toEmit: undefined
+            };
+      },
+      {
+        emit: false,
+        emittedOnce: false,
+        lastPriority: 0,
+        toEmit: undefined
+      } as {
+        emit: boolean;
+        emittedOnce: boolean;
+        lastPriority: number;
+        toEmit: undefined | T;
+      }
+    ),
+    filter(emission => emission.emit),
+    pluck("toEmit")
+  ) as Observable<T>;
+
 interface DataCache<T> {
   allEmissions: T[];
   newData: T[];
@@ -20,7 +62,7 @@ let difference = Date.now();
 
 export const logger = <T>(label: string, hideReturn = false) => (
   source: Observable<T>
-) =>
+): Observable<T> =>
   source.pipe(
     tap({
       next: data => {
