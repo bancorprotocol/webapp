@@ -260,11 +260,11 @@ export const newPools$ = combineLatest([
     pools.map(
       (pool): NewPool => ({
         ...pool,
-        reserves: pool.reserves.map(reserve => {
+        reserveTokens: pool.reserveTokens.map(reserve => {
           const meta =
             tokenMeta &&
             tokenMeta.find(meta =>
-              compareString(meta.contract, reserve.address)
+              compareString(meta.contract, reserve.contract)
             );
 
           return {
