@@ -16,7 +16,13 @@
       </b-col>
       <b-col xl="6">
         <sub-content-block :title="$t('locked')">
-          <claim-bnt v-for="item in locked" @refresh="refresh" :key="item.id" :item="item" @click="onClick" />
+          <claim-bnt
+            v-for="item in locked"
+            @refresh="refresh"
+            :key="item.id"
+            :item="item"
+            @click="onClick"
+          />
           <div v-if="!locked.length" class="no-claim-results">
             {{ `${$t("bnt_locked")}.` }}
           </div>
@@ -121,7 +127,7 @@ export default class Claim extends Vue {
   }
 
   async refresh() {
-    await vxm.ethBancor.fetchAndSetLockedBalances({})
+    await vxm.ethBancor.fetchAndSetLockedBalances();
     this.$forceUpdate();
   }
 
