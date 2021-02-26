@@ -50,7 +50,8 @@ import {
   removeLiquidityReturn,
   getHistoricBalances,
   getPoolAprs,
-  fetchRewardsMultiplier
+  fetchRewardsMultiplier,
+  fetchLockedBalances
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
@@ -283,14 +284,18 @@ bntSupplyApi$.subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
 
 tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
 
-combineLatest([
-  liquidityProtectionStore$,
-  onLogin$
-]).subscribe(([storeAddress, currentUser]) =>
-  vxm.ethBancor
-    .fetchAndSetLockedBalances({ storeAddress, currentUser })
-    .catch(e => console.warn("fetch and set locked balances threw..."))
-);
+export const lockedBalancesTrigger$ = new Subject<null>();
+lockedBalancesTrigger$.next(null);
+
+combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
+  .pipe(
+    switchMapIgnoreThrow(([storeAddress, currentUser]) =>
+      fetchLockedBalances(storeAddress, currentUser)
+    )
+  )
+  .subscribe(balances => {
+    vxm.ethBancor.setLockedBalances(balances);
+  });
 
 settingsContractAddress$
   .pipe(
@@ -298,8 +303,10 @@ settingsContractAddress$
       fetchMinLiqForMinting(settingsContractAddress)
     )
   )
-  .subscribe(settingsContract =>
-    vxm.minting.setMinNetworkTokenLiquidityForMinting(settingsContract)
+  .subscribe(minNetworkTokenLiquidityForMinting =>
+    vxm.minting.setMinNetworkTokenLiquidityForMinting(
+      minNetworkTokenLiquidityForMinting
+    )
   );
 
 const liquiditySettings$ = combineLatest([
@@ -414,7 +421,6 @@ const historicPoolBalances$ = combineLatest([
 ]).pipe(
   withLatestFrom(currentBlock$),
   switchMapIgnoreThrow(([[unverified, minimal], currentBlock]) => {
-    console.count("getting balance");
     return getHistoricBalances(unverified, currentBlock.blockNumber, minimal);
   })
 );

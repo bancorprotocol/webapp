@@ -63,10 +63,9 @@ export interface LockedBalance {
 export const traverseLockedBalances = async (
   contract: string,
   owner: string,
-  expectedCount: number,
-  w3: Web3
+  expectedCount: number
 ): Promise<LockedBalance[]> => {
-  const storeContract = buildLiquidityProtectionStoreContract(contract, w3);
+  const storeContract = buildLiquidityProtectionStoreContract(contract, web3);
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;

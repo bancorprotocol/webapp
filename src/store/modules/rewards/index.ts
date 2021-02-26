@@ -87,11 +87,11 @@ export class RewardsModule extends VuexModule.With({
                 await wait(3000);
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions();
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchAndSetLockedBalances();
                 await wait(3000);
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions();
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchAndSetLockedBalances();
               },
               resolveImmediately: true
             });
@@ -120,11 +120,11 @@ export class RewardsModule extends VuexModule.With({
                 await wait(3000);
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions();
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchAndSetLockedBalances();
                 await wait(3000);
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions();
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchAndSetLockedBalances();
               },
               resolveImmediately: true
             });
@@ -209,7 +209,9 @@ export class RewardsModule extends VuexModule.With({
 
       return poolPrograms;
     } catch (e) {
-      throw new Error(`Failed fetching pool programs ${e.message} ${storeContract}`);
+      throw new Error(
+        `Failed fetching pool programs ${e.message} ${storeContract}`
+      );
     }
   }
 

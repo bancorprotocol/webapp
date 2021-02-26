@@ -195,7 +195,8 @@ import {
   usdPriceOfBnt$,
   newPools$,
   poolPrograms$,
-  fetchPositionsTrigger$
+  fetchPositionsTrigger$,
+  lockedBalancesTrigger$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -1629,10 +1630,10 @@ export class EthBancorModule
       resolveImmediately: true,
       onConfirmation: async () => {
         await wait(600);
-        this.fetchAndSetLockedBalances({});
+        this.fetchAndSetLockedBalances();
         this.fetchProtectionPositions();
         await wait(2000);
-        this.fetchAndSetLockedBalances({});
+        this.fetchAndSetLockedBalances();
         this.fetchProtectionPositions();
       }
     });
@@ -1729,40 +1730,6 @@ export class EthBancorModule
   @mutation updateHistoricPoolFees(newFees: PreviousPoolFee[]) {
     const currentFees = this.previousPoolFeesArr;
     this.previousPoolFeesArr = [...currentFees, ...newFees];
-  }
-
-  @action async fetchAndSetLockedBalances({
-    storeAddress,
-    currentUser
-  }: {
-    storeAddress?: string;
-    currentUser?: string;
-  }) {
-    const owner = currentUser || this.currentUser;
-    if (!owner) return;
-
-    const contractAddress =
-      storeAddress || this.contracts.LiquidityProtectionStore;
-    const storeContract = buildLiquidityProtectionStoreContract(
-      contractAddress,
-      w3
-    );
-    const lockedBalanceCount = Number(
-      await storeContract.methods.lockedBalanceCount(owner).call()
-    );
-
-    const lockedBalances =
-      lockedBalanceCount > 0
-        ? await traverseLockedBalances(
-            contractAddress,
-            owner,
-            lockedBalanceCount,
-            w3
-          )
-        : [];
-    this.setLockedBalances(lockedBalances);
-
-    return lockedBalances;
   }
 
   loadingProtectedPositions = true;
@@ -2253,6 +2220,10 @@ export class EthBancorModule
     );
   }
 
+  @action async fetchAndSetLockedBalances() {
+    lockedBalancesTrigger$.next(null);
+  }
+
   @action async claimBnt(): Promise<TxResponse> {
     const contract = buildLiquidityProtectionContract(
       this.contracts.LiquidityProtection
@@ -2279,9 +2250,9 @@ export class EthBancorModule
 
     (async () => {
       await wait(2000);
-      this.fetchAndSetLockedBalances({});
+      this.fetchAndSetLockedBalances();
     })();
-    this.fetchAndSetLockedBalances({});
+    this.fetchAndSetLockedBalances();
 
     return {
       ...(await this.createTxResponse(hash)),

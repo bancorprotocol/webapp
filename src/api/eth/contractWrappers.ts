@@ -29,8 +29,10 @@ import {
 } from "./contractTypes";
 import {
   compareString,
+  LockedBalance,
   rewindBlocksByDays,
   sortAlongSide,
+  traverseLockedBalances,
   zeroAddress
 } from "../helpers";
 import {
@@ -296,7 +298,7 @@ export const fetchPositionsMulti = async (
       fromPairs(keys.map((key, index) => [key, res[index]]))
     ) as ProtectedLiquidity[];
 
-  return protectedLiquidity.filter(pos => typeof pos.owner == 'string');
+  return protectedLiquidity.filter(pos => typeof pos.owner == "string");
 };
 
 export const addLiquidityDisabled = async (
@@ -677,4 +679,23 @@ export const fetchRewardsMultiplier = async (
     .call();
 
   return new BigNumber(shrinkToken(result, 6));
+};
+
+export const fetchLockedBalances = async (
+  storeAddress: string,
+  currentUser: string
+): Promise<LockedBalance[]> => {
+  const owner = currentUser;
+
+  const contractAddress = storeAddress;
+  const storeContract = buildLiquidityProtectionStoreContract(contractAddress);
+  const lockedBalanceCount = Number(
+    await storeContract.methods.lockedBalanceCount(owner).call()
+  );
+
+  const lockedBalances =
+    lockedBalanceCount > 0
+      ? await traverseLockedBalances(contractAddress, owner, lockedBalanceCount)
+      : [];
+  return lockedBalances;
 };
