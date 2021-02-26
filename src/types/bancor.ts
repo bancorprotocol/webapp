@@ -321,6 +321,7 @@ export interface ViewRelay {
   reserves: ViewReserve[];
   addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
+  tradeSupported: boolean;
   removeLiquiditySupported: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;

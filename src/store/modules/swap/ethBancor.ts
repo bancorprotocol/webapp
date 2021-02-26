@@ -3159,8 +3159,13 @@ export class EthBancorModule
             compareString(reserve.id, bntTokenAddress)
           )?.amount || "0";
 
+        const tradeSupported = relayBalances.reserveBalances.every(
+          balance => balance.amount !== "0"
+        );
+
         return {
           id: poolContainerAddress,
+          tradeSupported,
           name: buildPoolNameFromReserves(reserves),
           version: Number(relay.version),
           reserves,
@@ -3194,6 +3199,9 @@ export class EthBancorModule
 
     return this.newPools.map(relay => {
       const liqDepth = Number(relay.liquidity.usd);
+      const tradeSupported = relay.reserves.every(
+        reserve => reserve.balance !== "0"
+      );
 
       const whitelisted = whiteListedPools.some(whitelistedAnchor =>
         compareString(whitelistedAnchor, relay.pool_dlt_id)
@@ -3254,6 +3262,7 @@ export class EthBancorModule
 
       return {
         id: relay.pool_dlt_id,
+        tradeSupported,
         name: buildPoolNameFromReserves(reserves),
         reserves,
         addProtectionSupported,
@@ -5189,9 +5198,7 @@ export class EthBancorModule
         to,
         networkContractAddress
       });
-      const smartTokenAddresses = path.filter((_, index) =>
-        isOdd(index)
-      );
+      const smartTokenAddresses = path.filter((_, index) => isOdd(index));
       if (smartTokenAddresses.length == 0)
         throw new Error("Failed to find any smart token addresses for path.");
       return smartTokenAddresses;
