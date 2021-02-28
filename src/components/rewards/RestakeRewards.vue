@@ -183,6 +183,7 @@ export default class RestakeRewards extends BaseTxAction {
     this.loading = true;
     try {
       await Promise.all([
+        new Promise(r => setTimeout(r, 1000)),
         this.loadMaxStakes(),
         vxm.rewards.fetchAndSetPendingRewards(),
         this.pools.forEach(async x => {
