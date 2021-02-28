@@ -258,6 +258,7 @@ export interface ViewToken {
   volume24h?: number;
   balance?: string;
   precision: number;
+  tradeSupported: boolean;
 }
 
 export interface TokenWithLogo extends AgnosticToken {
@@ -321,6 +322,7 @@ export interface ViewRelay {
   reserves: ViewReserve[];
   addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
+  tradeSupported: boolean;
   removeLiquiditySupported: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;

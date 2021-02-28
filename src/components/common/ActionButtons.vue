@@ -15,6 +15,9 @@
       @click="goToSwap"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       :class="small ? 'table-button-small' : 'table-button'"
+      :disabled="
+        (pool && !pool.tradeSupported) || (token && !token.tradeSupported)
+      "
     >
       <span v-if="!small">{{ $t("trade") }}</span>
       <font-awesome-icon
@@ -31,7 +34,6 @@
 import { Component, Prop } from "vue-property-decorator";
 import { ViewToken, ViewRelay } from "@/types/bancor";
 import BaseComponent from "@/components/BaseComponent.vue";
-import BigNumber from "bignumber.js";
 
 @Component
 export default class ActionButtons extends BaseComponent {
