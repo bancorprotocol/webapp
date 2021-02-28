@@ -123,7 +123,7 @@ export default class SideBar extends BaseComponent {
         label: "Bancor Analytics",
         newTab: true,
         hideMobile: false,
-        icon: "bntee.png"
+        icon: "analytics.svg"
       }
     ].map(link => ({
       ...link,
