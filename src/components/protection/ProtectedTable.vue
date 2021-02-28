@@ -191,6 +191,7 @@
           <div>
             {{ `${prettifyNumber(value)} ${item.symbol}` }}
           </div>
+
           <b-badge
             v-if="item.pendingReserveReward.gt(0)"
             variant="primary"
@@ -198,11 +199,21 @@
           >
             + {{ prettifyNumber(item.pendingReserveReward) }} BNT
           </b-badge>
+          <div v-if="item.rewardsMultiplier > 0">
+            <b-badge variant="primary">
+              X{{ prettifyNumber(item.rewardsMultiplier) }}
+            </b-badge>
+          </div>
         </div>
       </template>
-      <template #cellCollapsed(fees)="{ value }">
+      <template #cellCollapsed(fees)="{ value, item }">
         <div class="text-center">
-          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+          <div>
+            {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
+          </div>
+          <b-badge variant="primary" v-if="item.rewardsMultiplier > 0">
+            X{{ prettifyNumber(item.rewardsMultiplier) }}
+          </b-badge>
         </div>
       </template>
 
