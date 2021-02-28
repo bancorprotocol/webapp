@@ -494,6 +494,7 @@ export default class AddProtectionSingle extends BaseComponent {
     this.loading = true;
     try {
       await Promise.all([
+        new Promise(r => setTimeout(r, 1000)),
         this.fetchAndSetMaxStakes(this.pool.id),
         this.fetchAndSetDisabledReserves(this.pool.id)
       ]);
