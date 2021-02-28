@@ -84,7 +84,7 @@ export const getWelcomeData = async (
   try {
     const res = await axios.get<WelcomeData>(
       network == EthNetworks.Mainnet
-        ? "https://api-v2.bancor.network/welcome"
+        ? "https://api-v2.localcoin.io/welcome"
         : "https://ropsten-ptdczarhfq-nw.a.run.app/welcome"
     );
     console.info(`API data fetched at ${new Date()}`);
