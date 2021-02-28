@@ -1032,10 +1032,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@dfuse/client@^0.3.17":
-  version "0.3.17"
-  resolved "https://registry.yarnpkg.com/@dfuse/client/-/client-0.3.17.tgz#6d225394880f6e975783be7a8f7a6ebf2eae6842"
-  integrity sha512-GPF7SkqBXByF0sntScXZG0bo4j9iNGNl2UW1V9zwbx1oN8TFce+ewcp+u01QZGTxY0AVEXCVs94qWo3tjERkSA==
+"@dfuse/client@^0.3.19":
+  version "0.3.19"
+  resolved "https://registry.yarnpkg.com/@dfuse/client/-/client-0.3.19.tgz#d2fedea95df1efd3486e58879a8ea095ba8d7dd6"
+  integrity sha512-WVyRX901qnLMomhC0jNmsSWldHB+ptEve1BnyIUVgzOlzE8Qs74Q8CSVZajRjhPmF7IYiJSXwIcP7uEv/Bke1w==
   dependencies:
     "@types/debug" "^0.0.31"
     debug "^4.1.0"
