@@ -15,7 +15,9 @@
       @click="goToSwap"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       :class="small ? 'table-button-small' : 'table-button'"
-      :disabled="pool && !pool.tradeSupported"
+      :disabled="
+        (pool && !pool.tradeSupported) || (token && !token.tradeSupported)
+      "
     >
       <span v-if="!small">{{ $t("trade") }}</span>
       <font-awesome-icon
