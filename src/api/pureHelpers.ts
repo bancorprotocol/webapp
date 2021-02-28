@@ -94,7 +94,6 @@ export const groupPositionsArray = (
         }
 
         const sumFullyProtectedWithRewardUSD =
-
           Number(sumFullyProtectedWithReward) * val.reserveTokenPrice;
 
         const sumProtectedWithRewardUSD =
@@ -117,9 +116,12 @@ export const groupPositionsArray = (
           amount: sumProtectedWithReward.toNumber(),
           usdValue: sumProtectedWithRewardUSD
         };
-        item.roi =
-          (Number(sumFullyProtectedWithReward) - sumStakeAmount) /
-          sumStakeAmount;
+        item.roi = {
+          fees: sumFees / sumStakeAmount,
+          reserveRewards: item.pendingReserveReward
+            .times(val.bntTokenPrice)
+            .div(item.stake.usdValue)
+        };
         item.fees = sumFees;
 
         obj.set(id, item);
