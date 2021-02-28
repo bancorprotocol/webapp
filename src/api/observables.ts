@@ -690,16 +690,18 @@ combineLatest([
                   symbol: reserveToken.symbol,
                   id: reserveToken.dlt_id
                 },
-                roi:
-                  fullyProtectedDec &&
-                  Number(
+                ...(fullyProtectedDec && {
+                  roi: Number(
                     calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-                  ),
+                  )
+                }),
                 ...(pendingReserveReward && { pendingReserveReward }),
-                rewardsMultiplier: singleEntry.rewardsMultiplier,
+                ...(singleEntry.rewardsMultiplier && {
+                  rewardsMultiplier: singleEntry.rewardsMultiplier
+                }),
                 reserveTokenPrice,
                 bntTokenPrice: usdPriceOfBnt
-              } as ViewProtectedLiquidity;
+              };
             }
           );
       }

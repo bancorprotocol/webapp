@@ -796,14 +796,14 @@ export interface ViewProtectedLiquidity {
   stake: {
     amount: string;
     poolId: string;
-    usdValue?: number;
+    usdValue: number;
     symbol: string;
     unixTime: number;
   };
-  protectedAmount: TokenReward;
-  fullyProtected: TokenReward;
+  protectedAmount?: TokenReward;
+  fullyProtected?: TokenReward;
   fees: TokenReward;
-  roi: number;
+  roi?: number;
   apr: {
     day: number;
     week: number;
@@ -816,7 +816,7 @@ export interface ViewProtectedLiquidity {
   fullCoverage: number;
   givenVBnt?: string;
   pendingReserveReward?: string;
-  rewardsMultiplier: number;
+  rewardsMultiplier?: number;
   reserveTokenPrice: number;
   bntTokenPrice: number;
 }

@@ -186,7 +186,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   get rewardsWithMultiplier() {
     return vxm.ethBancor.protectedPositions.some(
-      position => position.rewardsMultiplier > 1
+      position => position.rewardsMultiplier && position.rewardsMultiplier > 1
     );
   }
 
