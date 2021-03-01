@@ -112,7 +112,7 @@ export default class WithdrawRewards extends BaseTxAction {
     if (this.txMeta.success) {
       await this.$router.replace({ name: "LiqProtection" });
     }
-    this.setDefault();
+    this.setTxDefault();
   }
 
   async withdrawAction() {
