@@ -29,7 +29,7 @@
     />
 
     <main-button
-      @click="initAction"
+      @click="openModal"
       :label="$t('supply')"
       :active="true"
       :large="true"
@@ -37,11 +37,34 @@
       :loading="rateLoading"
       :disabled="disableMainButton"
     />
-    <modal-pool-action
-      v-model="modal"
-      :amounts-array="[smartTokenAmount, amount1, amount2]"
-      :advanced-block-items="advancedBlockItems"
-    />
+
+    <modal-tx-action
+      title="Add Liquidity"
+      icon="plus"
+      :tx-meta.sync="txMeta"
+      @onConfirm="initAction"
+      redirect-on-success="Pool"
+    >
+      <gray-border-block>
+        <label-content-split
+          :label="$t('deposit')"
+          :value="`${prettifyNumber(amount1)} ${reserveOne.symbol}`"
+        />
+        <label-content-split
+          class="mt-1"
+          :value="`${prettifyNumber(amount2)} ${reserveTwo.symbol}`"
+        />
+      </gray-border-block>
+
+      <gray-border-block gray-bg="true" class="mt-3">
+        <label-content-split
+          v-for="item in advancedBlockItems"
+          :key="item.label"
+          :label="item.label"
+          :value="item.value"
+        />
+      </gray-border-block>
+    </modal-tx-action>
   </div>
 </template>
 
@@ -49,7 +72,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { ViewRelay, ViewAmount } from "@/types/bancor";
+import { ViewAmount, ViewRelay } from "@/types/bancor";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -57,10 +80,14 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import RateShareBlock from "@/components/common/RateShareBlock.vue";
 import { compareString, formatNumber, formatPercent } from "@/api/helpers";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 
 @Component({
   components: {
+    GrayBorderBlock,
+    ModalTxAction,
     RateShareBlock,
     ModalPoolAction,
     LabelContentSplit,
@@ -69,13 +96,11 @@ import BaseComponent from "@/components/BaseComponent.vue";
     MainButton
   }
 })
-export default class PoolActionsAddV1 extends BaseComponent {
+export default class PoolActionsAddV1 extends BaseTxAction {
   @Prop() pool!: ViewRelay;
 
-  smartTokenAmount: string = "??.??????";
   amount1: string = "";
   amount2: string = "";
-  modal = false;
 
   singleUnitCosts: any[] = [];
   shareOfPool = 0;
@@ -94,9 +119,26 @@ export default class PoolActionsAddV1 extends BaseComponent {
   }
 
   async initAction() {
-    if (this.currentUser) this.modal = true;
-    //@ts-ignore
-    else await this.promptAuth();
+    this.txMeta.txBusy = true;
+    try {
+      this.txMeta.success = await vxm.bancor.addLiquidity({
+        id: this.pool.id,
+        reserves: [
+          {
+            id: this.reserveOne.id,
+            amount: this.amount1
+          },
+          {
+            id: this.reserveTwo.id,
+            amount: this.amount2
+          }
+        ],
+        onUpdate: this.onUpdate
+      });
+    } catch (e) {
+      this.txMeta.txError = e.message;
+      this.txMeta.txBusy = false;
+    }
   }
 
   get balance1() {
@@ -135,14 +177,6 @@ export default class PoolActionsAddV1 extends BaseComponent {
 
   get advancedBlockItems() {
     return [
-      {
-        label: `${this.reserveOne.symbol} ${i18n.t("deposit")}`,
-        value: Number(this.amount1)
-      },
-      {
-        label: `${this.reserveTwo.symbol} ${i18n.t("deposit")}`,
-        value: Number(this.amount2)
-      },
       {
         label: i18n.t("rates"),
         value:
@@ -221,7 +255,7 @@ export default class PoolActionsAddV1 extends BaseComponent {
   }
 
   setSingleUnitCosts(units: ViewAmount[]) {
-    const items = units.map(unit => {
+    this.singleUnitCosts = units.map(unit => {
       const token = this.pool.reserves.find(reserve =>
         compareString(unit.id, reserve.id)
       )!;
@@ -234,7 +268,6 @@ export default class PoolActionsAddV1 extends BaseComponent {
         label: `${opposingToken.symbol} ${i18n.t("per")} ${token.symbol}`
       };
     });
-    this.singleUnitCosts = items;
   }
 
   async tokenTwoChanged(tokenAmount: string) {
