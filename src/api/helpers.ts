@@ -738,7 +738,8 @@ export const onboard = Onboard({
   },
   walletSelect: {
     wallets
-  }
+  },
+  walletCheck: walletChecks
 });
 
 export const fetchReserveBalance = async (
