@@ -214,16 +214,15 @@ export default class SwapAction extends BaseTxAction {
 
   get disableButton() {
     if (!this.currentUser && this.amount1) return false;
-    else if (
-      this.amount1 &&
-      this.amount2 &&
-      !new BigNumber(this.amount1).isZero() &&
-      !new BigNumber(this.amount2).isZero() &&
-      !this.errorToken1 &&
-      !this.errorToken2
-    )
-      return false;
-    else return true;
+    else
+      return !(
+        this.amount1 &&
+        this.amount2 &&
+        !new BigNumber(this.amount1).isZero() &&
+        !new BigNumber(this.amount2).isZero() &&
+        !this.errorToken1 &&
+        !this.errorToken2
+      );
   }
 
   get swapButtonLabel() {
@@ -393,14 +392,11 @@ export default class SwapAction extends BaseTxAction {
   }
 
   get overSlippageLimit() {
-    if (
+    return (
       this.slippage !== null &&
       this.slippage !== undefined &&
       this.slippage >= 0.03
-    ) {
-      return true;
-    }
-    return false;
+    );
   }
 
   @Watch("$route.query")
