@@ -44,14 +44,32 @@
         />
         <multi-input-field
           class="mb-3"
-          @input="onDiscourseInput"
           type="url"
           :placeholder="rate"
           :append="$t('defined_rate')"
           height="48"
         />
         <label-content-split :label="$t('expires_in')">
-          dropdown place holder
+          <b-dropdown
+            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            toggle-class="block-rounded"
+            :menu-class="
+              darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+            "
+          >
+            <template #button-content>
+              {{ formatDuration(selectedDuration) }}
+            </template>
+
+            <b-dropdown-item
+              v-for="item in durationList"
+              :key="item.toString()"
+              @click="changeDuration(item)"
+              :variant="darkMode ? 'dark' : 'light'"
+            >
+              {{ formatDuration(item) }}
+            </b-dropdown-item>
+          </b-dropdown>
         </label-content-split>
       </div>
       <div v-else>
@@ -135,6 +153,8 @@ import numeral from "numeral";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
+import dayjs from "@/utils/dayjs";
+import { formatDuration } from "@/api/helpers";
 
 @Component({
   components: {
@@ -151,6 +171,11 @@ export default class SwapAction extends BaseComponent {
 
   amount1 = "";
   amount2 = "";
+
+  durationList: plugin.Duration[] = [
+    dayjs.duration({ days: 5, hours: 23, minutes: 22 })
+  ];
+  selectedDuration = this.durationList[0];
 
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -249,6 +274,10 @@ export default class SwapAction extends BaseComponent {
       //   value: "??.??"
       // }
     ];
+  }
+
+  formatDuration(duration: plugin.Duration) {
+    return formatDuration(duration);
   }
 
   openModal(name: string) {

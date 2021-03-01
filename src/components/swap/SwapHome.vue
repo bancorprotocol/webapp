@@ -21,9 +21,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import SwapAction from "@/components/swap/SwapAction.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
@@ -31,7 +32,7 @@ import SwapAction from "@/components/swap/SwapAction.vue";
     ContentBlock
   }
 })
-export default class SwapHome extends Vue {
+export default class SwapHome extends BaseComponent {
   limit: boolean = false;
 
   toggleLimit() {

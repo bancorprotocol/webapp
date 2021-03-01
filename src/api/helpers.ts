@@ -1281,6 +1281,14 @@ export const formatUnixTime = (
   return { date, time, dateTime };
 };
 
+export const formatDuration = (duration: plugin.Duration): string => {
+  let sentance = "";
+  const days = duration.days();
+  if (days > 0) sentance += days + " Days";
+  sentance += "" + duration.subtract({ days }).format("HH:mm");
+  return sentance;
+};
+
 export const defaultTableSort = (
   row: TableItem,
   sortBy: string,
