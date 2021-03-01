@@ -278,13 +278,6 @@ export default class SwapAction extends BaseTxAction {
     });
   }
 
-  async openModal() {
-    //@ts-ignore
-    if (!this.currentUser) return await this.promptAuth();
-
-    this.txMeta.showTxModal = true;
-  }
-
   async initSwap() {
     this.txMeta.txBusy = true;
 

@@ -15,6 +15,13 @@ export default class BaseTxAction extends BaseComponent {
     prompt: null
   };
 
+  async openModal() {
+    //@ts-ignore
+    if (!this.currentUser) return await this.promptAuth();
+
+    this.txMeta.showTxModal = true;
+  }
+
   setTxDefault() {
     this.txMeta = {
       showTxModal: false,
