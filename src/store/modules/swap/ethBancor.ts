@@ -799,7 +799,12 @@ interface NewRelay {
   };
 }
 
-const unlimitedWei = new BigNumber(2).pow(256).minus(1).div(new BigNumber(10).pow(18)).toString().split('.')[0]
+const unlimitedWei = new BigNumber(2)
+  .pow(256)
+  .minus(1)
+  .div(new BigNumber(10).pow(18))
+  .toString()
+  .split(".")[0];
 
 const calculateMean = (a: string, b: string) =>
   new BigNumber(a).plus(b).div(2).toString();
@@ -2059,7 +2064,7 @@ export class EthBancorModule
   }: {
     decPercent: number;
     id: string;
-    onPrompt: OnPrompt
+    onPrompt: OnPrompt;
   }): Promise<TxResponse> {
     const dbId = id.split(":")[1];
 
@@ -6794,12 +6799,14 @@ export class EthBancorModule
     );
   }
 
-  @action async promptUserForApprovalType(onPrompt: OnPrompt): Promise<{ unlimitedApproval: boolean }> {
+  @action async promptUserForApprovalType(
+    onPrompt: OnPrompt
+  ): Promise<{ unlimitedApproval: boolean }> {
     const promptId = String(Date.now());
 
     enum ApproveTypes {
-      unlimited = "unlimited",
-      limited = "limited"
+      unlimited = "Unlimited Approve",
+      limited = "Approve"
     }
     const questions = [
       ApproveTypes.limited,
@@ -6825,7 +6832,7 @@ export class EthBancorModule
     );
 
     const unlimitedApproval = selectedQuestion.label == ApproveTypes.unlimited;
-    return { unlimitedApproval }
+    return { unlimitedApproval };
   }
 
   @action async convert({
@@ -6929,7 +6936,10 @@ export class EthBancorModule
     spender,
     amount,
     tokenAddress
-  }: TokenWithdrawParam): Promise<{ approvalIsRequired: boolean, currentApprovedBalance: string }> {
+  }: TokenWithdrawParam): Promise<{
+    approvalIsRequired: boolean;
+    currentApprovedBalance: string;
+  }> {
     const currentApprovedBalance = await getApprovedBalanceWei({
       owner,
       spender,
@@ -6943,7 +6953,7 @@ export class EthBancorModule
     return {
       approvalIsRequired: !sufficientBalanceAlreadyApproved,
       currentApprovedBalance
-    }
+    };
   }
 
   @action async approveTokenWithdrawal({
@@ -6960,12 +6970,12 @@ export class EthBancorModule
     const nullingTxRequired =
       isNullApprovalTokenContract &&
       fromWei(
-        currentApprovedBalance || 
-        await getApprovedBalanceWei({
-          owner,
-          spender,
-          tokenAddress
-        })
+        currentApprovedBalance ||
+          (await getApprovedBalanceWei({
+            owner,
+            spender,
+            tokenAddress
+          }))
       ) !== "0";
 
     if (nullingTxRequired) {
@@ -6996,20 +7006,28 @@ export class EthBancorModule
     spender: string;
     tokenAddress: string;
     amount: string;
-    onPrompt?: OnPrompt
+    onPrompt?: OnPrompt;
   }) {
-    const { approvalIsRequired, currentApprovedBalance } = await this.isApprovalRequired(tokenWithdrawal);
+    const {
+      approvalIsRequired,
+      currentApprovedBalance
+    } = await this.isApprovalRequired(tokenWithdrawal);
     if (!approvalIsRequired) return;
 
-    const withCurrentApprovedBalance = { ...tokenWithdrawal, currentApprovedBalance };
+    const withCurrentApprovedBalance = {
+      ...tokenWithdrawal,
+      currentApprovedBalance
+    };
     if (tokenWithdrawal.onPrompt) {
-      const { unlimitedApproval } = await this.promptUserForApprovalType(tokenWithdrawal.onPrompt);
+      const { unlimitedApproval } = await this.promptUserForApprovalType(
+        tokenWithdrawal.onPrompt
+      );
       return this.approveTokenWithdrawal({
         ...withCurrentApprovedBalance,
         ...(unlimitedApproval && { amount: unlimitedWei })
-      })
+      });
     } else {
-      return this.approveTokenWithdrawal(withCurrentApprovedBalance)
+      return this.approveTokenWithdrawal(withCurrentApprovedBalance);
     }
   }
 

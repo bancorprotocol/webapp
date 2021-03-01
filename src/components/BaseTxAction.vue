@@ -15,11 +15,6 @@ export default class BaseTxAction extends BaseComponent {
     prompt: null
   };
 
-  onUpdate(index: number, steps: Step[]) {
-    this.txMeta.sections = steps;
-    this.txMeta.stepIndex = index;
-  }
-
   setTxDefault() {
     this.txMeta = {
       showTxModal: false,
@@ -32,7 +27,13 @@ export default class BaseTxAction extends BaseComponent {
     };
   }
 
-  async onPrompt(prompt: Prompt) {
+  onUpdate(index: number, steps: Step[]) {
+    this.txMeta.sections = steps;
+    this.txMeta.stepIndex = index;
+  }
+
+  onPrompt(prompt: Prompt) {
+    this.txMeta.txBusy = false;
     this.txMeta.prompt = prompt;
   }
 }
