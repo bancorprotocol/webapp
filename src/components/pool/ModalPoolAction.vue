@@ -6,21 +6,7 @@
   >
     <b-row class="d-flex justify-content-center">
       <div v-if="!(txBusy || success || error)" class="w-100">
-        <b-col
-          v-if="false"
-          cols="12"
-          class="d-flex align-items-center justify-content-center"
-        >
-          <span
-            class="font-size-24 font-w600 mr-2"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ Number(amountsArray[0]) }}
-          </span>
-          <pool-logos :pool="pool" />
-        </b-col>
-
-        <b-col v-else cols="12" class="text-center">
+        <b-col cols="12" class="text-center">
           <div
             v-if="selectedToken && pool.v2"
             class="font-size-24 font-w600 mr-2"

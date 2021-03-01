@@ -19,8 +19,12 @@
         </div>
       </div>
 
-      <h2 class="font-size-20 font-w600">{{ title }}</h2>
+      <div class="font-size-20 font-w600 mb-4">
+        {{ title }}
+      </div>
+
       <slot />
+
       <div v-if="txMetaData.prompt" class="d-flex flex-column mt-2">
         <b-btn
           @click="selectedPromptReceiver(question.id)"

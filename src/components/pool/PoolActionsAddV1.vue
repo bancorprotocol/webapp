@@ -8,9 +8,11 @@
       :balance="balance1"
       :error-msg="token1Error"
     />
+
     <div class="text-center my-3">
       <font-awesome-icon icon="plus" class="text-primary font-size-16" />
     </div>
+
     <token-input-field
       :label="$t('input')"
       :token="reserveTwo"
@@ -20,10 +22,12 @@
       :balance="balance2"
       :error-msg="token2Error"
     />
+
     <rate-share-block
       :items="shareBlockItems"
       :label="$t('prices_pool_share')"
     />
+
     <main-button
       @click="initAction"
       :label="$t('supply')"
