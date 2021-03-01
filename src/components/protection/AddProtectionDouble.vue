@@ -77,12 +77,18 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
+import {
+  Prompt,
+  Step,
+  TxResponse,
+  ViewAmountDetail,
+  ViewRelay
+} from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { compareString, formatUnixTime, formatNumber } from "@/api/helpers";
+import { compareString, formatNumber, formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -180,17 +186,21 @@ export default class AddProtectionDouble extends BaseComponent {
 
     this.txBusy = true;
     try {
-      const txRes = await vxm.ethBancor.protectLiquidity({
+      this.success = await vxm.ethBancor.protectLiquidity({
         amount: { amount: this.amount, id: this.pool.id },
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
       });
-      this.success = txRes;
       this.amount = "";
     } catch (e) {
       this.error = e.message;
     } finally {
       this.txBusy = false;
     }
+  }
+
+  onPrompt(prompt: Prompt) {
+    //
   }
 
   async openModal() {

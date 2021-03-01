@@ -174,7 +174,13 @@
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { Step, TxResponse, ViewRelay, ViewAmountDetail } from "@/types/bancor";
+import {
+  Step,
+  TxResponse,
+  ViewRelay,
+  ViewAmountDetail,
+  Prompt
+} from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -376,7 +382,8 @@ export default class AddProtectionSingle extends BaseComponent {
           id: this.token.id,
           amount: this.amount
         },
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
       });
       this.success = txRes;
       this.amount = "";
@@ -385,6 +392,10 @@ export default class AddProtectionSingle extends BaseComponent {
     } finally {
       this.txBusy = false;
     }
+  }
+
+  onPrompt(prompt: Prompt) {
+    //
   }
 
   async amountChanged(tokenAmount: string) {

@@ -73,7 +73,7 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { TxResponse } from "@/types/bancor";
+import { Prompt, TxResponse } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -169,16 +169,20 @@ export default class WithdrawProtectionDouble extends BaseComponent {
     this.modal = true;
     this.txBusy = true;
     try {
-      const txRes = await vxm.ethBancor.removeProtection({
+      this.success = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
-        id: this.position.id
+        id: this.position.id,
+        onPrompt: this.onPrompt
       });
-      this.success = txRes;
     } catch (err) {
       this.error = err.message;
     } finally {
       this.txBusy = false;
     }
+  }
+
+  onPrompt(prompt: Prompt) {
+    //
   }
 
   onModalClick() {
