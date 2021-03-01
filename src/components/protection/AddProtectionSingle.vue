@@ -175,22 +175,17 @@ import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
 import {
+  Prompt,
   Step,
   TxResponse,
-  ViewRelay,
   ViewAmountDetail,
-  Prompt
+  ViewRelay
 } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import {
-  formatUnixTime,
-  formatNumber,
-  compareString,
-  findOrThrow
-} from "@/api/helpers";
+import { compareString, findOrThrow, formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
@@ -376,7 +371,7 @@ export default class AddProtectionSingle extends BaseComponent {
 
     this.txBusy = true;
     try {
-      const txRes = await vxm.ethBancor.addProtection({
+      this.success = await vxm.ethBancor.addProtection({
         poolId: this.pool.id,
         reserveAmount: {
           id: this.token.id,
@@ -385,7 +380,6 @@ export default class AddProtectionSingle extends BaseComponent {
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
-      this.success = txRes;
       this.amount = "";
     } catch (e) {
       this.error = e.message;
