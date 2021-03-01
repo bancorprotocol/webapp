@@ -38,7 +38,10 @@
       :disabled="disableActionButton"
     />
 
-    <modal-tx-action :tx-meta="txMeta" redirect-on-success="LiqProtection" />
+    <modal-tx-action
+      :tx-meta.sync="txMeta"
+      redirect-on-success="LiqProtection"
+    />
   </div>
 </template>
 
