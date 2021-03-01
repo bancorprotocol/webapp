@@ -653,9 +653,7 @@ const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 const walletChecks = [
   { checkName: 'derivationPath' },
   { checkName: 'accounts' },
-  { checkName: 'connect' },
   { checkName: 'network' },
-  { checkName: 'balance', minimumBalance: '1000000' }
 ]
 
 const wallets = [
