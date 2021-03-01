@@ -1,29 +1,43 @@
 <template>
-  <div>
-    <content-block :no-header="true" class="mb-3" :shadow="true">
-      <sub-navigation class="pt-3" />
-
-      <div>
-        <swap-action />
-      </div>
-    </content-block>
-  </div>
+  <content-block :no-header="true" class="mb-3" :shadow="true">
+    <b-button-group class="d-flex w-100 text-center mt-2 mb-3 pt-3">
+      <b-button
+        @click="toggleLimit"
+        :variant="
+          limit ? 'outline-primary' + (darkMode ? '-dark' : '') : 'primary'
+        "
+        >{{ $t("market") }}
+      </b-button>
+      <b-button
+        @click="toggleLimit"
+        :variant="
+          !limit ? 'outline-primary' + (darkMode ? '-dark' : '') : 'primary'
+        "
+        >{{ $t("limit") }}
+      </b-button>
+    </b-button-group>
+    <swap-action :limit="limit" />
+  </content-block>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import SubNavigation from "@/components/layout/SubNavigation.vue";
 import SwapAction from "@/components/swap/SwapAction.vue";
 
 @Component({
   components: {
     SwapAction,
-    SubNavigation,
     ContentBlock
   }
 })
-export default class SwapHome extends Vue {}
+export default class SwapHome extends Vue {
+  limit: boolean = false;
+
+  toggleLimit() {
+    this.limit = !this.limit;
+  }
+}
 </script>
 
 <style scoped lang="scss"></style>

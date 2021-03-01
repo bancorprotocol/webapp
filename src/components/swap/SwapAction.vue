@@ -35,45 +35,65 @@
     />
 
     <div class="my-3">
-      <div class="mb-3">
+      <div v-if="limit">
         <label-content-split
-          :label="advancedOpen ? $t('slippage_tolerance') : ''"
-        >
-          <span
-            @click="advancedOpen = !advancedOpen"
-            class="text-primary font-size-12 font-w500 cursor"
+          :label="$t('rate')"
+          :value="rate"
+          :loading="rateLoading"
+          class="mb-2"
+        />
+        <multi-input-field
+          class="mb-3"
+          @input="onDiscourseInput"
+          type="url"
+          :placeholder="rate"
+          :append="$t('defined_rate')"
+          height="48"
+        />
+        <label-content-split :label="$t('expires_in')">
+          dropdown place holder
+        </label-content-split>
+      </div>
+      <div v-else>
+        <div class="mb-3">
+          <label-content-split
+            :label="advancedOpen ? $t('slippage_tolerance') : ''"
           >
-            {{ $t("advanced_settings") }}
-            <font-awesome-icon
-              :icon="advancedOpen ? 'caret-up' : 'caret-down'"
-            />
+            <span
+              @click="advancedOpen = !advancedOpen"
+              class="text-primary font-size-12 font-w500 cursor"
+            >
+              {{ $t("advanced_settings") }}
+              <font-awesome-icon
+                :icon="advancedOpen ? 'caret-up' : 'caret-down'"
+              />
+            </span>
+          </label-content-split>
+          <b-collapse id="advanced-swap" v-model="advancedOpen">
+            <slippage-tolerance />
+          </b-collapse>
+        </div>
+        <label-content-split
+          :label="$t('rate')"
+          :value="rate"
+          :loading="rateLoading"
+          class="mb-2"
+        >
+          <span @click="inverseRate = !inverseRate" class="cursor">
+            {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
           </span>
         </label-content-split>
-        <b-collapse id="advanced-swap" v-model="advancedOpen">
-          <slippage-tolerance />
-        </b-collapse>
+        <label-content-split
+          :label="$t('price_impact')"
+          :tooltip="$t('market_price_diff')"
+          :is-alert="overSlippageLimit"
+          :value="
+            slippage !== null && slippage !== undefined
+              ? numeral(this.slippage).format('0.0000%')
+              : '0.0000%'
+          "
+        />
       </div>
-
-      <label-content-split
-        :label="$t('rate')"
-        :value="rate"
-        :loading="rateLoading"
-        class="mb-2"
-      >
-        <span @click="inverseRate = !inverseRate" class="cursor">
-          {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
-        </span>
-      </label-content-split>
-      <label-content-split
-        :label="$t('price_impact')"
-        :tooltip="$t('market_price_diff')"
-        :is-alert="overSlippageLimit"
-        :value="
-          slippage !== null && slippage !== undefined
-            ? numeral(this.slippage).format('0.0000%')
-            : '0.0000%'
-        "
-      />
       <label-content-split
         v-if="fee !== null"
         :label="$t('fee')"
@@ -102,16 +122,16 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component } from "vue-property-decorator";
+import { Watch, Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
-import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -122,10 +142,13 @@ import BaseComponent from "@/components/BaseComponent.vue";
     ModalSwapAction,
     LabelContentSplit,
     TokenInputField,
+    MultiInputField,
     MainButton
   }
 })
 export default class SwapAction extends BaseComponent {
+  @Prop({ default: false }) limit!: boolean;
+
   amount1 = "";
   amount2 = "";
 
