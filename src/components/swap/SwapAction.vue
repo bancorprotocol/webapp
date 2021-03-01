@@ -68,11 +68,7 @@
         :label="$t('price_impact')"
         :tooltip="$t('market_price_diff')"
         :is-alert="overSlippageLimit"
-        :value="
-          slippage !== null && slippage !== undefined
-            ? numeral(this.slippage).format('0.0000%')
-            : '0.0000%'
-        "
+        :value="priceImpact"
       />
       <label-content-split
         v-if="fee !== null"
@@ -83,24 +79,46 @@
 
     <main-button
       :label="swapButtonLabel"
-      @click="initSwap"
+      @click="openModal"
       :active="true"
       :large="true"
       :loading="rateLoading"
       :disabled="disableButton"
     />
 
-    <modal-tx-action :tx-meta.sync="txMeta">
-      confirm swap
-      <div v-if="txMeta.prompt">
-        <b-btn
-          @click="selectedPromptReceiver(question.id)"
-          v-for="question in txMeta.prompt.questions"
-          :key="question.id"
-        >
-          {{ question.label }}
-        </b-btn>
-      </div>
+    <modal-tx-action
+      title="Confirm Token Swap"
+      icon="exchange-alt"
+      :tx-meta.sync="txMeta"
+      @onConfirm="initSwap"
+    >
+      <gray-border-block>
+        <label-content-split
+          label="Sell"
+          :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
+          class="mb-2"
+        />
+        <label-content-split
+          label="Receive"
+          :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
+        />
+      </gray-border-block>
+
+      <p
+        class="font-size-12 my-3"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+      >
+        {{
+          $t("output_estimated", {
+            amount: numeral(slippageTolerance).format("0.0[0]%")
+          })
+        }}
+      </p>
+
+      <gray-border-block gray-bg="true">
+        <label-content-split label="Rate" :value="rate" class="mb-2" />
+        <label-content-split label="Price Impact" :value="priceImpact" />
+      </gray-border-block>
     </modal-tx-action>
   </div>
 </template>
@@ -113,19 +131,18 @@ import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BigNumber from "bignumber.js";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
-import { selectedPromptReceiver$ } from "@/api/observables";
+import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 
 @Component({
   components: {
+    GrayBorderBlock,
     ModalTxAction,
     SlippageTolerance,
-    ModalSwapAction,
     LabelContentSplit,
     TokenInputField,
     MainButton
@@ -153,6 +170,16 @@ export default class SwapAction extends BaseTxAction {
 
   get tokens() {
     return vxm.bancor.tokens;
+  }
+
+  get priceImpact() {
+    return this.slippage !== null && this.slippage !== undefined
+      ? numeral(this.slippage).format("0.0000%")
+      : "0.0000%";
+  }
+
+  get slippageTolerance() {
+    return vxm.bancor.slippageTolerance;
   }
 
   inverseRate = false;
@@ -204,11 +231,6 @@ export default class SwapAction extends BaseTxAction {
     else return i18n.t("swap");
   }
 
-  selectedPromptReceiver(id: string) {
-    this.txMeta.txBusy = true;
-    selectedPromptReceiver$.next(id);
-  }
-
   selectFromToken(id: string) {
     let to = this.$route.query.to;
 
@@ -257,11 +279,15 @@ export default class SwapAction extends BaseTxAction {
     });
   }
 
-  async initSwap() {
+  async openModal() {
     //@ts-ignore
     if (!this.currentUser) return await this.promptAuth();
 
     this.txMeta.showTxModal = true;
+  }
+
+  async initSwap() {
+    this.txMeta.txBusy = true;
 
     try {
       this.txMeta.success = await vxm.bancor.convert({
