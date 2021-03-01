@@ -63,8 +63,8 @@ import { selectedPromptReceiver$ } from "@/api/observables";
 export default class ModalTxAction extends BaseComponent {
   @PropSync("txMeta") txMetaData!: ITxMeta;
   @Prop({ default: "" }) title!: string;
-  @Prop({ required: false }) icon: string;
-  @Prop({ required: false }) redirectOnSuccess: string;
+  @Prop({ required: false }) icon?: string;
+  @Prop({ required: false }) redirectOnSuccess?: string;
 
   get currentStatus() {
     if (this.txMetaData.sections.length)
@@ -81,7 +81,7 @@ export default class ModalTxAction extends BaseComponent {
   }
 
   selectedPromptReceiver(id: string) {
-    this.txMeta.txBusy = true;
+    this.txMetaData.txBusy = true;
     selectedPromptReceiver$.next(id);
   }
 
