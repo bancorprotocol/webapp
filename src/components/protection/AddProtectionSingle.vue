@@ -136,38 +136,26 @@
       :disabled="disableActionButton"
     />
 
-    <modal-base
-      :title="`${$t('staking_protecting')}:`"
-      v-model="modal"
-      @input="setDefault"
+    <modal-tx-action
+      title="Confirm Stake & Protect"
+      icon="coins"
+      :tx-meta.sync="txMeta"
+      @onConfirm="initStake"
+      redirect-on-success="LiqProtection"
     >
-      <b-row v-if="!(txBusy || success || error)">
-        <b-col cols="12" class="text-center mb-3">
-          <span
-            class="font-size-24 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ `${prettifyNumber(amount)} ${token.symbol}` }}
-          </span>
-        </b-col>
-      </b-row>
-
-      <action-modal-status
-        v-else
-        :error="error"
-        :success="success"
-        :step-description="currentStatus"
-      />
-
-      <main-button
-        @click="initAction"
-        class="mt-3"
-        :label="modalConfirmButton"
-        :active="true"
-        :large="true"
-        :disabled="txBusy"
-      />
-    </modal-base>
+      <gray-border-block>
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          You are staking and protecting
+        </span>
+        <div
+          class="font-w500 font-size-14"
+          v-text="`${prettifyNumber(amount)} ${token.symbol}`"
+        />
+      </gray-border-block>
+    </modal-tx-action>
   </div>
 </template>
 
@@ -175,7 +163,7 @@
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
+import { ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -188,12 +176,14 @@ import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
 
 @Component({
   components: {
+    ModalTxAction,
     PriceDeviationError,
     ModalPoolSelect,
     ActionModalStatus,
@@ -206,7 +196,7 @@ import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
     MainButton
   }
 })
-export default class AddProtectionSingle extends BaseComponent {
+export default class AddProtectionSingle extends BaseTxAction {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
@@ -221,14 +211,8 @@ export default class AddProtectionSingle extends BaseComponent {
 
   amount: string = "";
 
-  modal = false;
   poolSelectModal = false;
 
-  txBusy = false;
-  success: TxResponse | string | null = null;
-  error = "";
-  sections: Step[] = [];
-  stepIndex = 0;
   preTxError = "";
   outputs: ViewAmountDetail[] = [];
 
@@ -346,31 +330,10 @@ export default class AddProtectionSingle extends BaseComponent {
     return { show, msg };
   }
 
-  get modalConfirmButton() {
-    return this.error
-      ? i18n.t("close")
-      : this.success
-      ? i18n.t("close")
-      : this.txBusy
-      ? `${i18n.t("processing")}...`
-      : i18n.t("confirm");
-  }
-
-  async initAction() {
-    if (this.success) {
-      this.setDefault();
-      this.modal = false;
-      await this.$router.push({ name: "LiqProtection" });
-      return;
-    } else if (this.error || this.inputError) {
-      this.modal = false;
-      this.setDefault();
-      return;
-    }
-
-    this.txBusy = true;
+  async initStake() {
+    this.txMeta.txBusy = true;
     try {
-      this.success = await vxm.ethBancor.addProtection({
+      this.txMeta.success = await vxm.ethBancor.addProtection({
         poolId: this.pool.id,
         reserveAmount: {
           id: this.token.id,
@@ -381,14 +344,9 @@ export default class AddProtectionSingle extends BaseComponent {
       });
       this.amount = "";
     } catch (e) {
-      this.error = e.message;
-    } finally {
-      this.txBusy = false;
+      this.txMeta.txError = e.message;
+      this.txMeta.txBusy = false;
     }
-  }
-
-  onPrompt() {
-    //
   }
 
   async amountChanged(tokenAmount: string) {
@@ -423,32 +381,8 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
-  async openModal() {
-    if (this.currentUser) this.modal = true;
-    // @ts-ignore
-    else await this.promptAuth();
-  }
-
   openPoolSelectModal() {
     this.poolSelectModal = true;
-  }
-
-  setDefault() {
-    this.sections = [];
-    this.error = "";
-    this.success = null;
-  }
-
-  get currentStatus() {
-    if (this.sections.length) {
-      return this.sections[this.stepIndex].description;
-    }
-    return undefined;
-  }
-
-  onUpdate(index: number, steps: any[]) {
-    this.sections = steps;
-    this.stepIndex = index;
   }
 
   async loadRecentAverageRate() {

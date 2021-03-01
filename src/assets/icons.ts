@@ -81,7 +81,8 @@ export const fas = [
   faArrowLeft,
   faArrowRight,
   faCheck,
-  faArrowUp
+  faArrowUp,
+  faCoins
 ];
 
 /* free-brands-svg-icons */
@@ -92,6 +93,7 @@ import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien"
 import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
 import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
 
 export const fab = [
   faDiscord,
