@@ -1059,7 +1059,8 @@ export class EosBancorModule
         return {
           ...token,
           name: meta.name,
-          logo: meta.logo
+          logo: meta.logo,
+          tradeSupported: true
         };
       }
     };
@@ -1147,9 +1148,9 @@ export class EosBancorModule
               ...(reserve.amount && { balance: reserve.amount })
             } as ViewReserve)
         );
-
         return {
           ...relay,
+          tradeSupported: true,
           version: relay.isMultiContract ? 2 : 1,
           id: buildTokenId({
             contract: relay.smartToken.contract,

@@ -1910,7 +1910,7 @@ export class EthBancorModule
 
       const rewardsMultiplier: {
         id: string;
-        rewardsMultiplier: BigNumber;
+        rewardsMultiplier: number;
       }[] = await Promise.all(
         uniquePoolReserveIds.map(async item => {
           const rewardsMultiplier = await vxm.rewards.fetchRewardsMultiplier({
@@ -1947,9 +1947,7 @@ export class EthBancorModule
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
               : new BigNumber(0),
-            rewardsMultiplier: multiplier
-              ? multiplier.rewardsMultiplier
-              : new BigNumber(0)
+            rewardsMultiplier: multiplier ? multiplier.rewardsMultiplier : 0
           };
         }
       );
@@ -3007,7 +3005,7 @@ export class EthBancorModule
     if (!this.apiData) {
       return [];
     }
-    const tokensWithWhiteListedStatus = this.newPools
+    const tokensWithPoolBackground = this.newPools
       .flatMap(pool => {
         const whitelisted = whitelistedPools.some(anchor =>
           compareString(anchor, pool.pool_dlt_id)
@@ -3025,9 +3023,14 @@ export class EthBancorModule
           pool.reserves.every(reserve => reserve.weight == decToPpm(0.5)) &&
           Number(pool.version) >= 41;
 
+        const tradeSupported = pool.reserves.every(
+          reserve => reserve.balance !== "0"
+        );
+
         return pool.reserves.map(reserve => ({
           contract: reserve.address,
-          liquidityProtection
+          liquidityProtection,
+          tradeSupported
         }));
       })
       .reduce((acc, item) => {
@@ -3041,18 +3044,25 @@ export class EthBancorModule
               token => ({
                 ...token,
                 liquidityProtection:
-                  token.liquidityProtection || item.liquidityProtection
+                  token.liquidityProtection || item.liquidityProtection,
+                tradeSupported: token.tradeSupported || item.tradeSupported
               })
             )
           : [...acc, item];
-      }, [] as { contract: string; liquidityProtection: boolean }[]);
+      }, [] as { contract: string; liquidityProtection: boolean; tradeSupported: boolean }[]);
 
     const tokenBalances = this.tokenBalances;
     const tokenMeta = this.tokenMeta;
     const finalTokens = this.apiData.tokens
       .map(token => {
-        const liquidityProtection = tokensWithWhiteListedStatus.some(t =>
+        const tokenWithBackground = tokensWithPoolBackground.find(t =>
           compareString(t.contract, token.dlt_id)
+        );
+        const liquidityProtection = !!(
+          tokenWithBackground && tokenWithBackground.liquidityProtection
+        );
+        const tradeSupported = !!(
+          tokenWithBackground && tokenWithBackground.tradeSupported
         );
 
         const change24h =
@@ -3081,7 +3091,8 @@ export class EthBancorModule
           liqDepth: Number(token.liquidity.usd || 0),
           liquidityProtection,
           price: Number(token.rate.usd),
-          volume24h: Number(1)
+          volume24h: Number(1),
+          tradeSupported
         };
       })
       .sort(sortByLiqDepth);
@@ -3161,8 +3172,13 @@ export class EthBancorModule
             compareString(reserve.id, bntTokenAddress)
           )?.amount || "0";
 
+        const tradeSupported = relayBalances.reserveBalances.every(
+          balance => balance.amount !== "0"
+        );
+
         return {
           id: poolContainerAddress,
+          tradeSupported,
           name: buildPoolNameFromReserves(reserves),
           version: Number(relay.version),
           reserves,
@@ -3196,13 +3212,22 @@ export class EthBancorModule
 
     return this.newPools.map(relay => {
       const liqDepth = Number(relay.liquidity.usd);
+      const tradeSupported = relay.reserves.every(
+        reserve => reserve.balance !== "0"
+      );
 
       const whitelisted = whiteListedPools.some(whitelistedAnchor =>
         compareString(whitelistedAnchor, relay.pool_dlt_id)
       );
-      const bntReserve = relay.reserves.find(reserve =>
+      const lpNetworkTokenReserve = relay.reserves.find(reserve =>
         compareString(reserve.address, liquidityProtectionNetworkToken)
       );
+
+      const hasEnoughLpNetworkToken =
+        lpNetworkTokenReserve &&
+        limit &&
+        limit.isLessThan(lpNetworkTokenReserve!.balance);
+
       const liquidityProtection =
         relay.reserveTokens.some(reserve =>
           compareString(reserve.contract, liquidityProtectionNetworkToken)
@@ -3210,10 +3235,10 @@ export class EthBancorModule
         relay.reserveTokens.length == 2 &&
         relay.reserveTokens.every(reserve => reserve.reserveWeight == 0.5) &&
         whitelisted &&
-        limit &&
-        limit.isLessThan(bntReserve!.balance);
+        hasEnoughLpNetworkToken;
 
-      const addProtectionSupported = liquidityProtection && bntReserve;
+      const addProtectionSupported =
+        liquidityProtection && lpNetworkTokenReserve;
 
       const apr = aprs.find(apr =>
         compareString(apr.poolId, relay.pool_dlt_id)
@@ -3250,6 +3275,7 @@ export class EthBancorModule
 
       return {
         id: relay.pool_dlt_id,
+        tradeSupported,
         name: buildPoolNameFromReserves(reserves),
         reserves,
         addProtectionSupported,
@@ -5723,7 +5749,11 @@ export class EthBancorModule
           lowestTwoCounts.some(([t]) => compareString(token, t))
         );
         if (!toToken) {
-          console.error("Unable to find terminating token...");
+          console.warn(
+            "Unable to find terminating token in swap for hash",
+            x.hash,
+            { trades: x.trades }
+          );
           return false;
         }
 

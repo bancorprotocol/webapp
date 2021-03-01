@@ -146,7 +146,7 @@ export default class SwapAction extends BaseComponent {
   advancedOpen = false;
 
   get tokens() {
-    return vxm.bancor.tokens;
+    return vxm.bancor.tokens.filter(token => token.tradeSupported);
   }
 
   inverseRate = false;

@@ -175,7 +175,7 @@ export default class ModalUnstake extends BaseComponent {
       : this.unstakeValue &&
         this.unstakeValue.isGreaterThan(0) &&
         this.currentStake.isGreaterThanOrEqualTo(this.unstakeValue)
-      ? i18n.t("stake_your_tokens")
+      ? i18n.t("unstake_your_tokens")
       : i18n.t("insufficient_amount");
   }
 
