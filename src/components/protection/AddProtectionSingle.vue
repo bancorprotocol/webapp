@@ -68,7 +68,7 @@
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
-          :label="index == 0 ? $t('value_receive') : ''"
+          :label="index === 0 ? $t('value_receive') : ''"
           :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
         />
       </div>
@@ -175,13 +175,7 @@
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import {
-  Prompt,
-  Step,
-  TxResponse,
-  ViewAmountDetail,
-  ViewRelay
-} from "@/types/bancor";
+import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -330,7 +324,7 @@ export default class AddProtectionSingle extends BaseComponent {
     if (!this.amount) return true;
     else if (this.priceDeviationTooHigh) return true;
     else if (this.loading) return true;
-    else return this.inputError ? true : false;
+    else return !!this.inputError;
   }
 
   get inputError() {
@@ -366,7 +360,7 @@ export default class AddProtectionSingle extends BaseComponent {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      await this.$router.push({ name: "LiqProtection" });
       return;
     } else if (this.error || this.inputError) {
       this.modal = false;
@@ -393,7 +387,7 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
-  onPrompt(prompt: Prompt) {
+  onPrompt() {
     //
   }
 
@@ -490,8 +484,7 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   async fetchAndSetDisabledReserves(poolId: string) {
-    const disabledReserves = await vxm.ethBancor.fetchDisabledReserves(poolId);
-    this.disabledReserves = disabledReserves;
+    this.disabledReserves = await vxm.ethBancor.fetchDisabledReserves(poolId);
   }
 
   async load() {
