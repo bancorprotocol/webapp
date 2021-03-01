@@ -9,7 +9,7 @@
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
-      :usdValue="usd1"
+      :usd-value="usd1"
     />
 
     <div class="text-center my-3">
@@ -31,7 +31,7 @@
       :dropdown="true"
       :disabled="false"
       :tokens="tokens"
-      :usdValue="usd2"
+      :usd-value="usd2"
     />
 
     <div class="my-3">
@@ -83,26 +83,30 @@
 
     <main-button
       :label="swapButtonLabel"
-      @click="initConvert"
+      @click="initSwap"
       :active="true"
       :large="true"
       :loading="rateLoading"
       :disabled="disableButton"
     />
 
-    <modal-swap-action
-      v-model="modal"
-      :token1="token1"
-      :token2="token2"
-      :amount1="amount1"
-      :amount2="amount2"
-      :advanced-block-items="advancedBlockItems"
-    />
+    <modal-tx-action :tx-meta.sync="txMeta">
+      confirm swap
+      <div v-if="txMeta.prompt">
+        <b-btn
+          @click="selectedPromptReceiver(question.id)"
+          v-for="question in txMeta.prompt.questions"
+          :key="question.id"
+        >
+          {{ question.label }}
+        </b-btn>
+      </div>
+    </modal-tx-action>
   </div>
 </template>
 
 <script lang="ts">
-import { Watch, Component } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import MainButton from "@/components/common/Button.vue";
@@ -111,13 +115,15 @@ import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
-import { formatNumber } from "@/api/helpers";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import BigNumber from "bignumber.js";
-import BaseComponent from "@/components/BaseComponent.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import { selectedPromptReceiver$ } from "@/api/observables";
 
 @Component({
   components: {
+    ModalTxAction,
     SlippageTolerance,
     ModalSwapAction,
     LabelContentSplit,
@@ -125,7 +131,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
     MainButton
   }
 })
-export default class SwapAction extends BaseComponent {
+export default class SwapAction extends BaseTxAction {
   amount1 = "";
   amount2 = "";
 
@@ -198,38 +204,9 @@ export default class SwapAction extends BaseComponent {
     else return i18n.t("swap");
   }
 
-  get advancedBlockItems() {
-    return [
-      {
-        label: i18n.t("rate"),
-        value:
-          "1 " +
-          this.token1.symbol +
-          " = " +
-          parseFloat(this.amount2) / parseFloat(this.amount1) +
-          " " +
-          this.token2.symbol
-      },
-      // {
-      //   label: "Minimum Received",
-      //   value: "??.??"
-      // },
-      {
-        label: i18n.t("price_impact"),
-        value:
-          this.slippage !== null && this.slippage !== undefined
-            ? numeral(this.slippage).format("0.0000%")
-            : "0.00%"
-      }
-      // {
-      //   label: "Liquidity Provider Fee",
-      //   value: "??.??"
-      // }
-    ];
-  }
-
-  openModal(name: string) {
-    this.$bvModal.show(name);
+  selectedPromptReceiver(id: string) {
+    this.txMeta.txBusy = true;
+    selectedPromptReceiver$.next(id);
   }
 
   selectFromToken(id: string) {
@@ -280,10 +257,30 @@ export default class SwapAction extends BaseComponent {
     });
   }
 
-  async initConvert() {
-    if (this.currentUser) this.modal = true;
+  async initSwap() {
     //@ts-ignore
-    else await this.promptAuth();
+    if (!this.currentUser) return await this.promptAuth();
+
+    this.txMeta.showTxModal = true;
+
+    try {
+      this.txMeta.success = await vxm.bancor.convert({
+        from: {
+          id: this.token1.id,
+          amount: this.amount1
+        },
+        to: {
+          id: this.token2.id,
+          amount: this.amount2
+        },
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
+      });
+      this.setDefault();
+    } catch (e) {
+      this.txMeta.txError = e.message;
+      this.txMeta.txBusy = false;
+    }
   }
 
   async updatePriceReturn(amount: string) {
