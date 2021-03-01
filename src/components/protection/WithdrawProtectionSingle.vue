@@ -77,32 +77,56 @@
 
     <main-button
       :label="$t('continue')"
-      @click="initAction"
+      @click="openModal"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
     />
 
-    <modal-base
-      :title="$t('you_will_receive')"
-      v-model="modal"
-      @input="setDefault"
+    <modal-tx-action
+      title="Confirm Withdraw"
+      icon="arrow-up"
+      :tx-meta.sync="txMeta"
+      @onConfirm="initWithdraw"
     >
-      <action-modal-status
-        :error="error"
-        :success="success"
-        msg="BNT withdrawals are subject to a 24h lock period before they can be claimed."
-      />
+      <gray-border-block>
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+          v-text="`~${percentage}% of your protected position`"
+        />
+        <div
+          v-if="expectedValue"
+          class="font-size-14 font-w500 mb-1"
+          v-text="
+            `${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
+          "
+        />
+      </gray-border-block>
+      <div class="mt-3" v-if="outputs.length > 1">
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          You will receive
+        </span>
+        <gray-border-block gray-bg="true" class="mt-1">
+          <label-content-split
+            v-for="output in outputs"
+            :label="output.symbol"
+            :key="output.id"
+            :value="prettifyNumber(output.amount)"
+          />
+        </gray-border-block>
+      </div>
 
-      <main-button
-        @click="onModalClick"
-        class="mt-3"
-        :label="modalConfirmButton"
-        :active="true"
-        :large="true"
-        :disabled="txBusy"
-      />
-    </modal-base>
+      <p
+        class="font-size-12 my-3"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+      >
+        {{ outputInfo }}
+      </p>
+    </modal-tx-action>
   </div>
 </template>
 
@@ -110,7 +134,7 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
+import { ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -121,10 +145,12 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
-import BaseComponent from "@/components/BaseComponent.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
 
 @Component({
   components: {
+    ModalTxAction,
     LogoAmountSymbol,
     ActionModalStatus,
     ModalBase,
@@ -135,16 +161,12 @@ import BaseComponent from "@/components/BaseComponent.vue";
     MainButton
   }
 })
-export default class WithdrawProtectionSingle extends BaseComponent {
+export default class WithdrawProtectionSingle extends BaseTxAction {
   get pool(): ViewRelay {
     return vxm.bancor.relay(this.position.stake.poolId);
   }
   percentage: string = "50";
 
-  modal = false;
-  txBusy = false;
-  success: TxResponse | string | null = null;
-  error = "";
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
   priceDeviationTooHigh: boolean = false;
@@ -227,38 +249,18 @@ export default class WithdrawProtectionSingle extends BaseComponent {
       : new BigNumber(0);
   }
 
-  async initAction() {
-    this.setDefault();
-    this.modal = true;
-    this.txBusy = true;
-
+  async initWithdraw() {
+    this.txMeta.txBusy = true;
     try {
-      this.success = await vxm.ethBancor.removeProtection({
+      this.txMeta.success = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
-        id: this.position.id
+        id: this.position.id,
+        onPrompt: this.onPrompt
       });
     } catch (err) {
-      this.error = err.message;
-    } finally {
-      this.txBusy = false;
+      this.txMeta.txError = err.message;
+      this.txMeta.txBusy = false;
     }
-  }
-
-  onModalClick() {
-    if (this.success) {
-      this.setDefault();
-      this.modal = false;
-      this.$router.push({ name: "LiqProtection", params: { scroll: "true" } });
-    } else if (this.error) {
-      this.setDefault();
-      this.modal = false;
-    }
-  }
-
-  setDefault() {
-    this.error = "";
-    this.success = null;
-    this.txBusy = false;
   }
 
   async onPercentUpdate() {
@@ -293,7 +295,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   async mounted() {
     if (!this.isVoteLoaded) await vxm.ethGovernance.init();
-    await this.onPercentUpdate(this.percentage);
+    await this.onPercentUpdate();
     await this.loadVBntBalance();
     this.interval = setInterval(async () => {
       await this.loadVBntBalance();
@@ -303,16 +305,6 @@ export default class WithdrawProtectionSingle extends BaseComponent {
 
   destroyed() {
     clearInterval(this.interval);
-  }
-
-  get modalConfirmButton() {
-    return this.error
-      ? i18n.t("close")
-      : this.success
-      ? i18n.t("close")
-      : this.txBusy
-      ? `${i18n.t("processing")}...`
-      : i18n.t("confirm");
   }
 }
 </script>
