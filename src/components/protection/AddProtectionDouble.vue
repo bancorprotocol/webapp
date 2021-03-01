@@ -16,7 +16,7 @@
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
-          :label="index == 0 ? $t('value_receive') : ''"
+          :label="index === 0 ? $t('value_receive') : ''"
           :value="`${formatNumber(output.amount)} ${output.symbol}`"
         />
       </gray-border-block>
@@ -31,7 +31,7 @@
       class="mt-3"
     />
 
-    <modal-base
+    <!--    <modal-base
       :title="$t('adding_liquidity_protection')"
       v-model="modal"
       @input="setDefault"
@@ -69,7 +69,28 @@
         :large="true"
         :disabled="txBusy"
       />
-    </modal-base>
+    </modal-base>-->
+
+    <modal-tx-action
+      title="Confirm Stake & Protect"
+      icon="coins"
+      :tx-meta.sync="txMeta"
+      @onConfirm="initStake"
+      redirect-on-success="LiqProtection"
+    >
+      <gray-border-block>
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          You are staking and protecting
+        </span>
+        <div
+          class="font-w500 font-size-14"
+          v-text="`${prettifyNumber(amount)} ${token.symbol}`"
+        />
+      </gray-border-block>
+    </modal-tx-action>
   </div>
 </template>
 
@@ -77,13 +98,7 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import {
-  Prompt,
-  Step,
-  TxResponse,
-  ViewAmountDetail,
-  ViewRelay
-} from "@/types/bancor";
+import { ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -95,10 +110,12 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
 @Component({
   components: {
+    ModalTxAction,
     ActionModalStatus,
     PoolLogos,
     ModalBase,
@@ -109,20 +126,15 @@ import BaseComponent from "@/components/BaseComponent.vue";
     MainButton
   }
 })
-export default class AddProtectionDouble extends BaseComponent {
+export default class AddProtectionDouble extends BaseTxAction {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
   }
 
   amount: string = "";
-
-  modal = false;
-  txBusy = false;
-  success: TxResponse | string | null = null;
   error = "";
-  sections: Step[] = [];
-  stepIndex = 0;
+
   outputs: ViewAmountDetail[] = [];
 
   get pools() {
@@ -149,7 +161,7 @@ export default class AddProtectionDouble extends BaseComponent {
 
   get disableActionButton() {
     if (!this.amount) return true;
-    else return this.inputError ? true : false;
+    else return !!this.inputError;
   }
 
   get inputError() {
@@ -162,73 +174,23 @@ export default class AddProtectionDouble extends BaseComponent {
     else return "";
   }
 
-  get modalConfirmButton() {
-    return this.error
-      ? i18n.t("close")
-      : this.success
-      ? i18n.t("close")
-      : this.txBusy
-      ? `${i18n.t("processing")}...`
-      : i18n.t("confirm");
-  }
-
-  async initAction() {
-    if (this.success) {
-      this.setDefault();
-      this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
-      return;
-    } else if (this.error) {
-      this.modal = false;
-      this.setDefault();
-      return;
-    }
-
-    this.txBusy = true;
+  async initStake() {
+    this.txMeta.txBusy = true;
     try {
-      this.success = await vxm.ethBancor.protectLiquidity({
+      this.txMeta.success = await vxm.ethBancor.protectLiquidity({
         amount: { amount: this.amount, id: this.pool.id },
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
       this.amount = "";
     } catch (e) {
-      this.error = e.message;
-    } finally {
-      this.txBusy = false;
+      this.txMeta.txError = e.message;
+      this.txMeta.txBusy = false;
     }
-  }
-
-  onPrompt(prompt: Prompt) {
-    //
-  }
-
-  async openModal() {
-    if (this.currentUser) this.modal = true;
-    // @ts-ignore
-    else await this.promptAuth();
-  }
-
-  setDefault() {
-    this.sections = [];
-    this.error = "";
-    this.success = null;
   }
 
   formatNumber(amount: string) {
     return formatNumber(amount, 6);
-  }
-
-  get currentStatus() {
-    if (this.sections.length) {
-      return this.sections[this.stepIndex].description;
-    }
-    return undefined;
-  }
-
-  onUpdate(index: number, steps: any[]) {
-    this.sections = steps;
-    this.stepIndex = index;
   }
 
   async selectPool(id: string) {
