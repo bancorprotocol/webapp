@@ -57,7 +57,7 @@
 
       <label-content-split
         v-for="(output, index) in outputs"
-        :label="index == 0 ? $t('output_breakdown') : ''"
+        :label="index === 0 ? $t('output_breakdown') : ''"
         :key="output.id"
         :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       />
@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
 import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
@@ -159,7 +159,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     if (this.vBntWarning) return true;
     else if (parseFloat(this.percentage) === 0) return true;
     else if (this.priceDeviationTooHigh) return true;
-    else return this.inputError ? true : false;
+    else return !!this.inputError;
   }
 
   get inputError() {
@@ -178,10 +178,9 @@ export default class WithdrawProtectionSingle extends BaseComponent {
   }
 
   get position() {
-    const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
+    return findOrThrow(vxm.ethBancor.protectedPositions, position =>
       compareString(position.id, this.$route.params.id)
     );
-    return pos;
   }
 
   get rewardsWithMultiplier() {
@@ -232,13 +231,12 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     this.setDefault();
     this.modal = true;
     this.txBusy = true;
-    const [poolId, first, second] = this.$route.params.id.split(":");
+
     try {
-      const txRes = await vxm.ethBancor.removeProtection({
+      this.success = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
         id: this.position.id
       });
-      this.success = txRes;
     } catch (err) {
       this.error = err.message;
     } finally {
@@ -263,7 +261,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     this.txBusy = false;
   }
 
-  async onPercentUpdate(newPercent: string) {
+  async onPercentUpdate() {
     const percentage = Number(this.percentage) / 100;
     if (!percentage) return;
     const res = await vxm.ethBancor.calculateSingleWithdraw({
