@@ -29,7 +29,7 @@
     />
 
     <main-button
-      @click="openModal"
+      @click="initAction"
       :label="$t('supply')"
       :active="true"
       :large="true"
@@ -42,7 +42,6 @@
       title="Add Liquidity"
       icon="plus"
       :tx-meta.sync="txMeta"
-      @onConfirm="initAction"
       redirect-on-success="Pool"
     >
       <gray-border-block>
@@ -119,6 +118,7 @@ export default class PoolActionsAddV1 extends BaseTxAction {
   }
 
   async initAction() {
+    this.openModal();
     this.txMeta.txBusy = true;
     try {
       this.txMeta.success = await vxm.bancor.addLiquidity({
