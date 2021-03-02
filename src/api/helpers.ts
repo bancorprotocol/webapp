@@ -649,13 +649,6 @@ const FORTMATIC_KEY = process.env.VUE_APP_FORTMATIC;
 const PORTIS_KEY = process.env.VUE_APP_PORTIS;
 const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 
-//adding support for hardware wallet path selection
-const walletChecks = [
-  { checkName: 'derivationPath' },
-  { checkName: 'accounts' },
-  { checkName: 'network' },
-]
-
 const wallets = [
   { walletName: "metamask", preferred: true },
   { walletName: "lattice", rpcUrl: RPC_URL, appName: APP_NAME },
@@ -736,8 +729,7 @@ export const onboard = Onboard({
   },
   walletSelect: {
     wallets
-  },
-  walletCheck: walletChecks
+  }
 });
 
 export const fetchReserveBalance = async (
