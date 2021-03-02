@@ -44,14 +44,10 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import CreateV1Step1 from "@/components/pool/create/CreateV1Step1.vue";
 import CreateV1Step2 from "@/components/pool/create/CreateV1Step2.vue";
 import MainButton from "@/components/common/Button.vue";
-import { Step, TxResponse, ViewToken } from "@/types/bancor";
-import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
-import BancorCheckbox from "@/components/common/BancorCheckbox.vue";
-import ModalBase from "@/components/modals/ModalBase.vue";
+import { ViewToken } from "@/types/bancor";
 import { compareString } from "@/api/helpers";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
-import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BigNumber from "bignumber.js";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
@@ -71,12 +67,8 @@ export interface CreateStep2 {
 @Component({
   components: {
     ModalTxAction,
-    AdvancedBlockItem,
     GrayBorderBlock,
     AlertBlock,
-    ModalBase,
-    BancorCheckbox,
-    ActionModalStatus,
     LabelContentSplit,
     ContentBlock,
     CreateV1Step1,
@@ -112,8 +104,7 @@ export default class CreateHomeNew extends BaseTxAction {
   get stepsConfirmError() {
     if (this.selectedTokens.length <= 1) return false;
     else if (this.step === 1 && this.errorStep1) return false;
-    else if (this.step === 2 && this.errorStep2) return false;
-    else return true;
+    else return !(this.step === 2 && this.errorStep2);
   }
 
   get errorStep1() {
@@ -135,14 +126,12 @@ export default class CreateHomeNew extends BaseTxAction {
   }
 
   get errorStep2() {
-    if (
+    return !(
       this.stepTwoProps.poolName &&
       this.stepTwoProps.poolSymbol &&
       this.stepTwoProps.poolFee &&
       this.stepTwoProps.poolDecimals
-    )
-      return false;
-    else return true;
+    );
   }
 
   get percentageWarning() {

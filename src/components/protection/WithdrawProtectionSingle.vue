@@ -141,8 +141,6 @@ import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import { compareString, findOrThrow } from "@/api/helpers";
-import ModalBase from "@/components/modals/ModalBase.vue";
-import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
@@ -152,8 +150,6 @@ import BaseTxAction from "@/components/BaseTxAction.vue";
   components: {
     ModalTxAction,
     LogoAmountSymbol,
-    ActionModalStatus,
-    ModalBase,
     AlertBlock,
     PercentageSlider,
     LabelContentSplit,

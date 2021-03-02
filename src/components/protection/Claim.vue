@@ -39,8 +39,6 @@ import { Component, Prop } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import { vxm } from "@/store";
-import ModalBase from "@/components/modals/ModalBase.vue";
-import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
@@ -48,8 +46,6 @@ import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 @Component({
   components: {
     ModalTxAction,
-    ActionModalStatus,
-    ModalBase,
     ClaimBnt,
     SubContentBlock,
     MainButton

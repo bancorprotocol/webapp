@@ -170,10 +170,8 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { compareString, findOrThrow, formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import ModalBase from "@/components/modals/ModalBase.vue";
 import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
@@ -186,9 +184,7 @@ import wait from "waait";
     ModalTxAction,
     PriceDeviationError,
     ModalPoolSelect,
-    ActionModalStatus,
     PoolLogos,
-    ModalBase,
     AlertBlock,
     LabelContentSplit,
     GrayBorderBlock,
