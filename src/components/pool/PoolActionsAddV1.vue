@@ -119,7 +119,10 @@ export default class PoolActionsAddV1 extends BaseTxAction {
 
   async initAction() {
     this.openModal();
+
+    if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
+
     try {
       this.txMeta.success = await vxm.bancor.addLiquidity({
         id: this.pool.id,
@@ -138,6 +141,7 @@ export default class PoolActionsAddV1 extends BaseTxAction {
       });
     } catch (e) {
       this.txMeta.txError = e.message;
+    } finally {
       this.txMeta.txBusy = false;
     }
   }

@@ -68,7 +68,7 @@
     <alert-block variant="error" :msg="error" />
 
     <main-button
-      @click="openModal"
+      @click="initAction"
       :label="$t('remove')"
       :active="true"
       :large="true"
@@ -80,7 +80,6 @@
       title="Remove Liquidity"
       icon="minus"
       :tx-meta.sync="txMeta"
-      @onConfirm="initAction"
       redirect-on-success="Pool"
     >
       <div
@@ -157,7 +156,11 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
   }
 
   async initAction() {
+    this.openModal();
+
+    if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
+
     try {
       this.txMeta.success = await vxm.bancor.addLiquidity({
         id: this.pool.id,
@@ -176,6 +179,7 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
       });
     } catch (e) {
       this.txMeta.txError = e.message;
+    } finally {
       this.txMeta.txBusy = false;
     }
   }

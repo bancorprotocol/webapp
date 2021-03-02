@@ -279,6 +279,8 @@ export default class SwapAction extends BaseTxAction {
 
   async initSwap() {
     this.openModal();
+
+    if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
 
     try {
@@ -297,6 +299,7 @@ export default class SwapAction extends BaseTxAction {
       this.setDefault();
     } catch (e) {
       this.txMeta.txError = e.message;
+    } finally {
       this.txMeta.txBusy = false;
     }
   }
