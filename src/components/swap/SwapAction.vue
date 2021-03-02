@@ -63,11 +63,24 @@
 
             <b-dropdown-item
               v-for="item in durationList"
-              :key="item.toString()"
+              :key="item.asSeconds()"
               @click="changeDuration(item)"
               :variant="darkMode ? 'dark' : 'light'"
             >
-              {{ formatDuration(item) }}
+              <div class="d-flex justify-content-between">
+                {{ formatDuration(item) }}
+                <font-awesome-icon
+                  v-if="selectedDuration === item"
+                  icon="check"
+                  class="mr-2 menu-icon"
+                />
+              </div>
+            </b-dropdown-item>
+            <b-dropdown-item
+              @click="openDurationModal()"
+              :variant="darkMode ? 'dark' : 'light'"
+            >
+              {{ $t("custom") }}
             </b-dropdown-item>
           </b-dropdown>
         </label-content-split>
@@ -129,12 +142,16 @@
     />
 
     <modal-swap-action
-      v-model="modal"
+      v-model="modalSwapAction"
       :token1="token1"
       :token2="token2"
       :amount1="amount1"
       :amount2="amount2"
       :advanced-block-items="advancedBlockItems"
+    />
+    <modal-duration-select
+      v-model="modalSelectDuration"
+      @confirm="changeDuration"
     />
   </div>
 </template>
@@ -155,6 +172,7 @@ import BigNumber from "bignumber.js";
 import BaseComponent from "@/components/BaseComponent.vue";
 import dayjs from "@/utils/dayjs";
 import { formatDuration } from "@/api/helpers";
+import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 
 @Component({
   components: {
@@ -163,7 +181,8 @@ import { formatDuration } from "@/api/helpers";
     LabelContentSplit,
     TokenInputField,
     MultiInputField,
-    MainButton
+    MainButton,
+    ModalDurationSelect
   }
 })
 export default class SwapAction extends BaseComponent {
@@ -173,9 +192,13 @@ export default class SwapAction extends BaseComponent {
   amount2 = "";
 
   durationList: plugin.Duration[] = [
-    dayjs.duration({ days: 5, hours: 23, minutes: 22 })
+    dayjs.duration({ minutes: 10 }),
+    dayjs.duration({ hours: 1 }),
+    dayjs.duration({ hours: 3 }),
+    dayjs.duration({ days: 1 }),
+    dayjs.duration({ days: 7 })
   ];
-  selectedDuration = this.durationList[0];
+  selectedDuration = this.durationList[4];
 
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -190,7 +213,8 @@ export default class SwapAction extends BaseComponent {
   initialRate = "";
   numeral = numeral;
 
-  modal = false;
+  modalSwapAction = false;
+  modalSelectDuration = false;
   advancedOpen = false;
 
   get tokens() {
@@ -280,6 +304,14 @@ export default class SwapAction extends BaseComponent {
     return formatDuration(duration);
   }
 
+  changeDuration(duration: plugin.Duration) {
+    this.selectedDuration = duration;
+  }
+
+  openDurationModal() {
+    this.modalSelectDuration = true;
+  }
+
   openModal(name: string) {
     this.$bvModal.show(name);
   }
@@ -333,7 +365,7 @@ export default class SwapAction extends BaseComponent {
   }
 
   async initConvert() {
-    if (this.currentUser) this.modal = true;
+    if (this.currentUser) this.modalSwapAction = true;
     //@ts-ignore
     else await this.promptAuth();
   }

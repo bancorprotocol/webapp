@@ -35,6 +35,7 @@ import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
 import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
+import { i18n } from "@/i18n";
 
 export enum PositionType {
   single,
@@ -1284,8 +1285,11 @@ export const formatUnixTime = (
 export const formatDuration = (duration: plugin.Duration): string => {
   let sentance = "";
   const days = duration.days();
-  if (days > 0) sentance += days + " Days";
-  sentance += "" + duration.subtract({ days }).format("HH:mm");
+  const minutes = duration.minutes();
+  const hours = duration.hours();
+  if (days > 0) sentance += days + ' '+i18n.tc("days");
+  if (hours > 0) sentance += ' '+hours + ' '+i18n.tc("hours");
+  if (minutes > 0) sentance += ' '+minutes + ' '+i18n.tc("minutes");
   return sentance;
 };
 

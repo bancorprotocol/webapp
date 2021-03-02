@@ -361,5 +361,10 @@ export const en = {
   market: "Market",
   limit: "Limit",
   defined_rate: "Defined Rate",
-  expires_in: "Expires in"
+  expires_in: "Expires in",
+  days:"Days",
+  hours:"Hours",
+  minutes:"Minutes",
+  custom_time:"Custom time",
+  set_up_time:"Set up your custom period of time"
 };
