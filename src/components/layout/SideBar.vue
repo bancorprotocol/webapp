@@ -123,7 +123,16 @@ export default class SideBar extends BaseComponent {
         label: "Bancor Analytics",
         newTab: true,
         hideMobile: false,
-        icon: "analytics.svg"
+        icon: "analytics.svg",
+        svgName: "bancor"
+      },
+      {
+        route: "FiatPage",
+        key: "fiat",
+        label: "Fiat",
+        newTab: false,
+        hideMobile: true,
+        svgName: "fiat"
       }
     ].map(link => ({
       ...link,
