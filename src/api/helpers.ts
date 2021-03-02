@@ -649,11 +649,7 @@ const FORTMATIC_KEY = process.env.VUE_APP_FORTMATIC;
 const PORTIS_KEY = process.env.VUE_APP_PORTIS;
 const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 
-//adding support for hardware wallet path selection
-//const walletChecks = [
-//  { checkName: 'derivationPath' },
-//  { checkName: 'accounts' }
-//]
+
 
 const wallets = [
   { walletName: "metamask", preferred: true },
