@@ -799,12 +799,8 @@ interface NewRelay {
   };
 }
 
-const unlimitedWei = new BigNumber(2)
-  .pow(256)
-  .minus(1)
-  .div(new BigNumber(10).pow(18))
-  .toString()
-  .split(".")[0];
+const unlimitedWei =
+  "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
 const calculateMean = (a: string, b: string) =>
   new BigNumber(a).plus(b).div(2).toString();
