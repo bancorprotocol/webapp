@@ -220,7 +220,6 @@ export default class CreateHomeNew extends BaseTxAction {
       this.txMeta.txError = e.message;
     } finally {
       this.txMeta.txBusy = false;
-      console.log("whauuat", this.txMeta.txBusy);
     }
   }
 
