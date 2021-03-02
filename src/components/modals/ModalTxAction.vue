@@ -81,8 +81,8 @@ export default class ModalTxAction extends BaseComponent {
     selectedPromptReceiver$.next(id);
   }
 
-  @Emit("onClose")
   async close() {
+    if (this.txMetaData.txBusy) return;
     if (this.redirectOnSuccess && this.txMetaData.success) {
       await this.$router.replace({ name: this.redirectOnSuccess });
     }

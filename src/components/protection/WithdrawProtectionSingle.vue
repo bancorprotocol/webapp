@@ -87,6 +87,7 @@
       title="Confirm Withdraw"
       icon="arrow-up"
       :tx-meta.sync="txMeta"
+      redirect-on-success="LiqProtection"
     >
       <gray-border-block>
         <span
@@ -250,6 +251,8 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
 
   async initWithdraw() {
     this.openModal();
+
+    if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
 
     try {
@@ -260,6 +263,7 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
       });
     } catch (err) {
       this.txMeta.txError = err.message;
+    } finally {
       this.txMeta.txBusy = false;
     }
   }
