@@ -6792,7 +6792,7 @@ export class EthBancorModule
     fromId: string;
     toId: string;
     relays: readonly MinimalRelay[];
-  }) {
+  }): Promise<MinimalRelay[]> {
     const lowerCased = relays.map(relay => ({
       ...relay,
       reserves: relay.reserves.map(reserve => ({
@@ -6896,20 +6896,20 @@ export class EthBancorModule
 
     const minimalRelays = await this.winningMinimalRelays();
 
-    const relays = await this.findPath({
-      relays: minimalRelays,
-      fromId: from.id,
-      toId: to.id
-    });
-
     const fromAmount = from.amount;
     const fromSymbol = fromToken.symbol;
     const fromTokenContract = fromToken.id;
     const toTokenContract = toToken.id;
 
-    const ethPath = generateEthPath(fromSymbol, relays);
-
     const fromWei = expandToken(fromAmount, fromTokenDecimals);
+    const relays = await this.findBestPath({
+      relays: minimalRelays,
+      fromId: from.id,
+      toId: to.id,
+      fromWei
+    });
+
+    const ethPath = generateEthPath(fromSymbol, relays);
 
     if (!fromIsEth) {
       onUpdate!(1, steps);
@@ -7056,12 +7056,16 @@ export class EthBancorModule
     path: string[];
     amount: string;
   }): Promise<string> {
-    return getReturnByPath({
-      networkContract: this.contracts.BancorNetwork,
-      path,
-      amount,
-      web3: w3
-    });
+    try {
+      return await getReturnByPath({
+        networkContract: this.contracts.BancorNetwork,
+        path,
+        amount,
+        web3: w3
+      });
+    } catch (e) {
+      throw new Error(`Threw getting return by path ${e}`);
+    }
   }
 
   @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
@@ -7148,6 +7152,77 @@ export class EthBancorModule
     };
   }
 
+  @action async findBestPath({
+    fromId,
+    toId,
+    relays,
+    fromWei
+  }: {
+    fromWei: string;
+    fromId: string;
+    toId: string;
+    relays: readonly MinimalRelay[];
+  }): Promise<MinimalRelay[]> {
+    const possibleStartingRelays = relays.filter(relay =>
+      relay.reserves.some(reserve => compareString(reserve.contract, fromId))
+    );
+    const moreThanOneReserveOut = possibleStartingRelays.length > 1;
+    const onlyOneHopNeeded = relays.some(relay =>
+      [fromId, toId].every(id =>
+        relay.reserves.some(reserve => compareString(reserve.contract, id))
+      )
+    );
+    const fromIsBnt = compareString(
+      fromId,
+      this.liquidityProtectionSettings.networkToken
+    );
+    const checkMultiplePaths =
+      moreThanOneReserveOut && !onlyOneHopNeeded && !fromIsBnt;
+
+    if (checkMultiplePaths) {
+      const fromSymbol = findOrThrow(
+        this.apiData!.tokens,
+        token => compareString(token.dlt_id, fromId),
+        "failed finding token...."
+      ).symbol;
+      const excludedRelays = relays.filter(
+        relay =>
+          !possibleStartingRelays.some(r =>
+            compareString(r.anchorAddress, relay.anchorAddress)
+          )
+      );
+
+      const results = await Promise.all(
+        possibleStartingRelays.map(async startingRelay => {
+          const isolatedRelays = [startingRelay, ...excludedRelays];
+          const relayPath = await this.findPath({
+            fromId,
+            relays: isolatedRelays,
+            toId
+          });
+          const path = generateEthPath(fromSymbol, relayPath);
+
+          return {
+            startingRelayAnchor: startingRelay.anchorAddress,
+            returnResult: await this.getReturnByPath({
+              path,
+              amount: fromWei
+            }),
+            path,
+            relays: relayPath
+          };
+        })
+      );
+
+      const sortedReturns = results.sort((a, b) =>
+        new BigNumber(b.returnResult).lt(a.returnResult) ? -1 : 1
+      );
+      const bestReturn = sortedReturns[0];
+      return bestReturn.relays;
+    } else {
+      return this.findPath({ fromId, toId, relays });
+    }
+  }
   @action async getReturn({
     from,
     toId
@@ -7167,16 +7242,17 @@ export class EthBancorModule
     );
 
     const minimalRelays = await this.winningMinimalRelays();
+    const fromWei = expandToken(amount, fromTokenDecimals);
 
-    const relays = await this.findPath({
+    const relays = await this.findBestPath({
       fromId: from.id,
       toId,
-      relays: minimalRelays
+      relays: minimalRelays,
+      fromWei
     });
 
     const path = generateEthPath(fromToken.symbol, relays);
 
-    const fromWei = expandToken(amount, fromTokenDecimals);
     try {
       const wei = await this.getReturnByPath({
         path,
@@ -7189,14 +7265,15 @@ export class EthBancorModule
 
       let slippage: number | undefined;
       try {
-        const contract = buildConverterContract(relays[0].contract, w3);
+        const firstRelayContract = relays[0].contract;
+        const contract = buildConverterContract(firstRelayContract, w3);
         const fromReserveBalanceWei = await contract.methods
           .getConnectorBalance(fromTokenContract)
           .call();
 
         const smallPortionOfReserveBalance = new BigNumber(
-          fromReserveBalanceWei
-        ).times(0.00001);
+          new BigNumber(fromReserveBalanceWei).times(0.00001).toFixed(0)
+        );
 
         if (smallPortionOfReserveBalance.isLessThan(fromWei)) {
           const smallPortionOfReserveBalanceWei = smallPortionOfReserveBalance.toFixed(
