@@ -2012,15 +2012,13 @@ export class EthBancorModule
         {
           description: "Triggering approval..",
           task: async () => {
-            if (!depositIsEth) {
-              await this.triggerApprovalIfRequired({
-                owner: this.currentUser,
-                spender: liqudityProtectionContractAddress,
-                amount: reserveAmountWei,
-                tokenAddress: reserveTokenAddress,
-                onPrompt
-              });
-            }
+            await this.triggerApprovalIfRequired({
+              owner: this.currentUser,
+              spender: liqudityProtectionContractAddress,
+              amount: reserveAmountWei,
+              tokenAddress: reserveTokenAddress,
+              onPrompt
+            });
           }
         },
         {
@@ -4919,7 +4917,6 @@ export class EthBancorModule
         ) {
           await this.mintEthErc(balance.amount!);
         }
-        if (compareString(balance.contract, ethReserveAddress)) return;
         return this.triggerApprovalIfRequired({
           owner: this.currentUser,
           amount: expandToken(balance.amount!, balance.decimals),
@@ -6911,16 +6908,14 @@ export class EthBancorModule
 
     const fromWei = expandToken(fromAmount, fromTokenDecimals);
 
-    if (!fromIsEth) {
-      onUpdate!(1, steps);
-      await this.triggerApprovalIfRequired({
-        owner: this.currentUser,
-        amount: fromWei,
-        spender: this.contracts.BancorNetwork,
-        tokenAddress: fromTokenContract,
-        onPrompt
-      });
-    }
+    onUpdate!(1, steps);
+    await this.triggerApprovalIfRequired({
+      owner: this.currentUser,
+      amount: fromWei,
+      spender: this.contracts.BancorNetwork,
+      tokenAddress: fromTokenContract,
+      onPrompt
+    });
 
     onUpdate!(2, steps);
 
@@ -7019,6 +7014,36 @@ export class EthBancorModule
     }
   }
 
+  @action async awaitConfirmation(onPrompt: OnPrompt) {
+    const promptId = String(Date.now());
+
+    enum ApproveTypes {
+      confirm = "Confirm"
+    }
+    const questions = [ApproveTypes.confirm].map(label => ({
+      id: [promptId, label].join(":"),
+      label
+    }));
+
+    onPrompt({ questions });
+
+    const receivedPromptId = await selectedPromptReceiver$
+      .pipe(
+        filter(id => {
+          const [pId] = id.split(":");
+          return pId == promptId;
+        }),
+        take(1)
+      )
+      .toPromise();
+
+    findOrThrow(
+      questions,
+      question => question.id == receivedPromptId,
+      "failed finding selected question"
+    );
+  }
+
   @action async triggerApprovalIfRequired(tokenWithdrawal: {
     owner: string;
     spender: string;
@@ -7026,11 +7051,26 @@ export class EthBancorModule
     amount: string;
     onPrompt?: OnPrompt;
   }) {
+    const fromIsEth = compareString(
+      tokenWithdrawal.tokenAddress,
+      ethReserveAddress
+    );
+    if (fromIsEth) {
+      if (tokenWithdrawal.onPrompt) {
+        return this.awaitConfirmation(tokenWithdrawal.onPrompt);
+      }
+    }
     const {
       approvalIsRequired,
       currentApprovedBalance
     } = await this.isApprovalRequired(tokenWithdrawal);
-    if (!approvalIsRequired) return;
+
+    if (!approvalIsRequired) {
+      if (tokenWithdrawal.onPrompt) {
+        return this.awaitConfirmation(tokenWithdrawal.onPrompt);
+      }
+      return;
+    }
 
     const withCurrentApprovedBalance = {
       ...tokenWithdrawal,
