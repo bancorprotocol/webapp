@@ -196,6 +196,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import BaseComponent from "@/components/BaseComponent.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
+import wait from "waait";
 
 @Component({
   components: {
@@ -494,7 +495,7 @@ export default class AddProtectionSingle extends BaseComponent {
     this.loading = true;
     try {
       await Promise.all([
-        new Promise(r => setTimeout(r, 1000)),
+        wait(1000),
         this.fetchAndSetMaxStakes(this.pool.id),
         this.fetchAndSetDisabledReserves(this.pool.id)
       ]);

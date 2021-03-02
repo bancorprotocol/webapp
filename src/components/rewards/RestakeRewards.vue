@@ -57,6 +57,7 @@ import { compareString } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BigNumber from "bignumber.js";
+import wait from "waait";
 
 @Component({
   components: {
@@ -183,7 +184,7 @@ export default class RestakeRewards extends BaseTxAction {
     this.loading = true;
     try {
       await Promise.all([
-        new Promise(r => setTimeout(r, 1000)),
+        wait(1000),
         this.loadMaxStakes(),
         vxm.rewards.fetchAndSetPendingRewards(),
         this.pools.forEach(async x => {
