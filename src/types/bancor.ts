@@ -603,6 +603,7 @@ export interface CreateV1PoolEthParams {
   decimals: number;
   decFee: string;
   onUpdate: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface CreatePoolModule {

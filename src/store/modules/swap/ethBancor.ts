@@ -2093,6 +2093,8 @@ export class EthBancorModule
         tokenAddress: this.liquidityProtectionSettings.govToken,
         onPrompt
       });
+    } else {
+      await this.awaitConfirmation(onPrompt);
     }
 
     const txHash = await this.resolveTxOnConfirmation({
@@ -2867,7 +2869,8 @@ export class EthBancorModule
     );
   }
 
-  @action async claimBnt(): Promise<TxResponse> {
+  @action async claimBnt(onPrompt: OnPrompt): Promise<TxResponse> {
+    await this.awaitConfirmation(onPrompt);
     const contract = buildLiquidityProtectionContract(
       this.contracts.LiquidityProtection
     );
@@ -4527,8 +4530,12 @@ export class EthBancorModule
 
   @action async removeLiquidity({
     reserves,
-    id: relayId
+    id: relayId,
+    onPrompt
   }: LiquidityParams): Promise<TxResponse> {
+    if (onPrompt) {
+      await this.awaitConfirmation(onPrompt);
+    }
     const relay = await this.relayById(relayId);
 
     const preV11 = Number(relay.version) < 11;
