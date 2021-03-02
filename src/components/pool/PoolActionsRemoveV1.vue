@@ -171,7 +171,8 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
             amount: this.amountToken2!.toString()
           }
         ],
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
       });
     } catch (e) {
       this.txMeta.txError = e.message;
