@@ -133,7 +133,8 @@ export default class PoolActionsAddV1 extends BaseTxAction {
             amount: this.amount2
           }
         ],
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
       });
     } catch (e) {
       this.txMeta.txError = e.message;
