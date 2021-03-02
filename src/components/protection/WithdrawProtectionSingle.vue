@@ -77,7 +77,7 @@
 
     <main-button
       :label="$t('continue')"
-      @click="openModal"
+      @click="initWithdraw"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
@@ -87,7 +87,6 @@
       title="Confirm Withdraw"
       icon="arrow-up"
       :tx-meta.sync="txMeta"
-      @onConfirm="initWithdraw"
     >
       <gray-border-block>
         <span
@@ -250,7 +249,9 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
   }
 
   async initWithdraw() {
+    this.openModal();
     this.txMeta.txBusy = true;
+
     try {
       this.txMeta.success = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
