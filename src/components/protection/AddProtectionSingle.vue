@@ -130,7 +130,7 @@
 
     <main-button
       :label="actionButtonLabel"
-      @click="openModal"
+      @click="initStake"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
@@ -140,7 +140,6 @@
       title="Confirm Stake & Protect"
       icon="coins"
       :tx-meta.sync="txMeta"
-      @onConfirm="initStake"
       redirect-on-success="LiqProtection"
     >
       <gray-border-block>
@@ -332,7 +331,9 @@ export default class AddProtectionSingle extends BaseTxAction {
   }
 
   async initStake() {
+    this.openModal();
     this.txMeta.txBusy = true;
+
     try {
       this.txMeta.success = await vxm.ethBancor.addProtection({
         poolId: this.pool.id,
