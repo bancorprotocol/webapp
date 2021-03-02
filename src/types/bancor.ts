@@ -795,6 +795,7 @@ export interface TokenReward {
 export interface ViewProtectedLiquidity {
   id: string;
   initialProtectedWei: string;
+  inititalProtectedToken: string;
   stake: {
     amount: string;
     poolId: string;

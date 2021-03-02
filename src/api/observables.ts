@@ -644,6 +644,7 @@ combineLatest([
               return {
                 id: `${singleEntry.poolToken}:${singleEntry.id}`,
                 initialProtectedWei: singleEntry.reserveAmount,
+                inititalProtectedToken: singleEntry.reserveToken,
                 whitelisted: isWhiteListed,
                 ...(givenVBnt && { givenVBnt }),
                 single: true,

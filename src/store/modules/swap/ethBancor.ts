@@ -28,14 +28,12 @@ import {
   V1PoolResponse,
   ViewTradeEvent,
   ViewLiquidityEvent,
-  ProtectedLiquidityCalculated,
   ProtectLiquidityParams,
   OnUpdate,
   ViewProtectedLiquidity,
   ViewLockedBalance,
   ProtectionRes,
   ViewAmountDetail,
-  WeiExtendedAsset,
   TokenWei,
   PoolLiqMiningApr,
   ProtectedLiquidity,
@@ -43,8 +41,7 @@ import {
   ViewReserve,
   RegisteredContracts,
   RawLiquidityProtectionSettings,
-  LiquidityProtectionSettings,
-  TimeScale
+  LiquidityProtectionSettings
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
@@ -68,13 +65,8 @@ import {
   zeroAddress,
   buildSingleUnitCosts,
   findChangedReserve,
-  getLogs,
-  DecodedEvent,
-  ConversionEventDecoded,
-  traverseLockedBalances,
   LockedBalance,
   rewindBlocksByDays,
-  calculateProgressLevel,
   buildPoolNameFromReserves
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
@@ -93,7 +85,6 @@ import {
 } from "@/api/eth/contractWrappers";
 import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
 import Decimal from "decimal.js";
-import axios, { AxiosResponse } from "axios";
 import { vxm } from "@/store";
 import wait from "waait";
 import {
@@ -101,12 +92,10 @@ import {
   differenceWith,
   zip,
   partition,
-  omit,
   toPairs,
   fromPairs,
   chunk,
   last,
-  isEqual,
   groupBy,
   first
 } from "lodash";
@@ -140,8 +129,7 @@ import {
   PreviousPoolFee,
   moreStaticRelays,
   previousPoolFees,
-  v2Pools,
-  compareStaticRelay
+  v2Pools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
@@ -155,12 +143,10 @@ import {
   combineLatest,
   from,
   Observable,
-  of,
   partition as partitionOb,
   merge
 } from "rxjs";
 import {
-  distinctUntilChanged,
   map,
   filter,
   concatMap,
@@ -217,12 +203,7 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
-import {
-  getWelcomeData,
-  NewPool,
-  WelcomeData,
-  TokenMetaWithReserve
-} from "@/api/eth/bancorApi";
+import { NewPool, WelcomeData } from "@/api/eth/bancorApi";
 import { PoolProgram } from "../rewards";
 import { distinctArrayItem } from "@/api/observables/customOperators";
 import {
@@ -234,8 +215,6 @@ import {
   liquidityProtectionStore$
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$ } from "@/api/observables/auth";
-
-const timeStart = Date.now();
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -1605,7 +1584,7 @@ export class EthBancorModule
     );
     const isDissolvingNetworkToken = compareString(
       this.liquidityProtectionSettings.networkToken,
-      position.protectedAmount.id
+      position.inititalProtectedToken
     );
     const ppmPercent = decToPpm(decPercent);
 
@@ -6386,7 +6365,7 @@ export class EthBancorModule
       "failed finding protected position"
     );
 
-    const reserveTokenAddress = position.protectedAmount.id;
+    const reserveTokenAddress = position.inititalProtectedToken;
 
     const reserveTokenObj = findOrThrow(this.apiData!.tokens, token =>
       compareString(reserveTokenAddress, token.dlt_id)
