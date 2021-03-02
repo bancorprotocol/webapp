@@ -36,14 +36,6 @@
           {{ question.label }}
         </b-btn>
       </div>
-      <b-btn
-        v-else
-        @click="confirm"
-        class="btn-block py-2 rounded mt-3"
-        size="lg"
-        variant="primary"
-        >Confirm</b-btn
-      >
     </div>
     <action-modal-status
       v-else
@@ -88,9 +80,6 @@ export default class ModalTxAction extends BaseComponent {
     this.txMetaData.txBusy = true;
     selectedPromptReceiver$.next(id);
   }
-
-  @Emit("onConfirm")
-  async confirm() {}
 
   @Emit("onClose")
   async close() {
