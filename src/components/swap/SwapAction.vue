@@ -79,7 +79,7 @@
 
     <main-button
       :label="swapButtonLabel"
-      @click="openModal"
+      @click="initSwap"
       :active="true"
       :large="true"
       :loading="rateLoading"
@@ -90,7 +90,6 @@
       title="Confirm Token Swap"
       icon="exchange-alt"
       :tx-meta.sync="txMeta"
-      @onConfirm="initSwap"
     >
       <gray-border-block>
         <label-content-split
@@ -279,6 +278,7 @@ export default class SwapAction extends BaseTxAction {
   }
 
   async initSwap() {
+    this.openModal();
     this.txMeta.txBusy = true;
 
     try {
