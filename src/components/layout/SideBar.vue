@@ -132,6 +132,7 @@ export default class SideBar extends BaseComponent {
         label: "Fiat",
         newTab: false,
         hideMobile: true,
+        icon: "fiat.svg",
         svgName: "fiat"
       }
     ].map(link => ({
