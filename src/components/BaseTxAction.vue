@@ -22,18 +22,6 @@ export default class BaseTxAction extends BaseComponent {
     this.txMeta.showTxModal = true;
   }
 
-  setTxDefault() {
-    this.txMeta = {
-      showTxModal: false,
-      txBusy: false,
-      success: null,
-      txError: "",
-      sections: [],
-      stepIndex: 0,
-      prompt: null
-    };
-  }
-
   onUpdate(index: number, steps: Step[]) {
     this.txMeta.sections = steps;
     this.txMeta.stepIndex = index;
