@@ -116,6 +116,23 @@ export default class SideBar extends BaseComponent {
         newTab: true,
         hideMobile: false,
         icon: "bntee.png"
+      },
+      {
+        route: "https://www.duneanalytics.com/bancor",
+        key: "analytics",
+        label: "Bancor Analytics",
+        newTab: true,
+        hideMobile: false,
+        icon: "analytics.svg",
+        svgName: "bancor"
+      },
+      {
+        route: "FiatPage",
+        key: "fiat",
+        label: "Fiat",
+        newTab: false,
+        hideMobile: true,
+        svgName: "fiat"
       }
     ].map(link => ({
       ...link,

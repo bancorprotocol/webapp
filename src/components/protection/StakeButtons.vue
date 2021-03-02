@@ -107,6 +107,7 @@ export default class StakeButtons extends BaseComponent {
     if (this.loadingMaxStakes || !this.poolId) return;
     this.loadingMaxStakes = true;
     try {
+      await new Promise(r => setTimeout(r, 1000));
       const result = await vxm.ethBancor.getMaxStakesView({
         poolId: this.poolId
       });
