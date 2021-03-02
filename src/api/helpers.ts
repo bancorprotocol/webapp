@@ -652,8 +652,7 @@ const SQUARELINK_KEY = process.env.VUE_APP_SQUARELINK;
 //adding support for hardware wallet path selection
 const walletChecks = [
   { checkName: 'derivationPath' },
-  { checkName: 'accounts' },
-  { checkName: 'network' },
+  { checkName: 'accounts' }
 ]
 
 const wallets = [
