@@ -8,14 +8,14 @@
     </span>
     <div>
       <span
-        class="font-size-20 font-w600"
+        class="font-size-16 font-w500"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
         {{ value }}
       </span>
       <span
         v-if="percentage"
-        class="font-size-14"
+        class="font-size-14 font-w500"
         :class="percentage >= 0 ? 'percentage-positive' : 'percentage-negative'"
         >{{ `${percentage > 0 ? "+" : ""}${percentage}%` }}
       </span>
