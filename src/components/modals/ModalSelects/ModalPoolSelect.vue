@@ -36,7 +36,7 @@ export default class ModalPoolSelect extends BaseComponent {
   currentStep = 1;
 
   get searchedPools() {
-    const searchString = this.search;
+    const searchString = this.search.toLowerCase();
     const pools = this.pools;
 
     return searchString

@@ -78,14 +78,18 @@
       v-if="focusedReserveIsDisabled"
       variant="error"
       :msg="
-        disabledReserves.length > 1
+        bothReservesAreDisabled
           ? $t('pool_not_accepting')
           : $t(`available_reserve_only`, { symbol: opposingTokenSymbol })
       "
       class="mt-3 mb-3"
     />
 
-    <gray-border-block :gray-bg="true" class="my-3">
+    <gray-border-block
+      :gray-bg="true"
+      class="my-3"
+      v-if="!focusedReserveIsDisabled"
+    >
       <label-content-split
         :label="$t('space_available')"
         :loading="loading"
@@ -98,7 +102,11 @@
         }}</span>
       </label-content-split>
       <label-content-split
-        v-if="amountToMakeSpace"
+        v-if="
+          amountToMakeSpace &&
+          !opposingReserveIsDisabled &&
+          !focusedReserveIsDisabled
+        "
         class="mt-2"
         :label="
           $t('needed_open_space', { bnt: bnt.symbol, tkn: otherTkn.symbol })
@@ -112,6 +120,7 @@
     </gray-border-block>
 
     <price-deviation-error
+      v-if="!bothReservesAreDisabled"
       v-model="priceDeviationTooHigh"
       :pool-id="pool.id"
       :token-contract="token.contract"
@@ -187,6 +196,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import BaseComponent from "@/components/BaseComponent.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
+import wait from "waait";
 
 @Component({
   components: {
@@ -277,6 +287,16 @@ export default class AddProtectionSingle extends BaseComponent {
   get focusedReserveIsDisabled() {
     return this.disabledReserves.some(reserveId =>
       compareString(reserveId, this.token.id)
+    );
+  }
+
+  get bothReservesAreDisabled() {
+    return this.disabledReserves.length > 1;
+  }
+
+  get opposingReserveIsDisabled() {
+    return this.disabledReserves.some(reserveId =>
+      compareString(reserveId, this.opposingToken ? this.opposingToken.id : "")
     );
   }
 
@@ -383,11 +403,14 @@ export default class AddProtectionSingle extends BaseComponent {
       });
       this.outputs = res.outputs;
 
-      const errorMsg = `${this.token.symbol} limit reached. Additional ${
-        this.opposingToken!.symbol
-      } liquidity should be staked to allow for ${
-        this.token.symbol
-      } single-sided staking.`;
+      const errorMsg = this.opposingReserveIsDisabled
+        ? i18n.tc("wait_until_space_opens", 0, {
+            token: this.token.symbol
+          })
+        : i18n.tc("limit_reached", 0, {
+            token: this.token.symbol,
+            opposingToken: this.opposingToken!.symbol
+          });
 
       if (res.error) {
         this.preTxError =
@@ -472,6 +495,7 @@ export default class AddProtectionSingle extends BaseComponent {
     this.loading = true;
     try {
       await Promise.all([
+        wait(1000),
         this.fetchAndSetMaxStakes(this.pool.id),
         this.fetchAndSetDisabledReserves(this.pool.id)
       ]);
