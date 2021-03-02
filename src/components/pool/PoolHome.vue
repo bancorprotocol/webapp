@@ -1,8 +1,6 @@
 <template>
   <div>
     <content-block class="mb-3 pt-3" :no-header="true" :shadow="true">
-      <sub-navigation />
-
       <div>
         <main-button
           @click="modal = true"
@@ -34,7 +32,6 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import SubNavigation from "@/components/layout/SubNavigation.vue";
 import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
@@ -46,7 +43,6 @@ import BigNumber from "bignumber.js";
   components: {
     YourLiquidity,
     MainButton,
-    SubNavigation,
     ModalPoolSelect,
     ContentBlock
   }
