@@ -24,63 +24,14 @@
       </div>
     </content-block>
 
-    <modal-base
-      :title="$t('you_create_Pool')"
-      v-model="modal"
-      @input="setDefault"
+    <modal-tx-action
+      title="Create Pool"
+      icon="plus"
+      :tx-meta.sync="txMeta"
+      redirect-on-success="Pool"
     >
-      <b-row v-if="!(txBusy || success || error)">
-        <b-col cols="12" class="text-center mb-3">
-          <span
-            v-for="(item, index) in selectedTokens"
-            :key="index"
-            class="font-size-24 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ item.token.symbol }}
-            <span v-if="selectedTokens.length !== index + 1">/</span>
-          </span>
-        </b-col>
-        <b-col cols="12">
-          <gray-border-block>
-            <label-content-split
-              v-for="item in selectedTokens"
-              :key="item.token.id"
-              :label="`${item.token.symbol} ${$t('ratio')}`"
-              :value="`${item.percentage}%`"
-            />
-            <label-content-split
-              :label="$t('fee')"
-              :value="`${stepTwoProps.poolFee}%`"
-            />
-            <label-content-split
-              :label="$t('pool_name')"
-              :value="stepTwoProps.poolName"
-            />
-            <label-content-split
-              :label="$t('token_symbol')"
-              :value="stepTwoProps.poolSymbol"
-            />
-          </gray-border-block>
-        </b-col>
-      </b-row>
-
-      <action-modal-status
-        v-else
-        :error="error"
-        :success="success"
-        :step-description="currentStatus"
-      />
-
-      <main-button
-        @click="createPool"
-        class="mt-3"
-        :label="modalConfirmButton"
-        :active="true"
-        :large="true"
-        :disabled="txBusy"
-      />
-    </modal-base>
+      muhh
+    </modal-tx-action>
   </div>
 </template>
 
@@ -102,7 +53,8 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AdvancedBlockItem from "@/components/common/AdvancedBlockItem.vue";
 import BigNumber from "bignumber.js";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
 export interface CreateStep1 {
   token: ViewToken | null;
@@ -118,6 +70,7 @@ export interface CreateStep2 {
 
 @Component({
   components: {
+    ModalTxAction,
     AdvancedBlockItem,
     GrayBorderBlock,
     AlertBlock,
@@ -131,19 +84,10 @@ export interface CreateStep2 {
     MainButton
   }
 })
-export default class CreateHomeNew extends BaseComponent {
+export default class CreateHomeNew extends BaseTxAction {
   version: 1 | 2 = 1;
   step = 1;
-  modal = false;
-
-  txBusy = false;
-  success: TxResponse | string | null = null;
-  error = "";
-  sections: Step[] = [];
-  stepIndex = 0;
-
   newPoolId = "";
-
   stepOneProps: CreateStep1[] = [
     {
       token: vxm.bancor.token(vxm.bancor.newNetworkTokenChoices[0].id),
@@ -154,7 +98,6 @@ export default class CreateHomeNew extends BaseComponent {
       percentage: "50"
     }
   ];
-
   stepTwoProps: CreateStep2 = {
     poolName: "",
     poolSymbol: "",
@@ -164,16 +107,6 @@ export default class CreateHomeNew extends BaseComponent {
 
   get stepsConfirmButton() {
     return this.step === 1 ? i18n.t("continue") : i18n.t("create_Pool");
-  }
-
-  get modalConfirmButton() {
-    return this.error
-      ? i18n.t("try_again")
-      : this.success
-      ? i18n.t("close")
-      : this.txBusy
-      ? `${i18n.t("processing")}...`
-      : i18n.t("confirm");
   }
 
   get stepsConfirmError() {
@@ -223,13 +156,6 @@ export default class CreateHomeNew extends BaseComponent {
     );
   }
 
-  get currentStatus() {
-    if (this.sections.length) {
-      return this.sections[this.stepIndex].description;
-    }
-    return undefined;
-  }
-
   get existingPoolWarning() {
     return this.existingPool ? i18n.t("pool_exists") : "";
   }
@@ -269,31 +195,12 @@ export default class CreateHomeNew extends BaseComponent {
   }
 
   async createPool() {
-    if (this.success) {
-      this.modal = false;
-      const poolId = this.newPoolId;
-      this.$router.push({
-        name: "PoolAction",
-        params: {
-          poolAction: "add",
-          account: poolId
-        }
-      });
-      this.setDefault();
-      return;
-    }
+    this.openModal();
 
-    if (this.error) {
-      this.setDefault();
-      return;
-    }
-
-    this.setDefault();
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
 
     const tokens = this.tokenIdArray;
-
-    this.txBusy = true;
-
     const percentFee = this.stepTwoProps.poolFee;
     const decFee = new BigNumber(percentFee).div(100).toString();
 
@@ -304,20 +211,17 @@ export default class CreateHomeNew extends BaseComponent {
         poolName: this.stepTwoProps.poolName,
         poolSymbol: this.stepTwoProps.poolSymbol,
         decimals: this.stepTwoProps.poolDecimals,
-        decFee
+        decFee,
+        onPrompt: this.onPrompt
       });
-      this.success = success;
+      this.txMeta.success = success;
       this.newPoolId = success.poolId;
     } catch (e) {
-      this.error = e.message;
+      this.txMeta.txError = e.message;
     } finally {
-      this.txBusy = false;
+      this.txMeta.txBusy = false;
+      console.log("whauuat", this.txMeta.txBusy);
     }
-  }
-
-  onUpdate(index: number, steps: any[]) {
-    this.sections = steps;
-    this.stepIndex = index;
   }
 
   back() {
@@ -338,19 +242,12 @@ export default class CreateHomeNew extends BaseComponent {
     this.stepOneProps = this.stepOneProps.filter(
       (p: CreateStep1) => p.token !== null
     );
-    if (this.step === 2) this.modal = true;
+    if (this.step === 2) await this.createPool();
     else this.step++;
   }
 
   prevStep() {
     this.step--;
-  }
-
-  setDefault() {
-    this.sections = [];
-    this.error = "";
-    this.success = null;
-    this.newPoolId = "";
   }
 }
 </script>
