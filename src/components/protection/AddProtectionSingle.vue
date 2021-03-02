@@ -332,6 +332,8 @@ export default class AddProtectionSingle extends BaseTxAction {
 
   async initStake() {
     this.openModal();
+
+    if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
 
     try {
@@ -347,6 +349,7 @@ export default class AddProtectionSingle extends BaseTxAction {
       this.amount = "";
     } catch (e) {
       this.txMeta.txError = e.message;
+    } finally {
       this.txMeta.txBusy = false;
     }
   }
