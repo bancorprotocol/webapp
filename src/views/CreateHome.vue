@@ -30,7 +30,7 @@
       :tx-meta.sync="txMeta"
       redirect-on-success="Pool"
     >
-      muhh
+      .
     </modal-tx-action>
   </div>
 </template>
