@@ -810,7 +810,6 @@ export interface ViewProtectedLiquidity {
   apr: {
     day: number;
     week: number;
-    // month: number;
   };
   single: boolean;
   whitelisted: boolean;
