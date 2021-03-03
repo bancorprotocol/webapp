@@ -26,7 +26,7 @@
         :placeholder="placeholder"
         :type="type"
         :style="styleInput"
-        :autofocus="!!autofocus"
+        :autofocus="autofocus"
       />
       <b-input-group-append v-if="append">
         <div
