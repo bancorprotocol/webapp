@@ -2742,8 +2742,10 @@ export class EthBancorModule
     decimals,
     poolName,
     poolSymbol,
-    reserves
+    reserves,
+    onPrompt
   }: CreateV1PoolEthParams): Promise<V1PoolResponse> {
+    await this.awaitConfirmation(onPrompt);
     const hasFee = new BigNumber(decFee).isGreaterThan(0);
 
     const {
