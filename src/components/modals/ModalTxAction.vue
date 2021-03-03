@@ -28,10 +28,16 @@
       <div v-if="txMetaData.prompt" class="d-flex flex-column mt-2">
         <b-btn
           @click="selectedPromptReceiver(question.id)"
-          v-for="question in txMetaData.prompt.questions"
+          v-for="(question, index) in txMetaData.prompt.questions"
           :key="question.id"
           class="mt-2 rounded py-2"
-          variant="primary"
+          :variant="
+            index + 1 === txMetaData.prompt.questions.length
+              ? 'primary'
+              : darkMode
+              ? 'outline-gray-dark'
+              : 'outline-gray'
+          "
         >
           {{ question.label }}
         </b-btn>

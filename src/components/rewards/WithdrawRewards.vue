@@ -37,11 +37,7 @@
       :pools="pools"
     />
 
-    <modal-tx-action
-      :tx-meta="txMeta"
-      :title="$t('you_withdrawing_rewards')"
-      redirect-on-success="LiqProtection"
-    />
+    <modal-tx-action :tx-meta="txMeta" redirect-on-success="LiqProtection" />
   </div>
 </template>
 
