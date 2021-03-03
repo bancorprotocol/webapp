@@ -41,16 +41,27 @@
         <!-- <version-badge v-if="version !== null" :version="version" /> -->
       </div>
 
-      <img
-        v-if="rippleAnimation"
-        width="30"
-        height="30"
-        :src="
-          darkMode
-            ? require(`@/assets/media/icons/rippleDark.svg`)
-            : require(`@/assets/media/icons/ripple.svg`)
-        "
-      />
+      <div v-if="rippleAnimation">
+        <img
+          id="ripple"
+          width="30"
+          height="30"
+          :src="
+            darkMode
+              ? require(`@/assets/media/icons/rippleDark.svg`)
+              : require(`@/assets/media/icons/ripple.svg`)
+          "
+        />
+        <b-popover
+          :target="`ripple`"
+          triggers="hover"
+          placement="bottom"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("data_refreshes_auto") }}
+        </b-popover>
+      </div>
 
       <div v-if="searchInput !== null" class="float-right">
         <multi-input-field
