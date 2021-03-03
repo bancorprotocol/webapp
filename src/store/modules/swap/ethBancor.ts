@@ -3,6 +3,7 @@ import {
   ProposedFromTransaction,
   ProposedToTransaction,
   ProposedConvertTransaction,
+  ProposedCreateOrder,
   LiquidityParams,
   OpposingLiquidParams,
   OpposingLiquid,
@@ -44,6 +45,7 @@ import {
   LiquidityProtectionSettings
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
+import { SignatureType } from "@0x/protocol-utils";
 import {
   Relay,
   Token,
@@ -216,6 +218,7 @@ import {
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$ } from "@/api/observables/auth";
 import { limitOrders$ } from "@/api/observables/keeperDao";
+import { createOrder } from "@/api/orderSigning";
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -6466,6 +6469,50 @@ export class EthBancorModule
       return this.findPath({ fromId, toId, relays });
     }
   }
+
+  @mutation setDaoTokens() {}
+
+  @action async getReturnOrder({}) {}
+
+  @action async createOrder({ from, to, expiryDuration }: ProposedCreateOrder) {
+    const currentUser = this.currentUser as string;
+    if (!currentUser) throw new Error("Cannot proceed without being logged in");
+
+    const [fromToken, toToken] = await this.tokensById([from.id, to.id]);
+
+    const now = dayjs().unix();
+    const expiry = new BigNumber(now + expiryDuration);
+
+    const randomHex = web3.utils.randomHex(32);
+    const randomNumber = web3.utils.hexToNumber(randomHex);
+    const randomBigNumber = new BigNumber(randomNumber);
+
+    const fromAmountWei = new BigNumber(
+      expandToken(from.amount, fromToken.precision)
+    );
+    const toAmountWei = new BigNumber(
+      expandToken(to.amount, toToken.precision)
+    );
+
+    const order = createOrder({
+      fromAddress: from.id,
+      toAddress: to.id,
+      fromAmountWei,
+      toAmountWei,
+      currentUser,
+      expiry,
+      salt: randomBigNumber
+    });
+
+    const signature = await order.getSignatureWithProviderAsync(
+      // @ts-ignore
+      web3.currentProvider,
+      SignatureType.EIP712
+    );
+
+    console.log({ order, signature });
+  }
+
   @action async getReturn({
     from,
     toId

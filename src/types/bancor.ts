@@ -144,6 +144,12 @@ export interface ProposedToTransaction {
   fromId: string;
 }
 
+export interface ProposedCreateOrder {
+  from: ViewAmount;
+  to: ViewAmount;
+  expiryDuration: number;
+}
+
 export interface ViewAmount {
   id: string;
   amount: string;

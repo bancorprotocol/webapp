@@ -1,12 +1,30 @@
 import { RfqOrder, SignatureType } from "@0x/protocol-utils";
-import { web3 } from "./web3";
+import BigNumber from "bignumber.js";
 
-const order = new RfqOrder({
-  chainId: 1
-});
-
-// @ts-ignore
-const signature = await order.getSignatureWithProviderAsync(
-  web3.currentProvider,
-  SignatureType.EIP712
-);
+export const createOrder = ({
+  fromAddress,
+  toAddress,
+  fromAmountWei,
+  toAmountWei,
+  currentUser,
+  expiry,
+  salt
+}: {
+  fromAddress: string;
+  toAddress: string;
+  fromAmountWei: BigNumber;
+  toAmountWei: BigNumber;
+  currentUser: string;
+  expiry: BigNumber;
+  salt: BigNumber;
+}): RfqOrder =>
+  new RfqOrder({
+    chainId: 1,
+    expiry,
+    salt,
+    maker: currentUser,
+    makerToken: fromAddress,
+    makerAmount: fromAmountWei,
+    takerAmount: toAmountWei,
+    takerToken: toAddress
+  });
