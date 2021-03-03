@@ -215,6 +215,7 @@ import {
   liquidityProtectionStore$
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$ } from "@/api/observables/auth";
+import { limitOrders$ } from "@/api/observables/keeperDao";
 
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -478,6 +479,8 @@ const smartTokenAnchor = (smartToken: Token) => ({
   anchor: smartToken,
   converterType: PoolType.Traditional
 });
+
+limitOrders$.subscribe(x => console.log("orders came out", x));
 
 const newRelayToRelayWithBalances = (
   newRelay: NewRelay

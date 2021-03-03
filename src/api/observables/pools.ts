@@ -1,12 +1,11 @@
 import { MinimalPool } from "@/types/bancor";
 import { isEqual } from "lodash";
-import { combineLatest, timer } from "rxjs";
+import { combineLatest } from "rxjs";
 import { distinctUntilChanged, map, pluck, share } from "rxjs/operators";
 import { getWelcomeData, WelcomeData } from "../eth/bancorApi";
 import { switchMapIgnoreThrow } from "./customOperators";
 import { networkVersion$ } from "./network";
-
-const fifteenSeconds$ = timer(0, 15000);
+import { fifteenSeconds$ } from "./timers";
 
 export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
   switchMapIgnoreThrow(([networkVersion]) => getWelcomeData(networkVersion)),

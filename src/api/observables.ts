@@ -27,16 +27,12 @@ import {
 } from "./eth/contractTypes";
 import { filterAndWarn } from "./pureHelpers";
 import {
-  RegisteredContracts,
-  MinimalPool,
   ProtectedLiquidityCalculated,
   ProtectedLiquidity,
   ViewProtectedLiquidity
 } from "@/types/bancor";
 import {
-  fetchContractAddresses,
   fetchLiquidityProtectionSettings,
-  fetchLiquidityProtectionSettingsContract,
   fetchMinLiqForMinting,
   fetchPositionIds,
   fetchPositionsMulti,
