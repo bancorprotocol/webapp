@@ -2966,6 +2966,7 @@ export class EthBancorModule
     onHash?: (hash: string) => void;
     onConfirmation?: (hash: string) => void;
   }): Promise<string> {
+    console.log("received", tx);
     let adjustedGas: number | boolean = false;
     if (gas) {
       adjustedGas = gas;
@@ -4916,23 +4917,60 @@ export class EthBancorModule
 
     const converterAddress = relay.contract;
 
-    await Promise.all(
+    const approvalStatuses = await Promise.all(
       matchedBalances.map(async balance => {
-        if (
-          compareString(balance.contract, ethErc20WrapperContract) &&
-          !postV28
-        ) {
-          await this.mintEthErc(balance.amount!);
-        }
-        return this.triggerApprovalIfRequired({
+        const { approvalIsRequired } = await this.isApprovalRequired({
           owner: this.currentUser,
           amount: expandToken(balance.amount!, balance.decimals),
           spender: converterAddress,
-          tokenAddress: balance.contract,
-          onPrompt
+          tokenAddress: balance.contract
         });
+        return {
+          contract: balance.contract,
+          approvalIsRequired
+        };
       })
     );
+
+    const requiredApprovals = approvalStatuses.filter(
+      status => status.approvalIsRequired
+    );
+
+    if (requiredApprovals.length > 0) {
+      const { unlimitedApproval } = await this.promptUserForApprovalType(
+        onPrompt!
+      );
+
+      await Promise.all(
+        matchedBalances.map(async balance => {
+          if (
+            compareString(balance.contract, ethErc20WrapperContract) &&
+            !postV28
+          ) {
+            await this.mintEthErc(balance.amount!);
+          }
+        })
+      );
+
+      await Promise.all(
+        matchedBalances
+          .filter(balance =>
+            requiredApprovals.some(status =>
+              compareString(balance.contract, status.contract)
+            )
+          )
+          .map(async balance => {
+            return this.triggerApprovalIfRequired({
+              owner: this.currentUser,
+              amount: unlimitedApproval
+                ? unlimitedWei
+                : expandToken(balance.amount!, balance.decimals),
+              spender: converterAddress,
+              tokenAddress: balance.contract
+            });
+          })
+      );
+    }
 
     onUpdate!(1, steps);
 
