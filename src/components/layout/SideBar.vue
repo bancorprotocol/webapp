@@ -70,9 +70,9 @@ export default class SideBar extends BaseComponent {
         icon: "swap.svg"
       },
       {
-        route: "LiqProtection",
-        key: "protection",
-        label: i18n.t("protection"),
+        route: "Portfolio",
+        key: "portfolio",
+        label: i18n.t("portfolio"),
         newTab: false,
         hideMobile: false,
         icon: "liquidity.svg"

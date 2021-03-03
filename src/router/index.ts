@@ -9,7 +9,7 @@ import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
-import ProtectionHome from "@/views/ProtectionHome.vue";
+import Portfolio from "@/views/Portfolio.vue";
 import AddProtectionHome from "@/views/AddProtectionHome.vue";
 import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
@@ -106,19 +106,6 @@ export const router = new Router({
       redirect: `/${defaultModule}/vote`
     },
     {
-      path: "/:service/pool",
-      name: "Pool",
-      components: {
-        Nav: Navigation,
-        Hero: PoolHome
-      },
-      props: true,
-      meta: {
-        key: "swap",
-        feature: "Liquidity"
-      }
-    },
-    {
       path: "/:service/pool/create",
       name: "PoolCreate",
       components: {
@@ -158,15 +145,15 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/protection",
-      name: "LiqProtection",
+      path: "/:service/portfolio",
+      name: "Portfolio",
       components: {
         Nav: Navigation,
-        default: ProtectionHome
+        default: Portfolio
       },
       meta: {
-        key: "protection",
-        feature: "Protection"
+        key: "portfolio",
+        feature: "Portfolio"
       }
     },
     {

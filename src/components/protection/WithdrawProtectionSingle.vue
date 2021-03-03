@@ -250,7 +250,7 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection", params: { scroll: "true" } });
+      this.$router.push({ name: "Portfolio", params: { scroll: "true" } });
     } else if (this.error) {
       this.setDefault();
       this.modal = false;

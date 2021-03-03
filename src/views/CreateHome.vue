@@ -323,7 +323,7 @@ export default class CreateHomeNew extends BaseComponent {
   back() {
     const atStart = this.step == 1;
     if (atStart) {
-      this.$router.push({ name: "Pool" });
+      this.$router.push({ name: "Portfolio" });
     } else {
       this.prevStep();
     }

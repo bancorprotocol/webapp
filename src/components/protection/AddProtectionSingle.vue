@@ -365,7 +365,7 @@ export default class AddProtectionSingle extends BaseComponent {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      this.$router.push({ name: "Portfolio" });
       return;
     } else if (this.error || this.inputError) {
       this.modal = false;

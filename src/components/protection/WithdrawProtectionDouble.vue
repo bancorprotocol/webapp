@@ -185,7 +185,7 @@ export default class WithdrawProtectionDouble extends BaseComponent {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      this.$router.push({ name: "Portfolio" });
     } else if (this.error) {
       this.setDefault();
       this.modal = false;

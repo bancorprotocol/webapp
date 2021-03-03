@@ -284,7 +284,7 @@ export const en = {
   language: "Language",
   blockchains: "Blockchains",
   version: "Version",
-  protection: "Protection",
+  portfolio: "Portfolio",
   name: "Name",
   value_tokens_pool: "The value of tokens in the pool.",
   estimated_apr:

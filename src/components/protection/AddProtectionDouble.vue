@@ -170,7 +170,7 @@ export default class AddProtectionDouble extends BaseComponent {
     if (this.success) {
       this.setDefault();
       this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
+      this.$router.push({ name: "Portfolio" });
       return;
     } else if (this.error) {
       this.modal = false;
