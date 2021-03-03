@@ -130,4 +130,8 @@ export default class ContentBlock extends BaseComponent {
 .fix-width {
   width: 120px;
 }
+
+.popover {
+  max-width: 180px;
+}
 </style>
