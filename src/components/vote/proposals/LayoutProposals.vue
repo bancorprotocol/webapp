@@ -95,7 +95,6 @@
             :class="darkMode ? 'divider-dark' : 'divider-light'"
           />
         </template>
-
       </b-row>
     </b-container>
 
@@ -216,7 +215,6 @@ export default class LayoutProposals extends BaseComponent {
   font-size: 12px;
   font-weight: 500;
   padding: 0.75rem;
-  text-transform: uppercase;
 
   &-light {
     background-color: #f7f9fc;

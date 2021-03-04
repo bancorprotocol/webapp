@@ -161,7 +161,7 @@
               :large="true"
               :active="true"
               :block="true"
-              class="font-size-14 font-w400 mr-3 text-uppercase button-vote button-vote--for"
+              class="font-size-14 font-w400 mr-3 button-vote button-vote--for"
             />
 
             <main-button
@@ -170,7 +170,7 @@
               :large="true"
               :active="true"
               :block="true"
-              class="font-size-14 font-w400 mt-0 text-uppercase button-vote button-vote--against"
+              class="font-size-14 font-w400 mt-0 button-vote button-vote--against"
             />
           </div>
 
@@ -181,7 +181,7 @@
             >
               <div class="row">
                 <span class="col-3">
-                  <span class="text-uppercase">{{ item.votes.voted }}</span>
+                  <span class="">{{ item.votes.voted }}</span>
                 </span>
                 <span class="col-9 text-right">
                   {{
@@ -227,7 +227,7 @@
             </div>
           </div>
 
-          <div class="font-size-12 font-w500 text-uppercase">
+          <div class="font-size-12 font-w500">
             <div class="votes-bar">
               <div
                 class="votes-bar__progress"
@@ -235,7 +235,7 @@
                   width: `${(100 / item.totalVotes) * item.totalVotesFor}%`
                 }"
               />
-              <div class="votes-bar__content text-uppercase">
+              <div class="votes-bar__content">
                 <span>
                   {{
                     `${$t("for")} ${(

@@ -28,7 +28,7 @@
         :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
       >
         <span
-          class="text-uppercase font-size-12 font-w500"
+          class="font-size-12 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           {{ $t("your_balance") }}
@@ -46,7 +46,7 @@
         :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
       >
         <span
-          class="text-uppercase font-size-12 font-w500"
+          class="font-size-12 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           {{ $t("currently_staked") }}

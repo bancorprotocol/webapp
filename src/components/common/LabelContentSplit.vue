@@ -2,7 +2,7 @@
   <div class="d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center">
       <span
-        class="font-size-12 font-w500 text-uppercase"
+        class="font-size-12 font-w500"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         {{ label }}
