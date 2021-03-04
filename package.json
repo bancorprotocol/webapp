@@ -31,7 +31,7 @@
     "axios": "^0.21.1",
     "bancorx": "^0.3.0",
     "bignumber.js": "^9.0.0",
-    "bnc-onboard": "^1.19.2",
+    "bnc-onboard": "^1.20.0",
     "bootstrap": "^4.6.0",
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.9.1",
