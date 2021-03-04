@@ -1,7 +1,7 @@
 <template>
   <div>
     <span
-      class="font-size-12 font-w600"
+      class="font-size-14 font-w500"
       :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
     >
       {{ title }}
