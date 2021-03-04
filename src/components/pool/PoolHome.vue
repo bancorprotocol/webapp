@@ -1,30 +1,17 @@
 <template>
   <div>
-    <content-block class="mb-3 pt-3" :no-header="true" :shadow="true">
-      <div>
-        <main-button
-          @click="modal = true"
-          :label="$t('join_pool')"
-          :active="true"
-          :large="true"
-        />
-        <modal-pool-select
-          @select="selectPool"
-          v-model="modal"
-          :pools="pools"
-        />
-        <your-liquidity />
-      </div>
-    </content-block>
-    <div class="d-flex justify-content-center">
-      <router-link
-        :to="{ name: 'PoolCreate' }"
-        class="cursor font-w700 mb-3"
-        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
-      >
-        <font-awesome-icon icon="plus" class="mr-2" />{{ $t("create_pool") }}
-      </router-link>
-    </div>
+    <b-row>
+      <b-col>
+        <p
+          class="font-size-14 font-w400 my-3 mb-5"
+          :class="darkMode ? 'text-dark' : 'text-light'"
+        >
+          {{ $t("manage_pool_tokens") }}
+        </p>
+
+        <pool-token />
+      </b-col>
+    </b-row>
   </div>
 </template>
 
@@ -34,6 +21,7 @@ import { vxm } from "@/store";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import MainButton from "@/components/common/Button.vue";
 import YourLiquidity from "@/components/pool/YourLiquidity.vue";
+import PoolToken from "@/components/pool/PoolToken.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { ViewRelay } from "@/types/bancor";
@@ -41,6 +29,7 @@ import BigNumber from "bignumber.js";
 
 @Component({
   components: {
+    PoolToken,
     YourLiquidity,
     MainButton,
     ModalPoolSelect,
