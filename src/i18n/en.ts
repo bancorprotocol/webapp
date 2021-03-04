@@ -357,5 +357,9 @@ export const en = {
     "Withdrawing will reset your rewards multiplier for all active positions back to x1",
   pool_not_accepting: "This pool is not accepting additional liquidity.",
   wait_until_space_opens:
-    "{token} limit reached. Please wait until some space opens up."
+    "{token} limit reached. Please wait until some space opens up.",
+  market: "Market",
+  limit: "Limit",
+  defined_rate: "Defined Rate",
+  expires_in: "Expires in"
 };
