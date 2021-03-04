@@ -358,5 +358,5 @@ export const en = {
   pool_not_accepting: "This pool is not accepting additional liquidity.",
   wait_until_space_opens:
     "{token} limit reached. Please wait until some space opens up.",
-  data_refreshes_auto: "Data on this page refreshes automatically"
+  data_refreshes_auto: "Data refreshes automatically"
 };
