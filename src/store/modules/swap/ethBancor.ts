@@ -45,7 +45,7 @@ import {
   LiquidityProtectionSettings
 } from "@/types/bancor";
 import { ethBancorApi } from "@/api/bancorApiWrapper";
-import { SignatureType } from "@0x/protocol-utils";
+import { RfqOrder, Signature, SignatureType } from "@0x/protocol-utils";
 import {
   Relay,
   Token,
@@ -217,7 +217,11 @@ import {
   liquidityProtectionStore$
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$ } from "@/api/observables/auth";
-import { limitOrders$ } from "@/api/observables/keeperDao";
+import {
+  limitOrders$,
+  RfqOrderJson,
+  sendOrder
+} from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 
 interface ViewRelayConverter extends ViewRelay {
@@ -6516,7 +6520,32 @@ export class EthBancorModule
       SignatureType.EIP712
     );
 
-    console.log({ order, signature });
+    const buildRfqJsonOrder = (
+      order: RfqOrder,
+      signature: Signature
+    ): RfqOrderJson => {
+      return {
+        maker: order.maker.toLowerCase(),
+        taker: order.taker.toLowerCase(),
+        chainId: order.chainId,
+        expiry: order.expiry.toNumber(),
+        makerAmount: order.makerAmount.toString().toLowerCase(),
+        makerToken: order.makerToken.toLowerCase(),
+        pool: order.pool.toLowerCase(),
+        salt: order.salt.toString().toLowerCase(),
+        signature,
+        takerAmount: order.takerAmount.toString().toLowerCase(),
+        takerToken: order.takerToken.toLowerCase(),
+        txOrigin: order.txOrigin.toLowerCase(),
+        verifyingContract: order.verifyingContract.toLowerCase()
+      };
+    };
+
+    const jsonOrder = buildRfqJsonOrder(order, signature);
+    console.log({ order, signature, jsonOrder });
+
+    const res = await sendOrder([jsonOrder]);
+    console.log(res, "was the response");
   }
 
   @action async getReturn({

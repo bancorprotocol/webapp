@@ -77,6 +77,27 @@ export interface Signature {
   s: string;
 }
 
+export interface RfqOrderJson {
+  maker: string;
+  taker: string;
+  makerToken: string;
+  takerToken: string;
+  makerAmount: string;
+  takerAmount: string;
+  txOrigin: string;
+  pool: string;
+  expiry: number;
+  salt: string;
+  chainId: number; // Ethereum Chain Id where the transaction is submitted.
+  verifyingContract: string; // Address of the contract where the transaction should be sent.
+  signature: {
+    signatureType: number;
+    v: number;
+    s: string;
+    r: string;
+  };
+}
+
 const baseUrl: string = "https://hidingbook.keeperdao.com/api/v1";
 
 const getTokenList = async () => {
@@ -93,6 +114,12 @@ const getOrders = async (currentUser: string) => {
   return res.data;
 };
 
+export const sendOrder = async (rfqOrder: RfqOrderJson[]) => {
+  const url = "https://hidingbook.keeperdao.com/api/v1/orders";
+  const res = await axios.post(url, rfqOrder);
+  return res.data;
+};
+
 export const keeperTokens$ = oneMinute$.pipe(
   switchMapIgnoreThrow(() => getTokenList()),
   pluck("result"),
@@ -104,3 +131,49 @@ export const limitOrders$ = combineLatest([onLogin$, oneMinute$]).pipe(
   switchMapIgnoreThrow(([currentUser]) => getOrders(currentUser)),
   pluck("orders")
 );
+
+const goodOrder = [
+  {
+    signature: {
+      r: "0x2aedeb89457c5d9915d7e73d5007b50942b9a9d22438626108fe5e01e38352df",
+      s: "0x2bc729fd6ac1ec80d9e4db3a05ff7d051db98573f3425e5a9768e5197b94241d",
+      v: 28,
+      signatureType: 2
+    },
+    makerToken: "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
+    takerToken: "0x960b236a07cf122663c4303350609a66a7b288c0",
+    txOrigin: "0xbd49a97300e10325c78d6b4ec864af31623bb5dd",
+    maker: "0xcf057a4ce6d27da5f0320d4e2a5b3deaf608971c",
+    taker: "0x0000000000000000000000000000000000000000",
+    makerAmount: "1189",
+    takerAmount: "1224",
+    pool: "0x000000000000000000000000000000000000000000000000000000000000002d",
+    expiry: 1614843241,
+    salt: "1614842641777000",
+    chainId: 1,
+    verifyingContract: "0xdef1c0ded9bec7f1a1670819833240f027b25eff"
+  }
+];
+
+const badOrder = [
+  {
+    maker: "0xcf057a4ce6d27da5f0320d4e2a5b3deaf608971c",
+    taker: "0x0000000000000000000000000000000000000000",
+    chainId: 1,
+    expiry: 1614846687,
+    makerAmount: "10000000000000000",
+    makerToken: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    pool: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    salt: "186997492765405",
+    signature: {
+      r: "0xea242b883479a61c7c080f6aacf72bf76641849d5ef0a1c04911e39e613cbd39",
+      s: "0x64435bf855400988420c86538a9bf7e0a562ad2569dc5d54fe3e005896446ec8",
+      v: 27,
+      signatureType: 2
+    },
+    takerAmount: "200000000000000000",
+    takerToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+    txOrigin: "0x0000000000000000000000000000000000000000",
+    verifyingContract: "0xdef1c0ded9bec7f1a1670819833240f027b25eff"
+  }
+];
