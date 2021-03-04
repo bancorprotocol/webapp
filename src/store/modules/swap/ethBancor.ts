@@ -1357,6 +1357,10 @@ export class EthBancorModule
   get stats() {
     const apiData = this.apiData!;
     const bntUsdPrice = Number(apiData.bnt_price.usd);
+    const bntPrice24Change = calculatePercentageChange(
+      bntUsdPrice,
+      Number(apiData.bnt_price_24h_ago.usd)
+    );
     const bntSupply = this.bntSupply;
 
     const { pools, tokens } = apiData;
@@ -1402,7 +1406,8 @@ export class EthBancorModule
       },
       twentyFourHourTradeCount: apiData.swaps.length,
       totalVolume24h,
-      bntUsdPrice
+      bntUsdPrice,
+      bntPrice24Change
     };
   }
 
@@ -6313,12 +6318,21 @@ export class EthBancorModule
         web3: w3
       });
     } catch (e) {
-      throw new Error(`Threw getting return by path ${e}`);
+      throw new Error(
+        `Threw getting return by path ${JSON.stringify(e)} ${path}`
+      );
     }
   }
 
   @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
+    const relaysWithBalances = this.apiData!.pools.filter(pool =>
+      pool.reserves.every(reserve => reserve.balance !== "0")
+    );
+    const relaysByLiqDepth = this.relays
+      .sort(sortByLiqDepth)
+      .filter(relay =>
+        relaysWithBalances.some(r => compareString(relay.id, r.pool_dlt_id))
+      );
     const winningRelays = uniqWith(relaysByLiqDepth, compareRelayByReserves);
 
     const relaysWithConverterAddress = winningRelays.map(relay => {
@@ -6457,14 +6471,21 @@ export class EthBancorModule
             returnResult: await this.getReturnByPath({
               path,
               amount: fromWei
-            }),
+            }).catch(() => false),
             path,
             relays: relayPath
           };
         })
       );
 
-      const sortedReturns = results.sort((a, b) =>
+      const passedResults = results
+        .filter(res => res.returnResult)
+        .map(res => ({ ...res, returnResult: res.returnResult as string }));
+
+      if (passedResults.length == 0)
+        throw new Error(`Failed finding a path between tokens`);
+
+      const sortedReturns = passedResults.sort((a, b) =>
         new BigNumber(b.returnResult).lt(a.returnResult) ? -1 : 1
       );
       const bestReturn = sortedReturns[0];

@@ -361,5 +361,6 @@ export const en = {
   market: "Market",
   limit: "Limit",
   defined_rate: "Defined Rate",
-  expires_in: "Expires in"
+  expires_in: "Expires in",
+  data_refreshes_auto: "Data refreshes automatically"
 };

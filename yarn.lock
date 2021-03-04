@@ -3624,10 +3624,10 @@
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
   integrity sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA==
 
-"@types/numeral@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@types/numeral/-/numeral-2.0.0.tgz#fc1ec435d46df7f3b4a50d727c319e1146724aa1"
-  integrity sha512-ibCOx5W9lj3yoBJgwbqfAGDMb5VkPDUcU+BbeEhvuFQmVI5+eT3tMxfSZFG3yO3LLNZgFXIx+QCqE5hMS/88Lw==
+"@types/numeral@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@types/numeral/-/numeral-2.0.1.tgz#f7270a16c643d5796199b2a03d1f28595d38f687"
+  integrity sha512-f0LSiBOMnSGILpylIZzYXtnHbhosjPI916W9AkB171MnY+7IVuXHfb7Ohv3AkaDeOieiq74f6vy9ROMxRhfZ1Q==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -6007,10 +6007,10 @@ bn.js@^5.0.0, bn.js@^5.1.1, bn.js@^5.1.2, bn.js@^5.1.3:
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.1.3.tgz#beca005408f642ebebea80b042b4d18d2ac0ee6b"
   integrity sha512-GkTiFpjFtUzU9CbMeJ5iazkCzGL3jrhzerzZIuqLABjbwRaFt33I9tUdSNryIptM+RxDet6OKm2WnLXzW51KsQ==
 
-bnc-onboard@^1.19.2:
-  version "1.19.2"
-  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.19.2.tgz#bc293dfebfeadc834c4219b3eae7ff827f9ff9f9"
-  integrity sha512-+vsc70ViYz2mJbhTXhIuVMHIqlmvGVKZVWTkI8+5xnUVoFh65GubdxuN55l/J+kgEodUHejPecswgYWUTElz8A==
+bnc-onboard@^1.20.0:
+  version "1.20.0"
+  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.20.0.tgz#436aa89a2839d6d0702a7689a9ca60f4a957d3cf"
+  integrity sha512-bt1pfEBFLnkuxzTQsvous/a28WufVJNVyi3MQwaSlC8IkIsZdih2dwiuhUd1HzGNzUFVk1xe9huxwb/7wEDl0w==
   dependencies:
     "@ledgerhq/hw-app-eth" "^5.21.0"
     "@ledgerhq/hw-transport-u2f" "^5.21.0"
@@ -6022,6 +6022,7 @@ bnc-onboard@^1.19.2:
     bnc-sdk "^3.1.0"
     bowser "^2.10.0"
     eth-lattice-keyring "^0.2.7"
+    eth-provider "^0.6.1"
     ethereumjs-tx "^2.1.2"
     ethereumjs-util "^7.0.3"
     fortmatic "^2.2.1"
@@ -8931,15 +8932,15 @@ eslint-plugin-prettier@^3.3.1:
   dependencies:
     prettier-linter-helpers "^1.0.0"
 
-eslint-plugin-vue@^7.6.0:
-  version "7.6.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-7.6.0.tgz#ea616e6dfd45d545adb16cba628c5a992cc31f0b"
-  integrity sha512-qYpKwAvpcQXyUXVcG8Zd+fxHDx9iSgTQuO7dql7Ug/2BCvNNDr6s3I9p8MoUo23JJdO7ZAjW3vSwY/EBf4uBcw==
+eslint-plugin-vue@^7.7.0:
+  version "7.7.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-7.7.0.tgz#a90df4595e670821bf243bd2750ededdb74948b8"
+  integrity sha512-mYz4bpLGv5jx6YG/GvKkqbGSfV7uma2u1P3mLA41Q5vQl8W1MeuTneB8tfsLq6xxxesFubcrOC0BZBJ5R+eaCQ==
   dependencies:
     eslint-utils "^2.1.0"
     natural-compare "^1.4.0"
     semver "^7.3.2"
-    vue-eslint-parser "^7.5.0"
+    vue-eslint-parser "^7.6.0"
 
 eslint-scope@^4.0.3:
   version "4.0.3"
@@ -9045,7 +9046,7 @@ esprima@^4.0.0, esprima@^4.0.1:
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
 
-esquery@^1.0.1, esquery@^1.4.0:
+esquery@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/esquery/-/esquery-1.4.0.tgz#2148ffc38b82e8c7057dfed48425b3e61f0f24a5"
   integrity sha512-cCDispWt5vHHtwMY2YrAQ4ibFkAL8RbH5YGBnZBc90MolvvfkkQcJro/aZiAQUlQ3qgrYS6D6v8Gc5G5CQsc9w==
@@ -9280,6 +9281,18 @@ eth-multicall@^1.3.13:
     lodash "^4.17.19"
     web3 "^1.2.11"
 
+eth-provider@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/eth-provider/-/eth-provider-0.6.1.tgz#795c69205f023678ed79f9139233426afdbc479c"
+  integrity sha512-0sBNzOBEUSQmo5zHSQ/os25ULh+LeoTTK5nGxiTJpXo8R0OOxOzYiVWLfAWuIuYLhzT1ma5A1wPZWMt+gPGeoA==
+  dependencies:
+    ethereum-provider "0.2.2"
+    events "3.2.0"
+    oboe "2.1.5"
+    uuid "8.3.2"
+    ws "7.4.3"
+    xhr2-cookies "1.1.0"
+
 eth-query@^2.0.2, eth-query@^2.1.0, eth-query@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/eth-query/-/eth-query-2.1.2.tgz#d6741d9000106b51510c72db92d6365456a6da5e"
@@ -9422,6 +9435,13 @@ ethereum-private-key-to-public-key@0.0.2:
   dependencies:
     meow "^5.0.0"
     secp256k1 "^3.7.1"
+
+ethereum-provider@0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/ethereum-provider/-/ethereum-provider-0.2.2.tgz#37ba0674a6c05915b51afb8e6d13e9bd166f1c33"
+  integrity sha512-147DaU4nccfYYCAKhrILdgSWTjjZX2NnmcZJx12frM+cNw8cGTbpQPpi4xApagIk7HlN16ZncCP5uyOiZN7n3g==
+  dependencies:
+    events "3.2.0"
 
 ethereum-public-key-to-address@0.0.1:
   version "0.0.1"
@@ -9750,7 +9770,7 @@ eventemitter3@^4.0.0:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
 
-events@^3.0.0, events@^3.2.0:
+events@3.2.0, events@^3.0.0, events@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/events/-/events-3.2.0.tgz#93b87c18f8efcd4202a461aec4dfc0556b639379"
   integrity sha512-/46HWwbfCX2xTawVfkKLGxMifJYQBWMwY1mjywRtb4c9x8l5NP3KoJtnIOiL1hfdRkIuYhETxQlo62IF8tcnlg==
@@ -20063,6 +20083,11 @@ uuid@7.0.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.2.tgz#7ff5c203467e91f5e0d85cfcbaaf7d2ebbca9be6"
   integrity sha512-vy9V/+pKG+5ZTYKf+VcphF5Oc6EFiu3W8Nv3P3zIh0EqVI80ZxOzuPfe9EHjkFNvf8+xuTHVeei4Drydlx4zjw==
 
+uuid@8.3.2:
+  version "8.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
+
 uuid@^3.0.1, uuid@^3.3.2, uuid@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
@@ -20177,22 +20202,10 @@ vue-content-loader@^2.0.0:
   resolved "https://registry.yarnpkg.com/vue-content-loader/-/vue-content-loader-2.0.0.tgz#8e3ef340505ec2a3a45d14f6b8c5ca588b110505"
   integrity sha512-4HtRASF3y1S03pcilwneVZzbowwKyDBfsPzP2JE35RMDIjsPuGnr93nO/2kP4mmqP4Qwmw6uCPd3SHBgJAi8Bw==
 
-vue-eslint-parser@^7.0.0:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-7.1.1.tgz#c43c1c715ff50778b9a7e9a4e16921185f3425d3"
-  integrity sha512-8FdXi0gieEwh1IprIBafpiJWcApwrU+l2FEj8c1HtHFdNXMd0+2jUSjBVmcQYohf/E72irwAXEXLga6TQcB3FA==
-  dependencies:
-    debug "^4.1.1"
-    eslint-scope "^5.0.0"
-    eslint-visitor-keys "^1.1.0"
-    espree "^6.2.1"
-    esquery "^1.0.1"
-    lodash "^4.17.15"
-
-vue-eslint-parser@^7.5.0:
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-7.5.0.tgz#b68221c55fee061899afcfb4441ec74c1495285e"
-  integrity sha512-6EHzl00hIpy4yWZo3qSbtvtVw1A1cTKOv1w95QSuAqGgk4113XtRjvNIiEGo49r0YWOPYsrmI4Dl64axL5Agrw==
+vue-eslint-parser@^7.0.0, vue-eslint-parser@^7.6.0:
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-7.6.0.tgz#01ea1a2932f581ff244336565d712801f8f72561"
+  integrity sha512-QXxqH8ZevBrtiZMZK0LpwaMfevQi9UL7lY6Kcp+ogWHC88AuwUPwwCIzkOUc1LR4XsYAt/F9yHXAB/QoD17QXA==
   dependencies:
     debug "^4.1.1"
     eslint-scope "^5.0.0"
@@ -21701,6 +21714,11 @@ ws@7.3.0:
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.3.0.tgz#4b2f7f219b3d3737bc1a2fbf145d825b94d38ffd"
   integrity sha512-iFtXzngZVXPGgpTlP1rBqsUK82p9tKqsWRPg5L56egiljujJT3vGAYnHANvFxBieXrTFavhzhxW52jnaWV+w2w==
+
+ws@7.4.3:
+  version "7.4.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.3.tgz#1f9643de34a543b8edb124bdcbc457ae55a6e5cd"
+  integrity sha512-hr6vCR76GsossIRsr8OLR9acVVm1jyfEWvhbNjtgPOrfvAlKzvyeg/P6r8RuDjRyrcQoPQT7K0DGEPc7Ae6jzA==
 
 ws@^3.0.0:
   version "3.3.3"
