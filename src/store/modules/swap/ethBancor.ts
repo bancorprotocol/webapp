@@ -6960,7 +6960,14 @@ export class EthBancorModule
   }
 
   @action async winningMinimalRelays(): Promise<MinimalRelay[]> {
-    const relaysByLiqDepth = this.relays.sort(sortByLiqDepth);
+    const relaysWithBalances = this.apiData!.pools.filter(pool =>
+      pool.reserves.every(reserve => reserve.balance !== "0")
+    );
+    const relaysByLiqDepth = this.relays
+      .sort(sortByLiqDepth)
+      .filter(relay =>
+        relaysWithBalances.some(r => compareString(relay.id, r.pool_dlt_id))
+      );
     const winningRelays = uniqWith(relaysByLiqDepth, compareRelayByReserves);
 
     const relaysWithConverterAddress = winningRelays.map(relay => {
