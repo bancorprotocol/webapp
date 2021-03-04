@@ -69,7 +69,8 @@ import {
   findChangedReserve,
   LockedBalance,
   rewindBlocksByDays,
-  buildPoolNameFromReserves
+  buildPoolNameFromReserves,
+  calculatePercentageChange
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import { ethErc20WrapperContract, ethReserveAddress } from "@/api/eth/ethAbis";
