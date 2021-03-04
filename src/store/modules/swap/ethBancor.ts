@@ -72,7 +72,8 @@ import {
   LockedBalance,
   rewindBlocksByDays,
   calculateProgressLevel,
-  buildPoolNameFromReserves
+  buildPoolNameFromReserves,
+  calculatePercentageChange
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import { ethErc20WrapperContract, ethReserveAddress } from "@/api/eth/ethAbis";
@@ -1469,6 +1470,7 @@ export class EthBancorModule
   get stats() {
     const apiData = this.apiData!;
     const bntUsdPrice = Number(apiData.bnt_price.usd);
+    const bntPrice24Change = calculatePercentageChange(bntUsdPrice, Number(apiData.bnt_price_24h_ago.usd))
     const bntSupply = this.bntSupply;
 
     const { pools, tokens } = apiData;
@@ -1514,7 +1516,8 @@ export class EthBancorModule
       },
       twentyFourHourTradeCount: apiData.swaps.length,
       totalVolume24h,
-      bntUsdPrice
+      bntUsdPrice,
+      bntPrice24Change
     };
   }
 
