@@ -44,7 +44,7 @@
         />
         <multi-input-field
           class="mb-3"
-          @input="onDiscourseInput"
+          @input="onRateInput"
           type="url"
           :placeholder="rate"
           :append="$t('defined_rate')"
@@ -128,7 +128,7 @@ import { i18n } from "@/i18n";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import { ViewToken } from "@/types/bancor";
+import { ViewAmount, ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
 import numeral from "numeral";
@@ -304,9 +304,40 @@ export default class SwapAction extends BaseComponent {
   }
 
   async initConvert() {
-    if (this.currentUser) this.modal = true;
+    if (this.currentUser && !this.limit) {
+      this.modal = true;
+    } else if (this.currentUser && this.limit) {
+      vxm.ethBancor.createOrder({
+        expiryDuration: 3600,
+        from: {
+          id: this.token1.id,
+          amount: this.amount1
+        },
+        to: {
+          id: this.token2.id,
+          amount: "0.2"
+        }
+      });
+    }
     //@ts-ignore
     else await this.promptAuth();
+  }
+
+  lastReturn: { from: ViewAmount; to: ViewAmount } = {
+    from: {
+      id: "",
+      amount: ""
+    },
+    to: {
+      id: "",
+      amount: ""
+    }
+  };
+
+  isSmallerThanLastReturn() {}
+
+  async onRateInput(rateInput: string) {
+    console.log("rate input", rateInput);
   }
 
   async updatePriceReturn(amount: string) {
@@ -316,13 +347,23 @@ export default class SwapAction extends BaseComponent {
     }
     try {
       this.rateLoading = true;
-      const reward = await vxm.bancor.getReturn({
+
+      const returnAmount = {
         from: {
           id: this.token1.id,
           amount: this.amount1
         },
         toId: this.token2.id
-      });
+      };
+
+      const reward = await vxm.bancor.getReturn(returnAmount);
+      this.lastReturn = {
+        ...returnAmount,
+        to: {
+          id: returnAmount.toId,
+          amount: reward.amount
+        }
+      };
       if (reward.slippage) {
         this.slippage = reward.slippage;
       } else {

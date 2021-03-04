@@ -6483,7 +6483,7 @@ export class EthBancorModule
     const now = dayjs().unix();
     const expiry = new BigNumber(now + expiryDuration);
 
-    const randomHex = web3.utils.randomHex(32);
+    const randomHex = web3.utils.randomHex(6);
     const randomNumber = web3.utils.hexToNumber(randomHex);
     const randomBigNumber = new BigNumber(randomNumber);
 
@@ -6494,7 +6494,7 @@ export class EthBancorModule
       expandToken(to.amount, toToken.precision)
     );
 
-    const order = createOrder({
+    const orderData = {
       fromAddress: from.id,
       toAddress: to.id,
       fromAmountWei,
@@ -6502,7 +6502,13 @@ export class EthBancorModule
       currentUser,
       expiry,
       salt: randomBigNumber
-    });
+    };
+
+    console.log(orderData, "was the order data");
+
+    const order = createOrder(orderData);
+
+    console.log({ order });
 
     const signature = await order.getSignatureWithProviderAsync(
       // @ts-ignore
