@@ -7079,8 +7079,6 @@ export class EthBancorModule
     const checkMultiplePaths =
       moreThanOneReserveOut && !onlyOneHopNeeded && !fromIsBnt;
 
-    console.log({ checkMultiplePaths });
-
     if (checkMultiplePaths) {
       const fromSymbol = findOrThrow(
         this.apiData!.tokens,
