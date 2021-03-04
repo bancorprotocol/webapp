@@ -6955,7 +6955,9 @@ export class EthBancorModule
         web3: w3
       });
     } catch (e) {
-      throw new Error(`Threw getting return by path ${e}`);
+      throw new Error(
+        `Threw getting return by path ${JSON.stringify(e)} ${path}`
+      );
     }
   }
 
@@ -7105,14 +7107,21 @@ export class EthBancorModule
             returnResult: await this.getReturnByPath({
               path,
               amount: fromWei
-            }),
+            }).catch(() => false),
             path,
             relays: relayPath
           };
         })
       );
 
-      const sortedReturns = results.sort((a, b) =>
+      const passedResults = results
+        .filter(res => res.returnResult)
+        .map(res => ({ ...res, returnResult: res.returnResult as string }));
+
+      if (passedResults.length == 0)
+        throw new Error(`Failed finding a path between tokens`);
+
+      const sortedReturns = passedResults.sort((a, b) =>
         new BigNumber(b.returnResult).lt(a.returnResult) ? -1 : 1
       );
       const bestReturn = sortedReturns[0];
