@@ -1470,7 +1470,10 @@ export class EthBancorModule
   get stats() {
     const apiData = this.apiData!;
     const bntUsdPrice = Number(apiData.bnt_price.usd);
-    const bntPrice24Change = calculatePercentageChange(bntUsdPrice, Number(apiData.bnt_price_24h_ago.usd))
+    const bntPrice24Change = calculatePercentageChange(
+      bntUsdPrice,
+      Number(apiData.bnt_price_24h_ago.usd)
+    );
     const bntSupply = this.bntSupply;
 
     const { pools, tokens } = apiData;
@@ -2864,8 +2867,9 @@ export class EthBancorModule
     const txRes = await Promise.all(
       chunked.map(arr => {
         const first = arr[0].index;
+        const second = first + 50;
         return this.resolveTxOnConfirmation({
-          tx: contract.methods.claimBalance(String(first), String(50))
+          tx: contract.methods.claimBalance(String(first), String(second))
         });
       })
     );
