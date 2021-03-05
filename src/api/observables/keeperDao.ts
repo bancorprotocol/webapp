@@ -132,6 +132,29 @@ export const limitOrders$ = combineLatest([onLogin$, oneMinute$]).pipe(
   pluck("orders")
 );
 
+const goodOrder2 = [
+  {
+    signature: {
+      r: "0xdc74f3f8160b4b593ed2509b43cf3e79ec328b8b58f42927ce38775bfde54ff7",
+      s: "0x533520e294134c9b1ac8dea446b062a78a729527f8f0c964532a8549059be11f",
+      v: 28,
+      signatureType: 2
+    },
+    makerToken: "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
+    takerToken: "0x6b175474e89094c44da98b954eedeac495271d0f",
+    txOrigin: "0xbd49a97300e10325c78d6b4ec864af31623bb5dd",
+    maker: "0xcf057a4ce6d27da5f0320d4e2a5b3deaf608971c",
+    taker: "0x0000000000000000000000000000000000000000",
+    makerAmount: "1189",
+    takerAmount: "8117",
+    pool: "0x000000000000000000000000000000000000000000000000000000000000002d",
+    expiry: 1614900836,
+    salt: "1614900236158000",
+    chainId: 1,
+    verifyingContract: "0xdef1c0ded9bec7f1a1670819833240f027b25eff"
+  }
+];
+
 const goodOrder = [
   {
     signature: {
