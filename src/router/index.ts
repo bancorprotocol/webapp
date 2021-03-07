@@ -157,10 +157,10 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/protection/whitelistedpools",
+      path: "/:service/portfolio/whitelistedpools",
       name: "WhitelistedPools",
       meta: {
-        key: "protection"
+        key: "portfolio"
       },
       components: {
         Nav: Navigation,
@@ -168,14 +168,14 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/protection/stake",
+      path: "/:service/portfolio/stake",
       components: {
         Nav: Navigation,
         Hero: ProtectionActions
       },
       props: true,
       meta: {
-        key: "protection"
+        key: "portfolio"
       },
       children: [
         {

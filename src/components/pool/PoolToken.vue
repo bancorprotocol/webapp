@@ -11,25 +11,52 @@
       :filter="search"
       :hidePagination="true"
     >
-      <template #cell(name)="{ value }">
+      <template #cell(relay)="{ value }">
         <pool-logos :pool="value" :cursor="false" />
       </template>
 
-      <template #cell(amount)="{ value }">
+      <template #cell(smartTokenAmount)="{ value }">
         {{ prettifyNumber(value) }}
       </template>
 
-      <template #cell(value)="{ value }">
-        {{ prettifyNumber(value, true) }}
+      <template #cell(value)="{ item }">
+        {{ prettifyNumber(item.smartTokenAmount * 2, true) }}
       </template>
 
-      <template #cell(reserve_breakdown)="{ value }">
-        {{ prettifyNumber(value) }}
+      <template #cell(reserve_breakdown)="{ item }">
+        <span>
+          <img
+            :key="item.relay.reserves[0].id"
+            class="img-avatar img-avatar32 border-colouring bg-white mr-1"
+            :src="item.relay.reserves[0].logo"
+            :alt="$t('token_logo')"
+          />
+          {{
+            `${item.relay.reserves[0].symbol} ${prettifyNumber(
+              item.relay.reserves[0].reserveWeight * item.smartTokenAmount
+            )} + `
+          }}
+          <img
+            :key="item.relay.reserves[1].id"
+            class="img-avatar img-avatar32 border-colouring bg-white mr-1"
+            :src="item.relay.reserves[1].logo"
+            :alt="$t('token_logo')"
+          />
+          {{
+            `${item.relay.reserves[1].symbol} ${prettifyNumber(
+              item.relay.reserves[1].reserveWeight * item.smartTokenAmount
+            )}`
+          }}
+        </span>
       </template>
 
-      <template #cell(actions)="{}">
-        <b-btn variant="primary" class="table-button mr-3">
-          {{ $t("protect") }}
+      <template #cell(actions)="{ item }">
+        <b-btn
+          variant="primary"
+          class="table-button mr-3"
+          @click="add(item.relay)"
+        >
+          {{ $t("add") }}
         </b-btn>
 
         <b-btn
@@ -47,7 +74,7 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
-import { ViewTableField } from "@/types/bancor";
+import { ViewRelay, ViewTableField } from "@/types/bancor";
 import DataTable from "@/components/common/DataTable.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
@@ -64,6 +91,7 @@ export default class PoolToken extends BaseComponent {
   search = "";
 
   get items() {
+    console.log("vxm.bancor.poolTokenPositions", vxm.bancor.poolTokenPositions);
     return vxm.bancor.poolTokenPositions;
   }
 
@@ -72,36 +100,51 @@ export default class PoolToken extends BaseComponent {
       {
         id: 1,
         label: i18n.tc("name"),
-        key: "name",
+        key: "relay",
         minWidth: "170px"
       },
       {
         id: 2,
         label: i18n.tc("amount"),
-        key: "amount",
-        minWidth: "200px"
+        key: "smartTokenAmount",
+        minWidth: "150px"
       },
       {
         id: 3,
         label: i18n.tc("value"),
         key: "value",
-        minWidth: "200px"
+        minWidth: "150px"
       },
       {
         id: 4,
         label: i18n.tc("reserve_breakdown"),
         key: "reserve_breakdown",
-        minWidth: "80px"
+        minWidth: "335px",
+        maxWidth: "335px"
       },
       {
         id: 5,
         label: "",
         key: "actions",
         sortable: false,
-        minWidth: "350px",
-        maxWidth: "350px"
+        minWidth: "325px",
+        maxWidth: "325px"
       }
     ];
+  }
+
+  add(pool: ViewRelay) {
+    if (pool && pool.addProtectionSupported) {
+      this.$router.push({
+        name: "AddProtectionSingle",
+        params: { id: pool!.id }
+      });
+    } else {
+      this.$router.push({
+        name: "PoolAction",
+        params: { poolAction: "add", account: pool!.id }
+      });
+    }
   }
 }
 </script>

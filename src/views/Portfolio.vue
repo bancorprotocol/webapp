@@ -14,7 +14,6 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { vxm } from "@/store";
 import ProtectionHome from "@/components/protection/ProtectionHome.vue";
 import PoolHome from "@/components/pool/PoolHome.vue";
 
