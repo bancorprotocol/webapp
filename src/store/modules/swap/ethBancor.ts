@@ -43,7 +43,6 @@ import {
   ViewReserve,
   RegisteredContracts
 } from "@/types/bancor";
-import { ethBancorApi } from "@/api/bancorApiWrapper";
 import {
   Relay,
   Token,
@@ -5069,52 +5068,10 @@ export class EthBancorModule
     };
   }
 
-  @action async warmEthApi() {
-    const tokens = await ethBancorApi.getTokens();
-    this.setBancorApiTokens(tokens);
-    return tokens;
-  }
-
   @action async addPossiblePropsFromBancorApi(
     reserveFeeds: ReserveFeed[]
   ): Promise<ReserveFeed[]> {
-    try {
-      const tokens = this.bancorApiTokens;
-      if (!tokens || tokens.length == 0) {
-        return reserveFeeds;
-        // throw new Error("There are no cached Bancor API tokens.");
-      }
-      const [bancorCovered, notCovered] = partition(reserveFeeds, feed => {
-        const inDictionary = ethBancorApiDictionary.find(
-          matchReserveFeed(feed)
-        );
-        if (!inDictionary) return false;
-        return tokens.some(token => token.id == inDictionary.tokenId);
-      });
-
-      const newBancorCovered = bancorCovered.map(reserveFeed => {
-        const dictionary = findOrThrow(
-          ethBancorApiDictionary,
-          matchReserveFeed(reserveFeed)
-        );
-        const tokenPrice = findOrThrow(
-          tokens,
-          token => token.id == dictionary.tokenId
-        );
-
-        return {
-          ...reserveFeed,
-          change24H: tokenPrice.change24h,
-          volume24H: tokenPrice.volume24h.USD,
-          costByNetworkUsd: reserveFeed.costByNetworkUsd || tokenPrice.price
-        };
-      });
-
-      return [...newBancorCovered, ...notCovered];
-    } catch (e) {
-      console.error(`Failed utilising Bancor API: ${e.message}`);
-      return reserveFeeds;
-    }
+    return reserveFeeds;
   }
 
   @action async updateRelayFeeds(suggestedFeeds: ReserveFeed[]) {
@@ -5989,8 +5946,6 @@ export class EthBancorModule
     web3.eth
       .getBlockNumber()
       .then(number => currentBlockReceiver$.next(number));
-
-    this.warmEthApi();
 
     currentBlock$
       .pipe(firstItem())
