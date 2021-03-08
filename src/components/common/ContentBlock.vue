@@ -66,6 +66,7 @@
       <div v-if="searchInput !== null" class="float-right">
         <multi-input-field
           v-model="searchInput"
+          :clear="true"
           :placeholder="$t('search')"
           prepend="search"
         />

@@ -27,13 +27,23 @@
         :type="type"
         :style="styleInput"
       />
-      <b-input-group-append v-if="append">
+      <b-input-group-append v-if="append || clear">
         <div
-          class="rounded-right d-flex align-items-center pr-3 pl-2 font-size-12 font-w500"
+          class="rounded-right d-flex align-items-center pr-2 pl-2 font-size-12 font-w500"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
           :style="styleAppend"
         >
-          {{ append }}
+          <div v-if="append" class="pr-2">
+            {{ append }}
+          </div>
+          <font-awesome-icon
+            v-if="clear && text"
+            class="cursor"
+            @click="clearText"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            icon="times"
+          />
+          <div v-else style="min-width: 8.25px"></div>
         </div>
       </b-input-group-append>
     </b-input-group>
@@ -58,13 +68,14 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: 32 }) height!: number;
   @Prop() append?: string;
   @Prop() prepend?: string;
+  @Prop({ default: false }) clear!: boolean;
 
   get styleInput() {
     const height = "height: " + this.height + "px;";
     const borderRight = "border-right: 0 !important;";
     const borderLeft = "border-left: 0 !important;";
     let border = "";
-    if (this.append) border += borderRight;
+    if (this.append || this.clearText) border += borderRight;
     if (this.prepend) border += borderLeft;
     return height + border;
   }
@@ -85,6 +96,10 @@ export default class MultiInputField extends BaseComponent {
     if (this.fontSize === "sm") return "font-size-12";
     else if (this.fontSize === "md") return "font-size-14";
     else return "font-size-16";
+  }
+
+  clearText() {
+    this.text = "";
   }
 }
 </script>
