@@ -11,36 +11,67 @@
           style="width: 60px; height: 60px"
         >
           <font-awesome-icon
-            v-if="icon"
-            :icon="icon"
+            v-if="iconName"
+            :icon="iconName"
             class="text-white"
             size="2x"
           />
         </div>
       </div>
 
-      <div class="font-size-20 font-w600 mb-4">
-        {{ title }}
+      <div class="font-size-20 font-w600 mb-3">
+        {{ titleMsg }}
       </div>
 
-      <slot />
+      <slot
+        v-if="
+          txMetaData.prompt &&
+          txMetaData.prompt.questions[0].label === 'confirm'
+        "
+      />
+      <div
+        v-else-if="
+          txMetaData.prompt && txMetaData.prompt.questions.length === 2
+        "
+        class="font-size-14"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
+        Before you can proceed, you need to<br />
+        approve your spending amount.
+      </div>
 
-      <div v-if="txMetaData.prompt" class="d-flex flex-column mt-2">
-        <b-btn
-          @click="selectedPromptReceiver(question.id)"
-          v-for="(question, index) in txMetaData.prompt.questions"
-          :key="question.id"
-          class="mt-2 rounded py-2"
-          :variant="
-            index + 1 === txMetaData.prompt.questions.length
-              ? 'primary'
-              : darkMode
-              ? 'outline-gray-dark'
-              : 'outline-gray'
-          "
-        >
-          {{ question.label }}
-        </b-btn>
+      <div v-if="txMetaData.prompt" class="d-block mt-3">
+        <div v-for="question in txMetaData.prompt.questions" :key="question.id">
+          <b-btn
+            v-if="question.label === 'unlimited'"
+            @click="selectedPromptReceiver(question.id)"
+            class="mt-2 rounded py-2 btn-block"
+            variant="primary"
+          >
+            Approve
+          </b-btn>
+          <div
+            v-if="question.label === 'limited'"
+            class="font-size-12 mt-3"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            <div>Want to approve before each transaction?</div>
+            <span
+              @click="selectedPromptReceiver(question.id)"
+              class="font-w500 cursor"
+            >
+              <u>Approve limited permission</u>
+            </span>
+          </div>
+          <b-btn
+            v-if="question.label === 'confirm'"
+            @click="selectedPromptReceiver(question.id)"
+            class="mt-2 rounded py-2 btn-block"
+            variant="primary"
+          >
+            Confirm
+          </b-btn>
+        </div>
       </div>
     </div>
     <action-modal-status
@@ -80,6 +111,20 @@ export default class ModalTxAction extends BaseComponent {
       this.txMetaData.success ||
       this.txMetaData.txError
     );
+  }
+
+  get showApprovalOptions() {
+    return (
+      this.txMetaData.prompt && this.txMetaData.prompt.questions.length === 2
+    );
+  }
+
+  get titleMsg() {
+    return this.showApprovalOptions ? "Approve" : this.title;
+  }
+
+  get iconName() {
+    return this.showApprovalOptions ? "lock" : this.icon;
   }
 
   selectedPromptReceiver(id: string) {
