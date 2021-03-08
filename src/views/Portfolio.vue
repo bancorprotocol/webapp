@@ -4,7 +4,7 @@
       <b-tab :title="$t('liquidity_protection')" active>
         <protection-home />
       </b-tab>
-      <b-tab :title="$t('pool_token')">
+      <b-tab :title="$t('pool_token')" v-if="hasPositions">
         <pool-home />
       </b-tab>
     </b-tabs>
@@ -14,6 +14,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { vxm } from "@/store";
 import ProtectionHome from "@/components/protection/ProtectionHome.vue";
 import PoolHome from "@/components/pool/PoolHome.vue";
 
@@ -23,7 +24,11 @@ import PoolHome from "@/components/pool/PoolHome.vue";
     PoolHome
   }
 })
-export default class Portfolio extends BaseComponent {}
+export default class Portfolio extends BaseComponent {
+  get hasPositions() {
+    return vxm.bancor.poolTokenPositions.length > 0;
+  }
+}
 </script>
 
 <style lang="scss"></style>
