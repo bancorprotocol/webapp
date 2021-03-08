@@ -14,7 +14,6 @@ jobs:
       - name: Install Dependencies
         run: |
           npm config set '//npm.fontawesome.com/:_authToken' "${{ secrets.FONT_AWESOME_PRO_TOKEN }}"
-          npm ci
           yarn
       - name: Build
         env:
