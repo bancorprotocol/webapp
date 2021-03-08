@@ -14,7 +14,9 @@ jobs:
         with:
           ref: staging
       - name: Install Dependencies
-        run: yarn
+        run: |
+          npm config set '//npm.fontawesome.com/:_authToken' "${{ secrets.FONT_AWESOME_PRO_TOKEN }}"
+          yarn
       - name: Build
         env:
           VUE_APP_I18N_LOCALE: "en"
