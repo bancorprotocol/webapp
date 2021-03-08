@@ -104,7 +104,7 @@
       </gray-border-block>
 
       <p
-        class="font-size-12 my-3"
+        class="font-size-12 my-3 text-left pl-3"
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
       >
         {{
