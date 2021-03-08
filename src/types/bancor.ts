@@ -258,6 +258,7 @@ export interface ViewToken {
   volume24h?: number;
   balance?: string;
   precision: number;
+  tradeSupported: boolean;
 }
 
 export interface TokenWithLogo extends AgnosticToken {
@@ -321,6 +322,7 @@ export interface ViewRelay {
   reserves: ViewReserve[];
   addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
+  tradeSupported: boolean;
   removeLiquiditySupported: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;
@@ -484,7 +486,7 @@ export interface ReserveFeed {
   priority: number;
 }
 
-interface LiquidityHistory {
+export interface LiquidityHistory {
   loading: boolean;
   data: ViewLiquidityEvent<ViewTradeEvent>[];
 }
@@ -504,6 +506,7 @@ export interface LiquidityModule {
     twentyFourHourTradeCount: number;
     totalVolume24h: number;
     bntUsdPrice?: number;
+    bntPrice24Change?: number;
     stakedBntPercent?: number;
     totalPoolCount?: number;
     totalTokenCount?: number;

@@ -78,7 +78,7 @@
       v-if="focusedReserveIsDisabled"
       variant="error"
       :msg="
-        disabledReserves.length > 1
+        bothReservesAreDisabled
           ? $t('pool_not_accepting')
           : $t(`available_reserve_only`, { symbol: opposingTokenSymbol })
       "
@@ -120,6 +120,7 @@
     </gray-border-block>
 
     <price-deviation-error
+      v-if="!bothReservesAreDisabled"
       v-model="priceDeviationTooHigh"
       :pool-id="pool.id"
       :token-contract="token.contract"
@@ -195,6 +196,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import BaseComponent from "@/components/BaseComponent.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
+import wait from "waait";
 
 @Component({
   components: {
@@ -286,6 +288,10 @@ export default class AddProtectionSingle extends BaseComponent {
     return this.disabledReserves.some(reserveId =>
       compareString(reserveId, this.token.id)
     );
+  }
+
+  get bothReservesAreDisabled() {
+    return this.disabledReserves.length > 1;
   }
 
   get opposingReserveIsDisabled() {
@@ -489,6 +495,7 @@ export default class AddProtectionSingle extends BaseComponent {
     this.loading = true;
     try {
       await Promise.all([
+        wait(1000),
         this.fetchAndSetMaxStakes(this.pool.id),
         this.fetchAndSetDisabledReserves(this.pool.id)
       ]);
