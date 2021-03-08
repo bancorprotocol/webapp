@@ -93,13 +93,13 @@
         <span
           class="font-size-12"
           :class="darkMode ? 'text-muted-dark' : 'text-muted'"
-          v-text="`~${percentage}% of your protected position`"
+          v-text="`${percentage}% of your protected position`"
         />
         <div
           v-if="expectedValue"
           class="font-size-14 font-w500 mb-1"
           v-text="
-            `${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
+            `~${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
           "
         />
       </gray-border-block>
