@@ -162,12 +162,6 @@ export default class PoolActionsRemoveV1 extends BaseComponent {
         this.error = i18n.tc("failed_calculate_withdraw");
         return;
       }
-      if (
-        this.balance1.isLessThan(amount) ||
-        this.balance2.isLessThan(opposingAmount)
-      ) {
-        this.error = i18n.tc("insufficient_token");
-      }
     } catch (e) {
       this.error = e.message;
     }
