@@ -60,6 +60,9 @@ export interface LockedBalance {
   expirationTime: number;
 }
 
+export const buildRange = (count: number): number[] =>
+  [...new Array(count)].map((_, index) => index);
+
 export const traverseLockedBalances = async (
   contract: string,
   owner: string,
@@ -250,7 +253,7 @@ export const calculateProgressLevel = (
 export const calculatePercentageChange = (
   numberNow: number,
   numberBefore: number
-):number  => {
+): number => {
   return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
 };
 
