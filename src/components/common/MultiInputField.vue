@@ -33,16 +33,17 @@
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
           :style="styleAppend"
         >
-          <div v-if="append">
+          <div v-if="append" class="pr-2">
             {{ append }}
           </div>
           <font-awesome-icon
             v-if="clear && text"
             class="cursor"
-            :class="darkMode ? 'text-dark' : 'text-light'"
             @click="clearText"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             icon="times"
           />
+          <div v-else style="min-width: 8.25px"></div>
         </div>
       </b-input-group-append>
     </b-input-group>
