@@ -37,7 +37,7 @@
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         Before you can proceed, you need to<br />
-        approve your spending amount.
+        approve your token spending amount.
       </div>
 
       <div v-if="txMetaData.prompt" class="d-block mt-3">
@@ -48,7 +48,7 @@
             class="mt-2 rounded py-2 btn-block"
             variant="primary"
           >
-            Approve
+            Approve Token
           </b-btn>
           <div
             v-if="question.label === 'limited'"
