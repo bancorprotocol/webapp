@@ -124,7 +124,7 @@ export default class ModalTxAction extends BaseComponent {
   }
 
   get iconName() {
-    return this.showApprovalOptions ? "lock" : this.icon;
+    return this.showApprovalOptions ? "unlock" : this.icon;
   }
 
   selectedPromptReceiver(id: string) {
