@@ -14,7 +14,7 @@
     <alert-block
       v-if="priceDeviationTooHigh && !inputError"
       variant="error"
-      class="mb-3"
+      class="mb-3 mt-3"
       msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few minutes."
     />
 
@@ -121,7 +121,7 @@
       </div>
 
       <p
-        class="font-size-12 my-3"
+        class="font-size-12 my-3 text-left pl-3"
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
       >
         {{ outputInfo }}
