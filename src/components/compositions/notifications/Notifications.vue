@@ -11,7 +11,7 @@
     >
       <template #button-content>
         <font-awesome-icon
-          v-if="!pendingQueue.length"
+          v-if="pendingQueue.length == 0"
           icon="bell"
           fixed-width
         />
