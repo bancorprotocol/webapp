@@ -58,6 +58,7 @@ export const groupPositionsArray = (
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
         item.pendingReserveReward = val.pendingReserveReward;
+        item.rewardsMultiplier = val.rewardsMultiplier;
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
@@ -93,6 +94,7 @@ export const groupPositionsArray = (
         }
 
         const sumFullyProtectedWithRewardUSD =
+
           Number(sumFullyProtectedWithReward) * val.reserveTokenPrice;
 
         const sumProtectedWithRewardUSD =
