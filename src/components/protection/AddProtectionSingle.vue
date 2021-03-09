@@ -68,7 +68,7 @@
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
-          :label="index == 0 ? $t('value_receive') : ''"
+          :label="index === 0 ? $t('value_receive') : ''"
           :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
         />
       </div>
@@ -78,14 +78,18 @@
       v-if="focusedReserveIsDisabled"
       variant="error"
       :msg="
-        disabledReserves.length > 1
+        bothReservesAreDisabled
           ? $t('pool_not_accepting')
           : $t(`available_reserve_only`, { symbol: opposingTokenSymbol })
       "
       class="mt-3 mb-3"
     />
 
-    <gray-border-block :gray-bg="true" class="my-3">
+    <gray-border-block
+      :gray-bg="true"
+      class="my-3"
+      v-if="!focusedReserveIsDisabled"
+    >
       <label-content-split
         :label="$t('space_available')"
         :loading="loading"
@@ -98,7 +102,11 @@
         }}</span>
       </label-content-split>
       <label-content-split
-        v-if="amountToMakeSpace"
+        v-if="
+          amountToMakeSpace &&
+          !opposingReserveIsDisabled &&
+          !focusedReserveIsDisabled
+        "
         class="mt-2"
         :label="
           $t('needed_open_space', { bnt: bnt.symbol, tkn: otherTkn.symbol })
@@ -112,6 +120,7 @@
     </gray-border-block>
 
     <price-deviation-error
+      v-if="!bothReservesAreDisabled"
       v-model="priceDeviationTooHigh"
       :pool-id="pool.id"
       :token-contract="token.contract"
@@ -121,44 +130,31 @@
 
     <main-button
       :label="actionButtonLabel"
-      @click="openModal"
+      @click="initStake"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
     />
 
-    <modal-base
-      :title="`${$t('staking_protecting')}:`"
-      v-model="modal"
-      @input="setDefault"
+    <modal-tx-action
+      title="Confirm Stake & Protect"
+      icon="coins"
+      :tx-meta.sync="txMeta"
+      redirect-on-success="LiqProtection"
     >
-      <b-row v-if="!(txBusy || success || error)">
-        <b-col cols="12" class="text-center mb-3">
-          <span
-            class="font-size-24 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ `${prettifyNumber(amount)} ${token.symbol}` }}
-          </span>
-        </b-col>
-      </b-row>
-
-      <action-modal-status
-        v-else
-        :error="error"
-        :success="success"
-        :step-description="currentStatus"
-      />
-
-      <main-button
-        @click="initAction"
-        class="mt-3"
-        :label="modalConfirmButton"
-        :active="true"
-        :large="true"
-        :disabled="txBusy"
-      />
-    </modal-base>
+      <gray-border-block>
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          You are staking and protecting
+        </span>
+        <div
+          class="font-w500 font-size-14"
+          v-text="`${prettifyNumber(amount)} ${token.symbol}`"
+        />
+      </gray-border-block>
+    </modal-tx-action>
   </div>
 </template>
 
@@ -166,7 +162,7 @@
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { Step, TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
+import { ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import BigNumber from "bignumber.js";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -174,26 +170,21 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { compareString, findOrThrow, formatUnixTime } from "@/api/helpers";
 import MainButton from "@/components/common/Button.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import ModalBase from "@/components/modals/ModalBase.vue";
 import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
-import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
-import {
-  addNotification,
-  ENotificationStatus
-} from "@/components/compositions/notifications";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import wait from "waait";
 
 @Component({
   components: {
     PriceDeviationError,
     ModalPoolSelect,
-    ActionModalStatus,
+    ModalTxAction,
     PoolLogos,
-    ModalBase,
     AlertBlock,
     LabelContentSplit,
     GrayBorderBlock,
@@ -201,7 +192,7 @@ import {
     MainButton
   }
 })
-export default class AddProtectionSingle extends BaseComponent {
+export default class AddProtectionSingle extends BaseTxAction {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
@@ -216,14 +207,8 @@ export default class AddProtectionSingle extends BaseComponent {
 
   amount: string = "";
 
-  modal = false;
   poolSelectModal = false;
 
-  txBusy = false;
-  success: TxResponse | string | null = null;
-  error = "";
-  sections: Step[] = [];
-  stepIndex = 0;
   preTxError = "";
   outputs: ViewAmountDetail[] = [];
 
@@ -279,6 +264,16 @@ export default class AddProtectionSingle extends BaseComponent {
     );
   }
 
+  get bothReservesAreDisabled() {
+    return this.disabledReserves.length > 1;
+  }
+
+  get opposingReserveIsDisabled() {
+    return this.disabledReserves.some(reserveId =>
+      compareString(reserveId, this.opposingToken ? this.opposingToken.id : "")
+    );
+  }
+
   get pools() {
     return vxm.bancor.relays.filter(x => x.whitelisted);
   }
@@ -309,7 +304,7 @@ export default class AddProtectionSingle extends BaseComponent {
     if (!this.amount) return true;
     else if (this.priceDeviationTooHigh) return true;
     else if (this.loading) return true;
-    else return this.inputError ? true : false;
+    else return !!this.inputError;
   }
 
   get inputError() {
@@ -331,61 +326,27 @@ export default class AddProtectionSingle extends BaseComponent {
     return { show, msg };
   }
 
-  get modalConfirmButton() {
-    return this.error
-      ? i18n.t("close")
-      : this.success
-      ? i18n.t("close")
-      : this.txBusy
-      ? `${i18n.t("processing")}...`
-      : i18n.t("confirm");
-  }
+  async initStake() {
+    this.openModal();
 
-  async initAction() {
-    if (this.success) {
-      this.setDefault();
-      this.modal = false;
-      this.$router.push({ name: "LiqProtection" });
-      return;
-    } else if (this.error || this.inputError) {
-      this.modal = false;
-      this.setDefault();
-      return;
-    }
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
 
-    this.txBusy = true;
     try {
-      const txRes = await vxm.ethBancor.addProtection({
+      this.txMeta.success = await vxm.ethBancor.addProtection({
         poolId: this.pool.id,
         reserveAmount: {
           id: this.token.id,
           amount: this.amount
         },
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
       });
-      this.success = txRes;
-      addNotification(
-        "Add Single-Sided Liquidity",
-        `Add ${this.prettifyNumber(this.amount)} ${this.token.symbol} to ${
-          this.pool.name
-        } pool,`,
-        undefined,
-        txRes.txId
-      );
       this.amount = "";
     } catch (e) {
-      this.error = e.message;
-      addNotification(
-        "Add Single-Sided Liquidity",
-        e.message,
-        ENotificationStatus.error,
-        undefined,
-        undefined,
-        true
-      );
-      this.modal = false;
+      this.txMeta.txError = e.message;
     } finally {
-      this.txBusy = false;
+      this.txMeta.txBusy = false;
     }
   }
 
@@ -399,11 +360,14 @@ export default class AddProtectionSingle extends BaseComponent {
       });
       this.outputs = res.outputs;
 
-      const errorMsg = `${this.token.symbol} limit reached. Additional ${
-        this.opposingToken!.symbol
-      } liquidity should be staked to allow for ${
-        this.token.symbol
-      } single-sided staking.`;
+      const errorMsg = this.opposingReserveIsDisabled
+        ? i18n.tc("wait_until_space_opens", 0, {
+            token: this.token.symbol
+          })
+        : i18n.tc("limit_reached", 0, {
+            token: this.token.symbol,
+            opposingToken: this.opposingToken!.symbol
+          });
 
       if (res.error) {
         this.preTxError =
@@ -418,32 +382,8 @@ export default class AddProtectionSingle extends BaseComponent {
     }
   }
 
-  async openModal() {
-    if (this.currentUser) this.modal = true;
-    // @ts-ignore
-    else await this.promptAuth();
-  }
-
   openPoolSelectModal() {
     this.poolSelectModal = true;
-  }
-
-  setDefault() {
-    this.sections = [];
-    this.error = "";
-    this.success = null;
-  }
-
-  get currentStatus() {
-    if (this.sections.length) {
-      return this.sections[this.stepIndex].description;
-    }
-    return undefined;
-  }
-
-  onUpdate(index: number, steps: any[]) {
-    this.sections = steps;
-    this.stepIndex = index;
   }
 
   async loadRecentAverageRate() {
@@ -479,8 +419,7 @@ export default class AddProtectionSingle extends BaseComponent {
   }
 
   async fetchAndSetDisabledReserves(poolId: string) {
-    const disabledReserves = await vxm.ethBancor.fetchDisabledReserves(poolId);
-    this.disabledReserves = disabledReserves;
+    this.disabledReserves = await vxm.ethBancor.fetchDisabledReserves(poolId);
   }
 
   async load() {
@@ -488,6 +427,7 @@ export default class AddProtectionSingle extends BaseComponent {
     this.loading = true;
     try {
       await Promise.all([
+        wait(1000),
         this.fetchAndSetMaxStakes(this.pool.id),
         this.fetchAndSetDisabledReserves(this.pool.id)
       ]);

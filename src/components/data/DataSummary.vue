@@ -1,7 +1,11 @@
 <template>
   <b-row>
     <b-col cols="12">
-      <content-block :title="$t('statistics')" :shadow-light="true">
+      <content-block
+        :title="$t('statistics')"
+        :shadow-light="true"
+        :rippleAnimation="true"
+      >
         <statistics class="mt-3" />
       </content-block>
     </b-col>

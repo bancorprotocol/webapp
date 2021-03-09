@@ -76,8 +76,17 @@ export interface MinimalRelay {
   reserves: TokenSymbol[];
 }
 
-export const generateEthPath = (from: string, relays: MinimalRelay[]) =>
-  relays.reduce<{ lastSymbol: string; path: string[] }>(
+export interface MinimalPool {
+  anchorAddress: string;
+  converterAddress: string;
+  reserves: string[];
+}
+
+export const generateEthPath = (from: string, relays: MinimalRelay[]) => {
+  if (!Array.isArray(relays))
+    throw new Error("Array was not passed to generate eth");
+  if (typeof from !== "string") throw new Error("From Symbol must be passed");
+  return relays.reduce<{ lastSymbol: string; path: string[] }>(
     (acc, item) => {
       const destinationSymbol = item.reserves.find(
         reserve => reserve.symbol !== acc.lastSymbol
@@ -94,3 +103,4 @@ export const generateEthPath = (from: string, relays: MinimalRelay[]) =>
       ]
     }
   ).path;
+};

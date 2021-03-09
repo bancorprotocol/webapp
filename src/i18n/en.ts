@@ -355,5 +355,8 @@ export const en = {
   rewards_ended: "Rewards ended",
   withdraw_reset:
     "Withdrawing will reset your rewards multiplier for all active positions back to x1",
-  pool_not_accepting: "This pool is not accepting additional liquidity."
+  pool_not_accepting: "This pool is not accepting additional liquidity.",
+  wait_until_space_opens:
+    "{token} limit reached. Please wait until some space opens up.",
+  data_refreshes_auto: "Data refreshes automatically"
 };

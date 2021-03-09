@@ -1,6 +1,6 @@
 import axios from "axios";
 import parse from "csv-parse/lib/sync";
-import { RawRow, HistoryRow } from "@/types/bancor.d.ts";
+import { RawRow, HistoryRow } from "@/types/bancor";
 
 const baseUrl = "https://zumzoom.github.io/analytics/";
 

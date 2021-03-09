@@ -33,7 +33,6 @@ import {
   ViewLiquidityEvent,
   ViewReserve
 } from "@/types/bancor";
-import { bancorApi, ethBancorApi } from "@/api/bancorApiWrapper";
 import {
   fetchMultiRelays,
   getBalance,
@@ -1059,7 +1058,8 @@ export class EosBancorModule
         return {
           ...token,
           name: meta.name,
-          logo: meta.logo
+          logo: meta.logo,
+          tradeSupported: true
         };
       }
     };
@@ -1147,9 +1147,9 @@ export class EosBancorModule
               ...(reserve.amount && { balance: reserve.amount })
             } as ViewReserve)
         );
-
         return {
           ...relay,
+          tradeSupported: true,
           version: relay.isMultiContract ? 2 : 1,
           id: buildTokenId({
             contract: relay.smartToken.contract,
@@ -1586,87 +1586,7 @@ export class EosBancorModule
   }: {
     relays: DryRelay[];
   }) {
-    try {
-      const [tokenPrices, ethTokenPrices] = await Promise.all([
-        bancorApi.getTokens(),
-        ethBancorApi.getTokens()
-      ]);
-
-      const bntToken = findOrThrow(tokenPrices, token =>
-        compareString(token.code, "BNT")
-      );
-
-      const usdPriceOfEth = findOrThrow(ethTokenPrices, token =>
-        compareString(token.code, "ETH")
-      ).price;
-
-      const relayFeeds: RelayFeed[] = relays.flatMap(relay => {
-        const [
-          secondaryReserve,
-          primaryReserve
-        ] = sortByNetworkTokens(relay.reserves, reserve =>
-          reserve.symbol.code().to_string()
-        );
-
-        const token = tokenPrices.find(price =>
-          compareString(price.code, primaryReserve.symbol.code().to_string())
-        );
-
-        if (!token) return [];
-
-        const includeBnt = compareString(
-          relay.smartToken.symbol.code().to_string(),
-          "BNTEOS"
-        );
-
-        const liqDepth = token.liquidityDepth * usdPriceOfEth * 2;
-
-        const secondary = {
-          tokenId: buildTokenId({
-            contract: secondaryReserve.contract,
-            symbol: secondaryReserve.symbol.code().to_string()
-          }),
-          smartTokenId: buildTokenId({
-            contract: relay.smartToken.contract,
-            symbol: relay.smartToken.symbol.code().to_string()
-          })
-        };
-
-        return [
-          {
-            change24H: token.change24h,
-            costByNetworkUsd: token.price,
-            liqDepth,
-            tokenId: buildTokenId({
-              contract: primaryReserve.contract,
-              symbol: primaryReserve.symbol.code().to_string()
-            }),
-            smartTokenId: buildTokenId({
-              contract: relay.smartToken.contract,
-              symbol: relay.smartToken.symbol.code().to_string()
-            }),
-            volume24H: token.volume24h.USD
-          },
-          includeBnt
-            ? {
-                ...secondary,
-                liqDepth,
-                costByNetworkUsd: bntToken.price,
-                change24H: bntToken.change24h,
-                volume24H: bntToken.volume24h.USD
-              }
-            : {
-                ...secondary,
-                liqDepth
-              }
-        ];
-      });
-      this.updateRelayFeed(relayFeeds);
-      return relayFeeds;
-    } catch (e) {
-      console.error(e);
-      return [];
-    }
+    return [];
   }
 
   @action async hydrateOldRelays(relays: DryRelay[]) {
