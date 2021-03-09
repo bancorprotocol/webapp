@@ -1294,17 +1294,16 @@ export const defaultTableSort = (
   sortZero: boolean = false
 ) => {
   const value = row[sortBy];
-  let isDefined: boolean;
-  if (!sortZero) {
-    isDefined =
-      value !== 0 && value !== "0" && value !== undefined && value !== null;
-  } else {
-    isDefined = value !== undefined && value !== null;
+  const isEmpty =
+    value === null ||
+    value === undefined ||
+    isNaN(value) ||
+    (!sortZero && (value === 0 || value === "0"));
+  if (isEmpty) return null;
+  if (isFinite(value)) {
+    const number = new BigNumber(value);
+    const isBigNumber = BigNumber.isBigNumber(number);
+    if (isBigNumber) return number.toNumber();
   }
-  const number = new BigNumber(value);
-  const isBigNumber = BigNumber.isBigNumber(number);
-  if (isBigNumber) {
-    if (isDefined) return number.toNumber();
-    else return null;
-  } else return value;
+  return value;
 };
