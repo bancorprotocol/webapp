@@ -11,6 +11,34 @@
       default-sort="stake"
       default-order="desc"
     >
+      <template #cell(pool)="{ item }">
+        <!-- <img
+              :key="item.poolId"
+              class="img-avatar bg-white logo-shadow"
+              :src="poolLogo(item)"
+              :alt="$t('token_logo')"
+            /> -->
+        <pool-logos-overlapped :pool-id="item.poolId" size="20" class="mr-1" />
+        <span>
+          {{ item.symbol }}
+          {{ poolName(item.poolId) }}
+        </span>
+      </template>
+
+      <template #cellCollapsed(pool)="{ value }">
+        <!-- <img
+              :key="value.poolId"
+              class="img-avatar bg-white logo-shadow"
+              :src="poolLogo(value)"
+              :alt="$t('token_logo')"
+            /> -->
+        <pool-logos-overlapped :pool-id="value.poolId" size="20" class="mr-1" />
+        <span>
+          {{ value.symbol }}
+          {{ poolName(value.poolId) }}
+        </span>
+      </template>
+
       <template #cell(stake)="{ item, value, isCollapsable }">
         <div :id="`popover-target-${item.id}`">
           <div>
@@ -399,6 +427,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
+import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import {
   buildPoolName,
@@ -442,6 +471,11 @@ export default class ProtectedTable extends BaseComponent {
 
   poolName(id: string): string {
     return buildPoolName(id);
+  }
+
+  poolLogo(item: any) {
+    console.log(vxm.bancor.relay(item.poolId));
+    return vxm.bancor.relay(item.poolId);
   }
 
   insuranceStarted(unixTime: number) {
@@ -489,43 +523,50 @@ export default class ProtectedTable extends BaseComponent {
     return [
       {
         id: 1,
+        key: "pool",
+        label: i18n.tc("pool"),
+        tooltip: "Place holder",
+        minWidth: "150px"
+      },
+      {
+        id: 2,
         key: "stake",
         label: i18n.tc("initial_stake"),
         tooltip: i18n.tc("tokens_originally_staked"),
         minWidth: "170px"
       },
       {
-        id: 2,
+        id: 3,
         key: "fullyProtected",
         label: i18n.tc("protected"),
         tooltip: i18n.tc("tokens_can_withdraw"),
-        minWidth: "160px"
-      },
-      {
-        id: 3,
-        key: "protectedAmount",
-        label: i18n.tc("claimable"),
-        tooltip: i18n.tc("tokens_can_withdraw_now"),
-        minWidth: "160px"
+        minWidth: "120px"
       },
       {
         id: 4,
-        key: "fees",
-        label: i18n.tc("fees_rewards"),
-        tooltip: i18n.tc("fees_stake_earned"),
-        minWidth: "110px",
-        thClass: "text-center"
+        key: "protectedAmount",
+        label: i18n.tc("claimable"),
+        tooltip: i18n.tc("tokens_can_withdraw_now"),
+        minWidth: "120px"
       },
       {
         id: 5,
-        key: "roi",
-        label: "ROI",
-        tooltip: i18n.tc("roi__protected_value"),
-        minWidth: "75px",
+        key: "fees",
+        label: i18n.tc("fees_rewards"),
+        tooltip: i18n.tc("fees_stake_earned"),
+        minWidth: "160px",
         thClass: "text-center"
       },
       {
         id: 6,
+        key: "roi",
+        label: "ROI",
+        tooltip: i18n.tc("roi__protected_value"),
+        minWidth: "50px",
+        thClass: "text-center"
+      },
+      {
+        id: 7,
         key: "apr",
         label: "APR",
         tooltip: i18n.tc("estimated_calculation_annual_returns"),
@@ -533,14 +574,14 @@ export default class ProtectedTable extends BaseComponent {
         minWidth: "115px"
       },
       {
-        id: 7,
+        id: 8,
         key: "currentCoverage",
         label: i18n.tc("current_coverage"),
         tooltip: i18n.tc("impermanent_loss_protection"),
         minWidth: "195px"
       },
       {
-        id: 8,
+        id: 9,
         key: "actions",
         label: "",
         sortable: false,
