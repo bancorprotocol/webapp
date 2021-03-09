@@ -29,6 +29,7 @@ export interface ProtectedLiquidity {
 export interface ProtectLiquidityParams {
   amount: ViewAmount;
   onUpdate?: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface PositionReturn {
@@ -147,6 +148,7 @@ export interface LiquidityParams {
   id: string;
   reserves: ViewAmount[];
   onUpdate?: OnUpdate;
+  onPrompt?: OnPrompt;
 }
 
 export interface OpposingLiquidParams {
@@ -168,10 +170,21 @@ export interface Section {
   description: string;
 }
 
+export interface Prompt {
+  questions: {
+    id: string;
+    label: string;
+  }[];
+}
+
+export type OnPrompt = (prompt: Prompt) => void;
+export type OnSelection = (id: string) => void;
+
 export interface ProposedConvertTransaction {
   from: ViewAmount;
   to: ViewAmount;
   onUpdate?: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface TokenDetail {
@@ -258,9 +271,10 @@ export interface ViewToken {
   volume24h?: number;
   balance?: string;
   precision: number;
+  tradeSupported: boolean;
 }
 
-interface TokenWithLogo extends AgnosticToken {
+export interface TokenWithLogo extends AgnosticToken {
   logo: string[];
 }
 
@@ -322,6 +336,7 @@ export interface ViewRelay {
   reserves: ViewReserve[];
   addProtectionSupported: boolean;
   addLiquiditySupported: boolean;
+  tradeSupported: boolean;
   removeLiquiditySupported: boolean;
   liquidityProtection: boolean;
   whitelisted: boolean;
@@ -466,7 +481,7 @@ export interface RegisteredContracts {
   LiquidityProtectionStore: string;
   StakingRewards: string;
 }
-interface PoolTokenPosition {
+export interface PoolTokenPosition {
   relay: ViewRelay;
   smartTokenAmount?: string;
   poolTokens?: {
@@ -485,7 +500,7 @@ export interface ReserveFeed {
   priority: number;
 }
 
-interface LiquidityHistory {
+export interface LiquidityHistory {
   loading: boolean;
   data: ViewLiquidityEvent<ViewTradeEvent>[];
 }
@@ -505,6 +520,7 @@ export interface LiquidityModule {
     twentyFourHourTradeCount: number;
     totalVolume24h: number;
     bntUsdPrice?: number;
+    bntPrice24Change?: number;
     stakedBntPercent?: number;
     totalPoolCount?: number;
     totalTokenCount?: number;
@@ -589,6 +605,7 @@ export interface CreateV1PoolEthParams {
   decimals: number;
   decFee: string;
   onUpdate: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface CreatePoolModule {
@@ -626,19 +643,19 @@ export interface PromiseSequence {
   title: string;
 }
 
-interface GetBalanceParam {
+export interface GetBalanceParam {
   tokens: TokenBalanceParam[];
   slow?: boolean;
   disableSetting?: boolean;
 }
 
-interface TokenBalanceParam {
+export interface TokenBalanceParam {
   contract: string;
   symbol: string;
   precision?: number;
 }
 
-interface TransferParam {
+export interface TransferParam {
   to: string;
   id: string;
   amount: number;
@@ -649,7 +666,7 @@ export interface TokenBalanceReturn extends TokenBalanceParam {
   balance: string;
 }
 
-interface TokenQueries extends TokenBalanceParam {
+export interface TokenQueries extends TokenBalanceParam {
   balance?: number;
 }
 
@@ -836,4 +853,5 @@ export interface ITxMeta {
   txError: string;
   sections: Step[];
   stepIndex: number;
+  prompt: Prompt | null;
 }
