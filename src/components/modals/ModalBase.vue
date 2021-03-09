@@ -36,6 +36,7 @@
               prepend="search"
               height="48"
               font-size="lg"
+              autofocus
             />
           </b-col>
         </b-row>
