@@ -120,7 +120,7 @@ export default class ModalTxAction extends BaseComponent {
   }
 
   get titleMsg() {
-    return this.showApprovalOptions ? "Approve" : this.title;
+    return this.showApprovalOptions ? "Approve Token" : this.title;
   }
 
   get iconName() {
