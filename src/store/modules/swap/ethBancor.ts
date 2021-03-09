@@ -1943,6 +1943,8 @@ export class EthBancorModule
         })
       );
 
+      const poolPrograms = await vxm.rewards.fetchPoolPrograms();
+
       const positions = allPositions.map(
         (position): ProtectedLiquidityCalculated => {
           const liqReturn =
@@ -1955,7 +1957,8 @@ export class EthBancorModule
             x => x.id === `${position.poolToken}-${position.reserveToken}`
           );
 
-          const multiplier = vxm.rewards.poolPrograms?.some(
+          console.log("poolPrograms", poolPrograms);
+          const multiplier = poolPrograms?.some(
             x => x.poolToken === position.poolToken
           )
             ? rewardsMultiplier.find(
