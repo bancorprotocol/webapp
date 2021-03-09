@@ -29,6 +29,7 @@ export interface ProtectedLiquidity {
 export interface ProtectLiquidityParams {
   amount: ViewAmount;
   onUpdate?: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface PositionReturn {
@@ -147,6 +148,7 @@ export interface LiquidityParams {
   id: string;
   reserves: ViewAmount[];
   onUpdate?: OnUpdate;
+  onPrompt?: OnPrompt;
 }
 
 export interface OpposingLiquidParams {
@@ -168,10 +170,21 @@ export interface Section {
   description: string;
 }
 
+export interface Prompt {
+  questions: {
+    id: string;
+    label: string;
+  }[];
+}
+
+export type OnPrompt = (prompt: Prompt) => void;
+export type OnSelection = (id: string) => void;
+
 export interface ProposedConvertTransaction {
   from: ViewAmount;
   to: ViewAmount;
   onUpdate?: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface TokenDetail {
@@ -591,6 +604,7 @@ export interface CreateV1PoolEthParams {
   decimals: number;
   decFee: string;
   onUpdate: OnUpdate;
+  onPrompt: OnPrompt;
 }
 
 export interface CreatePoolModule {
@@ -838,4 +852,5 @@ export interface ITxMeta {
   txError: string;
   sections: Step[];
   stepIndex: number;
+  prompt: Prompt | null;
 }
