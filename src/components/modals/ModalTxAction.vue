@@ -48,7 +48,7 @@
             class="mt-2 rounded py-2 btn-block"
             variant="primary"
           >
-            Approve Token
+            Unlimited Approval
           </b-btn>
           <div
             v-if="question.label === 'limited'"
@@ -60,7 +60,7 @@
               @click="selectedPromptReceiver(question.id)"
               class="font-w500 cursor"
             >
-              <u>Approve limited permission</u>
+              <u>Limited Approval</u>
             </span>
           </div>
           <b-btn
