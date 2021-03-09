@@ -13,7 +13,7 @@
     </template>
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
-      <b-dropdown-header class="">Bancor</b-dropdown-header>
+      <b-dropdown-header>Bancor</b-dropdown-header>
       <b-dropdown-item style="width: 230px" disabled>
         <font-awesome-icon icon="info" class="mr-2" fixed-width />
         {{ $t("about") }}
@@ -21,7 +21,7 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group v-if="false" id="dropdown-group-2">
-      <b-dropdown-header class="">{{ $t("apps") }}</b-dropdown-header>
+      <b-dropdown-header>{{ $t("apps") }}</b-dropdown-header>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
           <img
@@ -73,7 +73,7 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header class="">
+      <b-dropdown-header>
         {{ $t("community_support") }}
       </b-dropdown-header>
       <b-dropdown-text>
@@ -113,7 +113,7 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
-      <b-dropdown-header class="">{{ $t("developers") }}</b-dropdown-header>
+      <b-dropdown-header>{{ $t("developers") }}</b-dropdown-header>
       <b-dropdown-item
         @click="openUrl('https://docs.bancor.network/')"
         :variant="darkMode ? 'dark' : 'light'"

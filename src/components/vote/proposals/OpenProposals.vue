@@ -181,7 +181,7 @@
             >
               <div class="row">
                 <span class="col-3">
-                  <span class="">{{ item.votes.voted }}</span>
+                  <span>{{ item.votes.voted }}</span>
                 </span>
                 <span class="col-9 text-right">
                   {{

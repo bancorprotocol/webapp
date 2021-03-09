@@ -72,7 +72,7 @@
       </template>
 
       <template #cell(voted)="data">
-        <div class="" :class="getVoteClass(data.value)">
+        <div :class="getVoteClass(data.value)">
           {{ data.value === 1 ? $t("for") : $t("against") }}
         </div>
       </template>
