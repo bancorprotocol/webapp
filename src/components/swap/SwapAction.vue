@@ -38,7 +38,7 @@
       <div v-if="limit">
         <label-content-split
           :label="$t('rate')"
-          :value="rate"
+          :value="`${$t('current_rate')}: ${rate}`"
           :loading="rateLoading"
           class="mb-2"
         />

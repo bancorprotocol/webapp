@@ -1,5 +1,5 @@
 <template>
-  <modal-base :title="title" v-model="show">
+  <modal-base :title="title" v-model="show" size="sm">
     <b-row class="d-flex justify-content-center">
       <b-col cols="12" class="text-center">
         <font-awesome-icon icon="clock" class="text-primary" size="3x" />
@@ -15,67 +15,110 @@
         >
           {{ $t("set_up_time") }}
         </div>
+        <div>
+          <b-dropdown
+            boundary="viewport"
+            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            toggle-class="block-rounded"
+            :menu-class="
+              darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+            "
+            cols="6"
+            class="mt-3"
+            style="width: 160px"
+          >
+            <template
+              #button-content
+              style="width: 160px"
+              class="d-flex justify-content-between"
+            >
+              {{ `${$t("days")} ${selectedDays.asDays()}` }}
+            </template>
+
+            <b-dropdown-item
+              v-for="item in 7"
+              :key="item"
+              @click="changeDays(item)"
+              :variant="darkMode ? 'dark' : 'light'"
+            >
+              <div class="d-flex justify-content-between">
+                {{ `${item} ${$t("days")}` }}
+                <font-awesome-icon
+                  v-if="selectedDays.days() === item"
+                  icon="check"
+                  class="mr-2 menu-icon"
+                />
+              </div>
+            </b-dropdown-item>
+          </b-dropdown>
+        </div>
+        <div>
+          <b-dropdown
+            boundary="viewport"
+            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            toggle-class="block-rounded"
+            :menu-class="
+              darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+            "
+            cols="6"
+            class="mt-3"
+            style="width: 160px"
+          >
+            <template #button-content>
+              {{ `${$t("hours")} ${selectedHours.asHours()}` }}
+            </template>
+
+            <b-dropdown-item
+              v-for="item in 24"
+              :key="item"
+              @click="changeHours(item)"
+              :variant="darkMode ? 'dark' : 'light'"
+            >
+              <div class="d-flex justify-content-between">
+                {{ `${item} ${$t("hours")}` }}
+                <font-awesome-icon
+                  v-if="selectedHours.hours() === item"
+                  icon="check"
+                  class="mr-2 menu-icon"
+                />
+              </div>
+            </b-dropdown-item>
+          </b-dropdown>
+        </div>
+        <div>
+          <b-dropdown
+            boundary="viewport"
+            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            toggle-class="block-rounded"
+            :menu-class="
+              darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+            "
+            cols="6"
+            class="mt-3"
+            style="width: 160px"
+          >
+            <template #button-content>
+              {{ `${$t("minutes")} ${selectedMinutes.asMinutes()}` }}
+            </template>
+
+            <b-dropdown-item
+              v-for="item in 60"
+              :key="item"
+              @click="changeMinutes(item)"
+              :variant="darkMode ? 'dark' : 'light'"
+            >
+              <div class="d-flex justify-content-between">
+                {{ `${item} ${$t("minutes")}` }}
+                <font-awesome-icon
+                  v-if="selectedMinutes.minutes() === item"
+                  icon="check"
+                  class="mr-2 menu-icon"
+                />
+              </div>
+            </b-dropdown-item>
+          </b-dropdown>
+        </div>
       </b-col>
-      <b-dropdown
-        boundary="viewport"
-        :variant="darkMode ? 'outline-dark' : 'outline-light'"
-        toggle-class="block-rounded"
-        :menu-class="
-          darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
-        "
-        cols="6"
-        class="mr-2 mt-3"
-      >
-        <template #button-content>
-          {{ formatDuration(selectedHours) }}
-        </template>
-
-        <b-dropdown-item
-          v-for="item in 24"
-          :key="item"
-          @click="changeHours(item)"
-          :variant="darkMode ? 'dark' : 'light'"
-        >
-          <div class="d-flex justify-content-between">
-            {{ `${item} ${$t("hours")}` }}
-            <font-awesome-icon
-              v-if="selectedHours.hours() === item"
-              icon="check"
-              class="mr-2 menu-icon"
-            />
-          </div>
-        </b-dropdown-item>
-      </b-dropdown>
-      <b-dropdown
-        boundary="viewport"
-        :variant="darkMode ? 'outline-dark' : 'outline-light'"
-        toggle-class="block-rounded"
-        :menu-class="
-          darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
-        "
-        cols="6"
-        class="mt-3"
-      >
-        <template #button-content>
-          {{ formatDuration(selectedMinutes) }}
-        </template>
-
-        <b-dropdown-item
-          v-for="item in 60"
-          :key="item"
-          @click="changeMinutes(item)"
-          :variant="darkMode ? 'dark' : 'light'"
-        >
-          <div class="d-flex justify-content-between">
-            {{ `${item} ${$t("minutes")}` }}
-            <font-awesome-icon
-              v-if="selectedMinutes.minutes() === item"
-              icon="check"
-              class="mr-2 menu-icon"
-            />
-          </div>
-        </b-dropdown-item>
-      </b-dropdown>
       <b-col cols="12" class="mt-3">
         <main-button
           :label="$t('confirm')"
@@ -92,7 +135,6 @@ import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MainButton from "@/components/common/Button.vue";
-import { formatDuration } from "@/api/helpers";
 import dayjs from "@/utils/dayjs";
 
 @Component({
@@ -102,11 +144,12 @@ export default class ModalDurationSelect extends BaseComponent {
   @VModel() show!: boolean;
   @Prop({ type: String, default: "" }) title!: string;
 
+  selectedDays = dayjs.duration({ days: 1 });
   selectedHours = dayjs.duration({ hours: 1 });
   selectedMinutes = dayjs.duration({ minutes: 1 });
 
-  formatDuration(duration: plugin.Duration) {
-    return formatDuration(duration);
+  changeDays(days: number) {
+    this.selectedDays = dayjs.duration({ days });
   }
 
   changeHours(hours: number) {
@@ -120,7 +163,9 @@ export default class ModalDurationSelect extends BaseComponent {
   @Emit("confirm")
   confirm() {
     this.show = false;
-    return this.selectedHours.add({
+    return dayjs.duration({
+      days: this.selectedDays.asDays(),
+      hours: this.selectedHours.asHours(),
       minutes: this.selectedMinutes.asMinutes()
     });
   }
