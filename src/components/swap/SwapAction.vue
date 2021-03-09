@@ -160,6 +160,7 @@
 import { Watch, Component, Prop } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
+import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
@@ -199,6 +200,7 @@ export default class SwapAction extends BaseComponent {
     dayjs.duration({ days: 7 })
   ];
   selectedDuration = this.durationList[4];
+  keeperDaoList: TokenList | null = null;
 
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -494,8 +496,10 @@ export default class SwapAction extends BaseComponent {
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.replace({ name: "Swap", query: defaultQuery });
     }
-
-    await this.calculateRate();
+    [this.keeperDaoList] = await Promise.all([
+      getTokenList(),
+      this.calculateRate()
+    ]);
   }
 }
 </script>
