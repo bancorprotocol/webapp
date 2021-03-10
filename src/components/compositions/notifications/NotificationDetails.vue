@@ -3,7 +3,7 @@
     class="notification py-2 px-3 font-w400"
     :class="darkMode ? 'text-dark' : 'text-light'"
   >
-    <div class="d-flex justify-content-start">
+    <div class="d-flex justify-content-start align-items-center">
       <div>
         <font-awesome-icon
           class="mx-2"
@@ -16,11 +16,12 @@
       <div class="flex-fill font-w600">
         {{ notification.title }}
       </div>
+      <div class="font-size-12 font-w500 text-muted-light mr-3">5 min</div>
       <div @click="remove(notification.id)">
         <font-awesome-icon icon="times" />
       </div>
     </div>
-    <div class="mt-1">
+    <div class="my-2">
       {{ notification.description }}
     </div>
     <div v-if="notification.txHash">
