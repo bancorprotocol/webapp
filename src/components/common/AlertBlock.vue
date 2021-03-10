@@ -10,7 +10,7 @@
     <div v-if="title" class="font-w700 mb-2">{{ title }}</div>
     <span class="font-w500">
       <div v-if="messages !== undefined">
-        <div v-for="(message, index) in messages" :key="index" name="default">
+        <div v-for="message in messages" :key="message" name="default">
           <font-awesome-icon
             :icon="`exclamation-${
               variant === 'warning' ? 'triangle' : 'circle'

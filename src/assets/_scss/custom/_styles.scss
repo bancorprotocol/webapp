@@ -150,6 +150,13 @@
   color: $text-warning-dark;
 }
 
+.percentage-negative {
+  color: $text-error-light;
+}
+.percentage-positive {
+  color: $percentage-positive-light;
+}
+
 .cursor {
   cursor: pointer;
 }

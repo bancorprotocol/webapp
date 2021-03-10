@@ -65,7 +65,6 @@ export const traverseLockedBalances = async (
   expectedCount: number,
   w3: Web3
 ): Promise<LockedBalance[]> => {
-  console.log("traverseHit");
   const storeContract = buildLiquidityProtectionStoreContract(contract, w3);
   let lockedBalances: LockedBalance[] = [];
 
@@ -74,11 +73,9 @@ export const traverseLockedBalances = async (
     const startIndex = i * scopeRange;
     const endIndex = startIndex + scopeRange;
 
-    console.log(startIndex, endIndex, "is start and end index");
     const lockedBalanceRes = await storeContract.methods
       .lockedBalanceRange(owner, String(startIndex), String(endIndex))
       .call();
-    console.log("traverseHit 33");
 
     const bntWeis = lockedBalanceRes["0"];
     const expirys = lockedBalanceRes["1"];
@@ -248,6 +245,13 @@ export const calculateProgressLevel = (
   if (now >= endTimeSeconds) return 1;
   const timeWaited = now - startTimeSeconds;
   return timeWaited / totalWaitingTime;
+};
+
+export const calculatePercentageChange = (
+  numberNow: number,
+  numberBefore: number
+):number  => {
+  return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
 };
 
 export const compareString = (stringOne: string, stringTwo: string) => {
@@ -442,7 +446,6 @@ const decodeAddLiquidityEvent = (
     newSupply: string;
   };
   const [, trader, tokenAdded] = rawEvent.topics;
-  console.log("decoded add liquidity event", rawEvent);
   return {
     id: txHash,
     blockNumber,
@@ -494,7 +497,6 @@ const decodeConversionEvent = (
     }
   };
 
-  console.log(decoded, { rawEvent, res }, "big deal");
   return res;
 };
 
@@ -579,8 +581,6 @@ export const getConverterLogs = async (
   };
 
   const response = await axios.post<InfuraEventResponse>(address, request);
-
-  console.log(response, "was the raw res");
 
   if (response.data.error) {
     console.error("eth_getLogs failed!", response.data.error, address, request);

@@ -31,10 +31,12 @@
           <b-col cols="12">
             <multi-input-field
               v-model="searchField"
+              :clear="true"
               :placeholder="$t('search')"
               prepend="search"
               height="48"
               font-size="lg"
+              autofocus
             />
           </b-col>
         </b-row>
@@ -54,7 +56,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
   components: { MultiInputField }
 })
 export default class ModalBase extends BaseComponent {
-  @Prop() title!: string;
+  @Prop({ default: "" }) title!: string;
   @VModel({ type: Boolean }) show!: boolean;
   @PropSync("search", { type: String }) searchField?: string;
   @Prop({ default: "md" }) size!: "sm" | "md" | "lg";

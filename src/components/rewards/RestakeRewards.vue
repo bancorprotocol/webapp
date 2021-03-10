@@ -38,7 +38,10 @@
       :disabled="disableActionButton"
     />
 
-    <modal-tx-action :tx-meta="txMeta" @close="closeTxModal" />
+    <modal-tx-action
+      :tx-meta.sync="txMeta"
+      redirect-on-success="LiqProtection"
+    />
   </div>
 </template>
 
@@ -53,9 +56,11 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
+import { compareString } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BigNumber from "bignumber.js";
+import wait from "waait";
 
 @Component({
   components: {
@@ -80,6 +85,8 @@ export default class RestakeRewards extends BaseTxAction {
   maxStakeSymbol: string = "";
   loading = false;
 
+  disabledPools: string[] = [];
+
   private interval: any;
 
   get token() {
@@ -91,7 +98,11 @@ export default class RestakeRewards extends BaseTxAction {
   }
 
   get pools() {
-    return vxm.bancor.relays.filter(x => x.whitelisted);
+    return vxm.bancor.relays.filter(
+      x =>
+        x.whitelisted &&
+        !this.disabledPools.some(disablePoolID => disablePoolID === x.id)
+    );
   }
 
   get pendingRewards() {
@@ -154,19 +165,11 @@ export default class RestakeRewards extends BaseTxAction {
     await this.loadData();
   }
 
-  async closeTxModal() {
-    if (this.txMeta.success) {
-      await this.$router.replace({ name: "LiqProtection" });
-    }
-    this.setDefault();
-  }
-
   async loadMaxStakes() {
     const result = await vxm.ethBancor.getMaxStakesView({
       poolId: this.pool.id
     });
     let stake = result.filter(x => x.token === this.token.symbol);
-    console.log(stake);
     if (stake.length === 1) {
       this.maxStakeAmount = stake[0].amount;
       this.maxStakeSymbol = stake[0].token;
@@ -176,10 +179,24 @@ export default class RestakeRewards extends BaseTxAction {
   async loadData() {
     this.loading = true;
     try {
-      await this.loadMaxStakes();
-      await vxm.rewards.fetchAndSetPendingRewards();
+      await Promise.all([
+        wait(1000),
+        this.loadMaxStakes(),
+        vxm.rewards.fetchAndSetPendingRewards(),
+        this.pools.forEach(async x => {
+          const disabledReserves = await vxm.ethBancor.fetchDisabledReserves(
+            x.id
+          );
+          if (
+            disabledReserves.some(reserveId =>
+              compareString(reserveId, this.token.id)
+            )
+          )
+            this.disabledPools.push(x.id);
+        })
+      ]);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     } finally {
       this.loading = false;
     }

@@ -1,6 +1,9 @@
 <template>
   <div class="mt-3">
-    <label-content-split :label="$t('claimable_rewards')">
+    <label-content-split
+      :label="$t('claimable_rewards')"
+      :tooltip="$t('not_include_liquidity_rewards')"
+    >
       <logo-amount-symbol
         :token-id="bntAddress"
         :amount="prettifyNumber(pendingRewards.bnt)"
@@ -12,7 +15,7 @@
       class="my-3"
       :variant="warning.variant"
       :title="warning.title"
-      :msg="warning.msg"
+      :messages="[warning.msg]"
     />
 
     <main-button
@@ -34,11 +37,7 @@
       :pools="pools"
     />
 
-    <modal-tx-action
-      :tx-meta="txMeta"
-      :title="$t('you_withdrawing_rewards')"
-      @close="closeTxModal"
-    />
+    <modal-tx-action :tx-meta="txMeta" redirect-on-success="LiqProtection" />
   </div>
 </template>
 
@@ -105,13 +104,6 @@ export default class WithdrawRewards extends BaseTxAction {
     this.showPoolSelectModal = true;
   }
 
-  async closeTxModal() {
-    if (this.txMeta.success) {
-      await this.$router.replace({ name: "LiqProtection" });
-    }
-    this.setDefault();
-  }
-
   async withdrawAction() {
     this.txMeta.txBusy = true;
     this.txMeta.showTxModal = true;
@@ -132,7 +124,7 @@ export default class WithdrawRewards extends BaseTxAction {
     try {
       await vxm.rewards.loadData();
     } catch (e) {
-      console.log(e);
+      console.error(e);
     } finally {
       this.loading = false;
     }

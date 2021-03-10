@@ -85,7 +85,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BigNumber from "bignumber.js";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
 
 @Component({
   components: {
@@ -100,7 +100,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
     MainButton
   }
 })
-export default class WithdrawProtectionDouble extends BaseComponent {
+export default class WithdrawProtectionDouble extends BaseTxAction {
   percentage: string = "50";
 
   modal = false;
@@ -120,7 +120,7 @@ export default class WithdrawProtectionDouble extends BaseComponent {
 
   get disableActionButton() {
     if (parseFloat(this.percentage) === 0) return true;
-    else return this.inputError ? true : false;
+    else return !!this.inputError;
   }
 
   get inputError() {
@@ -136,12 +136,9 @@ export default class WithdrawProtectionDouble extends BaseComponent {
 
   get position() {
     const positions = vxm.ethBancor.protectedPositions;
-    console.log(positions, "x");
-    const pos = findOrThrow(positions, position =>
+    return findOrThrow(positions, position =>
       compareString(position.id, this.$route.params.id)
     );
-    console.log(pos, "is the selected pos", this.pool, "is the pass pool");
-    return pos;
   }
 
   get poolIds() {
@@ -170,14 +167,12 @@ export default class WithdrawProtectionDouble extends BaseComponent {
     this.setDefault();
     this.modal = true;
     this.txBusy = true;
-    const { poolId, first, second } = this.poolIds;
-    console.log({ poolId, first, second });
     try {
-      const txRes = await vxm.ethBancor.removeProtection({
+      this.success = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
-        id: this.position.id
+        id: this.position.id,
+        onPrompt: this.onPrompt
       });
-      this.success = txRes;
     } catch (err) {
       this.error = err.message;
     } finally {

@@ -118,7 +118,7 @@ export const en = {
   insufficient_balance: "Insufficient balance",
   stake_pool: "Stake in Pool",
   price_volatility:
-    "Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds.",
+    "Due to price volatility, protecting your tokens is currently not available. Please try again in a few minutes.",
   space_available: "Space Available",
   staking_protecting: "You are staking and protecting",
   price_deviation_high: "Price Deviation too High",
@@ -354,5 +354,9 @@ export const en = {
   you_withdrawing_rewards: "You are withdrawing rewards",
   rewards_ended: "Rewards ended",
   withdraw_reset:
-    "Withdrawing will reset your rewards multiplier for all active positions back to x1"
+    "Withdrawing will reset your rewards multiplier for all active positions back to x1",
+  pool_not_accepting: "This pool is not accepting additional liquidity.",
+  wait_until_space_opens:
+    "{token} limit reached. Please wait until some space opens up.",
+  data_refreshes_auto: "Data refreshes automatically"
 };

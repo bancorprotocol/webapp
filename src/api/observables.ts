@@ -1,5 +1,5 @@
 import { differenceWith, isEqual } from "lodash";
-import { Subject, combineLatest, Observable } from "rxjs";
+import { Subject, combineLatest, Observable, timer } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -10,22 +10,38 @@ import {
   shareReplay,
   pluck,
   scan,
-  share
+  share,
+  withLatestFrom
 } from "rxjs/operators";
 import { vxm } from "@/store";
 import { EthNetworks } from "./web3";
-import { getWelcomeData } from "./eth/bancorApi";
-import { getTokenMeta } from "@/store/modules/swap/ethBancor";
+import { getWelcomeData, NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
+import {
+  getTokenMeta,
+  ppmToDec,
+  defaultImage
+} from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
 import dayjs from "dayjs";
 import { RegisteredContracts } from "@/types/bancor";
-import { compareString } from "./helpers";
+import { compareString, findOrThrow } from "./helpers";
 import { buildStakingRewardsContract } from "./eth/contractTypes";
+import { filterAndWarn } from "./pureHelpers";
 
 interface DataCache<T> {
   allEmissions: T[];
   newData: T[];
 }
+
+export const switchMapIgnoreThrow = <T, Y>(
+  switchMapProm: (data: T) => Promise<Y>
+) => (source: Observable<T>): Observable<Y> =>
+  source.pipe(
+    switchMap(whatever =>
+      switchMapProm(whatever).catch(() => ("DONT THROW" as unknown) as Y)
+    ),
+    filter(x => !(typeof x == "string" && x === "DONT THROW"))
+  );
 
 export const distinctArrayItem = <T>(
   initialValue: T[],
@@ -54,13 +70,24 @@ export const distinctArrayItem = <T>(
 export const authenticated$ = new Subject<string>();
 export const networkVersionReceiver$ = new Subject<EthNetworks>();
 
+const onLogin$ = authenticated$.pipe(
+  filter(x => Boolean(x)),
+  share()
+);
+const onLogout$ = authenticated$.pipe(
+  filter(x => !Boolean(x)),
+  share()
+);
+
+const fifteenSeconds$ = timer(0, 15000);
+
 export const networkVersion$ = networkVersionReceiver$.pipe(
   distinctUntilChanged(),
   shareReplay(1)
 );
 
-export const apiData$ = networkVersion$.pipe(
-  switchMap(networkVersion => getWelcomeData(networkVersion)),
+export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
+  switchMapIgnoreThrow(([networkVersion]) => getWelcomeData(networkVersion)),
   share()
 );
 
@@ -92,7 +119,6 @@ export const contractAddresses$ = networkVars$.pipe(
     vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
   ),
   distinctUntilChanged<RegisteredContracts>(isEqual),
-  tap(x => console.log("sending out contracts...", x)),
   share()
 );
 
@@ -135,6 +161,60 @@ export const liquidityProtectionStore$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
+export const newPools$ = combineLatest([apiData$, tokenMeta$]).pipe(
+  map(([apiData, tokenMeta]) => {
+    {
+      const pools = apiData.pools;
+      const tokens = apiData.tokens;
+
+      const betterPools = pools.map(pool => {
+        const reserveTokens = pool.reserves
+          .map(
+            (reserve): TokenMetaWithReserve => {
+              const meta = tokenMeta.find(meta =>
+                compareString(meta.contract, reserve.address)
+              );
+              const token = findOrThrow(
+                tokens,
+                token => compareString(token.dlt_id, reserve.address),
+                "was expecting a token for a known reserve in API data"
+              );
+
+              return {
+                id: reserve.address,
+                contract: reserve.address,
+                reserveWeight: ppmToDec(reserve.weight),
+                decBalance: reserve.balance,
+                name: token.symbol,
+                symbol: token.symbol,
+                image: (meta && meta.image) || defaultImage,
+                precision: token.decimals
+              };
+            }
+          )
+          .filter(pool => pool.contract);
+        const decFee = ppmToDec(pool.fee);
+        return {
+          ...pool,
+          decFee,
+          reserveTokens
+        };
+      });
+
+      const passedPools = filterAndWarn(
+        betterPools,
+        pool => pool.reserveTokens.length == 2,
+        "lost pools"
+      ) as NewPool[];
+
+      return passedPools;
+    }
+  }),
+  filter(pools => pools.length > 0)
+);
+
+newPools$.subscribe(pools => vxm.ethBancor.setPools(pools));
+
 networkVersion$.subscribe(network => vxm.ethBancor.setNetwork(network));
 apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
 tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
@@ -144,7 +224,7 @@ networkVars$.subscribe(networkVariables =>
 
 combineLatest([
   liquidityProtectionStore$,
-  authenticated$
+  onLogin$
 ]).subscribe(([storeAddress, currentUser]) =>
   vxm.ethBancor.fetchAndSetLockedBalances({ storeAddress, currentUser })
 );
@@ -181,28 +261,26 @@ settingsContractAddress$
     vxm.ethBancor.setWhiteListedPools(whitelistedPools)
   );
 
-combineLatest([
-  authenticated$,
-  liquidityProtectionStore$,
-  currentBlock$,
-  apiData$
-]).subscribe(([userAddress, storeAddress, { blockNumber }, apiData]) => {
-  const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
-  vxm.ethBancor.fetchProtectionPositions({
-    storeAddress,
-    blockNumberNow: blockNumber,
-    userAddress: userAddress as string,
-    supportedAnchors
+combineLatest([onLogin$, liquidityProtectionStore$, currentBlock$])
+  .pipe(withLatestFrom(apiData$))
+  .subscribe(([[currentUser, storeAddress, { blockNumber }], apiData]) => {
+    const supportedAnchors = apiData.pools.map(pool => pool.pool_dlt_id);
+    vxm.ethBancor.fetchProtectionPositions({
+      storeAddress,
+      blockNumberNow: blockNumber,
+      userAddress: currentUser,
+      supportedAnchors
+    });
   });
+
+onLogin$.pipe(withLatestFrom(apiData$)).subscribe(([userAddress, apiData]) => {
+  if (userAddress) {
+    const reserveTokens = apiData.tokens.map(token => token.dlt_id);
+    const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
+    const allTokens = [...poolTokens, ...reserveTokens];
+    vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
+  }
 });
 
-combineLatest([authenticated$, apiData$]).subscribe(
-  ([userAddress, apiData]) => {
-    if (userAddress) {
-      const reserveTokens = apiData.tokens.map(token => token.dlt_id);
-      const poolTokens = apiData.pools.map(pool => pool.pool_dlt_id);
-      const allTokens = [...poolTokens, ...reserveTokens];
-      vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
-    }
-  }
-);
+
+export const selectedPromptReceiver$ = new Subject<string>();

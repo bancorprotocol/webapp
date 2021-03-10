@@ -11,6 +11,7 @@ import { multiSteps } from "@/api/helpers";
 import wait from "waait";
 import { shrinkToken } from "@/api/eth/helpers";
 import { expandToken } from "@/api/pureHelpers";
+import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { zip } from "lodash";
 
 const VuexModule = createModule({
@@ -91,7 +92,6 @@ export class RewardsModule extends VuexModule.With({
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions({});
                 vxm.ethBancor.fetchAndSetLockedBalances({});
-                console.log("tx confirmed");
               },
               resolveImmediately: true
             });
@@ -118,7 +118,6 @@ export class RewardsModule extends VuexModule.With({
               tx: this.contract.methods.claimRewards(),
               onConfirmation: async () => {
                 await wait(3000);
-                console.log("tx confirmed");
                 await this.loadData();
                 vxm.ethBancor.fetchProtectionPositions({});
                 vxm.ethBancor.fetchAndSetLockedBalances({});
@@ -208,8 +207,6 @@ export class RewardsModule extends VuexModule.With({
       }
       this.setPoolPrograms(poolPrograms);
 
-      console.log("Pool Programs", poolPrograms);
-
       return poolPrograms;
     } catch (e) {
       throw new Error(`Failed fetching pool programs ${e.message}`);
@@ -248,11 +245,11 @@ export class RewardsModule extends VuexModule.With({
   }: {
     poolId: string;
     reserveId: string;
-  }): Promise<BigNumber> {
+  }): Promise<number> {
     const result = await this.contract.methods
       .rewardsMultiplier(this.currentUser, poolId, reserveId)
       .call();
 
-    return new BigNumber(shrinkToken(result, 6));
+    return ppmToDec(result);
   }
 }

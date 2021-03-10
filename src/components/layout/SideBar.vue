@@ -38,7 +38,7 @@ export interface ViewSideBarLink {
   label: string;
   newTab: boolean;
   hideMobile: boolean;
-  svgName: string;
+  icon: string;
   active: boolean;
 }
 
@@ -54,12 +54,12 @@ export default class SideBar extends BaseComponent {
     );
     return [
       {
-        route: "DataSummary",
+        route: "Data",
         key: "data",
         label: i18n.t("data"),
         newTab: false,
         hideMobile: false,
-        svgName: "data"
+        icon: "data.svg"
       },
       {
         route: "Swap",
@@ -67,7 +67,7 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("swap"),
         newTab: false,
         hideMobile: false,
-        svgName: "swap"
+        icon: "swap.svg"
       },
       {
         route: "LiqProtection",
@@ -75,7 +75,7 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("protection"),
         newTab: false,
         hideMobile: false,
-        svgName: "liquidity"
+        icon: "liquidity.svg"
       },
       {
         route: "https://gov.bancor.network",
@@ -83,15 +83,15 @@ export default class SideBar extends BaseComponent {
         label: i18n.t("governance"),
         newTab: true,
         hideMobile: false,
-        svgName: "governance"
+        icon: "governance.svg"
       },
       {
-        route: "VotePage",
+        route: "Vote",
         key: "vote",
         label: i18n.t("vote.title"),
         newTab: false,
         hideMobile: true,
-        svgName: "vote"
+        icon: "vote.svg"
       },
       {
         route: "https://x.bancor.network/",
@@ -99,7 +99,7 @@ export default class SideBar extends BaseComponent {
         label: "Bancor X",
         newTab: true,
         hideMobile: true,
-        svgName: "bancorx"
+        icon: "bancorx.svg"
       },
       {
         route: "https://wallet.bancor.network/",
@@ -115,7 +115,24 @@ export default class SideBar extends BaseComponent {
         label: "Fiat",
         newTab: false,
         hideMobile: true,
-        svgName: "fiat"
+        svgName: "fiat",
+        icon: "bancor.svg"
+      },
+      {
+        route: "https://www.bntee.shop/",
+        key: "bntee",
+        label: "BNTEE Shop",
+        newTab: true,
+        hideMobile: false,
+        icon: "bntee.png"
+      },
+      {
+        route: "https://www.duneanalytics.com/bancor",
+        key: "analytics",
+        label: "Bancor Analytics",
+        newTab: true,
+        hideMobile: false,
+        icon: "analytics.svg"
       }
     ].map(link => ({
       ...link,

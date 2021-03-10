@@ -32,9 +32,9 @@ export default class PoolActions extends Vue {
   detailMode: boolean | null = null;
 
   get title() {
-    return `${
-      this.withdrawLiquidity ? i18n.t("Remove") : i18n.t("Add")
-    } ${i18n.t("Liquidity")}`;
+    return this.withdrawLiquidity
+      ? i18n.t("remove_liquidity")
+      : i18n.t("add_liquidity");
   }
 
   get version() {

@@ -33,7 +33,6 @@ const detectSubdomain = () => {
   const hostname = window.location.hostname;
   const splitted = hostname.split(".");
   const withoutStaging = splitted.length == 4 ? splitted.slice(1) : splitted;
-  console.log(withoutStaging, "is without staging");
   const subDomain = withoutStaging[0];
   if (subDomain == "localhost") return;
   if (subDomain == "data") {
@@ -185,7 +184,6 @@ export const router = new Router({
     },
     {
       path: "/:service/protection/stake",
-      name: "ProtectionAction",
       components: {
         Nav: Navigation,
         Hero: ProtectionActions
@@ -197,7 +195,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          name: "AddProtectionHome",
+          name: "ProtectionAction",
           component: AddProtectionHome
         },
         {
@@ -247,7 +245,6 @@ export const router = new Router({
     },
     {
       path: "/:service/data",
-      name: "Data",
       components: {
         Nav: Navigation,
         default: Data
@@ -256,7 +253,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          name: "DataSummary",
+          name: "Data",
           component: DataSummary,
           meta: {
             key: "data",
@@ -267,7 +264,6 @@ export const router = new Router({
     },
     {
       path: "/:service/vote",
-      name: "Vote",
       components: {
         Nav: Navigation,
         default: Vote
@@ -276,7 +272,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          name: "VotePage",
+          name: "Vote",
           component: VotePage,
           meta: {
             key: "vote",
