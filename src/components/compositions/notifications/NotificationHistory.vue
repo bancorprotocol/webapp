@@ -1,9 +1,18 @@
 <template>
-  <div class="px-3">
+  <div class="px-3 mt-3">
     <div v-if="history.length">
-      <div class="mb-3 font-w500 text-muted-light text-right">
-        <span @click="clearAllNotifications()" class="cursor">clear</span>
+      <div
+        class="d-flex mb-3 justify-content-between font-w600 text-right text-light"
+      >
+        <span @click="clearAllNotifications()">History</span>
+        <span
+          @click="clearAllNotifications()"
+          class="cursor text-muted-light font-size-12"
+        >
+          clear
+        </span>
       </div>
+
       <notification-details
         v-for="notification in history"
         :key="`history-${notification.id}`"
