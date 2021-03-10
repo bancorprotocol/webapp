@@ -18,7 +18,14 @@
         "
       />
     </div>
-    <span class="mx-3">Page {{ current }} of {{ pagesTotal }}</span>
+    <span class="mx-3">
+      {{
+        $t("page_of", {
+          current: current,
+          total: pagesTotal
+        })
+      }}</span
+    >
 
     <div
       :class="current < pagesTotal ? 'cursor' : ''"
@@ -41,7 +48,7 @@
     class="d-flex justify-content-center align-items-center mt-4 font-size-14 font-w500"
     :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
   >
-    No results found</span
+    {{ $t("no_res_found") }}</span
   >
 </template>
 

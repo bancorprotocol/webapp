@@ -10,7 +10,7 @@
   >
     <template slot="modal-header">
       <h5 :class="darkMode ? 'text-body-dark' : 'text-body-light'" class="m-0">
-        Select a Wallet
+        {{ $t("select_wallet") }}
       </h5>
       <font-awesome-icon
         icon="times"
@@ -38,7 +38,7 @@
               :src="
                 require('@/assets/media/logos/' + providerLogoUrl(provider))
               "
-              alt="Provider Logo"
+              :alt="$t('provider_logo')"
             />
             <h5
               class="m-0 p-0"
@@ -58,7 +58,7 @@
                 require('@/assets/media/logos/' +
                   providerLogoUrl(selectedProvider))
               "
-              alt="Provider Logo"
+              :alt="$t('provider_logo')"
             />
             <h5
               class="m-0 p-0"
@@ -69,7 +69,7 @@
           </div>
           <h3 class="mt-5 text-danger text-center">
             <font-awesome-icon icon="exclamation-circle" class="mr-2" />
-            Connection Error
+            {{ $t("cnnection_error") }}
           </h3>
           <p :class="darkMode ? 'text-body-dark' : 'text-body-light'">
             {{ error.message ? error.message : error }}
@@ -79,7 +79,8 @@
             size="lg"
             variant="primary"
             class="btn-block block-rounded"
-            >Try Again</b-btn
+          >
+            {{ $t("try_again") }}</b-btn
           >
         </b-col>
       </b-row>
@@ -92,7 +93,7 @@
                 require('@/assets/media/logos/' +
                   providerLogoUrl(selectedProvider))
               "
-              alt="Provider Logo"
+              :alt="$t('provider_logo')"
             />
             <h5
               class="m-0 p-0"

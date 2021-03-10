@@ -8,7 +8,6 @@
       <pool-logos-overlapped :pool="pool" size="20" />
       <span class="ml-2">{{ baseLabel }} </span>
       <font-awesome-icon v-if="dropdown" icon="caret-down" class="ml-2" />
-      <version-badge v-if="version" :version="pool.v2 ? 2 : 1" class="ml-2" />
     </div>
     <div
       v-else-if="token"
@@ -18,7 +17,7 @@
       <img
         class="img-avatar img-avatar32 bg-white"
         :src="token.logo"
-        alt="Token Logo"
+        :alt="$t('token_logo')"
         style="
           box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
           border: solid 1px #e6ebf2;

@@ -4,11 +4,12 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
+import { i18n } from "@/i18n";
 
 @Component
 export default class CountdownTimer extends Vue {
   @Prop() dateUnix!: number;
-  @Prop({ default: "Countdown ended" }) msgCountdownEnded!: string;
+  @Prop({ default: i18n.t("countdown_ended") }) msgCountdownEnded!: string;
 
   private now: number = Date.now() / 1000;
   private interval: any;

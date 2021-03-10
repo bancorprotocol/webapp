@@ -1,13 +1,13 @@
 <template>
   <div class="mt-3">
-    <label-content-split label="Stake in Pool" class="mt-3">
+    <label-content-split :label="$t('stake_pool')" class="mt-3">
       <pool-logos :pool="pool" :label="formatNumber(position.stake.amount)" />
     </label-content-split>
 
     <alert-block
       v-if="warning"
       variant="warning"
-      title="Important"
+      :title="$t('important')"
       :msg="warning"
       class="my-3"
     />
@@ -15,13 +15,13 @@
     <alert-block
       v-if="inputError"
       variant="error"
-      title="Important"
+      :title="$t('important')"
       :msg="inputError"
       class="my-3"
     />
 
     <percentage-slider
-      label="Input"
+      :label="$t('input')"
       v-model="percentage"
       :show-buttons="true"
     />
@@ -31,23 +31,31 @@
     </div>
 
     <gray-border-block :gray-bg="true" class="my-3" v-if="false">
-      <label-content-split label="Output value of" value="????" />
+      <label-content-split :label="$t('output_value')" value="????" />
       <label-content-split value="????" class="mb-2" />
 
-      <label-content-split label="Output breakdown" value="????" />
+      <label-content-split :label="$t('output_breakdown')" value="????" />
       <label-content-split value="????" />
     </gray-border-block>
 
     <main-button
-      label="Continue"
+      :label="$t('continue')"
       @click="initAction"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
     />
 
-    <modal-base title="You will receive" v-model="modal" @input="setDefault">
-      <action-modal-status :error="error" :success="success" />
+    <modal-base
+      :title="$t('you_will_receive')"
+      v-model="modal"
+      @input="setDefault"
+    >
+      <action-modal-status
+        :error="error"
+        :success="success"
+        :msg="$t('bnt_withdrawls')"
+      />
 
       <main-button
         @click="onModalClick"
@@ -64,6 +72,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
+import { i18n } from "@/i18n";
 import { TxResponse } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
@@ -105,7 +114,7 @@ export default class WithdrawProtectionDouble extends BaseComponent {
 
   get warning() {
     return this.position.coverageDecPercent !== 1
-      ? "You still haven’t reached full coverage. There is a risk for impermanent loss."
+      ? i18n.t("havent_reached_coverage")
       : "";
   }
 
@@ -116,10 +125,12 @@ export default class WithdrawProtectionDouble extends BaseComponent {
 
   get inputError() {
     if (!this.sufficientVBnt) {
-      return `Insufficient vBNT balance, you must hold ${this.position.givenVBnt} vBNT before withdrawing position.`;
+      return i18n.t("insufficient_vBNT_balance", {
+        amount: this.position.givenVBnt
+      });
     }
     return parseFloat(this.percentage) === 0
-      ? "Percentage can not be Zero"
+      ? i18n.t("percentage_not_zero")
       : "";
   }
 
@@ -197,12 +208,12 @@ export default class WithdrawProtectionDouble extends BaseComponent {
 
   get modalConfirmButton() {
     return this.error
-      ? "Close"
+      ? i18n.t("close")
       : this.success
-      ? "Close"
+      ? i18n.t("close")
       : this.txBusy
-      ? "processing ..."
-      : "Confirm";
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 }
 </script>
