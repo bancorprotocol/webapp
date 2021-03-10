@@ -6,7 +6,7 @@
           class="font-size-20 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
          >
-          Crypto/Fiat gateway providers
+          {{ `Crypto \<> Fiat Gateway Providers` }} 
         </span>
       </div>
 
@@ -14,8 +14,7 @@
         class="font-size-14 font-w400 my-3"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        Here is a list of popular crypto/fiat gateways that can be used to buy crypto with credit card,  
-        wire transfer, and more. Some also offer crypto to fiat off-ramp solutions.
+        Below is a list of popular crypto<>fiat gateways that can be used to buy or sell crypto with a credit card, bank transfer & more.
       </p>
     </b-col>
 
@@ -23,9 +22,7 @@
       <alert-block
         class="my-2"
       >
-        Disclaimer: The services are provided by the different service providers as is. 
-        Bancor is not associated, responsible or liable to the performance of the services. 
-        Any claims and questions, should be addressed with the selected partner directly.
+        Crypto<>fiat gateway services on Bancor are provided by third-parties. Bancor is not associated with, responsible or liable for the performance of these third-party services. Any claims and questions should be addressed with the selected provider directly.
       </alert-block>  
     </b-col>
 
