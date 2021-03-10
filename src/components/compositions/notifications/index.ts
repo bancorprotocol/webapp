@@ -1,3 +1,4 @@
+// @ts-ignore
 import { computed, ref, watch } from "@vue/composition-api";
 import { web3 } from "@/api/web3";
 
@@ -19,6 +20,14 @@ export interface INotificationView {
   showSeconds?: number;
   alertOnly?: boolean;
 }
+export interface IAddNotification {
+  title: string;
+  description: string;
+  status?: ENotificationStatus;
+  txHash?: string;
+  showSeconds?: number;
+  alertOnly?: boolean;
+}
 
 export const history = ref<INotificationView[]>([]);
 
@@ -30,21 +39,23 @@ export const pendingQueue = computed(() =>
   history.value.filter(n => n.status === ENotificationStatus.pending)
 );
 
-export const addNotification = (
-  title: string,
-  description = "",
-  status = ENotificationStatus.info,
-  txHash?: string,
-  showSeconds = 8,
-  alertOnly?: boolean
-) => {
+export const addNotification = (payload: IAddNotification) => {
+  const {
+    title,
+    description,
+    status,
+    txHash,
+    showSeconds,
+    alertOnly
+  } = payload;
+
   const notification: INotificationView = {
     id: Date.now(),
-    status,
+    status: status ?? ENotificationStatus.info,
     title,
     description,
     txHash,
-    showSeconds,
+    showSeconds: showSeconds ?? 8,
     alertOnly,
     timestamp: new Date()
   };
@@ -112,6 +123,7 @@ export const updatePendingTx = async (notification: INotificationView) => {
 
       // update history
       history.value[index].status = notification.status;
+      history.value[index].showSeconds = 8;
     }
   } catch (e) {
     console.error(" - Error in: updatePendingTx - ", e);
@@ -128,7 +140,7 @@ export const loadLocalHistory = () => {
 
 watch(
   history,
-  history => {
+  (history: INotificationView[]) => {
     localStorage.setItem("notification_history", JSON.stringify(history));
   },
   { deep: true }
