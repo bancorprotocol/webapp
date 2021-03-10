@@ -360,7 +360,7 @@ export const en = {
     "{token} limit reached. Please wait until some space opens up.",
   data_refreshes_auto: "Data refreshes automatically",
   multiplier_changes:
-    "Starting at 1, your multiplier increase .25 each week until reaching 2. At which point, you are getting twice the rewards you were on week 1. The number to the left already takes this into account.",
+    "Starting at 1x, your multiplier increase .25x each week until reaching 2x. At which point, you are getting twice the rewards you were on week 1. The number to the left assumes 2x is reached.",
   current_protection: "Current protection is {amount}",
   roi_protected_split:
     "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI."
