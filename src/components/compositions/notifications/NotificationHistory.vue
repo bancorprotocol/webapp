@@ -1,55 +1,8 @@
 <template>
-  <div class="notification-history">
-    <b-btn
-      @click="addNotification('Test Title', 'Description goes here', 'success')"
-      size="sm"
-      class="mr-2"
-    >
-      All
-    </b-btn>
+  <div class="px-3">
     <div v-if="history.length">
-      <div class="d-flex justify-content-between">
-        <div>
-          <b-btn @click="addNotification('Test Title')" size="sm" class="mr-2">
-            default
-          </b-btn>
-          <b-btn
-            @click="
-              addNotification('Test Title', 'Description goes here', 'pending')
-            "
-            size="sm"
-            class="mr-2"
-          >
-            pending
-          </b-btn>
-          <b-btn
-            @click="
-              addNotification('Test Title', 'Description goes here', 'success')
-            "
-            size="sm"
-            class="mr-2"
-          >
-            success
-          </b-btn>
-          <b-btn
-            @click="
-              addNotification('Test Title', 'Description goes here', 'warning')
-            "
-            size="sm"
-          >
-            warning
-          </b-btn>
-          <b-btn
-            @click="
-              addNotification('Test Title', 'Description goes here', 'error')
-            "
-            size="sm"
-          >
-            error
-          </b-btn>
-        </div>
-
-        <b-btn @click="clearAllNotifications()" size="sm">clear</b-btn>
+      <div class="mb-3 font-w500 text-muted-light text-right">
+        <span @click="clearAllNotifications()" class="cursor">clear</span>
       </div>
       <notification-details
         v-for="notification in history"
@@ -59,7 +12,9 @@
         style="width: 100%"
       />
     </div>
-    <div v-else class="text-center text-muted-light">No Notifications yet</div>
+    <div v-else class="text-center text-muted-light font-w500 mt-5">
+      Nothing here yet.
+    </div>
   </div>
 </template>
 
@@ -86,10 +41,3 @@ export default defineComponent({
   }
 });
 </script>
-
-<style scoped>
-.notification-history {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-</style>
