@@ -1943,6 +1943,8 @@ export class EthBancorModule
         })
       );
 
+      const poolPrograms = await vxm.rewards.fetchPoolPrograms();
+
       const positions = allPositions.map(
         (position): ProtectedLiquidityCalculated => {
           const liqReturn =
@@ -1955,9 +1957,13 @@ export class EthBancorModule
             x => x.id === `${position.poolToken}-${position.reserveToken}`
           );
 
-          const multiplier = rewardsMultiplier.find(
-            x => x.id === `${position.poolToken}-${position.reserveToken}`
-          );
+          const multiplier = poolPrograms?.some(
+            x => x.poolToken === position.poolToken
+          )
+            ? rewardsMultiplier.find(
+                x => x.id === `${position.poolToken}-${position.reserveToken}`
+              )
+            : null;
 
           return {
             ...position,
@@ -1966,7 +1972,10 @@ export class EthBancorModule
             pendingReserveReward: pendingReserveReward
               ? pendingReserveReward.pendingReserveReward
               : new BigNumber(0),
-            rewardsMultiplier: multiplier ? multiplier.rewardsMultiplier : 0
+            rewardsMultiplier:
+              multiplier && pendingReserveReward
+                ? multiplier.rewardsMultiplier
+                : 0
           };
         }
       );
