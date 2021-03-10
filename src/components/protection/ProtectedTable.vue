@@ -12,7 +12,7 @@
       default-order="desc"
     >
       <template #cell(stake)="{ item, value, isCollapsable }">
-        <div :id="`popover-target-${item.id}`">
+        <div :id="`popover-stake-${item.id}`">
           <div>
             {{ `${prettifyNumber(value.amount)} ${item.symbol}` }}
           </div>
@@ -64,7 +64,7 @@
           </div>
           <b-popover
             v-if="!isCollapsable"
-            :target="`popover-target-${item.id}`"
+            :target="`popover-stake-${item.id}`"
             triggers="hover"
             placement="top"
             class="font-size-12 font-w400"
@@ -75,7 +75,7 @@
         </div>
       </template>
       <template #cellCollapsed(stake)="{ item, value }">
-        <div :id="`popover-target-${item.id}`">
+        <div :id="`popover-stake-${item.id}`">
           <div>
             {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
           </div>
@@ -93,7 +93,7 @@
             {{ poolName(value.poolId) }}
           </div>
           <b-popover
-            :target="`popover-target-${item.id}`"
+            :target="`popover-stake-${item.id}`"
             triggers="hover"
             placement="top"
             class="font-size-12 font-w400"
@@ -187,7 +187,7 @@
       </template>
 
       <template #cell(fees)="{ item, value }">
-        <div class="text-center">
+        <div class="text-center" :id="`popover-fees-${item.id}`">
           <div>
             {{ `${prettifyNumber(value)} ${item.symbol}` }}
           </div>
@@ -205,9 +205,18 @@
             </b-badge>
           </div>
         </div>
+        <b-popover
+          :target="`popover-fees-${item.id}`"
+          triggers="hover"
+          placement="top"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("multiplier_changes") }}
+        </b-popover>
       </template>
       <template #cellCollapsed(fees)="{ value, item }">
-        <div class="text-center">
+        <div class="text-center" :id="`popover-fees-${item.id}`">
           <div>
             {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
           </div>
@@ -215,15 +224,26 @@
             X{{ prettifyNumber(item.rewardsMultiplier) }}
           </b-badge>
         </div>
+        <b-popover
+          :target="`popover-fees-${item.id}`"
+          triggers="hover"
+          placement="top"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("multiplier_changes") }}
+        </b-popover>
       </template>
 
       <template #cell(roi)="{ value }">
         <div class="text-center">
           <div>
-          {{
-              value && typeof value.fees !== "undefined" ? stringifyPercentage(value.fees) : "N/A"
-          }}
-        </div>
+            {{
+              value && typeof value.fees !== "undefined"
+                ? stringifyPercentage(value.fees)
+                : "N/A"
+            }}
+          </div>
           <b-badge
             v-if="value.reserveRewards.gt(0)"
             variant="primary"
@@ -308,10 +328,20 @@
 
         <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
         <countdown-timer
+          :id="`popover-currentCoverage-${item.id}`"
           :date-unix="item.fullCoverage"
           :msg-countdown-ended="$t('full_protection_reached')"
           class="font-size-12"
         />
+        <b-popover
+          :target="`popover-currentCoverage-${item.id}`"
+          triggers="hover"
+          placement="top"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("current_protection", { amount: item.fullyProtected.amount }) }}
+        </b-popover>
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
         <div class="d-flex flex-column font-size-12 font-w600">
@@ -340,10 +370,20 @@
 
         <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
         <countdown-timer
+          :id="`popover-currentCoverage-${item.id}`"
           :date-unix="item.fullCoverage"
           :msg-countdown-ended="$t('full_protection_reached')"
           class="font-size-12"
         />
+        <b-popover
+          :target="`popover-currentCoverage-${item.id}`"
+          triggers="hover"
+          placement="top"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("current_protection", { amount: item.fullyProtected.amount }) }}
+        </b-popover>
       </template>
 
       <template #cell(actions)="{ item, isCollapsable, isExpanded }">
@@ -521,7 +561,7 @@ export default class ProtectedTable extends BaseComponent {
         id: 4,
         key: "fees",
         label: i18n.tc("fees_rewards"),
-        tooltip: i18n.tc("fees_stake_earned"),
+        tooltip: i18n.tc("fees_generated"),
         minWidth: "110px",
         thClass: "text-center"
       },
@@ -529,7 +569,7 @@ export default class ProtectedTable extends BaseComponent {
         id: 5,
         key: "roi",
         label: "ROI",
-        tooltip: i18n.tc("roi__protected_value"),
+        tooltip: i18n.tc("roi_protected_split"),
         minWidth: "75px",
         thClass: "text-center"
       },
