@@ -1,37 +1,38 @@
 <template>
   <div>
-    <b-dropdown
-      id="dropdown-activity"
-      right
-      :variant="darkMode ? 'outline-dark' : 'outline-light'"
+    <b-btn
       size="sm"
-      toggle-class="block-rounded"
-      :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
-      no-caret
+      :variant="darkMode ? 'outline-dark' : 'outline-light'"
+      v-b-toggle.sidebar-notifications
     >
-      <template #button-content>
-        <font-awesome-icon
-          v-if="pendingQueue.length == 0"
-          icon="bell"
-          fixed-width
-        />
-        <font-awesome-icon v-else icon="circle-notch" spin fixed-width />
-      </template>
+      <font-awesome-icon
+        v-if="pendingQueue.length === 0"
+        icon="bell-on"
+        fixed-width
+      />
+      <font-awesome-icon v-else icon="circle-notch" spin fixed-width />
+    </b-btn>
 
-      <b-dropdown-text
-        style="width: 500px"
-        :variant="darkMode ? 'dark' : 'light'"
-      >
-        <NotificationHistory />
-      </b-dropdown-text>
-    </b-dropdown>
+    <b-sidebar
+      id="sidebar-notifications"
+      shadow
+      right
+      title="Notification Center"
+      bg-variant="white"
+      text-variant="light"
+      backdrop-variant="transparent"
+      width="400px"
+      backdrop
+    >
+      <NotificationHistory />
+    </b-sidebar>
 
     <NotificationAlerts />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "@vue/composition-api";
+import { defineComponent } from "@vue/composition-api";
 import {
   addNotification,
   ENotificationStatus,
@@ -39,9 +40,9 @@ import {
   loadLocalHistory,
   pendingQueue
 } from "@/components/compositions/notifications/index";
-import NotificationHistory from "@/components/compositions/notifications/NotificationHistory.vue";
 import { vxm } from "@/store";
 import NotificationAlerts from "@/components/compositions/notifications/NotificationAlerts.vue";
+import NotificationHistory from "@/components/compositions/notifications/NotificationHistory.vue";
 
 export default defineComponent({
   props: { position: { type: String, default: "right" } },
@@ -54,6 +55,7 @@ export default defineComponent({
   setup() {
     loadLocalHistory();
     return {
+      history,
       pendingQueue,
       addNotification,
       ENotificationStatus
