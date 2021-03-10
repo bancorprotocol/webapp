@@ -162,8 +162,8 @@ export const en = {
   fees: "Fees (24h)",
   fees_generated:
     "Fees are generated when traders swap in pools where you provide liquidity. Rewards are bonuses paid in BNT to liquidity providers.",
-  roi_protected_split:
-    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
+  roi_protected_value:
+    "The ROI of your fully protected value vs. your initial stake.",
   estimated_calculation_annual_returns:
     "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
   current_coverage: "Current Coverage",
@@ -361,5 +361,7 @@ export const en = {
   data_refreshes_auto: "Data refreshes automatically",
   multiplier_changes:
     "Starting at 1, your multiplier increase .25 each week until reaching 2. At which point, you are getting twice the rewards you were on week 1. The number to the left already takes this into account.",
-  current_protection: "Current protection is {amount}"
+  current_protection: "Current protection is {amount}",
+  roi_protected_split:
+    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI."
 };

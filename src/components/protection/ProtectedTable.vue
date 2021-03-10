@@ -188,22 +188,21 @@
 
       <template #cell(fees)="{ item, value }">
         <div class="text-center" :id="`popover-fees-${item.id}`">
-          <div>
-            {{ `${prettifyNumber(value)} ${item.symbol}` }}
-          </div>
+          {{ `${prettifyNumber(value)} ${item.symbol}` }}
 
           <b-badge
             v-if="item.pendingReserveReward.gt(0)"
             variant="primary"
-            class="px-2"
+            class="badge-version text-primary px-2"
           >
-            + {{ prettifyNumber(item.pendingReserveReward) }} BNT
+            {{
+              `+ ${prettifyNumber(item.pendingReserveReward)} BNT ${
+                item.rewardsMultiplier > 0
+                  ? "| X" + prettifyNumber(item.rewardsMultiplier)
+                  : ""
+              }`
+            }}
           </b-badge>
-          <div v-if="item.rewardsMultiplier > 0">
-            <b-badge variant="primary">
-              X{{ prettifyNumber(item.rewardsMultiplier) }}
-            </b-badge>
-          </div>
         </div>
         <b-popover
           :target="`popover-fees-${item.id}`"
@@ -215,28 +214,16 @@
           {{ $t("multiplier_changes") }}
         </b-popover>
       </template>
-      <template #cellCollapsed(fees)="{ value, item }">
-        <div class="text-center" :id="`popover-fees-${item.id}`">
+      <template #cellCollapsed(fees)="{ value }">
+        <div class="text-center">
           <div>
             {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
           </div>
-          <b-badge variant="primary" v-if="item.rewardsMultiplier > 0">
-            X{{ prettifyNumber(item.rewardsMultiplier) }}
-          </b-badge>
         </div>
-        <b-popover
-          :target="`popover-fees-${item.id}`"
-          triggers="hover"
-          placement="top"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          {{ $t("multiplier_changes") }}
-        </b-popover>
       </template>
 
-      <template #cell(roi)="{ value }">
-        <div class="text-center">
+      <template #cell(roi)="{ value, item }">
+        <div class="text-center" :id="`popover-roi-${item.id}`">
           <div>
             {{
               value && typeof value.fees !== "undefined"
@@ -247,11 +234,20 @@
           <b-badge
             v-if="value.reserveRewards.gt(0)"
             variant="primary"
-            class="px-2"
+            class="badge-version text-primary px-2"
           >
             + {{ stringifyPercentage(value.reserveRewards) }}
           </b-badge>
         </div>
+        <b-popover
+          :target="`popover-roi-${item.id}`"
+          triggers="hover"
+          placement="top"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("roi_protected_split") }}
+        </b-popover>
       </template>
       <template #cellCollapsed(roi)="{ value }">
         <div class="text-center">
@@ -555,21 +551,21 @@ export default class ProtectedTable extends BaseComponent {
         key: "protectedAmount",
         label: i18n.tc("claimable"),
         tooltip: i18n.tc("tokens_can_withdraw_now"),
-        minWidth: "160px"
+        minWidth: "140px"
       },
       {
         id: 4,
         key: "fees",
         label: i18n.tc("fees_rewards"),
         tooltip: i18n.tc("fees_generated"),
-        minWidth: "110px",
+        minWidth: "120px",
         thClass: "text-center"
       },
       {
         id: 5,
         key: "roi",
         label: "ROI",
-        tooltip: i18n.tc("roi_protected_split"),
+        tooltip: i18n.tc("roi_protected_value"),
         minWidth: "75px",
         thClass: "text-center"
       },
