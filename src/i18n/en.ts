@@ -268,7 +268,7 @@ export const en = {
   about: "About (Coming Soon)",
   apps: "Apps",
   data: "Data",
-  developers: "Developers",
+  developer_resources: "Developer Resources",
   chat: "Chat",
   community_support: "Community & Support",
   terms_of_use: "Terms of Use",
