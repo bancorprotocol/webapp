@@ -136,6 +136,7 @@ import BigNumber from "bignumber.js";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -284,7 +285,7 @@ export default class SwapAction extends BaseTxAction {
     this.txMeta.txBusy = true;
 
     try {
-      this.txMeta.success = await vxm.bancor.convert({
+      const success = await vxm.bancor.convert({
         from: {
           id: this.token1.id,
           amount: this.amount1
@@ -295,6 +296,17 @@ export default class SwapAction extends BaseTxAction {
         },
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
+      });
+      console.log(success);
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: "Swap",
+        description: `Sell ${this.prettifyNumber(this.amount1)} ${
+          this.token1.symbol
+        } and receive ${this.prettifyNumber(this.amount2)} ${
+          this.token2.symbol
+        }.`,
+        txHash: success.txId
       });
       this.setDefault();
     } catch (e) {
