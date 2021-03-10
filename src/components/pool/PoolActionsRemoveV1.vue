@@ -137,7 +137,6 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
   loading = false;
 
   percentage: string = "50";
-  rate = "??????.?????";
 
   amountSmartToken = "";
   amountToken1: BigNumber | null = null;
@@ -162,7 +161,7 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
     this.txMeta.txBusy = true;
 
     try {
-      this.txMeta.success = await vxm.bancor.addLiquidity({
+      this.txMeta.success = await vxm.bancor.removeLiquidity({
         id: this.pool.id,
         reserves: [
           {
