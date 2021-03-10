@@ -53,7 +53,6 @@ import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
-import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -113,13 +112,6 @@ export default class WithdrawRewards extends BaseTxAction {
       this.txMeta.success = await vxm.rewards.claimRewards({
         onUpdate: this.onUpdate
       });
-
-      await addNotification(
-        "Withdraw Rewards",
-        "Claiming xx BNT from rewards program",
-        undefined,
-        this.txMeta.success.txId
-      );
     } catch (e) {
       this.txMeta.txError = e.message;
     } finally {
