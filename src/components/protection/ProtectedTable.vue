@@ -20,7 +20,10 @@
         />
 
         {{ item.symbol }}
-        <div class="ml-4">
+        <div
+          class="font-size-12 font-w400 ml-4"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
           {{ poolName(item.poolId) }}
         </div>
       </template>
@@ -34,7 +37,10 @@
         />
         {{ item.stake.symbol }}
 
-        <div class="ml-4">
+        <div
+          class="font-size-12 font-w400 ml-4"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
           {{ poolName(item.stake.poolId) }}
         </div>
       </template>
@@ -47,7 +53,8 @@
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           />
           <b-popover
             v-if="!isCollapsable"
@@ -69,7 +76,8 @@
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           />
           <b-popover
             :target="`popover-stake-${item.id}`"
@@ -100,7 +108,8 @@
             typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         />
       </template>
       <template #cellCollapsed(fullyProtected)="{ value }">
@@ -120,7 +129,8 @@
             typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         />
       </template>
 
@@ -141,7 +151,8 @@
             typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         />
       </template>
       <template #cellCollapsed(protectedAmount)="{ value }">
@@ -161,7 +172,8 @@
             typeof value.amount !== 'undefined'
           "
           v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         />
       </template>
 
@@ -172,7 +184,7 @@
           <b-badge
             v-if="item.pendingReserveReward.gt(0)"
             variant="primary"
-            class="badge-version text-primary p-0"
+            class="badge-version text-primary"
           >
             {{
               `+ ${prettifyNumber(item.pendingReserveReward)} BNT ${
@@ -211,7 +223,7 @@
           <b-badge
             v-if="value.reserveRewards.gt(0)"
             variant="primary"
-            class="badge-version text-primary p-0"
+            class="badge-version text-primary"
           >
             + {{ stringifyPercentage(value.reserveRewards) }}
           </b-badge>
@@ -235,53 +247,63 @@
       </template>
 
       <template #cell(apr)="{ value }">
-        <div class="d-flex align-items-center">
-          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
+        <div>
           {{
-            typeof value.day !== "undefined"
-              ? stringifyPercentage(value.day)
-              : "N/A"
+            `D | ${
+              typeof value.day !== "undefined"
+                ? stringifyPercentage(value.day)
+                : "N/A"
+            }`
           }}
         </div>
-        <div class="d-flex align-items-center my-1">
-          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+        <div
+          class="font-size-12 font-w400 my-1"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
           {{
-            typeof value.week !== "undefined"
-              ? stringifyPercentage(value.week)
-              : "N/A"
+            `W | ${
+              typeof value.week !== "undefined"
+                ? stringifyPercentage(value.week)
+                : "N/A"
+            }`
           }}
         </div>
       </template>
       <template #cellCollapsed(apr)="{ value }">
-        <div class="d-flex align-items-center">
-          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
+        <div>
           {{
-            typeof value.day !== "undefined"
-              ? stringifyPercentage(value.day)
-              : "N/A"
+            `D | ${
+              typeof value.day !== "undefined"
+                ? stringifyPercentage(value.day)
+                : "N/A"
+            }`
           }}
         </div>
-        <div class="d-flex align-items-center my-1">
-          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
+        <div
+          class="font-size-12 font-w400 my-1"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
           {{
-            typeof value.week !== "undefined"
-              ? stringifyPercentage(value.week)
-              : "N/A"
+            `W | ${
+              typeof value.week !== "undefined"
+                ? stringifyPercentage(value.week)
+                : "N/A"
+            }`
           }}
         </div>
       </template>
 
       <template #cell(currentCoverage)="{ item }">
-        <div class="d-flex flex-column font-size-12 font-w600">
+        <!-- <div class="d-flex flex-column font-size-12 font-w600">
           <span v-if="item.collapsedData.length" class="font-w500">
             {{ $t("position_vesting_time") }}
-          </span>
+          </span> 
           {{ stringifyPercentage(item.coverageDecPercent) }}
           <div
             v-if="!insuranceStarted(item.insuranceStart)"
             class="d-flex justify-content-between align-items-center text-danger"
           >
-            <div>
+             <div>
               {{ `${$t("cliff")}:` }}
               <countdown-timer :date-unix="item.insuranceStart" />
             </div>
@@ -296,16 +318,23 @@
             >
               {{ $t("loss_protection_vesting") }}
             </b-popover>
-          </div>
-        </div>
+          </div> 
+        </div>-->
 
-        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
+        <b-progress
+          :id="`popover-percentage-${item.id}`"
+          :value="item.coverageDecPercent"
+          :max="1"
+          class="progress-bar-positive mt-1"
+          style="width: 65% !important"
+        />
         <countdown-timer
           :id="`popover-currentCoverage-${item.id}`"
           :date-unix="item.fullCoverage"
           :msg-countdown-ended="$t('full_protection_reached')"
           class="font-size-12"
         />
+
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
           triggers="hover"
@@ -315,9 +344,18 @@
         >
           {{ $t("current_protection", { amount: item.fullyProtected.amount }) }}
         </b-popover>
+        <b-popover
+          :target="`popover-percentage-${item.id}`"
+          triggers="hover"
+          placement="top"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ stringifyPercentage(item.coverageDecPercent) }}
+        </b-popover>
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
-        <div class="d-flex flex-column font-size-12 font-w600">
+        <!-- <div class="d-flex flex-column font-size-12 font-w600">
           {{ stringifyPercentage(item.coverageDecPercent) }}
           <div
             v-if="!insuranceStarted(item.insuranceStart)"
@@ -337,17 +375,23 @@
               placement="bottom"
             >
               {{ $t("loss_protection_vesting") }}
-            </b-popover>
+            </b-popover> 
           </div>
-        </div>
+        </div>-->
 
-        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
+        <b-progress
+          :value="item.coverageDecPercent"
+          :max="1"
+          class="mt-1"
+          style="width: 65% !important"
+        />
         <countdown-timer
           :id="`popover-currentCoverage-${item.id}`"
           :date-unix="item.fullCoverage"
           :msg-countdown-ended="$t('full_protection_reached')"
           class="font-size-12"
         />
+
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
           triggers="hover"
@@ -527,7 +571,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "pool",
         label: i18n.tc("pool"),
         tooltip: "Place holder",
-        minWidth: "130px"
+        minWidth: "120px"
       },
       {
         id: 2,
@@ -548,23 +592,21 @@ export default class ProtectedTable extends BaseComponent {
         key: "protectedAmount",
         label: i18n.tc("claimable"),
         tooltip: i18n.tc("tokens_can_withdraw_now"),
-        minWidth: "130px"
+        minWidth: "122px"
       },
       {
         id: 5,
         key: "fees",
         label: i18n.tc("fees_rewards"),
         tooltip: i18n.tc("fees_generated"),
-        minWidth: "160px",
-        thClass: "text-center"
+        minWidth: "162px"
       },
       {
         id: 6,
         key: "roi",
         label: "ROI",
         tooltip: i18n.tc("roi_protected_value"),
-        minWidth: "115px",
-        thClass: "text-center"
+        minWidth: "115px"
       },
       {
         id: 7,
@@ -572,22 +614,22 @@ export default class ProtectedTable extends BaseComponent {
         label: "APR",
         tooltip: i18n.tc("estimated_calculation_annual_returns"),
         sortable: true,
-        minWidth: "115px"
+        minWidth: "112px"
       },
       {
         id: 8,
         key: "currentCoverage",
         label: i18n.tc("current_coverage"),
         tooltip: i18n.tc("impermanent_loss_protection"),
-        minWidth: "195px"
+        minWidth: "174px"
       },
       {
         id: 9,
         key: "actions",
         label: "",
         sortable: false,
-        minWidth: "70px",
-        maxWidth: "70px"
+        minWidth: "30px",
+        maxWidth: "30px"
       }
     ];
   }
