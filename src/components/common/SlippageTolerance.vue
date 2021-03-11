@@ -9,6 +9,7 @@
       <b-input-group>
         <b-form-input
           class="text-right custom-input-field pr-1"
+          inputmode="decimal"
           :class="formInputStyles"
           v-model="custom"
           @input="setCustomSlippage"
