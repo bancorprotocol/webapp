@@ -19,27 +19,44 @@
         searchInput !== null ? 'pr-2' : ''
       ]"
     >
-      <div v-if="backButton" class="fix-width">
+      <div v-if="backButton">
         <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
       </div>
 
-      <h3
-        class="m-0 p-0 my-2 font-size-14 font-w600 w-100"
-        :class="titleClasses"
-      >
+      <h3 class="m-0 p-0 my-2 font-size-14 font-w600" :class="titleClasses">
         {{ title }}
       </h3>
 
-      <div class="fix-width d-flex justify-content-end">
-        <span
-          v-if="detailModeProp !== null"
-          @click="detailModeProp = !detailModeProp"
-          class="text-primary cursor font-size-12 font-w500"
-        >
-          {{ detailModeProp ? $t("simple") : $t("detailed") }}
-        </span>
-        <!-- <version-badge v-if="version !== null" :version="version" /> -->
-      </div>
+      <b-dropdown
+        v-for="dropdown in dropDownFilters"
+        :key="dropdown.id"
+        :text="dropdown.items[dropdown.selectedIndex].title"
+        :variant="darkMode ? 'outline-dark' : 'outline-light'"
+        toggle-class="block-rounded"
+        :menu-class="
+          darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+        "
+        no-caret
+        class="m-2"
+      >
+        <template #button-content>
+          <div class="d-lg-none">
+            <font-awesome-icon icon="filter" fixed-width />
+          </div>
+          <div class="d-none d-lg-inline">
+            {{ dropdown.items[dropdown.selectedIndex].title }}
+          </div>
+        </template>
+        <b-dropdown-item
+          :variant="darkMode ? 'dark' : 'light'"
+          v-for="(item, index) in dropdown.items"
+          :key="item.id"
+          @click="dropdown.selectedIndex = index"
+          >{{ item.title }}
+        </b-dropdown-item>
+      </b-dropdown>
+
+      <slot name="date"></slot>
 
       <div v-if="rippleAnimation">
         <img
@@ -63,7 +80,7 @@
         </b-popover>
       </div>
 
-      <div v-if="searchInput !== null" class="float-right">
+      <div v-if="searchInput !== null">
         <multi-input-field
           v-model="searchInput"
           :clear="true"
@@ -87,11 +104,10 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Emit } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import VersionBadge from "@/components/common/VersionBadge.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
-  components: { VersionBadge, MultiInputField }
+  components: { MultiInputField }
 })
 export default class ContentBlock extends BaseComponent {
   @Prop() title?: string;
@@ -101,17 +117,23 @@ export default class ContentBlock extends BaseComponent {
   @Prop({ default: false }) shadowLight?: boolean;
   @Prop({ default: false }) px0?: boolean;
   @Prop({ default: false }) backButton!: boolean;
+  @Prop() dropDownFilters!: {
+    id: string;
+    selectedIndex: number;
+    items: {
+      title: string;
+    }[];
+  }[];
+  @Prop({ default: false }) dateFilter!: Date[];
   @Prop({ default: false }) rippleAnimation?: boolean;
-  @Prop({ default: null }) version!: 1 | 2 | null;
   @PropSync("search", { default: null }) searchInput!: string | null;
-  @PropSync("detailMode", { default: null }) detailModeProp!: boolean | null;
 
   @Emit()
   back() {}
 
   get titleClasses() {
     const color = this.darkMode ? "text-dark" : "text-light";
-    const alignment = this.backButton ? "text-center" : "text-left";
+    const alignment = this.backButton ? "text-center w-100" : "text-left";
     return [color, alignment];
   }
 }
@@ -126,9 +148,5 @@ export default class ContentBlock extends BaseComponent {
 
 .border-bottom-dark {
   border-bottom: 1px solid $gray-border-dark;
-}
-
-.fix-width {
-  width: 120px;
 }
 </style>

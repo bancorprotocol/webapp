@@ -3,7 +3,7 @@
     :fields="fields"
     :items="items"
     :filter="filter"
-    :filter-function="doFilter"
+    :filter-functions="[doFilter]"
     :sort-function="customSort"
     default-sort="unixTime"
   >

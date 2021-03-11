@@ -6,7 +6,10 @@
       :collapsable="true"
       :filter="search"
       filter-by="stake"
-      :filter-function="doFilter"
+      :filter-functions="[
+        doFilter,
+        ...(filterFunctions ? filterFunctions : [])
+      ]"
       :sort-function="customSort"
       default-sort="stake"
       default-order="desc"
@@ -481,6 +484,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
   @Prop() positions!: ViewProtectedLiquidity[];
+  @Prop() filterFunctions?: Function[];
 
   stringifyPercentage = stringifyPercentage;
 
@@ -617,8 +621,10 @@ export default class ProtectedTable extends BaseComponent {
     ];
   }
 
-  doFilter(row: ViewGroupedPositions, filter: string) {
-    return (row.symbol as string).toLowerCase().includes(filter.toLowerCase());
+  doFilter(row: ViewGroupedPositions) {
+    return (row.symbol as string)
+      .toLowerCase()
+      .includes(this.search.toLowerCase());
   }
 
   customSort(row: ViewGroupedPositions, sortBy: string) {

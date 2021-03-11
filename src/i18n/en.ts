@@ -356,6 +356,12 @@ export const en = {
   withdraw_reset:
     "Withdrawing will reset your rewards multiplier for all active positions back to x1",
   pool_not_accepting: "This pool is not accepting additional liquidity.",
+  no_positions_found: "No protected positions found.",
+  all_positions: "All positions",
+  fully_protected: "Fully protected",
+  not_fully_protected: "Not Fully protected",
+  all_pools: "All Pools",
+  select_date: "Select a date range",
   wait_until_space_opens:
     "{token} limit reached. Please wait until some space opens up.",
   data_refreshes_auto: "Data refreshes automatically",

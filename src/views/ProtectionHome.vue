@@ -34,6 +34,7 @@
             positions.length ? $t('protected_positions') : $t('protected')
           "
           :search.sync="searchProtected"
+          :dropDownFilters="positions.length ? dropDownFilters : []"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
@@ -46,11 +47,52 @@
             v-else-if="!positions.length"
             class="mx-3 mt-3 font-size-14 font-w500"
           >
-            No protected positions found.
+            {{ $t("no_positions_found") }}
           </div>
           <div v-else>
-            <ProtectedTable :positions="positions" :search="searchProtected" />
+            <ProtectedTable
+              :positions="positions"
+              :search="searchProtected"
+              :filter-functions="[
+                positionFilterFunction,
+                poolsFilterFunction,
+                dateFilterFunction
+              ]"
+            />
           </div>
+          <template v-if="positions.length" #date>
+            <div>
+              <date-range-picker
+                ref="picker"
+                :autoApply="true"
+                :ranges="false"
+                singleDatePicker="range"
+                v-model="dateRange"
+                @update="updateDateRange"
+              >
+                <template #input="picker">
+                  <div class="d-lg-none">
+                    {{
+                      formatDateRange(picker.startDate, picker.endDate, true)
+                    }}
+                  </div>
+                  <div class="d-none d-lg-inline">
+                    {{
+                      hasRange
+                        ? formatDateRange(picker.startDate, picker.endDate)
+                        : $t("select_date")
+                    }}
+                  </div>
+                </template>
+              </date-range-picker>
+              <font-awesome-icon
+                v-if="hasRange"
+                icon="times"
+                class="ml-2"
+                @click="clearDateRange"
+              />
+            </div>
+          </template>
         </content-block>
       </b-col>
     </b-row>
@@ -81,15 +123,22 @@
 </template>
 
 <script lang="ts">
+import { uniqBy } from "lodash";
 import { Component } from "vue-property-decorator";
+import DateRangePicker from "vue2-daterange-picker";
+import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
 import { vxm } from "@/store";
+import { i18n } from "@/i18n";
 import ProtectedTable from "@/components/protection/ProtectedTable.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { ViewProtectedLiquidity } from "@/types/bancor";
+import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
+import { groupPositionsArray } from "@/api/pureHelpers";
+import { buildPoolName } from "@/api/helpers";
 import ProtectedSummary from "@/components/protection/ProtectedSummary.vue";
 import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
+import dayjs from "@/utils/dayjs";
 
 @Component({
   components: {
@@ -97,12 +146,126 @@ import RewardsSummary from "@/components/rewards/RewardsSummary.vue";
     ProtectedSummary,
     Claim,
     ContentBlock,
-    ProtectedTable
+    ProtectedTable,
+    DateRangePicker
   }
 })
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
+  groupedPos = groupPositionsArray(vxm.ethBancor.protectedPositions);
+  dropDownFilters = [
+    {
+      id: "position",
+      selectedIndex: 0,
+      items: [
+        { id: "0", title: i18n.t("all_positions") },
+        { id: "1", title: i18n.t("fully_protected") },
+        { id: "2", title: i18n.t("not_fully_protected") }
+      ]
+    },
+    {
+      id: "pools",
+      selectedIndex: 0,
+      items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
+    }
+  ];
+  today = dayjs();
+  dateRange: {
+    startDate: dayjs.Dayjs | null;
+    endDate: dayjs.Dayjs | null;
+  } = {
+    startDate: this.today.subtract(30, "days"),
+    endDate: this.today
+  };
+
+  positionFilterFunction(row: ViewGroupedPositions) {
+    const fullRow = this.groupedPos.find(x => x.id === row.id);
+    if (fullRow) row.collapsedData = fullRow.collapsedData;
+
+    const now = dayjs();
+    const isFullyProtected: boolean = dayjs
+      .unix(row.fullCoverage)
+      .isBefore(now);
+
+    const selectedIndex = this.dropDownFilters[0].selectedIndex;
+    if (selectedIndex == 1) {
+      row.collapsedData = row.collapsedData.filter(x =>
+        dayjs.unix(x.fullCoverage).isBefore(now)
+      );
+      return isFullyProtected;
+    } else if (selectedIndex == 2) {
+      row.collapsedData = row.collapsedData.filter(
+        x => !dayjs.unix(x.fullCoverage).isBefore(now)
+      );
+      return !isFullyProtected;
+    } else return true;
+  }
+
+  poolsFilterFunction(row: ViewGroupedPositions) {
+    const pools = this.dropDownFilters[1];
+    if (pools.selectedIndex == 0) return true;
+
+    const pool = this.poolNames[pools.selectedIndex - 1];
+    return pool.id === row.poolId;
+  }
+
+  dateFilterFunction(row: ViewGroupedPositions) {
+    const fullRow = this.groupedPos.find(x => x.id === row.id);
+    if (fullRow) row.collapsedData = fullRow.collapsedData;
+
+    let isInRange: boolean = false;
+    //cant use hasRange cause TS
+    if (this.dateRange.startDate && this.dateRange.endDate) {
+      const date = dayjs.unix(row.stake.unixTime);
+      isInRange =
+        date.isBefore(this.dateRange.endDate) &&
+        date.isAfter(this.dateRange.startDate);
+
+      row.collapsedData = row.collapsedData.filter(x => {
+        const date = dayjs.unix(x.stake.unixTime);
+        if (this.dateRange.startDate && this.dateRange.endDate)
+          return (isInRange =
+            date.isBefore(this.dateRange.endDate) &&
+            date.isAfter(this.dateRange.startDate));
+        else return true;
+      });
+    } else return true;
+    return isInRange;
+  }
+  get hasRange() {
+    return this.dateRange.startDate && this.dateRange.endDate;
+  }
+
+  updateDateRange(values: { startDate: string; endDate: string }) {
+    this.dateRange.startDate = dayjs(values.startDate);
+    this.dateRange.endDate = dayjs(values.endDate);
+  }
+
+  clearDateRange() {
+    this.dateRange.startDate = null;
+    this.dateRange.endDate = null;
+  }
+
+  formatDateRange(startDate: number, endDate: number, short: boolean = false) {
+    let start = new Intl.DateTimeFormat("en-GB").format(startDate);
+    let end = new Intl.DateTimeFormat("en-GB").format(endDate);
+    if (short) {
+      start = start.slice(0, start.length - 5); //4 numbers in a year
+      end = end.slice(0, end.length - 5);
+    }
+    return `${start} - ${end}`;
+  }
+
+  get poolNames() {
+    const filteredNamedPos = uniqBy(this.groupedPos, x => x.poolId).map(
+      value => ({
+        id: value.poolId,
+        title: buildPoolName(value.poolId)
+      })
+    );
+    return filteredNamedPos;
+  }
 
   get positions(): ViewProtectedLiquidity[] {
     return vxm.ethBancor.protectedPositions;
@@ -117,7 +280,9 @@ export default class ProtectionHome extends BaseComponent {
     const scroll = this.$route.params.scroll;
     const el = this.$el.getElementsByClassName("closedPos")[0];
 
-    if (el && scroll) el.scrollIntoView({ behavior: "smooth" });
+    if (el && scroll) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
   }
 }
 </script>

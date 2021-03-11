@@ -39,6 +39,7 @@ import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
 import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
+import { faFilter } from "@fortawesome/free-solid-svg-icons/faFilter";
 import { faClock as faClockReg } from "@fortawesome/pro-regular-svg-icons/faClock";
 
 export const fas = [
@@ -85,7 +86,8 @@ export const fas = [
   faArrowUp,
   faCoins,
   faMinus,
-  faUnlock
+  faUnlock,
+  faFilter
 ];
 
 export const far = [faClockReg];
