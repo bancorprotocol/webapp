@@ -510,7 +510,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "roi",
         label: "ROI",
         tooltip: i18n.tc("roi__protected_value"),
-        minWidth: "75px",
+        minWidth: "78px",
         thClass: "text-center"
       },
       {
