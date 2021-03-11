@@ -229,8 +229,8 @@ keeperTokens$.subscribe(token =>
 );
 
 const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
-  map(([tokens, orders]) => {
-    return orders.map(
+  map(([tokens, orders]) =>
+    orders.map(
       (order): ViewLimitOrder => {
         const fromToken = findOrThrow(tokens, token =>
           compareString(token.address, order.order.makerToken)
@@ -254,8 +254,8 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
           seller: order.order.maker
         };
       }
-    );
-  })
+    )
+  )
 );
 
 viewLimitOrders$.subscribe(orders => vxm.ethBancor.setLimitOrders(orders));
@@ -6515,6 +6515,7 @@ export class EthBancorModule
   daoTokenAddresses: string[] = [];
 
   @mutation setDaoTokens(tokenAddresses: string[]) {
+    console.log(tokenAddresses, "are the dao token addresses");
     this.daoTokenAddresses = tokenAddresses;
   }
 
