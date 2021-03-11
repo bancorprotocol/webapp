@@ -30,52 +30,29 @@
       </b-col>
     </b-row>
 
-    <modal-base
-      :title="`${$t('claim')} BNT`"
-      v-model="modal"
-      @input="setDefault"
-    >
-      <action-modal-status :error="error" :success="success" />
-
-      <main-button
-        @click="onModalClick"
-        class="mt-3"
-        :label="modalConfirmButton"
-        :active="true"
-        :large="true"
-        :disabled="txBusy"
-      />
-    </modal-base>
+    <modal-tx-action title="Claim your BNT" icon="coins" :tx-meta="txMeta" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import SubContentBlock from "@/components/common/SubContentBlock.vue";
 import ClaimBnt from "@/components/protection/ClaimBnt.vue";
 import { vxm } from "@/store";
-import { i18n } from "@/i18n";
-import ModalBase from "@/components/modals/ModalBase.vue";
-import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import MainButton from "@/components/common/Button.vue";
-import { TxResponse } from "@/types/bancor";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
 @Component({
   components: {
-    ActionModalStatus,
-    ModalBase,
+    ModalTxAction,
     ClaimBnt,
     SubContentBlock,
     MainButton
   }
 })
-export default class Claim extends Vue {
+export default class Claim extends BaseTxAction {
   @Prop({ default: "" }) search!: string;
-
-  modal = false;
-  txBusy = false;
-  success: TxResponse | string | null = null;
-  error = "";
 
   now = Date.now() / 1000;
 
@@ -88,42 +65,20 @@ export default class Claim extends Vue {
   }
 
   async onClick() {
-    this.setDefault();
-    this.modal = true;
-    this.txBusy = true;
+    // @ts-ignore
+    this.openModal();
+
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
+
     try {
-      const result = await vxm.ethBancor.claimBnt();
-      this.success = result;
+      // @ts-ignore
+      this.txMeta.success = await vxm.ethBancor.claimBnt(this.onPrompt);
     } catch (err) {
-      this.error = err.message;
+      this.txMeta.txBusy = err.message;
     } finally {
-      this.txBusy = false;
+      this.txMeta.txBusy = false;
     }
-  }
-
-  onModalClick() {
-    if (this.success) {
-      this.setDefault();
-      this.modal = false;
-    } else if (this.error) {
-      this.onClick();
-    }
-  }
-
-  get modalConfirmButton() {
-    return this.error
-      ? i18n.t("try_again")
-      : this.success
-      ? i18n.t("close")
-      : this.txBusy
-      ? `${i18n.t("processing")}...`
-      : i18n.t("confirm");
-  }
-
-  setDefault() {
-    this.error = "";
-    this.success = null;
-    this.txBusy = false;
   }
 
   async refresh() {

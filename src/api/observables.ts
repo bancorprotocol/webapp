@@ -720,3 +720,5 @@ combineLatest([onLogin$, minimalPools$]).subscribe(
     }
   }
 );
+
+export const selectedPromptReceiver$ = new Subject<string>();

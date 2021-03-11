@@ -38,7 +38,6 @@
           class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 pt-2"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          <span>{{ prettifyNumber(amountToken1) }}</span>
           <div class="d-flex align-items-center">
             <img
               :src="pool.reserves[0].logo"
@@ -47,12 +46,12 @@
             />
             <span class="ml-2">{{ pool.reserves[0].symbol }}</span>
           </div>
+          <span>{{ prettifyNumber(amountToken1) }}</span>
         </div>
         <div
           class="block-content d-flex justify-content-between align-items-center font-size-14 font-w600 py-2"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
-          <span>{{ prettifyNumber(amountToken2) }}</span>
           <div class="d-flex align-items-center">
             <img
               :src="pool.reserves[1].logo"
@@ -61,16 +60,10 @@
             />
             <span class="ml-2">{{ pool.reserves[1].symbol }}</span>
           </div>
+          <span>{{ prettifyNumber(amountToken2) }}</span>
         </div>
       </div>
     </div>
-
-    <label-content-split
-      v-if="false"
-      :label="$t('price')"
-      :value="`1 ${pool.reserves[1].symbol} = ${rate} ${pool.reserves[0].symbol}`"
-      class="my-3"
-    />
 
     <alert-block variant="error" :msg="error" />
 
@@ -83,11 +76,30 @@
       :disabled="error !== '' || !(amountToken1 && amountToken2) || loading"
     />
 
-    <modal-pool-action
-      v-model="modal"
-      :amounts-array="[amountSmartToken, amountToken1, amountToken2]"
-      :advanced-block-items="[]"
-    />
+    <modal-tx-action
+      title="Remove Liquidity"
+      icon="minus"
+      :tx-meta.sync="txMeta"
+      redirect-on-success="Pool"
+    >
+      <div
+        class="font-size-12 mb-2"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        v-text="`Withdraw ${percentage}% of your added liquidity`"
+      />
+      <gray-border-block>
+        <div class="font-size-14 font-w500 mb-1">
+          <div
+            class="mt-1"
+            v-text="`${prettifyNumber(amountToken1)} ${reserveOne.symbol}`"
+          />
+          <div
+            class="mt-1"
+            v-text="`${prettifyNumber(amountToken2)} ${reserveTwo.symbol}`"
+          />
+        </div>
+      </gray-border-block>
+    </modal-tx-action>
   </div>
 </template>
 
@@ -101,12 +113,16 @@ import MainButton from "@/components/common/Button.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalPoolAction from "@/components/pool/ModalPoolAction.vue";
 import BigNumber from "bignumber.js";
-import BaseComponent from "@/components/BaseComponent.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 
 @Component({
   components: {
+    GrayBorderBlock,
+    ModalTxAction,
     AlertBlock,
     PercentageSlider,
     ModalPoolAction,
@@ -115,7 +131,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
     MainButton
   }
 })
-export default class PoolActionsRemoveV1 extends BaseComponent {
+export default class PoolActionsRemoveV1 extends BaseTxAction {
   @Prop() pool!: ViewRelay;
 
   loading = false;
@@ -130,12 +146,42 @@ export default class PoolActionsRemoveV1 extends BaseComponent {
   error = "";
   balance1: BigNumber | null = null;
   balance2: BigNumber | null = null;
-  modal = false;
+
+  get reserveOne() {
+    return this.pool.reserves[0];
+  }
+
+  get reserveTwo() {
+    return this.pool.reserves[1];
+  }
 
   async initAction() {
-    if (this.currentUser) this.modal = true;
-    //@ts-ignore
-    else await this.promptAuth();
+    this.openModal();
+
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
+
+    try {
+      this.txMeta.success = await vxm.bancor.addLiquidity({
+        id: this.pool.id,
+        reserves: [
+          {
+            id: this.reserveOne.id,
+            amount: this.amountToken1!.toString()
+          },
+          {
+            id: this.reserveTwo.id,
+            amount: this.amountToken2!.toString()
+          }
+        ],
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
+      });
+    } catch (e) {
+      this.txMeta.txError = e.message;
+    } finally {
+      this.txMeta.txBusy = false;
+    }
   }
 
   @Watch("percentage")

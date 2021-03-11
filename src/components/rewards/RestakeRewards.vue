@@ -38,7 +38,10 @@
       :disabled="disableActionButton"
     />
 
-    <modal-tx-action :tx-meta="txMeta" @close="closeTxModal" />
+    <modal-tx-action
+      :tx-meta.sync="txMeta"
+      redirect-on-success="LiqProtection"
+    />
   </div>
 </template>
 
@@ -160,13 +163,6 @@ export default class RestakeRewards extends BaseTxAction {
     });
 
     await this.loadData();
-  }
-
-  async closeTxModal() {
-    if (this.txMeta.success) {
-      await this.$router.replace({ name: "LiqProtection" });
-    }
-    this.setDefault();
   }
 
   async loadMaxStakes() {

@@ -54,7 +54,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
   components: { MultiInputField }
 })
 export default class ModalBase extends BaseComponent {
-  @Prop() title!: string;
+  @Prop({ default: "" }) title!: string;
   @VModel({ type: Boolean }) show!: boolean;
   @PropSync("search", { type: String }) searchField?: string;
   @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
