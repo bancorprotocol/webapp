@@ -103,14 +103,14 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 export default class GatewayProviders extends BaseComponent {
   buy() {
     window.open(
-      "https://buy.moonpay.com/?apiKey=pk_test_UQrsGSrVtsrfN5O5IZUPJCDW5kXrrapO&defaultCurrencyCode=ETH",
+      "https://buy.moonpay.com/?apiKey=pk_live_qiJRayRj9iKRUWCfaWX5Vo6Sn0rnNsj&defaultCurrencyCode=ETH",
       "_blank"
     );
   }
 
   sell() {
     window.open(
-      "https://sell.moonpay.com/?apiKey=pk_test_UQrsGSrVtsrfN5O5IZUPJCDW5kXrrapO&defaultCurrencyCode=ETH",
+      "https://sell.moonpay.com/?apiKey=pk_live_qiJRayRj9iKRUWCfaWX5Vo6Sn0rnNsj&defaultCurrencyCode=ETH",
       "_blank"
     );
   }
