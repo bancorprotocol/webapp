@@ -90,12 +90,39 @@ export interface RfqOrderJson {
   salt: string;
   chainId: number; // Ethereum Chain Id where the transaction is submitted.
   verifyingContract: string; // Address of the contract where the transaction should be sent.
-  signature: {
-    signatureType: number;
-    v: number;
-    s: string;
-    r: string;
-  };
+  signature: Signature;
+}
+
+export interface InfoResponse {
+  result: Result;
+  message: string;
+}
+
+export interface Result {
+  orderDetails: OrderDetails;
+  tokenList: TokenList;
+  recommendedMinTradeAmounts: RecommendedMinTradeAmounts;
+}
+
+export interface OrderDetails {
+  verifyingContract: string;
+  chainId: number;
+  txOrigin: string;
+  taker: string;
+  pool: string;
+}
+
+export interface RecommendedMinTradeAmounts {
+  TODO: number;
+}
+
+export interface TokenList {
+  keywords: string[];
+  logoURI: string;
+  name: string;
+  timestamp: string;
+  tokens: Token[];
+  version: Version;
 }
 
 const baseUrl: string = "https://hidingbook.keeperdao.com/api/v1";
@@ -114,8 +141,18 @@ const getOrders = async (currentUser: string) => {
   return res.data;
 };
 
+const getInfo = async () => {
+  const res = await axios.get<InfoResponse>(`${baseUrl}/info`);
+  return res.data;
+};
+
+export const getTxOrigin = async (): Promise<string> => {
+  const res = await getInfo();
+  return res.result.orderDetails.txOrigin;
+};
+
 export const sendOrder = async (rfqOrder: RfqOrderJson[]) => {
-  const url = "https://hidingbook.keeperdao.com/api/v1/orders";
+  const url = `${baseUrl}/orders`;
   const res = await axios.post(url, rfqOrder);
   return res.data;
 };

@@ -156,7 +156,6 @@ import {
   tap,
   switchMap,
   shareReplay,
-  pluck,
   scan,
   first as firstItem,
   bufferTime,
@@ -172,7 +171,6 @@ import {
   reserveContractsInStatic,
   parseRawDynamic,
   filterAndWarn,
-  staticToConverterAndAnchor,
   miningBntReward,
   miningTknReward,
   calculateAmountToGetSpace
@@ -218,6 +216,7 @@ import {
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$ } from "@/api/observables/auth";
 import {
+  getTxOrigin,
   limitOrders$,
   RfqOrderJson,
   sendOrder
@@ -6476,6 +6475,8 @@ export class EthBancorModule
       expandToken(to.amount, toToken.precision)
     );
 
+    const txOrigin = await getTxOrigin();
+
     const orderData = {
       fromAddress: from.id,
       toAddress: to.id,
@@ -6483,7 +6484,8 @@ export class EthBancorModule
       toAmountWei,
       currentUser,
       expiry,
-      salt: randomBigNumber
+      salt: randomBigNumber,
+      txOrigin
     };
 
     console.log(orderData, "was the order data");

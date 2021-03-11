@@ -1,4 +1,4 @@
-import { RfqOrder, SignatureType } from "@0x/protocol-utils";
+import { RfqOrder } from "@0x/protocol-utils";
 import BigNumber from "bignumber.js";
 
 export const createOrder = ({
@@ -8,7 +8,8 @@ export const createOrder = ({
   toAmountWei,
   currentUser,
   expiry,
-  salt
+  salt,
+  txOrigin
 }: {
   fromAddress: string;
   toAddress: string;
@@ -17,6 +18,7 @@ export const createOrder = ({
   currentUser: string;
   expiry: BigNumber;
   salt: BigNumber;
+  txOrigin: string;
 }): RfqOrder =>
   new RfqOrder({
     chainId: 1,
@@ -26,5 +28,6 @@ export const createOrder = ({
     makerToken: fromAddress,
     makerAmount: fromAmountWei,
     takerAmount: toAmountWei,
-    takerToken: toAddress
+    takerToken: toAddress,
+    txOrigin
   });
