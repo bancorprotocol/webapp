@@ -94,6 +94,15 @@ export default class SideBar extends BaseComponent {
         icon: "vote.svg"
       },
       {
+        route: "FiatPage",
+        key: "fiat",
+        label: "Fiat",
+        newTab: false,
+        hideMobile: true,
+        icon: "fiat.svg",
+        svgName: "fiat"
+      },
+      {
         route: "https://x.bancor.network/",
         key: "bancorx",
         label: "Bancor X",
@@ -125,15 +134,6 @@ export default class SideBar extends BaseComponent {
         hideMobile: false,
         icon: "analytics.svg",
         svgName: "bancor"
-      },
-      {
-        route: "FiatPage",
-        key: "fiat",
-        label: "Fiat",
-        newTab: false,
-        hideMobile: true,
-        icon: "fiat.svg",
-        svgName: "fiat"
       }
     ].map(link => ({
       ...link,
