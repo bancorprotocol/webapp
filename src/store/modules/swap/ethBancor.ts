@@ -217,12 +217,56 @@ import {
 import { authenticatedReceiver$ } from "@/api/observables/auth";
 import {
   getTxOrigin,
+  keeperTokens$,
   limitOrders$,
   RfqOrderJson,
   sendOrder
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 
+keeperTokens$.subscribe(token =>
+  vxm.ethBancor.setDaoTokens(token.map(x => x.address))
+);
+
+const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
+  map(([tokens, orders]) => {
+    return orders.map(
+      (order): ViewLimitOrder => {
+        const fromToken = findOrThrow(tokens, token =>
+          compareString(token.address, order.order.makerToken)
+        );
+        const toToken = findOrThrow(tokens, token =>
+          compareString(token.address, order.order.takerToken)
+        );
+
+        return {
+          expiryTime: Number(order.order.expiry),
+          from: {
+            id: order.order.makerToken,
+            amount: shrinkToken(order.order.makerAmount, fromToken.decimals)
+          },
+          to: {
+            id: order.order.takerToken,
+            amount: shrinkToken(order.order.takerAmount, toToken.decimals)
+          },
+          id: order.metaData.orderHash,
+          orderHash: order.metaData.orderHash,
+          seller: order.order.maker
+        };
+      }
+    );
+  })
+);
+
+viewLimitOrders$.subscribe(orders => vxm.ethBancor.setLimitOrders(orders));
+interface ViewLimitOrder {
+  expiryTime: number;
+  seller: string;
+  from: ViewAmount;
+  to: ViewAmount;
+  orderHash: string;
+  id: string;
+}
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
 }
@@ -2469,7 +2513,14 @@ export class EthBancorModule
       })
       .sort(sortByLiqDepth);
 
-    return finalTokens;
+    const daoTokenAddresses = this.daoTokenAddresses;
+
+    return finalTokens.map(token => {
+      const limitOrderAvailable = daoTokenAddresses.some(tokenAddress =>
+        compareString(token.id, tokenAddress)
+      );
+      return { ...token, limitOrderAvailable };
+    });
   }
 
   get tokenMetaObj() {
@@ -3593,6 +3644,16 @@ export class EthBancorModule
   @action async getTokenSupply(tokenAddress: string) {
     const contract = buildTokenContract(tokenAddress, w3);
     return contract.methods.totalSupply().call();
+  }
+
+  limitOrdersArr: ViewLimitOrder[] = [];
+
+  @mutation setLimitOrders(orders: ViewLimitOrder[]) {
+    this.limitOrdersArr = orders;
+  }
+
+  get limitOrders() {
+    return this.limitOrdersArr;
   }
 
   @action async calculateOpposingWithdrawV2(
@@ -6451,7 +6512,11 @@ export class EthBancorModule
     }
   }
 
-  @mutation setDaoTokens() {}
+  daoTokenAddresses: string[] = [];
+
+  @mutation setDaoTokens(tokenAddresses: string[]) {
+    this.daoTokenAddresses = tokenAddresses;
+  }
 
   @action async getReturnOrder({}) {}
 
@@ -6468,9 +6533,8 @@ export class EthBancorModule
     const randomNumber = web3.utils.hexToNumber(randomHex);
     const randomBigNumber = new BigNumber(randomNumber);
 
-    const fromAmountWei = new BigNumber(
-      expandToken(from.amount, fromToken.precision)
-    );
+    const fromAmountWeiString = expandToken(from.amount, fromToken.precision);
+    const fromAmountWei = new BigNumber(fromAmountWeiString);
     const toAmountWei = new BigNumber(
       expandToken(to.amount, toToken.precision)
     );
@@ -6485,14 +6549,18 @@ export class EthBancorModule
       currentUser,
       expiry,
       salt: randomBigNumber,
-      txOrigin
+      txOrigin,
+      pool: "0x000000000000000000000000000000000000000000000000000000000000002d"
     };
-
-    console.log(orderData, "was the order data");
 
     const order = createOrder(orderData);
 
-    console.log({ order });
+    const approvedTx = await this.triggerApprovalIfRequired({
+      owner: currentUser,
+      amount: fromAmountWeiString,
+      spender: order.verifyingContract,
+      tokenAddress: from.id
+    });
 
     const signature = await order.getSignatureWithProviderAsync(
       // @ts-ignore

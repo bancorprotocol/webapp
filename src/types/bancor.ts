@@ -289,6 +289,7 @@ export interface ViewToken {
   balance?: string;
   precision: number;
   tradeSupported: boolean;
+  limitOrderAvailable: boolean;
 }
 
 export interface TokenWithLogo extends AgnosticToken {

@@ -9,7 +9,8 @@ export const createOrder = ({
   currentUser,
   expiry,
   salt,
-  txOrigin
+  txOrigin,
+  pool
 }: {
   fromAddress: string;
   toAddress: string;
@@ -19,6 +20,7 @@ export const createOrder = ({
   expiry: BigNumber;
   salt: BigNumber;
   txOrigin: string;
+  pool: string;
 }): RfqOrder =>
   new RfqOrder({
     chainId: 1,
@@ -29,5 +31,6 @@ export const createOrder = ({
     makerAmount: fromAmountWei,
     takerAmount: toAmountWei,
     takerToken: toAddress,
-    txOrigin
+    txOrigin,
+    pool
   });
