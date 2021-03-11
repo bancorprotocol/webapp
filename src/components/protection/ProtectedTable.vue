@@ -322,19 +322,22 @@
         </div>-->
 
         <b-progress
-          :id="`popover-percentage-${item.id}`"
           :value="item.coverageDecPercent"
           :max="1"
           class="progress-bar-positive mt-1"
           style="width: 65% !important"
         />
-        <countdown-timer
+        <span
           :id="`popover-currentCoverage-${item.id}`"
-          :date-unix="item.fullCoverage"
-          :msg-countdown-ended="$t('full_protection_reached')"
-          class="font-size-12"
-        />
-
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          <font-awesome-icon :icon="['far', 'clock']" />
+          <countdown-timer
+            :date-unix="item.fullCoverage"
+            :msg-countdown-ended="$t('full_protection_reached')"
+          />
+        </span>
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
           triggers="hover"
@@ -342,16 +345,11 @@
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          {{ $t("current_protection", { amount: item.fullyProtected.amount }) }}
-        </b-popover>
-        <b-popover
-          :target="`popover-percentage-${item.id}`"
-          triggers="hover"
-          placement="top"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          {{ stringifyPercentage(item.coverageDecPercent) }}
+          {{
+            $t("current_protection", {
+              amount: stringifyPercentage(item.coverageDecPercent)
+            })
+          }}
         </b-popover>
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
@@ -385,12 +383,17 @@
           class="mt-1"
           style="width: 65% !important"
         />
-        <countdown-timer
+        <span
           :id="`popover-currentCoverage-${item.id}`"
-          :date-unix="item.fullCoverage"
-          :msg-countdown-ended="$t('full_protection_reached')"
-          class="font-size-12"
-        />
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          <font-awesome-icon :icon="['far', 'clock']" />
+          <countdown-timer
+            :date-unix="item.fullCoverage"
+            :msg-countdown-ended="$t('full_protection_reached')"
+          />
+        </span>
 
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
@@ -399,7 +402,11 @@
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          {{ $t("current_protection", { amount: item.fullyProtected.amount }) }}
+          {{
+            $t("current_protection", {
+              amount: stringifyPercentage(item.coverageDecPercent)
+            })
+          }}
         </b-popover>
       </template>
 
@@ -407,7 +414,7 @@
         <b-btn
           v-if="!isCollapsable"
           @click="goToWithdraw(item.positionId)"
-          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+          :variant="darkMode ? 'circle-gray-dark' : 'circle-gray'"
           class="d-flex align-items-center justify-content-center"
           style="width: 41px; height: 41px"
         >
@@ -426,7 +433,7 @@
         </b-btn>
         <div v-else>
           <b-btn
-            :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+            :variant="darkMode ? 'circle-gray-dark' : 'circle-gray'"
             class="d-flex align-items-center justify-content-center"
             style="width: 41px; height: 41px"
           >
@@ -439,7 +446,7 @@
       <template #cellCollapsed(actions)="{ item }">
         <b-btn
           @click="goToWithdraw(item.id)"
-          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+          :variant="darkMode ? 'circle-gray-dark' : 'circle-gray'"
           class="d-flex align-items-center justify-content-center"
           style="width: 41px; height: 41px"
         >
@@ -578,14 +585,14 @@ export default class ProtectedTable extends BaseComponent {
         key: "stake",
         label: i18n.tc("initial_stake"),
         tooltip: i18n.tc("tokens_originally_staked"),
-        minWidth: "140px"
+        minWidth: "132px"
       },
       {
         id: 3,
         key: "fullyProtected",
         label: i18n.tc("protected"),
         tooltip: i18n.tc("tokens_can_withdraw"),
-        minWidth: "130px"
+        minWidth: "125px"
       },
       {
         id: 4,

@@ -217,6 +217,18 @@
     color: $text-color-dark !important;
   }
 
+  &.btn-circle-gray {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    border-radius: $border-radius-circle !important;
+  }
+
+  &.btn-circle-gray-dark {
+    color: $text-color-dark !important;
+    border-color: $light-white !important;
+    border-radius: $border-radius-circle !important;
+  }
+
   &.btn-outline-gray-dark:hover {
     color: $text-color-light !important;
   }
