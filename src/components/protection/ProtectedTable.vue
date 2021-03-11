@@ -301,7 +301,6 @@
           :value="item.coverageDecPercent"
           :max="1"
           class="progress-bar-positive mt-1"
-          style="width: 65% !important"
         />
         <span
           :id="`popover-currentCoverage-${item.id}`"
@@ -343,12 +342,7 @@
         </b-popover>
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
-        <b-progress
-          :value="item.coverageDecPercent"
-          :max="1"
-          class="mt-1"
-          style="width: 65% !important"
-        />
+        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
         <span
           :id="`popover-currentCoverage-${item.id}`"
           class="font-size-12 font-w400"
@@ -579,7 +573,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "protectedAmount",
         label: i18n.tc("claimable"),
         tooltip: i18n.tc("tokens_can_withdraw_now"),
-        minWidth: "122px"
+        minWidth: "130px"
       },
       {
         id: 5,
@@ -593,7 +587,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "roi",
         label: "ROI",
         tooltip: i18n.tc("roi_protected_value"),
-        minWidth: "115px"
+        minWidth: "107px"
       },
       {
         id: 7,
