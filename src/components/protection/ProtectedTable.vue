@@ -294,33 +294,6 @@
       </template>
 
       <template #cell(currentCoverage)="{ item }">
-        <!-- <div class="d-flex flex-column font-size-12 font-w600">
-          <span v-if="item.collapsedData.length" class="font-w500">
-            {{ $t("position_vesting_time") }}
-          </span> 
-          {{ stringifyPercentage(item.coverageDecPercent) }}
-          <div
-            v-if="!insuranceStarted(item.insuranceStart)"
-            class="d-flex justify-content-between align-items-center text-danger"
-          >
-             <div>
-              {{ `${$t("cliff")}:` }}
-              <countdown-timer :date-unix="item.insuranceStart" />
-            </div>
-            <font-awesome-icon
-              icon="info-circle"
-              :id="'popover-cliff-' + item.id"
-            />
-            <b-popover
-              :target="'popover-cliff-' + item.id"
-              triggers="hover"
-              placement="bottom"
-            >
-              {{ $t("loss_protection_vesting") }}
-            </b-popover>
-          </div> 
-        </div>-->
-
         <b-progress
           :value="item.coverageDecPercent"
           :max="1"
@@ -338,6 +311,20 @@
             :msg-countdown-ended="$t('full_protection_reached')"
           />
         </span>
+        <font-awesome-icon
+          v-if="!insuranceStarted(item.insuranceStart)"
+          :id="'popover-cliff-' + item.id"
+          icon="exclamation-circle"
+          class="text-danger"
+        />
+
+        <b-popover
+          :target="'popover-cliff-' + item.id"
+          triggers="hover"
+          placement="bottom"
+        >
+          {{ $t("loss_protection_vesting_30") }}
+        </b-popover>
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
           triggers="hover"
@@ -353,30 +340,6 @@
         </b-popover>
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
-        <!-- <div class="d-flex flex-column font-size-12 font-w600">
-          {{ stringifyPercentage(item.coverageDecPercent) }}
-          <div
-            v-if="!insuranceStarted(item.insuranceStart)"
-            class="d-flex justify-content-between align-items-center text-danger"
-          >
-            <div>
-              {{ `${$t("cliff")}:` }}
-              <countdown-timer :date-unix="item.insuranceStart" />
-            </div>
-            <font-awesome-icon
-              icon="info-circle"
-              :id="'popover-cliff-' + item.id"
-            />
-            <b-popover
-              :target="'popover-cliff-' + item.id"
-              triggers="hover"
-              placement="bottom"
-            >
-              {{ $t("loss_protection_vesting") }}
-            </b-popover> 
-          </div>
-        </div>-->
-
         <b-progress
           :value="item.coverageDecPercent"
           :max="1"
@@ -394,7 +357,20 @@
             :msg-countdown-ended="$t('full_protection_reached')"
           />
         </span>
+        <font-awesome-icon
+          v-if="!insuranceStarted(item.insuranceStart)"
+          :id="'popover-cliff-' + item.id"
+          icon="exclamation-circle"
+          class="text-danger"
+        />
 
+        <b-popover
+          :target="'popover-cliff-' + item.id"
+          triggers="hover"
+          placement="bottom"
+        >
+          {{ $t("loss_protection_vesting_30") }}
+        </b-popover>
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
           triggers="hover"

@@ -145,8 +145,8 @@ export const en = {
   please_refresh: "Please refresh",
   position_vesting_time: "Earliest position vesting time",
   cliff: "Cliff",
-  loss_protection_vesting:
-    "Impermanent loss protection starts vesting immediately when you deposit. But you must be in the pool until the cliff is reached before the protection can be utilized.",
+  loss_protection_vesting_30:
+    "Impermanent loss protection starts vesting immediately when you deposit. But, you must be in the pool for 30 days before the protection can be utilized.",
   coverage_achieved: "Full coverage achieved",
   left_until_coverage: "{time} left until full coverage",
   failed_find_position:
