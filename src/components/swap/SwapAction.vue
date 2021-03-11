@@ -169,7 +169,10 @@ export default class SwapAction extends BaseComponent {
   advancedOpen = false;
 
   get tokens() {
-    return vxm.bancor.tokens.filter(token => token.tradeSupported);
+    const isLimit = this.limit;
+    return vxm.bancor.tokens
+      .filter(token => token.tradeSupported)
+      .filter(token => (isLimit ? token.limitOrderAvailable : true));
   }
 
   inverseRate = false;
