@@ -118,7 +118,7 @@ export const en = {
   insufficient_balance: "Insufficient balance",
   stake_pool: "Stake in Pool",
   price_volatility:
-    "Due to price volatility, protecting your tokens is currently not available. Please try again in a few seconds.",
+    "Due to price volatility, protecting your tokens is currently not available. Please try again in a few minutes.",
   space_available: "Space Available",
   staking_protecting: "You are staking and protecting",
   price_deviation_high: "Price Deviation too High",
@@ -145,8 +145,8 @@ export const en = {
   please_refresh: "Please refresh",
   position_vesting_time: "Earliest position vesting time",
   cliff: "Cliff",
-  loss_protection_vesting:
-    "Impermanent loss protection starts vesting immediately when you deposit. But you must be in the pool until the cliff is reached before the protection can be utilized.",
+  loss_protection_vesting_30:
+    "Impermanent loss protection starts vesting immediately when you deposit. But, you must be in the pool for 30 days before the protection can be utilized.",
   coverage_achieved: "Full coverage achieved",
   left_until_coverage: "{time} left until full coverage",
   failed_find_position:
@@ -160,9 +160,9 @@ export const en = {
   tokens_can_withdraw_now:
     "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
   fees: "Fees (24h)",
-  fees_stake_earned:
-    "Fees and rewards earned by your stake since you entered the pool.",
-  roi__protected_value:
+  fees_generated:
+    "Fees are generated when traders swap in pools where you provide liquidity. Rewards are bonuses paid in BNT to liquidity providers.",
+  roi_protected_value:
     "The ROI of your fully protected value vs. your initial stake.",
   estimated_calculation_annual_returns:
     "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
@@ -361,5 +361,13 @@ export const en = {
   fully_protected: "Fully protected",
   not_fully_protected: "Not Fully protected",
   all_pools: "All Pools",
-  select_date:"Select a date range"
+  select_date: "Select a date range",
+  wait_until_space_opens:
+    "{token} limit reached. Please wait until some space opens up.",
+  data_refreshes_auto: "Data refreshes automatically",
+  multiplier_changes:
+    "Starting at 1, your multiplier increase .25 each week until reaching 2. At which point, you are getting twice the rewards you were on week 1. The number to the left already takes this into account.",
+  current_protection: "Current protection is {amount}",
+  roi_protected_split:
+    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI."
 };

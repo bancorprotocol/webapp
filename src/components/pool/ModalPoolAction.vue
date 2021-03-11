@@ -5,81 +5,6 @@
     :title="$t('you_will_receive')"
   >
     <b-row class="d-flex justify-content-center">
-      <div v-if="!(txBusy || success || error)" class="w-100">
-        <b-col
-          v-if="false"
-          cols="12"
-          class="d-flex align-items-center justify-content-center"
-        >
-          <span
-            class="font-size-24 font-w600 mr-2"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ Number(amountsArray[0]) }}
-          </span>
-          <pool-logos :pool="pool" />
-        </b-col>
-
-        <b-col v-else cols="12" class="text-center">
-          <div
-            v-if="selectedToken && pool.v2"
-            class="font-size-24 font-w600 mr-2"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ Number(amountsArray[1]) }} {{ selectedToken.symbol }}
-          </div>
-          <div v-else>
-            <div
-              class="font-size-24 font-w600 mr-2"
-              :class="darkMode ? 'text-dark' : 'text-light'"
-            >
-              {{ Number(amountsArray[1]) }} {{ pool.reserves[0].symbol }}
-            </div>
-            <font-awesome-icon
-              v-if="!pool.v2"
-              icon="plus"
-              class="text-primary"
-            />
-            <div
-              v-if="!pool.v2"
-              class="font-size-24 font-w600 mr-2"
-              :class="darkMode ? 'text-dark' : 'text-light'"
-            >
-              {{ Number(amountsArray[2]) }} {{ pool.reserves[1].symbol }}
-            </div>
-          </div>
-        </b-col>
-
-        <b-col cols="12" v-if="pool.v2">
-          <p
-            class="font-size-sm font-w400 text-center mt-2"
-            :class="!darkMode ? 'text-muted-light' : 'text-muted-dark'"
-          >
-            {{
-              $t("output_estimated", {
-                amount: numeral(slippageTolerance).format("0.0[0]%")
-              })
-            }}
-          </p>
-        </b-col>
-
-        <b-col cols="12">
-          <div
-            class="block block-rounded font-size-sm block-shadow my-3"
-            :class="darkMode ? 'bg-body-dark' : 'bg-body-light'"
-          >
-            <div class="block-content py-2" v-if="advancedBlockItems.length">
-              <advanced-block-item
-                v-for="item in advancedBlockItems"
-                :key="item.label"
-                :label="item.label"
-                :value="item.value"
-              />
-            </div>
-          </div>
-        </b-col>
-      </div>
-
       <action-modal-status
         v-if="txBusy || error || success"
         :error="error"
@@ -88,22 +13,12 @@
           sections.length ? sections[stepIndex].description : undefined
         "
       />
-
-      <b-col cols="12">
-        <main-button
-          @click="initAction"
-          :active="true"
-          :label="confirmButton"
-          :disabled="txBusy"
-          :large="true"
-        />
-      </b-col>
     </b-row>
   </modal-base>
 </template>
 
 <script lang="ts">
-import { Component, Prop, VModel } from "vue-property-decorator";
+import { Component, Prop, VModel, Watch } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
 import {
@@ -144,19 +59,6 @@ export default class ModalPoolAction extends BaseComponent {
   error = "";
   sections: Step[] = [];
   stepIndex = 0;
-
-  get slippageTolerance() {
-    return vxm.bancor.slippageTolerance;
-  }
-  get confirmButton() {
-    return this.error
-      ? i18n.t("try_again")
-      : this.success
-      ? i18n.t("close")
-      : this.txBusy
-      ? `${i18n.t("processing")}...`
-      : i18n.t("confirm");
-  }
 
   get pool(): ViewRelay {
     return vxm.bancor.relay(this.$route.params.account);
@@ -272,6 +174,11 @@ export default class ModalPoolAction extends BaseComponent {
   onUpdate(stepIndex: number, steps: Step[]) {
     this.stepIndex = stepIndex;
     this.sections = steps;
+  }
+
+  @Watch("modal")
+  onModalShow(val: boolean) {
+    if (val) this.initAction();
   }
 }
 </script>

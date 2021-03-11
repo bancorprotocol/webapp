@@ -38,7 +38,10 @@
       :disabled="disableActionButton"
     />
 
-    <modal-tx-action :tx-meta="txMeta" @close="closeTxModal" />
+    <modal-tx-action
+      :tx-meta.sync="txMeta"
+      redirect-on-success="LiqProtection"
+    />
   </div>
 </template>
 
@@ -57,6 +60,7 @@ import { compareString } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BigNumber from "bignumber.js";
+import wait from "waait";
 
 @Component({
   components: {
@@ -161,13 +165,6 @@ export default class RestakeRewards extends BaseTxAction {
     await this.loadData();
   }
 
-  async closeTxModal() {
-    if (this.txMeta.success) {
-      await this.$router.replace({ name: "LiqProtection" });
-    }
-    this.setDefault();
-  }
-
   async loadMaxStakes() {
     const result = await vxm.ethBancor.getMaxStakesView({
       poolId: this.pool.id
@@ -183,7 +180,7 @@ export default class RestakeRewards extends BaseTxAction {
     this.loading = true;
     try {
       await Promise.all([
-        new Promise(r => setTimeout(r, 1000)),
+        wait(1000),
         this.loadMaxStakes(),
         vxm.rewards.fetchAndSetPendingRewards(),
         this.pools.forEach(async x => {

@@ -40,6 +40,7 @@ import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
 import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
 import { faFilter } from "@fortawesome/free-solid-svg-icons/faFilter";
+import { faClock as faClockReg } from "@fortawesome/pro-regular-svg-icons/faClock";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -81,8 +82,15 @@ export const fas = [
   faUpload,
   faArrowLeft,
   faArrowRight,
-  faCheck,faFilter
+  faCheck,
+  faArrowUp,
+  faCoins,
+  faMinus,
+  faUnlock,
+  faFilter
 ];
+
+export const far = [faClockReg];
 
 /* free-brands-svg-icons */
 import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
@@ -91,6 +99,9 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
 import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
 import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
 import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
+import { faArrowUp, faUnlock } from "@fortawesome/free-solid-svg-icons";
+import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
+import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 
 export const fab = [
   faDiscord,

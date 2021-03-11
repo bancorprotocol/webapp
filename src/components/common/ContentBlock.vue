@@ -10,6 +10,7 @@
     ]"
   >
     <div v-if="noHeader"></div>
+
     <div
       v-else-if="title"
       class="d-flex justify-content-between align-items-center py-2 px-3 font-size-14 font-w600"
@@ -22,7 +23,7 @@
         <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
       </div>
 
-      <h3 class="p-0 my-2 font-size-14 font-w600" :class="titleClasses">
+      <h3 class="m-0 p-0 my-2 font-size-14 font-w600" :class="titleClasses">
         {{ title }}
       </h3>
 
@@ -57,9 +58,32 @@
 
       <slot name="date"></slot>
 
+      <div v-if="rippleAnimation">
+        <img
+          id="ripple"
+          width="30"
+          height="30"
+          :src="
+            darkMode
+              ? require(`@/assets/media/icons/rippleDark.svg`)
+              : require(`@/assets/media/icons/ripple.svg`)
+          "
+        />
+        <b-popover
+          :target="`ripple`"
+          triggers="hover"
+          placement="bottom"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("data_refreshes_auto") }}
+        </b-popover>
+      </div>
+
       <div v-if="searchInput !== null">
         <multi-input-field
           v-model="searchInput"
+          :clear="true"
           :placeholder="$t('search')"
           prepend="search"
         />
@@ -70,7 +94,7 @@
       class="block-header"
       :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
     >
-      <slot name="header"></slot>
+      <slot name="header"> </slot>
     </div>
     <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
       <slot></slot>
@@ -80,11 +104,10 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Emit } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import VersionBadge from "@/components/common/VersionBadge.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
-  components: { VersionBadge, MultiInputField }
+  components: { MultiInputField }
 })
 export default class ContentBlock extends BaseComponent {
   @Prop() title?: string;
@@ -102,7 +125,7 @@ export default class ContentBlock extends BaseComponent {
     }[];
   }[];
   @Prop({ default: false }) dateFilter!: Date[];
-  @Prop({ default: null }) version!: 1 | 2 | null;
+  @Prop({ default: false }) rippleAnimation?: boolean;
   @PropSync("search", { default: null }) searchInput!: string | null;
 
   @Emit()

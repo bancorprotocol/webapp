@@ -73,8 +73,8 @@ export default class TableTokens extends BaseComponent {
               id: 1,
               label: "",
               key: "liquidityProtection",
-              minWidth: "60px",
-              maxWidth: "60px"
+              minWidth: "70px",
+              maxWidth: "70px"
             }
           ]
         : []),

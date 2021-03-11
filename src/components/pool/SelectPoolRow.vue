@@ -31,9 +31,7 @@ export default class SelectPoolRow extends BaseComponent {
   click() {}
 
   get balance() {
-    const balance = this.showTokenBalance
-      ? this.tokenBalance
-      : this.smartTokenBalance;
+    const balance = this.showTokenBalance ? this.tokenBalance : null;
     return balance ? this.prettifyNumber(balance) : "";
   }
 
