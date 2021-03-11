@@ -5,7 +5,13 @@
         <b-row>
           <img
             class="mt-4 mb-3 ml-3 mr-3"
-            :src="require(`@/assets/media/logos/black-mp-logo.png`)"
+            :src="
+              darkMode
+                ? require(`@/assets/media/logos/mp-logo-dark.png`)
+                : require(`@/assets/media/logos/mp-logo.png`)
+            "
+            width="135"
+            height="40"
           />
         </b-row>
       </b-col>
