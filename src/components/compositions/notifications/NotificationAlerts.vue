@@ -3,13 +3,13 @@
     class="position-fixed p-4"
     :style="`${position}: 0; z-index: 999; max-width: 400px; width: 100%`"
   >
-    <notification-details
+    <div
       v-for="notification in alertQueue"
       :key="`alerts-${notification.id}`"
-      :notification="notification"
-      :is-alert="true"
-      class="mb-3"
-    />
+      class="notification mb-3"
+    >
+      <notification-details :notification="notification" :is-alert="true" />
+    </div>
   </div>
 </template>
 
@@ -34,3 +34,12 @@ export default defineComponent({
   }
 });
 </script>
+
+<style scoped>
+.notification {
+  background: #ffffff;
+  box-shadow: 0 2px 19px rgba(82, 105, 141, 0.12),
+    0 2px 22px rgba(15, 89, 209, 0.12);
+  border-radius: 10px;
+}
+</style>

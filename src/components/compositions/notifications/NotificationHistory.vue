@@ -1,27 +1,27 @@
 <template>
-  <div class="px-3 mt-3">
-    <div v-if="history.length">
-      <div
-        class="d-flex mb-3 justify-content-between font-w600 text-right text-light"
+  <div class="px-2">
+    <div class="d-flex justify-content-between font-w600 text-right text-light">
+      <span>Notifications</span>
+      <span
+        @click="clearAllNotifications()"
+        class="cursor text-muted-light font-size-12"
       >
-        <span @click="clearAllNotifications()">History</span>
-        <span
-          @click="clearAllNotifications()"
-          class="cursor text-muted-light font-size-12"
-        >
-          clear
-        </span>
-      </div>
-
-      <notification-details
-        v-for="notification in history"
-        :key="`history-${notification.id}`"
-        :notification="notification"
-        class="my-2"
-        style="width: 100%"
-      />
+        clear
+      </span>
     </div>
-    <div v-else class="text-center text-muted-light font-w500 mt-5">
+    <div v-if="history.length">
+      <div v-for="notification in history" :key="`history-${notification.id}`">
+        <hr class="my-3" />
+        <notification-details
+          :notification="notification"
+          style="width: 100%"
+        />
+      </div>
+    </div>
+    <div
+      v-else
+      class="text-center text-muted-light font-w400 font-size-12 mt-3"
+    >
       Nothing here yet.
     </div>
   </div>

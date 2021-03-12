@@ -1,31 +1,31 @@
 <template>
   <div>
-    <b-btn
-      size="sm"
-      :variant="darkMode ? 'outline-dark' : 'outline-light'"
-      v-b-toggle.sidebar-notifications
-    >
-      <font-awesome-icon
-        v-if="pendingQueue.length === 0"
-        icon="bell-on"
-        fixed-width
-      />
-      <font-awesome-icon v-else icon="circle-notch" spin fixed-width />
-    </b-btn>
-
-    <b-sidebar
-      id="sidebar-notifications"
-      shadow
+    <b-dropdown
+      id="dropdown-menu"
       right
-      title="Notification Center"
-      bg-variant="white"
-      text-variant="light"
-      backdrop-variant="transparent"
-      width="400px"
-      backdrop
+      :variant="darkMode ? 'outline-dark' : 'outline-light'"
+      size="sm"
+      toggle-class="block-rounded"
+      :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
+      no-caret
     >
-      <NotificationHistory />
-    </b-sidebar>
+      <template #button-content>
+        <font-awesome-icon
+          v-if="pendingQueue.length === 0"
+          icon="bell-on"
+          fixed-width
+        />
+        <font-awesome-icon v-else icon="circle-notch" spin fixed-width />
+      </template>
+
+      <b-dropdown-text
+        :variant="darkMode ? 'dark' : 'light'"
+        style="width: 400px; max-height: 80vh"
+        class="overflow-auto"
+      >
+        <NotificationHistory />
+      </b-dropdown-text>
+    </b-dropdown>
 
     <NotificationAlerts />
   </div>

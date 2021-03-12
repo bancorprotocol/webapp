@@ -2,22 +2,28 @@
   <div
     @mouseenter="mouseHover = true"
     @mouseleave="mouseHover = false"
-    class="notification py-2 px-3 font-w400"
-    :class="darkMode ? 'text-dark' : 'text-light'"
+    class="font-w400 cursor"
+    @click="openUrl"
+    :class="[darkMode ? 'text-dark' : 'text-light', isAlert ? 'py-2 px-3' : '']"
   >
     <div class="d-flex justify-content-start align-items-center">
       <div class="mr-2">
         <font-awesome-icon
+          v-if="!mouseHover"
           :class="`text-${statusIcon.class}`"
           :icon="statusIcon.icon"
           :spin="notification.status === 'pending'"
           fixed-width
         />
+        <font-awesome-icon
+          v-else
+          icon="external-link-alt"
+          class="text-primary"
+          fixed-width
+        />
       </div>
       <div class="flex-fill font-w600 font-size-12">
-        <div v-if="notification.txHash && mouseHover">
-          <a :href="getEtherscanUrl" target="_blank">View on Etherscan</a>
-        </div>
+        <div v-if="notification.txHash && mouseHover">View on Etherscan</div>
         <div v-else>
           {{ title }}
           <span
@@ -28,8 +34,12 @@
           </span>
         </div>
       </div>
-      <div @click="remove(notification.id)">
-        <font-awesome-icon icon="times" />
+      <div
+        @click="remove(notification.id)"
+        class="cursor"
+        :class="mouseHover ? 'text-danger' : 'text-muted-light'"
+      >
+        <font-awesome-icon :icon="['fal', 'times']" />
       </div>
     </div>
     <div class="my-1 ml-4 pl-1 font-size-12">
@@ -52,6 +62,7 @@ import {
 import { vxm } from "@/store";
 import { EthNetworks } from "@/api/web3";
 import dayjs from "dayjs";
+import { openNewTab } from "@/api/helpers";
 
 export default defineComponent({
   props: {
@@ -113,6 +124,10 @@ export default defineComponent({
         }`
     );
 
+    const openUrl = () => {
+      openNewTab(getEtherscanUrl.value);
+    };
+
     const remove = (id: number) => {
       if (props.isAlert) hideAlert(id);
       else removeNotification(id);
@@ -171,16 +186,9 @@ export default defineComponent({
       getEtherscanUrl,
       remove,
       statusIcon,
-      hideAlert
+      hideAlert,
+      openUrl
     };
   }
 });
 </script>
-<style scoped>
-.notification {
-  background: #ffffff;
-  box-shadow: 0 2px 19px rgba(82, 105, 141, 0.12),
-    0 2px 22px rgba(15, 89, 209, 0.12);
-  border-radius: 10px;
-}
-</style>
