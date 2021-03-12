@@ -1,7 +1,7 @@
 <template>
   <div
     class="position-fixed p-4"
-    :style="`${position}: 0; z-index: 999; max-width: 500px; width: 100%`"
+    :style="`${position}: 0; z-index: 999; max-width: 400px; width: 100%`"
   >
     <notification-details
       v-for="notification in alertQueue"
