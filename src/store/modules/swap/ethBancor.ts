@@ -4388,15 +4388,18 @@ export class EthBancorModule
 
     const approvalStatuses = await Promise.all(
       matchedBalances.map(async balance => {
+        const balanceWei = expandToken(balance.amount!, balance.decimals);
         const { approvalIsRequired } = await this.isApprovalRequired({
           owner: this.currentUser,
-          amount: expandToken(balance.amount!, balance.decimals),
+          amount: balanceWei,
           spender: converterAddress,
           tokenAddress: balance.contract
         });
         return {
           contract: balance.contract,
-          approvalIsRequired
+          approvalIsRequired,
+          balanceWei,
+          balanceDec: balance.amount
         };
       })
     );
@@ -4405,41 +4408,38 @@ export class EthBancorModule
       status => status.approvalIsRequired
     );
 
-    if (requiredApprovals.length > 0) {
+    const requiredApprovalsWithType: {
+      unlimitedApproval: boolean;
+      contract: string;
+      approvalIsRequired: boolean;
+      balanceWei: string;
+      balanceDec: string;
+    }[] = [];
+
+    for (const requiredApproval of requiredApprovals) {
       const { unlimitedApproval } = await this.promptUserForApprovalType(
         onPrompt!
       );
-
-      await Promise.all(
-        matchedBalances.map(async balance => {
-          if (
-            compareString(balance.contract, ethErc20WrapperContract) &&
-            !postV28
-          ) {
-            await this.mintEthErc(balance.amount!);
-          }
-        })
-      );
-
-      await Promise.all(
-        matchedBalances
-          .filter(balance =>
-            requiredApprovals.some(status =>
-              compareString(balance.contract, status.contract)
-            )
-          )
-          .map(async balance => {
-            return this.triggerApprovalIfRequired({
-              owner: this.currentUser,
-              amount: unlimitedApproval
-                ? unlimitedWei
-                : expandToken(balance.amount!, balance.decimals),
-              spender: converterAddress,
-              tokenAddress: balance.contract
-            });
-          })
-      );
+      requiredApprovalsWithType.push({
+        ...requiredApproval,
+        unlimitedApproval
+      });
     }
+
+    await Promise.all(
+      requiredApprovalsWithType.map(async type => {
+        if (compareString(type.contract, ethErc20WrapperContract) && !postV28) {
+          await this.mintEthErc(type.balanceDec);
+        }
+
+        return this.triggerApprovalIfRequired({
+          owner: this.currentUser,
+          amount: type.unlimitedApproval ? unlimitedWei : type.balanceWei,
+          spender: converterAddress,
+          tokenAddress: type.contract
+        });
+      })
+    );
 
     onUpdate!(1, steps);
 
