@@ -29,7 +29,6 @@ import { faPowerOff } from "@fortawesome/free-solid-svg-icons/faPowerOff";
 import { faSearch } from "@fortawesome/free-solid-svg-icons/faSearch";
 import { faShieldAlt } from "@fortawesome/free-solid-svg-icons/faShieldAlt";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
-import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
 import { faChevronCircleRight } from "@fortawesome/free-solid-svg-icons/faChevronCircleRight";
 import { faChevronUp } from "@fortawesome/free-solid-svg-icons/faChevronUp";
@@ -51,6 +50,7 @@ import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons/faArrowUp";
 import { faBellOn } from "@fortawesome/pro-solid-svg-icons/faBellOn";
+import { faTimes } from "@fortawesome/pro-light-svg-icons/faTimes";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -81,7 +81,6 @@ export const fas = [
   faSearch,
   faShieldAlt,
   faThumbsUp,
-  faTimes,
   faTimesCircle,
   faChevronCircleRight,
   faChevronUp,
@@ -111,3 +110,5 @@ export const fab = [
   faTelegramPlane,
   faTwitter
 ];
+
+export const fal = [faTimes];
