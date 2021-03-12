@@ -1607,6 +1607,12 @@ export class EthBancorModule
           }
         },
         {
+          description: "Confirm",
+          task: () => {
+            return this.awaitConfirmation(onPrompt);
+          }
+        },
+        {
           description: "Adding liquidity..",
           task: async () => {
             return this.resolveTxOnConfirmation({
@@ -1678,9 +1684,8 @@ export class EthBancorModule
         tokenAddress: this.liquidityProtectionSettings.govToken,
         onPrompt
       });
-    } else {
-      await this.awaitConfirmation(onPrompt);
     }
+    await this.awaitConfirmation(onPrompt);
 
     const txHash = await this.resolveTxOnConfirmation({
       tx: contract.methods.removeLiquidity(dbId, ppmPercent),
@@ -1725,6 +1730,10 @@ export class EthBancorModule
               onPrompt
             });
           }
+        },
+        {
+          description: "Confirmation",
+          task: () => this.awaitConfirmation(onPrompt)
         },
         {
           description: "Adding liquidity protection...",
@@ -4434,6 +4443,9 @@ export class EthBancorModule
 
     onUpdate!(1, steps);
 
+    if (onPrompt) {
+      await this.awaitConfirmation(onPrompt);
+    }
     let txHash: string;
 
     if (postV28 && relay.converterType == PoolType.Traditional) {
@@ -6345,6 +6357,8 @@ export class EthBancorModule
     });
 
     onUpdate!(2, steps);
+
+    await this.awaitConfirmation(onPrompt);
 
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
 
