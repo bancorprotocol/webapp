@@ -250,7 +250,7 @@ export const calculateProgressLevel = (
 export const calculatePercentageChange = (
   numberNow: number,
   numberBefore: number
-):number  => {
+): number => {
   return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
 };
 
@@ -1307,4 +1307,8 @@ export const defaultTableSort = (
     if (isDefined) return number.toNumber();
     else return null;
   } else return value;
+};
+
+export const openNewTab = (url: string) => {
+  window.open(url, "_blank");
 };
