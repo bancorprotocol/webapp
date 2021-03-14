@@ -22,13 +22,15 @@
           :alt="$t('token_logo')"
         />
 
-        {{ item.symbol }}
-        <div
-          class="font-size-12 font-w400 ml-4"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          {{ poolName(item.poolId) }}
-        </div>
+        <span class="font-w400">
+          {{ item.symbol }}
+          <div
+            class="font-size-12 ml-4"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ poolName(item.poolId) }}
+          </div>
+        </span>
       </template>
 
       <template #cellCollapsed(pool)="{ item }">
@@ -38,19 +40,21 @@
           :src="poolLogo(item.stake.poolId, item.stake.symbol)"
           :alt="$t('token_logo')"
         />
-        {{ item.stake.symbol }}
 
-        <div
-          class="font-size-12 font-w400 ml-4"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          {{ poolName(item.stake.poolId) }}
-        </div>
+        <span class="font-w400">
+          {{ item.stake.symbol }}
+          <div
+            class="font-size-12 ml-4"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ poolName(item.stake.poolId) }}
+          </div>
+        </span>
       </template>
 
       <template #cell(stake)="{ item, value, isCollapsable }">
-        <div :id="`popover-stake-${item.id}`">
-          <div>
+        <div :id="`popover-stake-${item.id}`" class="text-center py-3">
+          <div class="font-w400">
             {{ `${prettifyNumber(value.amount)} ${item.symbol}` }}
           </div>
           <div
@@ -72,8 +76,8 @@
         </div>
       </template>
       <template #cellCollapsed(stake)="{ item, value }">
-        <div :id="`popover-stake-${item.id}`">
-          <div>
+        <div :id="`popover-stake-${item.id}`" class="text-center">
+          <div class="font-w400">
             {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
           </div>
           <div
@@ -95,93 +99,99 @@
       </template>
 
       <template #cell(fullyProtected)="{ item, value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${item.symbol}`
                 : $t('stale_data')
             "
           />
+
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
       </template>
       <template #cellCollapsed(fullyProtected)="{ value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
                 : $t('stale_data')
             "
           />
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
       </template>
 
       <template #cell(protectedAmount)="{ item, value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${item.symbol}`
                 : $t('please_refresh')
             "
           />
+
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
       </template>
       <template #cellCollapsed(protectedAmount)="{ value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
                 : $t('please_refresh')
             "
           />
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        />
       </template>
 
       <template #cell(fees)="{ item, value }">
-        <div :id="`popover-fees-${item.id}`">
+        <div :id="`popover-fees-${item.id}`" class="text-center font-w400">
           {{ `${prettifyNumber(value)} ${item.symbol}` }}
 
           <b-badge
@@ -197,6 +207,7 @@
               }`
             }}
           </b-badge>
+          <div v-else style="height: 20px !important"></div>
         </div>
         <b-popover
           :target="`popover-fees-${item.id}`"
@@ -209,13 +220,13 @@
         </b-popover>
       </template>
       <template #cellCollapsed(fees)="{ value }">
-        <div>
+        <div class="font-w400 text-center">
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
       </template>
 
       <template #cell(roi)="{ value, item }">
-        <div :id="`popover-roi-${item.id}`">
+        <div :id="`popover-roi-${item.id}`" class="text-center font-w400">
           <div>
             {{
               value && typeof value.fees !== "undefined"
@@ -242,7 +253,7 @@
         </b-popover>
       </template>
       <template #cellCollapsed(roi)="{ value }">
-        <div>
+        <div class="font-w400 text-center">
           {{
             typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
           }}
@@ -250,49 +261,53 @@
       </template>
 
       <template #cell(apr)="{ value }">
-        <div>
-          {{
-            `D | ${
-              typeof value.day !== "undefined"
-                ? stringifyPercentage(value.day)
-                : "N/A"
-            }`
-          }}
-        </div>
-        <div
-          class="font-size-12 font-w400 my-1"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          {{
-            `W | ${
-              typeof value.week !== "undefined"
-                ? stringifyPercentage(value.week)
-                : "N/A"
-            }`
-          }}
+        <div class="text-center font-w400">
+          <div>
+            {{
+              `D | ${
+                typeof value.day !== "undefined"
+                  ? stringifyPercentage(value.day)
+                  : "N/A"
+              }`
+            }}
+          </div>
+          <div
+            class="font-size-12 font-w400 my-1 mr-2"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{
+              `W | ${
+                typeof value.week !== "undefined"
+                  ? stringifyPercentage(value.week)
+                  : "N/A"
+              }`
+            }}
+          </div>
         </div>
       </template>
       <template #cellCollapsed(apr)="{ value }">
-        <div>
-          {{
-            `D | ${
-              typeof value.day !== "undefined"
-                ? stringifyPercentage(value.day)
-                : "N/A"
-            }`
-          }}
-        </div>
-        <div
-          class="font-size-12 font-w400 my-1"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          {{
-            `W | ${
-              typeof value.week !== "undefined"
-                ? stringifyPercentage(value.week)
-                : "N/A"
-            }`
-          }}
+        <div class="text-center font-w400">
+          <div>
+            {{
+              `D | ${
+                typeof value.day !== "undefined"
+                  ? stringifyPercentage(value.day)
+                  : "N/A"
+              }`
+            }}
+          </div>
+          <div
+            class="font-size-12 font-w400 my-1 mr-2"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{
+              `W | ${
+                typeof value.week !== "undefined"
+                  ? stringifyPercentage(value.week)
+                  : "N/A"
+              }`
+            }}
+          </div>
         </div>
       </template>
 
@@ -301,6 +316,7 @@
           :value="item.coverageDecPercent"
           :max="1"
           class="progress-bar-positive mt-1"
+          style="width: 80% !important"
         />
         <span
           :id="`popover-currentCoverage-${item.id}`"
@@ -561,6 +577,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "stake",
         label: i18n.tc("initial_stake"),
         tooltip: i18n.tc("tokens_originally_staked"),
+        thClass: "text-center",
         minWidth: "132px"
       },
       {
@@ -568,6 +585,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "fullyProtected",
         label: i18n.tc("protected"),
         tooltip: i18n.tc("tokens_can_withdraw"),
+        thClass: "text-center",
         minWidth: "125px"
       },
       {
@@ -575,6 +593,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "protectedAmount",
         label: i18n.tc("claimable"),
         tooltip: i18n.tc("tokens_can_withdraw_now"),
+        thClass: "text-center",
         minWidth: "125px"
       },
       {
@@ -582,6 +601,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "fees",
         label: i18n.tc("fees_rewards"),
         tooltip: i18n.tc("fees_generated"),
+        thClass: "text-center",
         minWidth: "162px"
       },
       {
@@ -589,6 +609,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "roi",
         label: "ROI",
         tooltip: i18n.tc("roi_protected_value"),
+        thClass: "text-center",
         minWidth: "107px"
       },
       {
@@ -597,6 +618,7 @@ export default class ProtectedTable extends BaseComponent {
         label: "APR",
         tooltip: i18n.tc("estimated_calculation_annual_returns"),
         sortable: true,
+        thClass: "text-center",
         minWidth: "112px"
       },
       {
@@ -611,8 +633,8 @@ export default class ProtectedTable extends BaseComponent {
         key: "actions",
         label: "",
         sortable: false,
-        minWidth: "30px",
-        maxWidth: "30px"
+        minWidth: "25px",
+        maxWidth: "25px"
       }
     ];
   }
