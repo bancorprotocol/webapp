@@ -124,7 +124,7 @@
 
 <script lang="ts">
 import { uniqBy } from "lodash";
-import { Component } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import DateRangePicker from "vue2-daterange-picker";
 import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
 import { vxm } from "@/store";
@@ -153,7 +153,6 @@ import dayjs from "@/utils/dayjs";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
-  groupedPos = groupPositionsArray(vxm.ethBancor.protectedPositions);
   dropDownFilters = [
     {
       id: "position",
@@ -271,12 +270,29 @@ export default class ProtectionHome extends BaseComponent {
     return vxm.ethBancor.protectedPositions;
   }
 
+  get groupedPos() {
+    return groupPositionsArray(this.positions);
+  }
+
   get loading() {
     if (this.currentUser) return vxm.ethBancor.loadingProtectedPositions;
     else return false;
   }
 
+  @Watch("groupedPos")
+  positionsChanged() {
+    this.updateDropdownFilters();
+  }
+
+  updateDropdownFilters() {
+    this.dropDownFilters[1].items = [
+      { id: "0", title: i18n.t("all_pools") },
+      ...this.poolNames
+    ];
+  }
+
   async mounted() {
+    this.updateDropdownFilters();
     const scroll = this.$route.params.scroll;
     const el = this.$el.getElementsByClassName("closedPos")[0];
 

@@ -321,6 +321,7 @@
         />
 
         <b-popover
+          v-if="!insuranceStarted(item.insuranceStart)"
           :target="'popover-cliff-' + item.id"
           triggers="hover"
           placement="bottom"
@@ -362,6 +363,7 @@
         />
 
         <b-popover
+          v-if="!insuranceStarted(item.insuranceStart)"
           :target="'popover-cliff-' + item.id"
           triggers="hover"
           placement="bottom"
@@ -573,7 +575,7 @@ export default class ProtectedTable extends BaseComponent {
         key: "protectedAmount",
         label: i18n.tc("claimable"),
         tooltip: i18n.tc("tokens_can_withdraw_now"),
-        minWidth: "130px"
+        minWidth: "125px"
       },
       {
         id: 5,
