@@ -174,8 +174,8 @@ export default class ProtectionHome extends BaseComponent {
     startDate: dayjs.Dayjs | null;
     endDate: dayjs.Dayjs | null;
   } = {
-    startDate: this.today.subtract(30, "days"),
-    endDate: this.today
+    startDate: null,
+    endDate: null
   };
 
   positionFilterFunction(row: ViewGroupedPositions) {

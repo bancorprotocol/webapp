@@ -31,12 +31,20 @@
         v-for="dropdown in dropDownFilters"
         :key="dropdown.id"
         :text="dropdown.items[dropdown.selectedIndex].title"
-        :variant="darkMode ? 'outline-dark' : 'outline-light'"
+        :variant="
+          dropdown.selectedIndex == 0
+            ? darkMode
+              ? 'muted-dark'
+              : 'muted-light'
+            : darkMode
+            ? 'active-dark'
+            : 'active-light'
+        "
         toggle-class="block-rounded"
         :menu-class="
           darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
         "
-        no-caret
+        style="width: 200px"
         class="m-2"
       >
         <template #button-content>

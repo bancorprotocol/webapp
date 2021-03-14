@@ -241,6 +241,26 @@
     background-color: $bg-btn-outline-dark !important;
     color: $text-color-dark !important;
   }
+  &.btn-muted-light {
+    color: $gray-placeholder !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-active-light {
+    color: $text-color-light !important;
+    border-color: $text-color-light !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-active-dark {
+    color: $text-color-dark !important;
+    border-color: $text-color-dark !important;
+    background-color: $bg-body-dark !important;
+  }
+  &.btn-muted-dark {
+    color: $gray-placeholder-dark !important;
+    border-color: $gray-placeholder-dark !important;
+    background-color: $gray-border-dark !important;
+  }
   &.btn-outline-light {
     color: $primary !important;
     border-color: $gray-placeholder !important;
