@@ -53,16 +53,15 @@ import { computed, defineComponent, PropType, ref } from "@vue/composition-api";
 import {
   clearAllNotifications,
   ENotificationStatus,
+  hideAlert,
   history,
   INotificationView,
   removeNotification,
-  updatePendingTx,
-  hideAlert
+  updatePendingTx
 } from "@/components/compositions/notifications/index";
 import { vxm } from "@/store";
 import { EthNetworks } from "@/api/web3";
 import dayjs from "dayjs";
-import { openNewTab } from "@/api/helpers";
 
 export default defineComponent({
   props: {
@@ -125,7 +124,8 @@ export default defineComponent({
     );
 
     const openUrl = () => {
-      openNewTab(getEtherscanUrl.value);
+      window.open(getEtherscanUrl.value, "_blank");
+      // openNewTab(getEtherscanUrl.value);
     };
 
     const remove = (id: number) => {
