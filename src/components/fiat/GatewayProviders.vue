@@ -18,7 +18,7 @@
       <b-col lg="6">
         <div class="name-provider font-size-16 font-w500 mb-2">MoonPay</div>
         <b-row class="font-size-12 font-w600 ml-0 my-2" align-v="center">
-          <div class="txt-available mr-1">availble operations:</div>
+          <div class="txt-available mr-1">available operations:</div>
           <div
             class="fiat fiat__in mx-1"
             :class="darkMode ? 'text-body-light' : 'text-light'"
