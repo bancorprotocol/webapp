@@ -28,11 +28,12 @@
       </h3>
 
       <b-dropdown
+        :ref="'dropdown_' + dropdown.id"
         v-for="dropdown in dropDownFilters"
         :key="dropdown.id"
         :text="dropdown.items[dropdown.selectedIndex].title"
         :variant="
-          dropdown.selectedIndex == 0
+          !dropDownFiltering(dropdown)
             ? darkMode
               ? 'muted-dark'
               : 'muted-light'
@@ -40,19 +41,22 @@
             ? 'active-dark'
             : 'active-light'
         "
+        :block="true"
+        class="d-none d-lg-inline m-2"
         toggle-class="block-rounded"
         :menu-class="
           darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
         "
-        style="width: 200px"
-        class="m-2"
+        style="width: 200px !important"
+        :no-caret="true"
       >
         <template #button-content>
-          <div class="d-lg-none">
-            <font-awesome-icon icon="filter" fixed-width />
-          </div>
-          <div class="d-none d-lg-inline">
+          <div class="d-flex justify-content-between align-items-center">
             {{ dropdown.items[dropdown.selectedIndex].title }}
+            <font-awesome-icon
+              :icon="dropDownFiltering(dropdown) ? 'times' : 'caret-down'"
+              @click.stop="clearFilter(dropdown)"
+            />
           </div>
         </template>
         <b-dropdown-item
@@ -63,8 +67,9 @@
           >{{ item.title }}
         </b-dropdown-item>
       </b-dropdown>
-
-      <slot name="date"></slot>
+      <div class="d-none d-lg-inline">
+        <slot name="date"></slot>
+      </div>
 
       <div v-if="rippleAnimation">
         <img
@@ -96,7 +101,11 @@
           prepend="search"
         />
       </div>
+      <div v-if="dropDownFilters" class="d-lg-none">
+        <font-awesome-icon icon="filter" fixed-width />
+      </div>
     </div>
+
     <div
       v-else
       class="block-header"
@@ -143,6 +152,16 @@ export default class ContentBlock extends BaseComponent {
     const color = this.darkMode ? "text-dark" : "text-light";
     const alignment = this.backButton ? "text-center w-100" : "text-left";
     return [color, alignment];
+  }
+
+  dropDownFiltering(dropDown: any) {
+    return dropDown.selectedIndex !== 0;
+  }
+
+  clearFilter(dropdown: any) {
+    if (this.dropDownFiltering(dropdown)) {
+      dropdown.selectedIndex = 0;
+    }
   }
 }
 </script>
