@@ -28,6 +28,7 @@
 
       <b-col cols="12">
         <content-block
+          :padding="false"
           :px0="true"
           :shadow-light="true"
           :title="
