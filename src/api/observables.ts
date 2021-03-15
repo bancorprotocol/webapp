@@ -479,12 +479,15 @@ const rewardMultipliers$ = combineLatest([
   startWith(undefined)
 );
 
+const immediatePoolPrograms$ = poolPrograms$.pipe(startWith(undefined));
+
 const fullPositions$ = combineLatest([
   unVerifiedPositions$,
   removeLiquidityReturn$,
   pendingReserveRewards$,
   poolReturns$,
-  rewardMultipliers$
+  rewardMultipliers$,
+  immediatePoolPrograms$
 ]).pipe(
   map(
     ([
@@ -492,9 +495,10 @@ const fullPositions$ = combineLatest([
       removeLiquidityReturn,
       pendingReserveRewards,
       poolReturns,
-      rewardMultipliers
-    ]) => {
-      return unverifiedPositions.map(
+      rewardMultipliers,
+      poolPrograms
+    ]) =>
+      unverifiedPositions.map(
         (position): ProtectedLiquidityCalculated => {
           const removeLiq =
             removeLiquidityReturn &&
@@ -527,6 +531,14 @@ const fullPositions$ = combineLatest([
                 compareString(r.reserveToken, position.reserveToken)
             );
 
+          const multiplier =
+            poolPrograms &&
+            poolPrograms.some(x =>
+              compareString(x.poolToken, position.poolToken)
+            )
+              ? rewardMultiplier
+              : null;
+
           return {
             ...position,
             ...(reserveReward && {
@@ -541,13 +553,12 @@ const fullPositions$ = combineLatest([
             ...(removeLiq && { roiDec: removeLiq.roiDec }),
             ...(day && { oneDayDec: day.calculatedAprDec }),
             ...(week && { oneWeekDec: week.calculatedAprDec }),
-            ...(rewardMultiplier && {
-              rewardsMultiplier: rewardMultiplier.multiplier.toNumber()
+            ...(multiplier && {
+              multiplier: multiplier.multiplier.toNumber()
             })
           };
         }
-      );
-    }
+      )
   )
 );
 
