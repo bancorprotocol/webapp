@@ -57,8 +57,10 @@ export const groupPositionsArray = (
         item.insuranceStart = val.insuranceStart;
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
-        item.pendingReserveReward = val.pendingReserveReward;
-        item.rewardsMultiplier = val.rewardsMultiplier;
+        item.pendingReserveReward = new BigNumber(
+          val.pendingReserveReward ?? 0
+        );
+        item.rewardsMultiplier = val.rewardsMultiplier ?? 0;
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
@@ -95,7 +97,7 @@ export const groupPositionsArray = (
         };
         item.roi = {
           fees: sumFees / sumStakeAmount,
-          reserveRewards: new BigNumber(item.pendingReserveReward)
+          reserveRewards: item.pendingReserveReward
             .times(val.bntTokenPrice)
             .div(item.stake.usdValue)
         };
