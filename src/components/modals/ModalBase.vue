@@ -31,10 +31,12 @@
           <b-col cols="12">
             <multi-input-field
               v-model="searchField"
+              :clear="true"
               :placeholder="$t('search')"
               prepend="search"
               height="48"
               font-size="lg"
+              autofocus
             />
           </b-col>
         </b-row>

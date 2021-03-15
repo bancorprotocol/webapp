@@ -14,7 +14,7 @@
     <alert-block
       v-if="priceDeviationTooHigh && !inputError"
       variant="error"
-      class="mb-3"
+      class="mb-3 mt-3"
       msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few minutes."
     />
 
@@ -93,13 +93,13 @@
         <span
           class="font-size-12"
           :class="darkMode ? 'text-muted-dark' : 'text-muted'"
-          v-text="`~${percentage}% of your protected position`"
+          v-text="`${percentage}% of your protected position`"
         />
         <div
           v-if="expectedValue"
           class="font-size-14 font-w500 mb-1"
           v-text="
-            `${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
+            `~${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
           "
         />
       </gray-border-block>
@@ -121,7 +121,7 @@
       </div>
 
       <p
-        class="font-size-12 my-3"
+        class="font-size-12 my-3 text-left pl-3"
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
       >
         {{ outputInfo }}

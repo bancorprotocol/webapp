@@ -83,26 +83,17 @@ export default class ProtectedSummary extends BaseComponent {
         .map(x => Number(x.stake.usdValue || 0))
         .reduce((sum, current) => sum + current, 0);
 
-      let protectedValue = positions
-        .filter(
-          position =>
-            position.fullyProtected && position.fullyProtected.usdValue
-        )
-        .map(x => Number(x.fullyProtected!.usdValue || 0))
+      const protectedValue = positions
+        .map(x => Number((x.fullyProtected && x.fullyProtected.usdValue) || 0))
         .reduce((sum, current) => sum + current, 0);
 
-      let claimableValue = positions
-        .filter(
-          position =>
-            position.protectedAmount && position.protectedAmount.usdValue
+      const claimableValue = positions
+        .map(x =>
+          Number((x.protectedAmount && x.protectedAmount.usdValue) || 0)
         )
-        .map(x => Number(x.protectedAmount!.usdValue || 0))
         .reduce((sum, current) => sum + current, 0);
 
       const fees = protectedValue - initialStake;
-      const totalRewards = this.rewardsBalance.pendingRewards.usd.toNumber();
-      protectedValue += totalRewards;
-      claimableValue += totalRewards;
 
       return [
         {

@@ -26,7 +26,7 @@
 
 <script lang="ts">
 import { i18n } from "@/i18n";
-import { Component, Watch } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
 import SideBarBottomMore from "@/components/layout/SideBarBottomMore.vue";
@@ -94,6 +94,15 @@ export default class SideBar extends BaseComponent {
         icon: "vote.svg"
       },
       {
+        route: "FiatPage",
+        key: "fiat",
+        label: "Fiat",
+        newTab: false,
+        hideMobile: true,
+        icon: "fiat.svg",
+        svgName: "fiat"
+      },
+      {
         route: "https://x.bancor.network/",
         key: "bancorx",
         label: "Bancor X",
@@ -125,15 +134,6 @@ export default class SideBar extends BaseComponent {
         hideMobile: false,
         icon: "analytics.svg",
         svgName: "bancor"
-      },
-      {
-        route: "FiatPage",
-        key: "fiat",
-        label: "Fiat",
-        newTab: false,
-        hideMobile: true,
-        icon: "fiat.svg",
-        svgName: "fiat.svg"
       }
     ].map(link => ({
       ...link,

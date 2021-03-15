@@ -83,7 +83,8 @@ export const fas = [
   faCheck,
   faArrowUp,
   faCoins,
-  faMinus
+  faMinus,
+  faUnlock
 ];
 
 /* free-brands-svg-icons */
@@ -93,7 +94,7 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
 import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
 import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
 import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
-import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUp, faUnlock } from "@fortawesome/free-solid-svg-icons";
 import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 

@@ -137,7 +137,6 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
   loading = false;
 
   percentage: string = "50";
-  rate = "??????.?????";
 
   amountSmartToken = "";
   amountToken1: BigNumber | null = null;
@@ -162,7 +161,7 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
     this.txMeta.txBusy = true;
 
     try {
-      this.txMeta.success = await vxm.bancor.addLiquidity({
+      this.txMeta.success = await vxm.bancor.removeLiquidity({
         id: this.pool.id,
         reserves: [
           {
@@ -207,12 +206,6 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
       } else {
         this.error = i18n.tc("failed_calculate_withdraw");
         return;
-      }
-      if (
-        this.balance1.isLessThan(amount) ||
-        this.balance2.isLessThan(opposingAmount)
-      ) {
-        this.error = i18n.tc("insufficient_token");
       }
     } catch (e) {
       this.error = e.message;

@@ -6259,12 +6259,12 @@ export class EthBancorModule
     const promptId = String(Date.now());
 
     enum ApproveTypes {
-      unlimited = "Unlimited Approve",
-      limited = "Approve"
+      limited = "limited",
+      unlimited = "unlimited"
     }
     const questions = [
-      ApproveTypes.limited,
-      ApproveTypes.unlimited
+      ApproveTypes.unlimited,
+      ApproveTypes.limited
     ].map(label => ({ id: [promptId, label].join(":"), label }));
 
     onPrompt({ questions });
@@ -6459,7 +6459,7 @@ export class EthBancorModule
     const promptId = String(Date.now());
 
     enum ApproveTypes {
-      confirm = "Confirm"
+      confirm = "confirm"
     }
     const questions = [ApproveTypes.confirm].map(label => ({
       id: [promptId, label].join(":"),
@@ -6537,6 +6537,8 @@ export class EthBancorModule
     path: string[];
     amount: string;
   }): Promise<string> {
+    console.log("jan", this.contracts.BancorNetwork);
+    console.log(path);
     try {
       return await getReturnByPath({
         networkContract: this.contracts.BancorNetwork,

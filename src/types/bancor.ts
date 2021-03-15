@@ -348,11 +348,15 @@ export interface ViewGroupedPositions {
     // month: number;
   };
   fees: number;
-  roi: number;
+  roi: {
+    fees: number;
+    reserveRewards: BigNumber;
+  };
   insuranceStart: number;
   coverageDecPercent: number;
   fullCoverage: number;
-  pendingReserveReward: string;
+  pendingReserveReward: BigNumber;
+  rewardsMultiplier: number;
   reserveTokenPrice: number;
   collapsedData: ViewProtectedLiquidity[];
 }
