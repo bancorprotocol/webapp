@@ -7347,31 +7347,40 @@ export class EthBancorModule
           .getConnectorBalance(fromTokenContract)
           .call();
 
-        const smallPortionOfReserveBalance = new BigNumber(
-          new BigNumber(fromReserveBalanceWei).times(0.00001).toFixed(0)
+        const smallPortionOfFrom = new BigNumber(
+          new BigNumber(fromWei).times(0.00001).toFixed(0)
         );
 
-        if (smallPortionOfReserveBalance.isLessThan(fromWei)) {
-          const smallPortionOfReserveBalanceWei = smallPortionOfReserveBalance.toFixed(
-            0
-          );
+        const smallPortionFromWei = smallPortionOfFrom.isGreaterThan(1)
+          ? smallPortionOfFrom.toString()
+          : "1";
 
-          const smallPortionReturn = await this.getReturnByPath({
-            path,
-            amount: smallPortionOfReserveBalanceWei
-          });
+        console.log(
+          {
+            fromReserveBalanceWei,
+            smallPortionOfReserveBalance: smallPortionOfFrom.toString(),
+            fromWei
+          },
+          "is data"
+        );
 
-          const tinyReturnRate = buildRate(
-            new BigNumber(smallPortionOfReserveBalanceWei),
-            new BigNumber(smallPortionReturn)
-          );
+        const smallPortionReturn = await this.getReturnByPath({
+          path,
+          amount: smallPortionFromWei
+        });
 
-          const slippageNumber = calculateSlippage(
-            tinyReturnRate,
-            userReturnRate
-          );
-          slippage = slippageNumber.toNumber();
-        }
+        const tinyReturnRate = buildRate(
+          new BigNumber(smallPortionFromWei),
+          new BigNumber(smallPortionReturn)
+        );
+
+        const slippageNumber = calculateSlippage(
+          tinyReturnRate,
+          userReturnRate
+        );
+
+        console.log(slippageNumber.toNumber(), "is the slippage");
+        slippage = slippageNumber.toNumber();
       } catch (e) {
         console.error("Failed calculating slippage", e.message);
       }
