@@ -124,7 +124,7 @@
           prepend="search"
         />
         <b-btn class="d-flex" variant="primary">
-          <font-awesome-icon icon="filter" />
+          <font-awesome-icon icon="filter" @click="showMobileFilters" />
           <font-awesome-icon icon="times" class="ml-2" />
         </b-btn>
       </div>
@@ -133,15 +133,18 @@
     <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
       <slot></slot>
     </div>
+
+    <modal-protected-filters :show="modal" />
   </div>
 </template>
 <script lang="ts">
 import { Component, Prop, PropSync, Emit } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
+import ModalProtectedFilters from "@/components/modals/ModalProtectedFilters.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
-  components: { MultiInputField }
+  components: { MultiInputField, ModalProtectedFilters }
 })
 export default class ContentBlock extends BaseComponent {
   @Prop() title?: string;
@@ -163,6 +166,8 @@ export default class ContentBlock extends BaseComponent {
   @PropSync("search", { default: null }) searchInput!: string | null;
   @Prop() searchStyle!: string;
 
+  modal: boolean = false;
+
   @Emit()
   back() {}
 
@@ -170,6 +175,10 @@ export default class ContentBlock extends BaseComponent {
     const color = this.darkMode ? "text-dark" : "text-light";
     const alignment = this.backButton ? "text-center w-100" : "text-left";
     return [color, alignment];
+  }
+
+  showMobileFilters() {
+    this.modal = true;
   }
 
   dropDownFiltering(dropDown: any) {

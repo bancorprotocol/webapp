@@ -81,23 +81,23 @@
                   </div>
                   <div class="d-none d-lg-inline font-size-12 font-w400">
                     <div
-                      class="d-flex justify-content-between align-items-center"
                       v-if="hasRange"
+                      class="d-flex justify-content-between align-items-center"
                       :class="darkMode ? 'active-dark' : 'active-light'"
                     >
                       {{ formatDateRange(picker.startDate, picker.endDate) }}
                       <font-awesome-icon
-                        v-if="hasRange"
                         icon="times"
-                        class="ml-2"
-                        @click="clearDateRange"
+                        @click.stop="clearDateRange"
                       />
                     </div>
                     <div
                       v-else
+                      class="d-flex justify-content-between align-items-center"
                       :class="darkMode ? 'muted-dark' : 'muted-light'"
                     >
                       {{ $t("date_range") }}
+                      <font-awesome-icon icon="caret-down" />
                     </div>
                   </div>
                 </template>
