@@ -329,6 +329,5 @@ export const he = {
   total_fees: "סך עמלות",
   creating_proposal: "יוצר הצעה",
   vote_ended: "ההצבעה הסתיימה",
-  you_withdrawing_rewards: "אתה מושך פרסים",
-  rewards_ended: "הפרסים נגמרו"
+  you_withdrawing_rewards: "אתה מושך פרסים"
 };

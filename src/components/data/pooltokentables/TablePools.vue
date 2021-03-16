@@ -38,15 +38,8 @@
             }}
           </div>
         </template>
-        <b-badge
-          :variant="
-            timeEnded(value.endTime) ? 'badge-version text-primary' : 'danger'
-          "
-        >
-          <countdown-timer
-            :date-unix="value.endTime"
-            :msg-countdown-ended="$t('rewards_ended')"
-          />
+        <b-badge v-if="!timeEnded(value.endTime)" variant="danger">
+          <countdown-timer :date-unix="value.endTime" />
         </b-badge>
       </div>
     </template>
