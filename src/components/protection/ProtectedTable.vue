@@ -223,6 +223,7 @@
         <div class="font-w400 text-center">
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
+        <div style="height: 20px !important"></div>
       </template>
 
       <template #cell(roi)="{ value, item }">
@@ -241,6 +242,7 @@
           >
             + {{ stringifyPercentage(value.reserveRewards) }}
           </b-badge>
+          <div v-else style="height: 20px !important"></div>
         </div>
         <b-popover
           :target="`popover-roi-${item.id}`"
@@ -258,6 +260,7 @@
             typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
           }}
         </div>
+        <div style="height: 20px !important"></div>
       </template>
 
       <template #cell(apr)="{ value }">
@@ -323,7 +326,7 @@
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          <font-awesome-icon :icon="['far', 'clock']" />
+          <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
           <countdown-timer
             :date-unix="item.fullCoverage"
             :msg-countdown-ended="$t('full_protection_reached')"
@@ -359,13 +362,18 @@
         </b-popover>
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
-        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
+        <b-progress
+          :value="item.coverageDecPercent"
+          :max="1"
+          class="mt-1"
+          style="width: 80% !important"
+        />
         <span
           :id="`popover-currentCoverage-${item.id}`"
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          <font-awesome-icon :icon="['far', 'clock']" />
+          <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
           <countdown-timer
             :date-unix="item.fullCoverage"
             :msg-countdown-ended="$t('full_protection_reached')"
