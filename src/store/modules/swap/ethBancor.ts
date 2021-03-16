@@ -229,7 +229,8 @@ import {
   getWelcomeData,
   NewPool,
   WelcomeData,
-  TokenMetaWithReserve
+  TokenMetaWithReserve,
+  Pool
 } from "@/api/eth/bancorApi";
 import { PoolProgram } from "../rewards";
 
@@ -6944,7 +6945,7 @@ export class EthBancorModule
 
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
-        ethPath,
+        ethPath.path,
         fromWei,
         await this.weiMinusSlippageTolerance(expectedReturnWei),
         zeroAddress,
@@ -7274,7 +7275,7 @@ export class EthBancorModule
           return {
             startingRelayAnchor: startingRelay.anchorAddress,
             returnResult: await this.getReturnByPath({
-              path,
+              path: path.path,
               amount: fromWei
             }).catch(() => false),
             path,
@@ -7327,66 +7328,107 @@ export class EthBancorModule
       fromWei
     });
 
-    const path = generateEthPath(fromToken.symbol, relays);
+    const wholePath = generateEthPath(fromToken.symbol, relays);
+    const path = wholePath.path;
+    console.log(
+      wholePath.sortedRelays,
+      "are the sorted relays with from and to sorted"
+    );
+
+    const sortedPools = wholePath.sortedRelays.map(relay => {
+      const pool = findOrThrow(this.apiData!.pools, pool =>
+        compareString(pool.pool_dlt_id, relay.anchorAddress)
+      );
+
+      const updatedReserves = sortAlongSide(
+        pool.reserves,
+        reserve => reserve.address,
+        relay.reserves.map(r => r.contract)
+      );
+      return {
+        ...pool,
+        reserves: updatedReserves
+      };
+    }, "failed finding pools");
+
+    console.log(
+      sortedPools,
+      "are the sorted relays",
+      sortedPools.map(relay =>
+        relay.reserves.map(x => x.address.slice(0, 6)).join(" / ")
+      )
+    );
+
+    const slippageLessPrices = (sortedPools: Pool[]) =>
+      sortedPools.map(pool => {
+        const [fromReserve, toReserve] = pool.reserves;
+        return new BigNumber(toReserve.balance)
+          .div(fromReserve.balance)
+          .toString();
+      });
+
+    const slippageLessReturn = (rates: string[], amount: string) =>
+      rates.reduce(
+        (acc, item) => new BigNumber(item).times(acc),
+        new BigNumber(amount)
+      );
+
+    const calculateSlippageLessReturn = (
+      sortedPools: Pool[],
+      amount: string
+    ): BigNumber => {
+      const prices = slippageLessPrices(sortedPools);
+      const theReturn = slippageLessReturn(prices, amount);
+      console.log(theReturn.toString(), "is the slippage less return", {
+        prices
+      });
+      const terminatingPool = last(sortedPools)!;
+      const decPoolFee = ppmToDec(terminatingPool.fee);
+      return theReturn.times(new BigNumber(1).minus(decPoolFee));
+    };
 
     try {
-      const wei = await this.getReturnByPath({
+      const slippageWeiReturn = await this.getReturnByPath({
         path,
         amount: fromWei
       });
 
-      const weiNumber = new BigNumber(wei);
+      const expectedReturnDec = shrinkToken(slippageWeiReturn, toTokenDecimals);
 
-      const userReturnRate = buildRate(new BigNumber(fromWei), weiNumber);
+      console.log(expectedReturnDec, "is the user return amount");
+
+      const slippageLessReturn = calculateSlippageLessReturn(
+        sortedPools,
+        amount
+      );
+      const slippageLessReturnRate = buildRate(
+        new BigNumber(amount),
+        slippageLessReturn
+      );
+      const userReturnRate = buildRate(
+        new BigNumber(amount),
+        new BigNumber(expectedReturnDec)
+      );
+      console.log(
+        slippageLessReturnRate.toString(),
+        "is the slippageless rate"
+      );
+      console.log(userReturnRate.toString(), "is the user return rate");
 
       let slippage: number | undefined;
       try {
-        const firstRelayContract = relays[0].contract;
-        const contract = buildConverterContract(firstRelayContract, w3);
-        const fromReserveBalanceWei = await contract.methods
-          .getConnectorBalance(fromTokenContract)
-          .call();
-
-        const smallPortionOfFrom = new BigNumber(
-          new BigNumber(fromWei).times(0.00001).toFixed(0)
-        );
-
-        const smallPortionFromWei = smallPortionOfFrom.isGreaterThan(1)
-          ? smallPortionOfFrom.toString()
-          : "1";
-
-        console.log(
-          {
-            fromReserveBalanceWei,
-            smallPortionOfReserveBalance: smallPortionOfFrom.toString(),
-            fromWei
-          },
-          "is data"
-        );
-
-        const smallPortionReturn = await this.getReturnByPath({
-          path,
-          amount: smallPortionFromWei
-        });
-
-        const tinyReturnRate = buildRate(
-          new BigNumber(smallPortionFromWei),
-          new BigNumber(smallPortionReturn)
-        );
-
         const slippageNumber = calculateSlippage(
-          tinyReturnRate,
+          slippageLessReturnRate,
           userReturnRate
         );
 
-        console.log(slippageNumber.toNumber(), "is the slippage");
         slippage = slippageNumber.toNumber();
       } catch (e) {
         console.error("Failed calculating slippage", e.message);
       }
 
       return {
-        amount: shrinkToken(wei, toTokenDecimals),
+        amount: shrinkToken(slippageWeiReturn, toTokenDecimals),
         slippage
       };
     } catch (e) {
