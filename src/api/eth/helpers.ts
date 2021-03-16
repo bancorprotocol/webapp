@@ -44,27 +44,6 @@ export const shrinkToken = (
   return chopZeros ? new BigNumber(res).toString() : res;
 };
 
-export const makeBatchRequest = (calls: any[], from: string) => {
-  const batch = new web3.BatchRequest();
-  const promises = calls.map(
-    call =>
-      new Promise((resolve, reject) => {
-        const request = call.request({ from }, (error: any, data: any) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(data);
-          }
-        });
-        batch.add(request);
-      })
-  );
-
-  batch.execute();
-
-  return Promise.all(promises);
-};
-
 export interface TokenSymbol {
   contract: string;
   symbol: string;
