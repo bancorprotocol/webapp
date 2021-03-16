@@ -197,7 +197,7 @@
           <b-badge
             v-if="item.pendingReserveReward.gt(0)"
             variant="primary"
-            class="badge-version text-primary"
+            class="badge-version text-primary font-w500"
           >
             {{
               `+ ${prettifyNumber(item.pendingReserveReward)} BNT ${
@@ -238,7 +238,7 @@
           <b-badge
             v-if="value.reserveRewards.gt(0)"
             variant="primary"
-            class="badge-version text-primary"
+            class="badge-version text-primary font-w500"
           >
             + {{ stringifyPercentage(value.reserveRewards) }}
           </b-badge>
@@ -264,52 +264,56 @@
       </template>
 
       <template #cell(apr)="{ value }">
-        <div class="text-center font-w400">
+        <div class="d-flex justify-content-center font-w400">
           <div>
-            {{
-              `D | ${
-                typeof value.day !== "undefined"
-                  ? stringifyPercentage(value.day)
-                  : "N/A"
-              }`
-            }}
-          </div>
-          <div
-            class="font-size-12 font-w400 my-1 mr-2"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-          >
-            {{
-              `W | ${
-                typeof value.week !== "undefined"
-                  ? stringifyPercentage(value.week)
-                  : "N/A"
-              }`
-            }}
+            <div>
+              {{
+                `D | ${
+                  typeof value.day !== "undefined"
+                    ? stringifyPercentage(value.day)
+                    : "N/A"
+                }`
+              }}
+            </div>
+            <div
+              class="font-size-12 font-w400 my-1"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              {{
+                `W | ${
+                  typeof value.week !== "undefined"
+                    ? stringifyPercentage(value.week)
+                    : "N/A"
+                }`
+              }}
+            </div>
           </div>
         </div>
       </template>
       <template #cellCollapsed(apr)="{ value }">
-        <div class="text-center font-w400">
+        <div class="d-flex justify-content-center font-w400">
           <div>
-            {{
-              `D | ${
-                typeof value.day !== "undefined"
-                  ? stringifyPercentage(value.day)
-                  : "N/A"
-              }`
-            }}
-          </div>
-          <div
-            class="font-size-12 font-w400 my-1 mr-2"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-          >
-            {{
-              `W | ${
-                typeof value.week !== "undefined"
-                  ? stringifyPercentage(value.week)
-                  : "N/A"
-              }`
-            }}
+            <div>
+              {{
+                `D | ${
+                  typeof value.day !== "undefined"
+                    ? stringifyPercentage(value.day)
+                    : "N/A"
+                }`
+              }}
+            </div>
+            <div
+              class="font-size-12 font-w400 my-1"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              {{
+                `W | ${
+                  typeof value.week !== "undefined"
+                    ? stringifyPercentage(value.week)
+                    : "N/A"
+                }`
+              }}
+            </div>
           </div>
         </div>
       </template>

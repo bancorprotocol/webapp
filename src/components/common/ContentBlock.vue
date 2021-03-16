@@ -9,110 +9,127 @@
       { 'bg-block-light': !darkMode }
     ]"
   >
-    <div v-if="noHeader"></div>
+    <div :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'">
+      <div v-if="noHeader"></div>
 
-    <div
-      v-else-if="title"
-      class="d-flex justify-content-between align-items-center py-2 px-3 font-size-14 font-w600"
-      :class="[
-        darkMode ? 'border-bottom-dark' : 'border-bottom-light',
-        searchInput !== null ? 'pr-2' : ''
-      ]"
-    >
-      <div v-if="backButton">
-        <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
-      </div>
-
-      <h3 class="m-0 p-0 my-2 font-size-14 font-w600" :class="titleClasses">
-        {{ title }}
-      </h3>
-
-      <b-dropdown
-        :ref="'dropdown_' + dropdown.id"
-        v-for="dropdown in dropDownFilters"
-        :key="dropdown.id"
-        :text="dropdown.items[dropdown.selectedIndex].title"
-        :variant="
-          !dropDownFiltering(dropdown)
-            ? darkMode
-              ? 'muted-dark'
-              : 'muted-light'
-            : darkMode
-            ? 'active-dark'
-            : 'active-light'
-        "
-        :block="true"
-        class="d-none d-lg-inline m-2"
-        toggle-class="block-rounded"
-        :menu-class="
-          darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
-        "
-        style="width: 200px !important"
-        :no-caret="true"
+      <div
+        v-if="!noHeader && title"
+        class="d-flex justify-content-between align-items-center py-2 px-3 font-size-12 font-w400"
+        :class="searchInput !== null ? 'pr-2' : ''"
       >
-        <template #button-content>
-          <div class="d-flex justify-content-between align-items-center">
-            {{ dropdown.items[dropdown.selectedIndex].title }}
-            <font-awesome-icon
-              :icon="dropDownFiltering(dropdown) ? 'times' : 'caret-down'"
-              @click.stop="clearFilter(dropdown)"
-            />
-          </div>
-        </template>
-        <b-dropdown-item
-          :variant="darkMode ? 'dark' : 'light'"
-          v-for="(item, index) in dropdown.items"
-          :key="item.id"
-          @click="dropdown.selectedIndex = index"
-          >{{ item.title }}
-        </b-dropdown-item>
-      </b-dropdown>
-      <div class="d-none d-lg-inline">
-        <slot name="date"></slot>
-      </div>
+        <div v-if="backButton">
+          <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
+        </div>
 
-      <div v-if="rippleAnimation">
-        <img
-          id="ripple"
-          width="30"
-          height="30"
-          :src="
-            darkMode
-              ? require(`@/assets/media/icons/rippleDark.svg`)
-              : require(`@/assets/media/icons/ripple.svg`)
+        <h3 class="m-0 p-0 my-2 font-size-12 font-w400" :class="titleClasses">
+          {{ title }}
+        </h3>
+
+        <b-dropdown
+          :ref="'dropdown_' + dropdown.id"
+          v-for="dropdown in dropDownFilters"
+          :key="dropdown.id"
+          :text="dropdown.items[dropdown.selectedIndex].title"
+          :variant="
+            !dropDownFiltering(dropdown)
+              ? darkMode
+                ? 'muted-dark'
+                : 'muted-light'
+              : darkMode
+              ? 'active-dark'
+              : 'active-light'
           "
-        />
-        <b-popover
-          :target="`ripple`"
-          triggers="hover"
-          placement="bottom"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          :block="true"
+          class="d-none d-lg-inline m-2"
+          toggle-class="block-rounded"
+          :menu-class="
+            darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+          "
+          style="width: 200px !important"
+          :no-caret="true"
         >
-          {{ $t("data_refreshes_auto") }}
-        </b-popover>
+          <template #button-content>
+            <div class="d-flex justify-content-between align-items-center">
+              {{ dropdown.items[dropdown.selectedIndex].title }}
+              <font-awesome-icon
+                :icon="dropDownFiltering(dropdown) ? 'times' : 'caret-down'"
+                @click.stop="clearFilter(dropdown)"
+              />
+            </div>
+          </template>
+          <b-dropdown-item
+            :variant="darkMode ? 'dark' : 'light'"
+            v-for="(item, index) in dropdown.items"
+            :key="item.id"
+            @click="dropdown.selectedIndex = index"
+            >{{ item.title }}
+          </b-dropdown-item>
+        </b-dropdown>
+        <div class="d-none d-lg-inline">
+          <slot name="date"></slot>
+        </div>
+
+        <div v-if="rippleAnimation">
+          <img
+            id="ripple"
+            width="30"
+            height="30"
+            :src="
+              darkMode
+                ? require(`@/assets/media/icons/rippleDark.svg`)
+                : require(`@/assets/media/icons/ripple.svg`)
+            "
+          />
+          <b-popover
+            :target="`ripple`"
+            triggers="hover"
+            placement="bottom"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ $t("data_refreshes_auto") }}
+          </b-popover>
+        </div>
+
+        <div v-if="searchInput !== null">
+          <multi-input-field
+            class="d-none d-lg-inline"
+            :style="searchStyle"
+            v-model="searchInput"
+            :clear="true"
+            :placeholder="$t('search')"
+            prepend="search"
+          />
+        </div>
       </div>
 
-      <div v-if="searchInput !== null">
+      <div
+        v-else
+        class="block-header"
+        :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
+      >
+        <slot name="header"> </slot>
+      </div>
+      <div
+        v-if="dropDownFilters"
+        class="d-lg-none d-flex align-items-center pb-2 px-3"
+      >
         <multi-input-field
+          v-if="searchInput !== null"
+          class="mr-2"
+          style="width: 100%"
           v-model="searchInput"
           :clear="true"
           :placeholder="$t('search')"
           prepend="search"
         />
-      </div>
-      <div v-if="dropDownFilters" class="d-lg-none">
-        <font-awesome-icon icon="filter" fixed-width />
+        <b-btn class="d-flex" variant="primary">
+          <font-awesome-icon icon="filter" />
+          <font-awesome-icon icon="times" class="ml-2" />
+        </b-btn>
       </div>
     </div>
 
-    <div
-      v-else
-      class="block-header"
-      :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
-    >
-      <slot name="header"> </slot>
-    </div>
     <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
       <slot></slot>
     </div>
@@ -144,6 +161,7 @@ export default class ContentBlock extends BaseComponent {
   @Prop({ default: false }) dateFilter!: Date[];
   @Prop({ default: false }) rippleAnimation?: boolean;
   @PropSync("search", { default: null }) searchInput!: string | null;
+  @Prop() searchStyle!: string;
 
   @Emit()
   back() {}

@@ -361,7 +361,7 @@ export const en = {
   fully_protected: "Fully protected",
   not_fully_protected: "Not Fully protected",
   all_pools: "All Pools",
-  select_date: "Select a date range",
+  date_range: "Date range",
   wait_until_space_opens:
     "{token} limit reached. Please wait until some space opens up.",
   data_refreshes_auto: "Data refreshes automatically",

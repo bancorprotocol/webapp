@@ -28,6 +28,7 @@
 
       <b-col cols="12">
         <content-block
+          searchStyle="width: 200px !important"
           :px0="true"
           :shadow-light="true"
           :title="
@@ -63,11 +64,13 @@
           <template v-if="positions.length" #date>
             <div>
               <date-range-picker
+                style="width: 200px !important; height: 35px !important"
                 ref="picker"
                 :autoApply="true"
                 :ranges="false"
                 singleDatePicker="range"
                 v-model="dateRange"
+                class="dark-date"
                 @update="updateDateRange"
               >
                 <template #input="picker">
@@ -76,21 +79,29 @@
                       formatDateRange(picker.startDate, picker.endDate, true)
                     }}
                   </div>
-                  <div class="d-none d-lg-inline">
-                    {{
-                      hasRange
-                        ? formatDateRange(picker.startDate, picker.endDate)
-                        : $t("select_date")
-                    }}
+                  <div class="d-none d-lg-inline font-size-12 font-w400">
+                    <div
+                      class="d-flex justify-content-between align-items-center"
+                      v-if="hasRange"
+                      :class="darkMode ? 'active-dark' : 'active-light'"
+                    >
+                      {{ formatDateRange(picker.startDate, picker.endDate) }}
+                      <font-awesome-icon
+                        v-if="hasRange"
+                        icon="times"
+                        class="ml-2"
+                        @click="clearDateRange"
+                      />
+                    </div>
+                    <div
+                      v-else
+                      :class="darkMode ? 'muted-dark' : 'muted-light'"
+                    >
+                      {{ $t("date_range") }}
+                    </div>
                   </div>
                 </template>
               </date-range-picker>
-              <font-awesome-icon
-                v-if="hasRange"
-                icon="times"
-                class="ml-2"
-                @click="clearDateRange"
-              />
             </div>
           </template>
         </content-block>
@@ -183,20 +194,22 @@ export default class ProtectionHome extends BaseComponent {
     if (fullRow) row.collapsedData = fullRow.collapsedData;
 
     const now = dayjs();
-    const isFullyProtected: boolean = dayjs
-      .unix(row.fullCoverage)
-      .isBefore(now);
+    let isFullyProtected: boolean = dayjs.unix(row.fullCoverage).isBefore(now);
 
     const selectedIndex = this.dropDownFilters[0].selectedIndex;
     if (selectedIndex == 1) {
-      row.collapsedData = row.collapsedData.filter(x =>
-        dayjs.unix(x.fullCoverage).isBefore(now)
-      );
+      row.collapsedData = row.collapsedData.filter(x => {
+        const before = dayjs.unix(x.fullCoverage).isBefore(now);
+        if (before) isFullyProtected = true;
+        return before;
+      });
       return isFullyProtected;
     } else if (selectedIndex == 2) {
-      row.collapsedData = row.collapsedData.filter(
-        x => !dayjs.unix(x.fullCoverage).isBefore(now)
-      );
+      row.collapsedData = row.collapsedData.filter(x => {
+        const before = dayjs.unix(x.fullCoverage).isBefore(now);
+        if (!before) isFullyProtected = false;
+        return !before;
+      });
       return !isFullyProtected;
     } else return true;
   }
@@ -210,9 +223,6 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   dateFilterFunction(row: ViewGroupedPositions) {
-    const fullRow = this.groupedPos.find(x => x.id === row.id);
-    if (fullRow) row.collapsedData = fullRow.collapsedData;
-
     let isInRange: boolean = false;
     //cant use hasRange cause TS
     if (this.dateRange.startDate && this.dateRange.endDate) {
@@ -303,4 +313,4 @@ export default class ProtectionHome extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped></style>
