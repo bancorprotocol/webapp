@@ -428,46 +428,83 @@
 }
 
 .date-range-picker-light {
+  .calendar-table {
+    background: $bg-body-light !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-light !important;
+  }
+  .drp-calendar {
+    background: $bg-body-light !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-light !important;
+  }
   thead {
-    background: red !important;
+    background: $bg-body-light !important;
     th {
-      background: red !important;
-      color: black !important;
+      background: $bg-body-light !important;
+      color: $text-color-light !important;
     }
   }
   tbody {
-    background: black !important;
+    color: $text-color-light !important;
     tr {
-      background: red !important;
+      background: $bg-body-light !important;
     }
     td {
-      background: red !important;
+      background: $bg-body-light !important;
     }
     th {
-      background: red !important;
+      background: $bg-body-light !important;
       color: $text-color-light !important;
     }
     .in-range {
       background: $primary !important;
+      color: white !important;
     }
     .active {
       background: $primary !important;
+      color: white !important;
     }
   }
 }
 
 .date-range-picker-dark {
+  .calendar-table {
+    background: $bg-body-dark !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-dark !important;
+  }
+  .drp-calendar {
+    background: $bg-body-dark !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-dark !important;
+  }
+  thead {
+    background: $bg-body-dark !important;
+    th {
+      background: $bg-body-dark !important;
+      color: $text-color-dark !important;
+    }
+  }
   tbody {
-    background: black !important;
-
+    color: $text-color-dark !important;
+    tr {
+      background: $bg-body-dark !important;
+    }
     td {
-      background: red !important;
+      background: $bg-body-dark !important;
+    }
+    th {
+      background: $bg-body-dark !important;
+      color: $text-color-dark !important;
     }
     .in-range {
-      background: blue !important;
+      background: $primary !important;
+      color: white !important;
     }
     .active {
-      background: yellow !important;
+      background: $primary !important;
+      color: white !important;
     }
   }
 }
