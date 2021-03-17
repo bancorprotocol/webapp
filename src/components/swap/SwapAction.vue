@@ -94,25 +94,6 @@
           "
         />
       </div>
-      <<<<<<< HEAD =======
-
-      <label-content-split
-        :label="$t('rate')"
-        :value="rate"
-        :loading="rateLoading"
-        class="mb-2"
-      >
-        <span @click="inverseRate = !inverseRate" class="cursor">
-          {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
-        </span>
-      </label-content-split>
-      <label-content-split
-        :label="$t('price_impact')"
-        :tooltip="$t('market_price_diff')"
-        :is-alert="overSlippageLimit"
-        :value="priceImpact"
-      />
-      >>>>>>> feature/unlimitedApproval
       <label-content-split
         v-if="fee !== null"
         :label="$t('fee')"
