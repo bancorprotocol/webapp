@@ -38,19 +38,12 @@ import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
 import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
-import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
-import { faDiscourse } from "@fortawesome/free-brands-svg-icons/faDiscourse";
-import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
-import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
-import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
-import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
 import { faBell } from "@fortawesome/free-solid-svg-icons/faBell";
 import { faUnlock } from "@fortawesome/free-solid-svg-icons/faUnlock";
 import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons/faArrowUp";
 import { faBellOn } from "@fortawesome/pro-solid-svg-icons/faBellOn";
-import { faTimes } from "@fortawesome/pro-light-svg-icons/faTimes";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -101,14 +94,3 @@ export const fas = [
   faBell,
   faBellOn
 ];
-
-export const fab = [
-  faDiscord,
-  faDiscourse,
-  faGithub,
-  faRedditAlien,
-  faTelegramPlane,
-  faTwitter
-];
-
-export const fal = [faTimes];
