@@ -262,8 +262,8 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
       addNotification({
         title: "Withdraw Protection",
         description: `Withdraw ~${this.prettifyNumber(
-          this.expectedValue.amount
-        )} ${this.expectedValue.symbol} from your protected position in pool ${
+          this.expectedValue!.amount
+        )} ${this.expectedValue!.symbol} from your protected position in pool ${
           this.pool.name
         }.`,
         txHash: this.txMeta.success.txId

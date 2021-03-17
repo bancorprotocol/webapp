@@ -3,21 +3,23 @@
     class="position-fixed p-4"
     :style="`${position}: 0; z-index: 999; max-width: 400px; width: 100%`"
   >
-    <div
-      v-for="notification in alertQueue"
-      :key="`alerts-${notification.id}`"
-      class="notification mb-3"
-    >
-      <notification-details :notification="notification" :is-alert="true" />
-    </div>
+    <transition name="fade">
+      <div
+        v-for="notification in alertQueue"
+        :key="`alerts-${notification.id}`"
+        class="notification mb-3"
+      >
+        <notification-details :notification="notification" :is-alert="true" />
+      </div>
+    </transition>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "@vue/composition-api";
 import {
-  alertQueue,
   addNotification,
+  alertQueue,
   ENotificationStatus
 } from "@/components/compositions/notifications/index";
 import NotificationDetails from "@/components/compositions/notifications/NotificationDetails.vue";

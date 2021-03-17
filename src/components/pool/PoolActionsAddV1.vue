@@ -148,7 +148,7 @@ export default class PoolActionsAddV1 extends BaseTxAction {
         } and ${this.prettifyNumber(this.amount2)} ${
           this.reserveTwo.symbol
         } in liquidity to pool ${this.pool.name}.`,
-        txHash: this.txMeta.success.txId
+        txHash: this.txMeta.success!.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;

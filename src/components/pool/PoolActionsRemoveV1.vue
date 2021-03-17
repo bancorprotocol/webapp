@@ -180,12 +180,12 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
       this.txMeta.showTxModal = false;
       addNotification({
         title: "Remove Liquidity",
-        description: `Remove ${this.prettifyNumber(this.amountToken1)} ${
+        description: `Remove ${this.prettifyNumber(this.amountToken1 ?? 0)} ${
           this.reserveOne.symbol
-        } and ${this.prettifyNumber(this.amountToken2)} ${
+        } and ${this.prettifyNumber(this.amountToken2 ?? 0)} ${
           this.reserveTwo.symbol
         } in liquidity from pool ${this.pool.name}.`,
-        txHash: this.txMeta.success.txId
+        txHash: this.txMeta.success!.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;
