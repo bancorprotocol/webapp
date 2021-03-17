@@ -352,7 +352,6 @@ export const en = {
   creating_proposal: "Creating Proposal",
   vote_ended: "Vote Ended",
   you_withdrawing_rewards: "You are withdrawing rewards",
-  rewards_ended: "Rewards ended",
   withdraw_reset:
     "Withdrawing will reset your rewards multiplier for all active positions back to x1",
   pool_not_accepting: "This pool is not accepting additional liquidity.",
