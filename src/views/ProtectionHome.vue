@@ -68,18 +68,20 @@
               "
             >
               <date-range-picker
-                style="width: 200px !important; height: 35px !important"
                 ref="picker"
                 :auto-apply="true"
                 :ranges="false"
                 single-date-picker="range"
                 v-model="dateRange"
-                class="dark-date"
                 @update="updateDateRange"
                 :control-container-class="
-                  darkMode
-                    ? 'form-control date-range-dark'
-                    : 'form-control date-range-light'
+                  hasRange
+                    ? darkMode
+                      ? 'form-control-date date-range-dark-active'
+                      : 'form-control-date date-range-light-active'
+                    : darkMode
+                    ? 'form-control-date date-range-dark'
+                    : 'form-control-date date-range-light'
                 "
               >
                 <template #input="picker">
@@ -88,13 +90,14 @@
                       formatDateRange(picker.startDate, picker.endDate, true)
                     }}
                   </div>
-                  <div class="d-none d-lg-inline font-size-12 font-w400">
+                  <div class="d-none d-lg-inline font-size-14 font-w500">
                     <div
                       v-if="hasRange"
                       class="d-flex justify-content-between align-items-center"
-                      :class="darkMode ? 'active-dark' : 'active-light'"
                     >
-                      {{ formatDateRange(picker.startDate, picker.endDate) }}
+                      <div>
+                        {{ formatDateRange(picker.startDate, picker.endDate) }}
+                      </div>
                       <font-awesome-icon
                         icon="times"
                         @click.stop="clearDateRange"
@@ -103,7 +106,6 @@
                     <div
                       v-else
                       class="d-flex justify-content-between align-items-center"
-                      :class="darkMode ? 'muted-dark' : 'muted-light'"
                     >
                       {{ $t("date_range") }}
                       <font-awesome-icon icon="caret-down" />
