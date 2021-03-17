@@ -13,6 +13,7 @@ import { partition } from "lodash";
 import { compareString } from "@/api/helpers";
 import sort from "fast-sort";
 import numeral from "numeral";
+import wait from "waait";
 
 const oneMillion = new BigNumber(1000000);
 
@@ -31,6 +32,14 @@ export const calculateAmountToGetSpace = (
     .plus(networkTokensMintedDecimal)
     .minus(limitAmount)
     .toString();
+};
+
+export const throwAfter = async (
+  milliseconds: number,
+  errorMessage?: string
+): Promise<never> => {
+  await wait(milliseconds);
+  throw new Error(errorMessage || "Timeout");
 };
 
 export const groupPositionsArray = (
