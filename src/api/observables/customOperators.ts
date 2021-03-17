@@ -1,5 +1,5 @@
 import { differenceWith, isEqual } from "lodash";
-import { Observable } from "rxjs";
+import { combineLatest, Observable } from "rxjs";
 import {
   distinctUntilChanged,
   startWith,
@@ -7,9 +7,17 @@ import {
   tap,
   filter,
   scan,
-  pluck
+  pluck,
+  skip
 } from "rxjs/operators";
 import { compareString } from "../helpers";
+
+export const combineLatestImmediate = <T>(
+  observables: Observable<T>[]
+): Observable<(T | undefined)[]> =>
+  combineLatest(observables.map(obs => obs.pipe(startWith(undefined)))).pipe(
+    skip(1)
+  );
 
 export interface RankItem<T> {
   priority: number;
