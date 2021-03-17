@@ -118,6 +118,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -175,6 +176,16 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
         ],
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: "Remove Liquidity",
+        description: `Remove ${this.prettifyNumber(this.amountToken1)} ${
+          this.reserveOne.symbol
+        } and ${this.prettifyNumber(this.amountToken2)} ${
+          this.reserveTwo.symbol
+        } in liquidity from pool ${this.pool.name}.`,
+        txHash: this.txMeta.success.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;
