@@ -178,7 +178,9 @@ import {
   filterAndWarn,
   miningBntReward,
   miningTknReward,
-  calculateAmountToGetSpace
+  calculateAmountToGetSpace,
+  throwAfter,
+  mapIgnoreThrown
 } from "@/api/pureHelpers";
 import {
   currentBlockReceiver$,
@@ -6779,14 +6781,19 @@ export class EthBancorModule
           )
       );
 
-      const results = await Promise.all(
-        possibleStartingRelays.map(async startingRelay => {
+      const results = await mapIgnoreThrown(
+        possibleStartingRelays,
+        async startingRelay => {
           const isolatedRelays = [startingRelay, ...excludedRelays];
-          const relayPath = await this.findPath({
-            fromId,
-            relays: isolatedRelays,
-            toId
-          });
+          const relayPath = await Promise.race([
+            this.findPath({
+              fromId,
+              relays: isolatedRelays,
+              toId
+            }),
+            throwAfter(1000)
+          ]);
+
           const path = generateEthPath(fromSymbol, relayPath);
 
           return {
@@ -6794,11 +6801,11 @@ export class EthBancorModule
             returnResult: await this.getReturnByPath({
               path: path.path,
               amount: fromWei
-            }).catch(() => false),
+            }),
             path,
             relays: relayPath
           };
-        })
+        }
       );
 
       const passedResults = results
