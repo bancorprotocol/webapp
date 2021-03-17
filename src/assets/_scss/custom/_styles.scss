@@ -428,15 +428,38 @@
 }
 
 .date-range-picker-light {
+  thead {
+    background: red !important;
+    th {
+      background: red !important;
+      color: black !important;
+    }
+  }
   tbody {
+    background: black !important;
+    tr {
+      background: red !important;
+    }
     td {
-      background: green !important;
+      background: red !important;
+    }
+    th {
+      background: red !important;
+      color: $text-color-light !important;
+    }
+    .in-range {
+      background: $primary !important;
+    }
+    .active {
+      background: $primary !important;
     }
   }
 }
 
 .date-range-picker-dark {
   tbody {
+    background: black !important;
+
     td {
       background: red !important;
     }

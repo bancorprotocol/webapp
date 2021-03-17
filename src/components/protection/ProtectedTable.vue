@@ -191,7 +191,7 @@
           <b-badge
             v-if="item.pendingReserveReward.gt(0)"
             variant="primary"
-            class="badge-version text-primary font-w500"
+            class="badge-version text-primary font-w500 p-1"
           >
             {{
               `+ ${prettifyNumber(item.pendingReserveReward)} BNT ${
@@ -232,7 +232,7 @@
           <b-badge
             v-if="value.reserveRewards.gt(0)"
             variant="primary"
-            class="badge-version text-primary font-w500"
+            class="badge-version text-primary font-w500 p-1"
           >
             + {{ stringifyPercentage(value.reserveRewards) }}
           </b-badge>
