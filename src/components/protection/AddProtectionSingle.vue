@@ -178,6 +178,7 @@ import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import wait from "waait";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -342,7 +343,14 @@ export default class AddProtectionSingle extends BaseTxAction {
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
-      this.amount = "";
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: "Add Single-Sided Liquidity",
+        description: `Stake & Protect ${this.prettifyNumber(this.amount)} ${
+          this.token.symbol
+        } in pool ${this.pool.name}.`,
+        txHash: this.txMeta.success.txId
+      });
     } catch (e) {
       this.txMeta.txError = e.message;
     } finally {
