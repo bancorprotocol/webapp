@@ -1,4 +1,3 @@
-// @ts-ignore
 import { computed, ref, watch } from "@vue/composition-api";
 import { web3 } from "@/api/web3";
 
@@ -39,7 +38,7 @@ export const pendingQueue = computed(() =>
   history.value.filter(n => n.status === ENotificationStatus.pending)
 );
 
-export const addNotification = (payload: IAddNotification) => {
+export const addNotification = (payload: IAddNotification): void => {
   const {
     title,
     description,
@@ -50,24 +49,22 @@ export const addNotification = (payload: IAddNotification) => {
   } = payload;
 
   const notification: INotificationView = {
-    id: Date.now(),
+    id: history.value.length,
     status: status ?? ENotificationStatus.info,
     title,
     description,
     txHash,
-    showSeconds: showSeconds ?? 8,
+    showSeconds: showSeconds ?? 7,
     alertOnly,
     timestamp: new Date()
   };
 
-  if (txHash) {
-    notification.status = ENotificationStatus.pending;
-  }
+  if (txHash) notification.status = ENotificationStatus.pending;
 
   history.value.unshift(notification);
 };
 
-export const removeNotification = (id: number) => {
+export const removeNotification = (id: number): void => {
   const index = history.value
     .map(n => {
       return n.id;
@@ -78,7 +75,7 @@ export const removeNotification = (id: number) => {
   else console.error("Error: Remove Notification - ID not found.");
 };
 
-export const hideAlert = (id: number) => {
+export const hideAlert = (id: number): void => {
   const index = history.value
     .map(n => {
       return n.id;
@@ -91,22 +88,24 @@ export const hideAlert = (id: number) => {
   } else console.error("Error: Hide Alert - ID not found.");
 };
 
-export const clearAllNotifications = () => {
+export const clearAllNotifications = (): void => {
   history.value = [];
 };
 
-export const getTxStatus = async (hash: string) => {
+export const getTxStatus = async (hash: string): Promise<boolean | null> => {
   try {
     const tx = await web3.eth.getTransactionReceipt(hash);
     if (tx) return tx.status;
     else return null;
   } catch (e) {
-    console.error(" - web3 failed: getTransactionReceipt - ", e);
+    console.error("web3 failed: getTransactionReceipt", e);
     throw e;
   }
 };
 
-export const updatePendingTx = async (notification: INotificationView) => {
+export const updatePendingTx = async (
+  notification: INotificationView
+): Promise<void> => {
   try {
     const status = await getTxStatus(notification.txHash!);
     if (status !== null) {
@@ -121,12 +120,15 @@ export const updatePendingTx = async (notification: INotificationView) => {
         })
         .indexOf(notification.txHash);
 
+      if (index < 0)
+        return console.error("Notification Error: Tx Hash not found");
+
       // update history
       history.value[index].status = notification.status;
       history.value[index].showSeconds = 8;
     }
   } catch (e) {
-    console.error(" - Error in: updatePendingTx - ", e);
+    console.error("Notification Error: updatePendingTx", e);
     throw e;
   }
 };
