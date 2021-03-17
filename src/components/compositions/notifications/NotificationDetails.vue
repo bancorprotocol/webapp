@@ -167,7 +167,7 @@ export default defineComponent({
       }
     });
 
-    const darkMode = () => vxm.general.darkMode;
+    const darkMode = computed(() => vxm.general.darkMode);
 
     onMounted(() => {
       setTimeout(() => {

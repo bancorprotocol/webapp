@@ -1,21 +1,27 @@
 <template>
   <div class="px-2">
-    <div class="d-flex justify-content-between font-w600 text-right text-light">
+    <div
+      class="d-flex justify-content-between font-w600 text-right text-light align-items-end"
+    >
       <span>Notifications</span>
       <span
         @click="clearAllNotifications()"
         class="cursor text-muted-light font-size-12"
       >
-        clear
+        <u>clear</u>
       </span>
     </div>
+    <hr class="mt-2 mb-3" />
     <div v-if="history.length">
-      <div v-for="notification in history" :key="`history-${notification.id}`">
-        <hr class="my-3" />
+      <div
+        v-for="(notification, index) in history"
+        :key="`history-${notification.id}`"
+      >
         <notification-details
           :notification="notification"
           style="width: 100%"
         />
+        <hr v-if="index + 1 < history.length" class="my-3" />
       </div>
     </div>
     <div
@@ -30,10 +36,10 @@
 <script lang="ts">
 import { defineComponent } from "@vue/composition-api";
 import {
+  addNotification,
   clearAllNotifications,
   history,
-  pendingQueue,
-  addNotification
+  pendingQueue
 } from "@/components/compositions/notifications/index";
 import NotificationDetails from "@/components/compositions/notifications/NotificationDetails.vue";
 

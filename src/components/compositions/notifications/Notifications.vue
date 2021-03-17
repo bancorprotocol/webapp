@@ -12,7 +12,7 @@
       <template #button-content>
         <font-awesome-icon
           v-if="pendingQueue.length === 0"
-          icon="bell-on"
+          icon="bell"
           fixed-width
         />
         <font-awesome-icon v-else icon="circle-notch" spin fixed-width />
@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "@vue/composition-api";
+import { computed, defineComponent } from "@vue/composition-api";
 import {
   addNotification,
   ENotificationStatus,
@@ -47,18 +47,17 @@ import NotificationHistory from "@/components/compositions/notifications/Notific
 export default defineComponent({
   props: { position: { type: String, default: "right" } },
   components: { NotificationHistory, NotificationAlerts },
-  computed: {
-    darkMode() {
-      return vxm.general.darkMode;
-    }
-  },
   setup() {
     loadLocalHistory();
+
+    const darkMode = computed(() => vxm.general.darkMode);
+
     return {
       history,
       pendingQueue,
       addNotification,
-      ENotificationStatus
+      ENotificationStatus,
+      darkMode
     };
   }
 });
