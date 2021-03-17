@@ -28,14 +28,14 @@
 
       <b-col cols="12">
         <content-block
-          searchStyle="width: 200px !important"
+          search-style="width: 200px !important"
           :px0="true"
           :shadow-light="true"
           :title="
             positions.length ? $t('protected_positions') : $t('protected')
           "
           :search.sync="searchProtected"
-          :dropDownFilters="positions.length ? dropDownFilters : []"
+          :drop-down-filters="positions.length ? dropDownFilters : []"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
@@ -62,16 +62,25 @@
             />
           </div>
           <template v-if="positions.length" #date>
-            <div>
+            <div
+              :class="
+                darkMode ? 'date-range-picker-dark' : 'date-range-picker-light'
+              "
+            >
               <date-range-picker
                 style="width: 200px !important; height: 35px !important"
                 ref="picker"
-                :autoApply="true"
+                :auto-apply="true"
                 :ranges="false"
-                singleDatePicker="range"
+                single-date-picker="range"
                 v-model="dateRange"
                 class="dark-date"
                 @update="updateDateRange"
+                :control-container-class="
+                  darkMode
+                    ? 'form-control date-range-dark'
+                    : 'form-control date-range-light'
+                "
               >
                 <template #input="picker">
                   <div class="d-lg-none">
@@ -312,5 +321,3 @@ export default class ProtectionHome extends BaseComponent {
   }
 }
 </script>
-
-<style lang="scss" scoped></style>

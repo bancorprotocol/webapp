@@ -395,3 +395,34 @@
 .progress {
   height: 4px !important;
 }
+
+
+
+.date-range-light {
+  border: 4px solid green !important;
+}
+.date-range-dark {
+  border: 4px solid red !important;
+}
+
+.date-range-picker-light {
+  tbody {
+    td {
+      background: green !important;
+    }
+  }
+}
+
+.date-range-picker-dark {
+  tbody {
+    td {
+      background: red !important;
+    }
+    .in-range {
+      background: blue !important;
+    }
+    .active {
+      background: yellow !important;
+    }
+  }
+}
