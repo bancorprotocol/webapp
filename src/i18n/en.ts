@@ -318,7 +318,7 @@ export const en = {
   countdown_ended: "Countdown ended",
   enter_here: "Enter here",
   left_to_unlock: "left to unlock",
-  full_protection_reached: "Full protection reached",
+  full_protection: "Fully protected",
   custom: "Custom",
   page_of: "Page {current} of {total}",
   add_liquidity_pool_xyz: "Add Liquidity pool xyz",

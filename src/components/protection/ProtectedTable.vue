@@ -25,7 +25,7 @@
         <span class="font-w400">
           {{ item.symbol }}
           <div
-            class="font-size-12 ml-4"
+            class="font-size-12 ml-4 mt-1"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             {{ poolName(item.poolId) }}
@@ -44,7 +44,7 @@
         <span class="font-w400">
           {{ item.stake.symbol }}
           <div
-            class="font-size-12 ml-4"
+            class="font-size-12 ml-4 mt-1"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             {{ poolName(item.stake.poolId) }}
@@ -60,8 +60,7 @@
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
           <b-popover
             v-if="!isCollapsable"
@@ -83,8 +82,7 @@
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
           <b-popover
             :target="`popover-stake-${item.id}`"
@@ -116,8 +114,7 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
         </div>
       </template>
@@ -138,8 +135,7 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
         </div>
       </template>
@@ -162,8 +158,7 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
         </div>
       </template>
@@ -184,8 +179,7 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400"
-            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
         </div>
       </template>
@@ -322,7 +316,7 @@
         <b-progress
           :value="item.coverageDecPercent"
           :max="1"
-          class="progress-bar-positive mt-1"
+          class="progress-bar-positive mt-3"
           style="width: 80% !important"
         />
         <span
@@ -333,7 +327,7 @@
           <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
           <countdown-timer
             :date-unix="item.fullCoverage"
-            :msg-countdown-ended="$t('full_protection_reached')"
+            :msg-countdown-ended="$t('full_protection')"
           />
         </span>
         <font-awesome-icon
@@ -369,7 +363,7 @@
         <b-progress
           :value="item.coverageDecPercent"
           :max="1"
-          class="mt-1"
+          class="progress-bar-positive mt-3"
           style="width: 80% !important"
         />
         <span
@@ -380,7 +374,7 @@
           <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
           <countdown-timer
             :date-unix="item.fullCoverage"
-            :msg-countdown-ended="$t('full_protection_reached')"
+            :msg-countdown-ended="$t('full_protection')"
           />
         </span>
         <font-awesome-icon
