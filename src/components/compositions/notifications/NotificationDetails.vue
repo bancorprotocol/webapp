@@ -49,7 +49,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from "@vue/composition-api";
+import {
+  computed,
+  defineComponent,
+  onMounted,
+  onUnmounted,
+  PropType,
+  ref
+} from "@vue/composition-api";
 import {
   clearAllNotifications,
   ENotificationStatus,
@@ -75,25 +82,10 @@ export default defineComponent({
       default: false
     }
   },
-  computed: {
-    darkMode() {
-      return vxm.general.darkMode;
-    }
-  },
-  mounted() {
-    setTimeout(() => {
-      this.hideAlert(this.notification.id);
-    }, (this.notificationData.showSeconds || 0) * 1000);
-  },
-  destroyed() {
-    if (this.interval) clearInterval(this.interval);
-  },
   setup(props) {
-    const notificationData = props.notification as INotificationView;
-
     const title = computed(() => {
-      if (notificationData.txHash) {
-        switch (notificationData.status) {
+      if (props.notification.txHash) {
+        switch (props.notification.status) {
           case ENotificationStatus.error:
             return "Transaction Failed";
           case ENotificationStatus.success:
@@ -106,11 +98,13 @@ export default defineComponent({
             return "Transaction Information";
         }
       } else {
-        return notificationData.title;
+        return props.notification.title;
       }
     });
 
-    const timeAgo = computed(() => dayjs(notificationData.timestamp).fromNow());
+    const timeAgo = computed(() =>
+      dayjs(props.notification.timestamp).fromNow()
+    );
 
     const mouseHover = ref(false);
 
@@ -119,9 +113,9 @@ export default defineComponent({
     );
 
     const openUrl = () => {
-      if (!notificationData.txHash) return;
+      if (!props.notification.txHash) return;
       window.open(
-        generateEtherscanTxLink(notificationData.txHash, isRopsten.value),
+        generateEtherscanTxLink(props.notification.txHash, isRopsten.value),
         "_blank"
       );
     };
@@ -133,18 +127,18 @@ export default defineComponent({
 
     let interval: any;
 
-    if (notificationData.status === ENotificationStatus.pending) {
+    if (props.notification.status === ENotificationStatus.pending) {
       interval = setInterval(async () => {
-        if (notificationData.status !== ENotificationStatus.pending) {
+        if (props.notification.status !== ENotificationStatus.pending) {
           return clearInterval(interval);
         }
-        const txHash = notificationData.txHash;
-        if (txHash) await updatePendingTx(notificationData);
+        const txHash = props.notification.txHash;
+        if (txHash) await updatePendingTx(props.notification);
       }, 2000);
     }
 
     const statusIcon = computed<{ icon: string; class: string }>(() => {
-      switch (notificationData.status) {
+      switch (props.notification.status) {
         case ENotificationStatus.success:
           return {
             class: "success",
@@ -173,18 +167,29 @@ export default defineComponent({
       }
     });
 
+    const darkMode = () => vxm.general.darkMode;
+
+    onMounted(() => {
+      setTimeout(() => {
+        hideAlert(props.notification.id);
+      }, (props.notification.showSeconds || 0) * 1000);
+    });
+
+    onUnmounted(() => {
+      if (interval) clearInterval(interval);
+    });
+
     return {
       title,
       timeAgo,
       mouseHover,
       history,
       clearAllNotifications,
-      notificationData,
-      interval,
       remove,
       statusIcon,
       hideAlert,
-      openUrl
+      openUrl,
+      darkMode
     };
   }
 });

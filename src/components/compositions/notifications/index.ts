@@ -2,6 +2,7 @@ import { computed, ref, watch } from "@vue/composition-api";
 import { web3 } from "@/api/web3";
 
 const maxLimit = 100;
+const defaultShowSeconds = 7;
 
 export enum ENotificationStatus {
   success = "success",
@@ -56,7 +57,7 @@ export const addNotification = (payload: IAddNotification): void => {
     title,
     description,
     txHash,
-    showSeconds: showSeconds ?? 7,
+    showSeconds: showSeconds ?? defaultShowSeconds,
     alertOnly,
     timestamp: new Date()
   };
@@ -112,25 +113,25 @@ export const updatePendingTx = async (
 ): Promise<void> => {
   try {
     const status = await getTxStatus(notification.txHash!);
-    if (status !== null) {
-      // set status
-      if (status) notification.status = ENotificationStatus.success;
-      else notification.status = ENotificationStatus.error;
+    if (status === null) return;
 
-      // find history index
-      const index = history.value
-        .map(n => {
-          return n.txHash;
-        })
-        .indexOf(notification.txHash);
+    // set status if not null
+    if (status) notification.status = ENotificationStatus.success;
+    else notification.status = ENotificationStatus.error;
 
-      if (index < 0)
-        return console.error("Notification Error: Tx Hash not found");
+    // find history index
+    const index = history.value
+      .map(n => {
+        return n.txHash;
+      })
+      .indexOf(notification.txHash);
 
-      // update history
-      history.value[index].status = notification.status;
-      history.value[index].showSeconds = 8;
-    }
+    if (index < 0)
+      return console.error("Notification Error: Tx Hash not found");
+
+    // update history and show alert again
+    history.value[index].status = notification.status;
+    history.value[index].showSeconds = defaultShowSeconds;
   } catch (e) {
     console.error("Notification Error: updatePendingTx", e);
     throw e;
