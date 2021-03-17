@@ -3,7 +3,7 @@
     :fields="fields"
     :items="items"
     :filter="filter"
-    :filter-functions="[doFilter]"
+    :filter-function="[doFilter]"
     :sort-function="customSort"
     default-sort="liqDepth"
   >
@@ -26,7 +26,11 @@
     <template #cell(aprMiningRewards)="{ value }">
       <div v-if="value && value.rewards">
         <template v-for="reward in value.rewards">
-          <div :key="reward.address" class="font-size-12">
+          <div
+            v-if="!timeEnded(value.endTime)"
+            :key="reward.address"
+            class="font-size-12"
+          >
             {{
               `${reward.symbol} ${
                 reward.reward ? formatPercent(reward.reward) : "N/A"
@@ -34,11 +38,8 @@
             }}
           </div>
         </template>
-        <b-badge variant="danger">
-          <countdown-timer
-            :date-unix="value.endTime"
-            :msg-countdown-ended="$t('rewards_ended')"
-          />
+        <b-badge v-if="!timeEnded(value.endTime)" variant="danger">
+          <countdown-timer :date-unix="value.endTime" />
         </b-badge>
       </div>
     </template>
@@ -92,6 +93,8 @@ import { vxm } from "@/store";
 export default class TablePools extends BaseComponent {
   @Prop() items!: ViewRelay[];
   @Prop() filter!: string;
+
+  private now: number = Date.now() / 1000;
 
   get whiteListedPoolsLoading() {
     return vxm.ethBancor.whiteListedPoolsLoading;
@@ -174,6 +177,11 @@ export default class TablePools extends BaseComponent {
         maxWidth: "150px"
       }
     ];
+  }
+
+  timeEnded(dateUnix: number) {
+    const remainingTime = dateUnix - this.now;
+    return remainingTime < 0;
   }
 
   doFilter(row: ViewRelay) {
