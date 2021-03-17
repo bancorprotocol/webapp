@@ -44,6 +44,7 @@ import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
 import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons/faArrowUp";
 import { faBellOn } from "@fortawesome/pro-solid-svg-icons/faBellOn";
+import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -92,5 +93,6 @@ export const fas = [
   faCheck,
   faSync,
   faBell,
-  faBellOn
+  faBellOn,
+  faTimes
 ];
