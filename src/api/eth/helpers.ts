@@ -76,10 +76,17 @@ export interface MinimalRelay {
   reserves: TokenSymbol[];
 }
 
+export interface ViewAmount {
+  id: string;
+  amount: string;
+}
 export interface MinimalPool {
   anchorAddress: string;
   converterAddress: string;
   reserves: string[];
+}
+export interface MinimalPoolWithReserveBalances extends MinimalPool {
+  reserveBalances: ViewAmount[];
 }
 
 export const generateEthPath = (from: string, relays: MinimalRelay[]) => {

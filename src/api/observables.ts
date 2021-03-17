@@ -7,7 +7,9 @@ import {
   shareReplay,
   pluck,
   share,
-  withLatestFrom
+  withLatestFrom,
+  switchMap,
+  throttleTime
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
@@ -29,7 +31,8 @@ import { filterAndWarn } from "./pureHelpers";
 import {
   ProtectedLiquidityCalculated,
   ProtectedLiquidity,
-  ViewProtectedLiquidity
+  ViewProtectedLiquidity,
+  MinimalPool
 } from "@/types/bancor";
 import {
   fetchLiquidityProtectionSettings,
@@ -47,7 +50,7 @@ import {
 import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
 import { ethReserveAddress } from "./eth/ethAbis";
-import { shrinkToken } from "./eth/helpers";
+import { MinimalPoolWithReserveBalances, shrinkToken } from "./eth/helpers";
 import BigNumber from "bignumber.js";
 import {
   optimisticPositionIds,
@@ -204,6 +207,48 @@ export const poolPrograms$ = storeRewards$.pipe(
 
 const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
 
+export const minimalPoolReceiver$ = new Subject<MinimalPool[]>();
+
+const freshReserveBalances$ = minimalPoolReceiver$.pipe(
+  throttleTime(5000),
+  switchMapIgnoreThrow(minimalPools =>
+    vxm.ethBancor.getReserveBalances(minimalPools)
+  )
+);
+
+const decimalReserveBalances$ = freshReserveBalances$.pipe(
+  withLatestFrom(tokens$),
+  map(([pools, tokens]) => {
+    const poolsCovered = filterAndWarn(
+      pools,
+      pool =>
+        pool.reserveBalances.every(balance =>
+          tokens.some(token => compareString(balance.id, token.dlt_id))
+        ),
+      "lost reserve balances because it was not covered in API tokens"
+    );
+
+    return poolsCovered.map(
+      (pool): MinimalPoolWithReserveBalances => ({
+        ...pool,
+        reserveBalances: pool.reserveBalances.map(reserveBalance => {
+          const token = findOrThrow(tokens, token =>
+            compareString(token.dlt_id, reserveBalance.id)
+          );
+          return {
+            ...reserveBalance,
+            amount: shrinkToken(reserveBalance.amount, token.decimals)
+          };
+        })
+      })
+    );
+  })
+);
+
+decimalReserveBalances$.subscribe(pools =>
+  vxm.ethBancor.updateReserveBalances(pools)
+);
+
 export const newApiPools$ = apiData$.pipe(
   map(apiData => {
     const pools = apiData.pools;
@@ -280,7 +325,17 @@ networkVersion$.subscribe(network => {
     vxm.ethBancor.setNetwork(network);
   }
 });
-apiData$.subscribe(data => vxm.ethBancor.setApiData(data));
+apiData$.subscribe(data => {
+  vxm.ethBancor.setApiData(data);
+  const minimalPools = data.pools.map(
+    (pool): MinimalPool => ({
+      anchorAddress: pool.pool_dlt_id,
+      converterAddress: pool.converter_dlt_id,
+      reserves: pool.reserves.map(r => r.address)
+    })
+  );
+  minimalPoolReceiver$.next(minimalPools);
+});
 
 const bntSupplyApi$ = apiData$.pipe(
   pluck("bnt_supply"),

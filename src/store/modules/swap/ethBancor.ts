@@ -43,7 +43,8 @@ import {
   RegisteredContracts,
   RawLiquidityProtectionSettings,
   LiquidityProtectionSettings,
-  OnPrompt
+  OnPrompt,
+  MinimalPool
 } from "@/types/bancor";
 import { RfqOrder, Signature, SignatureType } from "@0x/protocol-utils";
 import {
@@ -100,7 +101,8 @@ import {
   chunk,
   last,
   groupBy,
-  first
+  first,
+  find
 } from "lodash";
 import {
   buildNetworkContract,
@@ -120,7 +122,8 @@ import {
   generateEthPath,
   shrinkToken,
   TokenSymbol,
-  removeLeadingZeros
+  removeLeadingZeros,
+  MinimalPoolWithReserveBalances
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory } from "@/api/eth/zumZoom";
@@ -185,7 +188,8 @@ import {
   fetchPositionsTrigger$,
   lockedBalancesTrigger$,
   newPools$,
-  selectedPromptReceiver$
+  selectedPromptReceiver$,
+  minimalPoolReceiver$
 } from "@/api/observables";
 import {
   dualPoolRoiShape,
@@ -1561,6 +1565,96 @@ export class EthBancorModule
 
   @action async fetchProtectionPositions() {
     fetchPositionsTrigger$.next(null);
+  }
+
+  @mutation updateReserveBalances(pools: MinimalPoolWithReserveBalances[]) {
+    this.newPools = updateArray(
+      this.newPools,
+      pool => pools.some(p => compareString(pool.pool_dlt_id, p.anchorAddress)),
+      pool => {
+        const newBalances = findOrThrow(pools, p =>
+          compareString(p.anchorAddress, pool.pool_dlt_id)
+        );
+        return {
+          ...pool,
+          reserves: pool.reserves.map(reserve => {
+            const newBalance = findOrThrow(
+              newBalances.reserveBalances,
+              balance => compareString(balance.id, reserve.address)
+            );
+            return {
+              ...reserve,
+              balance: newBalance.amount
+            };
+          })
+        };
+      }
+    );
+    const apiData = this.apiData!;
+    this.apiData = {
+      ...apiData,
+      pools: updateArray(
+        this.apiData!.pools,
+        pool =>
+          pools.some(p => compareString(pool.pool_dlt_id, p.anchorAddress)),
+        pool => {
+          const newBalances = findOrThrow(pools, p =>
+            compareString(p.anchorAddress, pool.pool_dlt_id)
+          );
+          return {
+            ...pool,
+            reserves: pool.reserves.map(reserve => {
+              const newBalance = findOrThrow(
+                newBalances.reserveBalances,
+                balance => compareString(balance.id, reserve.address)
+              );
+              return {
+                ...reserve,
+                balance: newBalance.amount
+              };
+            })
+          };
+        }
+      )
+    };
+  }
+
+  @action async getReserveBalances(
+    relays: MinimalPool[]
+  ): Promise<MinimalPoolWithReserveBalances[]> {
+    const [pools] = ((await this.multi({
+      groupsOfShapes: [
+        relays.map(v1Pool =>
+          reserveBalanceShape(v1Pool.converterAddress, v1Pool.reserves)
+        )
+      ]
+    })) as unknown[]) as [RawAbiReserveBalance[]];
+
+    const zipped = pools.map(pool => ({
+      reserves: [
+        { id: pool.reserveOneAddress, amount: pool.reserveOne },
+        { id: pool.reserveTwoAddress, amount: pool.reserveTwo }
+      ],
+      converterAddress: pool.converterAddress
+    }));
+
+    return relays.map(
+      (relay): MinimalPoolWithReserveBalances => {
+        const zippedPool = findOrThrow(
+          zipped,
+          pool => compareString(pool.converterAddress, relay.converterAddress),
+          "failed to find zipped pool..."
+        );
+        return {
+          ...relay,
+          reserveBalances: sortAlongSide(
+            zippedPool.reserves,
+            r => r.id,
+            relay.reserves
+          )
+        };
+      }
+    );
   }
 
   @action async addProtection({
@@ -6836,6 +6930,16 @@ export class EthBancorModule
       relays: minimalRelays,
       fromWei
     });
+
+    minimalPoolReceiver$.next(
+      relays.map(
+        (relay): MinimalPool => ({
+          anchorAddress: relay.anchorAddress,
+          converterAddress: relay.contract,
+          reserves: relay.reserves.map(r => r.contract)
+        })
+      )
+    );
 
     const path = generateEthPath(fromToken.symbol, relays);
 
