@@ -186,7 +186,8 @@ import {
   staticToConverterAndAnchor,
   miningBntReward,
   miningTknReward,
-  calculateAmountToGetSpace
+  calculateAmountToGetSpace,
+  throwAfter
 } from "@/api/pureHelpers";
 import {
   distinctArrayItem,
@@ -7264,11 +7265,23 @@ export class EthBancorModule
       const results = await Promise.all(
         possibleStartingRelays.map(async startingRelay => {
           const isolatedRelays = [startingRelay, ...excludedRelays];
-          const relayPath = await this.findPath({
-            fromId,
-            relays: isolatedRelays,
-            toId
-          });
+          const relayPath = await Promise.race([
+            this.findPath({
+              fromId,
+              relays: isolatedRelays,
+              toId
+            }),
+            throwAfter(1000)
+          ]).catch(() => false as false);
+          if (relayPath == false) {
+            return {
+              startingRelayAnchor: startingRelay.anchorAddress,
+              returnResult: false,
+              path: [],
+              relays: []
+            };
+          }
+
           const path = generateEthPath(fromSymbol, relayPath);
 
           return {
