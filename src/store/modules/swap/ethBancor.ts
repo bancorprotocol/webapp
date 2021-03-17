@@ -186,7 +186,9 @@ import {
   staticToConverterAndAnchor,
   miningBntReward,
   miningTknReward,
-  calculateAmountToGetSpace
+  calculateAmountToGetSpace,
+  throwAfter,
+  mapIgnoreThrown
 } from "@/api/pureHelpers";
 import {
   distinctArrayItem,
@@ -7261,14 +7263,19 @@ export class EthBancorModule
           )
       );
 
-      const results = await Promise.all(
-        possibleStartingRelays.map(async startingRelay => {
+      const results = await mapIgnoreThrown(
+        possibleStartingRelays,
+        async startingRelay => {
           const isolatedRelays = [startingRelay, ...excludedRelays];
-          const relayPath = await this.findPath({
-            fromId,
-            relays: isolatedRelays,
-            toId
-          });
+          const relayPath = await Promise.race([
+            this.findPath({
+              fromId,
+              relays: isolatedRelays,
+              toId
+            }),
+            throwAfter(1000)
+          ]);
+
           const path = generateEthPath(fromSymbol, relayPath);
 
           return {
@@ -7276,11 +7283,11 @@ export class EthBancorModule
             returnResult: await this.getReturnByPath({
               path,
               amount: fromWei
-            }).catch(() => false),
+            }),
             path,
             relays: relayPath
           };
-        })
+        }
       );
 
       const passedResults = results
@@ -7347,31 +7354,40 @@ export class EthBancorModule
           .getConnectorBalance(fromTokenContract)
           .call();
 
-        const smallPortionOfReserveBalance = new BigNumber(
-          new BigNumber(fromReserveBalanceWei).times(0.00001).toFixed(0)
+        const smallPortionOfFrom = new BigNumber(
+          new BigNumber(fromWei).times(0.00001).toFixed(0)
         );
 
-        if (smallPortionOfReserveBalance.isLessThan(fromWei)) {
-          const smallPortionOfReserveBalanceWei = smallPortionOfReserveBalance.toFixed(
-            0
-          );
+        const smallPortionFromWei = smallPortionOfFrom.isGreaterThan(1)
+          ? smallPortionOfFrom.toString()
+          : "1";
 
-          const smallPortionReturn = await this.getReturnByPath({
-            path,
-            amount: smallPortionOfReserveBalanceWei
-          });
+        console.log(
+          {
+            fromReserveBalanceWei,
+            smallPortionOfReserveBalance: smallPortionOfFrom.toString(),
+            fromWei
+          },
+          "is data"
+        );
 
-          const tinyReturnRate = buildRate(
-            new BigNumber(smallPortionOfReserveBalanceWei),
-            new BigNumber(smallPortionReturn)
-          );
+        const smallPortionReturn = await this.getReturnByPath({
+          path,
+          amount: smallPortionFromWei
+        });
 
-          const slippageNumber = calculateSlippage(
-            tinyReturnRate,
-            userReturnRate
-          );
-          slippage = slippageNumber.toNumber();
-        }
+        const tinyReturnRate = buildRate(
+          new BigNumber(smallPortionFromWei),
+          new BigNumber(smallPortionReturn)
+        );
+
+        const slippageNumber = calculateSlippage(
+          tinyReturnRate,
+          userReturnRate
+        );
+
+        console.log(slippageNumber.toNumber(), "is the slippage");
+        slippage = slippageNumber.toNumber();
       } catch (e) {
         console.error("Failed calculating slippage", e.message);
       }
