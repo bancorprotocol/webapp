@@ -10,6 +10,7 @@
     ]"
   >
     <div v-if="noHeader"></div>
+
     <div
       v-else-if="title"
       class="d-flex justify-content-between align-items-center py-2 px-3 font-size-14 font-w600"
@@ -40,9 +41,32 @@
         <!-- <version-badge v-if="version !== null" :version="version" /> -->
       </div>
 
+      <div v-if="rippleAnimation">
+        <img
+          id="ripple"
+          width="30"
+          height="30"
+          :src="
+            darkMode
+              ? require(`@/assets/media/icons/rippleDark.svg`)
+              : require(`@/assets/media/icons/ripple.svg`)
+          "
+        />
+        <b-popover
+          :target="`ripple`"
+          triggers="hover"
+          placement="bottom"
+          class="font-size-12 font-w400"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("data_refreshes_auto") }}
+        </b-popover>
+      </div>
+
       <div v-if="searchInput !== null" class="float-right">
         <multi-input-field
           v-model="searchInput"
+          :clear="true"
           :placeholder="$t('search')"
           prepend="search"
         />
@@ -53,7 +77,7 @@
       class="block-header"
       :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
     >
-      <slot name="header"></slot>
+      <slot name="header"> </slot>
     </div>
     <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
       <slot></slot>
@@ -77,6 +101,7 @@ export default class ContentBlock extends BaseComponent {
   @Prop({ default: false }) shadowLight?: boolean;
   @Prop({ default: false }) px0?: boolean;
   @Prop({ default: false }) backButton!: boolean;
+  @Prop({ default: false }) rippleAnimation?: boolean;
   @Prop({ default: null }) version!: 1 | 2 | null;
   @PropSync("search", { default: null }) searchInput!: string | null;
   @PropSync("detailMode", { default: null }) detailModeProp!: boolean | null;

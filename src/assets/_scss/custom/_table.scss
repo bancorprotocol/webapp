@@ -80,7 +80,10 @@
       // `$table-dark-hover-bg` default is a very transparent white
       // We overlay it over the background color to achieve the
       // same color effect while keeping the background solid
-      background-image: linear-gradient($table-dark-hover-bg, $table-dark-hover-bg);
+      background-image: linear-gradient(
+        $table-dark-hover-bg,
+        $table-dark-hover-bg
+      );
       background-repeat: no-repeat;
     }
   }
@@ -203,7 +206,9 @@
       // Handle case of zebra striping
       &.table-striped {
         // "fake" zebra striping via use of a transparent background image
-        > tbody > tr:nth-of-type(#{$table-striped-order}) > .table-b-table-default {
+        > tbody
+          > tr:nth-of-type(#{$table-striped-order})
+          > .table-b-table-default {
           // `$table-accent-bg` (used for striping) default is a very transparent black
           // We overlay it over the background color to achieve the same color
           // effect while keeping the background solid.
@@ -212,11 +217,16 @@
         }
 
         &.table-dark {
-          > tbody > tr:nth-of-type(#{$table-striped-order}) > .bg-b-table-default {
+          > tbody
+            > tr:nth-of-type(#{$table-striped-order})
+            > .bg-b-table-default {
             // `$table-dark-accent-bg` (used for striping) default is a very transparent white
             // We overlay it over the background color to achieve the same color
             // effect while keeping the background solid.
-            background-image: linear-gradient($table-dark-accent-bg, $table-dark-accent-bg);
+            background-image: linear-gradient(
+              $table-dark-accent-bg,
+              $table-dark-accent-bg
+            );
             background-repeat: no-repeat;
           }
         }
@@ -240,7 +250,10 @@
             // `$table-dark-hover-bg` default is a very transparent white
             // We overlay it over the background color to achieve the same color
             // effect while keeping the background solid.
-            background-image: linear-gradient($table-dark-hover-bg, $table-dark-hover-bg);
+            background-image: linear-gradient(
+              $table-dark-hover-bg,
+              $table-dark-hover-bg
+            );
             background-repeat: no-repeat;
           }
         }
@@ -276,18 +289,23 @@ $bv-escaped-characters: (("<", "%3c"), (">", "%3e"), ("#", "%23"));
         cursor: pointer;
         background-image: none;
         background-repeat: no-repeat;
-        background-size: $b-table-sort-icon-bg-width $b-table-sort-icon-bg-height;
+        background-size: $b-table-sort-icon-bg-width
+          $b-table-sort-icon-bg-height;
 
         &:not(.b-table-sort-icon-left) {
           // Default is icon on the right
           background-position: right calc(#{$table-cell-padding} / 2) center;
-          padding-right: calc(#{$table-cell-padding} + #{$b-table-sort-icon-bg-width});
+          padding-right: calc(
+            #{$table-cell-padding} + #{$b-table-sort-icon-bg-width}
+          );
         }
 
         &.b-table-sort-icon-left {
           // Left aligned sort icon
           background-position: left calc(#{$table-cell-padding} / 2) center;
-          padding-left: calc(#{$table-cell-padding} + #{$b-table-sort-icon-bg-width});
+          padding-left: calc(
+            #{$table-cell-padding} + #{$b-table-sort-icon-bg-width}
+          );
         }
       }
 
@@ -346,13 +364,17 @@ $bv-escaped-characters: (("<", "%3c"), (">", "%3e"), ("#", "%23"));
         &:not(.b-table-sort-icon-left) {
           // Default is icon on the right
           background-position: right calc(#{$table-cell-padding-sm} / 2) center;
-          padding-right: calc(#{$table-cell-padding-sm} + #{$b-table-sort-icon-bg-width});
+          padding-right: calc(
+            #{$table-cell-padding-sm} + #{$b-table-sort-icon-bg-width}
+          );
         }
 
         &.b-table-sort-icon-left {
           // Left aligned sort icon
           background-position: left calc(#{$table-cell-padding-sm} / 2) center;
-          padding-left: calc(#{$table-cell-padding-sm} + #{$b-table-sort-icon-bg-width});
+          padding-left: calc(
+            #{$table-cell-padding-sm} + #{$b-table-sort-icon-bg-width}
+          );
         }
       }
     }
@@ -494,7 +516,7 @@ $bv-escaped-characters: (("<", "%3c"), (">", "%3e"), ("#", "%23"));
     }
 
     th {
-      font-size: 12px !important;
+      font-size: 14px !important;
       font-weight: 500 !important;
       border-top: 1px solid $gray-border !important;
       border-bottom: 1px solid $gray-border !important;
@@ -519,7 +541,8 @@ $bv-escaped-characters: (("<", "%3c"), (">", "%3e"), ("#", "%23"));
   }
 }
 
-.dark-table, .table-dark {
+.dark-table,
+.table-dark {
   @extend .table;
 
   thead {

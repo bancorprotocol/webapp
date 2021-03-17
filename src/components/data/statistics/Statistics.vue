@@ -12,6 +12,8 @@
       <statistics-data-block
         :title="`${$t('price')} BNT`"
         :value="stats.bntUsdPrice"
+        :percentage="stats.bntPrice24Change"
+        blockStyle="width: 95px !important"
         :usd="true"
       />
     </b-col>

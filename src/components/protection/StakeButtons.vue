@@ -51,6 +51,7 @@ import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import wait from "waait";
 
 @Component({
   components: { LabelContentSplit, GrayBorderBlock, MainButton }
@@ -107,9 +108,13 @@ export default class StakeButtons extends BaseComponent {
     if (this.loadingMaxStakes || !this.poolId) return;
     this.loadingMaxStakes = true;
     try {
-      const result = await vxm.ethBancor.getMaxStakesView({
-        poolId: this.poolId
-      });
+      const [result] = await Promise.all([
+        vxm.ethBancor.getMaxStakesView({
+          poolId: this.poolId
+        }),
+        wait(1000)
+      ]);
+
       this.maxStakes = result.map(x => {
         return `${this.prettifyNumber(x.amount)} ${x.token}`;
       });
