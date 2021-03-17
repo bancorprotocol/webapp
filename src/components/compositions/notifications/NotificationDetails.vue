@@ -84,22 +84,23 @@ export default defineComponent({
   },
   setup(props) {
     const title = computed(() => {
-      if (props.notification.txHash) {
-        switch (props.notification.status) {
-          case ENotificationStatus.error:
-            return "Transaction Failed";
-          case ENotificationStatus.success:
-            return "Transaction Successful";
-          case ENotificationStatus.pending:
-            return "Transaction in Process";
-          case ENotificationStatus.warning:
-            return "Transaction Warning";
-          default:
-            return "Transaction Information";
-        }
-      } else {
-        return props.notification.title;
-      }
+      return props.notification.title;
+      // if (props.notification.txHash) {
+      //   switch (props.notification.status) {
+      //     case ENotificationStatus.error:
+      //       return "Transaction Failed";
+      //     case ENotificationStatus.success:
+      //       return "Transaction Successful";
+      //     case ENotificationStatus.pending:
+      //       return "Transaction in Process";
+      //     case ENotificationStatus.warning:
+      //       return "Transaction Warning";
+      //     default:
+      //       return "Transaction Information";
+      //   }
+      // } else {
+      //   return props.notification.title;
+      // }
     });
 
     const timeAgo = computed(() =>
