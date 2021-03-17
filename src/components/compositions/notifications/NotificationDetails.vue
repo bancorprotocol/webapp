@@ -60,6 +60,7 @@ import {
   updatePendingTx
 } from "@/components/compositions/notifications/index";
 import { vxm } from "@/store";
+import { generateEtherscanTxLink } from "@/api/helpers";
 import { EthNetworks } from "@/api/web3";
 import dayjs from "dayjs";
 
@@ -116,16 +117,13 @@ export default defineComponent({
     const isRopsten = computed(
       () => vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
     );
-    const getEtherscanUrl = computed(
-      () =>
-        `https://${isRopsten ? "ropsten." : ""}etherscan.io/tx/${
-          notificationData.txHash
-        }`
-    );
 
     const openUrl = () => {
-      window.open(getEtherscanUrl.value, "_blank");
-      // openNewTab(getEtherscanUrl.value);
+      if (!notificationData.txHash) return;
+      window.open(
+        generateEtherscanTxLink(notificationData.txHash, isRopsten.value),
+        "_blank"
+      );
     };
 
     const remove = (id: number) => {
@@ -183,7 +181,6 @@ export default defineComponent({
       clearAllNotifications,
       notificationData,
       interval,
-      getEtherscanUrl,
       remove,
       statusIcon,
       hideAlert,
