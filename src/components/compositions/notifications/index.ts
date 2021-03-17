@@ -1,6 +1,8 @@
 import { computed, ref, watch } from "@vue/composition-api";
 import { web3 } from "@/api/web3";
 
+const maxLimit = 100;
+
 export enum ENotificationStatus {
   success = "success",
   info = "info",
@@ -62,6 +64,8 @@ export const addNotification = (payload: IAddNotification): void => {
   if (txHash) notification.status = ENotificationStatus.pending;
 
   history.value.unshift(notification);
+
+  if (history.value.length > maxLimit) history.value.pop();
 };
 
 export const removeNotification = (id: number): void => {
