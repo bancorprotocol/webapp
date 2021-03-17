@@ -82,6 +82,7 @@ import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -138,6 +139,16 @@ export default class PoolActionsAddV1 extends BaseTxAction {
         ],
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: "Add Liquidity",
+        description: `Add ${this.prettifyNumber(this.amount1)} ${
+          this.reserveOne.symbol
+        } and ${this.prettifyNumber(this.amount2)} ${
+          this.reserveTwo.symbol
+        } in liquidity to pool ${this.pool.name}.`,
+        txHash: this.txMeta.success.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;
