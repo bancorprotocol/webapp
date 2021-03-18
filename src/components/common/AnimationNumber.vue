@@ -55,12 +55,13 @@ export default class AnimationNumber extends BaseComponent {
     if (this.watch) {
       this.tween(
         this.oldValue === -1 ? this.startingValue : this.oldValue,
-        this.targetValue
+        this.targetValue,
+        true
       );
     }
   }
 
-  tween(startValue: number, endValue: number) {
+  tween(startValue: number, endValue: number, fromWatcher: boolean = false) {
     const vm = this;
     const animate = () => {
       if (TWEEN.update()) {
@@ -69,7 +70,10 @@ export default class AnimationNumber extends BaseComponent {
     };
 
     new TWEEN.Tween({ tweeningValue: startValue })
-      .to({ tweeningValue: endValue }, this.animationTime)
+      .to(
+        { tweeningValue: endValue },
+        fromWatcher ? this.intervalTime : this.animationTime
+      )
       .onUpdate(obj => {
         vm.currentNumber = obj.tweeningValue;
       })
