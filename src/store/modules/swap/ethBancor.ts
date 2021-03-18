@@ -1703,12 +1703,6 @@ export class EthBancorModule
           }
         },
         {
-          description: "Confirm",
-          task: () => {
-            return this.awaitConfirmation(onPrompt);
-          }
-        },
-        {
           description: "Adding liquidity..",
           task: async () => {
             return this.resolveTxOnConfirmation({
@@ -1781,7 +1775,6 @@ export class EthBancorModule
         onPrompt
       });
     }
-    await this.awaitConfirmation(onPrompt);
 
     const txHash = await this.resolveTxOnConfirmation({
       tx: contract.methods.removeLiquidity(dbId, ppmPercent),
@@ -1826,10 +1819,6 @@ export class EthBancorModule
               onPrompt
             });
           }
-        },
-        {
-          description: "Confirmation",
-          task: () => this.awaitConfirmation(onPrompt)
         },
         {
           description: "Adding liquidity protection...",
@@ -6453,8 +6442,6 @@ export class EthBancorModule
 
     onUpdate!(2, steps);
 
-    await this.awaitConfirmation(onPrompt);
-
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
 
     const expectedReturn = to.amount;
@@ -6616,10 +6603,11 @@ export class EthBancorModule
       const { unlimitedApproval } = await this.promptUserForApprovalType(
         tokenWithdrawal.onPrompt
       );
-      return this.approveTokenWithdrawal({
+      await this.approveTokenWithdrawal({
         ...withCurrentApprovedBalance,
         ...(unlimitedApproval && { amount: unlimitedWei })
       });
+      await this.awaitConfirmation(tokenWithdrawal.onPrompt);
     } else {
       return this.approveTokenWithdrawal(withCurrentApprovedBalance);
     }
