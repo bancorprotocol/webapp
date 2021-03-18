@@ -28,7 +28,7 @@
 
       <b-col cols="12">
         <content-block
-          search-style="width: 200px !important"
+          search-style="width: 270px !important;"
           :px0="true"
           :shadow-light="true"
           :title="

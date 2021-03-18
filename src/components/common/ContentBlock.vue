@@ -40,12 +40,12 @@
               : 'active-light'
           "
           :block="true"
-          class="d-none d-lg-inline m-2"
+          class="d-none d-lg-inline"
           toggle-class="block-rounded"
           :menu-class="
             darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
           "
-          style="width: 200px !important"
+          style="width: 200px !important; height: 35px !important"
           :no-caret="true"
         >
           <template #button-content>
@@ -58,7 +58,7 @@
             </div>
           </template>
           <b-dropdown-item
-            :variant="darkMode ? 'dark' : 'light'"
+            :class="darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'"
             v-for="(item, index) in dropdown.items"
             :key="item.id"
             @click="dropdown.selectedIndex = index"
@@ -91,20 +91,19 @@
           </b-popover>
         </div>
 
-        <div v-if="searchInput !== null">
-          <multi-input-field
-            class="d-none d-lg-inline"
-            :style="searchStyle"
-            v-model="searchInput"
-            :clear="true"
-            :placeholder="$t('search')"
-            prepend="search"
-          />
-        </div>
+        <multi-input-field
+          v-if="searchInput !== null"
+          class="d-none d-lg-inline"
+          :style="searchStyle"
+          v-model="searchInput"
+          :clear="true"
+          :placeholder="$t('search')"
+          prepend="search"
+        />
       </div>
 
       <div
-        v-else
+        v-if="!noHeader && !title"
         class="block-header"
         :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
       >
