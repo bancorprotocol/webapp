@@ -1,26 +1,207 @@
 <template>
-  <modal-base v-model="show">
-    <h1>Place Holder</h1>
+  <modal-base v-model="modal" :title="$t('all_positions')" size="sm">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+      <b-btn
+        @click="setSelectedPosition(0)"
+        :variant="selectedPosition === 0 ? 'primary' : ''"
+        :class="
+          selectedPosition !== 0
+            ? darkMode
+              ? 'btn-active-dark'
+              : 'btn-active-light'
+            : ''
+        "
+      >
+        {{ $t("all_positions") }}
+      </b-btn>
+      <b-btn
+        @click="setSelectedPosition(1)"
+        :variant="selectedPosition === 1 ? 'primary' : ''"
+        :class="
+          selectedPosition !== 1
+            ? darkMode
+              ? 'btn-active-dark'
+              : 'btn-active-light'
+            : ''
+        "
+      >
+        {{ $t("protected") }}
+      </b-btn>
+      <b-btn
+        @click="setSelectedPosition(2)"
+        :variant="selectedPosition === 2 ? 'primary' : ''"
+        :class="
+          selectedPosition !== 2
+            ? darkMode
+              ? 'btn-active-dark'
+              : 'btn-active-light'
+            : ''
+        "
+      >
+        {{ $t("not_protected") }}
+      </b-btn>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div
+        :class="darkMode ? 'text-dark' : 'text-light'"
+        class="font-size-16 font-w500"
+      >
+        {{ $t("date_range") }}
+      </div>
+      <div
+        :class="darkMode ? 'date-range-picker-dark' : 'date-range-picker-light'"
+      >
+        <date-range-picker
+          ref="picker"
+          :auto-apply="true"
+          :ranges="false"
+          single-date-picker="range"
+          opens="left"
+          v-model="dateRange"
+          @update="updateDateRange"
+          :control-container-class="
+            hasRange
+              ? darkMode
+                ? 'form-control-date date-range-dark-active'
+                : 'form-control-date date-range-light-active'
+              : darkMode
+              ? 'form-control-date date-range-dark'
+              : 'form-control-date date-range-light'
+          "
+        >
+          <template #input="picker">
+            <div class="font-size-14 font-w500">
+              <div
+                v-if="hasRange"
+                class="d-flex justify-content-between align-items-center"
+              >
+                <div>
+                  {{ formatDateRange(picker.startDate, picker.endDate) }}
+                </div>
+                <font-awesome-icon icon="times" @click.stop="clearDateRange" />
+              </div>
+              <div
+                v-else
+                class="d-flex justify-content-between align-items-center"
+              >
+                {{ $t("date_range") }}
+                <font-awesome-icon icon="caret-down" />
+              </div>
+            </div>
+          </template>
+        </date-range-picker>
+      </div>
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div>
+      {{ "List Placeholder" }}
+    </div>
+    <div
+      class="text-center text-link font-size-12 font-w400"
+      @click="clearAllFilters"
+    >
+      {{ $t("clear_all_filters") }}
+    </div>
+    <main-button
+      @click="onHide"
+      :label="$t('confirm')"
+      :large="true"
+      :active="true"
+      :block="true"
+      class="font-size-14 font-w400 mt-3"
+    />
   </modal-base>
 </template>
 
 <script lang="ts">
 import { Component, VModel } from "vue-property-decorator";
-import BaseComponent from "@/components/BaseComponent.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
+import MainButton from "@/components/common/Button.vue";
+import DateRangePicker from "vue2-daterange-picker";
+import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
+import dayjs from "@/utils/dayjs";
 
 @Component({
   components: {
-    ModalBase
+    ModalBase,
+    MainButton,
+    DateRangePicker
   }
 })
 export default class ModalProtectedFilters extends BaseComponent {
-  @VModel({ type: Boolean }) show!: boolean;
+  @VModel({ type: Boolean }) modal!: boolean;
+
+  dateRange: {
+    startDate: dayjs.Dayjs | null;
+    endDate: dayjs.Dayjs | null;
+  } = {
+    startDate: null,
+    endDate: null
+  };
+
+  selectedPosition: number = 0;
+
+  get hasRange() {
+    return this.dateRange.startDate && this.dateRange.endDate;
+  }
+
+  setSelectedPosition(index: number) {
+    this.selectedPosition = index;
+  }
+
+  updateDateRange(values: { startDate: string; endDate: string }) {
+    this.dateRange.startDate = dayjs(values.startDate);
+    this.dateRange.endDate = dayjs(values.endDate);
+  }
+
+  clearDateRange() {
+    this.dateRange.startDate = null;
+    this.dateRange.endDate = null;
+  }
+
+  formatDateRange(startDate: number, endDate: number, short: boolean = false) {
+    let start = new Intl.DateTimeFormat("en-GB").format(startDate);
+    let end = new Intl.DateTimeFormat("en-GB").format(endDate);
+    if (short) {
+      start = start.slice(0, start.length - 5); //4 numbers in a year
+      end = end.slice(0, end.length - 5);
+    }
+    return `${start} - ${end}`;
+  }
+
+  clearAllFilters() {
+    this.selectedPosition = 0;
+    this.clearDateRange();
+  }
 
   onHide() {
-    this.show = false;
+    this.modal = false;
   }
 }
 </script>
-
 <style lang="scss"></style>

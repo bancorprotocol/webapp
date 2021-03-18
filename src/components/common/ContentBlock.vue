@@ -124,7 +124,12 @@
         />
         <b-btn class="d-flex" variant="primary">
           <font-awesome-icon icon="filter" @click="showMobileFilters" />
-          <font-awesome-icon icon="times" class="ml-2" />
+          <font-awesome-icon
+            icon="times"
+            v-if="anyAreFiltering"
+            class="ml-2"
+            @click="clearAllFilters"
+          />
         </b-btn>
       </div>
     </div>
@@ -133,7 +138,7 @@
       <slot></slot>
     </div>
 
-    <modal-protected-filters :show="modal" />
+    <modal-protected-filters v-model="modal" />
   </div>
 </template>
 <script lang="ts">
@@ -141,6 +146,7 @@ import { Component, Prop, PropSync, Emit } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import ModalProtectedFilters from "@/components/modals/ModalProtectedFilters.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import { drop } from "node_modules/@types/lodash";
 
 @Component({
   components: { MultiInputField, ModalProtectedFilters }
@@ -160,7 +166,8 @@ export default class ContentBlock extends BaseComponent {
       title: string;
     }[];
   }[];
-  @Prop({ default: false }) dateFilter!: Date[];
+  @Prop({ default: false }) dateFiltering!: boolean[];
+  @Prop() clearDate?: Function;
   @Prop({ default: false }) rippleAnimation?: boolean;
   @PropSync("search", { default: null }) searchInput!: string | null;
   @Prop() searchStyle!: string;
@@ -176,6 +183,15 @@ export default class ContentBlock extends BaseComponent {
     return [color, alignment];
   }
 
+  get anyAreFiltering() {
+    let anyFiltering: boolean = false;
+    this.dropDownFilters.map(
+      dropDown => (anyFiltering = dropDown.selectedIndex !== 0)
+    );
+
+    return this.dateFiltering || anyFiltering;
+  }
+
   showMobileFilters() {
     this.modal = true;
   }
@@ -188,6 +204,11 @@ export default class ContentBlock extends BaseComponent {
     if (this.dropDownFiltering(dropdown)) {
       dropdown.selectedIndex = 0;
     }
+  }
+
+  clearAllFilters() {
+    this.dropDownFilters.map(dropDown => dropDown.selectedIndex !== 0);
+    if (this.clearDate) this.clearDate();
   }
 }
 </script>

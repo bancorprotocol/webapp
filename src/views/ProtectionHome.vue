@@ -36,6 +36,8 @@
           "
           :search.sync="searchProtected"
           :drop-down-filters="positions.length ? dropDownFilters : []"
+          :dateFiltering="hasRange"
+          :clearDate="clearDateRange"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
@@ -85,12 +87,7 @@
                 "
               >
                 <template #input="picker">
-                  <div class="d-lg-none">
-                    {{
-                      formatDateRange(picker.startDate, picker.endDate, true)
-                    }}
-                  </div>
-                  <div class="d-none d-lg-inline font-size-14 font-w500">
+                  <div class="font-size-14 font-w500">
                     <div
                       v-if="hasRange"
                       class="d-flex justify-content-between align-items-center"

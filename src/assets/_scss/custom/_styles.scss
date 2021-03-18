@@ -93,6 +93,12 @@
   color: $text-link-dark !important;
 }
 
+.text-link {
+  color: $primary;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .block-light-blue-light {
   background-color: $block-bg-blue !important;
   border: $block-border-blue 1px solid !important;
