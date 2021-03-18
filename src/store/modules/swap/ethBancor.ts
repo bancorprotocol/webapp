@@ -6437,8 +6437,7 @@ export class EthBancorModule
     const relays = await this.findBestPath({
       relays: minimalRelays,
       fromId: from.id,
-      toId: to.id,
-      fromWei
+      toId: to.id
     });
 
     const ethPath = generateEthPath(fromSymbol, relays);
@@ -6744,10 +6743,8 @@ export class EthBancorModule
   @action async findBestPath({
     fromId,
     toId,
-    relays,
-    fromWei
+    relays
   }: {
-    fromWei: string;
     fromId: string;
     toId: string;
     relays: readonly MinimalRelay[];
@@ -6767,6 +6764,8 @@ export class EthBancorModule
     );
     const checkMultiplePaths =
       moreThanOneReserveOut && !onlyOneHopNeeded && !fromIsBnt;
+
+    const allViewRelays = this.relays;
 
     if (checkMultiplePaths) {
       const fromSymbol = findOrThrow(
@@ -6795,28 +6794,26 @@ export class EthBancorModule
           ]);
 
           const path = generateEthPath(fromSymbol, relayPath);
+          const viewRelay = findOrThrow(allViewRelays, relay =>
+            compareString(relay.id, startingRelay.anchorAddress)
+          );
 
           return {
             startingRelayAnchor: startingRelay.anchorAddress,
-            returnResult: await this.getReturnByPath({
-              path: path.path,
-              amount: fromWei
-            }),
+            liqDepth: viewRelay.liqDepth,
             path,
             relays: relayPath
           };
         }
       );
 
-      const passedResults = results
-        .filter(res => res.returnResult)
-        .map(res => ({ ...res, returnResult: res.returnResult as string }));
+      const passedResults = results.filter(res => res.liqDepth);
 
       if (passedResults.length == 0)
         throw new Error(`Failed finding a path between tokens`);
 
       const sortedReturns = passedResults.sort((a, b) =>
-        new BigNumber(b.returnResult).lt(a.returnResult) ? -1 : 1
+        new BigNumber(b.liqDepth).minus(a.liqDepth).toNumber()
       );
       const bestReturn = sortedReturns[0];
       return bestReturn.relays;
@@ -6934,8 +6931,7 @@ export class EthBancorModule
     const relays = await this.findBestPath({
       fromId: from.id,
       toId,
-      relays: minimalRelays,
-      fromWei
+      relays: minimalRelays
     });
 
     minimalPoolReceiver$.next(
@@ -6979,32 +6975,37 @@ export class EthBancorModule
       )
     );
 
-    const slippageLessPrices = (sortedPools: Pool[]) =>
+    interface SpotPriceWithFee {
+      rate: string;
+      decFee: number;
+    }
+
+    const spotPrices = (sortedPools: Pool[]): SpotPriceWithFee[] =>
       sortedPools.map(pool => {
         const [fromReserve, toReserve] = pool.reserves;
-        return new BigNumber(toReserve.balance)
+        const rate = new BigNumber(toReserve.balance)
           .div(fromReserve.balance)
           .toString();
+
+        const decFee = ppmToDec(pool.fee);
+        return { rate, decFee };
       });
 
-    const slippageLessReturn = (rates: string[], amount: string) =>
-      rates.reduce(
-        (acc, item) => new BigNumber(item).times(acc),
-        new BigNumber(amount)
-      );
+    const spotPriceReturn = (rates: SpotPriceWithFee[], amount: string) =>
+      rates.reduce((acc, item) => {
+        const spotReturn = new BigNumber(item.rate).times(acc);
+        const feeCharged = spotReturn.times(
+          new BigNumber(1).minus(item.decFee)
+        );
+        return feeCharged;
+      }, new BigNumber(amount));
 
-    const calculateSlippageLessReturn = (
+    const calculateSpotPriceReturn = (
       sortedPools: Pool[],
       amount: string
     ): BigNumber => {
-      const prices = slippageLessPrices(sortedPools);
-      const theReturn = slippageLessReturn(prices, amount);
-      console.log(theReturn.toString(), "is the slippage less return", {
-        prices
-      });
-      const terminatingPool = last(sortedPools)!;
-      const decPoolFee = ppmToDec(terminatingPool.fee);
-      return theReturn.times(new BigNumber(1).minus(decPoolFee));
+      const prices = spotPrices(sortedPools);
+      return spotPriceReturn(prices, amount);
     };
 
     try {
@@ -7017,10 +7018,7 @@ export class EthBancorModule
 
       console.log(expectedReturnDec, "is the user return amount");
 
-      const slippageLessReturn = calculateSlippageLessReturn(
-        sortedPools,
-        amount
-      );
+      const slippageLessReturn = calculateSpotPriceReturn(sortedPools, amount);
       const slippageLessReturnRate = buildRate(
         new BigNumber(amount),
         slippageLessReturn
