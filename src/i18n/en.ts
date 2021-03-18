@@ -277,6 +277,7 @@ export const en = {
   unsupported_network:
     "Unsupported Network. Switch to mainnet network to use the app!",
   transaction_settings: "Transaction Settings",
+  admin_mode: "Admin Mode",
   interface_settings: "Interface Settings",
   dark_mode: "Dark Mode",
   off: "Off",

@@ -8,6 +8,7 @@ const VuexModule = createModule({
 export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   language: string = "en";
   darkMode: boolean = false;
+  adminMode: boolean = false;
 
   @mutation setLocale(locale: string) {
     i18n.locale = locale;
@@ -15,7 +16,14 @@ export class GeneralModule extends VuexModule.With({ namespaced: "general/" }) {
   }
 
   @mutation toggleDarkMode() {
-    this.darkMode = !this.darkMode;
-    localStorage.setItem("darkMode", this.darkMode.toString());
+    const newStatus = !this.darkMode;
+    this.darkMode = newStatus;
+    localStorage.setItem("darkMode", newStatus.toString());
+  }
+
+  @mutation toggleAdminMode() {
+    const newStatus = !this.adminMode;
+    this.adminMode = newStatus;
+    localStorage.setItem("adminMode", newStatus.toString());
   }
 }
