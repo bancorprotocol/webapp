@@ -428,6 +428,11 @@
 }
 
 .date-range-picker-light {
+  .daterangepicker {
+    &.dropdown-menu {
+      background: $bg-body-light !important;
+    }
+  }
   .calendar-table {
     background: $bg-body-light !important;
     border-radius: 8px !important;
@@ -469,6 +474,11 @@
 }
 
 .date-range-picker-dark {
+  .daterangepicker {
+    &.dropdown-menu {
+      background: $bg-body-dark !important;
+    }
+  }
   .calendar-table {
     background: $bg-body-dark !important;
     border-radius: 8px !important;
