@@ -47,20 +47,20 @@ export default defineComponent({
 
 .alerts-enter {
   opacity: 0;
-  transform: translateY(40px);
+  transform: translateY(35px);
 }
 .alerts-enter-active {
-  transition: all 1.3s ease;
+  transition: all 1s ease;
 }
 .alerts-leave-to {
   opacity: 0;
   transform: scale(0.6);
 }
 .alerts-leave-active {
-  transition: all 1.3s ease;
+  transition: all 1s ease;
   position: absolute; /* for move transition after item leaves */
 }
 .alerts-move {
-  transition: all 1s ease;
+  transition: all 1.3s ease;
 }
 </style>

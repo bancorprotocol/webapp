@@ -1,9 +1,13 @@
 <template>
   <div
-    @mouseenter="mouseHover = true"
-    @mouseleave="mouseHover = false"
-    class="font-w400 cursor position-relative"
-    :class="[darkMode ? 'text-dark' : 'text-light', isAlert ? 'py-2 px-3' : '']"
+    @mouseenter="changeHover(true)"
+    @mouseleave="changeHover(false)"
+    class="font-w400"
+    :class="[
+      { cursor: notification.txHash },
+      darkMode ? 'text-dark' : 'text-light',
+      isAlert ? 'py-2 px-3' : ''
+    ]"
   >
     <div class="d-flex justify-content-start">
       <div @click="openUrl" class="pr-2">
@@ -22,7 +26,7 @@
         />
       </div>
       <div @click="openUrl" class="flex-fill font-size-12">
-        <div class="font-w600">
+        <div class="font-w600 pt-1">
           <div v-if="notification.txHash && mouseHover">View on Etherscan</div>
           <div v-else>
             {{ title }}
@@ -127,6 +131,11 @@ export default defineComponent({
       else removeNotification(id);
     };
 
+    const changeHover = (state: boolean) => {
+      if (!props.notification.txHash) return;
+      mouseHover.value = state;
+    };
+
     let interval: any;
 
     if (props.notification.status === ENotificationStatus.pending) {
@@ -191,7 +200,8 @@ export default defineComponent({
       statusIcon,
       hideAlert,
       openUrl,
-      darkMode
+      darkMode,
+      changeHover
     };
   }
 });
