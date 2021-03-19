@@ -2,12 +2,11 @@
   <div
     @mouseenter="mouseHover = true"
     @mouseleave="mouseHover = false"
-    class="font-w400 cursor"
-    @click="openUrl"
+    class="font-w400 cursor position-relative"
     :class="[darkMode ? 'text-dark' : 'text-light', isAlert ? 'py-2 px-3' : '']"
   >
-    <div class="d-flex justify-content-start align-items-center">
-      <div class="mr-2">
+    <div class="d-flex justify-content-start">
+      <div @click="openUrl" class="pr-2">
         <font-awesome-icon
           v-if="!mouseHover"
           :class="`text-${statusIcon.class}`"
@@ -22,16 +21,21 @@
           fixed-width
         />
       </div>
-      <div class="flex-fill font-w600 font-size-12">
-        <div v-if="notification.txHash && mouseHover">View on Etherscan</div>
-        <div v-else>
-          {{ title }}
-          <span
-            v-if="!notification.showSeconds"
-            class="font-size-12 font-w500 text-muted-light ml-2"
-          >
-            {{ timeAgo }}
-          </span>
+      <div @click="openUrl" class="flex-fill font-size-12">
+        <div class="font-w600">
+          <div v-if="notification.txHash && mouseHover">View on Etherscan</div>
+          <div v-else>
+            {{ title }}
+            <span
+              v-if="!notification.showSeconds"
+              class="font-size-12 font-w400 text-muted-light ml-1"
+            >
+              {{ timeAgo }}
+            </span>
+          </div>
+        </div>
+        <div class="my-1">
+          {{ notification.description }}
         </div>
       </div>
       <div
@@ -41,9 +45,6 @@
       >
         <font-awesome-icon :icon="['fal', 'times']" />
       </div>
-    </div>
-    <div class="my-1 ml-4 pl-1 font-size-12">
-      {{ notification.description }}
     </div>
   </div>
 </template>
