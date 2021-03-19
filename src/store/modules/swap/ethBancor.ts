@@ -44,7 +44,8 @@ import {
   RawLiquidityProtectionSettings,
   LiquidityProtectionSettings,
   OnPrompt,
-  MinimalPool
+  MinimalPool,
+  TokenPrecision
 } from "@/types/bancor";
 import { RfqOrder, Signature, SignatureType } from "@0x/protocol-utils";
 import {
@@ -115,7 +116,8 @@ import {
   buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSettingsContract,
   buildAddressLookupContract,
-  buildLiquidityProtectionSystemStoreContract
+  buildLiquidityProtectionSystemStoreContract,
+  buildWethContract
 } from "@/api/eth/contractTypes";
 import {
   MinimalRelay,
@@ -229,7 +231,7 @@ import {
   keeperTokens$,
   limitOrders$,
   RfqOrderJson,
-  sendOrder
+  sendOrders
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 
@@ -584,6 +586,9 @@ const trustedStables = (network: EthNetworks): UsdValue[] => {
   }
   return [];
 };
+
+export const wethTokenContractAddress =
+  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
 const calculateSlippage = (
   slippageLessRate: BigNumber,
@@ -6150,7 +6155,7 @@ export class EthBancorModule
     );
 
     const [balances, ethBalance] = (await Promise.all([
-      this.fetchTokenBalances(withoutEth),
+      this.fetchTokenBalances([...withoutEth, wethTokenContractAddress]),
       (async () => {
         if (!includesEth) return;
         const weiBalance = await web3.eth.getBalance(this.currentUser);
@@ -6567,9 +6572,51 @@ export class EthBancorModule
     );
   }
 
-  @action async depositWeth() {}
+  @action async depositWeth({
+    decAmount,
+    onPrompt
+  }: {
+    decAmount: string;
+    onPrompt: OnPrompt;
+  }): Promise<TxResponse> {
+    if (this.currentNetwork !== EthNetworks.Mainnet)
+      throw new Error("Ropsten not supported");
 
-  @action async withdrawWeth() {}
+    const tokenContract = buildWethContract(wethTokenContractAddress);
+
+    const wei = expandToken(decAmount, 18);
+
+    await this.awaitConfirmation(onPrompt);
+
+    const txHash = await this.resolveTxOnConfirmation({
+      value: wei,
+      tx: tokenContract.methods.deposit()
+    });
+
+    return this.createTxResponse(txHash);
+  }
+
+  @action async withdrawWeth({
+    decAmount,
+    onPrompt
+  }: {
+    decAmount: string;
+    onPrompt: OnPrompt;
+  }) {
+    if (this.currentNetwork !== EthNetworks.Mainnet)
+      throw new Error("Ropsten not supported");
+
+    const tokenContract = buildWethContract(wethTokenContractAddress);
+    const wei = expandToken(decAmount, 18);
+
+    await this.awaitConfirmation(onPrompt);
+
+    const txHash = await this.resolveTxOnConfirmation({
+      tx: tokenContract.methods.withdraw(wei)
+    });
+
+    return this.createTxResponse(txHash);
+  }
 
   @action async triggerApprovalIfRequired(tokenWithdrawal: {
     owner: string;
@@ -6817,17 +6864,46 @@ export class EthBancorModule
   daoTokenAddresses: string[] = [];
 
   @mutation setDaoTokens(tokenAddresses: string[]) {
-    console.log(tokenAddresses, "are the dao token addresses");
     this.daoTokenAddresses = tokenAddresses;
   }
 
   @action async getReturnOrder({}) {}
 
-  @action async createOrder({ from, to, expiryDuration }: ProposedCreateOrder) {
+  @action async tokenPrecisionsById(ids: string[]): Promise<TokenPrecision[]> {
+    const tokens = this.tokens;
+    return ids.map(
+      (id): TokenPrecision => {
+        if (compareString(id, wethTokenContractAddress)) {
+          return {
+            contract: wethTokenContractAddress,
+            precision: 18
+          };
+        } else {
+          const token = findOrThrow(tokens, token =>
+            compareString(token.id, id)
+          );
+          return {
+            contract: token.id,
+            precision: token.precision
+          };
+        }
+      }
+    );
+  }
+
+  @action async createOrder({
+    from,
+    to,
+    expiryDuration,
+    onPrompt
+  }: ProposedCreateOrder) {
     const currentUser = this.currentUser as string;
     if (!currentUser) throw new Error("Cannot proceed without being logged in");
 
-    const [fromToken, toToken] = await this.tokensById([from.id, to.id]);
+    const [fromToken, toToken] = await this.tokenPrecisionsById([
+      from.id,
+      to.id
+    ]);
 
     const now = dayjs().unix();
     const expiry = new BigNumber(now + expiryDuration);
@@ -6858,11 +6934,12 @@ export class EthBancorModule
 
     const order = createOrder(orderData);
 
-    const approvedTx = await this.triggerApprovalIfRequired({
+    await this.triggerApprovalIfRequired({
       owner: currentUser,
       amount: fromAmountWeiString,
       spender: order.verifyingContract,
-      tokenAddress: from.id
+      tokenAddress: from.id,
+      onPrompt
     });
 
     const signature = await order.getSignatureWithProviderAsync(
@@ -6874,28 +6951,26 @@ export class EthBancorModule
     const buildRfqJsonOrder = (
       order: RfqOrder,
       signature: Signature
-    ): RfqOrderJson => {
-      return {
-        maker: order.maker.toLowerCase(),
-        taker: order.taker.toLowerCase(),
-        chainId: order.chainId,
-        expiry: order.expiry.toNumber(),
-        makerAmount: order.makerAmount.toString().toLowerCase(),
-        makerToken: order.makerToken.toLowerCase(),
-        pool: order.pool.toLowerCase(),
-        salt: order.salt.toString().toLowerCase(),
-        signature,
-        takerAmount: order.takerAmount.toString().toLowerCase(),
-        takerToken: order.takerToken.toLowerCase(),
-        txOrigin: order.txOrigin.toLowerCase(),
-        verifyingContract: order.verifyingContract.toLowerCase()
-      };
-    };
+    ): RfqOrderJson => ({
+      maker: order.maker.toLowerCase(),
+      taker: order.taker.toLowerCase(),
+      chainId: order.chainId,
+      expiry: order.expiry.toNumber(),
+      makerAmount: order.makerAmount.toString().toLowerCase(),
+      makerToken: order.makerToken.toLowerCase(),
+      pool: order.pool.toLowerCase(),
+      salt: order.salt.toString().toLowerCase(),
+      signature,
+      takerAmount: order.takerAmount.toString().toLowerCase(),
+      takerToken: order.takerToken.toLowerCase(),
+      txOrigin: order.txOrigin.toLowerCase(),
+      verifyingContract: order.verifyingContract.toLowerCase()
+    });
 
     const jsonOrder = buildRfqJsonOrder(order, signature);
     console.log({ order, signature, jsonOrder });
 
-    const res = await sendOrder([jsonOrder]);
+    const res = await sendOrders([jsonOrder]);
     console.log(res, "was the response");
   }
 

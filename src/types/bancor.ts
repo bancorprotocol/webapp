@@ -149,6 +149,7 @@ export interface ProposedCreateOrder {
   from: ViewAmount;
   to: ViewAmount;
   expiryDuration: number;
+  onPrompt?: OnPrompt;
 }
 
 export interface ViewAmount {
@@ -756,6 +757,11 @@ export interface ReserveInstance {
   ratio: number;
   sale_enabled: boolean;
   contract: string;
+}
+
+export interface TokenPrecision {
+  contract: string;
+  precision: number;
 }
 
 export interface SimpleToken {

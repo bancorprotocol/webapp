@@ -1689,6 +1689,28 @@ export const ABISmartToken: AbiItem[] = [
   }
 ];
 
+export const ABIWethToken: AbiItem[] = [
+  ...ABISmartToken,
+  {
+    constant: false,
+    inputs: [],
+    name: "deposit",
+    outputs: [],
+    payable: true,
+    stateMutability: "payable",
+    type: "function"
+  },
+  {
+    constant: false,
+    inputs: [{ name: "_wad", type: "uint256" }],
+    name: "withdraw",
+    outputs: [],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "function"
+  }
+];
+
 export const ABIConverterRegistry: AbiItem[] = [
   {
     constant: false,

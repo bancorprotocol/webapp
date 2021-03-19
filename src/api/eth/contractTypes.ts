@@ -18,7 +18,8 @@ import {
   ABIStakingRewardsStore,
   ABIV2Converter,
   V2PoolsTokenContainer,
-  ABILiquidityProtectionSystemStore
+  ABILiquidityProtectionSystemStore,
+  ABIWethToken
 } from "@/api/eth/ethAbis";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
@@ -34,10 +35,7 @@ const buildContract = (
     ? new (injectedWeb3 || web3).eth.Contract(abi, contractAddress)
     : new (injectedWeb3 || web3).eth.Contract(abi);
 
-export const buildTokenContract = (
-  contractAddress?: string,
-  web3?: Web3
-): ContractMethods<{
+interface TokenContractType {
   symbol: () => CallReturn<string>;
   decimals: () => CallReturn<string>;
   totalSupply: () => CallReturn<string>;
@@ -50,7 +48,23 @@ export const buildTokenContract = (
     approvedAddress: string,
     approvedAmount: string
   ) => ContractSendMethod;
-}> => buildContract(ABISmartToken, contractAddress, web3);
+}
+interface WethContractType extends TokenContractType {
+  deposit: () => ContractSendMethod;
+  withdraw: (amount: string) => ContractSendMethod;
+}
+
+export const buildTokenContract = (
+  contractAddress?: string,
+  web3?: Web3
+): ContractMethods<TokenContractType> =>
+  buildContract(ABISmartToken, contractAddress, web3);
+
+export const buildWethContract = (
+  contractAddress?: string,
+  web3?: Web3
+): ContractMethods<WethContractType> =>
+  buildContract(ABIWethToken, contractAddress, web3);
 
 export const buildGovernanceContract = (
   contractAddress?: string,

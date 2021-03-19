@@ -151,7 +151,7 @@ export const getTxOrigin = async (): Promise<string> => {
   return res.result.orderDetails.txOrigin;
 };
 
-export const sendOrder = async (rfqOrder: RfqOrderJson[]) => {
+export const sendOrders = async (rfqOrder: RfqOrderJson[]) => {
   const url = `${baseUrl}/orders`;
 
   try {
