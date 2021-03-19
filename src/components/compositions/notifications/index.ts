@@ -52,7 +52,7 @@ export const addNotification = (payload: IAddNotification): void => {
   } = payload;
 
   const notification: INotificationView = {
-    id: history.value.length,
+    id: Date.now(),
     status: status ?? ENotificationStatus.info,
     title,
     description,
