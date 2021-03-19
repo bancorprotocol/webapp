@@ -87,11 +87,7 @@
           :label="$t('price_impact')"
           :tooltip="$t('market_price_diff')"
           :is-alert="overSlippageLimit"
-          :value="
-            slippage !== null && slippage !== undefined
-              ? numeral(this.slippage).format('0.0000%')
-              : '0.0000%'
-          "
+          :value="priceImpact"
         />
       </div>
       <label-content-split
@@ -203,9 +199,15 @@ export default class SwapAction extends BaseTxAction {
   }
 
   get priceImpact() {
-    return this.slippage !== null && this.slippage !== undefined
-      ? numeral(this.slippage).format("0.0000%")
-      : "0.0000%";
+    const zeroPercent = "0.0000%";
+    const slippage = this.slippage;
+    const slippageLabel =
+      slippage !== null && slippage !== undefined
+        ? numeral(slippage).format(zeroPercent)
+        : zeroPercent;
+
+    const corrected = slippageLabel == "NaN%" ? zeroPercent : slippageLabel;
+    return corrected;
   }
 
   get slippageTolerance() {

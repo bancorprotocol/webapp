@@ -7027,12 +7027,13 @@ export class EthBancorModule
 
       let slippage: number | undefined;
       try {
-        const slippageNumber = calculateSlippage(
+        const slippageBigNumber = calculateSlippage(
           slippageLessReturnRate,
           userReturnRate
         );
 
-        slippage = slippageNumber.toNumber();
+        const slippageNumber = slippageBigNumber.toNumber();
+        slippage = slippageNumber;
       } catch (e) {
         console.error("Failed calculating slippage", e.message);
       }
