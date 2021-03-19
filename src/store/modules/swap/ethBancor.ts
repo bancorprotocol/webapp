@@ -6567,6 +6567,10 @@ export class EthBancorModule
     );
   }
 
+  @action async depositWeth() {}
+
+  @action async withdrawWeth() {}
+
   @action async triggerApprovalIfRequired(tokenWithdrawal: {
     owner: string;
     spender: string;
