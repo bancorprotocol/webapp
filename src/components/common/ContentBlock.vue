@@ -34,7 +34,7 @@
             !dropDownFiltering(dropdown)
               ? darkMode
                 ? 'muted-dark'
-                : 'muted-light'
+                : 'muted-white-light'
               : darkMode
               ? 'active-dark'
               : 'active-light'
