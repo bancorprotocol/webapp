@@ -35,9 +35,7 @@
             positions.length ? $t('protected_positions') : $t('protected')
           "
           :search.sync="searchProtected"
-          :drop-down-filters="positions.length ? dropDownFilters : []"
-          :dateFiltering="hasRange"
-          :clearDate="clearDateRange"
+          :filters="true"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
@@ -63,6 +61,71 @@
               ]"
             />
           </div>
+          <template v-if="positions.length" #dropDowns>
+            <b-dropdown
+              :ref="'dropdown_' + dropdown.id"
+              v-for="dropdown in dropDownFilters"
+              :key="dropdown.id"
+              :text="dropdown.items[dropdown.selectedIndex].title"
+              :variant="
+                !dropDownFiltering(dropdown)
+                  ? darkMode
+                    ? 'muted-dark'
+                    : 'muted-white-light'
+                  : darkMode
+                  ? 'active-dark'
+                  : 'active-light'
+              "
+              :block="true"
+              class="d-none d-lg-inline"
+              toggle-class="block-rounded"
+              :menu-class="
+                darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+              "
+              style="width: 200px !important; height: 35px !important"
+              :no-caret="true"
+            >
+              <template #button-content>
+                <div class="d-flex justify-content-between align-items-center">
+                  {{ dropdown.items[dropdown.selectedIndex].title }}
+                  <font-awesome-icon
+                    :icon="dropDownFiltering(dropdown) ? 'times' : 'caret-down'"
+                    @click.stop="clearFilter(dropdown)"
+                  />
+                </div>
+              </template>
+              <div v-if="dropdown.multiiSelect">
+                <b-dropdown-item
+                  :class="
+                    darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'
+                  "
+                  v-for="(item, index) in dropdown.items"
+                  :key="item.id"
+                  @click.stop="checked(index, dropdown)"
+                >
+                  <b-form-checkbox
+                    :id="item.id"
+                    :value="true"
+                    :unchecked-value="false"
+                  >
+                    {{ item.title }}
+                  </b-form-checkbox>
+                </b-dropdown-item>
+              </div>
+              <div v-else>
+                <b-dropdown-item
+                  :class="
+                    darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'
+                  "
+                  v-for="(item, index) in dropdown.items"
+                  :key="item.id"
+                  @click="dropdown.selectedIndex = index"
+                >
+                  {{ item.title }}
+                </b-dropdown-item>
+              </div>
+            </b-dropdown>
+          </template>
           <template v-if="positions.length" #date>
             <div
               :class="
@@ -112,6 +175,17 @@
               </date-range-picker>
             </div>
           </template>
+          <template v-if="positions.length" #mobileFilters>
+            <b-btn class="d-flex" variant="primary">
+              <font-awesome-icon icon="filter" @click="showMobileFilters" />
+              <font-awesome-icon
+                icon="times"
+                v-if="anyAreFiltering"
+                class="ml-2"
+                @click="clearAllFilters"
+              />
+            </b-btn>
+          </template>
         </content-block>
       </b-col>
     </b-row>
@@ -138,6 +212,7 @@
         </content-block>
       </b-col>
     </b-row>
+    <modal-protected-filters v-model="modal" />
   </b-container>
 </template>
 
@@ -152,6 +227,7 @@ import ProtectedTable from "@/components/protection/ProtectedTable.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import ModalProtectedFilters from "@/components/modals/ModalProtectedFilters.vue";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import { groupPositionsArray } from "@/api/pureHelpers";
 import { buildPoolName } from "@/api/helpers";
@@ -166,7 +242,8 @@ import dayjs from "@/utils/dayjs";
     Claim,
     ContentBlock,
     ProtectedTable,
-    DateRangePicker
+    DateRangePicker,
+    ModalProtectedFilters
   }
 })
 export default class ProtectionHome extends BaseComponent {
@@ -176,6 +253,7 @@ export default class ProtectionHome extends BaseComponent {
     {
       id: "position",
       selectedIndex: 0,
+      multiSelect: false,
       items: [
         { id: "0", title: i18n.t("all_positions") },
         { id: "1", title: i18n.t("fully_protected") },
@@ -184,7 +262,8 @@ export default class ProtectionHome extends BaseComponent {
     },
     {
       id: "pools",
-      selectedIndex: 0,
+      indexes: 0,
+      multiiSelect: true,
       items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
     }
   ];
@@ -196,6 +275,7 @@ export default class ProtectionHome extends BaseComponent {
     startDate: null,
     endDate: null
   };
+  modal: boolean = false;
 
   positionFilterFunction(row: ViewGroupedPositions) {
     const fullRow = this.groupedPos.find(x => x.id === row.id);
@@ -224,9 +304,9 @@ export default class ProtectionHome extends BaseComponent {
 
   poolsFilterFunction(row: ViewGroupedPositions) {
     const pools = this.dropDownFilters[1];
-    if (pools.selectedIndex == 0) return true;
+    if (pools.selectedIndex === 0) return true;
 
-    const pool = this.poolNames[pools.selectedIndex - 1];
+    const pool = pools.indexes ? this.poolNames[pools.indexes - 1] : { id: -1 };
     return pool.id === row.poolId;
   }
 
@@ -272,6 +352,38 @@ export default class ProtectionHome extends BaseComponent {
       end = end.slice(0, end.length - 5);
     }
     return `${start} - ${end}`;
+  }
+
+  get anyAreFiltering() {
+    let anyFiltering: boolean = false;
+    this.dropDownFilters.map(
+      dropDown => (anyFiltering = dropDown.selectedIndex !== 0)
+    );
+
+    return this.hasRange || anyFiltering;
+  }
+
+  showMobileFilters() {
+    this.modal = true;
+  }
+
+  dropDownFiltering(dropDown: any) {
+    return dropDown.selectedIndex !== 0;
+  }
+
+  clearFilter(dropdown: any) {
+    if (this.dropDownFiltering(dropdown)) {
+      dropdown.selectedIndex = 0;
+    }
+  }
+
+  checked(index: number, dropDown: any) {
+    dropDown.indexes.includes(index);
+  }
+
+  clearAllFilters() {
+    this.dropDownFilters.map(dropDown => this.clearFilter(dropDown));
+    this.clearDateRange();
   }
 
   get poolNames() {
