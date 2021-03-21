@@ -30,7 +30,7 @@
       <statistics-data-block
         :title="$t('total_bnt_staked')"
         :value="stats.stakedBntPercent"
-        :stringifyPercentage="true"
+        :isPercentage="true"
       />
     </b-col>
   </b-row>
