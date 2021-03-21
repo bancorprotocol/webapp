@@ -66,6 +66,7 @@
       <div v-if="searchInput !== null" class="float-right">
         <multi-input-field
           v-model="searchInput"
+          :clear="true"
           :placeholder="$t('search')"
           prepend="search"
         />
@@ -78,7 +79,7 @@
     >
       <slot name="header"> </slot>
     </div>
-    <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
+    <div :class="padding ? 'block-content pb-3 pt-0 ' : '' + px0 ? 'px-0' : ''">
       <slot></slot>
     </div>
   </div>
@@ -99,6 +100,7 @@ export default class ContentBlock extends BaseComponent {
   @Prop({ default: false }) shadow?: boolean;
   @Prop({ default: false }) shadowLight?: boolean;
   @Prop({ default: false }) px0?: boolean;
+  @Prop({ default: true }) padding?: boolean;
   @Prop({ default: false }) backButton!: boolean;
   @Prop({ default: false }) rippleAnimation?: boolean;
   @Prop({ default: null }) version!: 1 | 2 | null;

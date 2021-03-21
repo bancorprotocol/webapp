@@ -2,7 +2,8 @@ name: Build and Test
 
 on:
   pull_request:
-    types: [opened, closed, edited, ready_for_review, review_requested, reopened]
+    types:
+      [opened, closed, edited, ready_for_review, review_requested, reopened]
   push:
 
 jobs:
@@ -13,7 +14,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
       - name: Install Dependencies
-        run: yarn
+        run: |
+          npm config set '//npm.fontawesome.com/:_authToken' "${{ secrets.FONT_AWESOME_PRO_TOKEN }}"
+          yarn
       - name: Test
         run: yarn jest
       - name: Build

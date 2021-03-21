@@ -115,38 +115,92 @@
     <b-dropdown-group id="dropdown-group-4">
       <b-dropdown-header>{{ $t("developers") }}</b-dropdown-header>
       <b-dropdown-item
-        @click="openUrl('https://docs.bancor.network/')"
+        @click="openUrl('https://twitter.com/Bancor')"
         :variant="darkMode ? 'dark' : 'light'"
       >
         <font-awesome-icon
-          icon="book-open"
-          class="mr-2 menu-icon"
+          :icon="['fab', 'twitter']"
+          class="menu-icon"
           fixed-width
         />
-        Gitbook
+        Twitter
       </b-dropdown-item>
       <b-dropdown-item
-        @click="openUrl('https://github.com/bancorprotocol/')"
+        @click="openUrl('https://www.reddit.com/r/Bancor/')"
         :variant="darkMode ? 'dark' : 'light'"
       >
         <font-awesome-icon
-          :icon="['fab', 'github']"
-          class="mr-2 menu-icon"
+          :icon="['fab', 'reddit-alien']"
+          class="menu-icon"
           fixed-width
         />
-        GitHub
+        Reddit
       </b-dropdown-item>
       <b-dropdown-item
-        @click="openUrl('https://t.me/BancorDevelopers')"
+        @click="openUrl('https://t.me/bancor')"
         :variant="darkMode ? 'dark' : 'light'"
       >
         <font-awesome-icon
           :icon="['fab', 'telegram-plane']"
-          class="mr-2 menu-icon"
+          class="menu-icon"
           fixed-width
         />
-        {{ $t("chat") }}
+        Telegram
       </b-dropdown-item>
+      <b-dropdown-item
+        @click="openUrl('https://discord.gg/EHK8wHbgau')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
+        <font-awesome-icon
+          :icon="['fab', 'discord']"
+          class="menu-icon"
+          fixed-width
+        />
+        Discord
+      </b-dropdown-item>
+      <b-dropdown-item
+        @click="openUrl('https://gov.bancor.network')"
+        :variant="darkMode ? 'dark' : 'light'"
+      >
+        <font-awesome-icon
+          @click="openUrl('https://gov.bancor.network')"
+          :icon="['fab', 'discourse']"
+          class="menu-icon"
+          fixed-width
+        />
+        Governance
+      </b-dropdown-item>
+    </b-dropdown-group>
+    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-group id="dropdown-group-4">
+      <b-dropdown-header>
+        {{ $t("developer_resources") }}
+      </b-dropdown-header>
+      <b-dropdown-text>
+        <div
+          class="d-flex justify-content-between"
+          style="width: 115px !important"
+        >
+          <font-awesome-icon
+            icon="book-open"
+            @click="openUrl('https://docs.bancor.network/')"
+            class="mr-2 menu-icon cursor"
+            fixed-width
+          />
+          <font-awesome-icon
+            :icon="['fab', 'github']"
+            @click="openUrl('https://github.com/bancorprotocol/')"
+            class="mr-2 menu-icon cursor"
+            fixed-width
+          />
+          <font-awesome-icon
+            :icon="['fab', 'telegram-plane']"
+            @click="openUrl('https://t.me/BancorDevelopers')"
+            class="mr-2 menu-icon cursor"
+            fixed-width
+          />
+        </div>
+      </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-5" class="font-size-12">

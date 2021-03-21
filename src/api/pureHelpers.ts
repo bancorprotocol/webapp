@@ -13,6 +13,18 @@ import { partition } from "lodash";
 import { compareString } from "@/api/helpers";
 import sort from "fast-sort";
 import numeral from "numeral";
+import wait from "waait";
+
+export const mapIgnoreThrown = async <T, V>(
+  input: readonly T[],
+  iteratee: (value: T, index: number) => Promise<V>
+): Promise<V[]> => {
+  const IGNORE_TOKEN = "IGNORE_TOKEN";
+  const res = await Promise.all(
+    input.map((val, index) => iteratee(val, index).catch(() => IGNORE_TOKEN))
+  );
+  return res.filter(res => res !== IGNORE_TOKEN) as V[];
+};
 
 const oneMillion = new BigNumber(1000000);
 
@@ -31,6 +43,14 @@ export const calculateAmountToGetSpace = (
     .plus(networkTokensMintedDecimal)
     .minus(limitAmount)
     .toString();
+};
+
+export const throwAfter = async (
+  milliseconds: number,
+  errorMessage?: string
+): Promise<never> => {
+  await wait(milliseconds);
+  throw new Error(errorMessage || "Timeout");
 };
 
 export const groupPositionsArray = (
@@ -58,6 +78,7 @@ export const groupPositionsArray = (
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
         item.pendingReserveReward = val.pendingReserveReward;
+        item.rewardsMultiplier = val.rewardsMultiplier;
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
@@ -66,37 +87,14 @@ export const groupPositionsArray = (
         const sumFullyProtected = filtered
           .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
           .reduce((sum, current) => sum + current);
-        let sumFullyProtectedWithReward: BigNumber;
 
         const sumProtectedAmount = filtered
           .map(x => Number(x.protectedAmount ? x.protectedAmount.amount : 0))
           .reduce((sum, current) => sum + current);
-        let sumProtectedWithReward: BigNumber;
 
-        if (compareString(symbol, "BNT")) {
-          sumFullyProtectedWithReward = item.pendingReserveReward.plus(
-            sumFullyProtected
-          );
-          sumProtectedWithReward = item.pendingReserveReward.plus(
-            sumProtectedAmount
-          );
-        } else {
-          const bntRewardUsd = item.pendingReserveReward.times(
-            val.bntTokenPrice
-          );
-          sumFullyProtectedWithReward = bntRewardUsd
-            .div(val.reserveTokenPrice)
-            .plus(sumFullyProtected);
-          sumProtectedWithReward = bntRewardUsd
-            .div(val.reserveTokenPrice)
-            .plus(sumProtectedAmount);
-        }
+        const sumFullyProtectedUSD = sumFullyProtected * val.reserveTokenPrice;
 
-        const sumFullyProtectedWithRewardUSD =
-          Number(sumFullyProtectedWithReward) * val.reserveTokenPrice;
-
-        const sumProtectedWithRewardUSD =
-          Number(sumProtectedWithReward) * val.reserveTokenPrice;
+        const sumProtectedUSD = sumProtectedAmount * val.reserveTokenPrice;
 
         const sumFees = filtered
           .map(x => Number(x.fees ? x.fees.amount : 0))
@@ -108,16 +106,19 @@ export const groupPositionsArray = (
           unixTime: val.stake.unixTime
         };
         item.fullyProtected = {
-          amount: sumFullyProtectedWithReward.toNumber(),
-          usdValue: sumFullyProtectedWithRewardUSD
+          amount: sumFullyProtected,
+          usdValue: sumFullyProtectedUSD
         };
         item.protectedAmount = {
-          amount: sumProtectedWithReward.toNumber(),
-          usdValue: sumProtectedWithRewardUSD
+          amount: sumProtectedAmount,
+          usdValue: sumProtectedUSD
         };
-        item.roi =
-          (Number(sumFullyProtectedWithReward) - sumStakeAmount) /
-          sumStakeAmount;
+        item.roi = {
+          fees: sumFees / sumStakeAmount,
+          reserveRewards: item.pendingReserveReward
+            .times(val.bntTokenPrice)
+            .div(item.stake.usdValue)
+        };
         item.fees = sumFees;
 
         obj.set(id, item);

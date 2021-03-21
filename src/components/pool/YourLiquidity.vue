@@ -20,8 +20,9 @@
       </b-col>
       <b-col cols="12">
         <multi-input-field
-          :placeholder="$t('search')"
           v-model="search"
+          :clear="true"
+          :placeholder="$t('search')"
           prepend="search"
           class="my-2"
         />
