@@ -61,6 +61,7 @@ import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BigNumber from "bignumber.js";
 import wait from "waait";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -117,7 +118,7 @@ export default class RestakeRewards extends BaseTxAction {
   get disableActionButton() {
     if (!this.amount) return true;
     else if (this.loading) return true;
-    else return this.inputError ? true : false;
+    else return !!this.inputError;
   }
 
   get inputError() {
@@ -146,6 +147,15 @@ export default class RestakeRewards extends BaseTxAction {
         maxAmount: this.amount,
         poolId: this.pool.id,
         onUpdate: this.onUpdate
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.restake.title"),
+        description: this.$tc("notifications.add.restake.description", 0, {
+          amount: this.prettifyNumber(this.amount),
+          pool: this.pool.name
+        }),
+        txHash: this.txMeta.success.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;

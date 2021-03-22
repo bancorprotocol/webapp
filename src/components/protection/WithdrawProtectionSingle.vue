@@ -145,6 +145,7 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -256,6 +257,16 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
         decPercent: Number(this.percentage) / 100,
         id: this.position.id,
         onPrompt: this.onPrompt
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.unstake.title"),
+        description: this.$tc("notifications.add.unstake.description", 0, {
+          amount: this.prettifyNumber(this.expectedValue!.amount),
+          symbol: this.expectedValue!.symbol,
+          pool: this.pool.name
+        }),
+        txHash: this.txMeta.success.txId
       });
     } catch (err) {
       this.txMeta.txError = err.message;

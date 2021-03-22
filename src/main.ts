@@ -1,3 +1,4 @@
+import "./utils/compositionApi";
 import Vue from "vue";
 import * as Sentry from "@sentry/browser";
 import { Vue as VueIntegration } from "@sentry/integrations";
@@ -11,7 +12,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import "@/assets/_scss/main.scss";
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { fas, fab } from "@/assets/icons";
+import { fab, fal, fas } from "@/assets/fontawesome";
 
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
@@ -68,7 +69,7 @@ Vue.use(
 
 Vue.use(BootstrapVue);
 
-library.add(...fas, ...fab);
+library.add(...fas, ...fab, ...fal);
 
 Vue.component("FontAwesomeIcon", FontAwesomeIcon);
 
