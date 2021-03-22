@@ -1198,17 +1198,17 @@
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.6.1.tgz#dcbd23030a71c0c74fc95d4a3f75ba81653850e9"
   integrity sha512-L/ZnJRAq7F++utfuoTKX4CLBG5YR7tFO3PLzG1/oXXKEezJ0kRL3CMRoueBEmTCzVb/6SIs2Qlaw++uDgi5Xyg==
 
-"@firebase/app@^0.6.16":
-  version "0.6.16"
-  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.6.16.tgz#d87f3d70e59dd44e8f14fd45a575b8ffe58be406"
-  integrity sha512-QGqfvDQ4AK54y2ysttdgtTsyuLGfN0OksdmWSHLDs7HBJg9nJkZUuFA/cJ1cftpPSVxpCbnro+OU1FtRgapzAA==
+"@firebase/app@^0.6.17":
+  version "0.6.17"
+  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.6.17.tgz#866c963cb4051a0457f989285524072bbb1aacda"
+  integrity sha512-xLXY8507VaVkg5l1mWIUh/OrGqutexKxngbvEdpD9PXY2qiBRApXgvdIJ+DuuhaZDnG+3M/5hlP1IIx7XnkAsA==
   dependencies:
     "@firebase/app-types" "0.6.1"
-    "@firebase/component" "0.2.1"
+    "@firebase/component" "0.3.0"
     "@firebase/logger" "0.2.6"
     "@firebase/util" "0.4.0"
     dom-storage "2.1.0"
-    tslib "^2.0.0"
+    tslib "^2.1.0"
     xmlhttprequest "1.8.0"
 
 "@firebase/component@0.2.1":
@@ -1218,6 +1218,14 @@
   dependencies:
     "@firebase/util" "0.4.0"
     tslib "^2.0.0"
+
+"@firebase/component@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@firebase/component/-/component-0.3.0.tgz#dadc66bee67553091b11179cc75a2a19020af457"
+  integrity sha512-jlyaQMLKkzetjHd41P6wywNNVIy+Pqa2Xf+GS/cdgLyPD5IhjqvJHEv0SrLL2ceRhXCA5ETUxSvV6aKbFgV3Vw==
+  dependencies:
+    "@firebase/util" "0.4.0"
+    tslib "^2.1.0"
 
 "@firebase/installations-types@0.3.4":
   version "0.3.4"
