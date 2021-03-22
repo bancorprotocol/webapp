@@ -362,5 +362,12 @@ export const en = {
     "Starting at 1, your multiplier increase .25 each week until reaching 2. At which point, you are getting twice the rewards you were on week 1. The number to the left already takes this into account.",
   current_protection: "Current protection is {amount}",
   roi_protected_split:
-    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI."
+    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
+  notifications: {
+    title: "Notifications",
+    buttons: {
+      clear: "clear"
+    },
+    nothing_here: "Nothing here yet."
+  }
 };

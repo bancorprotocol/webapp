@@ -3,12 +3,12 @@
     <div
       class="d-flex justify-content-between font-w600 text-right text-light align-items-end"
     >
-      <span>Notifications</span>
+      <span>{{ $t("notifications.title") }}</span>
       <span
         @click="clearAllNotifications()"
         class="cursor text-muted-light font-size-12"
       >
-        <u>clear</u>
+        <u>{{ $t("notifications.buttons.clear") }}</u>
       </span>
     </div>
     <hr class="mt-2 mb-3" />
@@ -28,7 +28,7 @@
       v-else
       class="text-center text-muted-light font-w400 font-size-12 mt-3"
     >
-      Nothing here yet.
+      {{ $t("notifications.nothing_here") }}
     </div>
   </div>
 </template>
