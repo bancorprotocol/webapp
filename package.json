@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@dfuse/client": "^0.3.19",
-    "@firebase/analytics": "^0.6.5",
+    "@firebase/analytics": "^0.6.6",
     "@firebase/app": "^0.6.17",
     "@fortawesome/fontawesome-pro": "^5.15.2",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
