@@ -1,23 +1,23 @@
 <template>
   <div class="px-2">
-    <div v-if="history.length">
-      <div
-        class="d-flex justify-content-between font-w600 text-right text-light align-items-end"
+    <div
+      class="d-flex justify-content-between font-w600 text-right text-light align-items-end"
+    >
+      <span :class="darkMode ? 'text-dark' : 'text-light'">
+        {{ $t("notifications.title") }}
+      </span>
+      <span
+        @click="clearAllNotifications()"
+        class="cursor font-size-12"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
-        <span :class="darkMode ? 'text-dark' : 'text-light'">
-          {{ $t("notifications.title") }}
-        </span>
-        <span
-          @click="clearAllNotifications()"
-          class="cursor font-size-12"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          <u>{{ $t("notifications.buttons.clear") }}</u>
-        </span>
-      </div>
+        <u>{{ $t("notifications.buttons.clear") }}</u>
+      </span>
+    </div>
 
-      <hr class="mt-2 mb-3" />
+    <hr class="mt-2 mb-3" />
 
+    <div v-if="history.length">
       <div
         v-for="(notification, index) in history"
         :key="`history-${notification.id}`"
