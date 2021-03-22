@@ -150,10 +150,11 @@ export default class RestakeRewards extends BaseTxAction {
       });
       this.txMeta.showTxModal = false;
       addNotification({
-        title: "Stake Rewards",
-        description: `Stake ${this.prettifyNumber(this.amount)} ${
-          this.token.symbol
-        } from rewards in pool ${this.pool.name}.`,
+        title: this.$tc("notifications.add.restake.title"),
+        description: this.$tc("notifications.add.restake.description", 0, {
+          amount: this.prettifyNumber(this.amount),
+          pool: this.pool.name
+        }),
         txHash: this.txMeta.success.txId
       });
     } catch (e) {
