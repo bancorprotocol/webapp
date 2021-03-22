@@ -115,10 +115,10 @@ export default class WithdrawRewards extends BaseTxAction {
       });
       this.txMeta.showTxModal = false;
       addNotification({
-        title: "Withdraw Rewards",
-        description: `Withdraw ${this.prettifyNumber(
-          this.pendingRewards.bnt
-        )} BNT from your rewards.`,
+        title: this.$tc("notifications.add.withdraw.title"),
+        description: this.$tc("notifications.add.withdraw.description", 0, {
+          amount: this.prettifyNumber(this.pendingRewards.bnt)
+        }),
         txHash: this.txMeta.success.txId
       });
     } catch (e) {
