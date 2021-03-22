@@ -3,7 +3,7 @@
     <token-input-field
       :label="$t('from')"
       v-model="amount1"
-      @input="updatePriceReturn"
+      @input="limit ? calculateEmptyFields(Field.amount1) : updatePriceReturn()"
       @select="selectFromToken"
       :token="token1"
       :balance="balance1"
@@ -24,7 +24,7 @@
     <token-input-field
       :label="$t('to_estimated')"
       v-model="amount2"
-      @input="sanitizeAmount"
+      @input="limit ? calculateEmptyFields(Field.amount2) : sanitizeAmount()"
       @select="selectToToken"
       :token="token2"
       :balance="balance2"
@@ -43,8 +43,9 @@
           class="mb-2"
         />
         <multi-input-field
+          @input="calculateEmptyFields(Field.rate)"
           class="mb-3"
-          type="url"
+          v-model="limitRate"
           :placeholder="rate"
           :append="$t('defined_rate')"
           height="48"
@@ -197,6 +198,12 @@ import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationS
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 
+enum Field {
+  amount1,
+  amount2,
+  rate
+}
+
 @Component({
   components: {
     GrayBorderBlock,
@@ -235,7 +242,9 @@ export default class SwapAction extends BaseTxAction {
   errorToken2 = "";
 
   rateLoading = false;
+  userSettedRate = false;
   initialRate = "";
+  limitRate = "";
   numeral = numeral;
 
   modalSelectDuration = false;
@@ -253,6 +262,10 @@ export default class SwapAction extends BaseTxAction {
 
   get slippageTolerance() {
     return vxm.bancor.slippageTolerance;
+  }
+
+  get Field() {
+    return Field;
   }
 
   inverseRate = false;
@@ -429,6 +442,53 @@ export default class SwapAction extends BaseTxAction {
     this.fee = this.slippage = null;
     this.errorToken2 = "";
     this.errorToken1 = "";
+  }
+
+  calcAmount1() {
+    this.amount1 = new BigNumber(this.amount2)
+      .div(new BigNumber(this.limitRate))
+      .toString();
+  }
+  calcAmount2() {
+    this.amount2 = new BigNumber(this.amount1)
+      .times(new BigNumber(this.limitRate))
+      .toString();
+  }
+  calcLimitRate() {
+    this.limitRate = new BigNumber(this.amount2)
+      .div(new BigNumber(this.amount1))
+      .toString();
+  }
+
+  async calculateEmptyFields(field: Field) {
+    switch (field) {
+      case Field.amount1:
+        if (this.amount1) {
+          if (this.amount2) {
+            if (this.userSettedRate) this.calcAmount2();
+            else this.calcLimitRate();
+          } else if (this.limitRate) this.calcAmount2();
+        }
+        break;
+      case Field.amount2:
+        if (this.amount2) {
+          if (this.amount1)
+            if (this.userSettedRate) this.calcAmount1();
+            else this.calcLimitRate();
+          else if (this.limitRate) this.calcAmount1();
+        }
+        break;
+      case Field.rate:
+        if (this.limitRate) {
+          this.userSettedRate = true;
+          if (this.amount1 && this.amount2) {
+            this.amount1 = "";
+            this.amount2 = "";
+          } else if (this.amount1) this.calcAmount2();
+          else if (this.amount2) this.calcAmount1();
+        } else this.userSettedRate = false;
+        break;
+    }
   }
 
   async calculateRate() {
