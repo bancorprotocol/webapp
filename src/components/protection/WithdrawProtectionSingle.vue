@@ -260,12 +260,12 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
       });
       this.txMeta.showTxModal = false;
       addNotification({
-        title: "Withdraw Protection",
-        description: `Withdraw ~${this.prettifyNumber(
-          this.expectedValue!.amount
-        )} ${this.expectedValue!.symbol} from your protected position in pool ${
-          this.pool.name
-        }.`,
+        title: this.$tc("notifications.add.unstake.title"),
+        description: this.$tc("notifications.add.unstake.description", 0, {
+          amount: this.prettifyNumber(this.expectedValue!.amount),
+          symbol: this.expectedValue!.symbol,
+          pool: this.pool.name
+        }),
         txHash: this.txMeta.success.txId
       });
     } catch (err) {
