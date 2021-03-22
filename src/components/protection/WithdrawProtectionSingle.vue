@@ -121,7 +121,7 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
 
 @Component({
   components: {
@@ -135,7 +135,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
     MainButton
   }
 })
-export default class WithdrawProtectionSingle extends BaseComponent {
+export default class WithdrawProtectionSingle extends BaseTxAction {
   get pool(): ViewRelay {
     return vxm.bancor.relay(this.position.stake.poolId);
   }
@@ -236,7 +236,8 @@ export default class WithdrawProtectionSingle extends BaseComponent {
     try {
       const txRes = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
-        id: this.position.id
+        id: this.position.id,
+        onPrompt: this.onPrompt
       });
       this.success = txRes;
     } catch (err) {

@@ -193,9 +193,9 @@ import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
 
 @Component({
   components: {
@@ -211,7 +211,7 @@ import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
     MainButton
   }
 })
-export default class AddProtectionSingle extends BaseComponent {
+export default class AddProtectionSingle extends BaseTxAction {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
@@ -381,7 +381,8 @@ export default class AddProtectionSingle extends BaseComponent {
           id: this.token.id,
           amount: this.amount
         },
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
       });
       this.success = txRes;
       this.amount = "";
@@ -422,12 +423,6 @@ export default class AddProtectionSingle extends BaseComponent {
     } else {
       this.outputs = [];
     }
-  }
-
-  async openModal() {
-    if (this.currentUser) this.modal = true;
-    // @ts-ignore
-    else await this.promptAuth();
   }
 
   openPoolSelectModal() {

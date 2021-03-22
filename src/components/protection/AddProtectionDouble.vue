@@ -89,7 +89,7 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import dayjs from "@/utils/dayjs";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
 
 @Component({
   components: {
@@ -103,7 +103,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
     MainButton
   }
 })
-export default class AddProtectionDouble extends BaseComponent {
+export default class AddProtectionDouble extends BaseTxAction {
   get pool(): ViewRelay {
     const [poolId] = this.$route.params.id.split(":");
     return vxm.bancor.relay(poolId);
@@ -182,7 +182,8 @@ export default class AddProtectionDouble extends BaseComponent {
     try {
       const txRes = await vxm.ethBancor.protectLiquidity({
         amount: { amount: this.amount, id: this.pool.id },
-        onUpdate: this.onUpdate
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
       });
       this.success = txRes;
       this.amount = "";
