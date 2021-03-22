@@ -70,22 +70,14 @@ export const addNotification = (payload: IAddNotification): void => {
 };
 
 export const removeNotification = (id: number): void => {
-  const index = history.value
-    .map(n => {
-      return n.id;
-    })
-    .indexOf(id);
+  const index = history.value.map(n => n.id).indexOf(id);
 
   if (index >= 0) history.value.splice(index, 1);
   else console.error("Error: Remove Notification - ID not found.");
 };
 
 export const hideAlert = (id: number): void => {
-  const index = history.value
-    .map(n => {
-      return n.id;
-    })
-    .indexOf(id);
+  const index = history.value.map(n => n.id).indexOf(id);
 
   if (index >= 0) {
     if (history.value[index].alertOnly) history.value.splice(index, 1);
@@ -120,12 +112,9 @@ export const updatePendingTx = async (
     else notification.status = ENotificationStatus.error;
 
     // find history index
-    const index = history.value
-      .map(n => {
-        return n.txHash;
-      })
-      .indexOf(notification.txHash);
+    const index = history.value.map(n => n.txHash).indexOf(notification.txHash);
 
+    // Stop here if not found
     if (index < 0)
       return console.error("Notification Error: Tx Hash not found");
 
