@@ -37,11 +37,7 @@
       :pools="pools"
     />
 
-    <modal-tx-action
-      :tx-meta="txMeta"
-      :title="$t('you_withdrawing_rewards')"
-      @close="closeTxModal"
-    />
+    <modal-tx-action :tx-meta="txMeta" :title="$t('you_withdrawing_rewards')" />
   </div>
 </template>
 
@@ -106,13 +102,6 @@ export default class WithdrawRewards extends BaseTxAction {
 
   restakeAction() {
     this.showPoolSelectModal = true;
-  }
-
-  async closeTxModal() {
-    if (this.txMeta.success) {
-      await this.$router.replace({ name: "Portfolio" });
-    }
-    this.setDefault();
   }
 
   async withdrawAction() {

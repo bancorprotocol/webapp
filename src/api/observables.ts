@@ -281,3 +281,6 @@ onLogin$.pipe(withLatestFrom(apiData$)).subscribe(([userAddress, apiData]) => {
     vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
   }
 });
+
+
+export const selectedPromptReceiver$ = new Subject<string>();
