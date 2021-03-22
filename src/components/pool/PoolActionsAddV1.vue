@@ -142,12 +142,18 @@ export default class PoolActionsAddV1 extends BaseTxAction {
       });
       this.txMeta.showTxModal = false;
       addNotification({
-        title: "Add Liquidity",
-        description: `Add ${this.prettifyNumber(this.amount1)} ${
-          this.reserveOne.symbol
-        } and ${this.prettifyNumber(this.amount2)} ${
-          this.reserveTwo.symbol
-        } in liquidity to pool ${this.pool.name}.`,
+        title: this.$tc("notifications.add.add_liquidity.title"),
+        description: this.$tc(
+          "notifications.add.add_liquidity.description",
+          0,
+          {
+            amount1: this.prettifyNumber(this.amount1),
+            symbol1: this.reserveOne.symbol,
+            amount2: this.prettifyNumber(this.amount2),
+            symbol2: this.reserveTwo.symbol,
+            pool: this.pool.name
+          }
+        ),
         txHash: this.txMeta.success!.txId
       });
     } catch (e) {
