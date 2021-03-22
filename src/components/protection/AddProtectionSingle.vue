@@ -345,10 +345,12 @@ export default class AddProtectionSingle extends BaseTxAction {
       });
       this.txMeta.showTxModal = false;
       addNotification({
-        title: "Add Single-Sided Liquidity",
-        description: `Stake & Protect ${this.prettifyNumber(this.amount)} ${
-          this.token.symbol
-        } in pool ${this.pool.name}.`,
+        title: this.$tc("notifications.add.stake.title"),
+        description: this.$tc("notifications.add.stake.description", 0, {
+          amount: this.prettifyNumber(this.amount),
+          symbol: this.token.symbol,
+          pool: this.pool.name
+        }),
         txHash: this.txMeta.success.txId
       });
     } catch (e) {
