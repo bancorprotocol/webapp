@@ -43,7 +43,7 @@
         </div>
       </div>
       <div
-        @click="remove(notification.id)"
+        @click.stop="remove(notification.id)"
         class="cursor"
         :class="mouseHover ? 'text-danger' : 'text-muted-light'"
       >
@@ -90,22 +90,6 @@ export default defineComponent({
   setup(props) {
     const title = computed(() => {
       return props.notification.title;
-      // if (props.notification.txHash) {
-      //   switch (props.notification.status) {
-      //     case ENotificationStatus.error:
-      //       return "Transaction Failed";
-      //     case ENotificationStatus.success:
-      //       return "Transaction Successful";
-      //     case ENotificationStatus.pending:
-      //       return "Transaction in Process";
-      //     case ENotificationStatus.warning:
-      //       return "Transaction Warning";
-      //     default:
-      //       return "Transaction Information";
-      //   }
-      // } else {
-      //   return props.notification.title;
-      // }
     });
 
     const timeAgo = computed(() =>
