@@ -248,6 +248,13 @@ export const calculateProgressLevel = (
   return timeWaited / totalWaitingTime;
 };
 
+export const calculatePercentageChange = (
+  numberNow: number,
+  numberBefore: number
+):number  => {
+  return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
+};
+
 export const compareString = (stringOne: string, stringTwo: string) => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))

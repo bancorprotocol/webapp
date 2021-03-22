@@ -150,7 +150,7 @@ export const he = {
     "(בהנחה ולא הגעת להגנה מלאה הערך הזה יהיה נמוך מהערך המוגן) הכמות של המטבעות שאתה יכול למשוך עכשיו",
   fees: "עמלות (24 שעות)",
   fees_stake_earned: "עמלות ופרסים שהרווחת על ידי  הפקדה מאז שנכנסת לבריכה",
-  roi__protected_value: "על הערך המוגן לגמרי שלך כנגד ההפדקה המקורית שלך ROI-ה",
+  roi_protected_value: "על הערך המוגן לגמרי שלך כנגד ההפדקה המקורית שלך ROI-ה",
   estimated_calculation_annual_returns:
     "חישוב מוערך של החזרות שנתיות על בסיס היסטוריית הפעולות (כלומר 7 ימים = 7 ימים/נזילות)",
   current_coverage: "כיסוי נוכחי",
@@ -329,6 +329,5 @@ export const he = {
   total_fees: "סך עמלות",
   creating_proposal: "יוצר הצעה",
   vote_ended: "ההצבעה הסתיימה",
-  you_withdrawing_rewards: "אתה מושך פרסים",
-  rewards_ended: "הפרסים נגמרו"
+  you_withdrawing_rewards: "אתה מושך פרסים"
 };

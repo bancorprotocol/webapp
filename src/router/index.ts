@@ -16,12 +16,14 @@ import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
 import TermsOfUse from "@/views/TermsOfUse.vue";
 import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
 import Vote from "@/views/Vote.vue";
+import Fiat from "@/views/Fiat.vue";
 import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
 import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
 import VotePage from "@/components/vote/VotePage.vue";
+import FiatPage from "@/components/fiat/FiatPage.vue";
 import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 
@@ -262,6 +264,26 @@ export const router = new Router({
           meta: {
             key: "vote",
             feature: "Vote"
+          }
+        }
+      ]
+    },
+    {
+      path: "/:service/fiat",
+      name: "Fiat",
+      components: {
+        Nav: Navigation,
+        default: Fiat
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "FiatPage",
+          component: FiatPage,
+          meta: {
+            key: "fiat",
+            feature: "Fiat"
           }
         }
       ]

@@ -4,6 +4,7 @@
       <multi-input-field
         class="max-search-width-xs"
         v-model="search"
+        :clear="true"
         :placeholder="$t('search')"
         prepend="search"
       />

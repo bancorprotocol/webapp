@@ -12,6 +12,7 @@
           @select="selectPool"
           v-model="modal"
           :pools="pools"
+          :show-token-balance="true"
         />
         <your-liquidity />
       </div>

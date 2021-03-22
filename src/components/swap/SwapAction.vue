@@ -118,11 +118,7 @@
           :label="$t('price_impact')"
           :tooltip="$t('market_price_diff')"
           :is-alert="overSlippageLimit"
-          :value="
-            slippage !== null && slippage !== undefined
-              ? numeral(this.slippage).format('0.0000%')
-              : '0.0000%'
-          "
+          :value="priceImpact"
         />
       </div>
       <label-content-split
@@ -134,25 +130,50 @@
 
     <main-button
       :label="swapButtonLabel"
-      @click="initConvert"
+      @click="initSwap"
       :active="true"
       :large="true"
       :loading="rateLoading"
       :disabled="disableButton"
     />
-
-    <modal-swap-action
-      v-model="modalSwapAction"
-      :token1="token1"
-      :token2="token2"
-      :amount1="amount1"
-      :amount2="amount2"
-      :advanced-block-items="advancedBlockItems"
-    />
     <modal-duration-select
       v-model="modalSelectDuration"
       @confirm="changeDuration"
     />
+
+    <modal-tx-action
+      title="Confirm Token Swap"
+      icon="exchange-alt"
+      :tx-meta.sync="txMeta"
+    >
+      <gray-border-block>
+        <label-content-split
+          label="Sell"
+          :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
+          class="mb-2"
+        />
+        <label-content-split
+          label="Receive"
+          :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
+        />
+      </gray-border-block>
+
+      <p
+        class="font-size-12 my-3 text-left pl-3"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+      >
+        {{
+          $t("output_estimated", {
+            amount: numeral(slippageTolerance).format("0.0[0]%")
+          })
+        }}
+      </p>
+
+      <gray-border-block gray-bg="true">
+        <label-content-split label="Rate" :value="rate" class="mb-2" />
+        <label-content-split label="Price Impact" :value="priceImpact" />
+      </gray-border-block>
+    </modal-tx-action>
   </div>
 </template>
 
@@ -163,22 +184,24 @@ import { i18n } from "@/i18n";
 import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
-import MultiInputField from "@/components/common/MultiInputField.vue";
 import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import ModalSwapAction from "@/components/swap/ModalSwapAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import numeral from "numeral";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
-import BaseComponent from "@/components/BaseComponent.vue";
 import dayjs from "@/utils/dayjs";
 import { formatDuration } from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 
 @Component({
   components: {
+    GrayBorderBlock,
+    ModalTxAction,
     SlippageTolerance,
-    ModalSwapAction,
     LabelContentSplit,
     TokenInputField,
     MultiInputField,
@@ -186,7 +209,7 @@ import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationS
     ModalDurationSelect
   }
 })
-export default class SwapAction extends BaseComponent {
+export default class SwapAction extends BaseTxAction {
   @Prop({ default: false }) limit!: boolean;
 
   amount1 = "";
@@ -215,12 +238,21 @@ export default class SwapAction extends BaseComponent {
   initialRate = "";
   numeral = numeral;
 
-  modalSwapAction = false;
   modalSelectDuration = false;
   advancedOpen = false;
 
   get tokens() {
     return vxm.bancor.tokens.filter(token => token.tradeSupported);
+  }
+
+  get priceImpact() {
+    return this.slippage !== null && this.slippage !== undefined
+      ? numeral(this.slippage).format("0.0000%")
+      : "0.0000%";
+  }
+
+  get slippageTolerance() {
+    return vxm.bancor.slippageTolerance;
   }
 
   inverseRate = false;
@@ -272,36 +304,6 @@ export default class SwapAction extends BaseComponent {
     else return i18n.t("swap");
   }
 
-  get advancedBlockItems() {
-    return [
-      {
-        label: i18n.t("rate"),
-        value:
-          "1 " +
-          this.token1.symbol +
-          " = " +
-          parseFloat(this.amount2) / parseFloat(this.amount1) +
-          " " +
-          this.token2.symbol
-      },
-      // {
-      //   label: "Minimum Received",
-      //   value: "??.??"
-      // },
-      {
-        label: i18n.t("price_impact"),
-        value:
-          this.slippage !== null && this.slippage !== undefined
-            ? numeral(this.slippage).format("0.0000%")
-            : "0.00%"
-      }
-      // {
-      //   label: "Liquidity Provider Fee",
-      //   value: "??.??"
-      // }
-    ];
-  }
-
   formatDuration(duration: plugin.Duration) {
     return formatDuration(duration);
   }
@@ -312,10 +314,6 @@ export default class SwapAction extends BaseComponent {
 
   openDurationModal() {
     this.modalSelectDuration = true;
-  }
-
-  openModal(name: string) {
-    this.$bvModal.show(name);
   }
 
   selectFromToken(id: string) {
@@ -366,10 +364,29 @@ export default class SwapAction extends BaseComponent {
     });
   }
 
-  async initConvert() {
-    if (this.currentUser) this.modalSwapAction = true;
-    //@ts-ignore
-    else await this.promptAuth();
+  async initSwap() {
+    this.openModal();
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
+    try {
+      this.txMeta.success = await vxm.bancor.convert({
+        from: {
+          id: this.token1.id,
+          amount: this.amount1
+        },
+        to: {
+          id: this.token2.id,
+          amount: this.amount2
+        },
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
+      });
+      this.setDefault();
+    } catch (e) {
+      this.txMeta.txError = e.message;
+    } finally {
+      this.txMeta.txBusy = false;
+    }
   }
 
   async updatePriceReturn(amount: string) {
