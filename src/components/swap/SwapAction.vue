@@ -300,12 +300,13 @@ export default class SwapAction extends BaseTxAction {
       console.log(success);
       this.txMeta.showTxModal = false;
       addNotification({
-        title: "Swap",
-        description: `Sell ${this.prettifyNumber(this.amount1)} ${
-          this.token1.symbol
-        } and receive ${this.prettifyNumber(this.amount2)} ${
-          this.token2.symbol
-        }.`,
+        title: this.$tc("notifications.add.swap.title"),
+        description: this.$tc("notifications.add.swap.description", 0, {
+          amount1: this.prettifyNumber(this.amount1),
+          symbol1: this.token1.symbol,
+          amount2: this.prettifyNumber(this.amount2),
+          symbol2: this.token2.symbol
+        }),
         txHash: success.txId
       });
       this.setDefault();
