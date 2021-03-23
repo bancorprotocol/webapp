@@ -38,16 +38,20 @@ export const keeperDaoContract = new ContractWrappers(providerEngine, {
   chainId: 1
 });
 
-// contract.exchangeProxy.cancelRfqOrder();
-
-console.log(keeperDaoContract, "is the contract");
-
 authenticated$.subscribe(x => console.log("regular joe 3", x));
 onLogin$.subscribe(x => console.log(x, "regular joe 2"));
 
 export interface KeeperTokenResponse {
   result: Result;
   message: string;
+}
+
+export enum OrderStatus {
+  INVALID,
+  FILLABLE,
+  FILLED,
+  CANCELLED,
+  EXPIRED
 }
 
 export interface Result {
@@ -86,7 +90,7 @@ export interface MetaData {
   orderHash: string;
   makerBalance_makerToken: number;
   makerAllowance_makerToken: number;
-  status: number;
+  status: OrderStatus;
   filledAmount_takerToken: number;
   remainingFillableAmount_takerToken: number;
 }
@@ -233,11 +237,3 @@ export const limitOrders$ = combineLatest([onLogin$, oneMinute$]).pipe(
   switchMapIgnoreThrow(([currentUser]) => getOrders(currentUser)),
   pluck("orders")
 );
-
-export enum OrderStatus {
-  INVALID,
-  FILLABLE,
-  FILLED,
-  CANCELLED,
-  EXPIRED
-}

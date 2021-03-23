@@ -234,7 +234,8 @@ import {
   OrderElement,
   orderToBigNumberOrder,
   RfqOrderJson,
-  sendOrders
+  sendOrders,
+  OrderStatus
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 
@@ -271,7 +272,8 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
           id: order.metaData.orderHash,
           orderHash: order.metaData.orderHash,
           seller: order.order.maker,
-          percentFilled: fillPercentage
+          percentFilled: fillPercentage,
+          status: order.metaData.status as OrderStatus
         };
       }
     )
@@ -291,6 +293,7 @@ interface ViewLimitOrder {
   orderHash: string;
   id: string;
   percentFilled: DecPercent;
+  status: OrderStatus;
 }
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;
@@ -3786,6 +3789,7 @@ export class EthBancorModule
   rawLimitOrdersArr: OrderElement[] = [];
 
   @mutation setRawLimitOrders(orders: OrderElement[]) {
+    console.log(orders, "was the raw orders");
     this.rawLimitOrdersArr = orders;
   }
 
@@ -6929,7 +6933,7 @@ export class EthBancorModule
     to,
     expiryDuration,
     onPrompt
-  }: ProposedCreateOrder) {
+  }: ProposedCreateOrder): Promise<void> {
     const currentUser = this.currentUser as string;
     if (!currentUser) throw new Error("Cannot proceed without being logged in");
 
@@ -7001,10 +7005,8 @@ export class EthBancorModule
     });
 
     const jsonOrder = buildRfqJsonOrder(order, signature);
-    console.log({ order, signature, jsonOrder });
 
-    const res = await sendOrders([jsonOrder]);
-    console.log(res, "was the response");
+    await sendOrders([jsonOrder]);
   }
 
   @action async getReturn({

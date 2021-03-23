@@ -157,6 +157,7 @@ import BigNumber from "bignumber.js";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import dayjs from "@/utils/dayjs";
 
 @Component({
   components: {
@@ -190,6 +191,10 @@ export default class SwapAction extends BaseTxAction {
 
   modal = false;
   advancedOpen = false;
+
+  get orders() {
+    return vxm.ethBancor.limitOrders;
+  }
 
   get tokens() {
     const isLimit = this.limit;
@@ -318,19 +323,33 @@ export default class SwapAction extends BaseTxAction {
     this.txMeta.txBusy = true;
 
     try {
-      this.txMeta.success = await vxm.bancor.convert({
-        from: {
-          id: this.token1.id,
-          amount: this.amount1
-        },
-        to: {
-          id: this.token2.id,
-          amount: this.amount2
-        },
-        onUpdate: this.onUpdate,
-        // @ts-ignore
-        onPrompt: this.onPrompt
-      });
+      const from = {
+        id: this.token1.id,
+        amount: this.amount1
+      };
+
+      const to = {
+        id: this.token2.id,
+        amount: this.amount2
+      };
+
+      if (this.limit) {
+        const oneDay = dayjs.duration(1, "day").asSeconds();
+        const id = await vxm.ethBancor.createOrder({
+          onPrompt: this.onPrompt,
+          expiryDuration: oneDay,
+          from,
+          to
+        });
+      } else {
+        this.txMeta.success = await vxm.bancor.convert({
+          from,
+          to,
+          onUpdate: this.onUpdate,
+          // @ts-ignore
+          onPrompt: this.onPrompt
+        });
+      }
       this.setDefault();
     } catch (e) {
       this.txMeta.txError = e.message;
