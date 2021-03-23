@@ -412,5 +412,15 @@ export const en = {
           "Remove {amount1} {symbol1} and {amount2} {symbol2} in liquidity from {pool} pool."
       }
     }
+  },
+  modal: {
+    limit_order: {
+      title: "Transaction Confirmation",
+      sub_title: "You are creating a limit order",
+      info_text: "Transaction will expire in {timer}",
+      sell: "Sell",
+      receive: "Receive",
+      rate: "Rate"
+    }
   }
 };
