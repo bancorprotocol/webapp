@@ -250,6 +250,7 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
           compareString(token.address, order.order.takerToken)
         );
 
+        const fillPercentage = new BigNumber(order.metaData.filledAmount_takerToken).div(order.order.takerAmount).toNumber();
         return {
           expiryTime: Number(order.order.expiry),
           from: {
@@ -262,7 +263,8 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
           },
           id: order.metaData.orderHash,
           orderHash: order.metaData.orderHash,
-          seller: order.order.maker
+          seller: order.order.maker,
+          percentFilled: fillPercentage
         };
       }
     )
@@ -270,6 +272,9 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
 );
 
 viewLimitOrders$.subscribe(orders => vxm.ethBancor.setLimitOrders(orders));
+
+type DecPercent = number;
+
 interface ViewLimitOrder {
   expiryTime: number;
   seller: string;
@@ -277,6 +282,7 @@ interface ViewLimitOrder {
   to: ViewAmount;
   orderHash: string;
   id: string;
+  percentFilled: DecPercent;
 }
 interface ViewRelayConverter extends ViewRelay {
   converterAddress: string;

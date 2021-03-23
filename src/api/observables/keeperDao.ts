@@ -184,3 +184,11 @@ export const limitOrders$ = combineLatest([onLogin$, oneMinute$]).pipe(
   switchMapIgnoreThrow(([currentUser]) => getOrders(currentUser)),
   pluck("orders")
 );
+
+export enum OrderStatus {
+  INVALID,
+  FILLABLE,
+  FILLED,
+  CANCELLED,
+  EXPIRED
+}
