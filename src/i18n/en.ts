@@ -372,5 +372,45 @@ export const en = {
   current_rate: "Current rate",
   defined_rate: "Defined rate",
   market: "Market",
-  limit: "Limit"
+  limit: "Limit",
+  notifications: {
+    title: "Notifications",
+    buttons: {
+      clear: "clear"
+    },
+    nothing_here: "Nothing here yet.",
+    add: {
+      swap: {
+        title: "Swap",
+        description: "Sell {amount1} {symbol1} and receive {amount2} {symbol2}."
+      },
+      stake: {
+        title: "Add Single-Sided Liquidity",
+        description: "Stake & Protect {amount} {symbol} in {pool} pool."
+      },
+      unstake: {
+        title: "Withdraw Protection",
+        description:
+          "Withdraw ~{amount} {symbol} from your protected position in {pool} pool."
+      },
+      restake: {
+        title: "Stake Rewards",
+        description: "Stake {amount} BNT from your rewards in {pool} pool."
+      },
+      withdraw: {
+        title: "Withdraw Rewards",
+        description: "Withdraw {amount} BNT from your rewards."
+      },
+      add_liquidity: {
+        title: "Add Liquidity",
+        description:
+          "Add {amount1} {symbol1} and {amount2} {symbol2} in liquidity to {pool} pool."
+      },
+      remove_liquidity: {
+        title: "Remove Liquidity",
+        description:
+          "Remove {amount1} {symbol1} and {amount2} {symbol2} in liquidity from {pool} pool."
+      }
+    }
+  }
 };

@@ -197,6 +197,7 @@ import { formatDuration } from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 enum Field {
   amount1,
@@ -382,7 +383,7 @@ export default class SwapAction extends BaseTxAction {
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {
-      this.txMeta.success = await vxm.bancor.convert({
+      const success = await vxm.bancor.convert({
         from: {
           id: this.token1.id,
           amount: this.amount1
@@ -393,6 +394,18 @@ export default class SwapAction extends BaseTxAction {
         },
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
+      });
+      console.log(success);
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.swap.title"),
+        description: this.$tc("notifications.add.swap.description", 0, {
+          amount1: this.prettifyNumber(this.amount1),
+          symbol1: this.token1.symbol,
+          amount2: this.prettifyNumber(this.amount2),
+          symbol2: this.token2.symbol
+        }),
+        txHash: success.txId
       });
       this.setDefault();
     } catch (e) {
