@@ -1,9 +1,46 @@
 import { authenticated$, onLogin$ } from "./auth";
 import axios from "axios";
-import { combineLatest, from, timer } from "rxjs";
-import { pluck, share, tap } from "rxjs/operators";
+import { combineLatest } from "rxjs";
+import { pluck, share } from "rxjs/operators";
 import { switchMapIgnoreThrow } from "./customOperators";
 import { oneMinute$ } from "./timers";
+import { ContractWrappers } from "@0x/contract-wrappers";
+import { alchemyAddress } from "../web3";
+import Web3 from "web3";
+import BigNumber from "bignumber.js";
+import { RfqOrder } from "@0x/protocol-utils";
+
+interface BigNumberRfq {
+  makerToken: string;
+  takerToken: string;
+  makerAmount: BigNumber;
+  takerAmount: BigNumber;
+  maker: string;
+  taker: string;
+  txOrigin: string;
+  pool: string;
+  expiry: BigNumber;
+  salt: BigNumber;
+}
+
+import {
+  SignerSubprovider,
+  RPCSubprovider,
+  Web3ProviderEngine
+} from "@0x/subproviders";
+// import { Web3Wrapper } from '@0x/web3-wrapper';
+
+const providerEngine = new Web3ProviderEngine();
+providerEngine.addProvider(new RPCSubprovider(alchemyAddress));
+providerEngine.start();
+
+export const keeperDaoContract = new ContractWrappers(providerEngine, {
+  chainId: 1
+});
+
+// contract.exchangeProxy.cancelRfqOrder();
+
+console.log(keeperDaoContract, "is the contract");
 
 authenticated$.subscribe(x => console.log("regular joe 3", x));
 onLogin$.subscribe(x => console.log(x, "regular joe 2"));
@@ -70,6 +107,19 @@ export interface OrderOrder {
   signature: Signature;
 }
 
+export const orderToBigNumberOrder = (order: OrderOrder): BigNumberRfq => ({
+  expiry: new BigNumber(order.expiry),
+  makerAmount: new BigNumber(order.makerAmount),
+  salt: new BigNumber(order.salt),
+  takerAmount: new BigNumber(order.takerAmount),
+  maker: order.maker,
+  makerToken: order.makerToken,
+  pool: order.pool,
+  taker: order.taker,
+  takerToken: order.takerToken,
+  txOrigin: order.txOrigin
+});
+
 export interface Signature {
   signatureType: number;
   v: number;
@@ -134,7 +184,6 @@ const getTokenList = async () => {
 };
 
 const getOrders = async (currentUser: string) => {
-  console.log("orders callled", currentUser);
   const res = await axios.get<OrderResponse>(
     `${baseUrl}/orders?maker=${currentUser}`
   );

@@ -228,8 +228,11 @@ import {
 import { authenticatedReceiver$ } from "@/api/observables/auth";
 import {
   getTxOrigin,
+  keeperDaoContract,
   keeperTokens$,
   limitOrders$,
+  OrderElement,
+  orderToBigNumberOrder,
   RfqOrderJson,
   sendOrders
 } from "@/api/observables/keeperDao";
@@ -250,7 +253,11 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
           compareString(token.address, order.order.takerToken)
         );
 
-        const fillPercentage = new BigNumber(order.metaData.filledAmount_takerToken).div(order.order.takerAmount).toNumber();
+        const fillPercentage = new BigNumber(
+          order.metaData.filledAmount_takerToken
+        )
+          .div(order.order.takerAmount)
+          .toNumber();
         return {
           expiryTime: Number(order.order.expiry),
           from: {
@@ -272,6 +279,7 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
 );
 
 viewLimitOrders$.subscribe(orders => vxm.ethBancor.setLimitOrders(orders));
+limitOrders$.subscribe(orders => vxm.ethBancor.setRawLimitOrders(orders));
 
 type DecPercent = number;
 
@@ -546,8 +554,6 @@ const smartTokenAnchor = (smartToken: Token) => ({
   anchor: smartToken,
   converterType: PoolType.Traditional
 });
-
-limitOrders$.subscribe(x => console.log("orders came out", x));
 
 const newRelayToRelayWithBalances = (
   newRelay: NewRelay
@@ -2547,7 +2553,6 @@ export class EthBancorModule
   }
 
   get tokens(): ViewToken[] {
-    console.time("tokens");
     const liquidityProtectionNetworkToken =
       this.liquidityProtectionSettings.networkToken ||
       "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
@@ -3778,12 +3783,17 @@ export class EthBancorModule
   }
 
   limitOrdersArr: ViewLimitOrder[] = [];
+  rawLimitOrdersArr: OrderElement[] = [];
+
+  @mutation setRawLimitOrders(orders: OrderElement[]) {
+    this.rawLimitOrdersArr = orders;
+  }
 
   @mutation setLimitOrders(orders: ViewLimitOrder[]) {
     this.limitOrdersArr = orders;
   }
 
-  get limitOrders() {
+  get limitOrders(): ViewLimitOrder[] {
     return this.limitOrdersArr;
   }
 
@@ -6895,6 +6905,23 @@ export class EthBancorModule
         }
       }
     );
+  }
+
+  @action async cancelOrder(orderId: string) {
+    const limitOrder = findOrThrow(
+      this.rawLimitOrdersArr,
+      order => compareString(order.metaData.orderHash, orderId),
+      `failed finding order with ID of ${orderId}`
+    );
+
+    const big = orderToBigNumberOrder(limitOrder.order);
+
+    try {
+      const res = await keeperDaoContract.exchangeProxy.cancelRfqOrder(big);
+      console.log(res, "was successful");
+    } catch (e) {
+      console.error(e, "was the error");
+    }
   }
 
   @action async createOrder({
