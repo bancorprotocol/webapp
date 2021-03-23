@@ -3,7 +3,7 @@
     <token-input-field
       :label="$t('from')"
       v-model="amount1"
-      @input="limit ? calculateEmptyFields(Field.amount1) : updatePriceReturn()"
+      @input="calculateEmptyFields(Field.amount1)"
       @select="selectFromToken"
       :token="token1"
       :balance="balance1"
@@ -24,7 +24,7 @@
     <token-input-field
       :label="$t('to_estimated')"
       v-model="amount2"
-      @input="limit ? calculateEmptyFields(Field.amount2) : sanitizeAmount()"
+      @input="calculateEmptyFields(Field.amount2)"
       @select="selectToToken"
       :token="token2"
       :balance="balance2"
@@ -35,7 +35,7 @@
     />
 
     <div class="my-3">
-      <div v-if="limit">
+      <div>
         <label-content-split
           :label="$t('rate')"
           :value="`${$t('current_rate')}: ${rate}`"
@@ -85,42 +85,6 @@
             </b-dropdown-item>
           </b-dropdown>
         </label-content-split>
-      </div>
-      <div v-else>
-        <div class="mb-3">
-          <label-content-split
-            :label="advancedOpen ? $t('slippage_tolerance') : ''"
-          >
-            <span
-              @click="advancedOpen = !advancedOpen"
-              class="text-primary font-size-12 font-w500 cursor"
-            >
-              {{ $t("advanced_settings") }}
-              <font-awesome-icon
-                :icon="advancedOpen ? 'caret-up' : 'caret-down'"
-              />
-            </span>
-          </label-content-split>
-          <b-collapse id="advanced-swap" v-model="advancedOpen">
-            <slippage-tolerance />
-          </b-collapse>
-        </div>
-        <label-content-split
-          :label="$t('rate')"
-          :value="rate"
-          :loading="rateLoading"
-          class="mb-2"
-        >
-          <span @click="inverseRate = !inverseRate" class="cursor">
-            {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
-          </span>
-        </label-content-split>
-        <label-content-split
-          :label="$t('price_impact')"
-          :tooltip="$t('market_price_diff')"
-          :is-alert="overSlippageLimit"
-          :value="priceImpact"
-        />
       </div>
       <label-content-split
         v-if="fee !== null"
@@ -179,7 +143,7 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Prop } from "vue-property-decorator";
+import { Watch, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
@@ -218,9 +182,6 @@ enum Field {
   }
 })
 export default class SwapLimit extends BaseTxAction {
-  // TODO remove market stuff
-  limit = true;
-
   amount1 = "";
   amount2 = "";
 

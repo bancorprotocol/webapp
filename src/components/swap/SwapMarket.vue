@@ -124,10 +124,9 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Prop } from "vue-property-decorator";
+import { Watch, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
-import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewToken } from "@/types/bancor";
@@ -137,17 +136,9 @@ import numeral from "numeral";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
-import dayjs from "@/utils/dayjs";
-import { formatDuration } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import { addNotification } from "@/components/compositions/notifications";
-
-enum Field {
-  amount1,
-  amount2,
-  rate
-}
 
 @Component({
   components: {
