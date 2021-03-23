@@ -211,7 +211,6 @@ export default class SwapLimit extends BaseTxAction {
   numeral = numeral;
 
   modalSelectDuration = false;
-  advancedOpen = false;
 
   get tokens() {
     return vxm.bancor.tokens.filter(token => token.tradeSupported);
@@ -324,10 +323,6 @@ export default class SwapLimit extends BaseTxAction {
         to: id
       }
     });
-  }
-
-  sanitizeAmount() {
-    this.setDefault();
   }
 
   invertSelection() {
