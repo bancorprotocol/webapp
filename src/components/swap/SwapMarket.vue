@@ -3,13 +3,13 @@
     <token-input-field
       :label="$t('from')"
       v-model="amount1"
-      @input="limit ? calculateEmptyFields(Field.amount1) : updatePriceReturn()"
+      @input="updatePriceReturn"
       @select="selectFromToken"
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
-      :usdValue="usd1"
+      :usd-value="usd1"
     />
 
     <div class="text-center my-3">
@@ -24,69 +24,18 @@
     <token-input-field
       :label="$t('to_estimated')"
       v-model="amount2"
-      @input="limit ? calculateEmptyFields(Field.amount2) : sanitizeAmount()"
+      @input="sanitizeAmount()"
       @select="selectToToken"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
       :disabled="false"
       :tokens="tokens"
-      :usdValue="usd2"
+      :usd-value="usd2"
     />
 
     <div class="my-3">
-      <div v-if="limit">
-        <label-content-split
-          :label="$t('rate')"
-          :value="`${$t('current_rate')}: ${rate}`"
-          :loading="rateLoading"
-          class="mb-2"
-        />
-        <multi-input-field
-          @input="calculateEmptyFields(Field.rate)"
-          class="mb-3"
-          v-model="limitRate"
-          :placeholder="rate"
-          :append="$t('defined_rate')"
-          height="48"
-        />
-        <label-content-split :label="$t('expires_in')">
-          <b-dropdown
-            :variant="darkMode ? 'outline-dark' : 'outline-light'"
-            toggle-class="block-rounded"
-            :menu-class="
-              darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
-            "
-          >
-            <template #button-content>
-              {{ formatDuration(selectedDuration) }}
-            </template>
-
-            <b-dropdown-item
-              v-for="item in durationList"
-              :key="item.asSeconds()"
-              @click="changeDuration(item)"
-              :variant="darkMode ? 'dark' : 'light'"
-            >
-              <div class="d-flex justify-content-between">
-                {{ formatDuration(item) }}
-                <font-awesome-icon
-                  v-if="selectedDuration === item"
-                  icon="check"
-                  class="mr-2 menu-icon"
-                />
-              </div>
-            </b-dropdown-item>
-            <b-dropdown-item
-              @click="openDurationModal()"
-              :variant="darkMode ? 'dark' : 'light'"
-            >
-              {{ $t("custom") }}
-            </b-dropdown-item>
-          </b-dropdown>
-        </label-content-split>
-      </div>
-      <div v-else>
+      <div>
         <div class="mb-3">
           <label-content-split
             :label="advancedOpen ? $t('slippage_tolerance') : ''"
@@ -136,10 +85,6 @@
       :large="true"
       :loading="rateLoading"
       :disabled="disableButton"
-    />
-    <modal-duration-select
-      v-model="modalSelectDuration"
-      @confirm="changeDuration"
     />
 
     <modal-tx-action
@@ -194,7 +139,6 @@ import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
 import dayjs from "@/utils/dayjs";
 import { formatDuration } from "@/api/helpers";
-import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import { addNotification } from "@/components/compositions/notifications";
@@ -213,25 +157,12 @@ enum Field {
     LabelContentSplit,
     TokenInputField,
     MultiInputField,
-    MainButton,
-    ModalDurationSelect
+    MainButton
   }
 })
-export default class SwapAction extends BaseTxAction {
-  @Prop({ default: false }) limit!: boolean;
-
+export default class SwapMarket extends BaseTxAction {
   amount1 = "";
   amount2 = "";
-
-  durationList: plugin.Duration[] = [
-    dayjs.duration({ minutes: 10 }),
-    dayjs.duration({ hours: 1 }),
-    dayjs.duration({ hours: 3 }),
-    dayjs.duration({ days: 1 }),
-    dayjs.duration({ days: 7 })
-  ];
-  selectedDuration = this.durationList[4];
-  keeperDaoList: TokenList | null = null;
 
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -248,7 +179,6 @@ export default class SwapAction extends BaseTxAction {
   limitRate = "";
   numeral = numeral;
 
-  modalSelectDuration = false;
   advancedOpen = false;
 
   get tokens() {
@@ -263,10 +193,6 @@ export default class SwapAction extends BaseTxAction {
 
   get slippageTolerance() {
     return vxm.bancor.slippageTolerance;
-  }
-
-  get Field() {
-    return Field;
   }
 
   inverseRate = false;
@@ -316,18 +242,6 @@ export default class SwapAction extends BaseTxAction {
   get swapButtonLabel() {
     if (!this.amount1) return i18n.t("enter_amount");
     else return i18n.t("swap");
-  }
-
-  formatDuration(duration: plugin.Duration) {
-    return formatDuration(duration);
-  }
-
-  changeDuration(duration: plugin.Duration) {
-    this.selectedDuration = duration;
-  }
-
-  openDurationModal() {
-    this.modalSelectDuration = true;
   }
 
   selectFromToken(id: string) {
@@ -457,53 +371,6 @@ export default class SwapAction extends BaseTxAction {
     this.errorToken1 = "";
   }
 
-  calcAmount1() {
-    this.amount1 = new BigNumber(this.amount2)
-      .div(new BigNumber(this.limitRate))
-      .toString();
-  }
-  calcAmount2() {
-    this.amount2 = new BigNumber(this.amount1)
-      .times(new BigNumber(this.limitRate))
-      .toString();
-  }
-  calcLimitRate() {
-    this.limitRate = new BigNumber(this.amount2)
-      .div(new BigNumber(this.amount1))
-      .toString();
-  }
-
-  async calculateEmptyFields(field: Field) {
-    switch (field) {
-      case Field.amount1:
-        if (this.amount1) {
-          if (this.amount2) {
-            if (this.userSettedRate) this.calcAmount2();
-            else this.calcLimitRate();
-          } else if (this.limitRate) this.calcAmount2();
-        }
-        break;
-      case Field.amount2:
-        if (this.amount2) {
-          if (this.amount1)
-            if (this.userSettedRate) this.calcAmount1();
-            else this.calcLimitRate();
-          else if (this.limitRate) this.calcAmount1();
-        }
-        break;
-      case Field.rate:
-        if (this.limitRate) {
-          this.userSettedRate = true;
-          if (this.amount1 && this.amount2) {
-            this.amount1 = "";
-            this.amount2 = "";
-          } else if (this.amount1) this.calcAmount2();
-          else if (this.amount2) this.calcAmount1();
-        } else this.userSettedRate = false;
-        break;
-    }
-  }
-
   async calculateRate() {
     this.rateLoading = true;
     try {
@@ -586,10 +453,6 @@ export default class SwapAction extends BaseTxAction {
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.replace({ name: "Swap", query: defaultQuery });
     }
-    [this.keeperDaoList] = await Promise.all([
-      getTokenList(),
-      this.calculateRate()
-    ]);
   }
 }
 </script>

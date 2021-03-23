@@ -16,7 +16,7 @@
         >{{ $t("limit") }}
       </b-button>
     </b-button-group>
-    <swap-action v-if="!limit" />
+    <swap-market v-if="!limit" />
     <swap-limit v-else />
   </content-block>
 </template>
@@ -24,14 +24,14 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import SwapAction from "@/components/swap/SwapAction.vue";
+import SwapMarket from "@/components/swap/SwapMarket.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import SwapLimit from "@/components/swap/SwapLimit.vue";
 
 @Component({
   components: {
     SwapLimit,
-    SwapAction,
+    SwapMarket,
     ContentBlock
   }
 })
