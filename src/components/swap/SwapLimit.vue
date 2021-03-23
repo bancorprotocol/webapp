@@ -107,19 +107,30 @@
     />
 
     <modal-tx-action
-      title="Confirm Token Swap"
-      icon="exchange-alt"
+      :title="$t('modal.limit_order.title')"
+      icon="file-alt"
       :tx-meta.sync="txMeta"
     >
-      <gray-border-block>
+      <p
+        class="font-size-14 mb-4 text-center"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+      >
+        {{ $t("modal.limit_order.sub_title") }}
+      </p>
+      <gray-border-block gray-bg="true">
         <label-content-split
-          label="Sell"
+          :label="$t('modal.limit_order.sell')"
           :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
           class="mb-2"
         />
         <label-content-split
-          label="Receive"
+          :label="$t('modal.limit_order.receive')"
           :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
+          class="mb-2"
+        />
+        <label-content-split
+          :label="$t('modal.limit_order.rate')"
+          :value="rate"
         />
       </gray-border-block>
 
@@ -128,16 +139,11 @@
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
       >
         {{
-          $t("output_estimated", {
-            amount: numeral(slippageTolerance).format("0.0[0]%")
+          $t("modal.limit_order.info_text", {
+            timer: "?????"
           })
         }}
       </p>
-
-      <gray-border-block gray-bg="true">
-        <label-content-split label="Rate" :value="rate" class="mb-2" />
-        <label-content-split label="Price Impact" :value="priceImpact" />
-      </gray-border-block>
     </modal-tx-action>
   </div>
 </template>
