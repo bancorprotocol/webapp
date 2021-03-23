@@ -285,7 +285,7 @@ limitOrders$.subscribe(orders => vxm.ethBancor.setRawLimitOrders(orders));
 
 type DecPercent = number;
 
-interface ViewLimitOrder {
+export interface ViewLimitOrder {
   expiryTime: number;
   seller: string;
   from: ViewAmount;
