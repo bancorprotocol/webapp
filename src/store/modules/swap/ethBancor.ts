@@ -3564,10 +3564,11 @@ export class EthBancorModule
         const mergedWei = [...rebuiltDecimals, ...parsedNumbers];
         const mergedDecimal = mergedWei.map(balance => ({
           ...balance,
-          balance:
-            balance.balance !== "0"
+          balance: balance.balance
+            ? balance.balance !== "0"
               ? shrinkToken(balance.balance, balance.decimals)
               : balance.balance
+            : "0"
         }));
 
         return mergedDecimal.map(
