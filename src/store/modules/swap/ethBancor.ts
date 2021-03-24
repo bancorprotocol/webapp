@@ -1,218 +1,217 @@
-import { createModule, mutation, action } from "vuex-class-component";
+import { action, createModule, mutation } from "vuex-class-component";
 import {
+  ProposedCreateOrder,
+  BaseToken,
+  ConvertReturn,
+  CreatePoolModule,
+  CreateV1PoolEthParams,
+  HistoryModule,
+  LiquidityModule,
+  LiquidityParams,
+  ModalChoice,
+  ModuleParam,
+  OpposingLiquid,
+  OpposingLiquidParams,
+  PoolTokenPosition,
+  ProposedConvertTransaction,
   ProposedFromTransaction,
   ProposedToTransaction,
-  ProposedConvertTransaction,
-  ProposedCreateOrder,
-  LiquidityParams,
-  OpposingLiquidParams,
-  OpposingLiquid,
-  TradingModule,
-  LiquidityModule,
-  BaseToken,
-  CreatePoolModule,
-  ModalChoice,
-  ViewToken,
-  ViewRelay,
-  TokenPrice,
+  ProtectedLiquidityCalculated,
+  ReserveFeed,
   Section,
   Step,
-  HistoryModule,
-  ViewAmount,
-  ModuleParam,
-  ConvertReturn,
-  UserPoolBalances,
-  ReserveFeed,
-  PoolTokenPosition,
-  CreateV1PoolEthParams,
+  TokenPrice,
+  TradingModule,
   TxResponse,
+  UserPoolBalances,
   V1PoolResponse,
-  ViewTradeEvent,
+  ViewAmount,
+  ViewAmountDetail,
   ViewLiquidityEvent,
   ProtectLiquidityParams,
   OnUpdate,
-  ViewProtectedLiquidity,
-  ViewLockedBalance,
   ProtectionRes,
-  ViewAmountDetail,
   TokenWei,
   PoolLiqMiningApr,
   ProtectedLiquidity,
   ConverterAndAnchor,
-  ViewReserve,
   RegisteredContracts,
   RawLiquidityProtectionSettings,
   LiquidityProtectionSettings,
   OnPrompt,
   MinimalPool,
   TokenPrecision,
-  ViewTokenAmount
+  ViewTokenAmount,
+  ViewLockedBalance,
+  ViewProtectedLiquidity,
+  ViewRelay,
+  ViewReserve,
+  ViewToken,
+  ViewTradeEvent
 } from "@/types/bancor";
 import { RfqOrder, Signature, SignatureType } from "@0x/protocol-utils";
 import {
-  Relay,
-  Token,
-  fetchReserveBalance,
+  ChainLinkRelay,
   compareString,
+  fetchReserveBalance,
   findOrThrow,
-  updateArray,
+  generateEtherscanTxLink,
   isOdd,
   multiSteps,
-  PoolType,
-  TraditionalRelay,
-  ChainLinkRelay,
-  SmartToken,
   PoolContainer,
-  sortAlongSide,
+  PoolType,
+  Relay,
   RelayWithReserveBalances,
+  SmartToken,
+  sortAlongSide,
   sortByLiqDepth,
-  matchReserveFeed,
-  zeroAddress,
   buildSingleUnitCosts,
   findChangedReserve,
   LockedBalance,
   rewindBlocksByDays,
   buildPoolNameFromReserves,
-  calculatePercentageChange
+  calculatePercentageChange,
+  Token,
+  TraditionalRelay,
+  updateArray,
+  zeroAddress
 } from "@/api/helpers";
 import { ContractSendMethod } from "web3-eth-contract";
 import { ethErc20WrapperContract, ethReserveAddress } from "@/api/eth/ethAbis";
 import {
-  getApprovedBalanceWei,
-  getReturnByPath,
-  liquidationLimit,
-  getConvertersByAnchors,
-  getAnchors,
+  addLiquidityDisabled,
   conversionPath,
-  getTokenSupplyWei,
   existingPool,
+  getAnchors,
+  getApprovedBalanceWei,
+  getConvertersByAnchors,
   getRemoveLiquidityReturn,
-  addLiquidityDisabled
+  getReturnByPath,
+  getTokenSupplyWei,
+  liquidationLimit
 } from "@/api/eth/contractWrappers";
-import { toWei, fromWei, toHex, asciiToHex } from "web3-utils";
+import { asciiToHex, fromWei, toHex, toWei } from "web3-utils";
 import Decimal from "decimal.js";
 import { vxm } from "@/store";
 import wait from "waait";
 import {
-  uniqWith,
+  chunk,
   differenceWith,
-  zip,
+  first,
+  fromPairs,
+  groupBy,
+  last,
   partition,
   toPairs,
-  fromPairs,
-  chunk,
-  last,
-  groupBy,
-  first,
-  find
+  uniqWith,
+  zip
 } from "lodash";
 import {
-  buildNetworkContract,
-  buildRegistryContract,
-  buildV28ConverterContract,
-  buildV2Converter,
   buildConverterContract,
-  buildTokenContract,
   buildLiquidityProtectionContract,
-  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSettingsContract,
   buildAddressLookupContract,
+  buildWethContract,
+  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSystemStoreContract,
-  buildWethContract
+  buildNetworkContract,
+  buildRegistryContract,
+  buildTokenContract,
+  buildV28ConverterContract,
+  buildV2Converter
 } from "@/api/eth/contractTypes";
 import {
-  MinimalRelay,
   generateEthPath,
+  MinimalRelay,
   shrinkToken,
-  TokenSymbol,
   removeLeadingZeros,
-  MinimalPoolWithReserveBalances
+  MinimalPoolWithReserveBalances,
+  TokenSymbol
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { getSmartTokenHistory } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {
-  priorityEthPools,
   knownPools,
-  PreviousPoolFee,
   moreStaticRelays,
+  PreviousPoolFee,
   previousPoolFees,
+  priorityEthPools,
   v2Pools
 } from "./staticRelays";
 import BigNumber from "bignumber.js";
 import { knownVersions } from "@/api/eth/knownConverterVersions";
-import { MultiCall, ShapeWithLabel, DataTypes } from "eth-multicall";
+import { DataTypes, MultiCall, ShapeWithLabel } from "eth-multicall";
 import dayjs from "@/utils/dayjs";
 import { getNetworkVariables } from "@/api/config";
 import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
 import {
-  Subject,
   combineLatest,
   from,
   Observable,
   partition as partitionOb,
   merge,
-  of
+  Subject
 } from "rxjs";
 import {
-  map,
-  filter,
-  concatMap,
-  mergeMap,
-  tap,
-  switchMap,
-  shareReplay,
-  scan,
-  first as firstItem,
-  bufferTime,
-  delay,
   buffer,
+  bufferTime,
+  concatMap,
+  delay,
+  filter,
+  first as firstItem,
+  map,
+  mergeMap,
+  scan,
   share,
-  take
+  shareReplay,
+  switchMap,
+  take,
+  tap
 } from "rxjs/operators";
 import {
-  decToPpm,
-  compareStaticRelayAndSet,
-  expandToken,
+  calculateAmountToGetSpace,
   calculatePriceDeviationTooHigh,
-  reserveContractsInStatic,
-  parseRawDynamic,
+  compareStaticRelayAndSet,
+  decToPpm,
+  expandToken,
   filterAndWarn,
+  mapIgnoreThrown,
   miningBntReward,
   miningTknReward,
-  calculateAmountToGetSpace,
-  throwAfter,
-  mapIgnoreThrown
+  parseRawDynamic,
+  reserveContractsInStatic,
+  throwAfter
 } from "@/api/pureHelpers";
 import {
-  currentBlockReceiver$,
-  currentBlock$,
-  usdPriceOfBnt$,
-  poolPrograms$,
   fetchPositionsTrigger$,
   lockedBalancesTrigger$,
+  minimalPoolReceiver$,
+  currentBlock$,
+  currentBlockReceiver$,
   newPools$,
+  poolPrograms$,
   selectedPromptReceiver$,
-  minimalPoolReceiver$
+  usdPriceOfBnt$
 } from "@/api/observables";
 import {
-  dualPoolRoiShape,
-  reserveBalanceShape,
-  tokenShape,
-  tokenSupplyShape,
-  slimBalanceShape,
   balanceShape,
-  v2PoolBalanceShape,
-  relayShape,
-  poolTokenShape,
-  protectedReservesShape,
+  dualPoolRoiShape,
   dynamicRelayShape,
-  staticRelayShape,
   liquidityProtectionSettingsShape,
   liquidityProtectionShape,
-  protectedPositionShape
+  poolTokenShape,
+  protectedPositionShape,
+  protectedReservesShape,
+  relayShape,
+  reserveBalanceShape,
+  slimBalanceShape,
+  staticRelayShape,
+  tokenShape,
+  tokenSupplyShape,
+  v2PoolBalanceShape
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
@@ -1083,9 +1082,6 @@ const assertChainlink = (relay: Relay): ChainLinkRelay => {
   }
   throw new Error("Not a chainlink relay");
 };
-
-const generateEtherscanTxLink = (txHash: string, ropsten: boolean = false) =>
-  `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
 
 const generateEtherscanAccountLink = (
   account: string,

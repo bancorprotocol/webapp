@@ -109,19 +109,6 @@ export const router = new Router({
       redirect: `/${defaultModule}/vote`
     },
     {
-      path: "/:service/pool",
-      name: "Pool",
-      components: {
-        Nav: Navigation,
-        Hero: PoolHome
-      },
-      props: true,
-      meta: {
-        key: "swap",
-        feature: "Liquidity"
-      }
-    },
-    {
       path: "/:service/pool/create",
       name: "PoolCreate",
       components: {

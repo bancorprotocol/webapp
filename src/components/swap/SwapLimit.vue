@@ -3,7 +3,7 @@
     <token-input-field
       :label="$t('from')"
       v-model="amount1"
-      @input="updatePriceReturn"
+      @input="calculateEmptyFields(Field.amount1)"
       @select="selectFromToken"
       :token="token1"
       :balance="balance1"
@@ -24,7 +24,7 @@
     <token-input-field
       :label="$t('to_estimated')"
       v-model="amount2"
-      @input="sanitizeAmount"
+      @input="calculateEmptyFields(Field.amount2)"
       @select="selectToToken"
       :token="token2"
       :balance="balance2"
@@ -35,60 +35,56 @@
     />
 
     <div class="my-3">
-      <div v-if="limit">
+      <div>
         <label-content-split
           :label="$t('rate')"
-          :value="rate"
+          :value="`${$t('current_rate')}: ${rate}`"
           :loading="rateLoading"
           class="mb-2"
         />
         <multi-input-field
+          @input="calculateEmptyFields(Field.rate)"
           class="mb-3"
-          @input="onRateInput"
-          type="url"
+          v-model="limitRate"
           :placeholder="rate"
           :append="$t('defined_rate')"
           height="48"
         />
         <label-content-split :label="$t('expires_in')">
-          dropdown place holder
-        </label-content-split>
-      </div>
-      <div v-else>
-        <div class="mb-3">
-          <label-content-split
-            :label="advancedOpen ? $t('slippage_tolerance') : ''"
+          <b-dropdown
+            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            toggle-class="block-rounded"
+            :menu-class="
+              darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+            "
           >
-            <span
-              @click="advancedOpen = !advancedOpen"
-              class="text-primary font-size-12 font-w500 cursor"
+            <template #button-content>
+              {{ formatDuration(selectedDuration) }}
+            </template>
+
+            <b-dropdown-item
+              v-for="item in durationList"
+              :key="item.asSeconds()"
+              @click="changeDuration(item)"
+              :variant="darkMode ? 'dark' : 'light'"
             >
-              {{ $t("advanced_settings") }}
-              <font-awesome-icon
-                :icon="advancedOpen ? 'caret-up' : 'caret-down'"
-              />
-            </span>
-          </label-content-split>
-          <b-collapse id="advanced-swap" v-model="advancedOpen">
-            <slippage-tolerance />
-          </b-collapse>
-        </div>
-        <label-content-split
-          :label="$t('rate')"
-          :value="rate"
-          :loading="rateLoading"
-          class="mb-2"
-        >
-          <span @click="inverseRate = !inverseRate" class="cursor">
-            {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
-          </span>
+              <div class="d-flex justify-content-between">
+                {{ formatDuration(item) }}
+                <font-awesome-icon
+                  v-if="selectedDuration === item"
+                  icon="check"
+                  class="mr-2 menu-icon"
+                />
+              </div>
+            </b-dropdown-item>
+            <b-dropdown-item
+              @click="openDurationModal()"
+              :variant="darkMode ? 'dark' : 'light'"
+            >
+              {{ $t("custom") }}
+            </b-dropdown-item>
+          </b-dropdown>
         </label-content-split>
-        <label-content-split
-          :label="$t('price_impact')"
-          :tooltip="$t('market_price_diff')"
-          :is-alert="overSlippageLimit"
-          :value="priceImpact"
-        />
       </div>
       <label-content-split
         v-if="fee !== null"
@@ -105,21 +101,36 @@
       :loading="rateLoading"
       :disabled="disableButton"
     />
+    <modal-duration-select
+      v-model="modalSelectDuration"
+      @confirm="changeDuration"
+    />
 
     <modal-tx-action
-      title="Confirm Token Swap"
-      icon="exchange-alt"
+      :title="$t('modal.limit_order.title')"
+      icon="file-alt"
       :tx-meta.sync="txMeta"
     >
-      <gray-border-block>
+      <p
+        class="font-size-14 mb-4 text-center"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+      >
+        {{ $t("modal.limit_order.sub_title") }}
+      </p>
+      <gray-border-block gray-bg="true">
         <label-content-split
-          label="Sell"
+          :label="$t('modal.limit_order.sell')"
           :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
           class="mb-2"
         />
         <label-content-split
-          label="Receive"
+          :label="$t('modal.limit_order.receive')"
           :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
+          class="mb-2"
+        />
+        <label-content-split
+          :label="$t('modal.limit_order.rate')"
+          :value="rate"
         />
       </gray-border-block>
 
@@ -128,36 +139,41 @@
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
       >
         {{
-          $t("output_estimated", {
-            amount: numeral(slippageTolerance).format("0.0[0]%")
+          $t("modal.limit_order.info_text", {
+            timer: "?????"
           })
         }}
       </p>
-
-      <gray-border-block gray-bg="true">
-        <label-content-split label="Rate" :value="rate" class="mb-2" />
-        <label-content-split label="Price Impact" :value="priceImpact" />
-      </gray-border-block>
     </modal-tx-action>
   </div>
 </template>
 
 <script lang="ts">
-import { Watch, Component, Prop } from "vue-property-decorator";
+import { Watch, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
+import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
-import MultiInputField from "@/components/common/MultiInputField.vue";
-import { ViewAmount, ViewToken } from "@/types/bancor";
+import { ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import numeral from "numeral";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
-import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import dayjs from "@/utils/dayjs";
+import { formatDuration } from "@/api/helpers";
+import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
-import dayjs from "@/utils/dayjs";
+import { addNotification } from "@/components/compositions/notifications";
+
+enum Field {
+  amount1,
+  amount2,
+  rate
+}
 
 @Component({
   components: {
@@ -167,14 +183,23 @@ import dayjs from "@/utils/dayjs";
     LabelContentSplit,
     TokenInputField,
     MultiInputField,
-    MainButton
+    MainButton,
+    ModalDurationSelect
   }
 })
-export default class SwapAction extends BaseTxAction {
-  @Prop({ default: false }) limit!: boolean;
-
+export default class SwapLimit extends BaseTxAction {
   amount1 = "";
   amount2 = "";
+
+  durationList: plugin.Duration[] = [
+    dayjs.duration({ minutes: 10 }),
+    dayjs.duration({ hours: 1 }),
+    dayjs.duration({ hours: 3 }),
+    dayjs.duration({ days: 1 }),
+    dayjs.duration({ days: 7 })
+  ];
+  selectedDuration = this.durationList[4];
+  keeperDaoList: TokenList | null = null;
 
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -186,37 +211,29 @@ export default class SwapAction extends BaseTxAction {
   errorToken2 = "";
 
   rateLoading = false;
+  userSettedRate = false;
   initialRate = "";
+  limitRate = "";
   numeral = numeral;
 
-  modal = false;
-  advancedOpen = false;
-
-  get orders() {
-    return vxm.ethBancor.limitOrders;
-  }
+  modalSelectDuration = false;
 
   get tokens() {
-    const isLimit = this.limit;
-    return vxm.bancor.tokens
-      .filter(token => token.tradeSupported)
-      .filter(token => (isLimit ? token.limitOrderAvailable : true));
+    return vxm.bancor.tokens.filter(token => token.tradeSupported);
   }
 
   get priceImpact() {
-    const zeroPercent = "0.0000%";
-    const slippage = this.slippage;
-    const slippageLabel =
-      slippage !== null && slippage !== undefined
-        ? numeral(slippage).format(zeroPercent)
-        : zeroPercent;
-
-    const corrected = slippageLabel == "NaN%" ? zeroPercent : slippageLabel;
-    return corrected;
+    return this.slippage !== null && this.slippage !== undefined
+      ? numeral(this.slippage).format("0.0000%")
+      : "0.0000%";
   }
 
   get slippageTolerance() {
     return vxm.bancor.slippageTolerance;
+  }
+
+  get Field() {
+    return Field;
   }
 
   inverseRate = false;
@@ -251,20 +268,33 @@ export default class SwapAction extends BaseTxAction {
 
   get disableButton() {
     if (!this.currentUser && this.amount1) return false;
-    else
-      return !(
-        this.amount1 &&
-        this.amount2 &&
-        !new BigNumber(this.amount1).isZero() &&
-        !new BigNumber(this.amount2).isZero() &&
-        !this.errorToken1 &&
-        !this.errorToken2
-      );
+    else if (
+      this.amount1 &&
+      this.amount2 &&
+      !new BigNumber(this.amount1).isZero() &&
+      !new BigNumber(this.amount2).isZero() &&
+      !this.errorToken1 &&
+      !this.errorToken2
+    )
+      return false;
+    else return true;
   }
 
   get swapButtonLabel() {
     if (!this.amount1) return i18n.t("enter_amount");
     else return i18n.t("swap");
+  }
+
+  formatDuration(duration: plugin.Duration) {
+    return formatDuration(duration);
+  }
+
+  changeDuration(duration: plugin.Duration) {
+    this.selectedDuration = duration;
+  }
+
+  openDurationModal() {
+    this.modalSelectDuration = true;
   }
 
   selectFromToken(id: string) {
@@ -301,10 +331,6 @@ export default class SwapAction extends BaseTxAction {
     });
   }
 
-  sanitizeAmount() {
-    this.setDefault();
-  }
-
   invertSelection() {
     this.$router.replace({
       name: "Swap",
@@ -316,63 +342,40 @@ export default class SwapAction extends BaseTxAction {
   }
 
   async initSwap() {
-    // @ts-ignore
     this.openModal();
-
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
-
     try {
-      const from = {
-        id: this.token1.id,
-        amount: this.amount1
-      };
-
-      const to = {
-        id: this.token2.id,
-        amount: this.amount2
-      };
-
-      if (this.limit) {
-        const oneDay = dayjs.duration(1, "day").asSeconds();
-        const id = await vxm.ethBancor.createOrder({
-          onPrompt: this.onPrompt,
-          expiryDuration: oneDay,
-          from,
-          to
-        });
-      } else {
-        this.txMeta.success = await vxm.bancor.convert({
-          from,
-          to,
-          onUpdate: this.onUpdate,
-          // @ts-ignore
-          onPrompt: this.onPrompt
-        });
-      }
+      const success = await vxm.bancor.convert({
+        from: {
+          id: this.token1.id,
+          amount: this.amount1
+        },
+        to: {
+          id: this.token2.id,
+          amount: this.amount2
+        },
+        onUpdate: this.onUpdate,
+        onPrompt: this.onPrompt
+      });
+      console.log(success);
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.swap.title"),
+        description: this.$tc("notifications.add.swap.description", 0, {
+          amount1: this.prettifyNumber(this.amount1),
+          symbol1: this.token1.symbol,
+          amount2: this.prettifyNumber(this.amount2),
+          symbol2: this.token2.symbol
+        }),
+        txHash: success.txId
+      });
       this.setDefault();
     } catch (e) {
       this.txMeta.txError = e.message;
     } finally {
       this.txMeta.txBusy = false;
     }
-  }
-
-  lastReturn: { from: ViewAmount; to: ViewAmount } = {
-    from: {
-      id: "",
-      amount: ""
-    },
-    to: {
-      id: "",
-      amount: ""
-    }
-  };
-
-  isSmallerThanLastReturn() {}
-
-  async onRateInput(rateInput: string) {
-    console.log("rate input", rateInput);
   }
 
   async updatePriceReturn(amount: string) {
@@ -382,23 +385,13 @@ export default class SwapAction extends BaseTxAction {
     }
     try {
       this.rateLoading = true;
-
-      const returnAmount = {
+      const reward = await vxm.bancor.getReturn({
         from: {
           id: this.token1.id,
           amount: this.amount1
         },
         toId: this.token2.id
-      };
-
-      const reward = await vxm.bancor.getReturn(returnAmount);
-      this.lastReturn = {
-        ...returnAmount,
-        to: {
-          id: returnAmount.toId,
-          amount: reward.amount
-        }
-      };
+      });
       if (reward.slippage) {
         this.slippage = reward.slippage;
       } else {
@@ -425,6 +418,53 @@ export default class SwapAction extends BaseTxAction {
     this.fee = this.slippage = null;
     this.errorToken2 = "";
     this.errorToken1 = "";
+  }
+
+  calcAmount1() {
+    this.amount1 = new BigNumber(this.amount2)
+      .div(new BigNumber(this.limitRate))
+      .toString();
+  }
+  calcAmount2() {
+    this.amount2 = new BigNumber(this.amount1)
+      .times(new BigNumber(this.limitRate))
+      .toString();
+  }
+  calcLimitRate() {
+    this.limitRate = new BigNumber(this.amount2)
+      .div(new BigNumber(this.amount1))
+      .toString();
+  }
+
+  async calculateEmptyFields(field: Field) {
+    switch (field) {
+      case Field.amount1:
+        if (this.amount1) {
+          if (this.amount2) {
+            if (this.userSettedRate) this.calcAmount2();
+            else this.calcLimitRate();
+          } else if (this.limitRate) this.calcAmount2();
+        }
+        break;
+      case Field.amount2:
+        if (this.amount2) {
+          if (this.amount1)
+            if (this.userSettedRate) this.calcAmount1();
+            else this.calcLimitRate();
+          else if (this.limitRate) this.calcAmount1();
+        }
+        break;
+      case Field.rate:
+        if (this.limitRate) {
+          this.userSettedRate = true;
+          if (this.amount1 && this.amount2) {
+            this.amount1 = "";
+            this.amount2 = "";
+          } else if (this.amount1) this.calcAmount2();
+          else if (this.amount2) this.calcAmount1();
+        } else this.userSettedRate = false;
+        break;
+    }
   }
 
   async calculateRate() {
@@ -469,11 +509,14 @@ export default class SwapAction extends BaseTxAction {
   }
 
   get overSlippageLimit() {
-    return (
+    if (
       this.slippage !== null &&
       this.slippage !== undefined &&
       this.slippage >= 0.03
-    );
+    ) {
+      return true;
+    }
+    return false;
   }
 
   @Watch("$route.query")
@@ -506,8 +549,10 @@ export default class SwapAction extends BaseTxAction {
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.replace({ name: "Swap", query: defaultQuery });
     }
-
-    await this.calculateRate();
+    [this.keeperDaoList] = await Promise.all([
+      getTokenList(),
+      this.calculateRate()
+    ]);
   }
 }
 </script>

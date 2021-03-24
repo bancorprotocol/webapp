@@ -11,15 +11,15 @@ import {
   OnUpdate,
   ReserveFeed,
   Step,
+  TableItem,
   TokenBalanceParam,
   TokenBalanceReturn,
   TokenBalances,
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken,
-  TableItem,
-  ViewReserve
+  ViewReserve,
+  ViewToken
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -34,8 +34,9 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
-import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
 import { authenticatedReceiver$ } from "./observables/auth";
+import { EthNetworks, getAlchemyUrl, getInfuraAddress, web3 } from "@/api/web3";
+import { i18n } from "@/i18n";
 
 export enum PositionType {
   single,
@@ -1300,6 +1301,17 @@ export const formatUnixTime = (
   return { date, time, dateTime };
 };
 
+export const formatDuration = (duration: plugin.Duration): string => {
+  let sentance = "";
+  const days = duration.days();
+  const minutes = duration.minutes();
+  const hours = duration.hours();
+  if (days > 0) sentance += days + " " + i18n.tc("days");
+  if (hours > 0) sentance += " " + hours + " " + i18n.tc("hours");
+  if (minutes > 0) sentance += " " + minutes + " " + i18n.tc("minutes");
+  return sentance;
+};
+
 export const defaultTableSort = (
   row: TableItem,
   sortBy: string,
@@ -1320,3 +1332,8 @@ export const defaultTableSort = (
     else return null;
   } else return value;
 };
+
+export const generateEtherscanTxLink = (
+  txHash: string,
+  ropsten: boolean = false
+): string => `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;

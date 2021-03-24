@@ -353,7 +353,6 @@ export const en = {
   creating_proposal: "Creating Proposal",
   vote_ended: "Vote Ended",
   you_withdrawing_rewards: "You are withdrawing rewards",
-  rewards_ended: "Rewards ended",
   withdraw_reset:
     "Withdrawing will reset your rewards multiplier for all active positions back to x1",
   pool_not_accepting: "This pool is not accepting additional liquidity.",
@@ -368,5 +367,61 @@ export const en = {
     "Starting at 1, your multiplier increase .25 each week until reaching 2. At which point, you are getting twice the rewards you were on week 1. The number to the left already takes this into account.",
   current_protection: "Current protection is {amount}",
   roi_protected_split:
-    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI."
+    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
+  days: "Days",
+  hours: "Hours",
+  minutes: "Minutes",
+  custom_time: "Custom time",
+  set_up_time: "Set up your custom period of time",
+  current_rate: "Current rate",
+  notifications: {
+    title: "Notifications",
+    buttons: {
+      clear: "clear"
+    },
+    nothing_here: "Nothing here yet.",
+    add: {
+      swap: {
+        title: "Swap",
+        description: "Sell {amount1} {symbol1} and receive {amount2} {symbol2}."
+      },
+      stake: {
+        title: "Add Single-Sided Liquidity",
+        description: "Stake & Protect {amount} {symbol} in {pool} pool."
+      },
+      unstake: {
+        title: "Withdraw Protection",
+        description:
+          "Withdraw ~{amount} {symbol} from your protected position in {pool} pool."
+      },
+      restake: {
+        title: "Stake Rewards",
+        description: "Stake {amount} BNT from your rewards in {pool} pool."
+      },
+      withdraw: {
+        title: "Withdraw Rewards",
+        description: "Withdraw {amount} BNT from your rewards."
+      },
+      add_liquidity: {
+        title: "Add Liquidity",
+        description:
+          "Add {amount1} {symbol1} and {amount2} {symbol2} in liquidity to {pool} pool."
+      },
+      remove_liquidity: {
+        title: "Remove Liquidity",
+        description:
+          "Remove {amount1} {symbol1} and {amount2} {symbol2} in liquidity from {pool} pool."
+      }
+    }
+  },
+  modal: {
+    limit_order: {
+      title: "Transaction Confirmation",
+      sub_title: "You are creating a limit order",
+      info_text: "Transaction will expire in {timer}",
+      sell: "Sell",
+      receive: "Receive",
+      rate: "Rate"
+    }
+  }
 };
