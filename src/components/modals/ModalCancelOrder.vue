@@ -1,5 +1,5 @@
 <template>
-  <modal-base v-model="show" size="sm" @onHide="onHide">
+  <modal-base v-model="show" size="sm">
     <div
       v-if="limitOrder"
       class="text-center"
@@ -108,7 +108,7 @@ export default class ModalCancelOrder extends BaseComponent {
       console.error("failed to cancel limit order", e);
       addNotification({
         title: "Cancel Order",
-        description: e,
+        description: e.toString(),
         status: ENotificationStatus.error,
         showSeconds: 15
       });
