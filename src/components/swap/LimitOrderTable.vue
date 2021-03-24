@@ -5,6 +5,7 @@
       :px0="true"
       :shadow-light="true"
       :search.sync="search"
+      :padding="false"
       class="mt-3"
     >
       <data-table
@@ -23,15 +24,19 @@
         </template>
 
         <template #cell(from)="{ value }">
-          {{ prettifyNumber(value.amount) }}
+          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </template>
 
         <template #cell(to)="{ value }">
-          {{ prettifyNumber(value.amount) }}
+          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </template>
 
         <template #cell(rate)="{ item }">
-          1 TKN = {{ prettifyNumber(item.from.amount / item.to.amount) }}
+          {{
+            ` 1 ${item.from.symbol} = ${prettifyNumber(
+              item.to.amount / item.from.amount
+            )} ${item.to.symbol}`
+          }}
         </template>
 
         <template #cell(percentFilled)="{ value }">
