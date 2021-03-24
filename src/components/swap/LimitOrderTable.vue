@@ -95,7 +95,6 @@
     <modal-cancel-order
       v-model="showCancelModal"
       :limit-order="itemToCancel"
-      @confirm="initCancel"
       @onHide="itemToCancel = null"
     />
   </b-container>
@@ -199,18 +198,6 @@ export default class LimitOrderTable extends BaseComponent {
 
   get allOrderIds() {
     return this.orders.map(x => x.id);
-  }
-
-  async initCancel() {
-    if (!this.itemToCancel) return console.error("Item to cancel not found");
-    try {
-      await vxm.ethBancor.cancelOrder(this.itemToCancel.id);
-    } catch (e) {
-      console.error("failed to cancel limit order", e);
-    } finally {
-      this.showCancelModal = false;
-      this.itemToCancel = null;
-    }
   }
 
   async cancelAll() {

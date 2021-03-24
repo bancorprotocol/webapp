@@ -55,7 +55,7 @@
       </p>
 
       <b-btn
-        @click="confirm"
+        @click="initCancel"
         class="mt-2 rounded py-2 btn-block"
         variant="primary"
       >
@@ -69,10 +69,15 @@ import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MainButton from "@/components/common/Button.vue";
-import dayjs from "@/utils/dayjs";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import { ViewLimitOrder } from "@/store/modules/swap/ethBancor";
+import { vxm } from "@/store";
+import {
+  addNotification,
+  ENotificationStatus
+} from "@/components/compositions/notifications";
+
 @Component({
   components: { LabelContentSplit, GrayBorderBlock, ModalBase, MainButton }
 })
@@ -90,9 +95,26 @@ export default class ModalCancelOrder extends BaseComponent {
     return `1 ${fromSymbol} = ${this.prettifyNumber(rate)} ${toSymbol}`;
   }
 
-  @Emit("confirm")
-  confirm() {
-    return;
+  async initCancel() {
+    if (!this.limitOrder) return console.error("Item to cancel not found");
+    try {
+      await vxm.ethBancor.cancelOrder(this.limitOrder.id);
+      addNotification({
+        title: "Cancel Limit Order",
+        description: "Limit Order canceled successfully.",
+        status: ENotificationStatus.success
+      });
+    } catch (e) {
+      console.error("failed to cancel limit order", e);
+      addNotification({
+        title: "Cancel Order",
+        description: e,
+        status: ENotificationStatus.error,
+        showSeconds: 15
+      });
+    } finally {
+      this.show = false;
+    }
   }
 
   @Emit("onHide")
