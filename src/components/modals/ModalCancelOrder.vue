@@ -1,6 +1,10 @@
 <template>
   <modal-base v-model="show" size="sm" @onHide="onHide">
-    <div class="text-center" :class="darkMode ? 'text-dark' : 'text-light'">
+    <div
+      v-if="limitOrder"
+      class="text-center"
+      :class="darkMode ? 'text-dark' : 'text-light'"
+    >
       <div class="d-flex justify-content-center mb-3">
         <div
           class="d-flex justify-content-center align-items-center bg-danger rounded-circle"
@@ -74,12 +78,14 @@ import { ViewLimitOrder } from "@/store/modules/swap/ethBancor";
 })
 export default class ModalCancelOrder extends BaseComponent {
   @VModel() show!: boolean;
-  @Prop() limitOrder!: ViewLimitOrder;
+  @Prop() limitOrder!: ViewLimitOrder | null;
 
   get rate() {
+    if (!this.limitOrder) return;
     const fromSymbol = this.limitOrder.from.symbol;
     const toSymbol = this.limitOrder.to.symbol;
-    const rate = this.limitOrder.to.amount / this.limitOrder.from.amount;
+    const rate =
+      Number(this.limitOrder.to.amount) / Number(this.limitOrder.from.amount);
 
     return `1 ${fromSymbol} = ${this.prettifyNumber(rate)} ${toSymbol}`;
   }
