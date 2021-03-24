@@ -13,7 +13,7 @@
         <div class="d-flex">
           <div class="mr-3">
             <b-btn
-              @click="cancelAll"
+              @click="initAction('cancelAll')"
               size="sm"
               class="mr-2"
               :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -21,7 +21,7 @@
               Cancel all orders
             </b-btn>
             <b-btn
-              @click="withdrawWeth"
+              @click="initAction('withdrawWeth')"
               :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
               size="sm"
             >
@@ -37,6 +37,7 @@
           />
         </div>
       </div>
+
       <data-table
         :fields="fields"
         :items="mockOrders"
@@ -93,13 +94,13 @@
     </content-block>
 
     <modal-cancel-order v-model="showCancelModal" :limit-order="itemToCancel" />
+    <modal-tx-action :tx-meta="txMeta" />
   </b-container>
 </template>
 
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
-import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import DataTable from "@/components/common/DataTable.vue";
 import { ViewLimitOrder } from "@/store/modules/swap/ethBancor";
@@ -107,20 +108,21 @@ import { OrderStatus } from "@/api/observables/keeperDao";
 import { ViewTableField } from "@/types/bancor";
 import dayjs from "dayjs";
 import { formatPercent } from "@/api/helpers";
-import ModalBase from "@/components/modals/ModalBase.vue";
 import ModalCancelOrder from "@/components/modals/ModalCancelOrder.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
 @Component({
   components: {
+    ModalTxAction,
     MultiInputField,
     ModalCancelOrder,
-    ModalBase,
     DataTable,
     ContentBlock
   }
 })
-export default class LimitOrderTable extends BaseComponent {
+export default class LimitOrderTable extends BaseTxAction {
   search = "";
   showCancelModal = false;
   itemToCancel: ViewLimitOrder | null = null;
@@ -172,11 +174,13 @@ export default class LimitOrderTable extends BaseComponent {
         from: {
           id: "22",
           amount: "55.33333",
-          logo: "",
+          logo:
+            "https://raw.githubusercontent.com/eoscafe/eos-airdrops/master/logos/bancor.png",
           symbol: "BNT"
         },
         to: {
-          logo: "",
+          logo:
+            "https://storage.googleapis.com/bancor-prod-file-store/images/communities/aea83e97-13a3-4fe7-b682-b2a82299cdf2.png",
           symbol: "ETH",
           id: "33",
           amount: "12.44"
@@ -196,11 +200,29 @@ export default class LimitOrderTable extends BaseComponent {
     return this.orders.map(x => x.id);
   }
 
+  async initAction(action: "cancelAll" | "withdrawWeth") {
+    this.openModal();
+
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
+    try {
+      if (action === "cancelAll") await this.cancelAll();
+      if (action === "withdrawWeth") await this.withdrawWeth();
+
+      // this.txMeta.showTxModal = false;
+    } catch (e) {
+      this.txMeta.txError = e.message;
+    } finally {
+      // this.txMeta.txBusy = false;
+    }
+  }
+
   async cancelAll() {
     try {
       // await vxm.ethBancor.cancelOrder(this.allOrderIds);
     } catch (e) {
       console.error("failed to cancel all limit orders", e);
+      throw e;
     }
   }
 
@@ -209,6 +231,7 @@ export default class LimitOrderTable extends BaseComponent {
       // await vxm.ethBancor.withdrawWeth({});
     } catch (e) {
       console.error("failed to withdraw weth", e);
+      throw e;
     }
   }
 
