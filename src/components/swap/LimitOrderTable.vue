@@ -63,7 +63,12 @@
       </data-table>
     </content-block>
 
-    <modal-base v-model="showCancelModal" size="sm"> cancel </modal-base>
+    <modal-cancel-order
+      v-model="showCancelModal"
+      :limit-order="itemToCancel"
+      @confirm="initCancel"
+      @onHide="itemToCancel = null"
+    />
   </b-container>
 </template>
 
@@ -79,13 +84,15 @@ import { ViewTableField } from "@/types/bancor";
 import dayjs from "dayjs";
 import { formatPercent } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
+import ModalCancelOrder from "@/components/modals/ModalCancelOrder.vue";
 
 @Component({
-  components: { ModalBase, DataTable, ContentBlock }
+  components: { ModalCancelOrder, ModalBase, DataTable, ContentBlock }
 })
 export default class LimitOrderTable extends BaseComponent {
   search = "";
   showCancelModal = false;
+  itemToCancel: ViewLimitOrder | null = null;
 
   dayjs = dayjs;
   formatPercent = formatPercent;
@@ -154,7 +161,20 @@ export default class LimitOrderTable extends BaseComponent {
     return vxm.ethBancor.limitOrders;
   }
 
+  async initCancel() {
+    if (!this.itemToCancel) return console.error("Item to cancel not found");
+    try {
+      await vxm.ethBancor.cancelOrder(this.itemToCancel.id);
+    } catch (e) {
+      console.error("failed to cancel limit order", e);
+    } finally {
+      this.showCancelModal = false;
+      this.itemToCancel = null;
+    }
+  }
+
   openCancelModal(item: ViewLimitOrder) {
+    this.itemToCancel = item;
     this.showCancelModal = true;
   }
 }
