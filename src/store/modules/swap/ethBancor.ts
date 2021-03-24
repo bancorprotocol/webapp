@@ -6959,6 +6959,10 @@ export class EthBancorModule
     } catch (e) {
       console.error(e, "was the error");
     }
+    const currentViewOrders = this.limitOrdersArr;
+    this.setLimitOrders(
+      currentViewOrders.filter(order => !compareString(order.id, orderId))
+    );
   }
 
   @action async createOrder({
