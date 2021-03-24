@@ -57,7 +57,7 @@
 
       <label-content-split
         v-for="(output, index) in outputs"
-        :label="index == 0 ? $t('output_breakdown') : ''"
+        :label="index === 0 ? $t('output_breakdown') : ''"
         :key="output.id"
         :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
       />
@@ -122,6 +122,7 @@ import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
 import BaseTxAction from "@/components/BaseTxAction.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -140,11 +141,11 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
     return vxm.bancor.relay(this.position.stake.poolId);
   }
   percentage: string = "50";
-
   modal = false;
   txBusy = false;
   success: TxResponse | string | null = null;
   error = "";
+
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
   priceDeviationTooHigh: boolean = false;
@@ -186,7 +187,7 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
 
   get rewardsWithMultiplier() {
     return vxm.ethBancor.protectedPositions.some(
-      position => position.rewardsMultiplier > 1
+      position => position.rewardsMultiplier && position.rewardsMultiplier > 1
     );
   }
 
@@ -233,6 +234,7 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
     this.modal = true;
     this.txBusy = true;
     const [poolId, first, second] = this.$route.params.id.split(":");
+
     try {
       const txRes = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
@@ -240,6 +242,16 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
         onPrompt: this.onPrompt
       });
       this.success = txRes;
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.unstake.title"),
+        description: this.$tc("notifications.add.unstake.description", 0, {
+          amount: this.prettifyNumber(this.expectedValue!.amount),
+          symbol: this.expectedValue!.symbol,
+          pool: this.pool.name
+        }),
+        txHash: txRes.txId
+      });
     } catch (err) {
       this.error = err.message;
     } finally {

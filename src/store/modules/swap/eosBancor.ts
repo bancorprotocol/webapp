@@ -1033,7 +1033,8 @@ export class EosBancorModule
           ...token,
           name: tokenMeta.name,
           balance: tokenBalanceString,
-          logo: tokenMeta.logo
+          logo: tokenMeta.logo,
+          limitOrderAvailable: false
         };
       });
   }
@@ -1059,7 +1060,8 @@ export class EosBancorModule
           ...token,
           name: meta.name,
           logo: meta.logo,
-          tradeSupported: true
+          tradeSupported: true,
+          limitOrderAvailable: false
         };
       }
     };

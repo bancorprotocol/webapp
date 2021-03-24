@@ -1,10 +1,16 @@
-import { Contract } from "web3-eth-contract";
 import BigNumber from "bignumber.js";
+import { Contract } from "web3-eth-contract";
 
+export interface MinimalPool {
+  anchorAddress: string;
+  converterAddress: string;
+  reserves: string[];
+}
 export interface TokenWei {
   tokenContract: string;
   weiAmount: string;
 }
+
 export interface ProtectedViewPosition {
   type: number;
   whitelisted: boolean;
@@ -14,6 +20,7 @@ export interface ProtectedViewPosition {
   endTime: number;
   protectionPercent: number;
 }
+
 export interface ProtectedLiquidity {
   id: string;
   owner: string;
@@ -26,6 +33,16 @@ export interface ProtectedLiquidity {
   timestamp: string;
 }
 
+export interface PoolHistoricBalance {
+  scale: TimeScale;
+  pool: MinimalPool;
+  smartTokenSupply: string;
+  reserveBalances: {
+    contract: string;
+    weiAmount: string;
+  }[];
+}
+
 export interface ProtectLiquidityParams {
   amount: ViewAmount;
   onUpdate?: OnUpdate;
@@ -36,6 +53,12 @@ export interface PositionReturn {
   baseAmount: string;
   networkAmount: string;
   targetAmount: string;
+}
+
+export interface TimeScale {
+  blockHeight: number;
+  days: number;
+  label: string;
 }
 export interface ProtectedLiquidityCalculated {
   id: string;
@@ -56,9 +79,10 @@ export interface ProtectedLiquidityCalculated {
   roiDec?: string;
   fullLiquidityReturn?: PositionReturn;
   currentLiquidityReturn?: PositionReturn;
-  pendingReserveReward: BigNumber;
-  rewardsMultiplier: number;
+  pendingReserveReward?: string;
+  rewardsMultiplier?: number;
 }
+
 export interface TokenPrice {
   id: string;
   code: string;
@@ -121,9 +145,23 @@ export interface ProposedToTransaction {
   fromId: string;
 }
 
+export interface ProposedCreateOrder {
+  from: ViewAmount;
+  to: ViewAmount;
+  expiryDuration: number;
+  onPrompt?: OnPrompt;
+}
+
 export interface ViewAmount {
   id: string;
   amount: string;
+}
+
+export interface ViewTokenAmount {
+  id: string;
+  amount: string;
+  logo: string;
+  symbol: string;
 }
 
 export interface ViewAmountDetail extends ViewAmount {
@@ -272,6 +310,7 @@ export interface ViewToken {
   balance?: string;
   precision: number;
   tradeSupported: boolean;
+  limitOrderAvailable: boolean;
 }
 
 export interface TokenWithLogo extends AgnosticToken {
@@ -390,6 +429,25 @@ export interface ViewModalToken {
   symbol: string;
   img: string;
   balance?: string;
+}
+
+export interface RawLiquidityProtectionSettings {
+  minProtectionDelay: string;
+  maxProtectionDelay: string;
+  lockDuration: string;
+  govToken: string;
+  networkToken: string;
+  defaultNetworkTokenMintingLimit: string;
+}
+
+export interface LiquidityProtectionSettings {
+  contract: string;
+  minDelay: number;
+  maxDelay: number;
+  lockedDelay: number;
+  govToken: string;
+  networkToken: string;
+  defaultNetworkTokenMintingLimit: string;
 }
 
 export interface SlippageTolerance {
@@ -708,6 +766,11 @@ export interface ReserveInstance {
   contract: string;
 }
 
+export interface TokenPrecision {
+  contract: string;
+  precision: number;
+}
+
 export interface SimpleToken {
   symbol: string;
   name: string;
@@ -763,27 +826,29 @@ export interface Service {
 }
 
 export interface TokenReward {
+  id: string;
   amount: string;
   symbol: string;
   usdValue?: string | number;
 }
 export interface ViewProtectedLiquidity {
   id: string;
+  initialProtectedWei: string;
+  inititalProtectedToken: string;
   stake: {
     amount: string;
     poolId: string;
-    usdValue?: number;
+    usdValue: number;
     symbol: string;
     unixTime: number;
   };
-  protectedAmount: TokenReward;
-  fullyProtected: TokenReward;
+  protectedAmount?: TokenReward;
+  fullyProtected?: TokenReward;
   fees: TokenReward;
-  roi: number;
+  roi?: number;
   apr: {
     day: number;
     week: number;
-    // month: number;
   };
   single: boolean;
   whitelisted: boolean;
@@ -791,8 +856,8 @@ export interface ViewProtectedLiquidity {
   coverageDecPercent: number;
   fullCoverage: number;
   givenVBnt?: string;
-  pendingReserveReward: BigNumber;
-  rewardsMultiplier: number;
+  pendingReserveReward?: string;
+  rewardsMultiplier?: number;
   reserveTokenPrice: number;
   bntTokenPrice: number;
 }

@@ -3,13 +3,13 @@
     <token-input-field
       :label="$t('from')"
       v-model="amount1"
-      @input="updatePriceReturn"
+      @input="calculateEmptyFields(Field.amount1)"
       @select="selectFromToken"
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
       :tokens="tokens"
-      :usdValue="usd1"
+      :usd-value="usd1"
     />
 
     <div class="text-center my-3">
@@ -24,18 +24,18 @@
     <token-input-field
       :label="$t('to_estimated')"
       v-model="amount2"
-      @input="sanitizeAmount"
+      @input="calculateEmptyFields(Field.amount2)"
       @select="selectToToken"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
       :disabled="false"
       :tokens="tokens"
-      :usdValue="usd2"
+      :usd-value="usd2"
     />
 
     <div class="my-3">
-      <div v-if="limit">
+      <div>
         <label-content-split
           :label="$t('rate')"
           :value="`${$t('current_rate')}: ${rate}`"
@@ -43,8 +43,9 @@
           class="mb-2"
         />
         <multi-input-field
+          @input="calculateEmptyFields(Field.rate)"
           class="mb-3"
-          type="url"
+          v-model="limitRate"
           :placeholder="rate"
           :append="$t('defined_rate')"
           height="48"
@@ -85,42 +86,6 @@
           </b-dropdown>
         </label-content-split>
       </div>
-      <div v-else>
-        <div class="mb-3">
-          <label-content-split
-            :label="advancedOpen ? $t('slippage_tolerance') : ''"
-          >
-            <span
-              @click="advancedOpen = !advancedOpen"
-              class="text-primary font-size-12 font-w500 cursor"
-            >
-              {{ $t("advanced_settings") }}
-              <font-awesome-icon
-                :icon="advancedOpen ? 'caret-up' : 'caret-down'"
-              />
-            </span>
-          </label-content-split>
-          <b-collapse id="advanced-swap" v-model="advancedOpen">
-            <slippage-tolerance />
-          </b-collapse>
-        </div>
-        <label-content-split
-          :label="$t('rate')"
-          :value="rate"
-          :loading="rateLoading"
-          class="mb-2"
-        >
-          <span @click="inverseRate = !inverseRate" class="cursor">
-            {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
-          </span>
-        </label-content-split>
-        <label-content-split
-          :label="$t('price_impact')"
-          :tooltip="$t('market_price_diff')"
-          :is-alert="overSlippageLimit"
-          :value="priceImpact"
-        />
-      </div>
       <label-content-split
         v-if="fee !== null"
         :label="$t('fee')"
@@ -142,19 +107,30 @@
     />
 
     <modal-tx-action
-      title="Confirm Token Swap"
-      icon="exchange-alt"
+      :title="$t('modal.limit_order.title')"
+      icon="file-alt"
       :tx-meta.sync="txMeta"
     >
-      <gray-border-block>
+      <p
+        class="font-size-14 mb-4 text-center"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+      >
+        {{ $t("modal.limit_order.sub_title") }}
+      </p>
+      <gray-border-block gray-bg="true">
         <label-content-split
-          label="Sell"
+          :label="$t('modal.limit_order.sell')"
           :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
           class="mb-2"
         />
         <label-content-split
-          label="Receive"
+          :label="$t('modal.limit_order.receive')"
           :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
+          class="mb-2"
+        />
+        <label-content-split
+          :label="$t('modal.limit_order.rate')"
+          :value="rate"
         />
       </gray-border-block>
 
@@ -163,22 +139,17 @@
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
       >
         {{
-          $t("output_estimated", {
-            amount: numeral(slippageTolerance).format("0.0[0]%")
+          $t("modal.limit_order.info_text", {
+            timer: "?????"
           })
         }}
       </p>
-
-      <gray-border-block gray-bg="true">
-        <label-content-split label="Rate" :value="rate" class="mb-2" />
-        <label-content-split label="Price Impact" :value="priceImpact" />
-      </gray-border-block>
     </modal-tx-action>
   </div>
 </template>
 
 <script lang="ts">
-import { Watch, Component, Prop } from "vue-property-decorator";
+import { Watch, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
@@ -196,6 +167,14 @@ import { formatDuration } from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
+
+enum Field {
+  amount1,
+  amount2,
+  rate
+}
+
 @Component({
   components: {
     GrayBorderBlock,
@@ -208,10 +187,10 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
     ModalDurationSelect
   }
 })
-export default class SwapAction extends BaseTxAction {
-  @Prop({ default: false }) limit!: boolean;
+export default class SwapLimit extends BaseTxAction {
   amount1 = "";
   amount2 = "";
+
   durationList: plugin.Duration[] = [
     dayjs.duration({ minutes: 10 }),
     dayjs.duration({ hours: 1 }),
@@ -221,29 +200,44 @@ export default class SwapAction extends BaseTxAction {
   ];
   selectedDuration = this.durationList[4];
   keeperDaoList: TokenList | null = null;
+
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
+
   slippage: number | null | undefined = null;
   fee: string | null = null;
+
   errorToken1 = "";
   errorToken2 = "";
+
   rateLoading = false;
+  userSettedRate = false;
   initialRate = "";
+  limitRate = "";
   numeral = numeral;
+
   modalSelectDuration = false;
-  advancedOpen = false;
+
   get tokens() {
     return vxm.bancor.tokens.filter(token => token.tradeSupported);
   }
+
   get priceImpact() {
     return this.slippage !== null && this.slippage !== undefined
       ? numeral(this.slippage).format("0.0000%")
       : "0.0000%";
   }
+
   get slippageTolerance() {
     return vxm.bancor.slippageTolerance;
   }
+
+  get Field() {
+    return Field;
+  }
+
   inverseRate = false;
+
   get rate() {
     let rate = "";
     switch (this.inverseRate) {
@@ -271,6 +265,7 @@ export default class SwapAction extends BaseTxAction {
       }
     }
   }
+
   get disableButton() {
     if (!this.currentUser && this.amount1) return false;
     else if (
@@ -284,25 +279,32 @@ export default class SwapAction extends BaseTxAction {
       return false;
     else return true;
   }
+
   get swapButtonLabel() {
     if (!this.amount1) return i18n.t("enter_amount");
     else return i18n.t("swap");
   }
+
   formatDuration(duration: plugin.Duration) {
     return formatDuration(duration);
   }
+
   changeDuration(duration: plugin.Duration) {
     this.selectedDuration = duration;
   }
+
   openDurationModal() {
     this.modalSelectDuration = true;
   }
+
   selectFromToken(id: string) {
     let to = this.$route.query.to;
+
     if (id === to) {
       this.invertSelection();
       return;
     }
+
     this.$router.replace({
       name: "Swap",
       query: {
@@ -311,12 +313,15 @@ export default class SwapAction extends BaseTxAction {
       }
     });
   }
+
   selectToToken(id: string) {
     let from = this.$route.query.from;
+
     if (id === from) {
       this.invertSelection();
       return;
     }
+
     this.$router.replace({
       name: "Swap",
       query: {
@@ -325,9 +330,7 @@ export default class SwapAction extends BaseTxAction {
       }
     });
   }
-  sanitizeAmount() {
-    this.setDefault();
-  }
+
   invertSelection() {
     this.$router.replace({
       name: "Swap",
@@ -337,12 +340,13 @@ export default class SwapAction extends BaseTxAction {
       }
     });
   }
+
   async initSwap() {
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {
-      this.txMeta.success = await vxm.bancor.convert({
+      const success = await vxm.bancor.convert({
         from: {
           id: this.token1.id,
           amount: this.amount1
@@ -354,6 +358,18 @@ export default class SwapAction extends BaseTxAction {
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
+      console.log(success);
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.swap.title"),
+        description: this.$tc("notifications.add.swap.description", 0, {
+          amount1: this.prettifyNumber(this.amount1),
+          symbol1: this.token1.symbol,
+          amount2: this.prettifyNumber(this.amount2),
+          symbol2: this.token2.symbol
+        }),
+        txHash: success.txId
+      });
       this.setDefault();
     } catch (e) {
       this.txMeta.txError = e.message;
@@ -361,6 +377,7 @@ export default class SwapAction extends BaseTxAction {
       this.txMeta.txBusy = false;
     }
   }
+
   async updatePriceReturn(amount: string) {
     if (!amount || amount === "0" || amount === ".") {
       this.setDefault();
@@ -394,6 +411,7 @@ export default class SwapAction extends BaseTxAction {
       this.rateLoading = false;
     }
   }
+
   setDefault() {
     this.amount1 = "";
     this.amount2 = "";
@@ -401,6 +419,54 @@ export default class SwapAction extends BaseTxAction {
     this.errorToken2 = "";
     this.errorToken1 = "";
   }
+
+  calcAmount1() {
+    this.amount1 = new BigNumber(this.amount2)
+      .div(new BigNumber(this.limitRate))
+      .toString();
+  }
+  calcAmount2() {
+    this.amount2 = new BigNumber(this.amount1)
+      .times(new BigNumber(this.limitRate))
+      .toString();
+  }
+  calcLimitRate() {
+    this.limitRate = new BigNumber(this.amount2)
+      .div(new BigNumber(this.amount1))
+      .toString();
+  }
+
+  async calculateEmptyFields(field: Field) {
+    switch (field) {
+      case Field.amount1:
+        if (this.amount1) {
+          if (this.amount2) {
+            if (this.userSettedRate) this.calcAmount2();
+            else this.calcLimitRate();
+          } else if (this.limitRate) this.calcAmount2();
+        }
+        break;
+      case Field.amount2:
+        if (this.amount2) {
+          if (this.amount1)
+            if (this.userSettedRate) this.calcAmount1();
+            else this.calcLimitRate();
+          else if (this.limitRate) this.calcAmount1();
+        }
+        break;
+      case Field.rate:
+        if (this.limitRate) {
+          this.userSettedRate = true;
+          if (this.amount1 && this.amount2) {
+            this.amount1 = "";
+            this.amount2 = "";
+          } else if (this.amount1) this.calcAmount2();
+          else if (this.amount2) this.calcAmount1();
+        } else this.userSettedRate = false;
+        break;
+    }
+  }
+
   async calculateRate() {
     this.rateLoading = true;
     try {
@@ -417,24 +483,31 @@ export default class SwapAction extends BaseTxAction {
     }
     this.rateLoading = false;
   }
+
   get balance1() {
     return vxm.bancor.token(this.token1.id).balance ?? "0";
   }
+
   get balance2() {
     return vxm.bancor.token(this.token2.id).balance ?? "0";
   }
+
   get usd1() {
     const token1 = vxm.bancor.token(this.token1.id);
     if (token1.price && token1.balance)
       return new BigNumber(token1.price).times(token1.balance);
+
     return "0";
   }
+
   get usd2() {
     const token2 = vxm.bancor.token(this.token2.id);
     if (token2.price && token2.balance)
       return new BigNumber(token2.price).times(token2.balance);
+
     return "0";
   }
+
   get overSlippageLimit() {
     if (
       this.slippage !== null &&
@@ -445,6 +518,7 @@ export default class SwapAction extends BaseTxAction {
     }
     return false;
   }
+
   @Watch("$route.query")
   async onTokenChange(query: any) {
     try {
@@ -460,6 +534,7 @@ export default class SwapAction extends BaseTxAction {
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
   }
+
   async mounted() {
     if (this.$route.query.to && this.$route.query.from)
       await this.onTokenChange(this.$route.query);
@@ -490,6 +565,7 @@ export default class SwapAction extends BaseTxAction {
   color: #0f59d1;
   font-size: 1rem;
 }
+
 .active {
   cursor: pointer;
   color: #0f59d1;

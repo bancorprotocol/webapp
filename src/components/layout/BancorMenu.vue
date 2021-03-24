@@ -138,7 +138,7 @@
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
       <b-dropdown-header>
-        {{ $t("developer_resources") }}
+        {{ $t("developers") }}
       </b-dropdown-header>
       <b-dropdown-text>
         <div

@@ -26,6 +26,7 @@ import VotePage from "@/components/vote/VotePage.vue";
 import FiatPage from "@/components/fiat/FiatPage.vue";
 import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
+import LimitOrderTable from "@/components/swap/LimitOrderTable.vue";
 
 Vue.use(Router);
 
@@ -222,7 +223,8 @@ export const router = new Router({
       name: "Swap",
       components: {
         Nav: Navigation,
-        Hero: SwapHome
+        Hero: SwapHome,
+        default: LimitOrderTable
       },
       props: true,
       meta: {

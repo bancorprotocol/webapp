@@ -102,9 +102,10 @@ export default class TableTransactions extends BaseComponent {
   doFilter(row: any, filter: string) {
     const fromSymbol = row.data.from.symbol;
     const toSymbol = row.data.to.symbol;
+    const lowerFilter = filter.toLowerCase();
     return (
-      (fromSymbol && fromSymbol.toLowerCase().indexOf(filter) >= 0) ||
-      (toSymbol && toSymbol.toLowerCase().indexOf(filter) >= 0)
+      (fromSymbol && fromSymbol.toLowerCase().indexOf(lowerFilter) >= 0) ||
+      (toSymbol && toSymbol.toLowerCase().indexOf(lowerFilter) >= 0)
     );
   }
 

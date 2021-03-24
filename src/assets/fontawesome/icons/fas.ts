@@ -1,4 +1,4 @@
-/* free-solid-svg-icons */
+import { faSync } from "@fortawesome/free-solid-svg-icons/faSync";
 import { faAngleDoubleLeft } from "@fortawesome/free-solid-svg-icons/faAngleDoubleLeft";
 import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons/faAngleDoubleRight";
 import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
@@ -29,7 +29,6 @@ import { faPowerOff } from "@fortawesome/free-solid-svg-icons/faPowerOff";
 import { faSearch } from "@fortawesome/free-solid-svg-icons/faSearch";
 import { faShieldAlt } from "@fortawesome/free-solid-svg-icons/faShieldAlt";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons/faThumbsUp";
-import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
 import { faTimesCircle } from "@fortawesome/free-solid-svg-icons/faTimesCircle";
 import { faChevronCircleRight } from "@fortawesome/free-solid-svg-icons/faChevronCircleRight";
 import { faChevronUp } from "@fortawesome/free-solid-svg-icons/faChevronUp";
@@ -39,6 +38,14 @@ import { faPoll } from "@fortawesome/free-solid-svg-icons/faPoll";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons/faRetweet";
 import { faUpload } from "@fortawesome/free-solid-svg-icons/faUpload";
 import { faCheck } from "@fortawesome/free-solid-svg-icons/faCheck";
+import { faBell } from "@fortawesome/free-solid-svg-icons/faBell";
+import { faUnlock } from "@fortawesome/free-solid-svg-icons/faUnlock";
+import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
+import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
+import { faArrowUp } from "@fortawesome/free-solid-svg-icons/faArrowUp";
+import { faBellOn } from "@fortawesome/pro-solid-svg-icons/faBellOn";
+import { faTimes } from "@fortawesome/free-solid-svg-icons/faTimes";
+import { faFileAlt } from "@fortawesome/pro-solid-svg-icons/faFileAlt";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -69,7 +76,6 @@ export const fas = [
   faSearch,
   faShieldAlt,
   faThumbsUp,
-  faTimes,
   faTimesCircle,
   faChevronCircleRight,
   faChevronUp,
@@ -84,25 +90,11 @@ export const fas = [
   faArrowUp,
   faCoins,
   faMinus,
-  faUnlock
-];
-
-/* free-brands-svg-icons */
-import { faDiscord } from "@fortawesome/free-brands-svg-icons/faDiscord";
-import { faDiscourse } from "@fortawesome/free-brands-svg-icons/faDiscourse";
-import { faGithub } from "@fortawesome/free-brands-svg-icons/faGithub";
-import { faRedditAlien } from "@fortawesome/free-brands-svg-icons/faRedditAlien";
-import { faTelegramPlane } from "@fortawesome/free-brands-svg-icons/faTelegramPlane";
-import { faTwitter } from "@fortawesome/free-brands-svg-icons/faTwitter";
-import { faArrowUp, faUnlock } from "@fortawesome/free-solid-svg-icons";
-import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
-import { faMinus } from "@fortawesome/free-solid-svg-icons/faMinus";
-
-export const fab = [
-  faDiscord,
-  faDiscourse,
-  faGithub,
-  faRedditAlien,
-  faTelegramPlane,
-  faTwitter
+  faUnlock,
+  faCheck,
+  faSync,
+  faBell,
+  faBellOn,
+  faTimes,
+  faFileAlt
 ];

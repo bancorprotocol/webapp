@@ -68,7 +68,7 @@
         <label-content-split
           v-for="(output, index) in outputs"
           :key="output.id"
-          :label="index == 0 ? $t('value_receive') : ''"
+          :label="index === 0 ? $t('value_receive') : ''"
           :value="`${prettifyNumber(output.amount)} ${output.symbol}`"
         />
       </div>
@@ -196,6 +196,7 @@ import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vu
 import Vue from "vue";
 import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -217,26 +218,24 @@ export default class AddProtectionSingle extends BaseTxAction {
     return vxm.bancor.relay(poolId);
   }
 
+  priceDeviationTooHigh: boolean = false;
+  loading: boolean = false;
+  modal: boolean = false;
+  poolSelectModal: boolean = false;
+  txBusy: boolean = false;
+
+  success: TxResponse | string | null = null;
+  outputs: ViewAmountDetail[] = [];
+  sections: Step[] = [];
+
   maxStakeAmount: string = "";
   maxStakeSymbol: string = "";
   amountToMakeSpace: string = "";
-  priceDeviationTooHigh: boolean = false;
-
-  loading: boolean = false;
-
   amount: string = "";
+  preTxError: string = "";
+  error: string = "";
 
-  modal = false;
-  poolSelectModal = false;
-
-  txBusy = false;
-  success: TxResponse | string | null = null;
-  error = "";
-  sections: Step[] = [];
   stepIndex = 0;
-  preTxError = "";
-  outputs: ViewAmountDetail[] = [];
-
   selectedTokenIndex = 0;
 
   private interval: any;
@@ -360,7 +359,6 @@ export default class AddProtectionSingle extends BaseTxAction {
       ? `${i18n.t("processing")}...`
       : i18n.t("confirm");
   }
-
   async initAction() {
     if (this.success) {
       this.setDefault();
@@ -374,6 +372,7 @@ export default class AddProtectionSingle extends BaseTxAction {
     }
 
     this.txBusy = true;
+
     try {
       const txRes = await vxm.ethBancor.addProtection({
         poolId: this.pool.id,
@@ -385,7 +384,16 @@ export default class AddProtectionSingle extends BaseTxAction {
         onPrompt: this.onPrompt
       });
       this.success = txRes;
-      this.amount = "";
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.stake.title"),
+        description: this.$tc("notifications.add.stake.description", 0, {
+          amount: this.prettifyNumber(this.amount),
+          symbol: this.token.symbol,
+          pool: this.pool.name
+        }),
+        txHash: txRes.txId
+      });
     } catch (e) {
       this.error = e.message;
     } finally {
@@ -434,14 +442,12 @@ export default class AddProtectionSingle extends BaseTxAction {
     this.error = "";
     this.success = null;
   }
-
   get currentStatus() {
     if (this.sections.length) {
       return this.sections[this.stepIndex].description;
     }
     return undefined;
   }
-
   onUpdate(index: number, steps: any[]) {
     this.sections = steps;
     this.stepIndex = index;
