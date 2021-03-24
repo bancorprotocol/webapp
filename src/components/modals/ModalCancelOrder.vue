@@ -14,13 +14,13 @@
         </div>
       </div>
 
-      <div class="font-size-20 font-w600 mb-3">Cancel Transaction</div>
+      <div class="font-size-20 font-w600 mb-2">Cancel Transaction</div>
 
       <p
-        class="font-size-14 mb-4 text-center"
+        class="font-size-14 mb-3 text-center"
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
       >
-        {{ $t("modal.limit_order.sub_title") }}
+        You are canceling a limit order
       </p>
       <gray-border-block gray-bg="true">
         <label-content-split
