@@ -35,67 +35,42 @@
     />
 
     <div class="my-3">
-      <div v-if="limit">
+      <div class="mb-3">
         <label-content-split
-          :label="$t('rate')"
-          :value="rate"
-          :loading="rateLoading"
-          class="mb-2"
-        />
-        <multi-input-field
-          class="mb-3"
-          @input="onRateInput"
-          type="url"
-          :placeholder="rate"
-          :append="$t('defined_rate')"
-          height="48"
-        />
-        <label-content-split :label="$t('expires_in')">
-          dropdown place holder
-        </label-content-split>
-      </div>
-      <div v-else>
-        <div class="mb-3">
-          <label-content-split
-            :label="advancedOpen ? $t('slippage_tolerance') : ''"
-          >
-            <span
-              @click="advancedOpen = !advancedOpen"
-              class="text-primary font-size-12 font-w500 cursor"
-            >
-              {{ $t("advanced_settings") }}
-              <font-awesome-icon
-                :icon="advancedOpen ? 'caret-up' : 'caret-down'"
-              />
-            </span>
-          </label-content-split>
-          <b-collapse id="advanced-swap" v-model="advancedOpen">
-            <slippage-tolerance />
-          </b-collapse>
-        </div>
-        <label-content-split
-          :label="$t('rate')"
-          :value="rate"
-          :loading="rateLoading"
-          class="mb-2"
+          :label="advancedOpen ? $t('slippage_tolerance') : ''"
         >
-          <span @click="inverseRate = !inverseRate" class="cursor">
-            {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
+          <span
+            @click="advancedOpen = !advancedOpen"
+            class="text-primary font-size-12 font-w500 cursor"
+          >
+            {{ $t("advanced_settings") }}
+            <font-awesome-icon
+              :icon="advancedOpen ? 'caret-up' : 'caret-down'"
+            />
           </span>
         </label-content-split>
-        <label-content-split
-          :label="$t('price_impact')"
-          :tooltip="$t('market_price_diff')"
-          :is-alert="overSlippageLimit"
-          :value="priceImpact"
-        />
+        <b-collapse id="advanced-swap" v-model="advancedOpen">
+          <slippage-tolerance />
+        </b-collapse>
       </div>
       <label-content-split
-        v-if="fee !== null"
-        :label="$t('fee')"
-        :value="fee"
+        :label="$t('rate')"
+        :value="rate"
+        :loading="rateLoading"
+        class="mb-2"
+      >
+        <span @click="inverseRate = !inverseRate" class="cursor">
+          {{ rate }} <font-awesome-icon icon="retweet" class="text-muted" />
+        </span>
+      </label-content-split>
+      <label-content-split
+        :label="$t('price_impact')"
+        :tooltip="$t('market_price_diff')"
+        :is-alert="overSlippageLimit"
+        :value="priceImpact"
       />
     </div>
+    <label-content-split v-if="fee !== null" :label="$t('fee')" :value="fee" />
 
     <main-button
       :label="swapButtonLabel"
@@ -174,9 +149,7 @@ import { addNotification } from "@/components/compositions/notifications";
     MainButton
   }
 })
-export default class SwapMarket extends BaseTxAction {
-  @Prop({ default: false }) limit!: boolean;
-
+export default class SwapAction extends BaseTxAction {
   amount1 = "";
   amount2 = "";
 
@@ -202,10 +175,7 @@ export default class SwapMarket extends BaseTxAction {
   }
 
   get tokens() {
-    const isLimit = this.limit;
-    return vxm.bancor.tokens
-      .filter(token => token.tradeSupported)
-      .filter(token => (isLimit ? token.limitOrderAvailable : true));
+    return vxm.bancor.tokens.filter(token => token.tradeSupported);
   }
 
   get priceImpact() {
