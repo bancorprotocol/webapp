@@ -55,7 +55,6 @@
         </label-content-split>
       </div>
       <div v-else>
-      <div>
         <div class="mb-3">
           <label-content-split
             :label="advancedOpen ? $t('slippage_tolerance') : ''"
