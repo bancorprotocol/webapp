@@ -116,10 +116,5 @@ export default class ModalCancelOrder extends BaseComponent {
       this.show = false;
     }
   }
-
-  @Emit("onHide")
-  onHide() {
-    return;
-  }
 }
 </script>

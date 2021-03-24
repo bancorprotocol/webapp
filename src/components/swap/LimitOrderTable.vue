@@ -92,11 +92,7 @@
       </data-table>
     </content-block>
 
-    <modal-cancel-order
-      v-model="showCancelModal"
-      :limit-order="itemToCancel"
-      @onHide="itemToCancel = null"
-    />
+    <modal-cancel-order v-model="showCancelModal" :limit-order="itemToCancel" />
   </b-container>
 </template>
 
