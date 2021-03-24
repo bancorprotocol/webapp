@@ -45,7 +45,8 @@ import {
   LiquidityProtectionSettings,
   OnPrompt,
   MinimalPool,
-  TokenPrecision
+  TokenPrecision,
+  ViewTokenAmount
 } from "@/types/bancor";
 import { RfqOrder, Signature, SignatureType } from "@0x/protocol-utils";
 import {
@@ -152,7 +153,8 @@ import {
   from,
   Observable,
   partition as partitionOb,
-  merge
+  merge,
+  of
 } from "rxjs";
 import {
   map,
@@ -217,6 +219,7 @@ import { nullApprovals } from "@/api/eth/nullApprovals";
 import { NewPool, WelcomeData, Pool } from "@/api/eth/bancorApi";
 import { PoolProgram } from "../rewards";
 import { distinctArrayItem } from "@/api/observables/customOperators";
+import { immediateTokenMeta$ } from "@/api/observables";
 import {
   networkVersion$,
   networkVersionReceiver$
@@ -238,21 +241,51 @@ import {
   OrderStatus
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
+import { tokens$ } from "@/api/observables/pools";
 
 keeperTokens$.subscribe(token =>
   vxm.ethBancor.setDaoTokens(token.map(x => x.address))
 );
 
-const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
-  map(([tokens, orders]) =>
+const limitOrdersSupported$ = combineLatest([limitOrders$, tokens$]).pipe(
+  map(([orders, apiTokens]) =>
+    orders.filter(order => {
+      const tokensTraded = [order.order.makerToken, order.order.takerToken];
+      return tokensTraded.every(token =>
+        apiTokens.some(apiToken => compareString(token, apiToken.dlt_id))
+      );
+    })
+  ),
+  filter(orders => orders.length > 0)
+);
+
+const imageOrDefault = (
+  id: string,
+  tokenMeta: TokenMeta[] | undefined
+): string => {
+  if (!tokenMeta) return defaultImage;
+  const meta = tokenMeta.find(meta => compareString(meta.id, id));
+  return (meta && meta.image) || defaultImage;
+};
+
+const viewLimitOrders$ = combineLatest([
+  keeperTokens$,
+  limitOrdersSupported$,
+  immediateTokenMeta$
+]).pipe(
+  map(([tokens, orders, tokenMeta]) =>
     orders.map(
       (order): ViewLimitOrder => {
         const fromToken = findOrThrow(tokens, token =>
           compareString(token.address, order.order.makerToken)
         );
+
+        const fromTokenImage = imageOrDefault(fromToken.address, tokenMeta);
+
         const toToken = findOrThrow(tokens, token =>
           compareString(token.address, order.order.takerToken)
         );
+        const toTokenImage = imageOrDefault(toToken.address, tokenMeta);
 
         const fillPercentage = new BigNumber(
           order.metaData.filledAmount_takerToken
@@ -263,11 +296,15 @@ const viewLimitOrders$ = combineLatest([keeperTokens$, limitOrders$]).pipe(
           expiryTime: Number(order.order.expiry),
           from: {
             id: order.order.makerToken,
+            logo: fromTokenImage,
+            symbol: fromToken.symbol,
             amount: shrinkToken(order.order.makerAmount, fromToken.decimals)
           },
           to: {
             id: order.order.takerToken,
-            amount: shrinkToken(order.order.takerAmount, toToken.decimals)
+            amount: shrinkToken(order.order.takerAmount, toToken.decimals),
+            logo: toTokenImage,
+            symbol: toToken.symbol
           },
           id: order.metaData.orderHash,
           orderHash: order.metaData.orderHash,
@@ -288,8 +325,8 @@ type DecPercent = number;
 export interface ViewLimitOrder {
   expiryTime: number;
   seller: string;
-  from: ViewAmount;
-  to: ViewAmount;
+  from: ViewTokenAmount;
+  to: ViewTokenAmount;
   orderHash: string;
   id: string;
   percentFilled: DecPercent;

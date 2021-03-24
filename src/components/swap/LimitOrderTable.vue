@@ -118,9 +118,13 @@ export default class LimitOrderTable extends BaseComponent {
         seller: "1234567",
         from: {
           id: "22",
-          amount: "55.33333"
+          amount: "55.33333",
+          logo: "",
+          symbol: "BNT"
         },
         to: {
+          logo: "",
+          symbol: "ETH",
           id: "33",
           amount: "12.44"
         },

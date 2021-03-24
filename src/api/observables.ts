@@ -205,7 +205,7 @@ export const poolPrograms$ = storeRewards$.pipe(
   share()
 );
 
-const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
+export const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
 
 export const minimalPoolReceiver$ = new Subject<MinimalPool[]>();
 

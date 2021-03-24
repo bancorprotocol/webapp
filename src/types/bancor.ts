@@ -157,6 +157,13 @@ export interface ViewAmount {
   amount: string;
 }
 
+export interface ViewTokenAmount {
+  id: string;
+  amount: string;
+  logo: string;
+  symbol: string;
+}
+
 export interface ViewAmountDetail extends ViewAmount {
   usdPrice?: number;
   symbol: string;
