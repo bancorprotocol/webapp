@@ -24,10 +24,20 @@
         </template>
 
         <template #cell(from)="{ value }">
+          <img
+            class="img-avatar img-avatar32 bg-white logo-shadow mr-2"
+            :src="value.logo"
+            :alt="value.symbol"
+          />
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </template>
 
         <template #cell(to)="{ value }">
+          <img
+            class="img-avatar img-avatar32 bg-white logo-shadow mr-2"
+            :src="value.logo"
+            :alt="value.symbol"
+          />
           {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </template>
 
