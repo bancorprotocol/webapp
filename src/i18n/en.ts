@@ -430,5 +430,6 @@ export const en = {
     }
   },
   protected_not_found: "No protected positions found.",
-  claim_bnt: "Claim your BNT"
+  claim_bnt: "Claim your BNT",
+  pool_tokens: "Pool tokens"
 };

@@ -102,6 +102,7 @@
       :disabled="disableButton"
     />
     <modal-duration-select
+      :initialDuration="selectedDuration"
       v-model="modalSelectDuration"
       @confirm="changeDuration"
     />
@@ -325,7 +326,7 @@ export default class SwapLimit extends BaseTxAction {
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {
-      const success = await vxm.bancor.convert({
+      const success = await vxm.ethBancor.createOrder({
         from: {
           id: this.token1.id,
           amount: this.amount1
@@ -334,10 +335,9 @@ export default class SwapLimit extends BaseTxAction {
           id: this.token2.id,
           amount: this.amount2
         },
-        onUpdate: this.onUpdate,
+        expiryDuration: this.selectedDuration.asSeconds(),
         onPrompt: this.onPrompt
       });
-      console.log(success);
       this.txMeta.showTxModal = false;
       addNotification({
         title: this.$tc("notifications.add.swap.title"),
@@ -347,7 +347,7 @@ export default class SwapLimit extends BaseTxAction {
           amount2: this.prettifyNumber(this.amount2),
           symbol2: this.token2.symbol
         }),
-        txHash: success.txId
+        txHash: this.txMeta.success?.txId
       });
       this.setDefault();
     } catch (e) {

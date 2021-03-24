@@ -36,15 +36,15 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 7"
+              v-for="item in 8"
               :key="item"
-              @click="changeDays(item)"
+              @click="changeDays(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"
             >
               <div class="d-flex justify-content-between">
-                {{ `${item} ${$t("days")}` }}
+                {{ `${item - 1} ${$t("days")}` }}
                 <font-awesome-icon
-                  v-if="selectedDays.days() === item"
+                  v-if="selectedDays.days() === item - 1"
                   icon="check"
                   class="mr-2 menu-icon"
                 />
@@ -69,15 +69,15 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 24"
+              v-for="item in 25"
               :key="item"
-              @click="changeHours(item)"
+              @click="changeHours(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"
             >
               <div class="d-flex justify-content-between">
-                {{ `${item} ${$t("hours")}` }}
+                {{ `${item - 1} ${$t("hours")}` }}
                 <font-awesome-icon
-                  v-if="selectedHours.hours() === item"
+                  v-if="selectedHours.hours() === item - 1"
                   icon="check"
                   class="mr-2 menu-icon"
                 />
@@ -87,7 +87,6 @@
         </div>
         <div>
           <b-dropdown
-            boundary="viewport"
             :variant="darkMode ? 'outline-dark' : 'outline-light'"
             toggle-class="block-rounded"
             :menu-class="
@@ -102,15 +101,15 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 60"
+              v-for="item in 61"
               :key="item"
-              @click="changeMinutes(item)"
+              @click="changeMinutes(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"
             >
               <div class="d-flex justify-content-between">
-                {{ `${item} ${$t("minutes")}` }}
+                {{ `${item - 1} ${$t("minutes")}` }}
                 <font-awesome-icon
-                  v-if="selectedMinutes.minutes() === item"
+                  v-if="selectedMinutes.minutes() === item - 1"
                   icon="check"
                   class="mr-2 menu-icon"
                 />
@@ -141,19 +140,27 @@ import dayjs from "@/utils/dayjs";
 })
 export default class ModalDurationSelect extends BaseComponent {
   @VModel() show!: boolean;
+  @Prop() initialDuration!: plugin.Duration;
   @Prop({ type: String, default: "" }) title!: string;
-  selectedDays = dayjs.duration({ days: 1 });
-  selectedHours = dayjs.duration({ hours: 1 });
-  selectedMinutes = dayjs.duration({ minutes: 1 });
+
+  selectedDays = dayjs.duration({ days: this.initialDuration.days() });
+  selectedHours = dayjs.duration({ hours: this.initialDuration.hours() });
+  selectedMinutes = dayjs.duration({
+    minutes: this.initialDuration.minutes()
+  });
+
   changeDays(days: number) {
     this.selectedDays = dayjs.duration({ days });
   }
+
   changeHours(hours: number) {
     this.selectedHours = dayjs.duration({ hours });
   }
+
   changeMinutes(minutes: number) {
     this.selectedMinutes = dayjs.duration({ minutes });
   }
+
   @Emit("confirm")
   confirm() {
     this.show = false;

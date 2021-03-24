@@ -1,6 +1,7 @@
 <template>
   <content-block
     :px0="true"
+    :padding="false"
     :shadow-light="true"
     :title="$t('pool_tokens')"
     :search.sync="search"
@@ -32,22 +33,14 @@
             :src="item.relay.reserves[0].logo"
             :alt="$t('token_logo')"
           />
-          {{
-            `${item.relay.reserves[0].symbol} ${prettifyNumber(
-              item.relay.reserves[0].reserveWeight * item.smartTokenAmount
-            )} +`
-          }}
+          {{ `${item.relay.reserves[0].symbol} ${prettifyNumber(item.bnt)} +` }}
           <img
             :key="item.relay.reserves[1].id"
             class="img-avatar img-avatar32 border-colouring bg-white mr-1 ml-1"
             :src="item.relay.reserves[1].logo"
             :alt="$t('token_logo')"
           />
-          {{
-            `${item.relay.reserves[1].symbol} ${prettifyNumber(
-              item.relay.reserves[1].reserveWeight * item.smartTokenAmount
-            )}`
-          }}
+          {{ `${item.relay.reserves[1].symbol} ${prettifyNumber(item.tkn)}` }}
         </span>
       </template>
 
@@ -84,6 +77,7 @@ import DataTable from "@/components/common/DataTable.vue";
 import PoolLogos from "@/components/common/PoolLogos.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ContentBlock from "@/components/common/ContentBlock.vue";
+import BigNumber from "bignumber.js";
 
 @Component({
   components: {
@@ -95,12 +89,19 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 export default class PoolToken extends BaseComponent {
   search = "";
   disabledPools: string[] = [];
-
-  get items() {
-    return vxm.bancor.poolTokenPositions.map(x => {
-      return { id: x.relay.id, ...x };
-    });
-  }
+  items: {
+    bnt: BigNumber;
+    tkn: BigNumber;
+    relay: ViewRelay;
+    smartTokenAmount?: string | undefined;
+    poolTokens?:
+      | {
+          reserveId: string;
+          balance: string;
+        }[]
+      | undefined;
+    id: string;
+  }[] = [];
 
   get fields(): ViewTableField[] {
     return [
@@ -185,8 +186,27 @@ export default class PoolToken extends BaseComponent {
     });
   }
 
+  async getAllBalances() {
+    return Promise.all(
+      vxm.bancor.poolTokenPositions.map(async x => {
+        const res = await vxm.bancor.getUserBalances(x.relay.id);
+        let bnt, tkn;
+        if (x.relay.reserves[0].id === res.maxWithdrawals[0].id) {
+          bnt = new BigNumber(res.maxWithdrawals[0].amount);
+          tkn = new BigNumber(res.maxWithdrawals[1].amount);
+        } else {
+          bnt = new BigNumber(res.maxWithdrawals[1].amount);
+          tkn = new BigNumber(res.maxWithdrawals[0].amount);
+        }
+
+        return { id: x.relay.id, ...x, bnt, tkn };
+      })
+    );
+  }
+
   async mounted() {
     await this.setDisabledReserves();
+    this.items = await this.getAllBalances();
   }
 }
 </script>
