@@ -1,16 +1,7 @@
 <template>
-  <b-container fluid="xl" class="px-xl-0">
+  <div>
     <b-row>
-      <b-col cols="12">
-        <div>
-          <span
-            class="font-size-20 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ $t("liquidity_protection") }}
-          </span>
-        </div>
-
+      <b-col cols="12" class="mb-5">
         <p
           class="font-size-14 font-w400 my-3"
           :class="darkMode ? 'text-dark' : 'text-light'"
@@ -78,7 +69,7 @@
         </content-block>
       </b-col>
     </b-row>
-  </b-container>
+  </div>
 </template>
 
 <script lang="ts">

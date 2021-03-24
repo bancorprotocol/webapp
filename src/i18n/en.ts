@@ -160,9 +160,9 @@ export const en = {
   tokens_can_withdraw_now:
     "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
   fees: "Fees (24h)",
-  fees_generated:
-    "Fees are generated when traders swap in pools where you provide liquidity. Rewards are bonuses paid in BNT to liquidity providers.",
-  roi_protected_value:
+  fees_stake_earned:
+    "Fees and rewards earned by your stake since you entered the pool.",
+  roi__protected_value:
     "The ROI of your fully protected value vs. your initial stake.",
   estimated_calculation_annual_returns:
     "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
@@ -268,7 +268,7 @@ export const en = {
   about: "About (Coming Soon)",
   apps: "Apps",
   data: "Data",
-  developer_resources: "Developer Resources",
+  developers: "Developers",
   chat: "Chat",
   community_support: "Community & Support",
   terms_of_use: "Terms of Use",
@@ -285,7 +285,7 @@ export const en = {
   language: "Language",
   blockchains: "Blockchains",
   version: "Version",
-  protection: "Protection",
+  portfolio: "Portfolio",
   name: "Name",
   value_tokens_pool: "The value of tokens in the pool.",
   estimated_apr:
@@ -353,6 +353,7 @@ export const en = {
   creating_proposal: "Creating Proposal",
   vote_ended: "Vote Ended",
   you_withdrawing_rewards: "You are withdrawing rewards",
+  rewards_ended: "Rewards ended",
   withdraw_reset:
     "Withdrawing will reset your rewards multiplier for all active positions back to x1",
   pool_not_accepting: "This pool is not accepting additional liquidity.",
@@ -362,6 +363,10 @@ export const en = {
   limit: "Limit",
   defined_rate: "Defined Rate",
   expires_in: "Expires in",
+  manage_pool_tokens: "Manage your Bancor pool tokens.",
+  protect: "Protect",
+  reserve_breakdown: "Reserve Breakdown",
+  value: "Value",
   data_refreshes_auto: "Data refreshes automatically",
   multiplier_changes:
     "Starting at 1, your multiplier increase .25 each week until reaching 2. At which point, you are getting twice the rewards you were on week 1. The number to the left already takes this into account.",

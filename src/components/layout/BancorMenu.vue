@@ -44,7 +44,7 @@
           <span class="ml-3">{{ $t("data") }}</span>
         </div>
       </b-dropdown-item>
-      <b-dropdown-item :to="{ name: 'LiqProtection' }">
+      <b-dropdown-item :to="{ name: 'Portfolio' }">
         <font-awesome-icon icon="shield-alt" class="mr-2" fixed-width />
         {{ $t("liquidity_protection") }}
       </b-dropdown-item>
@@ -138,7 +138,7 @@
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
       <b-dropdown-header>
-        {{ $t("developer_resources") }}
+        {{ $t("developers") }}
       </b-dropdown-header>
       <b-dropdown-text>
         <div

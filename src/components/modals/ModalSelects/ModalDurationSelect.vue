@@ -136,30 +136,24 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import MainButton from "@/components/common/Button.vue";
 import dayjs from "@/utils/dayjs";
-
 @Component({
   components: { ModalBase, MainButton }
 })
 export default class ModalDurationSelect extends BaseComponent {
   @VModel() show!: boolean;
   @Prop({ type: String, default: "" }) title!: string;
-
   selectedDays = dayjs.duration({ days: 1 });
   selectedHours = dayjs.duration({ hours: 1 });
   selectedMinutes = dayjs.duration({ minutes: 1 });
-
   changeDays(days: number) {
     this.selectedDays = dayjs.duration({ days });
   }
-
   changeHours(hours: number) {
     this.selectedHours = dayjs.duration({ hours });
   }
-
   changeMinutes(minutes: number) {
     this.selectedMinutes = dayjs.duration({ minutes });
   }
-
   @Emit("confirm")
   confirm() {
     this.show = false;

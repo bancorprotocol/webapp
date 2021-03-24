@@ -559,7 +559,7 @@ export default class ProtectedTable extends BaseComponent {
         id: 4,
         key: "fees",
         label: i18n.tc("fees_rewards"),
-        tooltip: i18n.tc("fees_generated"),
+        tooltip: i18n.tc("fees_stake_earned"),
         minWidth: "120px",
         thClass: "text-center"
       },

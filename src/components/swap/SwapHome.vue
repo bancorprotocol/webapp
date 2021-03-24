@@ -16,8 +16,7 @@
         >{{ $t("limit") }}
       </b-button>
     </b-button-group>
-    <swap-market v-if="!limit" />
-    <swap-limit v-else />
+    <swap-action :limit="limit" />
   </content-block>
 </template>
 
