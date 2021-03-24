@@ -1,13 +1,42 @@
 <template>
   <b-container fluid="xl">
     <content-block
-      title="Active Orders"
+      :no-header="true"
       :px0="true"
       :shadow-light="true"
-      :search.sync="search"
       :padding="false"
       class="mt-3"
     >
+      <div class="d-flex justify-content-between py-2 px-3">
+        <h3 class="m-0 p-0 my-2 font-size-14 font-w600">Limit Orders</h3>
+
+        <div class="d-flex">
+          <div class="mr-3">
+            <b-btn
+              @click="cancelAll"
+              size="sm"
+              class="mr-2"
+              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+            >
+              Cancel all orders
+            </b-btn>
+            <b-btn
+              @click="withdrawWeth"
+              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+              size="sm"
+            >
+              Withdraw WETH
+            </b-btn>
+          </div>
+
+          <multi-input-field
+            v-model="search"
+            :clear="true"
+            placeholder="Search"
+            prepend="search"
+          />
+        </div>
+      </div>
       <data-table
         :fields="fields"
         :items="mockOrders"
@@ -85,9 +114,16 @@ import dayjs from "dayjs";
 import { formatPercent } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ModalCancelOrder from "@/components/modals/ModalCancelOrder.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 
 @Component({
-  components: { ModalCancelOrder, ModalBase, DataTable, ContentBlock }
+  components: {
+    MultiInputField,
+    ModalCancelOrder,
+    ModalBase,
+    DataTable,
+    ContentBlock
+  }
 })
 export default class LimitOrderTable extends BaseComponent {
   search = "";
@@ -161,6 +197,10 @@ export default class LimitOrderTable extends BaseComponent {
     return vxm.ethBancor.limitOrders;
   }
 
+  get allOrderIds() {
+    return this.orders.map(x => x.id);
+  }
+
   async initCancel() {
     if (!this.itemToCancel) return console.error("Item to cancel not found");
     try {
@@ -170,6 +210,22 @@ export default class LimitOrderTable extends BaseComponent {
     } finally {
       this.showCancelModal = false;
       this.itemToCancel = null;
+    }
+  }
+
+  async cancelAll() {
+    try {
+      // await vxm.ethBancor.cancelOrder(this.allOrderIds);
+    } catch (e) {
+      console.error("failed to cancel all limit orders", e);
+    }
+  }
+
+  async withdrawWeth() {
+    try {
+      // await vxm.ethBancor.withdrawWeth({});
+    } catch (e) {
+      console.error("failed to withdraw weth", e);
     }
   }
 
