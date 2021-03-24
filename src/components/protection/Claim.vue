@@ -30,7 +30,7 @@
       </b-col>
     </b-row>
 
-    <modal-tx-action title="Claim your BNT" icon="coins" :tx-meta="txMeta" />
+    <modal-tx-action :title="$t('claim_bnt')" icon="coins" :tx-meta="txMeta" />
   </div>
 </template>
 

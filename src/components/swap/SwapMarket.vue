@@ -107,18 +107,18 @@
     />
 
     <modal-tx-action
-      title="Confirm Token Swap"
+      :title="$t('confirm_token_swap')"
       icon="exchange-alt"
       :tx-meta.sync="txMeta"
     >
       <gray-border-block>
         <label-content-split
-          label="Sell"
+          :label="$t('modal.limit_order.sell')"
           :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
           class="mb-2"
         />
         <label-content-split
-          label="Receive"
+          :label="$t('modal.limit_order.receive')"
           :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
         />
       </gray-border-block>
@@ -135,8 +135,12 @@
       </p>
 
       <gray-border-block gray-bg="true">
-        <label-content-split label="Rate" :value="rate" class="mb-2" />
-        <label-content-split label="Price Impact" :value="priceImpact" />
+        <label-content-split
+          :label="$t('modal.limit_order.rate')"
+          :value="rate"
+          class="mb-2"
+        />
+        <label-content-split :label="$t('price_impact')" :value="priceImpact" />
       </gray-border-block>
     </modal-tx-action>
   </div>
@@ -170,7 +174,7 @@ import { addNotification } from "@/components/compositions/notifications";
     MainButton
   }
 })
-export default class SwapAction extends BaseTxAction {
+export default class SwapMarket extends BaseTxAction {
   @Prop({ default: false }) limit!: boolean;
 
   amount1 = "";

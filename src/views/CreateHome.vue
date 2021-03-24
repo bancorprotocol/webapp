@@ -25,7 +25,7 @@
     </content-block>
 
     <modal-tx-action
-      title="Create Pool"
+      :title="$t('create_Pool')"
       icon="plus"
       :tx-meta.sync="txMeta"
       redirect-on-success="Pool"
