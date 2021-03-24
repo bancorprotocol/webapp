@@ -236,35 +236,14 @@ export default class SwapLimit extends BaseTxAction {
     return Field;
   }
 
-  inverseRate = false;
-
   get rate() {
-    let rate = "";
-    switch (this.inverseRate) {
-      case false: {
-        if (this.amount1 && this.amount2)
-          rate = this.prettifyNumber(
-            Number(this.amount1) / Number(this.amount2)
-          );
-        else rate = this.prettifyNumber(1 / Number(this.initialRate));
-        return (
-          "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
-        );
-      }
-      default: {
-        if (this.amount1 && this.amount2)
-          rate = this.prettifyNumber(
-            Number(this.amount2) / Number(this.amount1)
-          );
-        else {
-          rate = this.prettifyNumber(Number(this.initialRate));
-        }
-        return (
-          "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
-        );
-      }
-    }
+    const rate = this.prettifyNumber(1 / Number(this.initialRate));
+    return this.inverseRate
+      ? "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
+      : "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol;
   }
+
+  inverseRate = false;
 
   get disableButton() {
     if (!this.currentUser && this.amount1) return false;
@@ -470,14 +449,14 @@ export default class SwapLimit extends BaseTxAction {
   async calculateRate() {
     this.rateLoading = true;
     try {
-      const reward = await vxm.bancor.getReturn({
+      const rate = await vxm.bancor.getReturn({
         from: {
           id: this.token1.id,
           amount: "1"
         },
         toId: this.token2.id
       });
-      this.initialRate = reward.amount;
+      this.initialRate = rate.amount;
     } catch (e) {
       console.error(e);
     }
