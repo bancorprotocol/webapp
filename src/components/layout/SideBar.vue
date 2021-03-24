@@ -127,7 +127,7 @@ export default class SideBar extends BaseComponent {
         icon: "bntee.png"
       },
       {
-        route: "https://www.duneanalytics.com/bancor",
+        route: "https://duneanalytics.com/Bancor/bancor_1",
         key: "analytics",
         label: "Bancor Analytics",
         newTab: true,
