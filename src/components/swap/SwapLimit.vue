@@ -43,15 +43,14 @@
           class="mb-2"
         />
         <div class="d-flex align-items-center mb-3">
-          {{ `1 ${token1.symbol} =` }}
+          <span style="white-space: nowrap">{{ `1 ${token1.symbol} =` }}</span>
           <multi-input-field
             @input="rateCalcField()"
             v-model="limitRate"
-            class="mx-2"
             :placeholder="rate"
             :append="$t('defined_rate')"
-            :alertMsg="rateAlert"
-            :alertVariant="rateVariant"
+            :alert-msg="rateAlert"
+            :alert-variant="rateVariant"
             :format="true"
             height="48"
           />

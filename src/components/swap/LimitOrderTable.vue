@@ -12,14 +12,17 @@
 
         <div class="d-flex">
           <div class="d-flex mr-3">
-            <b-btn
-              @click="openCancelModal(null)"
-              size="sm"
-              class="mr-2"
-              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-            >
-              Cancel all orders
-            </b-btn>
+            <div>
+              <b-btn
+                @click="openCancelModal(null)"
+                size="sm"
+                class="mr-2"
+                :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+              >
+                Cancel all orders
+              </b-btn>
+            </div>
+
             <withdraw-weth />
           </div>
 
