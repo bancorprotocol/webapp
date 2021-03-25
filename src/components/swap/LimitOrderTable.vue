@@ -211,7 +211,7 @@ export default class LimitOrderTable extends BaseComponent {
           amount: "12.44"
         },
         orderHash: "12344555",
-        id: "1",
+        id: "2",
         percentFilled: 0.6,
         status: OrderStatus.EXPIRED
       }
