@@ -42,17 +42,21 @@
           :loading="rateLoading"
           class="mb-2"
         />
-        <multi-input-field
-          @input="rateCalcField()"
-          class="mb-3"
-          v-model="limitRate"
-          :placeholder="rate"
-          :append="$t('defined_rate')"
-          :alertMsg="rateAlert"
-          :alertVariant="rateVariant"
-          :format="true"
-          height="48"
-        />
+        <div class="d-flex align-items-center mb-3">
+          {{ `1 ${token1.symbol} =` }}
+          <multi-input-field
+            @input="rateCalcField()"
+            v-model="limitRate"
+            class="mx-2"
+            :placeholder="rate"
+            :append="$t('defined_rate')"
+            :alertMsg="rateAlert"
+            :alertVariant="rateVariant"
+            :format="true"
+            height="48"
+          />
+          {{ token2.symbol }}
+        </div>
         <label-content-split :label="$t('expires_in')">
           <b-dropdown
             :variant="darkMode ? 'outline-dark' : 'outline-light'"
