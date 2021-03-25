@@ -45,7 +45,7 @@
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             icon="times"
           />
-          <div v-else style="min-width: 8.25px"></div>
+          <div v-else style="min-width: 8px"></div>
         </div>
       </b-input-group-append>
     </b-input-group>

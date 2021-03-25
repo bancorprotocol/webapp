@@ -46,16 +46,21 @@
           <span style="white-space: nowrap">{{ `1 ${token1.symbol} =` }}</span>
           <multi-input-field
             @input="rateCalcField()"
+            class="mx-2"
             v-model="limitRate"
             :placeholder="rate"
             :append="$t('defined_rate')"
-            :alert-msg="rateAlert"
-            :alert-variant="rateVariant"
             :format="true"
             height="48"
           />
           {{ token2.symbol }}
         </div>
+        <alert-block
+          class="mb-2"
+          v-if="rateAlert !== ''"
+          :variant="rateVariant"
+          :msg="rateAlert"
+        />
         <label-content-split :label="$t('expires_in')">
           <b-dropdown
             :variant="darkMode ? 'outline-dark' : 'outline-light'"
@@ -174,6 +179,7 @@ import { formatDuration } from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
@@ -185,7 +191,8 @@ import { addNotification } from "@/components/compositions/notifications";
     TokenInputField,
     MultiInputField,
     MainButton,
-    ModalDurationSelect
+    ModalDurationSelect,
+    AlertBlock
   }
 })
 export default class SwapLimit extends BaseTxAction {
