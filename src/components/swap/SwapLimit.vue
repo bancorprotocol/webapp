@@ -102,7 +102,7 @@
       :disabled="disableButton"
     />
     <modal-duration-select
-      :initialDuration="selectedDuration"
+      :initial-duration="selectedDuration"
       v-model="modalSelectDuration"
       @confirm="changeDuration"
     />
@@ -526,7 +526,7 @@ export default class SwapLimit extends BaseTxAction {
       if (this.$route.query.from) defaultQuery.from = this.$route.query.from;
       // @ts-ignore
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
-      await this.$router.replace({ name: "Swap", query: defaultQuery });
+      await this.$router.replace({ name: "SwapLimit", query: defaultQuery });
     }
     [this.keeperDaoList] = await Promise.all([
       getTokenList(),

@@ -223,7 +223,8 @@ export const router = new Router({
       path: "/:service/swap",
       components: {
         Nav: Navigation,
-        Hero: SwapHome
+        Hero: SwapHome,
+        default: LimitOrderTable
       },
       props: true,
       meta: {
@@ -233,12 +234,7 @@ export const router = new Router({
       children: [
         {
           path: "",
-          name: "LimitOrderTable",
-          component: LimitOrderTable
-        },
-        {
-          path: "market",
-          name: "SwapMarket",
+          name: "Swap",
           component: SwapMarket
         },
         {

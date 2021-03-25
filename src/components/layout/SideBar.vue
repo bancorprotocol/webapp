@@ -62,7 +62,7 @@ export default class SideBar extends BaseComponent {
         icon: "data.svg"
       },
       {
-        route: "SwapMarket",
+        route: "Swap",
         key: "swap",
         label: i18n.t("swap"),
         newTab: false,
