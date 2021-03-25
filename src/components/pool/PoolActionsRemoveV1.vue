@@ -78,7 +78,7 @@
 
     <modal-tx-action
       title="Remove Liquidity"
-      icon="minus"
+      icon="arrow-from-bottom"
       :tx-meta.sync="txMeta"
       redirect-on-success="Pool"
     >

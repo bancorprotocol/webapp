@@ -42,14 +42,21 @@
           :loading="rateLoading"
           class="mb-2"
         />
-        <multi-input-field
-          @input="rateCalcField()"
-          class="mb-3"
-          v-model="limitRate"
-          :placeholder="rate"
-          :append="$t('defined_rate')"
-          height="48"
-        />
+        <div class="d-flex align-items-center mb-3">
+          {{ `1 ${token1.symbol} =` }}
+          <multi-input-field
+            @input="rateCalcField()"
+            v-model="limitRate"
+            class="mx-2"
+            :placeholder="rate"
+            :append="$t('defined_rate')"
+            :alertMsg="rateAlert"
+            :alertVariant="rateVariant"
+            :format="true"
+            height="48"
+          />
+          {{ token2.symbol }}
+        </div>
         <label-content-split :label="$t('expires_in')">
           <b-dropdown
             :variant="darkMode ? 'outline-dark' : 'outline-light'"
@@ -203,6 +210,8 @@ export default class SwapLimit extends BaseTxAction {
   fee: string | null = null;
 
   errorToken1 = "";
+  rateAlert = "";
+  rateVariant = "";
 
   rateLoading = false;
   userSettedRate = false;
@@ -227,13 +236,15 @@ export default class SwapLimit extends BaseTxAction {
   }
 
   get rate() {
-    const rate = this.prettifyNumber(1 / Number(this.initialRate));
-    return this.inverseRate
-      ? "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
-      : "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol;
+    return (
+      "1 " +
+      this.token1.symbol +
+      " = " +
+      this.prettifyNumber(this.initialRate) +
+      " " +
+      this.token2.symbol
+    );
   }
-
-  inverseRate = false;
 
   get disableButton() {
     if (!this.currentUser && this.amount1) return false;
@@ -359,17 +370,10 @@ export default class SwapLimit extends BaseTxAction {
         },
         toId: this.token2.id
       });
-      if (reward.slippage) {
-        this.slippage = reward.slippage;
-      } else {
-        this.slippage = 0;
-      }
-      if (reward.fee) {
-        this.fee = reward.fee;
-      }
-      this.amount2 = reward.amount;
-      const raiseError = new BigNumber(this.balance1).isLessThan(amount);
-      this.errorToken1 = raiseError ? i18n.tc("insufficient_token") : "";
+
+      if (reward.slippage) this.slippage = reward.slippage;
+      else this.slippage = 0;
+      if (reward.fee) this.fee = reward.fee;
     } catch (e) {
       this.errorToken1 = e.message;
     } finally {
@@ -407,7 +411,7 @@ export default class SwapLimit extends BaseTxAction {
         else this.calcLimitRate();
       } else if (this.limitRate) this.calcAmount2();
     }
-    this.checkError();
+    this.checkAlerts();
   }
 
   amount2CalcField() {
@@ -417,7 +421,7 @@ export default class SwapLimit extends BaseTxAction {
         else this.calcLimitRate();
       else if (this.limitRate) this.calcAmount1();
     }
-    this.checkError();
+    this.checkAlerts();
   }
 
   rateCalcField() {
@@ -429,7 +433,7 @@ export default class SwapLimit extends BaseTxAction {
       } else if (this.amount1) this.calcAmount2();
       else if (this.amount2) this.calcAmount1();
     } else this.userSettedRate = false;
-    this.checkError();
+    this.checkAlerts();
   }
 
   async calculateRate() {
@@ -449,11 +453,19 @@ export default class SwapLimit extends BaseTxAction {
     this.rateLoading = false;
   }
 
-  checkError() {
+  checkAlerts() {
     this.errorToken1 =
       this.amount1 && new BigNumber(this.balance1).isLessThan(this.amount1)
         ? i18n.tc("insufficient_token")
         : "";
+    const initialRate = new BigNumber(this.initialRate);
+    if (initialRate.isGreaterThan(this.limitRate)) {
+      this.rateAlert = i18n.tc("rate_below_market");
+      this.rateVariant = "error";
+    } else if (initialRate.times(1.2).isLessThan(this.limitRate)) {
+      this.rateAlert = i18n.tc("rate_above_market");
+      this.rateVariant = "warning";
+    } else this.rateAlert = "";
   }
 
   get balance1() {
@@ -503,6 +515,7 @@ export default class SwapLimit extends BaseTxAction {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
+    this.checkAlerts();
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
   }
