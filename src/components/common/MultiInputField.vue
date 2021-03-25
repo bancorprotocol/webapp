@@ -27,6 +27,7 @@
         :type="type"
         :style="styleInput"
         :autofocus="autofocus"
+        :formatter="format ? formatter : null"
       />
       <b-input-group-append v-if="append || clear">
         <div
@@ -76,6 +77,7 @@ export default class MultiInputField extends BaseComponent {
   @Prop() append?: string;
   @Prop() prepend?: string;
   @Prop() alertMsg?: string;
+  @Prop({ default: false }) format?: boolean;
   @Prop({ default: "error" }) alertVariant?: string;
   @Prop() autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
@@ -106,6 +108,16 @@ export default class MultiInputField extends BaseComponent {
     if (this.fontSize === "sm") return "font-size-12";
     else if (this.fontSize === "md") return "font-size-14";
     else return "font-size-16";
+  }
+
+  formatter(text: String) {
+    if (text === undefined) text = this.text.toString();
+
+    return text
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
   }
 
   clearText() {

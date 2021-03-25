@@ -50,6 +50,7 @@
           :append="$t('defined_rate')"
           :alertMsg="rateAlert"
           :alertVariant="rateVariant"
+          :format="true"
           height="48"
         />
         <label-content-split :label="$t('expires_in')">
@@ -231,13 +232,15 @@ export default class SwapLimit extends BaseTxAction {
   }
 
   get rate() {
-    const rate = this.prettifyNumber(1 / Number(this.initialRate));
-    return this.inverseRate
-      ? "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
-      : "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol;
+    return (
+      "1 " +
+      this.token1.symbol +
+      " = " +
+      this.prettifyNumber(this.initialRate) +
+      " " +
+      this.token2.symbol
+    );
   }
-
-  inverseRate = false;
 
   get disableButton() {
     if (!this.currentUser && this.amount1) return false;
@@ -363,17 +366,10 @@ export default class SwapLimit extends BaseTxAction {
         },
         toId: this.token2.id
       });
-      if (reward.slippage) {
-        this.slippage = reward.slippage;
-      } else {
-        this.slippage = 0;
-      }
-      if (reward.fee) {
-        this.fee = reward.fee;
-      }
-      this.amount2 = reward.amount;
-      const raiseError = new BigNumber(this.balance1).isLessThan(amount);
-      this.errorToken1 = raiseError ? i18n.tc("insufficient_token") : "";
+
+      if (reward.slippage) this.slippage = reward.slippage;
+      else this.slippage = 0;
+      if (reward.fee) this.fee = reward.fee;
     } catch (e) {
       this.errorToken1 = e.message;
     } finally {
@@ -458,7 +454,7 @@ export default class SwapLimit extends BaseTxAction {
       this.amount1 && new BigNumber(this.balance1).isLessThan(this.amount1)
         ? i18n.tc("insufficient_token")
         : "";
-    const initialRate = new BigNumber(1).div(this.initialRate);
+    const initialRate = new BigNumber(this.initialRate);
     if (initialRate.isGreaterThan(this.limitRate)) {
       this.rateAlert = i18n.tc("rate_below_market");
       this.rateVariant = "error";
@@ -515,6 +511,7 @@ export default class SwapLimit extends BaseTxAction {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
+    this.checkAlerts();
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
   }
