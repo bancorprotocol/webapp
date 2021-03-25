@@ -48,6 +48,8 @@
           v-model="limitRate"
           :placeholder="rate"
           :append="$t('defined_rate')"
+          :alertMsg="rateAlert"
+          :alertVariant="rateVariant"
           height="48"
         />
         <label-content-split :label="$t('expires_in')">
@@ -203,6 +205,8 @@ export default class SwapLimit extends BaseTxAction {
   fee: string | null = null;
 
   errorToken1 = "";
+  rateAlert = "";
+  rateVariant = "";
 
   rateLoading = false;
   userSettedRate = false;
@@ -407,7 +411,7 @@ export default class SwapLimit extends BaseTxAction {
         else this.calcLimitRate();
       } else if (this.limitRate) this.calcAmount2();
     }
-    this.checkError();
+    this.checkAlerts();
   }
 
   amount2CalcField() {
@@ -417,7 +421,7 @@ export default class SwapLimit extends BaseTxAction {
         else this.calcLimitRate();
       else if (this.limitRate) this.calcAmount1();
     }
-    this.checkError();
+    this.checkAlerts();
   }
 
   rateCalcField() {
@@ -429,7 +433,7 @@ export default class SwapLimit extends BaseTxAction {
       } else if (this.amount1) this.calcAmount2();
       else if (this.amount2) this.calcAmount1();
     } else this.userSettedRate = false;
-    this.checkError();
+    this.checkAlerts();
   }
 
   async calculateRate() {
@@ -449,11 +453,19 @@ export default class SwapLimit extends BaseTxAction {
     this.rateLoading = false;
   }
 
-  checkError() {
+  checkAlerts() {
     this.errorToken1 =
       this.amount1 && new BigNumber(this.balance1).isLessThan(this.amount1)
         ? i18n.tc("insufficient_token")
         : "";
+    const initialRate = new BigNumber(1).div(this.initialRate);
+    if (initialRate.isGreaterThan(this.limitRate)) {
+      this.rateAlert = i18n.tc("rate_below_market");
+      this.rateVariant = "error";
+    } else if (initialRate.times(1.2).isLessThan(this.limitRate)) {
+      this.rateAlert = i18n.tc("rate_above_market");
+      this.rateVariant = "warning";
+    } else this.rateAlert = "";
   }
 
   get balance1() {

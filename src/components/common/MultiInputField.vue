@@ -48,6 +48,11 @@
         </div>
       </b-input-group-append>
     </b-input-group>
+    <alert-block
+      v-if="alertMsg !== ''"
+      :variant="alertVariant"
+      :msg="alertMsg"
+    />
   </div>
 </template>
 
@@ -55,10 +60,11 @@
 import { Component, Prop, VModel } from "vue-property-decorator";
 import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
-  components: { LabelContentSplit }
+  components: { LabelContentSplit, AlertBlock }
 })
 export default class MultiInputField extends BaseComponent {
   @VModel() text!: string | number;
@@ -69,6 +75,8 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: 32 }) height!: number;
   @Prop() append?: string;
   @Prop() prepend?: string;
+  @Prop() alertMsg?: string;
+  @Prop({ default: "error" }) alertVariant?: string;
   @Prop() autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
 
