@@ -5,7 +5,7 @@
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       size="sm"
     >
-      {{ $t("button.withdraw_weth") }}
+      {{ $tc("button.withdraw_weth", 0, { amount: balance }) }}
     </b-btn>
 
     <modal-tx-action
@@ -36,7 +36,7 @@
       </gray-border-block>
 
       <p
-        class="font-size-12 font-w400 mt-3 mb-0"
+        class="font-size-12 font-w400 mt-3 mb-0 text-left px-3"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         {{ $t("modal.withdraw_weth.info") }}
@@ -53,6 +53,8 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import BigNumber from "bignumber.js";
+import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
+
 @Component({
   components: {
     GrayBorderBlock,
@@ -62,12 +64,17 @@ import BigNumber from "bignumber.js";
   }
 })
 export default class WithdrawWeth extends BaseTxAction {
-  balance = 123;
   percentage = "50";
+
+  get balance(): string {
+    const wethToken = vxm.bancor.token(wethTokenContractAddress);
+    return wethToken.balance ?? "0";
+  }
 
   get output() {
     const percentage = new BigNumber(this.percentage).div(100);
-    return new BigNumber(this.balance).times(percentage).toString();
+    const amount = new BigNumber(this.balance).times(percentage).toString();
+    return this.prettifyNumber(amount);
   }
   async withdrawWeth() {
     this.openModal();

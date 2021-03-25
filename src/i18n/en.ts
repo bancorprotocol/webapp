@@ -438,7 +438,7 @@ export const en = {
     }
   },
   button: {
-    withdraw_weth: "Withdraw WETH"
+    withdraw_weth: "Withdraw {amount} WETH"
   },
   protected_not_found: "No protected positions found.",
   claim_bnt: "Claim your BNT",
