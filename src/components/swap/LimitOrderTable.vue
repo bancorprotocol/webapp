@@ -13,6 +13,7 @@
         <div class="d-flex">
           <div class="d-flex mr-3">
             <b-btn
+              @click="openCancelModal(null)"
               size="sm"
               class="mr-2"
               :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
@@ -192,7 +193,7 @@ export default class LimitOrderTable extends BaseComponent {
     return this.orders.map(x => x.id);
   }
 
-  openCancelModal(item: ViewLimitOrder) {
+  openCancelModal(item: ViewLimitOrder | null) {
     this.itemToCancel = item;
     this.showCancelModal = true;
   }
