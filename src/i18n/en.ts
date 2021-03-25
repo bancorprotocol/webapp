@@ -427,7 +427,18 @@ export const en = {
       sell: "Sell",
       receive: "Receive",
       rate: "Rate"
+    },
+    withdraw_weth: {
+      title: "Confirm Withdraw",
+      balance: "Available Balance",
+      amount: "Withdraw Amount",
+      output_amount: "Your Output amount is",
+      info:
+        "WETH, is a token that represents ETH 1:1 and conforms to the ERC20 token standard."
     }
+  },
+  button: {
+    withdraw_weth: "Withdraw WETH"
   },
   protected_not_found: "No protected positions found.",
   claim_bnt: "Claim your BNT",
