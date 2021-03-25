@@ -54,6 +54,7 @@ import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import BigNumber from "bignumber.js";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -82,11 +83,16 @@ export default class WithdrawWeth extends BaseTxAction {
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {
-      await vxm.ethBancor.withdrawWeth({
+      this.txMeta.success = await vxm.ethBancor.withdrawWeth({
         decAmount: this.output,
         onPrompt: this.onPrompt
       });
       this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.widthdraw_weth.title"),
+        description: this.$tc("notifications.add.widthdraw_weth.description"),
+        txHash: this.txMeta.success!.txId
+      });
     } catch (e) {
       console.error("failed to withdraw weth", e);
       this.txMeta.txError = e.message;

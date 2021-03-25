@@ -416,6 +416,10 @@ export const en = {
         title: "Remove Liquidity",
         description:
           "Remove {amount1} {symbol1} and {amount2} {symbol2} in liquidity from {pool} pool."
+      },
+      withdraw_weth: {
+        title: "Withdraw Weth",
+        description: "Successfully withdrawn {amount} WETH."
       }
     }
   },
