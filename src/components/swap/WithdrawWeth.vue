@@ -1,0 +1,91 @@
+<template>
+  <div>
+    <b-btn
+      @click="withdrawWeth()"
+      :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+      size="sm"
+    >
+      {{ $t("button.withdraw_weth") }}
+    </b-btn>
+
+    <modal-tx-action
+      :title="$t('modal.withdraw_weth.title')"
+      icon="arrow-from-bottom"
+      :tx-meta="txMeta"
+    >
+      <label-content-split :label="$t('modal.withdraw_weth.balance')">
+        {{ balance }} WETH
+      </label-content-split>
+
+      <hr />
+
+      <percentage-slider
+        v-model="percentage"
+        :label="$t('modal.withdraw_weth.amount')"
+        :show-buttons="true"
+      />
+
+      <gray-border-block class="mt-4">
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("modal.withdraw_weth.output_amount") }}
+        </span>
+        <div class="font-size-14 font-w500">{{ output }} ETH</div>
+      </gray-border-block>
+
+      <p
+        class="font-size-12 font-w400 mt-3 mb-0"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
+        {{ $t("modal.withdraw_weth.info") }}
+      </p>
+    </modal-tx-action>
+  </div>
+</template>
+<script lang="ts">
+import { Component } from "vue-property-decorator";
+import { vxm } from "@/store";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import PercentageSlider from "@/components/common/PercentageSlider.vue";
+import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import BigNumber from "bignumber.js";
+@Component({
+  components: {
+    GrayBorderBlock,
+    PercentageSlider,
+    LabelContentSplit,
+    ModalTxAction
+  }
+})
+export default class WithdrawWeth extends BaseTxAction {
+  balance = 123;
+  percentage = "50";
+
+  get output() {
+    const percentage = new BigNumber(this.percentage).div(100);
+    return new BigNumber(this.balance).times(percentage).toString();
+  }
+  async withdrawWeth() {
+    this.openModal();
+
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
+    try {
+      await vxm.ethBancor.withdrawWeth({
+        decAmount: this.output,
+        onPrompt: this.onPrompt
+      });
+      this.txMeta.showTxModal = false;
+    } catch (e) {
+      console.error("failed to withdraw weth", e);
+      this.txMeta.txError = e.message;
+    } finally {
+      this.txMeta.txBusy = false;
+    }
+  }
+}
+</script>

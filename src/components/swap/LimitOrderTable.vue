@@ -11,22 +11,15 @@
         <h3 class="m-0 p-0 my-2 font-size-14 font-w600">Limit Orders</h3>
 
         <div class="d-flex">
-          <div class="mr-3">
+          <div class="d-flex mr-3">
             <b-btn
-              @click="initAction('cancelAll')"
               size="sm"
               class="mr-2"
               :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
             >
               Cancel all orders
             </b-btn>
-            <b-btn
-              @click="initAction('withdrawWeth')"
-              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-              size="sm"
-            >
-              Withdraw WETH
-            </b-btn>
+            <withdraw-weth />
           </div>
 
           <multi-input-field
@@ -94,7 +87,6 @@
     </content-block>
 
     <modal-cancel-order v-model="showCancelModal" :limit-order="itemToCancel" />
-    <modal-tx-action :tx-meta="txMeta" />
   </b-container>
 </template>
 
@@ -110,19 +102,19 @@ import dayjs from "dayjs";
 import { formatPercent } from "@/api/helpers";
 import ModalCancelOrder from "@/components/modals/ModalCancelOrder.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import BaseTxAction from "@/components/BaseTxAction.vue";
-import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
+import WithdrawWeth from "@/components/swap/WithdrawWeth.vue";
 
 @Component({
   components: {
-    ModalTxAction,
+    WithdrawWeth,
     MultiInputField,
     ModalCancelOrder,
     DataTable,
     ContentBlock
   }
 })
-export default class LimitOrderTable extends BaseTxAction {
+export default class LimitOrderTable extends BaseComponent {
   search = "";
   showCancelModal = false;
   itemToCancel: ViewLimitOrder | null = null;
@@ -198,41 +190,6 @@ export default class LimitOrderTable extends BaseTxAction {
 
   get allOrderIds() {
     return this.orders.map(x => x.id);
-  }
-
-  async initAction(action: "cancelAll" | "withdrawWeth") {
-    this.openModal();
-
-    if (this.txMeta.txBusy) return;
-    this.txMeta.txBusy = true;
-    try {
-      if (action === "cancelAll") await this.cancelAll();
-      if (action === "withdrawWeth") await this.withdrawWeth();
-
-      // this.txMeta.showTxModal = false;
-    } catch (e) {
-      this.txMeta.txError = e.message;
-    } finally {
-      // this.txMeta.txBusy = false;
-    }
-  }
-
-  async cancelAll() {
-    try {
-      // await vxm.ethBancor.cancelOrder(this.allOrderIds);
-    } catch (e) {
-      console.error("failed to cancel all limit orders", e);
-      throw e;
-    }
-  }
-
-  async withdrawWeth() {
-    try {
-      // await vxm.ethBancor.withdrawWeth({});
-    } catch (e) {
-      console.error("failed to withdraw weth", e);
-      throw e;
-    }
   }
 
   openCancelModal(item: ViewLimitOrder) {
