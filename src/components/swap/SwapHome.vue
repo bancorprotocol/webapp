@@ -16,22 +16,17 @@
         >{{ $t("limit") }}
       </b-button>
     </b-button-group>
-    <swap-limit v-if="limit" />
-    <swap-market v-else />
+    <router-view />
   </content-block>
 </template>
 
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
-import SwapLimit from "@/components/swap/SwapLimit.vue";
-import SwapMarket from "@/components/swap/SwapMarket.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
   components: {
-    SwapLimit,
-    SwapMarket,
     ContentBlock
   }
 })
