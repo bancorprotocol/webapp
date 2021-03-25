@@ -420,6 +420,14 @@ export const en = {
       withdraw_weth: {
         title: "Withdraw Weth",
         description: "Successfully withdrawn {amount} WETH."
+      },
+      cancel_order: {
+        title: "Cancel Limit Order",
+        description: "Limit Order canceled successfully."
+      },
+      cancel_all_orders: {
+        title: "Cancel All Limit Orders",
+        description: "All Limit Orders canceled successfully."
       }
     }
   },
@@ -439,9 +447,18 @@ export const en = {
       output_amount: "Your Output amount is",
       info:
         "WETH, is a token that represents ETH 1:1 and conforms to the ERC20 token standard."
+    },
+    cancel_order: {
+      title: "Cancel Transaction",
+      description: "You are canceling a limit order"
+    },
+    cancel_all_orders: {
+      title: "Cancel all Transactions",
+      description: "You are about to cancel all open orders"
     }
   },
   button: {
+    confirm: "Confirm",
     withdraw_weth: "Withdraw {amount} WETH"
   },
   protected_not_found: "No protected positions found.",
