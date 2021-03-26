@@ -114,8 +114,9 @@ export default class ModalCancelOrder extends BaseComponent {
   async cancelById() {
     if (!this.limitOrder) return;
     try {
-      await vxm.ethBancor.cancelOrder(this.limitOrder.id);
+      const { txId } = await vxm.ethBancor.cancelOrders([this.limitOrder.id]);
       addNotification({
+        txHash: txId,
         title: this.$tc("notifications.add.cancel_order.title"),
         description: this.$tc("notifications.add.cancel_order.description"),
         status: ENotificationStatus.success
@@ -136,8 +137,9 @@ export default class ModalCancelOrder extends BaseComponent {
   async cancelAll() {
     const allOrderIds = vxm.ethBancor.limitOrders.map(x => x.id);
     try {
-      // await vxm.ethBancor.cancelOrder(allOrderIds);
+      const { txId } = await vxm.ethBancor.cancelOrders(allOrderIds);
       addNotification({
+        txHash: txId,
         title: this.$tc("notifications.add.cancel_all_orders.title"),
         description: this.$tc(
           "notifications.add.cancel_all_orders.description"
