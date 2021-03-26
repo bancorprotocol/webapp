@@ -230,7 +230,9 @@ export default class SwapLimit extends BaseTxAction {
   modalSelectDuration = false;
 
   get tokens() {
-    return vxm.bancor.tokens.filter(token => token.tradeSupported);
+    return vxm.bancor.tokens.filter(
+      token => token.tradeSupported && token.limitOrderAvailable
+    );
   }
 
   get priceImpact() {
