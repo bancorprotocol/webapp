@@ -238,7 +238,8 @@ import {
   RfqOrderJson,
   sendOrders,
   OrderStatus,
-  orderToStringOrder
+  orderToStringOrder,
+  limitOrderTrigger$
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
@@ -7062,7 +7063,9 @@ export class EthBancorModule
     const jsonOrder = buildRfqJsonOrder(order, signature);
 
     await sendOrders([jsonOrder]);
-    // wait(1000).then(() => orderRece)
+    wait(100).then(() => limitOrderTrigger$.next(null));
+    wait(1000).then(() => limitOrderTrigger$.next(null));
+    wait(10000).then(() => limitOrderTrigger$.next(null));
   }
 
   @action async getReturn({

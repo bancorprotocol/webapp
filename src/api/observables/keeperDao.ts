@@ -1,6 +1,6 @@
 import { authenticated$, onLogin$ } from "./auth";
 import axios from "axios";
-import { combineLatest } from "rxjs";
+import { combineLatest, Subject } from "rxjs";
 import { filter, map, pluck, share } from "rxjs/operators";
 import { switchMapIgnoreThrow } from "./customOperators";
 import { oneMinute$ } from "./timers";
@@ -230,7 +230,14 @@ export const keeperTokens$ = oneMinute$.pipe(
   share()
 );
 
-export const limitOrders$ = combineLatest([onLogin$, oneMinute$]).pipe(
+export const limitOrderTrigger$ = new Subject<null>();
+limitOrderTrigger$.next(null);
+
+export const limitOrders$ = combineLatest([
+  onLogin$,
+  oneMinute$,
+  limitOrderTrigger$
+]).pipe(
   switchMapIgnoreThrow(([currentUser]) => getOrders(currentUser)),
   pluck("orders"),
   map(orders =>
