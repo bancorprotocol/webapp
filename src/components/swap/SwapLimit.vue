@@ -231,7 +231,9 @@ export default class SwapLimit extends BaseTxAction {
 
   get tokens() {
     return vxm.bancor.tokens.filter(
-      token => token.tradeSupported && token.limitOrderAvailable
+      token =>
+        token.tradeSupported &&
+        (token.limitOrderAvailable || token.id === ethReserveAddress)
     );
   }
 
@@ -340,7 +342,7 @@ export default class SwapLimit extends BaseTxAction {
       amount: this.amount1
     };
 
-    const fromIsEth = ethReserveAddress == fromViewAmount.id;
+    const fromIsEth = ethReserveAddress === fromViewAmount.id;
     if (fromIsEth) {
       // bring up modal...?
       const res = await vxm.ethBancor.depositWeth({
