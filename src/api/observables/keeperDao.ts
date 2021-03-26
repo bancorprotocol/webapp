@@ -241,9 +241,6 @@ export const limitOrders$ = combineLatest([
   oneMinute$,
   limitOrderTrigger$
 ]).pipe(
-  tap(x => {
-    alert(JSON.stringify(x));
-  }),
   switchMapIgnoreThrow(([currentUser]) => getOrders(currentUser)),
   pluck("orders"),
   map(orders =>
