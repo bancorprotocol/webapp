@@ -118,7 +118,8 @@ import {
   buildRegistryContract,
   buildTokenContract,
   buildV28ConverterContract,
-  buildV2Converter
+  buildV2Converter,
+  buildExchangeProxyContract
 } from "@/api/eth/contractTypes";
 import {
   generateEthPath,
@@ -231,14 +232,13 @@ import {
 import { authenticatedReceiver$ } from "@/api/observables/auth";
 import {
   getTxOrigin,
-  keeperDaoContract,
   keeperTokens$,
   limitOrders$,
   OrderElement,
-  orderToBigNumberOrder,
   RfqOrderJson,
   sendOrders,
-  OrderStatus
+  OrderStatus,
+  orderToStringOrder
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
@@ -298,11 +298,17 @@ const viewLimitOrders$ = combineLatest([
             id: order.order.makerToken,
             logo: fromTokenImage,
             symbol: fromToken.symbol,
-            amount: shrinkToken(order.order.makerAmount, fromToken.decimals)
+            amount: shrinkToken(
+              order.order.makerAmount.toString(),
+              fromToken.decimals
+            )
           },
           to: {
             id: order.order.takerToken,
-            amount: shrinkToken(order.order.takerAmount, toToken.decimals),
+            amount: shrinkToken(
+              order.order.takerAmount.toString(),
+              toToken.decimals
+            ),
             logo: toTokenImage,
             symbol: toToken.symbol
           },
@@ -6950,28 +6956,31 @@ export class EthBancorModule
     );
   }
 
-  @action async cancelOrder(orderId: string) {
-    const limitOrder = findOrThrow(
-      this.rawLimitOrdersArr,
-      order => compareString(order.metaData.orderHash, orderId),
-      `failed finding order with ID of ${orderId}`
+  @action async cancelOrders(orderIds: string[]): Promise<TxResponse> {
+    const limitOrders = orderIds.map(orderId =>
+      findOrThrow(
+        this.rawLimitOrdersArr,
+        order => compareString(order.metaData.orderHash, orderId),
+        `failed finding order with ID of ${orderId}`
+      )
     );
 
-    const big = orderToBigNumberOrder(limitOrder.order);
-
-    try {
-      console.log("trying with", big);
-      const res = await keeperDaoContract.exchangeProxy
-        .cancelRfqOrder(big)
-        .sendTransactionAsync({ from: this.currentUser });
-      console.log(res, "was successful");
-    } catch (e) {
-      console.error(e, "was the error", big, "was the data entered");
-    }
-    const currentViewOrders = this.limitOrdersArr;
-    this.setLimitOrders(
-      currentViewOrders.filter(order => !compareString(order.id, orderId))
+    const stringOrders = limitOrders.map(limitOrder =>
+      orderToStringOrder(limitOrder.order)
     );
+    const exchangeProxyAddress = await exchangeProxy$.pipe(take(1)).toPromise();
+
+    const contract = buildExchangeProxyContract(exchangeProxyAddress);
+
+    const onlyOneOrder = stringOrders.length == 1;
+
+    const res = await this.resolveTxOnConfirmation({
+      tx: onlyOneOrder
+        ? contract.methods.cancelRfqOrder(stringOrders[0])
+        : contract.methods.batchCancelRfqOrders(stringOrders)
+    });
+
+    return this.createTxResponse(res);
   }
 
   @action async createOrder({

@@ -1,14 +1,14 @@
 import { authenticated$, onLogin$ } from "./auth";
 import axios from "axios";
 import { combineLatest } from "rxjs";
-import { pluck, share } from "rxjs/operators";
+import { filter, map, pluck, share } from "rxjs/operators";
 import { switchMapIgnoreThrow } from "./customOperators";
 import { oneMinute$ } from "./timers";
 import { ContractWrappers } from "@0x/contract-wrappers";
 import { alchemyAddress } from "../web3";
-import Web3 from "web3";
 import BigNumber from "bignumber.js";
-import { RfqOrder } from "@0x/protocol-utils";
+// @ts-ignore
+import JSONbig from "json-bigint";
 
 interface BigNumberRfq {
   makerToken: string;
@@ -108,18 +108,18 @@ export interface MetaData {
   makerAllowance_makerToken: number;
   status: OrderStatus;
   filledAmount_takerToken: number;
-  remainingFillableAmount_takerToken: number;
+  remainingFillableAmount_takerToken: BigNumber;
 }
 
 export interface OrderOrder {
   maker: string;
   taker: string;
-  makerAmount: string;
-  takerAmount: string;
+  makerAmount: BigNumber;
+  takerAmount: BigNumber;
   makerToken: string;
   takerToken: string;
-  salt: string;
-  expiry: string;
+  salt: number;
+  expiry: number;
   chainId: number;
   txOrigin: string;
   pool: string;
@@ -127,11 +127,11 @@ export interface OrderOrder {
   signature: Signature;
 }
 
-export const orderToBigNumberOrder = (order: OrderOrder): BigNumberRfq => ({
-  expiry: new BigNumber(order.expiry),
-  makerAmount: new BigNumber(order.makerAmount),
-  salt: new BigNumber(order.salt),
-  takerAmount: new BigNumber(order.takerAmount),
+export const orderToStringOrder = (order: OrderOrder): StringRfq => ({
+  expiry: String(order.expiry),
+  makerAmount: order.makerAmount.toString(),
+  salt: String(order.salt),
+  takerAmount: order.takerAmount.toString(),
   maker: order.maker,
   makerToken: order.makerToken,
   pool: order.pool,
@@ -205,7 +205,8 @@ const getTokenList = async () => {
 
 const getOrders = async (currentUser: string) => {
   const res = await axios.get<OrderResponse>(
-    `${baseUrl}/orders?maker=${currentUser}`
+    `${baseUrl}/orders?maker=${currentUser}`,
+    { transformResponse: res => JSONbig.parse(res) }
   );
   return res.data;
 };

@@ -28,7 +28,7 @@ const zeroXContracts$ = networkVersion$.pipe(
 
 export const exchangeProxy$ = zeroXContracts$.pipe(
   pluck("exchangeProxy"),
-  share()
+  shareReplay(1)
 );
 
 export const contractAddresses$ = networkVars$.pipe(
