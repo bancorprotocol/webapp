@@ -410,7 +410,9 @@ liquiditySettings$.subscribe(settings => {
 });
 
 const whitelistedPools$ = settingsContractAddress$.pipe(
-  switchMapIgnoreThrow(address => fetchWhiteListedV1Pools(address)),
+  optimisticObservable("whitelistedQbc", address =>
+    fetchWhiteListedV1Pools(address)
+  ),
   share()
 );
 
