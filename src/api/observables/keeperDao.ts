@@ -238,5 +238,9 @@ export const keeperTokens$ = oneMinute$.pipe(
 
 export const limitOrders$ = combineLatest([onLogin$, oneMinute$]).pipe(
   switchMapIgnoreThrow(([currentUser]) => getOrders(currentUser)),
-  pluck("orders")
+  pluck("orders"),
+  map(orders =>
+    orders.filter(order => order.metaData.status !== OrderStatus.CANCELLED)
+  ),
+  filter(orders => orders.length > 0)
 );
