@@ -11,22 +11,19 @@
         <h3 class="m-0 p-0 my-2 font-size-14 font-w600">Limit Orders</h3>
 
         <div class="d-flex">
-          <div class="mr-3">
-            <b-btn
-              @click="initAction('cancelAll')"
-              size="sm"
-              class="mr-2"
-              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-            >
-              Cancel all orders
-            </b-btn>
-            <b-btn
-              @click="initAction('withdrawWeth')"
-              :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-              size="sm"
-            >
-              Withdraw WETH
-            </b-btn>
+          <div class="d-flex mr-3">
+            <div>
+              <b-btn
+                @click="openCancelModal(null)"
+                size="sm"
+                class="mr-2"
+                :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+              >
+                Cancel all orders
+              </b-btn>
+            </div>
+
+            <withdraw-weth />
           </div>
 
           <multi-input-field
@@ -44,12 +41,19 @@
         :filter="search"
         default-sort="expiryTime"
       >
-        <template #cell(expiryTime)="{ value }">
+        <template #cell(expiryTime)="{ value, item }">
           <span class="text-primary">
             {{ dayjs(value).format("DD/MM/YYYY") }}
           </span>
-          <span class="ml-3">
+          <span class="ml-3 mr-2">
             {{ dayjs(value).format("h:mm:ss A") }}
+          </span>
+          <span v-b-popover.hover="$t('tooltip.order_expired')">
+            <font-awesome-icon
+              v-if="isExpired(item.status)"
+              icon="comment-exclamation"
+              class="text-danger"
+            />
           </span>
         </template>
 
@@ -94,7 +98,6 @@
     </content-block>
 
     <modal-cancel-order v-model="showCancelModal" :limit-order="itemToCancel" />
-    <modal-tx-action :tx-meta="txMeta" />
   </b-container>
 </template>
 
@@ -110,19 +113,19 @@ import dayjs from "dayjs";
 import { formatPercent } from "@/api/helpers";
 import ModalCancelOrder from "@/components/modals/ModalCancelOrder.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-import BaseTxAction from "@/components/BaseTxAction.vue";
-import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
+import WithdrawWeth from "@/components/swap/WithdrawWeth.vue";
 
 @Component({
   components: {
-    ModalTxAction,
+    WithdrawWeth,
     MultiInputField,
     ModalCancelOrder,
     DataTable,
     ContentBlock
   }
 })
-export default class LimitOrderTable extends BaseTxAction {
+export default class LimitOrderTable extends BaseComponent {
   search = "";
   showCancelModal = false;
   itemToCancel: ViewLimitOrder | null = null;
@@ -189,6 +192,28 @@ export default class LimitOrderTable extends BaseTxAction {
         id: "1",
         percentFilled: 0.6,
         status: OrderStatus.FILLABLE
+      },
+      {
+        expiryTime: Date.now(),
+        seller: "1234567",
+        from: {
+          id: "22",
+          amount: "55.33333",
+          logo:
+            "https://raw.githubusercontent.com/eoscafe/eos-airdrops/master/logos/bancor.png",
+          symbol: "BNT"
+        },
+        to: {
+          logo:
+            "https://storage.googleapis.com/bancor-prod-file-store/images/communities/aea83e97-13a3-4fe7-b682-b2a82299cdf2.png",
+          symbol: "ETH",
+          id: "33",
+          amount: "12.44"
+        },
+        orderHash: "12344555",
+        id: "2",
+        percentFilled: 0.6,
+        status: OrderStatus.EXPIRED
       }
     ];
   }
@@ -200,42 +225,11 @@ export default class LimitOrderTable extends BaseTxAction {
     return this.orders.map(x => x.id);
   }
 
-  async initAction(action: "cancelAll" | "withdrawWeth") {
-    this.openModal();
-
-    if (this.txMeta.txBusy) return;
-    this.txMeta.txBusy = true;
-    try {
-      if (action === "cancelAll") await this.cancelAll();
-      if (action === "withdrawWeth") await this.withdrawWeth();
-
-      // this.txMeta.showTxModal = false;
-    } catch (e) {
-      this.txMeta.txError = e.message;
-    } finally {
-      // this.txMeta.txBusy = false;
-    }
+  isExpired(status: OrderStatus) {
+    return status === OrderStatus.EXPIRED;
   }
 
-  async cancelAll() {
-    try {
-      // await vxm.ethBancor.cancelOrder(this.allOrderIds);
-    } catch (e) {
-      console.error("failed to cancel all limit orders", e);
-      throw e;
-    }
-  }
-
-  async withdrawWeth() {
-    try {
-      // await vxm.ethBancor.withdrawWeth({});
-    } catch (e) {
-      console.error("failed to withdraw weth", e);
-      throw e;
-    }
-  }
-
-  openCancelModal(item: ViewLimitOrder) {
+  openCancelModal(item: ViewLimitOrder | null) {
     this.itemToCancel = item;
     this.showCancelModal = true;
   }

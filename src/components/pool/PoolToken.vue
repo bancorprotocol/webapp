@@ -109,7 +109,7 @@ export default class PoolToken extends BaseComponent {
         id: 1,
         label: i18n.tc("name"),
         key: "relay",
-        minWidth: "170px"
+        minWidth: "150px"
       },
       {
         id: 2,
@@ -126,9 +126,7 @@ export default class PoolToken extends BaseComponent {
       {
         id: 4,
         label: i18n.tc("reserve_breakdown"),
-        key: "reserve_breakdown",
-        minWidth: "395px",
-        maxWidth: "395px"
+        key: "reserve_breakdown"
       },
       {
         id: 5,

@@ -4,9 +4,10 @@ import Data from "@/views/Data.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import Navigation from "@/components/layout/Navigation.vue";
 import { services } from "@/api/helpers";
-import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
+import SwapMarket from "@/components/swap/SwapMarket.vue";
+import SwapLimit from "@/components/swap/SwapLimit.vue";
 import CreateHome from "@/views/CreateHome.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
 import Portfolio from "@/views/Portfolio.vue";
@@ -220,7 +221,6 @@ export const router = new Router({
     },
     {
       path: "/:service/swap",
-      name: "Swap",
       components: {
         Nav: Navigation,
         Hero: SwapHome,
@@ -230,7 +230,19 @@ export const router = new Router({
       meta: {
         key: "swap",
         feature: "Trade"
-      }
+      },
+      children: [
+        {
+          path: "",
+          name: "Swap",
+          component: SwapMarket
+        },
+        {
+          path: "limit",
+          name: "SwapLimit",
+          component: SwapLimit
+        }
+      ]
     },
     {
       path: "/:service/data",

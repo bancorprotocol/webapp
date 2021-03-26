@@ -27,6 +27,7 @@
         :type="type"
         :style="styleInput"
         :autofocus="autofocus"
+        :formatter="format ? formatter : null"
       />
       <b-input-group-append v-if="append || clear">
         <div
@@ -44,10 +45,15 @@
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
             icon="times"
           />
-          <div v-else style="min-width: 8.25px"></div>
+          <div v-else style="min-width: 8px"></div>
         </div>
       </b-input-group-append>
     </b-input-group>
+    <alert-block
+      v-if="alertMsg !== ''"
+      :variant="alertVariant"
+      :msg="alertMsg"
+    />
   </div>
 </template>
 
@@ -55,10 +61,11 @@
 import { Component, Prop, VModel } from "vue-property-decorator";
 import { i18n } from "@/i18n";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import AlertBlock from "@/components/common/AlertBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
-  components: { LabelContentSplit }
+  components: { LabelContentSplit, AlertBlock }
 })
 export default class MultiInputField extends BaseComponent {
   @VModel() text!: string | number;
@@ -69,6 +76,9 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: 32 }) height!: number;
   @Prop() append?: string;
   @Prop() prepend?: string;
+  @Prop() alertMsg?: string;
+  @Prop({ default: false }) format?: boolean;
+  @Prop({ default: "error" }) alertVariant?: string;
   @Prop() autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
 
@@ -98,6 +108,16 @@ export default class MultiInputField extends BaseComponent {
     if (this.fontSize === "sm") return "font-size-12";
     else if (this.fontSize === "md") return "font-size-14";
     else return "font-size-16";
+  }
+
+  formatter(text: String) {
+    if (text === undefined) text = this.text.toString();
+
+    return text
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
   }
 
   clearText() {

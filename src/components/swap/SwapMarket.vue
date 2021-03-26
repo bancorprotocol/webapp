@@ -160,7 +160,6 @@ export default class SwapAction extends BaseTxAction {
   fee: string | null = null;
 
   errorToken1 = "";
-  errorToken2 = "";
 
   rateLoading = false;
   userSettedRate = false;
@@ -231,8 +230,7 @@ export default class SwapAction extends BaseTxAction {
       this.amount2 &&
       !new BigNumber(this.amount1).isZero() &&
       !new BigNumber(this.amount2).isZero() &&
-      !this.errorToken1 &&
-      !this.errorToken2
+      !this.errorToken1
     )
       return false;
     else return true;
@@ -381,10 +379,8 @@ export default class SwapAction extends BaseTxAction {
       this.amount2 = reward.amount;
       const raiseError = new BigNumber(this.balance1).isLessThan(amount);
       this.errorToken1 = raiseError ? i18n.tc("insufficient_token") : "";
-      this.errorToken2 = "";
     } catch (e) {
       this.errorToken1 = e.message;
-      this.errorToken2 = "";
     } finally {
       this.rateLoading = false;
     }
@@ -394,7 +390,6 @@ export default class SwapAction extends BaseTxAction {
     this.amount1 = "";
     this.amount2 = "";
     this.fee = this.slippage = null;
-    this.errorToken2 = "";
     this.errorToken1 = "";
   }
 
