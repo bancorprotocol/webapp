@@ -7,7 +7,7 @@ import {
   optimisticContract,
   switchMapIgnoreThrow
 } from "./customOperators";
-import { networkVars$ } from "./network";
+import { networkVars$, networkVersion$ } from "./network";
 import { vxm } from "@/store";
 import {
   distinctUntilChanged,
@@ -18,6 +18,18 @@ import {
 } from "rxjs/operators";
 import { RegisteredContracts } from "@/types/bancor";
 import { isEqual } from "lodash";
+import { getContractAddressesForChainOrThrow } from "@0x/contract-addresses";
+
+const zeroXContracts$ = networkVersion$.pipe(
+  switchMapIgnoreThrow(async networkVersion =>
+    getContractAddressesForChainOrThrow(networkVersion as number)
+  )
+);
+
+export const exchangeProxy$ = zeroXContracts$.pipe(
+  pluck("exchangeProxy"),
+  share()
+);
 
 export const contractAddresses$ = networkVars$.pipe(
   switchMapIgnoreThrow(networkVariables => {

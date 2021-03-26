@@ -225,6 +225,7 @@ import {
 } from "@/api/observables/network";
 import {
   bancorConverterRegistry$,
+  exchangeProxy$,
   liquidityProtectionStore$
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$ } from "@/api/observables/auth";
@@ -1208,6 +1209,10 @@ interface StakedAndReserve {
     poolTokenAddress: string;
   }[];
 }
+
+exchangeProxy$.subscribe(x => {
+  console.log(x, "is the address!");
+});
 
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
@@ -6955,10 +6960,13 @@ export class EthBancorModule
     const big = orderToBigNumberOrder(limitOrder.order);
 
     try {
-      const res = await keeperDaoContract.exchangeProxy.cancelRfqOrder(big);
+      console.log("trying with", big);
+      const res = await keeperDaoContract.exchangeProxy
+        .cancelRfqOrder(big)
+        .sendTransactionAsync({ from: this.currentUser });
       console.log(res, "was successful");
     } catch (e) {
-      console.error(e, "was the error");
+      console.error(e, "was the error", big, "was the data entered");
     }
     const currentViewOrders = this.limitOrdersArr;
     this.setLimitOrders(

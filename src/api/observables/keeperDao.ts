@@ -31,6 +31,9 @@ import {
 // import { Web3Wrapper } from '@0x/web3-wrapper';
 
 const providerEngine = new Web3ProviderEngine();
+
+// @ts-ignore
+providerEngine.addProvider(new SignerSubprovider(window.web3.currentProvider));
 providerEngine.addProvider(new RPCSubprovider(alchemyAddress));
 providerEngine.start();
 
