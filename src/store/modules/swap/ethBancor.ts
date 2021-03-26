@@ -7062,6 +7062,7 @@ export class EthBancorModule
     const jsonOrder = buildRfqJsonOrder(order, signature);
 
     await sendOrders([jsonOrder]);
+    // wait(1000).then(() => orderRece)
   }
 
   @action async getReturn({

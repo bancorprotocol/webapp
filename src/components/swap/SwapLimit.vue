@@ -167,7 +167,7 @@ import { i18n } from "@/i18n";
 import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
-import { ViewToken } from "@/types/bancor";
+import { ViewAmount, ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import numeral from "numeral";
@@ -181,6 +181,8 @@ import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import { addNotification } from "@/components/compositions/notifications";
+import { ethReserveAddress } from "@/api/eth/ethAbis";
+import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 
 @Component({
   components: {
@@ -330,12 +332,28 @@ export default class SwapLimit extends BaseTxAction {
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
+
+    const fromViewAmount = {
+      id: this.token1.id,
+      amount: this.amount1
+    };
+
+    const fromIsEth = ethReserveAddress == fromViewAmount.id;
+    if (fromIsEth) {
+      // bring up modal...?
+      const res = await vxm.ethBancor.depositWeth({
+        decAmount: fromViewAmount.amount,
+        onPrompt: this.onPrompt
+      });
+    }
+
+    const correctedFrom: ViewAmount = fromIsEth
+      ? { id: wethTokenContractAddress, amount: fromViewAmount.amount }
+      : fromViewAmount;
+
     try {
       const success = await vxm.ethBancor.createOrder({
-        from: {
-          id: this.token1.id,
-          amount: this.amount1
-        },
+        from: correctedFrom,
         to: {
           id: this.token2.id,
           amount: this.amount2
