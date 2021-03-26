@@ -423,11 +423,13 @@ export const en = {
       },
       cancel_order: {
         title: "Cancel Limit Order",
-        description: "Limit Order canceled successfully."
+        description: "Limit Order canceled successfully.",
+        description_error: "Failed to cancel Limit Order."
       },
       cancel_all_orders: {
         title: "Cancel All Limit Orders",
-        description: "All Limit Orders canceled successfully."
+        description: "All Limit Orders canceled successfully.",
+        description_error: "Failed to cancel all Limit Orders."
       }
     }
   },

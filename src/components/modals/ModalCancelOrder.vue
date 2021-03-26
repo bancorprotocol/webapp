@@ -57,8 +57,10 @@
         @click="initCancel"
         class="mt-2 rounded py-2 btn-block"
         variant="primary"
+        :disabled="txBusy"
       >
-        {{ $t("button.confirm") }}
+        <font-awesome-icon v-if="txBusy" icon="circle-notch" spin />
+        <span v-else>{{ $t("button.confirm") }}</span>
       </b-btn>
     </div>
   </modal-base>
@@ -84,6 +86,8 @@ export default class ModalCancelOrder extends BaseComponent {
   @VModel() show!: boolean;
   @Prop() limitOrder!: ViewLimitOrder | null;
 
+  txBusy = false;
+
   get title() {
     return this.limitOrder
       ? this.$t("modal.cancel_order.title")
@@ -107,8 +111,10 @@ export default class ModalCancelOrder extends BaseComponent {
   }
 
   async initCancel() {
+    this.txBusy = true;
     if (this.limitOrder) await this.cancelById();
     else await this.cancelAll();
+    this.txBusy = false;
   }
 
   async cancelById() {
@@ -125,7 +131,9 @@ export default class ModalCancelOrder extends BaseComponent {
       console.error("failed to cancel limit order", e);
       addNotification({
         title: this.$tc("notifications.add.cancel_order.title"),
-        description: e.toString(),
+        description: this.$tc(
+          "notifications.add.cancel_order.description_error"
+        ),
         status: ENotificationStatus.error,
         showSeconds: 15
       });
@@ -150,7 +158,9 @@ export default class ModalCancelOrder extends BaseComponent {
       console.error("failed to cancel limit order", e);
       addNotification({
         title: this.$tc("notifications.add.cancel_all_orders.title"),
-        description: e.toString(),
+        description: this.$tc(
+          "notifications.add.cancel_all_orders.description_error"
+        ),
         status: ENotificationStatus.error,
         showSeconds: 15
       });
