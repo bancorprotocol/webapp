@@ -23,6 +23,19 @@ interface BigNumberRfq {
   salt: BigNumber;
 }
 
+export interface StringRfq {
+  makerToken: string;
+  takerToken: string;
+  makerAmount: string;
+  takerAmount: string;
+  maker: string;
+  taker: string;
+  txOrigin: string;
+  pool: string;
+  expiry: string;
+  salt: string;
+}
+
 import {
   SignerSubprovider,
   RPCSubprovider,

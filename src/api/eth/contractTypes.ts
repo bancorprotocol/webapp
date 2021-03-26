@@ -19,12 +19,14 @@ import {
   ABIV2Converter,
   V2PoolsTokenContainer,
   ABILiquidityProtectionSystemStore,
-  ABIWethToken
+  ABIWethToken,
+  ABIExchangeProxy
 } from "@/api/eth/ethAbis";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import Web3 from "web3";
 import { web3 } from "@/api/web3";
+import { StringRfq } from "@/api/observables/keeperDao";
 
 const buildContract = (
   abi: AbiItem[],
@@ -340,6 +342,13 @@ export const buildLiquidityProtectionContract = (
     poolAnchor: string
   ) => CallReturn<{ "0": string; "1": string }>;
 }> => buildContract(ABILiquidityProtection, contractAddress, web3);
+
+export const buildExchangeProxyContract = (
+  contractAddress: string
+): ContractMethods<{
+  cancelRfqOrder: (order: StringRfq) => ContractSendMethod;
+  batchCancelRfqOrders: (orders: StringRfq[]) => ContractSendMethod;
+}> => buildContract(ABIExchangeProxy, contractAddress);
 
 export const buildLiquidityProtectionSettingsContract = (
   contractAddress: string,
