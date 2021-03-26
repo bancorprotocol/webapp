@@ -4,8 +4,6 @@ import { combineLatest } from "rxjs";
 import { filter, map, pluck, share } from "rxjs/operators";
 import { switchMapIgnoreThrow } from "./customOperators";
 import { oneMinute$ } from "./timers";
-import { ContractWrappers } from "@0x/contract-wrappers";
-import { alchemyAddress } from "../web3";
 import BigNumber from "bignumber.js";
 // @ts-ignore
 import JSONbig from "json-bigint";
@@ -35,24 +33,6 @@ export interface StringRfq {
   expiry: string;
   salt: string;
 }
-
-import {
-  SignerSubprovider,
-  RPCSubprovider,
-  Web3ProviderEngine
-} from "@0x/subproviders";
-// import { Web3Wrapper } from '@0x/web3-wrapper';
-
-const providerEngine = new Web3ProviderEngine();
-
-// @ts-ignore
-providerEngine.addProvider(new SignerSubprovider(window.web3.currentProvider));
-providerEngine.addProvider(new RPCSubprovider(alchemyAddress));
-providerEngine.start();
-
-export const keeperDaoContract = new ContractWrappers(providerEngine, {
-  chainId: 1
-});
 
 authenticated$.subscribe(x => console.log("regular joe 3", x));
 onLogin$.subscribe(x => console.log(x, "regular joe 2"));

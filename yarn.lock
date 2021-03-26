@@ -52,21 +52,6 @@
     ethereum-types "^3.4.0"
     ethers "~4.0.4"
 
-"@0x/contract-wrappers@^13.14.0":
-  version "13.14.0"
-  resolved "https://registry.yarnpkg.com/@0x/contract-wrappers/-/contract-wrappers-13.14.0.tgz#c02cc205f60d001cc0bcaaa26cdbe0a2fc64350b"
-  integrity sha512-xcChczlVlTTyd+gaNX0sZXhfosDaTpKwzFxEOSqMPev6NEDs1KnAC2Fd9fTV0QQKPPS1N9Vu+4S6uGfPYyYtVg==
-  dependencies:
-    "@0x/assert" "^3.0.21"
-    "@0x/base-contract" "^6.2.18"
-    "@0x/contract-addresses" "^5.11.0"
-    "@0x/json-schemas" "^5.4.1"
-    "@0x/types" "^3.3.1"
-    "@0x/utils" "^6.2.0"
-    "@0x/web3-wrapper" "^7.4.1"
-    ethereum-types "^3.4.0"
-    ethers "~4.0.4"
-
 "@0x/json-schemas@^5.4.1":
   version "5.4.1"
   resolved "https://registry.yarnpkg.com/@0x/json-schemas/-/json-schemas-5.4.1.tgz#488cae01fbb7f37fa9043e426f52ff32de69f6e0"
