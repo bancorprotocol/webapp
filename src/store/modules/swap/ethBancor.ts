@@ -5603,6 +5603,7 @@ export class EthBancorModule
 
     BigNumber.config({ EXPONENTIAL_AT: 256 });
 
+    limitOrderTrigger$.next(true);
     web3.eth
       .getChainId()
       .then(chainId => networkVersionReceiver$.next(chainId));
@@ -7041,9 +7042,9 @@ export class EthBancorModule
     const jsonOrder = buildRfqJsonOrder(order, signature);
 
     await sendOrders([jsonOrder]);
-    wait(100).then(() => limitOrderTrigger$.next(null));
-    wait(1000).then(() => limitOrderTrigger$.next(null));
-    wait(10000).then(() => limitOrderTrigger$.next(null));
+    wait(100).then(() => limitOrderTrigger$.next(true));
+    wait(1000).then(() => limitOrderTrigger$.next(true));
+    wait(10000).then(() => limitOrderTrigger$.next(true));
   }
 
   @action async getReturn({

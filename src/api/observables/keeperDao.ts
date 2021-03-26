@@ -1,7 +1,7 @@
 import { authenticated$, onLogin$ } from "./auth";
 import axios from "axios";
 import { combineLatest, Subject } from "rxjs";
-import { filter, map, pluck, share } from "rxjs/operators";
+import { filter, map, pluck, share, tap } from "rxjs/operators";
 import { switchMapIgnoreThrow } from "./customOperators";
 import { oneMinute$ } from "./timers";
 import BigNumber from "bignumber.js";
@@ -184,6 +184,7 @@ const getTokenList = async () => {
 };
 
 const getOrders = async (currentUser: string) => {
+  console.log(currentUser, "get orders triggered");
   const res = await axios.get<OrderResponse>(
     `${baseUrl}/orders?maker=${currentUser}`,
     { transformResponse: res => JSONbig.parse(res) }
@@ -230,14 +231,19 @@ export const keeperTokens$ = oneMinute$.pipe(
   share()
 );
 
-export const limitOrderTrigger$ = new Subject<null>();
-limitOrderTrigger$.next(null);
+export const limitOrderTrigger$ = new Subject<true>();
+limitOrderTrigger$.next(true);
+
+limitOrderTrigger$.subscribe(x => console.log("trigger went out", x));
 
 export const limitOrders$ = combineLatest([
   onLogin$,
   oneMinute$,
   limitOrderTrigger$
 ]).pipe(
+  tap(x => {
+    alert(JSON.stringify(x));
+  }),
   switchMapIgnoreThrow(([currentUser]) => getOrders(currentUser)),
   pluck("orders"),
   map(orders =>
