@@ -9,7 +9,8 @@ import {
   share,
   withLatestFrom,
   switchMap,
-  throttleTime
+  throttleTime,
+  tap
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
@@ -410,15 +411,14 @@ liquiditySettings$.subscribe(settings => {
 });
 
 const whitelistedPools$ = settingsContractAddress$.pipe(
-  optimisticObservable("whitelistedQbc", address =>
-    fetchWhiteListedV1Pools(address)
-  ),
+  switchMapIgnoreThrow(address => fetchWhiteListedV1Pools(address)),
   share()
 );
 
-whitelistedPools$.subscribe(whitelistedPools =>
-  vxm.ethBancor.setWhiteListedPools(whitelistedPools)
-);
+whitelistedPools$.subscribe(whitelistedPools => {
+  vxm.ethBancor.setWhiteListedPools(whitelistedPools);
+  vxm.ethBancor.setWhiteListedPoolsLoading(false);
+});
 
 const localAndRemotePositionIds$ = combineLatest([
   onLogin$,

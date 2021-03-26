@@ -1550,28 +1550,6 @@ export class EthBancorModule
     this.whiteListedPoolsLoading = state;
   }
 
-  @action async fetchWhiteListedV1Pools(
-    liquidityProtectionSettingsAddress: string
-  ) {
-    try {
-      const contractAddress = liquidityProtectionSettingsAddress;
-      const liquidityProtection = buildLiquidityProtectionSettingsContract(
-        contractAddress,
-        w3
-      );
-      const whiteListedPools = await liquidityProtection.methods
-        .poolWhitelist()
-        .call();
-
-      return whiteListedPools;
-    } catch (e) {
-      console.error("Failed fetching whitelisted pools");
-      throw new Error(`Failed to fetch whitelisted pools ${e}`);
-    } finally {
-      this.setWhiteListedPoolsLoading(false);
-    }
-  }
-
   @action async protectLiquidityTx({
     anchorAddress,
     amountWei,
