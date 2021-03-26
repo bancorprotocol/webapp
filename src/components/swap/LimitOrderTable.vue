@@ -37,16 +37,16 @@
 
       <data-table
         :fields="fields"
-        :items="mockOrders"
+        :items="orders"
         :filter="search"
         default-sort="expiryTime"
       >
         <template #cell(expiryTime)="{ value, item }">
           <span class="text-primary">
-            {{ dayjs(value).format("DD/MM/YYYY") }}
+            {{ dayjs.unix(value).format("DD/MM/YYYY") }}
           </span>
           <span class="ml-3 mr-2">
-            {{ dayjs(value).format("h:mm:ss A") }}
+            {{ dayjs.unix(value).format("h:mm:ss A") }}
           </span>
           <span v-b-popover.hover="$t('tooltip.order_expired')">
             <font-awesome-icon
