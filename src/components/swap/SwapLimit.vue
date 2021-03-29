@@ -8,7 +8,7 @@
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
-      :tokens="tokens"
+      :tokens="tokensFrom"
       :usd-value="usd1"
     />
 
@@ -30,7 +30,7 @@
       :balance="balance2"
       :dropdown="true"
       :disabled="false"
-      :tokens="tokens"
+      :tokens="tokensTo"
       :usd-value="usd2"
     />
 
@@ -264,11 +264,20 @@ export default class SwapLimit extends BaseTxAction {
 
   modalSelectDuration = false;
 
-  get tokens() {
+  get tokensFrom() {
     return vxm.bancor.tokens.filter(
       token =>
         token.tradeSupported &&
         (token.limitOrderAvailable || token.id === ethReserveAddress)
+    );
+  }
+
+  get tokensTo() {
+    return vxm.bancor.tokens.filter(
+      token =>
+        token.tradeSupported &&
+        token.limitOrderAvailable &&
+        token.id !== ethReserveAddress
     );
   }
 
@@ -449,11 +458,15 @@ export default class SwapLimit extends BaseTxAction {
       this.setDefault();
       return;
     }
+    const fromId =
+      this.token1.id === wethTokenContractAddress
+        ? ethReserveAddress
+        : this.token1.id;
     try {
       this.rateLoading = true;
       const reward = await vxm.bancor.getReturn({
         from: {
-          id: this.token1.id,
+          id: fromId,
           amount: this.amount1
         },
         toId: this.token2.id
