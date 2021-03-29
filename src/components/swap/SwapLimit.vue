@@ -123,39 +123,42 @@
       icon="file-alt"
       :tx-meta.sync="txMeta"
     >
-      <p
-        class="font-size-14 mb-4 text-center"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
-      >
-        {{ $t("modal.limit_order.sub_title") }}
-      </p>
-      <gray-border-block gray-bg="true">
-        <label-content-split
-          :label="$t('modal.limit_order.sell')"
-          :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
-          class="mb-2"
-        />
-        <label-content-split
-          :label="$t('modal.limit_order.receive')"
-          :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
-          class="mb-2"
-        />
-        <label-content-split
-          :label="$t('modal.limit_order.rate')"
-          :value="rate"
-        />
-      </gray-border-block>
+      <div v-if="!isDepositingWeth">
+        <p
+          class="font-size-14 mb-4 text-center"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          {{ $t("modal.limit_order.sub_title") }}
+        </p>
+        <gray-border-block gray-bg="true">
+          <label-content-split
+            :label="$t('modal.limit_order.sell')"
+            :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
+            class="mb-2"
+          />
+          <label-content-split
+            :label="$t('modal.limit_order.receive')"
+            :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
+            class="mb-2"
+          />
+          <label-content-split
+            :label="$t('modal.limit_order.rate')"
+            :value="rate"
+          />
+        </gray-border-block>
 
-      <p
-        class="font-size-12 my-3 text-left pl-3"
-        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
-      >
-        {{
-          $t("modal.limit_order.info_text", {
-            timer: "?????"
-          })
-        }}
-      </p>
+        <p
+          class="font-size-12 my-3 text-left pl-3"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          {{
+            $t("modal.limit_order.info_text", {
+              timer: "?????"
+            })
+          }}
+        </p>
+      </div>
+      <div v-else>deposit eth</div>
     </modal-tx-action>
   </div>
 </template>
@@ -180,7 +183,10 @@ import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationS
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { addNotification } from "@/components/compositions/notifications";
+import {
+  addNotification,
+  ENotificationStatus
+} from "@/components/compositions/notifications";
 import { ethReserveAddress } from "@/api/eth/ethAbis";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 
@@ -332,7 +338,24 @@ export default class SwapLimit extends BaseTxAction {
     });
   }
 
+  isDepositingWeth = false;
+
+  async initWethDeposit(amount: string) {
+    this.isDepositingWeth = true;
+    try {
+      const success = await vxm.ethBancor.depositWeth({
+        decAmount: amount,
+        onPrompt: this.onPrompt
+      });
+    } catch (e) {
+      throw e;
+    } finally {
+      this.isDepositingWeth = false;
+    }
+  }
+
   async initSwap() {
+    console.log("init Limit Swap");
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
@@ -342,20 +365,24 @@ export default class SwapLimit extends BaseTxAction {
       amount: this.amount1
     };
 
-    const fromIsEth = ethReserveAddress === fromViewAmount.id;
-    if (fromIsEth) {
-      // bring up modal...?
-      const res = await vxm.ethBancor.depositWeth({
-        decAmount: fromViewAmount.amount,
-        onPrompt: this.onPrompt
-      });
-    }
-
-    const correctedFrom: ViewAmount = fromIsEth
-      ? { id: wethTokenContractAddress, amount: fromViewAmount.amount }
-      : fromViewAmount;
-
     try {
+      const fromIsEth = ethReserveAddress === fromViewAmount.id;
+      if (fromIsEth) {
+        console.log("1 from is eth");
+        this.isDepositingWeth = true;
+        const success = await vxm.ethBancor.depositWeth({
+          decAmount: fromViewAmount.amount,
+          onPrompt: this.onPrompt
+        });
+        console.log("2 deposit success", success);
+        this.isDepositingWeth = false;
+      }
+
+      const correctedFrom: ViewAmount = fromIsEth
+        ? { id: wethTokenContractAddress, amount: fromViewAmount.amount }
+        : fromViewAmount;
+      console.log("3 init actual swap");
+
       const success = await vxm.ethBancor.createOrder({
         from: correctedFrom,
         to: {
@@ -366,6 +393,7 @@ export default class SwapLimit extends BaseTxAction {
         onPrompt: this.onPrompt
       });
       this.txMeta.showTxModal = false;
+      console.log("4 Swap succuess");
       addNotification({
         title: this.$tc("notifications.add.swap.title"),
         description: this.$tc("notifications.add.swap.description", 0, {
@@ -374,13 +402,16 @@ export default class SwapLimit extends BaseTxAction {
           amount2: this.prettifyNumber(this.amount2),
           symbol2: this.token2.symbol
         }),
-        txHash: this.txMeta.success?.txId
+        status: ENotificationStatus.success
       });
       this.setDefault();
     } catch (e) {
+      console.log("5 Swap error");
       this.txMeta.txError = e.message;
     } finally {
+      console.log("6 Swap finally");
       this.txMeta.txBusy = false;
+      this.isDepositingWeth = false;
     }
   }
 
