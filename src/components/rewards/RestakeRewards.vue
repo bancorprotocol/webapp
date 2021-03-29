@@ -38,7 +38,10 @@
       :disabled="disableActionButton"
     />
 
-    <modal-tx-action :tx-meta="txMeta" @close="closeTxModal" />
+    <modal-tx-action
+      :tx-meta.sync="txMeta"
+      redirect-on-success="LiqProtection"
+    />
   </div>
 </template>
 
@@ -57,6 +60,8 @@ import { compareString } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BigNumber from "bignumber.js";
+import wait from "waait";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -113,7 +118,7 @@ export default class RestakeRewards extends BaseTxAction {
   get disableActionButton() {
     if (!this.amount) return true;
     else if (this.loading) return true;
-    else return this.inputError ? true : false;
+    else return !!this.inputError;
   }
 
   get inputError() {
@@ -143,6 +148,15 @@ export default class RestakeRewards extends BaseTxAction {
         poolId: this.pool.id,
         onUpdate: this.onUpdate
       });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.restake.title"),
+        description: this.$tc("notifications.add.restake.description", 0, {
+          amount: this.prettifyNumber(this.amount),
+          pool: this.pool.name
+        }),
+        txHash: this.txMeta.success.txId
+      });
     } catch (e) {
       this.txMeta.txError = e.message;
     } finally {
@@ -161,13 +175,6 @@ export default class RestakeRewards extends BaseTxAction {
     await this.loadData();
   }
 
-  async closeTxModal() {
-    if (this.txMeta.success) {
-      await this.$router.replace({ name: "LiqProtection" });
-    }
-    this.setDefault();
-  }
-
   async loadMaxStakes() {
     const result = await vxm.ethBancor.getMaxStakesView({
       poolId: this.pool.id
@@ -183,6 +190,7 @@ export default class RestakeRewards extends BaseTxAction {
     this.loading = true;
     try {
       await Promise.all([
+        wait(1000),
         this.loadMaxStakes(),
         vxm.rewards.fetchAndSetPendingRewards(),
         this.pools.forEach(async x => {

@@ -52,7 +52,7 @@
         </div>
       </div>
       <div class="middle-space" />
-      <p class="tm-text" v-if="!showMinimize && visibleLabel">© Bancor 2020</p>
+      <p class="tm-text" v-if="!showMinimize && visibleLabel">© Bancor 2021</p>
     </div>
   </div>
 </template>

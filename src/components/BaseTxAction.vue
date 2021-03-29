@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { ITxMeta, Step } from "@/types/bancor";
+import { ITxMeta, Prompt, Step } from "@/types/bancor";
 
 @Component
 export default class BaseTxAction extends BaseComponent {
@@ -11,23 +11,25 @@ export default class BaseTxAction extends BaseComponent {
     success: null,
     txError: "",
     sections: [],
-    stepIndex: 0
+    stepIndex: 0,
+    prompt: null
   };
+
+  openModal() {
+    //@ts-ignore
+    if (!this.currentUser) return this.promptAuth();
+
+    this.txMeta.showTxModal = true;
+  }
 
   onUpdate(index: number, steps: Step[]) {
     this.txMeta.sections = steps;
     this.txMeta.stepIndex = index;
   }
 
-  setDefault() {
-    this.txMeta = {
-      showTxModal: false,
-      txBusy: false,
-      success: null,
-      txError: "",
-      sections: [],
-      stepIndex: 0
-    };
+  onPrompt(prompt: Prompt) {
+    this.txMeta.txBusy = false;
+    this.txMeta.prompt = prompt;
   }
 }
 </script>

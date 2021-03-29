@@ -11,15 +11,15 @@ import {
   OnUpdate,
   ReserveFeed,
   Step,
+  TableItem,
   TokenBalanceParam,
   TokenBalanceReturn,
   TokenBalances,
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken,
-  TableItem,
-  ViewReserve
+  ViewReserve,
+  ViewToken
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -34,7 +34,7 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
-import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
+import { EthNetworks, getAlchemyUrl, getInfuraAddress, web3 } from "@/api/web3";
 
 export enum PositionType {
   single,
@@ -245,6 +245,13 @@ export const calculateProgressLevel = (
   if (now >= endTimeSeconds) return 1;
   const timeWaited = now - startTimeSeconds;
   return timeWaited / totalWaitingTime;
+};
+
+export const calculatePercentageChange = (
+  numberNow: number,
+  numberBefore: number
+): number => {
+  return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
 };
 
 export const compareString = (stringOne: string, stringTwo: string) => {
@@ -1301,3 +1308,8 @@ export const defaultTableSort = (
     else return null;
   } else return value;
 };
+
+export const generateEtherscanTxLink = (
+  txHash: string,
+  ropsten: boolean = false
+): string => `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
