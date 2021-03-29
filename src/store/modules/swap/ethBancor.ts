@@ -6643,7 +6643,13 @@ export class EthBancorModule
     );
   }
 
-  @action async cancelOrders(orderIds: string[]): Promise<TxResponse> {
+  @action async cancelOrders({
+    orderIds,
+    onPrompt
+  }: {
+    orderIds: string[];
+    onPrompt: OnPrompt;
+  }): Promise<TxResponse> {
     const limitOrders = orderIds.map(orderId =>
       findOrThrow(
         this.rawLimitOrdersArr,
@@ -6661,11 +6667,17 @@ export class EthBancorModule
 
     const onlyOneOrder = stringOrders.length == 1;
 
+    await this.awaitConfirmation(onPrompt);
+
     const res = await this.resolveTxOnConfirmation({
       tx: onlyOneOrder
         ? contract.methods.cancelRfqOrder(stringOrders[0])
         : contract.methods.batchCancelRfqOrders(stringOrders)
     });
+
+    wait(100).then(() => limitOrderTrigger$.next(true));
+    wait(1000).then(() => limitOrderTrigger$.next(true));
+    wait(10000).then(() => limitOrderTrigger$.next(true));
 
     return this.createTxResponse(res);
   }
