@@ -1,17 +1,19 @@
 <template>
-  <modal-base v-model="show" size="sm">
-    <div class="text-center" :class="darkMode ? 'text-dark' : 'text-light'">
-      <div class="d-flex justify-content-center mb-3">
-        <div
-          class="d-flex justify-content-center align-items-center bg-danger rounded-circle"
-          style="width: 60px; height: 60px"
-        >
-          <font-awesome-icon icon="times" class="text-white" size="2x" />
-        </div>
-      </div>
+  <div>
+    <b-btn
+      @click="cancelAll()"
+      :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+      size="sm"
+    >
+      {{ $t("button.withdraw_weth", { amount: prettifyNumber(balance) }) }}
+    </b-btn>
 
-      <div class="font-size-20 font-w600 mb-2">{{ title }}</div>
-
+    <modal-tx-action
+      :title="title"
+      icon="times"
+      icon-variant="danger"
+      :tx-meta="txMeta"
+    >
       <p
         class="font-size-14 mb-3 text-center"
         :class="darkMode ? 'text-muted-dark' : 'text-muted'"
@@ -52,41 +54,33 @@
           }}
         </p>
       </div>
-
-      <b-btn
-        @click="initCancel"
-        class="mt-2 rounded py-2 btn-block"
-        variant="primary"
-        :disabled="txBusy"
-      >
-        <font-awesome-icon v-if="txBusy" icon="circle-notch" spin />
-        <span v-else>{{ $t("button.confirm") }}</span>
-      </b-btn>
-    </div>
-  </modal-base>
+    </modal-tx-action>
+  </div>
 </template>
 <script lang="ts">
-import { Component, Emit, Prop, VModel } from "vue-property-decorator";
-import BaseComponent from "@/components/BaseComponent.vue";
-import ModalBase from "@/components/modals/ModalBase.vue";
-import MainButton from "@/components/common/Button.vue";
-import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
-import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
-import { ViewLimitOrder } from "@/store/modules/swap/ethBancor";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
+import BaseTxAction from "@/components/BaseTxAction.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import PercentageSlider from "@/components/common/PercentageSlider.vue";
+import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { ViewLimitOrder } from "@/store/modules/swap/ethBancor";
 import {
   addNotification,
   ENotificationStatus
 } from "@/components/compositions/notifications";
 
 @Component({
-  components: { LabelContentSplit, GrayBorderBlock, ModalBase, MainButton }
+  components: {
+    GrayBorderBlock,
+    PercentageSlider,
+    LabelContentSplit,
+    ModalTxAction
+  }
 })
-export default class ModalCancelOrder extends BaseComponent {
-  @VModel() show!: boolean;
-  @Prop() limitOrder!: ViewLimitOrder | null;
-
-  txBusy = false;
+export default class CancelLimitOrder extends BaseTxAction {
+  limitOrder: ViewLimitOrder | null = null;
 
   get title() {
     return this.limitOrder
@@ -110,19 +104,22 @@ export default class ModalCancelOrder extends BaseComponent {
     return `1 ${fromSymbol} = ${this.prettifyNumber(rate)} ${toSymbol}`;
   }
 
-  async initCancel() {
-    this.txBusy = true;
-    if (this.limitOrder) await this.cancelById();
-    else await this.cancelAll();
-    this.txBusy = false;
-  }
+  async cancelById(limitOrder: ViewLimitOrder) {
+    if (!limitOrder) return;
+    this.limitOrder = limitOrder;
+    this.openModal();
 
-  async cancelById() {
-    if (!this.limitOrder) return;
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
+
     try {
-      const { txId } = await vxm.ethBancor.cancelOrders([this.limitOrder.id]);
+      if (!this.limitOrder) return;
+      this.txMeta.success = await vxm.ethBancor.cancelOrders({
+        orderIds: [this.limitOrder.id],
+        onPrompt: this.onPrompt
+      });
       addNotification({
-        txHash: txId,
+        txHash: this.txMeta.success!.txId,
         title: this.$tc("notifications.add.cancel_order.title"),
         description: this.$tc("notifications.add.cancel_order.description"),
         status: ENotificationStatus.success
@@ -138,21 +135,28 @@ export default class ModalCancelOrder extends BaseComponent {
         showSeconds: 15
       });
     } finally {
-      this.show = false;
+      this.txMeta.showTxModal = false;
+      this.txMeta.txBusy = false;
     }
   }
 
   async cancelAll() {
-    const allOrderIds = vxm.ethBancor.limitOrders.map(x => x.id);
+    this.limitOrder = null;
+    this.openModal();
+
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
+
+    const orderIds = vxm.ethBancor.limitOrders.map(x => x.id);
     try {
-      const { txId } = await vxm.ethBancor.cancelOrders(allOrderIds);
+      this.txMeta.success = await vxm.ethBancor.cancelOrders({
+        orderIds,
+        onPrompt: this.onPrompt
+      });
       addNotification({
-        txHash: txId,
+        txHash: this.txMeta.success!.txId,
         title: this.$tc("notifications.add.cancel_all_orders.title"),
-        description: this.$tc(
-          "notifications.add.cancel_all_orders.description"
-        ),
-        status: ENotificationStatus.success
+        description: this.$tc("notifications.add.cancel_all_orders.description")
       });
     } catch (e) {
       console.error("failed to cancel limit order", e);
@@ -165,7 +169,8 @@ export default class ModalCancelOrder extends BaseComponent {
         showSeconds: 15
       });
     } finally {
-      this.show = false;
+      this.txMeta.showTxModal = false;
+      this.txMeta.txBusy = false;
     }
   }
 }
