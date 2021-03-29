@@ -83,7 +83,7 @@
   </modal-base>
 </template>
 <script lang="ts">
-import { Component, Emit, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync } from "vue-property-decorator";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import { ITxMeta } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";

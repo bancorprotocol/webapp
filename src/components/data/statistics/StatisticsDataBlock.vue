@@ -8,17 +8,15 @@
     </span>
 
     <div
-      class="font-size-16 font-w500 d-flex justify-content-between align-items-center ="
+      class="font-size-16 font-w500 d-flex justify-content-between align-items-center"
       :style="blockStyle"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <animation-number
-        v-if="value"
-        :target-value="value"
-        :usd="usd"
-        :percentage="stringifyPercentage"
-        :watch="true"
-      />
+      <div v-if="value">
+        {{
+          isPercentage ? stringifyPercentage(value) : prettifyNumber(value, usd)
+        }}
+      </div>
       <div v-else>
         {{ replacmentTxt }}
       </div>
@@ -37,6 +35,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import BaseComponent from "@/components/BaseComponent.vue";
 import AnimationNumber from "@/components/common/AnimationNumber.vue";
+import { stringifyPercentage } from "@/api/helpers";
 
 @Component({
   components: { AnimationNumber }
@@ -46,9 +45,13 @@ export default class StatisticsDataBlock extends BaseComponent {
   @Prop() value!: string | number;
   @Prop({ default: "N/A" }) replacmentTxt!: string | number;
   @Prop({ default: false }) usd!: boolean;
-  @Prop({ default: false }) stringifyPercentage!: boolean;
+  @Prop({ default: false }) isPercentage!: boolean;
   @Prop() percentage?: number;
   @Prop() blockStyle!: string;
+
+  get stringifyPercentage() {
+    return stringifyPercentage;
+  }
 }
 </script>
 
