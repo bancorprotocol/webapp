@@ -38,7 +38,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
     Proposals
   }
 })
-export default class VotePage extends BaseComponent {
+export default class VoteLegacy extends BaseComponent {
   get isEth() {
     return this.$route.params.service === "eth";
   }

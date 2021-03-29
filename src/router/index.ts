@@ -27,6 +27,7 @@ import VotePage from "@/components/vote/VotePage.vue";
 import FiatPage from "@/components/fiat/FiatPage.vue";
 import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
+import VoteLegacy from "@/components/vote/VoteLegacy.vue";
 import LimitOrderTable from "@/components/swap/LimitOrderTable.vue";
 
 Vue.use(Router);
@@ -275,6 +276,25 @@ export const router = new Router({
           path: "",
           name: "Vote",
           component: VotePage,
+          meta: {
+            key: "vote",
+            feature: "Vote"
+          }
+        }
+      ]
+    },
+    {
+      path: "/:service/vote-legacy",
+      components: {
+        Nav: Navigation,
+        default: Vote
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "VoteLegacy",
+          component: VoteLegacy,
           meta: {
             key: "vote",
             feature: "Vote"
