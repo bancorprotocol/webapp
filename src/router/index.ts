@@ -23,7 +23,7 @@ import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
-import VotePage from "@/components/vote/VotePage.vue";
+import VotePage from "@/components/vote-new/VotePage.vue";
 import FiatPage from "@/components/fiat/FiatPage.vue";
 import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
