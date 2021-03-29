@@ -6648,7 +6648,7 @@ export class EthBancorModule
     onPrompt
   }: {
     orderIds: string[];
-    onPrompt: OnPrompt;
+    onPrompt?: OnPrompt;
   }): Promise<TxResponse> {
     const limitOrders = orderIds.map(orderId =>
       findOrThrow(
@@ -6667,7 +6667,9 @@ export class EthBancorModule
 
     const onlyOneOrder = stringOrders.length == 1;
 
-    await this.awaitConfirmation(onPrompt);
+    if (onPrompt) {
+      await this.awaitConfirmation(onPrompt);
+    }
 
     const res = await this.resolveTxOnConfirmation({
       tx: onlyOneOrder
