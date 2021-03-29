@@ -43,7 +43,12 @@
           class="mb-2"
         />
         <div class="d-flex align-items-center mb-3">
-          <span style="white-space: nowrap">{{ `1 ${token1.symbol} =` }}</span>
+          <span
+            class="font-size-14 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+            style="white-space: nowrap"
+            >{{ `1 ${token1.symbol} =` }}</span
+          >
           <multi-input-field
             @input="rateCalcField()"
             class="mx-2"
@@ -53,7 +58,11 @@
             :format="true"
             height="48"
           />
-          {{ token2.symbol }}
+          <span
+            class="font-size-14 font-w600"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+            >{{ token2.symbol }}</span
+          >
         </div>
         <alert-block
           class="mb-2"
