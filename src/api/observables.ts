@@ -14,7 +14,7 @@ import {
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
-import { EthNetworks } from "./web3";
+import { EthNetworks, web3 } from "./web3";
 import { NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
 import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
@@ -33,7 +33,8 @@ import {
   ProtectedLiquidityCalculated,
   ProtectedLiquidity,
   ViewProtectedLiquidity,
-  MinimalPool
+  MinimalPool,
+  PoolLiqMiningApr
 } from "@/types/bancor";
 import {
   fetchLiquidityProtectionSettings,
@@ -46,7 +47,8 @@ import {
   getHistoricBalances,
   getPoolAprs,
   fetchRewardsMultiplier,
-  fetchLockedBalances
+  fetchLockedBalances,
+  fetchPoolLiqMiningApr
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
@@ -71,6 +73,7 @@ import {
   settingsContractAddress$,
   stakingRewards$
 } from "./observables/contracts";
+import { DataTypes, MultiCall, ShapeWithLabel } from "eth-multicall";
 
 const tokenMetaDataEndpoint =
   "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
@@ -311,7 +314,7 @@ export const newPools$ = combineLatest([
 
           return {
             ...reserve,
-            ...(meta && meta.image && { image: meta.image })
+            image: (meta && meta.image) || defaultImage
           };
         })
       })
@@ -374,17 +377,19 @@ combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
     vxm.ethBancor.setLockedBalances(balances);
   });
 
-settingsContractAddress$
-  .pipe(
-    switchMapIgnoreThrow(settingsContractAddress =>
-      fetchMinLiqForMinting(settingsContractAddress)
-    )
-  )
-  .subscribe(minNetworkTokenLiquidityForMinting =>
+export const minNetworkTokenLiquidityForMinting$ = settingsContractAddress$.pipe(
+  switchMapIgnoreThrow(settingsContractAddress =>
+    fetchMinLiqForMinting(settingsContractAddress)
+  ),
+  share()
+);
+
+minNetworkTokenLiquidityForMinting$.subscribe(
+  minNetworkTokenLiquidityForMinting =>
     vxm.minting.setMinNetworkTokenLiquidityForMinting(
       minNetworkTokenLiquidityForMinting
     )
-  );
+);
 
 const liquiditySettings$ = combineLatest([
   liquidityProtection$,
@@ -401,6 +406,11 @@ const liquiditySettings$ = combineLatest([
       })
     )
   ),
+  share()
+);
+
+export const liquidityProtectionNetworkToken$ = liquiditySettings$.pipe(
+  pluck("networkToken"),
   share()
 );
 
@@ -788,5 +798,66 @@ combineLatest([onLogin$, minimalPools$]).subscribe(
     }
   }
 );
+
+combineLatest([
+  newPools$,
+  tokens$,
+  networkVars$,
+  liquidityProtectionNetworkToken$,
+  poolPrograms$,
+  liquidityProtectionStore$
+])
+  .pipe(
+    switchMapIgnoreThrow(
+      async ([
+        pools,
+        tokens,
+        networkVars,
+        liquidityProtectionNetworkToken,
+        poolPrograms,
+        liquidityProtectionStore
+      ]) => {
+        const minimalPools = pools.map(
+          (pool): MinimalPoolWithReserveBalances => ({
+            anchorAddress: pool.pool_dlt_id,
+            converterAddress: pool.converter_dlt_id,
+            reserves: pool.reserves.map(r => r.address),
+            reserveBalances: pool.reserves.map(reserve => ({
+              amount: expandToken(
+                reserve.balance,
+                findOrThrow(tokens, token =>
+                  compareString(token.dlt_id, reserve.address)
+                ).decimals
+              ),
+              id: reserve.address
+            }))
+          })
+        );
+
+        const liqApr = await fetchPoolLiqMiningApr(
+          networkVars.multiCall,
+          poolPrograms,
+          minimalPools,
+          liquidityProtectionStore,
+          liquidityProtectionNetworkToken
+        );
+
+        const complementSymbols = liqApr.map(
+          (apr): PoolLiqMiningApr => ({
+            ...apr,
+            rewards: apr.rewards.map(r => ({
+              ...r,
+              symbol: findOrThrow(tokens, token =>
+                compareString(token.dlt_id, r.address)
+              ).symbol
+            }))
+          })
+        );
+
+        return complementSymbols;
+      }
+    )
+  )
+  .subscribe(apr => vxm.ethBancor.updateLiqMiningApr(apr));
 
 export const selectedPromptReceiver$ = new Subject<string>();
