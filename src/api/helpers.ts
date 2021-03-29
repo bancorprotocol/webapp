@@ -1302,14 +1302,14 @@ export const formatUnixTime = (
 };
 
 export const formatDuration = (duration: plugin.Duration): string => {
-  let sentance = "";
+  let sentence = "";
   const days = duration.days();
   const minutes = duration.minutes();
   const hours = duration.hours();
-  if (days > 0) sentance += days + " " + i18n.tc("days");
-  if (hours > 0) sentance += " " + hours + " " + i18n.tc("hours");
-  if (minutes > 0) sentance += " " + minutes + " " + i18n.tc("minutes");
-  return sentance;
+  if (days > 0) sentence += days + " " + i18n.tc("days");
+  if (hours > 0) sentence += " " + hours + " " + i18n.tc("hours");
+  if (minutes > 0) sentence += " " + minutes + " " + i18n.tc("minutes");
+  return sentence;
 };
 
 export const defaultTableSort = (
