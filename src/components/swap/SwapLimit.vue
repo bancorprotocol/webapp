@@ -119,8 +119,8 @@
     />
 
     <modal-tx-action
-      :title="$t('modal.limit_order.title')"
-      icon="file-alt"
+      :title="modalTitle"
+      :icon="modalIcon"
       :tx-meta.sync="txMeta"
     >
       <div v-if="!isDepositingWeth">
@@ -158,13 +158,31 @@
           }}
         </p>
       </div>
-      <div v-else>deposit eth</div>
+      <div v-else>
+        <p
+          class="font-size-14 mb-4 text-center"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          You will receive
+        </p>
+
+        <gray-border-block>
+          {{ prettifyNumber(amount1) }} WETH
+        </gray-border-block>
+
+        <p
+          class="font-size-12 font-w400 mt-3 mb-0 text-left px-3"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        >
+          {{ $t("modal.withdraw_weth.info") }}
+        </p>
+      </div>
     </modal-tx-action>
   </div>
 </template>
 
 <script lang="ts">
-import { Watch, Component } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
@@ -206,6 +224,16 @@ import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 export default class SwapLimit extends BaseTxAction {
   amount1 = "";
   amount2 = "";
+
+  get modalTitle() {
+    if (this.isDepositingWeth) return "Confirm WETH deposit";
+    else return this.$t("modal.limit_order.title");
+  }
+
+  get modalIcon() {
+    if (this.isDepositingWeth) return "arrow-to-bottom";
+    else return "file-alt";
+  }
 
   durationList: plugin.Duration[] = [
     dayjs.duration({ minutes: 10 }),
