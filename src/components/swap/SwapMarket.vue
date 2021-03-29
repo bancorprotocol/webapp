@@ -122,7 +122,7 @@
 </template>
 
 <script lang="ts">
-import { Watch, Component, Prop } from "vue-property-decorator";
+import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import MainButton from "@/components/common/Button.vue";
@@ -137,6 +137,8 @@ import BigNumber from "bignumber.js";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import { addNotification } from "@/components/compositions/notifications";
+import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
+import { compareString } from "@/api/helpers";
 
 @Component({
   components: {
@@ -174,7 +176,11 @@ export default class SwapAction extends BaseTxAction {
   }
 
   get tokens() {
-    return vxm.bancor.tokens.filter(token => token.tradeSupported);
+    return vxm.bancor.tokens.filter(
+      token =>
+        token.tradeSupported &&
+        !compareString(token.id, wethTokenContractAddress)
+    );
   }
 
   get priceImpact() {
