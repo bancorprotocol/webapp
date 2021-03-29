@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="side-bar"
-    :class="classSideBar()"
-    @mouseover="mouseoverSidebar"
-    @mouseleave="mouseoutSidebar"
-  >
+  <div class="side-bar" :class="darkMode ? ' side-bar-dark' : ''">
     <div class="bancor-icon-wrapper">
       <b-navbar-brand class="pb-1 brand-icon mb-1">
         <router-link :to="{ name: 'Data' }">
@@ -40,10 +35,10 @@
             />
           </span>
           <transition name="fade">
-            <span v-if="!showMinimize && visibleLabel">{{ link.label }}</span>
+            <span>{{ link.label }}</span>
           </transition>
           <font-awesome-icon
-            v-if="!showMinimize && visibleLabel && link.newTab"
+            v-if="link.newTab"
             variant="white"
             class="icon-newtab block-rounded ml-auto"
             icon="external-link-alt"
@@ -51,8 +46,13 @@
           />
         </div>
       </div>
-      <div class="middle-space" />
-      <p class="tm-text" v-if="!showMinimize && visibleLabel">© Bancor 2021</p>
+      <div />
+      <div
+        class="font-size-14 font-w500 text-center"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+      >
+        © Bancor 2021
+      </div>
     </div>
   </div>
 </template>
@@ -63,84 +63,17 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
 export default class SideBarLeft extends Vue {
-  showMinimize: boolean = false;
-  visibleLabel: boolean = true;
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
 
-  classSideBar(): string {
-    const classNames: string[] = [];
-    if (this.darkMode) {
-      classNames.push("side-bar-dark");
-    }
-    if (this.showMinimize) {
-      classNames.push("side-bar-minimize");
-    }
-    return classNames.join(" ");
-  }
-
   imgLogo(): string {
-    if (this.darkMode) {
-      if (this.showMinimize) {
-        return require("@/assets/media/logos/bancor-white2.png");
-      } else {
-        return require("@/assets/media/logos/bancor-white.png");
-      }
-    } else {
-      if (this.showMinimize) {
-        return require("@/assets/media/logos/bancor-black2.png");
-      } else {
-        return require("@/assets/media/logos/bancor-black.png");
-      }
-    }
-  }
-
-  mouseoverSidebar() {
-    if (this.showMinimize) {
-      this.toggleView();
-      this.showLabel(true);
-    }
-  }
-
-  mouseoutSidebar() {
-    if (!this.showMinimize) {
-      this.toggleView();
-      this.showLabel(false);
-    }
-  }
-
-  showLabel(visible: boolean) {
-    let timeout;
-    if (visible) {
-      timeout = setTimeout(() => {
-        this.visibleLabel = true;
-      }, 250);
-    } else {
-      this.visibleLabel = false;
-      clearTimeout(timeout);
-    }
+    if (this.darkMode) return require("@/assets/media/logos/bancor-white.png");
+    else return require("@/assets/media/logos/bancor-black.png");
   }
 
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
     return link;
-  }
-
-  toggleView() {
-    this.showMinimize = !this.showMinimize;
-  }
-
-  mounted() {
-    const mql = window.matchMedia("(max-width: 1190px)");
-    mql.addEventListener("change", e => {
-      if (e.matches) {
-        this.showMinimize = true;
-        this.showLabel(false);
-      } else {
-        this.showMinimize = false;
-        this.showLabel(true);
-      }
-    });
   }
 }
 </script>
@@ -162,6 +95,9 @@ export default class SideBarLeft extends Vue {
   }
 
   .side-bar-wrapper {
+    overflow: auto;
+    display: grid;
+    grid-template-rows: auto 1fr 30px;
     width: 230px;
     height: 100%;
     background-color: #e6ebf2;
@@ -222,24 +158,6 @@ export default class SideBarLeft extends Vue {
       opacity: 0;
     }
   }
-  .middle-space {
-    flex-grow: 1;
-  }
-  .tm-text {
-    position: absolute;
-    bottom: 15px;
-    width: 88px;
-    height: 15px;
-    font-family: Inter;
-    font-size: 12px;
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #97a5b8;
-    margin-left: 25px;
-  }
   .clicked-link {
     span {
       color: #0f59d1;
@@ -290,29 +208,7 @@ export default class SideBarLeft extends Vue {
     cursor: pointer;
   }
 }
-.side-bar-minimize {
-  .side-bar-wrapper {
-    min-width: 60px;
-    width: 60px !important;
-  }
 
-  .clicked-link {
-    &::before {
-      left: 33px !important;
-    }
-    &::after {
-      left: 33px !important;
-    }
-  }
-  .clicked-link-dark {
-    &::before {
-      left: 33px !important;
-    }
-    &::after {
-      left: 33px !important;
-    }
-  }
-}
 .side-bar-link-dark {
   span {
     color: #aaa !important;
