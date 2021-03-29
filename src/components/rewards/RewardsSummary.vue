@@ -71,7 +71,7 @@
           </div>
           <div v-else class="font-size-14 font-w600 text-primary">--</div>
           <div
-            class="font-size-10 font-w500"
+            class="font-size-12 font-w500"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             {{ item.label }}

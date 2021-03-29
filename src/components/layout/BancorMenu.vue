@@ -74,7 +74,9 @@
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header>
-        {{ $t("community_support") }}
+        <div class="font-size-16">
+          {{ $t("community_support") }}
+        </div>
       </b-dropdown-header>
       <b-dropdown-text>
         <div class="d-flex justify-content-between cursor">
@@ -113,7 +115,11 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
-      <b-dropdown-header>{{ $t("developers") }}</b-dropdown-header>
+      <b-dropdown-header>
+        <div class="font-size-16">
+          {{ $t("developers") }}
+        </div>
+      </b-dropdown-header>
       <b-dropdown-item
         @click="openUrl('https://twitter.com/Bancor')"
         :variant="darkMode ? 'dark' : 'light'"
@@ -174,7 +180,9 @@
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
       <b-dropdown-header>
-        {{ $t("developer_resources") }}
+        <div class="font-size-16">
+          {{ $t("developer_resources") }}
+        </div>
       </b-dropdown-header>
       <b-dropdown-text>
         <div
@@ -203,7 +211,7 @@
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-5" class="font-size-12">
+    <b-dropdown-group id="dropdown-group-5" class="font-size-16">
       <b-dropdown-item
         @click="navPrivacy"
         :variant="darkMode ? 'dark' : 'light'"

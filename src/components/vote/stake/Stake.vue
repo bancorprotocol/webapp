@@ -28,13 +28,13 @@
         :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
       >
         <span
-          class="font-size-12 font-w500"
+          class="font-size-14 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           {{ $t("your_balance") }}
         </span>
         <div
-          class="font-size-12 font-w500"
+          class="font-size-14 font-w500"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
           {{ prettifyNumber(balance.toNumber()) }} {{ symbol }}
@@ -46,13 +46,13 @@
         :class="darkMode ? 'border-bottom-dark' : 'border-bottom-light'"
       >
         <span
-          class="font-size-12 font-w500"
+          class="font-size-14 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           {{ $t("currently_staked") }}
         </span>
         <div
-          class="font-size-12 font-w500"
+          class="font-size-14 font-w500"
           :class="darkMode ? 'text-dark' : 'text-light'"
         >
           {{ prettifyNumber(votes.toNumber()) }} {{ symbol }}
@@ -92,7 +92,7 @@
         </span>
 
         <div
-          class="font-size-12 font-w400 text-center"
+          class="font-size-14 font-w400 text-center"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           <div>
