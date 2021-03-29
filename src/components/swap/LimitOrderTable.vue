@@ -14,7 +14,7 @@
           <div class="d-flex mr-3">
             <cancel-limit-order ref="cancelModal" />
 
-            <withdraw-weth />
+            <withdraw-weth class="ml-2" />
           </div>
 
           <multi-input-field

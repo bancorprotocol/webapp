@@ -5,7 +5,7 @@
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       size="sm"
     >
-      {{ $t("button.withdraw_weth", { amount: prettifyNumber(balance) }) }}
+      Cancel All
     </b-btn>
 
     <modal-tx-action
