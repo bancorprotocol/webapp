@@ -229,6 +229,7 @@ export default class SwapLimit extends BaseTxAction {
 
   rateLoading = false;
   userSettedRate = false;
+  amount1LastChanged = true;
   initialRate = "";
   limitRate = "";
   numeral = numeral;
@@ -470,6 +471,7 @@ export default class SwapLimit extends BaseTxAction {
         else this.calcLimitRate();
       } else if (this.limitRate) this.calcAmount2();
     }
+    this.amount1LastChanged = true;
     this.checkAlerts();
   }
 
@@ -480,17 +482,15 @@ export default class SwapLimit extends BaseTxAction {
         else this.calcLimitRate();
       else if (this.limitRate) this.calcAmount1();
     }
+    this.amount1LastChanged = false;
     this.checkAlerts();
   }
 
   rateCalcField() {
     if (this.limitRate) {
       this.userSettedRate = true;
-      if (this.amount1 && this.amount2) {
-        this.amount1 = "";
-        this.amount2 = "";
-      } else if (this.amount1) this.calcAmount2();
-      else if (this.amount2) this.calcAmount1();
+      if (this.amount1 && this.amount1LastChanged) this.calcAmount2();
+      else if (this.amount2 && !this.amount1LastChanged) this.calcAmount1();
     } else this.userSettedRate = false;
     this.checkAlerts();
   }

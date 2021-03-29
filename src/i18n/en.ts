@@ -473,5 +473,5 @@ export const en = {
   rate_below_market:
     "The rate is lower than market rate, you can get a better rate on market tab",
   rate_above_market:
-    "The rate is to high above market rate and will likely not be fulfilled"
+    "The rate is too high above market rate and will likely not be fulfilled"
 };
