@@ -5799,18 +5799,6 @@ export class EthBancorModule
         share()
       );
 
-      combineLatest([poolPrograms$, finalRelays$, liquidityProtectionStore$])
-        .pipe(
-          mergeMap(([poolPrograms, relays, protectionStoreAddress]) =>
-            this.fetchPooLiqMiningApr({
-              poolPrograms,
-              relays: relays.relays,
-              protectionStoreAddress
-            })
-          )
-        )
-        .subscribe(liqMiningApr => this.updateLiqMiningApr(liqMiningApr));
-
       await newPools$.pipe(firstItem()).toPromise();
     } catch (e) {
       console.error("thrown in x", e);

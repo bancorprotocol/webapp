@@ -33,7 +33,8 @@ import {
   ProtectedLiquidityCalculated,
   ProtectedLiquidity,
   ViewProtectedLiquidity,
-  MinimalPool
+  MinimalPool,
+  PoolLiqMiningApr
 } from "@/types/bancor";
 import {
   fetchLiquidityProtectionSettings,
@@ -47,7 +48,7 @@ import {
   getPoolAprs,
   fetchRewardsMultiplier,
   fetchLockedBalances,
-  fetchPooLiqMiningApr
+  fetchPoolLiqMiningApr
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
@@ -798,32 +799,65 @@ combineLatest([onLogin$, minimalPools$]).subscribe(
   }
 );
 
-const viewPools$ = combineLatest([
+combineLatest([
   newPools$,
+  tokens$,
   networkVars$,
   liquidityProtectionNetworkToken$,
   poolPrograms$,
   liquidityProtectionStore$
-]).pipe(
-  switchMapIgnoreThrow(
-    async ([
-      pools,
-      networkVars,
-      liquidityProtectionNetworkToken,
-      poolPrograms,
-      liquidityProtectionStore
-    ]) => {
-      const x = [pools];
-
-      const liqApr = await fetchPooLiqMiningApr(
-        networkVars.multiCall,
-        poolPrograms,
+])
+  .pipe(
+    switchMapIgnoreThrow(
+      async ([
         pools,
-        liquidityProtectionStore,
-        liquidityProtectionNetworkToken
-      );
-    }
+        tokens,
+        networkVars,
+        liquidityProtectionNetworkToken,
+        poolPrograms,
+        liquidityProtectionStore
+      ]) => {
+        const minimalPools = pools.map(
+          (pool): MinimalPoolWithReserveBalances => ({
+            anchorAddress: pool.pool_dlt_id,
+            converterAddress: pool.converter_dlt_id,
+            reserves: pool.reserves.map(r => r.address),
+            reserveBalances: pool.reserves.map(reserve => ({
+              amount: expandToken(
+                reserve.balance,
+                findOrThrow(tokens, token =>
+                  compareString(token.dlt_id, reserve.address)
+                ).decimals
+              ),
+              id: reserve.address
+            }))
+          })
+        );
+
+        const liqApr = await fetchPoolLiqMiningApr(
+          networkVars.multiCall,
+          poolPrograms,
+          minimalPools,
+          liquidityProtectionStore,
+          liquidityProtectionNetworkToken
+        );
+
+        const complementSymbols = liqApr.map(
+          (apr): PoolLiqMiningApr => ({
+            ...apr,
+            rewards: apr.rewards.map(r => ({
+              ...r,
+              symbol: findOrThrow(tokens, token =>
+                compareString(token.dlt_id, r.address)
+              ).symbol
+            }))
+          })
+        );
+
+        return complementSymbols;
+      }
+    )
   )
-);
+  .subscribe(apr => vxm.ethBancor.updateLiqMiningApr(apr));
 
 export const selectedPromptReceiver$ = new Subject<string>();

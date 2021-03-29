@@ -44,7 +44,7 @@ import {
   protectedPositionShape,
   protectedReservesShape
 } from "./shapes";
-import { shrinkToken } from "./helpers";
+import { MinimalPoolWithReserveBalances, shrinkToken } from "./helpers";
 import { PoolProgram } from "@/store/modules/rewards";
 import { miningBntReward, miningTknReward } from "../pureHelpers";
 import { ppmToDec } from "@/store/modules/swap/ethBancor";
@@ -707,13 +707,13 @@ export const fetchLockedBalances = async (
   return lockedBalances;
 };
 
-export const fetchPooLiqMiningApr = async (
+export const fetchPoolLiqMiningApr = async (
   multiCallAddress: string,
   poolPrograms: PoolProgram[],
-  relays: RelayWithReserveBalances[],
+  relays: MinimalPoolWithReserveBalances[],
   protectionStoreAddress: string,
   liquidityNetworkToken: string
-): Promise<PoolLiqMiningApr[]> => {
+) => {
   const ethMulti = new MultiCall(web3, multiCallAddress, [
     500,
     300,
@@ -725,7 +725,7 @@ export const fetchPooLiqMiningApr = async (
 
   const highTierPools = relays.filter(relay =>
     poolPrograms.some(poolProgram =>
-      compareString(relay.id, poolProgram.poolToken)
+      compareString(relay.anchorAddress, poolProgram.poolToken)
     )
   );
 
@@ -734,12 +734,12 @@ export const fetchPooLiqMiningApr = async (
   const storeAddress = protectionStoreAddress;
 
   const protectedShapes = highTierPools.map(pool => {
-    const [reserveOne, reserveTwo] = pool.reserves;
+    const [reserveOne, reserveTwo] = pool.reserveBalances;
     return protectedReservesShape(
       storeAddress,
-      pool.id,
-      reserveOne.contract,
-      reserveTwo.contract
+      pool.anchorAddress,
+      reserveOne.id,
+      reserveTwo.id
     );
   });
 
@@ -773,7 +773,7 @@ export const fetchPooLiqMiningApr = async (
     );
 
     const poolReserveBalances = findOrThrow(highTierPools, p =>
-      compareString(pool.anchorAddress, p.id)
+      compareString(pool.anchorAddress, p.anchorAddress)
     );
 
     const networkToken = liquidityNetworkToken;
@@ -824,16 +824,11 @@ export const fetchPooLiqMiningApr = async (
     };
   });
 
-  const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
+  const liqMiningApr = res.map(calculated => {
     const [bntReserve, tknReserve] = sortAlongSide(
       calculated.reserves,
       reserve => reserve.contract,
       [liquidityNetworkToken]
-    );
-    const fullTknReserve = findOrThrow(
-      highTierPools.flatMap(pool => pool.reserves),
-      reserve => compareString(reserve.contract, tknReserve.contract),
-      "failed to find reserve"
     );
 
     return {
@@ -843,13 +838,11 @@ export const fetchPooLiqMiningApr = async (
         {
           address: bntReserve.contract,
           amount: bntReserve.amount,
-          symbol: "BNT",
           reward: calculated.bntReward
         },
         {
           address: tknReserve.contract,
           amount: tknReserve.amount,
-          symbol: fullTknReserve.symbol,
           reward: calculated.tknReward
         }
       ]
