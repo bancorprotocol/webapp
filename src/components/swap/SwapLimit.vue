@@ -183,7 +183,10 @@ import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationS
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
-import { addNotification } from "@/components/compositions/notifications";
+import {
+  addNotification,
+  ENotificationStatus
+} from "@/components/compositions/notifications";
 import { ethReserveAddress } from "@/api/eth/ethAbis";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 
@@ -399,7 +402,7 @@ export default class SwapLimit extends BaseTxAction {
           amount2: this.prettifyNumber(this.amount2),
           symbol2: this.token2.symbol
         }),
-        txHash: this.txMeta.success?.txId
+        status: ENotificationStatus.success
       });
       this.setDefault();
     } catch (e) {
