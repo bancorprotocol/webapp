@@ -12,16 +12,7 @@
 
         <div class="d-flex">
           <div class="d-flex mr-3">
-            <div>
-              <b-btn
-                @click="openCancelModal(null)"
-                size="sm"
-                class="mr-2"
-                :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
-              >
-                Cancel all orders
-              </b-btn>
-            </div>
+            <cancel-limit-order ref="cancelModal" />
 
             <withdraw-weth />
           </div>
@@ -89,15 +80,13 @@
 
         <template #cell(cancel)="{ item }">
           <font-awesome-icon
-            @click="openCancelModal(item)"
+            @click="setItemToCancel(item)"
             :icon="['fas', 'times']"
             class="cursor"
           />
         </template>
       </data-table>
     </content-block>
-
-    <modal-cancel-order v-model="showCancelModal" :limit-order="itemToCancel" />
   </b-container>
 </template>
 
@@ -111,24 +100,23 @@ import { OrderStatus } from "@/api/observables/keeperDao";
 import { ViewTableField } from "@/types/bancor";
 import dayjs from "dayjs";
 import { formatPercent } from "@/api/helpers";
-import ModalCancelOrder from "@/components/modals/ModalCancelOrder.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import WithdrawWeth from "@/components/swap/WithdrawWeth.vue";
+import CancelLimitOrder from "@/components/swap/CancelLimitOrder.vue";
+import Vue from "vue";
 
 @Component({
   components: {
+    CancelLimitOrder,
     WithdrawWeth,
     MultiInputField,
-    ModalCancelOrder,
     DataTable,
     ContentBlock
   }
 })
 export default class LimitOrderTable extends BaseComponent {
   search = "";
-  showCancelModal = false;
-  itemToCancel: ViewLimitOrder | null = null;
 
   dayjs = dayjs;
   formatPercent = formatPercent;
@@ -169,69 +157,18 @@ export default class LimitOrderTable extends BaseComponent {
     ];
   }
 
-  get mockOrders(): ViewLimitOrder[] {
-    return [
-      {
-        expiryTime: Date.now(),
-        seller: "1234567",
-        from: {
-          id: "22",
-          amount: "55.33333",
-          logo:
-            "https://raw.githubusercontent.com/eoscafe/eos-airdrops/master/logos/bancor.png",
-          symbol: "BNT"
-        },
-        to: {
-          logo:
-            "https://storage.googleapis.com/bancor-prod-file-store/images/communities/aea83e97-13a3-4fe7-b682-b2a82299cdf2.png",
-          symbol: "ETH",
-          id: "33",
-          amount: "12.44"
-        },
-        orderHash: "12344555",
-        id: "1",
-        percentFilled: 0.6,
-        status: OrderStatus.FILLABLE
-      },
-      {
-        expiryTime: Date.now(),
-        seller: "1234567",
-        from: {
-          id: "22",
-          amount: "55.33333",
-          logo:
-            "https://raw.githubusercontent.com/eoscafe/eos-airdrops/master/logos/bancor.png",
-          symbol: "BNT"
-        },
-        to: {
-          logo:
-            "https://storage.googleapis.com/bancor-prod-file-store/images/communities/aea83e97-13a3-4fe7-b682-b2a82299cdf2.png",
-          symbol: "ETH",
-          id: "33",
-          amount: "12.44"
-        },
-        orderHash: "12344555",
-        id: "2",
-        percentFilled: 0.6,
-        status: OrderStatus.EXPIRED
-      }
-    ];
-  }
   get orders() {
     return vxm.ethBancor.limitOrders;
-  }
-
-  get allOrderIds() {
-    return this.orders.map(x => x.id);
   }
 
   isExpired(status: OrderStatus) {
     return status === OrderStatus.EXPIRED;
   }
 
-  openCancelModal(item: ViewLimitOrder | null) {
-    this.itemToCancel = item;
-    this.showCancelModal = true;
+  setItemToCancel(item: ViewLimitOrder) {
+    (this.$refs.cancelModal as Vue & {
+      cancelById: (item: ViewLimitOrder) => void;
+    }).cancelById(item);
   }
 }
 </script>
