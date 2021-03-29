@@ -2787,7 +2787,6 @@ export class EthBancorModule
   get traditionalRelays(): ViewRelay[] {
     if (!this.apiData) return [];
 
-    const aprs = this.poolAprs;
     const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
     const whiteListedPools = this.whiteListedPools;
     const limit = vxm.minting.minNetworkTokenLiquidityforMinting;
@@ -2827,10 +2826,6 @@ export class EthBancorModule
         compareString(reserve.address, liquidityProtectionNetworkToken)
       );
       const addProtectionSupported = liquidityProtection && bntReserve;
-
-      const apr = aprs.find(apr =>
-        compareString(apr.poolId, relay.pool_dlt_id)
-      );
 
       const feesGenerated = relay.fees_24h.usd || 0;
       const feesVsLiquidity = new BigNumber(feesGenerated)
@@ -2877,7 +2872,6 @@ export class EthBancorModule
         v2: false,
         volume,
         feesGenerated,
-        ...(apr && { apr: apr.oneWeekApr }),
         ...(feesVsLiquidity && { feesVsLiquidity }),
         aprMiningRewards
       } as ViewRelay;
@@ -5819,6 +5813,7 @@ export class EthBancorModule
   poolAprs: PoolApr[] = [];
 
   @mutation updatePoolAprs(newPoolAprs: PoolApr[]) {
+    console.log(newPoolAprs, "update pool aprs is a thing");
     const existing = this.poolAprs;
     const withoutOld = existing.filter(
       apr => !newPoolAprs.some(a => compareString(apr.poolId, a.poolId))
