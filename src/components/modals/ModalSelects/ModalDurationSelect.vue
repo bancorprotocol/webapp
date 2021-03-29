@@ -17,7 +17,6 @@
         </div>
         <div>
           <b-dropdown
-            boundary="viewport"
             :variant="darkMode ? 'outline-dark' : 'outline-light'"
             toggle-class="block-rounded"
             :menu-class="
@@ -32,7 +31,7 @@
               style="width: 160px"
               class="d-flex justify-content-between"
             >
-              {{ `${$t("days")} ${selectedDays.asDays()}` }}
+              {{ $tc("days", selectedDays.asDays()) }}
             </template>
 
             <b-dropdown-item
@@ -42,7 +41,7 @@
               :variant="darkMode ? 'dark' : 'light'"
             >
               <div class="d-flex justify-content-between">
-                {{ `${item - 1} ${$t("days")}` }}
+                {{ $tc("days", item - 1) }}
                 <font-awesome-icon
                   v-if="selectedDays.days() === item - 1"
                   icon="check"
@@ -54,7 +53,6 @@
         </div>
         <div>
           <b-dropdown
-            boundary="viewport"
             :variant="darkMode ? 'outline-dark' : 'outline-light'"
             toggle-class="block-rounded"
             :menu-class="
@@ -65,7 +63,7 @@
             style="width: 160px"
           >
             <template #button-content>
-              {{ `${$t("hours")} ${selectedHours.asHours()}` }}
+              {{ $tc("hours", selectedHours.asHours()) }}
             </template>
 
             <b-dropdown-item
@@ -75,7 +73,7 @@
               :variant="darkMode ? 'dark' : 'light'"
             >
               <div class="d-flex justify-content-between">
-                {{ `${item - 1} ${$t("hours")}` }}
+                {{ $tc("hours", item - 1) }}
                 <font-awesome-icon
                   v-if="selectedHours.hours() === item - 1"
                   icon="check"
@@ -97,7 +95,7 @@
             style="width: 160px"
           >
             <template #button-content>
-              {{ `${$t("minutes")} ${selectedMinutes.asMinutes()}` }}
+              {{ $tc("minutes", selectedMinutes.asMinutes()) }}
             </template>
 
             <b-dropdown-item
@@ -107,7 +105,7 @@
               :variant="darkMode ? 'dark' : 'light'"
             >
               <div class="d-flex justify-content-between">
-                {{ `${item - 1} ${$t("minutes")}` }}
+                {{ $tc("minutes", item - 1) }}
                 <font-awesome-icon
                   v-if="selectedMinutes.minutes() === item - 1"
                   icon="check"
@@ -164,20 +162,14 @@ export default class ModalDurationSelect extends BaseComponent {
   @Emit("confirm")
   confirm() {
     this.show = false;
+    const days: number = this.selectedDays.asDays();
     return dayjs.duration({
-      days: this.selectedDays.asDays(),
-      hours: this.selectedHours.asHours(),
-      minutes: this.selectedMinutes.asMinutes()
+      days: days,
+      hours: days === 7 ? 0 : this.selectedHours.asHours(),
+      minutes: days === 7 ? 0 : this.selectedMinutes.asMinutes()
     });
   }
 }
 </script>
 
-<style scoped lang="scss">
-.modal-dialog-scrollable .modal-content {
-  overflow: initial;
-}
-.modal-dialog-scrollable .modal-body {
-  position: static;
-}
-</style>
+<style scoped lang="scss"></style>
