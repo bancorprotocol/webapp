@@ -6,6 +6,7 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   PoolHistoricBalance,
+  PoolLiqMiningApr,
   PositionReturn,
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
@@ -29,7 +30,9 @@ import {
 } from "./contractTypes";
 import {
   compareString,
+  findOrThrow,
   LockedBalance,
+  RelayWithReserveBalances,
   rewindBlocksByDays,
   sortAlongSide,
   traverseLockedBalances,
@@ -38,9 +41,13 @@ import {
 import {
   liquidityProtectionSettingsShape,
   liquidityProtectionShape,
-  protectedPositionShape
+  protectedPositionShape,
+  protectedReservesShape
 } from "./shapes";
 import { shrinkToken } from "./helpers";
+import { PoolProgram } from "@/store/modules/rewards";
+import { miningBntReward, miningTknReward } from "../pureHelpers";
+import { ppmToDec } from "@/store/modules/swap/ethBancor";
 
 export const getApprovedBalanceWei = async ({
   tokenAddress,
@@ -698,4 +705,156 @@ export const fetchLockedBalances = async (
       ? await traverseLockedBalances(contractAddress, owner, lockedBalanceCount)
       : [];
   return lockedBalances;
+};
+
+export const fetchPooLiqMiningApr = async (
+  multiCallAddress: string,
+  poolPrograms: PoolProgram[],
+  relays: RelayWithReserveBalances[],
+  protectionStoreAddress: string,
+  liquidityNetworkToken: string
+): Promise<PoolLiqMiningApr[]> => {
+  const ethMulti = new MultiCall(web3, multiCallAddress, [
+    500,
+    300,
+    100,
+    50,
+    20,
+    1
+  ]);
+
+  const highTierPools = relays.filter(relay =>
+    poolPrograms.some(poolProgram =>
+      compareString(relay.id, poolProgram.poolToken)
+    )
+  );
+
+  if (highTierPools.length == 0) return [];
+
+  const storeAddress = protectionStoreAddress;
+
+  const protectedShapes = highTierPools.map(pool => {
+    const [reserveOne, reserveTwo] = pool.reserves;
+    return protectedReservesShape(
+      storeAddress,
+      pool.id,
+      reserveOne.contract,
+      reserveTwo.contract
+    );
+  });
+
+  const [protectedReserves] = ((await ethMulti.all([
+    protectedShapes
+  ])) as unknown[]) as {
+    anchorAddress: string;
+    reserveOneAddress: string;
+    reserveTwoAddress: string;
+    reserveOneProtected: string;
+    reserveTwoProtected: string;
+  }[][];
+
+  const zippedProtectedReserves = protectedReserves.map(protectedReserve => ({
+    anchorAddress: protectedReserve.anchorAddress,
+    reserves: [
+      {
+        contract: protectedReserve.reserveOneAddress,
+        amount: protectedReserve.reserveOneProtected
+      },
+      {
+        contract: protectedReserve.reserveTwoAddress,
+        amount: protectedReserve.reserveTwoProtected
+      }
+    ]
+  }));
+
+  const res = zippedProtectedReserves.map(pool => {
+    const poolProgram: PoolProgram = findOrThrow(poolPrograms, pp =>
+      compareString(pool.anchorAddress, pp.poolToken)
+    );
+
+    const poolReserveBalances = findOrThrow(highTierPools, p =>
+      compareString(pool.anchorAddress, p.id)
+    );
+
+    const networkToken = liquidityNetworkToken;
+
+    const [
+      bntReserve,
+      tknReserve
+    ] = sortAlongSide(
+      poolReserveBalances.reserveBalances,
+      reserve => reserve.id,
+      [networkToken]
+    );
+
+    const [bntProtected, tknProtected] = sortAlongSide(
+      pool.reserves,
+      reserve => reserve.contract,
+      [networkToken]
+    );
+
+    const [
+      bntProtectedShare,
+      tknProtectedShare
+    ] = sortAlongSide(poolProgram.reserves, reserve => reserve.reserveId, [
+      networkToken
+    ]);
+
+    const poolRewardRate = poolProgram.rewardRate;
+
+    const bntReward = miningBntReward(
+      bntProtected.amount,
+      poolRewardRate,
+      ppmToDec(bntProtectedShare.rewardShare)
+    );
+
+    const tknReward = miningTknReward(
+      tknReserve.amount,
+      bntReserve.amount,
+      tknProtected.amount,
+      poolRewardRate,
+      ppmToDec(tknProtectedShare.rewardShare)
+    );
+
+    return {
+      ...pool,
+      bntReward,
+      tknReward,
+      endTime: poolProgram.endTimes
+    };
+  });
+
+  const liqMiningApr: PoolLiqMiningApr[] = res.map(calculated => {
+    const [bntReserve, tknReserve] = sortAlongSide(
+      calculated.reserves,
+      reserve => reserve.contract,
+      [liquidityNetworkToken]
+    );
+    const fullTknReserve = findOrThrow(
+      highTierPools.flatMap(pool => pool.reserves),
+      reserve => compareString(reserve.contract, tknReserve.contract),
+      "failed to find reserve"
+    );
+
+    return {
+      poolId: calculated.anchorAddress,
+      endTime: Number(calculated.endTime),
+      rewards: [
+        {
+          address: bntReserve.contract,
+          amount: bntReserve.amount,
+          symbol: "BNT",
+          reward: calculated.bntReward
+        },
+        {
+          address: tknReserve.contract,
+          amount: tknReserve.amount,
+          symbol: fullTknReserve.symbol,
+          reward: calculated.tknReward
+        }
+      ]
+    };
+  });
+
+  return liqMiningApr;
 };

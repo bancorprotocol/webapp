@@ -14,7 +14,7 @@ import {
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
-import { EthNetworks } from "./web3";
+import { EthNetworks, web3 } from "./web3";
 import { NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
 import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
@@ -46,7 +46,8 @@ import {
   getHistoricBalances,
   getPoolAprs,
   fetchRewardsMultiplier,
-  fetchLockedBalances
+  fetchLockedBalances,
+  fetchPooLiqMiningApr
 } from "./eth/contractWrappers";
 import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
@@ -71,6 +72,7 @@ import {
   settingsContractAddress$,
   stakingRewards$
 } from "./observables/contracts";
+import { DataTypes, MultiCall, ShapeWithLabel } from "eth-multicall";
 
 const tokenMetaDataEndpoint =
   "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
@@ -311,7 +313,7 @@ export const newPools$ = combineLatest([
 
           return {
             ...reserve,
-            ...(meta && meta.image && { image: meta.image })
+            image: (meta && meta.image) || defaultImage
           };
         })
       })
@@ -374,17 +376,19 @@ combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
     vxm.ethBancor.setLockedBalances(balances);
   });
 
-settingsContractAddress$
-  .pipe(
-    switchMapIgnoreThrow(settingsContractAddress =>
-      fetchMinLiqForMinting(settingsContractAddress)
-    )
-  )
-  .subscribe(minNetworkTokenLiquidityForMinting =>
+export const minNetworkTokenLiquidityForMinting$ = settingsContractAddress$.pipe(
+  switchMapIgnoreThrow(settingsContractAddress =>
+    fetchMinLiqForMinting(settingsContractAddress)
+  ),
+  share()
+);
+
+minNetworkTokenLiquidityForMinting$.subscribe(
+  minNetworkTokenLiquidityForMinting =>
     vxm.minting.setMinNetworkTokenLiquidityForMinting(
       minNetworkTokenLiquidityForMinting
     )
-  );
+);
 
 const liquiditySettings$ = combineLatest([
   liquidityProtection$,
@@ -401,6 +405,11 @@ const liquiditySettings$ = combineLatest([
       })
     )
   ),
+  share()
+);
+
+export const liquidityProtectionNetworkToken$ = liquiditySettings$.pipe(
+  pluck("networkToken"),
   share()
 );
 
@@ -787,6 +796,34 @@ combineLatest([onLogin$, minimalPools$]).subscribe(
       vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
     }
   }
+);
+
+const viewPools$ = combineLatest([
+  newPools$,
+  networkVars$,
+  liquidityProtectionNetworkToken$,
+  poolPrograms$,
+  liquidityProtectionStore$
+]).pipe(
+  switchMapIgnoreThrow(
+    async ([
+      pools,
+      networkVars,
+      liquidityProtectionNetworkToken,
+      poolPrograms,
+      liquidityProtectionStore
+    ]) => {
+      const x = [pools];
+
+      const liqApr = await fetchPooLiqMiningApr(
+        networkVars.multiCall,
+        poolPrograms,
+        pools,
+        liquidityProtectionStore,
+        liquidityProtectionNetworkToken
+      );
+    }
+  )
 );
 
 export const selectedPromptReceiver$ = new Subject<string>();
