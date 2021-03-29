@@ -1306,9 +1306,9 @@ export const formatDuration = (duration: plugin.Duration): string => {
   const days = duration.days();
   const minutes = duration.minutes();
   const hours = duration.hours();
-  if (days > 0) sentence += days + " " + i18n.tc("days");
-  if (hours > 0) sentence += " " + hours + " " + i18n.tc("hours");
-  if (minutes > 0) sentence += " " + minutes + " " + i18n.tc("minutes");
+  if (days > 0) sentence += i18n.tc("days",days);
+  if (hours > 0) sentence += " " + i18n.tc("hours",hours);
+  if (minutes > 0) sentence += " " + i18n.tc("minutes",minutes);
   return sentence;
 };
 

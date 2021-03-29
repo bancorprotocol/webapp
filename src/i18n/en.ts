@@ -373,9 +373,9 @@ export const en = {
   current_protection: "Current protection is {amount}",
   roi_protected_split:
     "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
-  days: "Days",
-  hours: "Hours",
-  minutes: "Minutes",
+  days: "1 Day | {count} Days",
+  hours: "1 Hour | {count} Hours",
+  minutes: "1 Minute | {count} Minutes",
   custom_time: "Custom time",
   set_up_time: "Set up your custom period of time",
   current_rate: "Current rate",
