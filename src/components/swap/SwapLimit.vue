@@ -162,7 +162,7 @@
         >
           {{
             $t("modal.limit_order.info_text", {
-              timer: "?????"
+              timer: durationTimer
             })
           }}
         </p>
@@ -205,7 +205,7 @@ import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
 import dayjs from "@/utils/dayjs";
-import { compareString, formatDuration } from "@/api/helpers";
+import { compareString, durationTimer, formatDuration } from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -217,6 +217,7 @@ import {
 import { ethReserveAddress } from "@/api/eth/ethAbis";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 import { Duration } from "dayjs/plugin/duration";
+import { Dayjs } from "dayjs";
 
 @Component({
   components: {
@@ -234,6 +235,10 @@ import { Duration } from "dayjs/plugin/duration";
 export default class SwapLimit extends BaseTxAction {
   amount1 = "";
   amount2 = "";
+
+  get durationTimer() {
+    return durationTimer(this.selectedDuration);
+  }
 
   get modalTitle() {
     if (this.isDepositingWeth) return "Confirm WETH deposit";
@@ -388,7 +393,6 @@ export default class SwapLimit extends BaseTxAction {
   isDepositingWeth = false;
 
   async initSwap() {
-    console.log("init Limit Swap");
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
@@ -401,20 +405,17 @@ export default class SwapLimit extends BaseTxAction {
     try {
       const fromIsEth = ethReserveAddress === fromViewAmount.id;
       if (fromIsEth) {
-        console.log("1 from is eth");
         this.isDepositingWeth = true;
         const success = await vxm.ethBancor.depositWeth({
           decAmount: fromViewAmount.amount,
           onPrompt: this.onPrompt
         });
-        console.log("2 deposit success", success);
         this.isDepositingWeth = false;
       }
 
       const correctedFrom: ViewAmount = fromIsEth
         ? { id: wethTokenContractAddress, amount: fromViewAmount.amount }
         : fromViewAmount;
-      console.log("3 init actual swap");
 
       const success = await vxm.ethBancor.createOrder({
         from: correctedFrom,
@@ -426,7 +427,6 @@ export default class SwapLimit extends BaseTxAction {
         onPrompt: this.onPrompt
       });
       this.txMeta.showTxModal = false;
-      console.log("4 Swap succuess");
       addNotification({
         title: this.$tc("notifications.add.swap.title"),
         description: this.$tc("notifications.add.swap.description", 0, {
@@ -439,10 +439,8 @@ export default class SwapLimit extends BaseTxAction {
       });
       this.setDefault();
     } catch (e) {
-      console.log("5 Swap error");
       this.txMeta.txError = e.message;
     } finally {
-      console.log("6 Swap finally");
       this.txMeta.txBusy = false;
       this.isDepositingWeth = false;
     }

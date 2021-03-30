@@ -37,6 +37,8 @@ import dayjs from "@/utils/dayjs";
 import { authenticatedReceiver$ } from "./observables/auth";
 import { EthNetworks, getAlchemyUrl, getInfuraAddress, web3 } from "@/api/web3";
 import { i18n } from "@/i18n";
+import { Duration } from "dayjs/plugin/duration";
+import { Dayjs } from "dayjs";
 
 export enum PositionType {
   single,
@@ -1306,9 +1308,9 @@ export const formatDuration = (duration: plugin.Duration): string => {
   const days = duration.days();
   const minutes = duration.minutes();
   const hours = duration.hours();
-  if (days > 0) sentence += i18n.tc("days",days);
-  if (hours > 0) sentence += " " + i18n.tc("hours",hours);
-  if (minutes > 0) sentence += " " + i18n.tc("minutes",minutes);
+  if (days > 0) sentence += i18n.tc("days", days);
+  if (hours > 0) sentence += " " + i18n.tc("hours", hours);
+  if (minutes > 0) sentence += " " + i18n.tc("minutes", minutes);
   return sentence;
 };
 
@@ -1337,3 +1339,13 @@ export const generateEtherscanTxLink = (
   txHash: string,
   ropsten: boolean = false
 ): string => `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
+
+export const durationTimer = (
+  duration: Duration,
+  start: Dayjs = dayjs(),
+  format: string = "DD[d:]HH[h:]mm[m]"
+): string => {
+  const end = start.add(duration);
+  const result = dayjs.duration(end.diff(start));
+  return result.format(format);
+};
