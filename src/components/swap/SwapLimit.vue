@@ -252,7 +252,6 @@ export default class SwapLimit extends BaseTxAction {
     dayjs.duration({ days: 7 })
   ];
   selectedDuration = this.durationList[4];
-  keeperDaoList: TokenList | null = null;
 
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -643,10 +642,7 @@ export default class SwapLimit extends BaseTxAction {
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.replace({ name: "SwapLimit", query: defaultQuery });
     }
-    [this.keeperDaoList] = await Promise.all([
-      getTokenList(),
-      this.calculateRate()
-    ]);
+    await this.calculateRate();
   }
 }
 </script>
