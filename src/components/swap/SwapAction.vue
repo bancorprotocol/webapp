@@ -173,9 +173,13 @@ export default class SwapAction extends BaseTxAction {
   }
 
   get priceImpact() {
-    return this.slippage !== null && this.slippage !== undefined
-      ? numeral(this.slippage).format("0.0000%")
-      : "0.0000%";
+    const baseFormat = "0.0000%";
+    if (this.slippage !== null && this.slippage !== undefined) {
+      const formatted = numeral(this.slippage).format("0.0000%");
+      return formatted !== "NaN%" ? formatted : baseFormat;
+    } else {
+      return baseFormat;
+    }
   }
 
   get slippageTolerance() {
