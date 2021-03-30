@@ -386,20 +386,6 @@ export default class SwapLimit extends BaseTxAction {
 
   isDepositingWeth = false;
 
-  async initWethDeposit(amount: string) {
-    this.isDepositingWeth = true;
-    try {
-      const success = await vxm.ethBancor.depositWeth({
-        decAmount: amount,
-        onPrompt: this.onPrompt
-      });
-    } catch (e) {
-      throw e;
-    } finally {
-      this.isDepositingWeth = false;
-    }
-  }
-
   async initSwap() {
     console.log("init Limit Swap");
     this.openModal();
