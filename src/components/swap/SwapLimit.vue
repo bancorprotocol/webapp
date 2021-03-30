@@ -532,10 +532,14 @@ export default class SwapLimit extends BaseTxAction {
 
   async calculateRate() {
     this.rateLoading = true;
+    const fromId =
+      this.token1.id === wethTokenContractAddress
+        ? ethReserveAddress
+        : this.token1.id;
     try {
       const rate = await vxm.bancor.getReturn({
         from: {
-          id: this.token1.id,
+          id: fromId,
           amount: "1"
         },
         toId: this.token2.id
