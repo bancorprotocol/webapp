@@ -1,5 +1,5 @@
-import { uniqWith } from "lodash";
-import { Subject, combineLatest, merge } from "rxjs";
+import { fromPairs, isEqual, uniqWith } from "lodash";
+import { Subject, combineLatest, merge, Observable } from "rxjs";
 import {
   distinctUntilChanged,
   map,
@@ -16,25 +16,30 @@ import dayjs from "dayjs";
 import { vxm } from "@/store";
 import { EthNetworks, web3 } from "./web3";
 import { NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
-import { ppmToDec } from "@/store/modules/swap/ethBancor";
+import { ppmToDec, Balance } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
 import {
   compareString,
   findOrThrow,
   calculateProgressLevel,
-  calculatePercentIncrease
+  calculatePercentIncrease,
+  sortAlongSide,
+  buildPoolNameFromReserves,
+  updateArray
 } from "./helpers";
 import {
   buildStakingRewardsContract,
   buildTokenContract
 } from "./eth/contractTypes";
-import { filterAndWarn } from "./pureHelpers";
+import { decToPpm, filterAndWarn } from "./pureHelpers";
 import {
   ProtectedLiquidityCalculated,
   ProtectedLiquidity,
   ViewProtectedLiquidity,
   MinimalPool,
-  PoolLiqMiningApr
+  PoolLiqMiningApr,
+  ViewRelay,
+  ViewReserve
 } from "@/types/bancor";
 import {
   fetchLiquidityProtectionSettings,
@@ -73,7 +78,8 @@ import {
   settingsContractAddress$,
   stakingRewards$
 } from "./observables/contracts";
-import { DataTypes, MultiCall, ShapeWithLabel } from "eth-multicall";
+import { keeperTokens$ } from "./observables/keeperDao";
+import { sortByLiqDepth } from "@/api/helpers";
 
 const tokenMetaDataEndpoint =
   "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
@@ -799,65 +805,301 @@ combineLatest([onLogin$, minimalPools$]).subscribe(
   }
 );
 
-combineLatest([
+const liqMiningApr$ = combineLatest([
   newPools$,
   tokens$,
   networkVars$,
   liquidityProtectionNetworkToken$,
   poolPrograms$,
   liquidityProtectionStore$
+]).pipe(
+  switchMapIgnoreThrow(
+    async ([
+      pools,
+      tokens,
+      networkVars,
+      liquidityProtectionNetworkToken,
+      poolPrograms,
+      liquidityProtectionStore
+    ]) => {
+      const minimalPools = pools.map(
+        (pool): MinimalPoolWithReserveBalances => ({
+          anchorAddress: pool.pool_dlt_id,
+          converterAddress: pool.converter_dlt_id,
+          reserves: pool.reserves.map(r => r.address),
+          reserveBalances: pool.reserves.map(reserve => ({
+            amount: expandToken(
+              reserve.balance,
+              findOrThrow(tokens, token =>
+                compareString(token.dlt_id, reserve.address)
+              ).decimals
+            ),
+            id: reserve.address
+          }))
+        })
+      );
+
+      const liqApr = await fetchPoolLiqMiningApr(
+        networkVars.multiCall,
+        poolPrograms,
+        minimalPools,
+        liquidityProtectionStore,
+        liquidityProtectionNetworkToken
+      );
+
+      const complementSymbols = liqApr.map(
+        (apr): PoolLiqMiningApr => ({
+          ...apr,
+          rewards: apr.rewards.map(r => ({
+            ...r,
+            symbol: findOrThrow(tokens, token =>
+              compareString(token.dlt_id, r.address)
+            ).symbol
+          }))
+        })
+      );
+
+      return complementSymbols;
+    }
+  ),
+  share()
+);
+
+const viewRelays$ = combineLatest([
+  liqMiningApr$,
+  whitelistedImmediate$,
+  minNetworkTokenLiquidityForMinting$,
+  liquidityProtectionNetworkToken$,
+  newPools$
+]).pipe(
+  switchMapIgnoreThrow(
+    async ([
+      poolLiquidityMiningAprs,
+      whitelistedImmediate,
+      limitWei,
+      liquidityProtectionNetworkToken,
+      pools
+    ]) => {
+      const whiteListedPools = whitelistedImmediate || [];
+
+      return pools.map(
+        (relay): ViewRelay => {
+          const liqDepth = Number(relay.liquidity.usd);
+          const tradeSupported = relay.reserves.every(
+            reserve => reserve.balance !== "0"
+          );
+
+          const whitelisted = whiteListedPools.some(whitelistedAnchor =>
+            compareString(whitelistedAnchor, relay.pool_dlt_id)
+          );
+          const lpNetworkTokenReserve = relay.reserves.find(reserve =>
+            compareString(reserve.address, liquidityProtectionNetworkToken)
+          );
+
+          const limit = new BigNumber(shrinkToken(limitWei, 18));
+
+          const hasEnoughLpNetworkToken =
+            lpNetworkTokenReserve &&
+            limit &&
+            limit.isLessThan(lpNetworkTokenReserve!.balance);
+
+          const liquidityProtection = !!(
+            relay.reserveTokens.some(reserve =>
+              compareString(reserve.contract, liquidityProtectionNetworkToken)
+            ) &&
+            relay.reserveTokens.length == 2 &&
+            relay.reserveTokens.every(
+              reserve => reserve.reserveWeight == 0.5
+            ) &&
+            whitelisted &&
+            hasEnoughLpNetworkToken
+          );
+
+          const bntReserve = relay.reserves.find(reserve =>
+            compareString(reserve.address, liquidityProtectionNetworkToken)
+          );
+          const addProtectionSupported = !!(
+            liquidityProtection && !!bntReserve
+          );
+
+          const feesGenerated = relay.fees_24h.usd || "0";
+          const feesVsLiquidity = new BigNumber(feesGenerated)
+            .times(365)
+            .div(liqDepth)
+            .toString();
+
+          const volume = relay.volume_24h.usd || undefined;
+
+          const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
+            compareString(apr.poolId, relay.pool_dlt_id)
+          );
+
+          const reserves = sortAlongSide(
+            relay.reserveTokens.map(
+              (reserve): ViewReserve => ({
+                id: reserve.contract,
+                reserveWeight: reserve.reserveWeight,
+                reserveId: relay.pool_dlt_id + reserve.contract,
+                logo: [reserve.image],
+                symbol: reserve.symbol,
+                contract: reserve.contract
+              })
+            ),
+            reserve => reserve.contract,
+            [liquidityProtectionNetworkToken]
+          );
+
+          return {
+            id: relay.pool_dlt_id,
+            tradeSupported,
+            name: buildPoolNameFromReserves(reserves),
+            reserves,
+            addProtectionSupported,
+            fee: relay.decFee,
+            liqDepth,
+            symbol: relay.name,
+            addLiquiditySupported: true,
+            removeLiquiditySupported: true,
+            liquidityProtection,
+            whitelisted,
+            v2: false,
+            volume,
+            feesGenerated,
+            ...(feesVsLiquidity && { feesVsLiquidity }),
+            aprMiningRewards
+          };
+        }
+      );
+    }
+  )
+);
+
+viewRelays$.subscribe(relays => vxm.ethBancor.setViewRelays(relays));
+
+export const balanceReceiver$ = new Subject<Balance[]>();
+
+const tokenBalances$ = balanceReceiver$.pipe(
+  distinctUntilChanged(isEqual)
+) as Observable<number>;
+
+const priceChangePercent = (priceThen: number, priceNow: number): number => {
+  const difference = priceNow - priceThen;
+  return difference / priceThen;
+};
+
+const viewTokens$ = combineLatest([
+  keeperTokens$,
+  liquidityProtectionNetworkToken$,
+  whitelistedImmediate$,
+  newPools$,
+  tokens$,
+  tokenMeta$
 ])
   .pipe(
     switchMapIgnoreThrow(
       async ([
-        pools,
-        tokens,
-        networkVars,
+        daoTokenAddresses,
         liquidityProtectionNetworkToken,
-        poolPrograms,
-        liquidityProtectionStore
+        whitelistedImmediate,
+        newPools,
+        tokens,
+        tokenMeta
       ]) => {
-        const minimalPools = pools.map(
-          (pool): MinimalPoolWithReserveBalances => ({
-            anchorAddress: pool.pool_dlt_id,
-            converterAddress: pool.converter_dlt_id,
-            reserves: pool.reserves.map(r => r.address),
-            reserveBalances: pool.reserves.map(reserve => ({
-              amount: expandToken(
-                reserve.balance,
-                findOrThrow(tokens, token =>
-                  compareString(token.dlt_id, reserve.address)
-                ).decimals
-              ),
-              id: reserve.address
-            }))
+        const whitelistedPools = whitelistedImmediate || [];
+
+        const tokensWithPoolBackground = newPools
+          .flatMap(pool => {
+            const whitelisted = whitelistedPools.some(anchor =>
+              compareString(anchor, pool.pool_dlt_id)
+            );
+
+            const liquidityProtection =
+              whitelisted &&
+              pool.reserves.some(reserve =>
+                compareString(reserve.address, liquidityProtectionNetworkToken)
+              ) &&
+              pool.reserves.length == 2 &&
+              pool.reserves.every(reserve => reserve.weight == decToPpm(0.5)) &&
+              Number(pool.version) >= 41;
+
+            const tradeSupported = pool.reserves.every(
+              reserve => reserve.balance !== "0"
+            );
+
+            return pool.reserves.map(reserve => ({
+              contract: reserve.address,
+              liquidityProtection,
+              tradeSupported
+            }));
           })
-        );
+          .reduce((acc, item) => {
+            const existingToken = acc.find(token =>
+              compareString(token.contract!, item.contract)
+            );
+            return existingToken
+              ? updateArray(
+                  acc,
+                  token => compareString(token.contract!, item.contract),
+                  token => ({
+                    ...token,
+                    liquidityProtection:
+                      token.liquidityProtection || item.liquidityProtection,
+                    tradeSupported: token.tradeSupported || item.tradeSupported
+                  })
+                )
+              : [...acc, item];
+          }, [] as { contract: string; liquidityProtection: boolean; tradeSupported: boolean }[]);
 
-        const liqApr = await fetchPoolLiqMiningApr(
-          networkVars.multiCall,
-          poolPrograms,
-          minimalPools,
-          liquidityProtectionStore,
-          liquidityProtectionNetworkToken
-        );
+        const finalTokens = tokens
+          .map(token => {
+            const tokenWithBackground = tokensWithPoolBackground.find(t =>
+              compareString(t.contract, token.dlt_id)
+            );
+            const liquidityProtection = !!(
+              tokenWithBackground && tokenWithBackground.liquidityProtection
+            );
+            const tradeSupported = !!(
+              tokenWithBackground && tokenWithBackground.tradeSupported
+            );
 
-        const complementSymbols = liqApr.map(
-          (apr): PoolLiqMiningApr => ({
-            ...apr,
-            rewards: apr.rewards.map(r => ({
-              ...r,
-              symbol: findOrThrow(tokens, token =>
-                compareString(token.dlt_id, r.address)
-              ).symbol
-            }))
+            const change24h =
+              priceChangePercent(
+                Number(token.rate_24h_ago.usd),
+                Number(token.rate.usd)
+              ) * 100;
+            const meta = tokenMeta.find(meta =>
+              compareString(meta.contract, token.dlt_id)
+            );
+            const balance = "99";
+            const balanceString = balance;
+
+            return {
+              contract: token.dlt_id,
+              id: token.dlt_id,
+              name: token.symbol,
+              symbol: token.symbol,
+              precision: token.decimals,
+              logo: (meta && meta.image) || defaultImage,
+              change24h,
+              ...(balance && { balance: balanceString }),
+              liqDepth: Number(token.liquidity.usd || 0),
+              liquidityProtection,
+              price: Number(token.rate.usd),
+              volume24h: Number(1),
+              tradeSupported
+            };
           })
-        );
+          .sort(sortByLiqDepth);
 
-        return complementSymbols;
+        return finalTokens.map(token => {
+          const limitOrderAvailable = daoTokenAddresses
+            .map(token => token.address)
+            .some(tokenAddress => compareString(token.id, tokenAddress));
+          return { ...token, limitOrderAvailable };
+        });
       }
     )
   )
-  .subscribe(apr => vxm.ethBancor.updateLiqMiningApr(apr));
+  .subscribe(tokens => vxm.ethBancor.setViewTokens(tokens));
 
 export const selectedPromptReceiver$ = new Subject<string>();

@@ -244,10 +244,6 @@ import {
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
 
-keeperTokens$.subscribe(token =>
-  vxm.ethBancor.setDaoTokens(token.map(x => x.address))
-);
-
 const limitOrdersSupported$ = combineLatest([limitOrders$, tokens$]).pipe(
   map(([orders, apiTokens]) =>
     orders.filter(order => {
@@ -411,7 +407,7 @@ combineLatest([currentBlockTwo$, bufferedAnchorsAndConverters$])
 
 const w3: Web3 = web3;
 
-interface Balance {
+export interface Balance {
   balance: string;
   id: string;
 }
@@ -1217,10 +1213,6 @@ interface StakedAndReserve {
   }[];
 }
 
-exchangeProxy$.subscribe(x => {
-  console.log(x, "is the address!");
-});
-
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
     contract: ethReserveAddress,
@@ -1300,11 +1292,6 @@ const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
     );
   }
   return uniqueTokens;
-};
-
-const priceChangePercent = (priceThen: number, priceNow: number): number => {
-  const difference = priceNow - priceThen;
-  return difference / priceThen;
 };
 
 const seperateMiniTokens = (tokens: AbiCentralPoolToken[]) => {
@@ -2578,111 +2565,14 @@ export class EthBancorModule
     return "eth";
   }
 
+  viewTokens: ViewToken[] = [];
+
+  @mutation setViewTokens(viewTokens: ViewToken[]) {
+    this.viewTokens = viewTokens;
+  }
+
   get tokens(): ViewToken[] {
-    const liquidityProtectionNetworkToken =
-      this.liquidityProtectionSettings.networkToken ||
-      "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
-    const whitelistedPools = this.whiteListedPools;
-    if (!this.apiData) {
-      return [];
-    }
-    const tokensWithPoolBackground = this.newPools
-      .flatMap(pool => {
-        const whitelisted = whitelistedPools.some(anchor =>
-          compareString(anchor, pool.pool_dlt_id)
-        );
-
-        const liquidityProtection =
-          whitelisted &&
-          pool.reserves.some(reserve =>
-            compareString(reserve.address, liquidityProtectionNetworkToken)
-          ) &&
-          pool.reserves.length == 2 &&
-          pool.reserves.every(reserve => reserve.weight == decToPpm(0.5)) &&
-          Number(pool.version) >= 41;
-
-        const tradeSupported = pool.reserves.every(
-          reserve => reserve.balance !== "0"
-        );
-
-        return pool.reserves.map(reserve => ({
-          contract: reserve.address,
-          liquidityProtection,
-          tradeSupported
-        }));
-      })
-      .reduce((acc, item) => {
-        const existingToken = acc.find(token =>
-          compareString(token.contract!, item.contract)
-        );
-        return existingToken
-          ? updateArray(
-              acc,
-              token => compareString(token.contract!, item.contract),
-              token => ({
-                ...token,
-                liquidityProtection:
-                  token.liquidityProtection || item.liquidityProtection,
-                tradeSupported: token.tradeSupported || item.tradeSupported
-              })
-            )
-          : [...acc, item];
-      }, [] as { contract: string; liquidityProtection: boolean; tradeSupported: boolean }[]);
-
-    const tokenBalances = this.tokenBalances;
-    const tokenMeta = this.tokenMeta;
-    const finalTokens = this.apiData.tokens
-      .map(token => {
-        const tokenWithBackground = tokensWithPoolBackground.find(t =>
-          compareString(t.contract, token.dlt_id)
-        );
-        const liquidityProtection = !!(
-          tokenWithBackground && tokenWithBackground.liquidityProtection
-        );
-        const tradeSupported = !!(
-          tokenWithBackground && tokenWithBackground.tradeSupported
-        );
-
-        const change24h =
-          priceChangePercent(
-            Number(token.rate_24h_ago.usd),
-            Number(token.rate.usd)
-          ) * 100;
-        const meta = tokenMeta.find(meta =>
-          compareString(meta.contract, token.dlt_id)
-        );
-        const balance = tokenBalances.find(balance =>
-          compareString(balance.id, token.dlt_id)
-        );
-        const balanceString =
-          balance && new BigNumber(balance.balance).toString();
-
-        return {
-          contract: token.dlt_id,
-          id: token.dlt_id,
-          name: token.symbol,
-          symbol: token.symbol,
-          precision: token.decimals,
-          logo: (meta && meta.image) || defaultImage,
-          change24h,
-          ...(balance && { balance: balanceString }),
-          liqDepth: Number(token.liquidity.usd || 0),
-          liquidityProtection,
-          price: Number(token.rate.usd),
-          volume24h: Number(1),
-          tradeSupported
-        };
-      })
-      .sort(sortByLiqDepth);
-
-    const daoTokenAddresses = this.daoTokenAddresses;
-
-    return finalTokens.map(token => {
-      const limitOrderAvailable = daoTokenAddresses.some(tokenAddress =>
-        compareString(token.id, tokenAddress)
-      );
-      return { ...token, limitOrderAvailable };
-    });
+    return this.viewTokens;
   }
 
   get tokenMetaObj() {
@@ -2784,98 +2674,14 @@ export class EthBancorModule
       });
   }
 
+  viewRelays: ViewRelay[] = [];
+
+  @mutation setViewRelays(relays: ViewRelay[]) {
+    this.viewRelays = relays;
+  }
+
   get traditionalRelays(): ViewRelay[] {
-    if (!this.apiData) return [];
-
-    const poolLiquidityMiningAprs = this.poolLiqMiningAprs;
-    const whiteListedPools = this.whiteListedPools;
-    const limit = vxm.minting.minNetworkTokenLiquidityforMinting;
-
-    const liquidityProtectionNetworkToken =
-      this.liquidityProtectionSettings.networkToken ||
-      "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C";
-
-    return this.newPools.map(relay => {
-      const liqDepth = Number(relay.liquidity.usd);
-      const tradeSupported = relay.reserves.every(
-        reserve => reserve.balance !== "0"
-      );
-
-      const whitelisted = whiteListedPools.some(whitelistedAnchor =>
-        compareString(whitelistedAnchor, relay.pool_dlt_id)
-      );
-      const lpNetworkTokenReserve = relay.reserves.find(reserve =>
-        compareString(reserve.address, liquidityProtectionNetworkToken)
-      );
-
-      const hasEnoughLpNetworkToken =
-        lpNetworkTokenReserve &&
-        limit &&
-        limit.isLessThan(lpNetworkTokenReserve!.balance);
-
-      const liquidityProtection =
-        relay.reserveTokens.some(reserve =>
-          compareString(reserve.contract, liquidityProtectionNetworkToken)
-        ) &&
-        relay.reserveTokens.length == 2 &&
-        relay.reserveTokens.every(reserve => reserve.reserveWeight == 0.5) &&
-        whitelisted &&
-        hasEnoughLpNetworkToken;
-
-      const bntReserve = relay.reserves.find(reserve =>
-        compareString(reserve.address, liquidityProtectionNetworkToken)
-      );
-      const addProtectionSupported = liquidityProtection && bntReserve;
-
-      const feesGenerated = relay.fees_24h.usd || 0;
-      const feesVsLiquidity = new BigNumber(feesGenerated)
-        .times(365)
-        .div(liqDepth)
-        .toString();
-
-      const volume = relay.volume_24h.usd;
-
-      const aprMiningRewards = poolLiquidityMiningAprs.find(apr =>
-        compareString(apr.poolId, relay.pool_dlt_id)
-      );
-
-      const reserves = sortAlongSide(
-        relay.reserveTokens.map(
-          reserve =>
-            ({
-              id: reserve.contract,
-              reserveWeight: reserve.reserveWeight,
-              reserveId: relay.pool_dlt_id + reserve.contract,
-              logo: [reserve.image],
-              symbol: reserve.symbol,
-              contract: reserve.contract,
-              smartTokenSymbol: reserve.symbol
-            } as ViewReserve)
-        ),
-        reserve => reserve.contract,
-        [liquidityProtectionNetworkToken]
-      );
-
-      return {
-        id: relay.pool_dlt_id,
-        tradeSupported,
-        name: buildPoolNameFromReserves(reserves),
-        reserves,
-        addProtectionSupported,
-        fee: relay.decFee,
-        liqDepth,
-        symbol: relay.name,
-        addLiquiditySupported: true,
-        removeLiquiditySupported: true,
-        liquidityProtection,
-        whitelisted,
-        v2: false,
-        volume,
-        feesGenerated,
-        ...(feesVsLiquidity && { feesVsLiquidity }),
-        aprMiningRewards
-      } as ViewRelay;
-    });
+    return this.viewRelays;
   }
 
   @action async getGeometricMean(amounts: string[]) {
@@ -5879,7 +5685,9 @@ export class EthBancorModule
     return tokenAddresses;
   }
 
-  @action async fetchAndSetTokenBalances(tokenContractAddresses: string[]) {
+  @action async fetchAndSetTokenBalances(
+    tokenContractAddresses: string[]
+  ): Promise<void> {
     if (!this.currentUser) return;
 
     const governanceToken =
@@ -6611,12 +6419,6 @@ export class EthBancorModule
     } else {
       return this.findPath({ fromId, toId, relays });
     }
-  }
-
-  daoTokenAddresses: string[] = [];
-
-  @mutation setDaoTokens(tokenAddresses: string[]) {
-    this.daoTokenAddresses = tokenAddresses;
   }
 
   @action async getReturnOrder({}) {}
