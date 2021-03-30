@@ -396,6 +396,7 @@ export default class SwapLimit extends BaseTxAction {
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
+    this.isDepositingWeth = false;
 
     const fromViewAmount = {
       id: this.token1.id,
@@ -417,7 +418,7 @@ export default class SwapLimit extends BaseTxAction {
         ? { id: wethTokenContractAddress, amount: fromViewAmount.amount }
         : fromViewAmount;
 
-      const success = await vxm.ethBancor.createOrder({
+      await vxm.ethBancor.createOrder({
         from: correctedFrom,
         to: {
           id: this.token2.id,
