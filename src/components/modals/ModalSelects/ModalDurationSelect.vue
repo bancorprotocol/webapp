@@ -23,7 +23,7 @@
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
             "
             cols="6"
-            class="mt-3"
+            class="mt-3 limited-dropdown"
             style="width: 160px"
           >
             <template
@@ -59,7 +59,7 @@
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
             "
             cols="6"
-            class="mt-3"
+            class="mt-3 limited-dropdown"
             style="width: 160px"
           >
             <template #button-content>
@@ -90,8 +90,8 @@
             :menu-class="
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
             "
+            class="mt-3 limited-dropdown"
             cols="6"
-            class="mt-3"
             style="width: 160px"
           >
             <template #button-content>
@@ -172,4 +172,4 @@ export default class ModalDurationSelect extends BaseComponent {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style lang="scss"></style>

@@ -194,7 +194,6 @@
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
-import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewAmount, ViewToken } from "@/types/bancor";

@@ -359,3 +359,10 @@
 .progress {
   height: 4px !important;
 }
+
+.limited-dropdown {
+  .dropdown-menu {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+}
