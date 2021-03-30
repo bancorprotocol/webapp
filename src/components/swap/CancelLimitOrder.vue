@@ -49,7 +49,7 @@
         >
           {{
             $t("modal.limit_order.info_text", {
-              timer: "?????"
+              timer: durationTimer
             })
           }}
         </p>
@@ -70,6 +70,8 @@ import {
   addNotification,
   ENotificationStatus
 } from "@/components/compositions/notifications";
+import { durationTimer } from "@/api/helpers";
+import dayjs from "dayjs";
 
 @Component({
   components: {
@@ -92,6 +94,13 @@ export default class CancelLimitOrder extends BaseTxAction {
     return this.limitOrder
       ? this.$t("modal.cancel_order.description")
       : this.$t("modal.cancel_all_orders.description");
+  }
+
+  get durationTimer() {
+    if (!this.limitOrder) return "n/a";
+    const expiryTime = dayjs.unix(this.limitOrder.expiryTime);
+    const duration = dayjs.duration(expiryTime.diff(dayjs()));
+    return durationTimer(duration);
   }
 
   get rate() {
