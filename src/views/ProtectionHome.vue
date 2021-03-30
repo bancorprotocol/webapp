@@ -63,12 +63,11 @@
           </div>
           <template v-if="positions.length" #dropDowns>
             <b-dropdown
-              :ref="'dropdown_' + dropdown.id"
-              v-for="dropdown in dropDownFilters"
-              :key="dropdown.id"
-              :text="dropdown.items[dropdown.selectedIndex].title"
+              :ref="'dropdown_' + positionFilters.id"
+              :key="positionFilters.id"
+              :text="positionFilters.items[positionFilters.selectedIndex].title"
               :variant="
-                !dropDownFiltering(dropdown)
+                !positionsFiltering()
                   ? darkMode
                     ? 'muted-dark'
                     : 'muted-white-light'
@@ -87,43 +86,79 @@
             >
               <template #button-content>
                 <div class="d-flex justify-content-between align-items-center">
-                  {{ dropdown.items[dropdown.selectedIndex].title }}
+                  {{
+                    positionFilters.items[positionFilters.selectedIndex].title
+                  }}
                   <font-awesome-icon
-                    :icon="dropDownFiltering(dropdown) ? 'times' : 'caret-down'"
-                    @click.stop="clearFilter(dropdown)"
+                    :icon="positionsFiltering() ? 'times' : 'caret-down'"
+                    @click.stop="clearPositions()"
                   />
                 </div>
               </template>
-              <div v-if="dropdown.multiiSelect">
-                <b-dropdown-item
-                  :class="
-                    darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'
-                  "
-                  v-for="(item, index) in dropdown.items"
-                  :key="item.id"
-                  @click.stop="checked(index, dropdown)"
-                >
-                  <b-form-checkbox
-                    :id="item.id"
-                    :value="true"
-                    :unchecked-value="false"
-                  >
-                    {{ item.title }}
-                  </b-form-checkbox>
-                </b-dropdown-item>
-              </div>
-              <div v-else>
-                <b-dropdown-item
-                  :class="
-                    darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'
-                  "
-                  v-for="(item, index) in dropdown.items"
-                  :key="item.id"
-                  @click="dropdown.selectedIndex = index"
+
+              <b-dropdown-item
+                :class="darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'"
+                v-for="(item, index) in positionFilters.items"
+                :key="item.id"
+                @click="positionFilters.selectedIndex = index"
+              >
+                {{ item.title }}
+              </b-dropdown-item>
+            </b-dropdown>
+            <b-dropdown
+              :ref="'dropdown_' + poolFilters.id"
+              :key="poolFilters.id"
+              :text="
+                poolFilters.selectedIndexes.length > 1
+                  ? $t('multiple_token_pairs')
+                  : poolFilters.items[poolFilters.selectedIndexes[0]].title
+              "
+              :variant="
+                !poolsFiltering()
+                  ? darkMode
+                    ? 'muted-dark'
+                    : 'muted-white-light'
+                  : darkMode
+                  ? 'active-dark'
+                  : 'active-light'
+              "
+              :block="true"
+              class="d-none d-lg-inline"
+              toggle-class="block-rounded"
+              :menu-class="
+                darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
+              "
+              style="width: 200px !important; height: 35px !important"
+              :no-caret="true"
+            >
+              <template #button-content>
+                <div class="d-flex justify-content-between align-items-center">
+                  {{
+                    poolFilters.selectedIndexes.length > 1
+                      ? $t("multiple_token_pairs")
+                      : poolFilters.items[poolFilters.selectedIndexes[0]].title
+                  }}
+                  <font-awesome-icon
+                    :icon="poolsFiltering() ? 'times' : 'caret-down'"
+                    @click.stop="clearPools()"
+                  />
+                </div>
+              </template>
+
+              <b-dropdown-item
+                :class="darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'"
+                v-for="(item, index) in poolFilters.items"
+                :key="item.id"
+                @click.stop="checked(index)"
+              >
+                <b-form-checkbox
+                  :id="item.id"
+                  :value="true"
+                  :unchecked-value="false"
                 >
                   {{ item.title }}
-                </b-dropdown-item>
-              </div>
+                </b-form-checkbox>
+              </b-dropdown-item>
             </b-dropdown>
           </template>
           <template v-if="positions.length" #date>
@@ -249,24 +284,24 @@ import dayjs from "@/utils/dayjs";
 export default class ProtectionHome extends BaseComponent {
   searchProtected = "";
   searchClaim = "";
-  dropDownFilters = [
-    {
-      id: "position",
-      selectedIndex: 0,
-      multiSelect: false,
-      items: [
-        { id: "0", title: i18n.t("all_positions") },
-        { id: "1", title: i18n.t("fully_protected") },
-        { id: "2", title: i18n.t("not_fully_protected") }
-      ]
-    },
-    {
-      id: "pools",
-      indexes: 0,
-      multiiSelect: true,
-      items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
-    }
-  ];
+  positionFilters = {
+    id: "position",
+    selectedIndex: 0,
+    multiSelect: false,
+    items: [
+      { id: "0", title: i18n.t("all_positions") },
+      { id: "1", title: i18n.t("fully_protected") },
+      { id: "2", title: i18n.t("not_fully_protected") }
+    ]
+  };
+
+  poolFilters = {
+    id: "pools",
+    selectedIndexes: [0],
+    multiiSelect: true,
+    items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
+  };
+
   today = dayjs();
   dateRange: {
     startDate: dayjs.Dayjs | null;
@@ -284,7 +319,7 @@ export default class ProtectionHome extends BaseComponent {
     const now = dayjs();
     let isFullyProtected: boolean = dayjs.unix(row.fullCoverage).isBefore(now);
 
-    const selectedIndex = this.dropDownFilters[0].selectedIndex;
+    const selectedIndex = this.positionFilters.selectedIndex;
     if (selectedIndex == 1) {
       row.collapsedData = row.collapsedData.filter(x => {
         const before = dayjs.unix(x.fullCoverage).isBefore(now);
@@ -303,11 +338,11 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   poolsFilterFunction(row: ViewGroupedPositions) {
-    const pools = this.dropDownFilters[1];
-    if (pools.selectedIndex === 0) return true;
+    // const pools = this.poolFilters;
 
-    const pool = pools.indexes ? this.poolNames[pools.indexes - 1] : { id: -1 };
-    return pool.id === row.poolId;
+    // const pool = pools.selectedIndexes ? this.poolNames[pools.selectedIndexes - 1] : { id: -1 };
+    // return pool.id === row.poolId;
+    return true;
   }
 
   dateFilterFunction(row: ViewGroupedPositions) {
@@ -354,36 +389,34 @@ export default class ProtectionHome extends BaseComponent {
     return `${start} - ${end}`;
   }
 
-  get anyAreFiltering() {
-    let anyFiltering: boolean = false;
-    this.dropDownFilters.map(
-      dropDown => (anyFiltering = dropDown.selectedIndex !== 0)
-    );
-
-    return this.hasRange || anyFiltering;
-  }
-
   showMobileFilters() {
     this.modal = true;
   }
 
-  dropDownFiltering(dropDown: any) {
-    return dropDown.selectedIndex !== 0;
+  positionsFiltering() {
+    return this.positionFilters.selectedIndex !== 0;
+  }
+  poolsFiltering() {
+    return this.poolFilters.selectedIndexes[0] !== 0;
+  }
+  get anyAreFiltering() {
+    return this.hasRange || this.positionsFiltering() || this.poolsFiltering();
   }
 
-  clearFilter(dropdown: any) {
-    if (this.dropDownFiltering(dropdown)) {
-      dropdown.selectedIndex = 0;
-    }
+  clearPositions() {
+    this.positionFilters.selectedIndex = 0;
+  }
+  clearPools() {
+    this.poolFilters.selectedIndexes = [0];
+  }
+  clearAllFilters() {
+    this.clearPositions();
+    this.clearPools();
+    this.clearDateRange();
   }
 
   checked(index: number, dropDown: any) {
     dropDown.indexes.includes(index);
-  }
-
-  clearAllFilters() {
-    this.dropDownFilters.map(dropDown => this.clearFilter(dropDown));
-    this.clearDateRange();
   }
 
   get poolNames() {
@@ -411,18 +444,18 @@ export default class ProtectionHome extends BaseComponent {
 
   @Watch("groupedPos")
   positionsChanged() {
-    this.updateDropdownFilters();
+    this.updatePools();
   }
 
-  updateDropdownFilters() {
-    this.dropDownFilters[1].items = [
+  updatePools() {
+    this.poolFilters.items = [
       { id: "0", title: i18n.t("all_pools") },
       ...this.poolNames
     ];
   }
 
   async mounted() {
-    this.updateDropdownFilters();
+    this.updatePools();
     const scroll = this.$route.params.scroll;
     const el = this.$el.getElementsByClassName("closedPos")[0];
 

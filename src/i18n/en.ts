@@ -370,5 +370,6 @@ export const en = {
   roi_protected_split:
     "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
   not_protected: "Not Protected",
-  clear_all_filters: "Clear all filters"
+  clear_all_filters: "Clear all filters",
+  multiple_token_pairs: "Multiple Token Pairs"
 };
