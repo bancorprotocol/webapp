@@ -205,7 +205,7 @@ import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
 import dayjs from "@/utils/dayjs";
-import { formatDuration } from "@/api/helpers";
+import { compareString, formatDuration } from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -216,6 +216,7 @@ import {
 } from "@/components/compositions/notifications";
 import { ethReserveAddress } from "@/api/eth/ethAbis";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
+import { Duration } from "dayjs/plugin/duration";
 
 @Component({
   components: {
@@ -452,10 +453,9 @@ export default class SwapLimit extends BaseTxAction {
       this.setDefault();
       return;
     }
-    const fromId =
-      this.token1.id === wethTokenContractAddress
-        ? ethReserveAddress
-        : this.token1.id;
+    const fromId = compareString(this.token1.id, wethTokenContractAddress)
+      ? ethReserveAddress
+      : this.token1.id;
     try {
       this.rateLoading = true;
       const reward = await vxm.bancor.getReturn({
@@ -532,10 +532,9 @@ export default class SwapLimit extends BaseTxAction {
 
   async calculateRate() {
     this.rateLoading = true;
-    const fromId =
-      this.token1.id === wethTokenContractAddress
-        ? ethReserveAddress
-        : this.token1.id;
+    const fromId = compareString(this.token1.id, wethTokenContractAddress)
+      ? ethReserveAddress
+      : this.token1.id;
     try {
       const rate = await vxm.bancor.getReturn({
         from: {
