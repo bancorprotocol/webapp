@@ -5,8 +5,10 @@ import {
   miningTknReward,
   prettifyNumber,
   calculateLimits,
-  calculateAmountToGetSpace
+  calculateAmountToGetSpace,
+  groupPositionsArray
 } from "@/api/pureHelpers";
+import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import BigNumber from "bignumber.js";
 
 describe("dec to ppm works", () => {
@@ -78,20 +80,11 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
   });
 });
 
-/*describe("calculate grouped positions for protected table", () => {
+describe("calculate grouped positions for protected table", () => {
   test("Group Protected Positions", () => {
     const positions: ViewProtectedLiquidity[] = [
       {
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
-        whitelisted: true,
-        givenVBnt: "0.999999999999999999",
-        single: true,
-        apr: {
-          day: 0.02117,
-          week: 0.03276
-        },
-        insuranceStart: 1605109590,
-        fullCoverage: 1611157590,
         stake: {
           amount: "0.999999999999999999",
           symbol: "BNT",
@@ -99,35 +92,38 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
           unixTime: 1602517590,
           usdValue: 0.99741083
         },
-        fullyProtected: {
-          amount: "1.005877144022078272",
-          symbol: "BNT",
-          usdValue: 1.0032727570970905
-        },
         protectedAmount: {
           amount: "0.988304322300486270",
           symbol: "BNT",
           usdValue: 0.9857454343983155
         },
-        coverageDecPercent: 0.5692694444444445,
+        fullyProtected: {
+          amount: "1.005877144022078272",
+          symbol: "BNT",
+          usdValue: 1.0032727570970905
+        },
         fees: {
           amount: "0.006127116288703279",
           symbol: "BNT"
         },
         roi: 0.005877144022078273,
-        pendingPoolReward: new BigNumber(0),
-        reserveTokenPrice: 1
-      },
-      {
-        id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:3",
-        whitelisted: true,
-        single: true,
         apr: {
           day: 0.02117,
           week: 0.03276
         },
+        single: true,
+        whitelisted: true,
         insuranceStart: 1605109590,
+        coverageDecPercent: 0.5692694444444445,
         fullCoverage: 1611157590,
+        givenVBnt: "0.999999999999999999",
+        pendingReserveReward: new BigNumber(0),
+        rewardsMultiplier: 1,
+        reserveTokenPrice: 1,
+        bntTokenPrice: 1
+      },
+      {
+        id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:3",
         stake: {
           amount: "0.003102978944697264",
           symbol: "ETH",
@@ -135,34 +131,38 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
           unixTime: 1602517590,
           usdValue: 1.7846539507916555
         },
-        fullyProtected: {
-          amount: "0.003121215598852726",
-          symbol: "ETH",
-          usdValue: 1.795142619090029
-        },
         protectedAmount: {
           amount: "0.003066687503051707",
           symbol: "ETH",
           usdValue: 1.7637812133780322
         },
-        coverageDecPercent: 0.5692694444444445,
+        fullyProtected: {
+          amount: "0.003121215598852726",
+          symbol: "ETH",
+          usdValue: 1.795142619090029
+        },
         fees: {
           amount: "0.000019012312835558",
           symbol: "ETH"
         },
-        roi: 0.005877144022078185
+        roi: 0.005877144022078185,
+        apr: {
+          day: 0.02117,
+          week: 0.03276
+        },
+        single: true,
+        whitelisted: true,
+        insuranceStart: 1605109590,
+        coverageDecPercent: 0.5692694444444445,
+        fullCoverage: 1611157590,
+        givenVBnt: "0.999999999999999999",
+        pendingReserveReward: new BigNumber(0),
+        rewardsMultiplier: 1,
+        reserveTokenPrice: 1,
+        bntTokenPrice: 1
       },
       {
         id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:22",
-        whitelisted: true,
-        givenVBnt: "1.119976353898094348",
-        single: true,
-        apr: {
-          day: 0.01752,
-          week: 0.054652
-        },
-        insuranceStart: 1605127478,
-        fullCoverage: 1611175478,
         stake: {
           amount: "1.119976353898094348",
           symbol: "BNT",
@@ -170,35 +170,38 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
           unixTime: 1602535478,
           usdValue: 1.117076544721872
         },
-        fullyProtected: {
-          amount: "1.131695940901228608",
-          symbol: "BNT",
-          usdValue: 1.1287657877219255
-        },
         protectedAmount: {
           amount: "1.127341412993218302",
           symbol: "BNT",
           usdValue: 1.1244225344269387
         },
-        coverageDecPercent: 0.5671990740740741,
+        fullyProtected: {
+          amount: "1.131695940901228608",
+          symbol: "BNT",
+          usdValue: 1.1287657877219255
+        },
         fees: {
           amount: "0.011825823889716568",
           symbol: "BNT"
         },
         roi: 0.01046413789214751,
-        pendingPoolReward: new BigNumber(0),
-        reserveTokenPrice: 1
-      },
-      {
-        id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:23",
-        whitelisted: true,
-        single: true,
         apr: {
           day: 0.01752,
           week: 0.054652
         },
+        single: true,
+        whitelisted: true,
         insuranceStart: 1605127478,
+        coverageDecPercent: 0.5671990740740741,
         fullCoverage: 1611175478,
+        givenVBnt: "1.119976353898094348",
+        pendingReserveReward: new BigNumber(0),
+        rewardsMultiplier: 1,
+        reserveTokenPrice: 1,
+        bntTokenPrice: 1
+      },
+      {
+        id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:23",
         stake: {
           amount: "0.048010344040805995",
           symbol: "NMR",
@@ -206,36 +209,38 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
           unixTime: 1602535478,
           usdValue: 1.4617575474277011
         },
-        fullyProtected: {
-          amount: "0.048520733032588171",
-          symbol: "NMR",
-          usdValue: 1.4772972186332958
-        },
         protectedAmount: {
           amount: "0.048334066249605458",
           symbol: "NMR",
           usdValue: 1.4716138271823387
         },
-        coverageDecPercent: 0.5671990740740741,
+        fullyProtected: {
+          amount: "0.048520733032588171",
+          symbol: "NMR",
+          usdValue: 1.4772972186332958
+        },
         fees: {
           amount: "0.000515015617056458",
           symbol: "NMR"
         },
         roi: 0.010630813046213022,
-        pendingPoolReward: new BigNumber(0),
-        reserveTokenPrice: 1
+        apr: {
+          day: 0.01752,
+          week: 0.054652
+        },
+        single: true,
+        whitelisted: true,
+        insuranceStart: 1605127478,
+        coverageDecPercent: 0.5671990740740741,
+        fullCoverage: 1611175478,
+        givenVBnt: "0.999999999999999999",
+        pendingReserveReward: new BigNumber(0),
+        rewardsMultiplier: 1,
+        reserveTokenPrice: 1,
+        bntTokenPrice: 1
       },
       {
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:939",
-        whitelisted: true,
-        givenVBnt: "1.000000000000000000",
-        single: true,
-        apr: {
-          day: 0.02117,
-          week: 0.03276
-        },
-        insuranceStart: 1607613882,
-        fullCoverage: 1613661882,
         stake: {
           amount: "1.000000000000000000",
           symbol: "BNT",
@@ -243,24 +248,35 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
           unixTime: 1605021882,
           usdValue: 0.99741083
         },
-        fullyProtected: {
-          amount: "1.002608722329711269",
-          symbol: "BNT",
-          usdValue: 1.000012797904117
-        },
         protectedAmount: {
           amount: "1.000825163770841809",
           symbol: "BNT",
           usdValue: 0.9982338572815612
         },
-        coverageDecPercent: 0.27942083333333334,
+        fullyProtected: {
+          amount: "1.002608722329711269",
+          symbol: "BNT",
+          usdValue: 1.000012797904117
+        },
         fees: {
           amount: "0.002613383452134935",
           symbol: "BNT"
         },
         roi: 0.002608722329711269,
-        pendingPoolReward: new BigNumber(0),
-        reserveTokenPrice: 1
+        apr: {
+          day: 0.02117,
+          week: 0.03276
+        },
+        single: true,
+        whitelisted: true,
+        insuranceStart: 1607613882,
+        coverageDecPercent: 0.27942083333333334,
+        fullCoverage: 1613661882,
+        givenVBnt: "1.000000000000000000",
+        pendingReserveReward: new BigNumber(0),
+        rewardsMultiplier: 1,
+        reserveTokenPrice: 1,
+        bntTokenPrice: 1
       }
     ];
 
@@ -268,202 +284,184 @@ describe("can convert TKN amount to wei with correct precision and rounding", ()
 
     const result: ViewGroupedPositions[] = [
       {
+        apr: { day: 0.02117, week: 0.03276 },
         collapsedData: [
           {
-            id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:939",
-            whitelisted: true,
-            givenVBnt: "1.000000000000000000",
-            single: true,
-            apr: {
-              day: 0.02117,
-              week: 0.03276
-            },
-            insuranceStart: 1607613882,
+            apr: { day: 0.02117, week: 0.03276 },
+            bntTokenPrice: 1,
+            coverageDecPercent: 0.27942083333333334,
+            fees: { amount: "0.002613383452134935", symbol: "BNT" },
             fullCoverage: 1613661882,
-            stake: {
-              amount: "1.000000000000000000",
-              symbol: "BNT",
-              poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-              unixTime: 1605021882,
-              usdValue: 0.99741083
-            },
             fullyProtected: {
               amount: "1.002608722329711269",
               symbol: "BNT",
               usdValue: 1.000012797904117
             },
+            givenVBnt: "1.000000000000000000",
+            id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:939",
+            insuranceStart: 1607613882,
+            pendingReserveReward: new BigNumber(0),
             protectedAmount: {
               amount: "1.000825163770841809",
               symbol: "BNT",
               usdValue: 0.9982338572815612
             },
-            coverageDecPercent: 0.27942083333333334,
-            fees: {
-              amount: "0.002613383452134935",
-              symbol: "BNT"
-            },
+            reserveTokenPrice: 1,
+            rewardsMultiplier: 1,
             roi: 0.002608722329711269,
-            pendingPoolReward: new BigNumber(0),
-            reserveTokenPrice: 1
-          },
-          {
-            id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
-            whitelisted: true,
-            givenVBnt: "0.999999999999999999",
             single: true,
-            apr: {
-              day: 0.02117,
-              week: 0.03276
-            },
-            insuranceStart: 1605109590,
-            fullCoverage: 1611157590,
             stake: {
-              amount: "0.999999999999999999",
-              symbol: "BNT",
+              amount: "1.000000000000000000",
               poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-              unixTime: 1602517590,
+              symbol: "BNT",
+              unixTime: 1605021882,
               usdValue: 0.99741083
             },
+            whitelisted: true
+          },
+          {
+            apr: { day: 0.02117, week: 0.03276 },
+            bntTokenPrice: 1,
+            coverageDecPercent: 0.5692694444444445,
+            fees: { amount: "0.006127116288703279", symbol: "BNT" },
+            fullCoverage: 1611157590,
             fullyProtected: {
               amount: "1.005877144022078272",
               symbol: "BNT",
               usdValue: 1.0032727570970905
             },
+            givenVBnt: "0.999999999999999999",
+            id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
+            insuranceStart: 1605109590,
+            pendingReserveReward: new BigNumber(0),
             protectedAmount: {
               amount: "0.988304322300486270",
               symbol: "BNT",
               usdValue: 0.9857454343983155
             },
-            coverageDecPercent: 0.5692694444444445,
-            fees: {
-              amount: "0.006127116288703279",
-              symbol: "BNT"
-            },
-            roi: 0.005877144022078273,
-            pendingPoolReward: new BigNumber(0),
             reserveTokenPrice: 1,
-            pendingPoolReward: new BigNumber(0),
-            reserveTokenPrice: 1
+            rewardsMultiplier: 1,
+            roi: 0.005877144022078273,
+            single: true,
+            stake: {
+              amount: "0.999999999999999999",
+              poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+              symbol: "BNT",
+              unixTime: 1602517590,
+              usdValue: 0.99741083
+            },
+            whitelisted: true
           }
         ],
-        id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533-BNT",
-        positionId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
-        poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-        symbol: "BNT",
-        apr: {
-          day: 0.02117,
-          week: 0.03276
-        },
-        insuranceStart: 1605109590,
         coverageDecPercent: 0.5692694444444445,
+        fees: 0.008740499740838214,
         fullCoverage: 1611157590,
-        stake: {
-          amount: 2,
-          usdValue: 1.99482166,
-          unixTime: 1602517590
-        },
         fullyProtected: {
           amount: 2.0084858663517897,
-          usdValue: 2.0032855550012076
+          usdValue: 2.0084858663517897
         },
+        id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533-BNT",
+        insuranceStart: 1605109590,
+        pendingReserveReward: new BigNumber(0),
+        poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+        positionId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
         protectedAmount: {
           amount: 1.9891294860713282,
-          usdValue: 1.9839792916798769
+          usdValue: 1.9891294860713282
         },
-        roi: 0.0042429331758948585,
-        fees: 0.008740499740838214
+        rewardsMultiplier: 1,
+        roi: { fees: 0.004370249870419107, reserveRewards: new BigNumber(0) },
+        stake: { amount: 2, unixTime: 1602517590, usdValue: 2 },
+        symbol: "BNT"
       },
       {
+        apr: { day: 0.02117, week: 0.03276 },
         collapsedData: [],
-        id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533-ETH",
-        positionId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:3",
-        poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
-        symbol: "ETH",
-        apr: {
-          day: 0.02117,
-          week: 0.03276
-        },
-        insuranceStart: 1605109590,
         coverageDecPercent: 0.5692694444444445,
+        fees: 0.000019012312835558,
         fullCoverage: 1611157590,
-        stake: {
-          amount: 0.003102978944697264,
-          usdValue: 1.7846539507916555,
-          unixTime: 1602517590
-        },
         fullyProtected: {
           amount: 0.003121215598852726,
-          usdValue: 1.795142619090029
+          usdValue: 0.003121215598852726
         },
+        id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533-ETH",
+        insuranceStart: 1605109590,
+        pendingReserveReward: new BigNumber(0),
+        poolId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533",
+        positionId: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:3",
         protectedAmount: {
           amount: 0.003066687503051707,
-          usdValue: 1.7637812133780322
+          usdValue: 0.003066687503051707
         },
-        roi: 0.005877144022078197,
-        fees: 0.000019012312835558
+        rewardsMultiplier: 1,
+        roi: { fees: 0.006127116288703305, reserveRewards: new BigNumber(0) },
+        stake: {
+          amount: 0.003102978944697264,
+          unixTime: 1602517590,
+          usdValue: 0.003102978944697264
+        },
+        symbol: "ETH"
       },
       {
+        apr: { day: 0.01752, week: 0.054652 },
         collapsedData: [],
-        id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44-BNT",
-        positionId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:22",
-        poolId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44",
-        symbol: "BNT",
-        apr: {
-          day: 0.01752,
-          week: 0.054652
-        },
-        insuranceStart: 1605127478,
         coverageDecPercent: 0.5671990740740741,
+        fees: 0.011825823889716569,
         fullCoverage: 1611175478,
-        stake: {
-          amount: 1.1199763538980942,
-          usdValue: 1.117076544721872,
-          unixTime: 1602535478
-        },
         fullyProtected: {
           amount: 1.1316959409012286,
-          usdValue: 1.1287657877219255
+          usdValue: 1.1316959409012286
         },
+        id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44-BNT",
+        insuranceStart: 1605127478,
+        pendingReserveReward: new BigNumber(0),
+        poolId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44",
+        positionId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:22",
         protectedAmount: {
           amount: 1.1273414129932182,
-          usdValue: 1.1244225344269387
+          usdValue: 1.1273414129932182
         },
-        roi: 0.010464137892147599,
-        fees: 0.011825823889716569
+        rewardsMultiplier: 1,
+        roi: { fees: 0.010558994257831082, reserveRewards: new BigNumber(0) },
+        stake: {
+          amount: 1.1199763538980942,
+          unixTime: 1602535478,
+          usdValue: 1.1199763538980942
+        },
+        symbol: "BNT"
       },
       {
+        apr: { day: 0.01752, week: 0.054652 },
         collapsedData: [],
-        id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44-NMR",
-        positionId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:23",
-        poolId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44",
-        symbol: "NMR",
-        apr: {
-          day: 0.01752,
-          week: 0.054652
-        },
-        insuranceStart: 1605127478,
         coverageDecPercent: 0.5671990740740741,
+        fees: 0.000515015617056458,
         fullCoverage: 1611175478,
-        stake: {
-          amount: 0.048010344040805994,
-          usdValue: 1.4617575474277011,
-          unixTime: 1602535478
-        },
         fullyProtected: {
           amount: 0.04852073303258817,
-          usdValue: 1.4772972186332958
+          usdValue: 0.04852073303258817
         },
+        id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44-NMR",
+        insuranceStart: 1605127478,
+        pendingReserveReward: new BigNumber(0),
+        poolId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44",
+        positionId: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:23",
         protectedAmount: {
           amount: 0.048334066249605456,
-          usdValue: 1.4716138271823387
+          usdValue: 0.048334066249605456
         },
-        roi: 0.010630813046213059,
-        fees: 0.000515015617056458
+        rewardsMultiplier: 1,
+        roi: { fees: 0.010727180305534255, reserveRewards: new BigNumber(0) },
+        stake: {
+          amount: 0.048010344040805994,
+          unixTime: 1602535478,
+          usdValue: 0.048010344040805994
+        },
+        symbol: "NMR"
       }
     ];
     expect(grouped).toEqual(result);
   });
-});*/
+});
 
 describe("Prettify Numbers", () => {
   test("convert numbers to strings with comma separator and pre-defined decimal precision", () => {

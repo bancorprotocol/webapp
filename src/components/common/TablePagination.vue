@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="pagesTotal > 0"
-    class="d-flex justify-content-center align-items-center mt-4 font-size-14 font-w500"
+    class="d-flex justify-content-center py-4 font-size-14 font-w500"
   >
     <div
       :class="current > 1 ? 'cursor' : ''"
@@ -18,14 +18,9 @@
         "
       />
     </div>
-    <span class="mx-3">
-      {{
-        $t("page_of", {
-          current: current,
-          total: pagesTotal
-        })
-      }}</span
-    >
+    <div class="mx-3">
+      {{ $t("page_of", { current: current, total: pagesTotal }) }}
+    </div>
 
     <div
       :class="current < pagesTotal ? 'cursor' : ''"
@@ -43,13 +38,13 @@
       />
     </div>
   </div>
-  <span
+  <div
     v-else
-    class="d-flex justify-content-center align-items-center mt-4 font-size-14 font-w500"
+    class="text-center my-4 font-size-14 font-w500"
     :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
   >
-    {{ $t("no_res_found") }}</span
-  >
+    {{ $t("no_res_found") }}
+  </div>
 </template>
 
 <script lang="ts">

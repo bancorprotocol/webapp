@@ -28,14 +28,14 @@
 
       <b-col cols="12">
         <content-block
-          search-style="width: 270px !important;"
+          :padding="false"
           :px0="true"
           :shadow-light="true"
+          :filters="true"
           :title="
             positions.length ? $t('protected_positions') : $t('protected')
           "
           :search.sync="searchProtected"
-          :filters="true"
         >
           <div v-if="loading" class="d-flex justify-content-center mt-3">
             <b-spinner
@@ -268,6 +268,7 @@
         </content-block>
       </b-col>
     </b-row>
+
     <modal-protected-filters
       v-model="modal"
       :poolFilters="poolFilters"
@@ -277,8 +278,8 @@
 </template>
 
 <script lang="ts">
-import { uniqBy } from "lodash";
 import { Component, Watch } from "vue-property-decorator";
+import { uniqBy } from "lodash";
 import DateRangePicker from "vue2-daterange-picker";
 import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
 import { vxm } from "@/store";
@@ -321,7 +322,6 @@ export default class ProtectionHome extends BaseComponent {
       { id: "2", title: i18n.t("not_fully_protected") }
     ]
   };
-
   poolFilters: {
     id: string;
     selectedIndexes: number[];
@@ -336,7 +336,6 @@ export default class ProtectionHome extends BaseComponent {
     multiiSelect: true,
     items: [{ id: "0", title: i18n.tc("all_pools") }, ...this.poolNames]
   };
-
   today = dayjs();
   dateRange: {
     startDate: dayjs.Dayjs | null;
@@ -346,14 +345,11 @@ export default class ProtectionHome extends BaseComponent {
     endDate: null
   };
   modal: boolean = false;
-
   positionFilterFunction(row: ViewGroupedPositions) {
     const fullRow = this.groupedPos.find(x => x.id === row.id);
     if (fullRow) row.collapsedData = fullRow.collapsedData;
-
     const now = dayjs();
     let isFullyProtected: boolean = dayjs.unix(row.fullCoverage).isBefore(now);
-
     const selectedIndex = this.positionFilters.selectedIndex;
     if (selectedIndex == 1) {
       row.collapsedData = row.collapsedData.filter(x => {
@@ -371,7 +367,6 @@ export default class ProtectionHome extends BaseComponent {
       return !isFullyProtected;
     } else return true;
   }
-
   poolsFilterFunction(row: ViewGroupedPositions) {
     const pools = this.poolFilters;
     if (pools.selectedIndexes.length === 0) return true;
@@ -381,7 +376,6 @@ export default class ProtectionHome extends BaseComponent {
       ) !== -1
     );
   }
-
   dateFilterFunction(row: ViewGroupedPositions) {
     let isInRange: boolean = false;
     //cant use hasRange cause TS
@@ -390,7 +384,6 @@ export default class ProtectionHome extends BaseComponent {
       isInRange =
         date.isBefore(this.dateRange.endDate) &&
         date.isAfter(this.dateRange.startDate);
-
       row.collapsedData = row.collapsedData.filter(x => {
         const date = dayjs.unix(x.stake.unixTime);
         if (this.dateRange.startDate && this.dateRange.endDate)
@@ -405,17 +398,14 @@ export default class ProtectionHome extends BaseComponent {
   get hasRange() {
     return this.dateRange.startDate && this.dateRange.endDate;
   }
-
   updateDateRange(values: { startDate: string; endDate: string }) {
     this.dateRange.startDate = dayjs(values.startDate);
     this.dateRange.endDate = dayjs(values.endDate);
   }
-
   clearDateRange() {
     this.dateRange.startDate = null;
     this.dateRange.endDate = null;
   }
-
   formatDateRange(startDate: number, endDate: number, short: boolean = false) {
     let start = new Intl.DateTimeFormat("en-GB").format(startDate);
     let end = new Intl.DateTimeFormat("en-GB").format(endDate);
@@ -425,11 +415,9 @@ export default class ProtectionHome extends BaseComponent {
     }
     return `${start} - ${end}`;
   }
-
   showMobileFilters() {
     this.modal = true;
   }
-
   positionsFiltering() {
     return this.positionFilters.selectedIndex !== 0;
   }
@@ -439,11 +427,9 @@ export default class ProtectionHome extends BaseComponent {
   get anyAreFiltering() {
     return this.hasRange || this.positionsFiltering() || this.poolsFiltering();
   }
-
   indexSelected(index: number) {
     return this.poolFilters.selectedIndexes.includes(index);
   }
-
   clearPositions() {
     this.positionFilters.selectedIndex = 0;
   }
@@ -455,7 +441,6 @@ export default class ProtectionHome extends BaseComponent {
     this.clearPools();
     this.clearDateRange();
   }
-
   get poolNames() {
     const filteredNamedPos = uniqBy(this.groupedPos, x => x.poolId).map(
       value => ({
@@ -484,7 +469,6 @@ export default class ProtectionHome extends BaseComponent {
   positionsChanged() {
     this.updatePools();
   }
-
   updatePools() {
     this.poolFilters.items = [
       { id: "0", title: i18n.tc("all_pools") },
@@ -497,9 +481,7 @@ export default class ProtectionHome extends BaseComponent {
     const scroll = this.$route.params.scroll;
     const el = this.$el.getElementsByClassName("closedPos")[0];
 
-    if (el && scroll) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
+    if (el && scroll) el.scrollIntoView({ behavior: "smooth" });
   }
 }
 </script>

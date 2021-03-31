@@ -326,7 +326,6 @@ export interface ViewGroupedPositions {
   fullCoverage: number;
   pendingReserveReward: BigNumber;
   rewardsMultiplier: number;
-  reserveTokenPrice: number;
   collapsedData: ViewProtectedLiquidity[];
 }
 

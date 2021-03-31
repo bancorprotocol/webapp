@@ -84,7 +84,7 @@
       </div>
     </div>
 
-    <div class="block-content pb-3 pt-0" :class="px0 ? 'px-0' : ''">
+    <div :class="padding ? 'block-content pb-3 pt-0 ' : '' + px0 ? 'px-0' : ''">
       <slot></slot>
     </div>
   </div>
@@ -92,9 +92,7 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Emit } from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
-
 import BaseComponent from "@/components/BaseComponent.vue";
-import { drop } from "node_modules/@types/lodash";
 
 @Component({
   components: { MultiInputField }
@@ -106,6 +104,7 @@ export default class ContentBlock extends BaseComponent {
   @Prop({ default: false }) shadow?: boolean;
   @Prop({ default: false }) shadowLight?: boolean;
   @Prop({ default: false }) px0?: boolean;
+  @Prop({ default: true }) padding?: boolean;
   @Prop({ default: false }) backButton!: boolean;
   @Prop({ default: false }) filters!: boolean;
   @Prop({ default: false }) rippleAnimation?: boolean;
