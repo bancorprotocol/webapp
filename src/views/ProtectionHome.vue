@@ -149,29 +149,35 @@
                   />
                 </div>
               </template>
-
-              <!-- <b-dropdown-item
-                :class="darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'"
-                v-for="(item, index) in poolFilters.items"
-                :key="item.id"
-                @click.stop="checked(index)"
-              >
-                     </b-dropdown-item> -->
               <b-form-checkbox-group
                 id="checkbox-group"
                 v-model="poolFilters.selectedIndexes"
                 name="selectedPools"
+                stacked
               >
                 <b-form-checkbox
-                  :class="
-                    darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'
-                  "
-                  v-for="(item, index) in poolNames"
-                  :key="item.id"
-                  :id="item.id"
+                  class="d-flex align-items-center ml-2 my-2"
+                  :class="darkMode ? 'checkbox-dark' : 'checkbox-light'"
+                  v-for="(pool, index) in poolNames"
+                  :key="pool.id"
+                  :id="pool.id"
                   :value="index + 1"
                 >
-                  {{ item.title }}
+                  <pool-logos-overlapped :pool="pool" size="16" />
+                  <div
+                    class="font-size-12 font-w500 ml-2"
+                    :class="
+                      indexSelected(index + 1)
+                        ? darkMode
+                          ? 'label-active-dark'
+                          : 'label-active-light'
+                        : darkMode
+                        ? 'label-muted-dark'
+                        : 'label-muted-light'
+                    "
+                  >
+                    {{ pool.title }}
+                  </div>
                 </b-form-checkbox>
               </b-form-checkbox-group>
             </b-dropdown>
@@ -278,6 +284,7 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
 import Claim from "@/components/protection/Claim.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import ModalProtectedFilters from "@/components/modals/ModalProtectedFilters.vue";
+import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import { ViewGroupedPositions, ViewProtectedLiquidity } from "@/types/bancor";
 import { groupPositionsArray } from "@/api/pureHelpers";
 import { buildPoolName } from "@/api/helpers";
@@ -293,7 +300,8 @@ import dayjs from "@/utils/dayjs";
     ContentBlock,
     ProtectedTable,
     DateRangePicker,
-    ModalProtectedFilters
+    ModalProtectedFilters,
+    PoolLogosOverlapped
   }
 })
 export default class ProtectionHome extends BaseComponent {
@@ -310,11 +318,19 @@ export default class ProtectionHome extends BaseComponent {
     ]
   };
 
-  poolFilters = {
+  poolFilters: {
+    id: string;
+    selectedIndexes: number[];
+    multiiSelect: boolean;
+    items: {
+      id: string;
+      title: string;
+    }[];
+  } = {
     id: "pools",
     selectedIndexes: [],
     multiiSelect: true,
-    items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
+    items: [{ id: "0", title: i18n.tc("all_pools") }, ...this.poolNames]
   };
 
   today = dayjs();
@@ -354,6 +370,7 @@ export default class ProtectionHome extends BaseComponent {
 
   poolsFilterFunction(row: ViewGroupedPositions) {
     const pools = this.poolFilters;
+    if (pools.selectedIndexes.length === 0) return true;
     return (
       pools.selectedIndexes.findIndex(
         index => pools.items[index].id === row.poolId
@@ -419,6 +436,10 @@ export default class ProtectionHome extends BaseComponent {
     return this.hasRange || this.positionsFiltering() || this.poolsFiltering();
   }
 
+  indexSelected(index: number) {
+    return this.poolFilters.selectedIndexes.includes(index);
+  }
+
   clearPositions() {
     this.positionFilters.selectedIndex = 0;
   }
@@ -432,10 +453,15 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   get poolNames() {
+    console.log(
+      "this.wejfdhygwqyfughweukfhgiuwe",
+      vxm.bancor.relay(this.groupedPos[0].poolId).reserves
+    );
     const filteredNamedPos = uniqBy(this.groupedPos, x => x.poolId).map(
       value => ({
         id: value.poolId,
-        title: buildPoolName(value.poolId)
+        title: buildPoolName(value.poolId),
+        reserves: vxm.bancor.relay(value.poolId).reserves
       })
     );
     return filteredNamedPos;
@@ -461,7 +487,7 @@ export default class ProtectionHome extends BaseComponent {
 
   updatePools() {
     this.poolFilters.items = [
-      { id: "0", title: i18n.t("all_pools") },
+      { id: "0", title: i18n.tc("all_pools") },
       ...this.poolNames
     ];
   }
@@ -477,3 +503,5 @@ export default class ProtectionHome extends BaseComponent {
   }
 }
 </script>
+
+<style lang="scss"></style>

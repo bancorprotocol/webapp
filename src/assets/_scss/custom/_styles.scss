@@ -72,6 +72,22 @@
   color: $text-color-dark !important;
 }
 
+.label-muted-light {
+  color: $dropdown-light !important;
+}
+
+.label-active-light {
+  color: $text-color-light !important;
+}
+
+.label-muted-dark {
+  color: $dropdown-light !important;
+}
+
+.label-active-dark {
+  color: $text-color-dark !important;
+}
+
 .text-red {
   color: $text-error-dark !important;
   font-weight: 700 !important;
@@ -556,5 +572,30 @@
   a:hover {
     color: white !important;
     background-color: $bg-btn-outline-dark !important;
+  }
+}
+
+.checkbox-dark {
+  .custom-control-label::before {
+    border-radius: 2px;
+  }
+
+  .custom-control-input:checked {
+    ~ .custom-control-label::before {
+      background-color: $dropdown-dark;
+      border-color: white;
+    }
+  }
+}
+
+.checkbox-light {
+  .custom-control-label::before {
+    border-radius: 2px;
+  }
+  .custom-control-input:checked {
+    ~ .custom-control-label::before {
+      background-color: $text-muted-light;
+      border-color: $text-muted-light;
+    }
   }
 }
