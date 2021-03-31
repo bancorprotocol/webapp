@@ -109,9 +109,11 @@
               :ref="'dropdown_' + poolFilters.id"
               :key="poolFilters.id"
               :text="
-                poolFilters.selectedIndexes.length > 1
-                  ? $t('multiple_token_pairs')
-                  : poolFilters.items[poolFilters.selectedIndexes[0]].title
+                poolsFiltering()
+                  ? poolFilters.selectedIndexes.length > 1
+                    ? $t('multiple_token_pairs')
+                    : poolFilters.items[poolFilters.selectedIndexes[0]].title
+                  : poolFilters.items[0].title
               "
               :variant="
                 !poolsFiltering()
@@ -134,9 +136,12 @@
               <template #button-content>
                 <div class="d-flex justify-content-between align-items-center">
                   {{
-                    poolFilters.selectedIndexes.length > 1
-                      ? $t("multiple_token_pairs")
-                      : poolFilters.items[poolFilters.selectedIndexes[0]].title
+                    poolsFiltering()
+                      ? poolFilters.selectedIndexes.length > 1
+                        ? $t("multiple_token_pairs")
+                        : poolFilters.items[poolFilters.selectedIndexes[0]]
+                            .title
+                      : poolFilters.items[0].title
                   }}
                   <font-awesome-icon
                     :icon="poolsFiltering() ? 'times' : 'caret-down'"
@@ -145,20 +150,30 @@
                 </div>
               </template>
 
-              <b-dropdown-item
+              <!-- <b-dropdown-item
                 :class="darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'"
                 v-for="(item, index) in poolFilters.items"
                 :key="item.id"
                 @click.stop="checked(index)"
               >
+                     </b-dropdown-item> -->
+              <b-form-checkbox-group
+                id="checkbox-group"
+                v-model="poolFilters.selectedIndexes"
+                name="selectedPools"
+              >
                 <b-form-checkbox
+                  :class="
+                    darkMode ? 'dropdown-item-dark' : 'dropdown-item-light'
+                  "
+                  v-for="(item, index) in poolNames"
+                  :key="item.id"
                   :id="item.id"
-                  :value="true"
-                  :unchecked-value="false"
+                  :value="index + 1"
                 >
                   {{ item.title }}
                 </b-form-checkbox>
-              </b-dropdown-item>
+              </b-form-checkbox-group>
             </b-dropdown>
           </template>
           <template v-if="positions.length" #date>
@@ -297,7 +312,7 @@ export default class ProtectionHome extends BaseComponent {
 
   poolFilters = {
     id: "pools",
-    selectedIndexes: [0],
+    selectedIndexes: [],
     multiiSelect: true,
     items: [{ id: "0", title: i18n.t("all_pools") }, ...this.poolNames]
   };
@@ -338,11 +353,12 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   poolsFilterFunction(row: ViewGroupedPositions) {
-    // const pools = this.poolFilters;
-
-    // const pool = pools.selectedIndexes ? this.poolNames[pools.selectedIndexes - 1] : { id: -1 };
-    // return pool.id === row.poolId;
-    return true;
+    const pools = this.poolFilters;
+    return (
+      pools.selectedIndexes.findIndex(
+        index => pools.items[index].id === row.poolId
+      ) !== -1
+    );
   }
 
   dateFilterFunction(row: ViewGroupedPositions) {
@@ -397,7 +413,7 @@ export default class ProtectionHome extends BaseComponent {
     return this.positionFilters.selectedIndex !== 0;
   }
   poolsFiltering() {
-    return this.poolFilters.selectedIndexes[0] !== 0;
+    return this.poolFilters.selectedIndexes.length !== 0;
   }
   get anyAreFiltering() {
     return this.hasRange || this.positionsFiltering() || this.poolsFiltering();
@@ -407,16 +423,12 @@ export default class ProtectionHome extends BaseComponent {
     this.positionFilters.selectedIndex = 0;
   }
   clearPools() {
-    this.poolFilters.selectedIndexes = [0];
+    this.poolFilters.selectedIndexes = [];
   }
   clearAllFilters() {
     this.clearPositions();
     this.clearPools();
     this.clearDateRange();
-  }
-
-  checked(index: number, dropDown: any) {
-    dropDown.indexes.includes(index);
   }
 
   get poolNames() {
