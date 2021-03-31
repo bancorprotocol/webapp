@@ -268,7 +268,11 @@
         </content-block>
       </b-col>
     </b-row>
-    <modal-protected-filters v-model="modal" />
+    <modal-protected-filters
+      v-model="modal"
+      :poolFilters="poolFilters"
+      :poolNames="poolNames"
+    />
   </b-container>
 </template>
 
@@ -453,10 +457,6 @@ export default class ProtectionHome extends BaseComponent {
   }
 
   get poolNames() {
-    console.log(
-      "this.wejfdhygwqyfughweukfhgiuwe",
-      vxm.bancor.relay(this.groupedPos[0].poolId).reserves
-    );
     const filteredNamedPos = uniqBy(this.groupedPos, x => x.poolId).map(
       value => ({
         id: value.poolId,

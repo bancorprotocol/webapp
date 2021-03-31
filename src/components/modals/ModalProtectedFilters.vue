@@ -92,34 +92,38 @@
         </date-range-picker>
       </div>
     </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
-    <div>
-      {{ "List Placeholder" }}
-    </div>
+    <b-form-checkbox-group
+      id="checkbox-group"
+      style="height: 150px"
+      v-model="poolFilters.selectedIndexes"
+      name="selectedPools"
+      stacked
+    >
+      <b-form-checkbox
+        class="d-flex align-items-center ml-2 my-2"
+        :class="darkMode ? 'checkbox-dark' : 'checkbox-light'"
+        v-for="(pool, index) in poolNames"
+        :key="pool.id"
+        :id="pool.id"
+        :value="index + 1"
+      >
+        <pool-logos-overlapped :pool="pool" size="16" />
+        <div
+          class="font-size-12 font-w500 ml-2"
+          :class="
+            indexSelected(index + 1)
+              ? darkMode
+                ? 'label-active-dark'
+                : 'label-active-light'
+              : darkMode
+              ? 'label-muted-dark'
+              : 'label-muted-light'
+          "
+        >
+          {{ pool.title }}
+        </div>
+      </b-form-checkbox>
+    </b-form-checkbox-group>
     <div
       class="text-center text-link font-size-12 font-w400"
       @click="clearAllFilters"
@@ -138,10 +142,11 @@
 </template>
 
 <script lang="ts">
-import { Component, VModel } from "vue-property-decorator";
+import { Component, Prop, VModel } from "vue-property-decorator";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import MainButton from "@/components/common/Button.vue";
+import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
 import DateRangePicker from "vue2-daterange-picker";
 import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
 import dayjs from "@/utils/dayjs";
@@ -150,11 +155,27 @@ import dayjs from "@/utils/dayjs";
   components: {
     ModalBase,
     MainButton,
-    DateRangePicker
+    DateRangePicker,
+    PoolLogosOverlapped
   }
 })
 export default class ModalProtectedFilters extends BaseComponent {
   @VModel({ type: Boolean }) modal!: boolean;
+  @Prop() poolFilters?: {
+    id: string;
+    selectedIndexes: number[];
+    multiiSelect: boolean;
+    items: {
+      id: string;
+      title: string;
+    }[];
+  };
+
+  @Prop() poolNames?: {
+    id: string;
+    title: string;
+    reserves: any;
+  }[];
 
   dateRange: {
     startDate: dayjs.Dayjs | null;
@@ -168,6 +189,13 @@ export default class ModalProtectedFilters extends BaseComponent {
 
   get hasRange() {
     return this.dateRange.startDate && this.dateRange.endDate;
+  }
+
+  indexSelected(index: number) {
+    if (this.poolFilters)
+      return this.poolFilters.selectedIndexes.includes(index);
+
+    return false;
   }
 
   setSelectedPosition(index: number) {
@@ -196,6 +224,7 @@ export default class ModalProtectedFilters extends BaseComponent {
 
   clearAllFilters() {
     this.selectedPosition = 0;
+    if (this.poolFilters) this.poolFilters.selectedIndexes = [];
     this.clearDateRange();
   }
 
