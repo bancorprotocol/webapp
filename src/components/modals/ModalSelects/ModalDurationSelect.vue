@@ -163,10 +163,14 @@ export default class ModalDurationSelect extends BaseComponent {
   confirm() {
     this.show = false;
     const days: number = this.selectedDays.asDays();
+    const hours: number = this.selectedHours.asHours();
+    const minutes: number = this.selectedMinutes.asMinutes();
+    if (days === 0 && hours === 0 && minutes === 0) return this.initialDuration;
+
     return dayjs.duration({
       days: days,
-      hours: days === 7 ? 0 : this.selectedHours.asHours(),
-      minutes: days === 7 ? 0 : this.selectedMinutes.asMinutes()
+      hours: days === 7 ? 0 : hours,
+      minutes: days === 7 ? 0 : minutes
     });
   }
 }
