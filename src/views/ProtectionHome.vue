@@ -272,7 +272,10 @@
     <modal-protected-filters
       v-model="modal"
       :initialPoolFilters="poolFilters"
+      :initialDateRange="dateRange"
+      :initialPosition="positionFilters.selectedIndex"
       :poolNames="poolNames"
+      @confirm="setFilters"
     />
   </b-container>
 </template>
@@ -438,6 +441,13 @@ export default class ProtectionHome extends BaseComponent {
     this.clearPools();
     this.clearDateRange();
   }
+
+  setFilters(filters: any) {
+    this.positionFilters.selectedIndex = filters.positionIndex;
+    this.dateRange = filters.dateRange;
+    this.poolFilters.selectedIndexes = filters.selectedIndexes;
+  }
+
   get poolNames() {
     const filteredNamedPos = uniqBy(this.groupedPos, x => x.poolId).map(
       value => ({

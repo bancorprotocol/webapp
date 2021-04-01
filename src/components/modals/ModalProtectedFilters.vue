@@ -131,18 +131,18 @@
       {{ $t("clear_all_filters") }}
     </div>
     <main-button
-      @click="onHide"
       :label="$t('confirm')"
       :large="true"
       :active="true"
       :block="true"
       class="font-size-14 font-w400 mt-3"
+      @click="confirm()"
     />
   </modal-base>
 </template>
 
 <script lang="ts">
-import { Component, Prop, VModel } from "vue-property-decorator";
+import { Component, Emit, Prop, VModel } from "vue-property-decorator";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -169,13 +169,18 @@ export default class ModalProtectedFilters extends BaseComponent {
       title: string;
     }[];
   };
-  poolFilters: any;
-
+  @Prop() initialDateRange!: {
+    startDate: dayjs.Dayjs | null;
+    endDate: dayjs.Dayjs | null;
+  };
+  @Prop() initialPosition!: number;
   @Prop() poolNames?: {
     id: string;
     title: string;
     reserves: any;
   }[];
+
+  poolFilters: any;
 
   dateRange: {
     startDate: dayjs.Dayjs | null;
@@ -228,17 +233,28 @@ export default class ModalProtectedFilters extends BaseComponent {
     this.clearDateRange();
   }
 
-  async created() {
+  init() {
     this.poolFilters = {
       id: this.initialPoolFilters.id,
       selectedIndexes: [...this.initialPoolFilters.selectedIndexes],
       items: [...this.initialPoolFilters.items]
     };
+    this.selectedPosition = this.initialPosition;
+    this.dateRange = this.initialDateRange;
   }
 
-  onHide() {
+  @Emit("confirm")
+  confirm() {
     this.modal = false;
-    this.clearAllFilters();
+    return {
+      positionIndex: this.selectedPosition,
+      dateRange: this.dateRange,
+      selectedIndexes: this.poolFilters.selectedIndexes
+    };
+  }
+
+  async created() {
+    this.init();
   }
 }
 </script>
