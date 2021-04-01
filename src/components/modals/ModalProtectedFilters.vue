@@ -161,15 +161,15 @@ import dayjs from "@/utils/dayjs";
 })
 export default class ModalProtectedFilters extends BaseComponent {
   @VModel({ type: Boolean }) modal!: boolean;
-  @Prop() poolFilters?: {
+  @Prop() initialPoolFilters!: {
     id: string;
     selectedIndexes: number[];
-    multiiSelect: boolean;
     items: {
       id: string;
       title: string;
     }[];
   };
+  poolFilters: any;
 
   @Prop() poolNames?: {
     id: string;
@@ -228,8 +228,17 @@ export default class ModalProtectedFilters extends BaseComponent {
     this.clearDateRange();
   }
 
+  async created() {
+    this.poolFilters = {
+      id: this.initialPoolFilters.id,
+      selectedIndexes: [...this.initialPoolFilters.selectedIndexes],
+      items: [...this.initialPoolFilters.items]
+    };
+  }
+
   onHide() {
     this.modal = false;
+    this.clearAllFilters();
   }
 }
 </script>

@@ -271,7 +271,7 @@
 
     <modal-protected-filters
       v-model="modal"
-      :poolFilters="poolFilters"
+      :initialPoolFilters="poolFilters"
       :poolNames="poolNames"
     />
   </b-container>
@@ -315,7 +315,6 @@ export default class ProtectionHome extends BaseComponent {
   positionFilters = {
     id: "position",
     selectedIndex: 0,
-    multiSelect: false,
     items: [
       { id: "0", title: i18n.t("all_positions") },
       { id: "1", title: i18n.t("fully_protected") },
@@ -325,7 +324,6 @@ export default class ProtectionHome extends BaseComponent {
   poolFilters: {
     id: string;
     selectedIndexes: number[];
-    multiiSelect: boolean;
     items: {
       id: string;
       title: string;
@@ -333,7 +331,6 @@ export default class ProtectionHome extends BaseComponent {
   } = {
     id: "pools",
     selectedIndexes: [],
-    multiiSelect: true,
     items: [{ id: "0", title: i18n.tc("all_pools") }, ...this.poolNames]
   };
   today = dayjs();
