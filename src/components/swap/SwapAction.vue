@@ -301,7 +301,6 @@ export default class SwapAction extends BaseTxAction {
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
-      console.log(success);
       this.txMeta.showTxModal = false;
       addNotification({
         title: this.$tc("notifications.add.swap.title"),

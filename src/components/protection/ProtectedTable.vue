@@ -509,7 +509,6 @@ export default class ProtectedTable extends BaseComponent {
   get groupedPositions() {
     if (this.positions.length > 0) {
       const groupedPositions = groupPositionsArray(this.positions);
-      console.log("groupedPositions", groupedPositions);
       return groupedPositions;
     } else return [];
   }
