@@ -93,18 +93,18 @@
       </div>
     </div>
     <b-form-checkbox-group
-      id="checkbox-group"
+      id="checkbox-group-prot-modal"
       style="height: 150px"
       v-model="poolFilters.selectedIndexes"
-      name="selectedPools"
+      name="selectedPools-prot-modal"
       stacked
     >
       <b-form-checkbox
         class="d-flex align-items-center ml-2 my-2"
         :class="darkMode ? 'checkbox-dark' : 'checkbox-light'"
         v-for="(pool, index) in poolNames"
-        :key="pool.id"
-        :id="pool.id"
+        :key="pool.id + 'modal-prot'"
+        :id="pool.id + 'modal-prot'"
         :value="index + 1"
       >
         <pool-logos-overlapped :pool="pool" size="16" />
