@@ -184,15 +184,13 @@ export default class SwapAction extends BaseTxAction {
   }
 
   get priceImpact() {
-    const zeroPercent = "0.0000%";
-    const slippage = this.slippage;
-    const slippageLabel =
-      slippage !== null && slippage !== undefined
-        ? numeral(slippage).format(zeroPercent)
-        : zeroPercent;
-
-    const corrected = slippageLabel == "NaN%" ? zeroPercent : slippageLabel;
-    return corrected;
+    const baseFormat = "0.0000%";
+    if (this.slippage !== null && this.slippage !== undefined) {
+      const formatted = numeral(this.slippage).format("0.0000%");
+      return formatted !== "NaN%" ? formatted : baseFormat;
+    } else {
+      return baseFormat;
+    }
   }
 
   get slippageTolerance() {
