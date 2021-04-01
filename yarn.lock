@@ -1198,15 +1198,15 @@
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.6.1.tgz#dcbd23030a71c0c74fc95d4a3f75ba81653850e9"
   integrity sha512-L/ZnJRAq7F++utfuoTKX4CLBG5YR7tFO3PLzG1/oXXKEezJ0kRL3CMRoueBEmTCzVb/6SIs2Qlaw++uDgi5Xyg==
 
-"@firebase/app@^0.6.17":
-  version "0.6.17"
-  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.6.17.tgz#866c963cb4051a0457f989285524072bbb1aacda"
-  integrity sha512-xLXY8507VaVkg5l1mWIUh/OrGqutexKxngbvEdpD9PXY2qiBRApXgvdIJ+DuuhaZDnG+3M/5hlP1IIx7XnkAsA==
+"@firebase/app@^0.6.18":
+  version "0.6.18"
+  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.6.18.tgz#68df65fee9929d5ace7a25fcd522888c0858bb2b"
+  integrity sha512-eBThPc4QGHy/FC+oHZsnp4Qk6oksYTZ10B4jXaVH1lCS5eUSKvV1TIzAtpkPzMp2huS/qBz411r1tkQUv5vKcw==
   dependencies:
     "@firebase/app-types" "0.6.1"
-    "@firebase/component" "0.3.0"
+    "@firebase/component" "0.3.1"
     "@firebase/logger" "0.2.6"
-    "@firebase/util" "0.4.0"
+    "@firebase/util" "0.4.1"
     dom-storage "2.1.0"
     tslib "^2.1.0"
     xmlhttprequest "1.8.0"
@@ -1217,6 +1217,14 @@
   integrity sha512-jlyaQMLKkzetjHd41P6wywNNVIy+Pqa2Xf+GS/cdgLyPD5IhjqvJHEv0SrLL2ceRhXCA5ETUxSvV6aKbFgV3Vw==
   dependencies:
     "@firebase/util" "0.4.0"
+    tslib "^2.1.0"
+
+"@firebase/component@0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@firebase/component/-/component-0.3.1.tgz#91e32bd4426ad10f6bbe86b178780e8715171986"
+  integrity sha512-8ACaB772bWwZRE47aVEYzld+jlDPgvHnLZoiVtG6BzygonVnKzwXo0wK6wcRzCbx4kun7G/gXYM0gUMkqvKtRA==
+  dependencies:
+    "@firebase/util" "0.4.1"
     tslib "^2.1.0"
 
 "@firebase/installations-types@0.3.4":
@@ -1246,6 +1254,13 @@
   integrity sha512-z8A+9YGM61ZXQ2KBSVwxXaELOJjG+EQ374YolqNVMvWBJzTNGZGaVP81Ggl8XD10Xinyt1Dgdo86JDV0OAnvqA==
   dependencies:
     tslib "^2.0.0"
+
+"@firebase/util@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@firebase/util/-/util-0.4.1.tgz#fe76cf0238901dc5455b341cf02e298e7bf68df4"
+  integrity sha512-XhYCOwq4AH+YeQBEnDQvigz50WiiBU4LnJh2+//VMt4J2Ybsk0eTgUHNngUzXsmp80EJrwal3ItODg55q1ajWg==
+  dependencies:
+    tslib "^2.1.0"
 
 "@fortawesome/fontawesome-common-types@^0.2.34":
   version "0.2.34"
