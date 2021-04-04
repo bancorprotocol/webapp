@@ -67,7 +67,7 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 25"
+              v-for="item in 24"
               :key="item"
               @click="changeHours(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"
@@ -99,7 +99,7 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 61"
+              v-for="item in 60"
               :key="item"
               @click="changeMinutes(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"

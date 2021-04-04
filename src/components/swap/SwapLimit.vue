@@ -613,6 +613,7 @@ export default class SwapLimit extends BaseTxAction {
     this.checkAlerts();
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
+    this.checkAlerts();
   }
 
   async mounted() {
