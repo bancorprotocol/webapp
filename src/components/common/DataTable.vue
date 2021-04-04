@@ -85,12 +85,24 @@
       </tbody>
     </table>
 
-    <table-pagination
-      v-if="!hidePagination"
-      :current-page.sync="currentPage"
-      :row-count="filteredItems.length"
-      :per-page="perPage"
-    />
+    <div class="bottom">
+      <div />
+      <table-pagination
+        v-if="!hidePagination"
+        :current-page.sync="currentPage"
+        :row-count="filteredItems.length"
+        :per-page="perPage"
+      />
+
+      <router-link
+        v-if="createPool"
+        :to="{ name: 'PoolCreate' }"
+        class="cursor font-w500 font-size-14"
+        :class="darkMode ? 'text-body-dark' : 'text-body-light'"
+      >
+        <font-awesome-icon icon="plus" class="mr-2" />{{ $t("create_pool") }}
+      </router-link>
+    </div>
   </div>
 </template>
 
@@ -114,6 +126,7 @@ export default class DataTable extends BaseComponent {
   @Prop() filterBy?: string;
   @Prop() defaultSort?: string;
   @Prop({ default: false }) collapsable!: boolean;
+  @Prop({ default: false }) createPool!: boolean;
   @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
@@ -275,5 +288,11 @@ export default class DataTable extends BaseComponent {
 .collapsed-indicator {
   border-left: 2px solid $primary;
   padding-left: 20px;
+}
+
+.bottom {
+  display: grid;
+  grid-template-columns: 120px 1fr 120px;
+  align-items: center;
 }
 </style>
