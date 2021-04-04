@@ -325,6 +325,36 @@
   }
 }
 
+.large-tabs-light {
+  .nav-tabs {
+    border: white;
+  }
+  .nav-tabs .nav-link {
+    color: $text-muted-light;
+    background: $gray-border;
+  }
+  .nav-link.active {
+    color: $text-color-light;
+    background: white;
+    border: white;
+  }
+}
+
+.large-tabs-dark {
+  .nav-tabs {
+    border: $bg-body-dark;
+  }
+  .nav-tabs .nav-link {
+    color: $text-muted-dark;
+    background: $gray-border-dark;
+  }
+  .nav-link.active {
+    color: $text-color-dark;
+    background: $bg-body-dark;
+    border: $bg-body-dark;
+  }
+}
+
 .border-gray {
   border: 1px solid $gray-border !important;
 }

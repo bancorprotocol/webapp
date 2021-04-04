@@ -86,7 +86,6 @@
     </table>
 
     <div class="bottom">
-      <div />
       <table-pagination
         v-if="!hidePagination"
         :current-page.sync="currentPage"
@@ -97,7 +96,7 @@
       <router-link
         v-if="createPool"
         :to="{ name: 'PoolCreate' }"
-        class="cursor font-w500 font-size-14"
+        class="cursor font-w500 font-size-14 mr-2"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
       >
         <font-awesome-icon icon="plus" class="mr-2" />{{ $t("create_pool") }}
@@ -292,7 +291,8 @@ export default class DataTable extends BaseComponent {
 
 .bottom {
   display: grid;
-  grid-template-columns: 120px 1fr 120px;
+  grid-template-columns: 1fr auto;
   align-items: center;
+  justify-content: center;
 }
 </style>

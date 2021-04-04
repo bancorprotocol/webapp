@@ -1,6 +1,6 @@
 <template>
   <b-container fluid="xl" class="px-xl-0">
-    <b-tabs no-fade>
+    <b-tabs no-fade :class="darkMode ? 'large-tabs-dark' : 'large-tabs-light'">
       <b-tab :title="$t('liquidity_protection')" active>
         <protection-home />
       </b-tab>
