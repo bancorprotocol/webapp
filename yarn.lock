@@ -2737,34 +2737,25 @@
     penpal "3.0.7"
     pocket-js-core "0.0.3"
 
-"@sentry/browser@^6.2.4":
-  version "6.2.4"
-  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-6.2.4.tgz#b74757b1f76e7a525e6eaca39668db36db82cb21"
-  integrity sha512-OV1CQUxNawncpSEcrA+YccOu72rLC0tyYq/Pc4D/ihpfJmvR0o0L8vZYESay55V5lcqnJPFp8IyCJ2bF8IZTsA==
+"@sentry/browser@^6.2.5":
+  version "6.2.5"
+  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-6.2.5.tgz#35e259e16521d26f348a06b31eb495e0033111d6"
+  integrity sha512-nlvaE+D7oaj4MxoY9ikw+krQDOjftnDYJQnOwOraXPk7KYM6YwmkakLuE+x/AkaH3FQVTQF330VAa9d6SWETlA==
   dependencies:
-    "@sentry/core" "6.2.4"
-    "@sentry/types" "6.2.4"
-    "@sentry/utils" "6.2.4"
+    "@sentry/core" "6.2.5"
+    "@sentry/types" "6.2.5"
+    "@sentry/utils" "6.2.5"
     tslib "^1.9.3"
 
-"@sentry/core@6.2.4":
-  version "6.2.4"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.2.4.tgz#613102074208958c580df4e7e06e9aa6b4d5f40c"
-  integrity sha512-8Z98OTM4wFS2n3T+V8a6cYWHDAk1byWuMb8JquZLdYgR5O1jkSpSFrhksQ+B/wDbVw05VOolSNFJsDTC2D5qXg==
+"@sentry/core@6.2.5":
+  version "6.2.5"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.2.5.tgz#e75093f8598becc0a4a0be927f32f7ac49e8588f"
+  integrity sha512-I+AkgIFO6sDUoHQticP6I27TT3L+i6TUS03in3IEtpBcSeP2jyhlxI8l/wdA7gsBqUPdQ4GHOOaNgtFIcr8qag==
   dependencies:
-    "@sentry/hub" "6.2.4"
-    "@sentry/minimal" "6.2.4"
-    "@sentry/types" "6.2.4"
-    "@sentry/utils" "6.2.4"
-    tslib "^1.9.3"
-
-"@sentry/hub@6.2.4":
-  version "6.2.4"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.2.4.tgz#0e25b851dc04b806713c8d878b1e11696ccf47ea"
-  integrity sha512-dY8Vj3c4oIirNNNzWkJvoRMzjlU8Nw3PJ/IwhdWjiQhj5/oqOzJwJQSMeOKdOGIhArAifr0hSXdy1+tHGEOOdQ==
-  dependencies:
-    "@sentry/types" "6.2.4"
-    "@sentry/utils" "6.2.4"
+    "@sentry/hub" "6.2.5"
+    "@sentry/minimal" "6.2.5"
+    "@sentry/types" "6.2.5"
+    "@sentry/utils" "6.2.5"
     tslib "^1.9.3"
 
 "@sentry/hub@6.2.5":
@@ -2784,15 +2775,6 @@
     "@sentry/types" "6.2.4"
     "@sentry/utils" "6.2.4"
     localforage "^1.8.1"
-    tslib "^1.9.3"
-
-"@sentry/minimal@6.2.4":
-  version "6.2.4"
-  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.2.4.tgz#7d8d490b0942e14cde544c0a77550693e4702d97"
-  integrity sha512-KN+Abbz5CCAceSMvwymSG8GIVPaz4Y/xuY7R7dA8IlzncHaWRQ/Ss0PXjYUWL4YoTlTK6id1AW0i3JMICHMVgw==
-  dependencies:
-    "@sentry/hub" "6.2.4"
-    "@sentry/types" "6.2.4"
     tslib "^1.9.3"
 
 "@sentry/minimal@6.2.5":
