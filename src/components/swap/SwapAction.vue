@@ -453,7 +453,7 @@ export default class SwapAction extends BaseTxAction {
       console.log("update rate and return");
       await this.calculateRate();
       if (this.amount1) await this.updatePriceReturn(this.amount1);
-    }, 10000);
+    }, 15000);
   }
 
   destroyed() {
