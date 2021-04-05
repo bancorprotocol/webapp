@@ -2967,7 +2967,6 @@ export class EthBancorModule
     onHash?: (hash: string) => void;
     onConfirmation?: (hash: string) => void;
   }): Promise<string> {
-    console.log("received", tx);
     let adjustedGas: number | boolean = false;
     if (gas) {
       adjustedGas = gas;
@@ -7097,8 +7096,6 @@ export class EthBancorModule
     path: string[];
     amount: string;
   }): Promise<string> {
-    console.log("jan", this.contracts.BancorNetwork);
-    console.log(path);
     try {
       return await getReturnByPath({
         networkContract: this.contracts.BancorNetwork,
