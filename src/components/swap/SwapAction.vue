@@ -137,6 +137,7 @@ import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import { addNotification } from "@/components/compositions/notifications";
+import wait from "waait";
 
 @Component({
   components: {
@@ -365,6 +366,7 @@ export default class SwapAction extends BaseTxAction {
 
   async calculateRate() {
     this.rateLoading = true;
+    await wait(1000);
     try {
       const reward = await vxm.bancor.getReturn({
         from: {
@@ -428,6 +430,8 @@ export default class SwapAction extends BaseTxAction {
     await this.calculateRate();
   }
 
+  interval: any = null;
+
   async mounted() {
     if (this.$route.query.to && this.$route.query.from)
       await this.onTokenChange(this.$route.query);
@@ -444,6 +448,16 @@ export default class SwapAction extends BaseTxAction {
     }
 
     await this.calculateRate();
+
+    this.interval = setInterval(async () => {
+      console.log("update rate and return");
+      await this.calculateRate();
+      if (this.amount1) await this.updatePriceReturn(this.amount1);
+    }, 15000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 }
 </script>
