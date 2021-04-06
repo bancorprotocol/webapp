@@ -59,6 +59,33 @@
             >{{ token2.symbol }}</span
           >
         </div>
+        <div class="d-flex justify-content-between my-3">
+          <div v-for="(x, index) in percentages" :key="x" style="width: 80px">
+            <b-btn
+              @click="setPercentage(index)"
+              :variant="
+                !custom && selectedPercentage === index
+                  ? 'primary'
+                  : darkMode
+                  ? 'outline-gray-dark'
+                  : 'outline-gray'
+              "
+              size="xs"
+              block
+            >
+              {{ x }} %
+            </b-btn>
+          </div>
+          <multi-input-field
+            v-model="custom"
+            @input="setCustomPercentage"
+            style="width: 80px"
+            inputStyle="text-right custom-input-field pr-1"
+            :placeholder="$t('custom')"
+            height="24"
+            :format="true"
+          />
+        </div>
         <alert-block
           class="mb-2"
           v-if="rateAlert !== ''"
@@ -228,6 +255,10 @@ export default class SwapLimit extends BaseTxAction {
   amount1 = "";
   amount2 = "";
 
+  percentages = [1, 3, 5];
+  selectedPercentage = 1;
+  custom = "";
+
   get durationTimer() {
     return durationTimer(this.selectedDuration);
   }
@@ -240,6 +271,15 @@ export default class SwapLimit extends BaseTxAction {
   get modalIcon() {
     if (this.isDepositingWeth) return "arrow-to-bottom";
     else return "file-alt";
+  }
+
+  setPercentage(index: number) {
+    this.selectedPercentage = index;
+    this.custom = "";
+    this.changeLimitRateByPercentage();
+  }
+  setCustomPercentage() {
+    this.changeLimitRateByPercentage(this.custom ? true : false);
   }
 
   durationList: plugin.Duration[] = [
@@ -512,6 +552,14 @@ export default class SwapLimit extends BaseTxAction {
     this.checkAlerts();
   }
 
+  changeLimitRateByPercentage(custom: boolean = false) {
+    const percentage = custom
+      ? Number(this.custom) / 100
+      : Number(this.percentages[this.selectedPercentage]) / 100;
+    this.limitRate = (Number(this.initialRate) * (1 + percentage)).toString();
+    this.checkAlerts();
+  }
+
   rateCalcField() {
     if (this.limitRate) {
       this.userSettedRate = true;
@@ -624,6 +672,7 @@ export default class SwapLimit extends BaseTxAction {
       await this.$router.replace({ name: "SwapLimit", query: defaultQuery });
     }
     await this.calculateRate();
+    this.changeLimitRateByPercentage();
   }
 }
 </script>
