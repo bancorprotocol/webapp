@@ -87,7 +87,7 @@ export default class MultiInputField extends BaseComponent {
     const borderRight = "border-right: 0 !important;";
     const borderLeft = "border-left: 0 !important;";
     let border = "";
-    if (this.append || this.clearText) border += borderRight;
+    if (this.append || this.clear) border += borderRight;
     if (this.prepend) border += borderLeft;
     return height + border;
   }

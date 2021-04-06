@@ -46,10 +46,9 @@
           <multi-input-field
             @input="rateCalcField()"
             :prepend="`1 ${token1.symbol} =`"
-            class="mx-2"
+            class="w-100 mx-2"
             v-model="limitRate"
             :placeholder="`${prettifyNumber(initialRate)} ${token2.symbol}`"
-            :append="$t('defined_rate')"
             :format="true"
             height="48"
           />

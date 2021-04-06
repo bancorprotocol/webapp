@@ -361,7 +361,6 @@ export const en = {
     "{token} limit reached. Please wait until some space opens up.",
   market: "Market",
   limit: "Limit",
-  defined_rate: "Defined Rate",
   expires_in: "Expires in",
   manage_pool_tokens: "Manage your Bancor pool tokens.",
   protect: "Protect",
