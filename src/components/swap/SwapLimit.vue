@@ -73,18 +73,27 @@
               size="xs"
               block
             >
-              {{ x }} %
+              +{{ x }}%
             </b-btn>
           </div>
           <multi-input-field
+            id="custom"
             v-model="custom"
             @input="setCustomPercentage"
             style="width: 80px"
-            inputStyle="text-right custom-input-field pr-1"
             :placeholder="$t('custom')"
             height="24"
             :format="true"
           />
+          <b-popover
+            target="custom"
+            triggers="hover"
+            placement="right"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ $t("rate_swap_tokens") }}
+          </b-popover>
         </div>
         <alert-block
           class="mb-2"
