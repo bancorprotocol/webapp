@@ -594,8 +594,15 @@
   }
   .custom-control-input:checked {
     ~ .custom-control-label::before {
-      background-color: $text-muted-light;
+      background-color: $primary;
       border-color: $text-muted-light;
     }
+  }
+}
+
+.limited-dropdown {
+  .dropdown-menu {
+    max-height: 250px;
+    overflow-y: auto;
   }
 }

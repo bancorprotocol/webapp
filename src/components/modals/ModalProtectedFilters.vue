@@ -2,6 +2,19 @@
   <modal-base v-model="modal" :title="$t('all_positions')" size="sm">
     <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
       <b-btn
+        @click="setSelectedPosition(-1)"
+        :variant="selectedPosition === -1 ? 'primary' : ''"
+        :class="
+          selectedPosition !== -1
+            ? darkMode
+              ? 'btn-active-dark'
+              : 'btn-active-light'
+            : ''
+        "
+      >
+        {{ $t("all_positions") }}
+      </b-btn>
+      <b-btn
         @click="setSelectedPosition(0)"
         :variant="selectedPosition === 0 ? 'primary' : ''"
         :class="
@@ -12,26 +25,13 @@
             : ''
         "
       >
-        {{ $t("all_positions") }}
+        {{ $t("protected") }}
       </b-btn>
       <b-btn
         @click="setSelectedPosition(1)"
         :variant="selectedPosition === 1 ? 'primary' : ''"
         :class="
           selectedPosition !== 1
-            ? darkMode
-              ? 'btn-active-dark'
-              : 'btn-active-light'
-            : ''
-        "
-      >
-        {{ $t("protected") }}
-      </b-btn>
-      <b-btn
-        @click="setSelectedPosition(2)"
-        :variant="selectedPosition === 2 ? 'primary' : ''"
-        :class="
-          selectedPosition !== 2
             ? darkMode
               ? 'btn-active-dark'
               : 'btn-active-light'
@@ -190,7 +190,7 @@ export default class ModalProtectedFilters extends BaseComponent {
     endDate: null
   };
 
-  selectedPosition: number = 0;
+  selectedPosition: number = -1;
 
   get hasRange() {
     return this.dateRange.startDate && this.dateRange.endDate;
@@ -228,7 +228,7 @@ export default class ModalProtectedFilters extends BaseComponent {
   }
 
   clearAllFilters() {
-    this.selectedPosition = 0;
+    this.selectedPosition = -1;
     if (this.poolFilters) this.poolFilters.selectedIndexes = [];
     this.clearDateRange();
   }

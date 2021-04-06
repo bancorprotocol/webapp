@@ -65,7 +65,6 @@
             <b-dropdown
               :ref="'dropdown_' + positionFilters.id"
               :key="positionFilters.id"
-              :text="positionFilters.items[positionFilters.selectedIndex].title"
               :variant="
                 !positionsFiltering()
                   ? darkMode
@@ -87,7 +86,10 @@
               <template #button-content>
                 <div class="d-flex justify-content-between align-items-center">
                   {{
-                    positionFilters.items[positionFilters.selectedIndex].title
+                    positionFilters.selectedIndex === -1
+                      ? $t("all_positions")
+                      : positionFilters.items[positionFilters.selectedIndex]
+                          .title
                   }}
                   <font-awesome-icon
                     :icon="positionsFiltering() ? 'times' : 'caret-down'"
@@ -125,7 +127,7 @@
                   : 'active-light'
               "
               :block="true"
-              class="d-none d-lg-inline"
+              class="d-none d-lg-inline limited-dropdown"
               toggle-class="block-rounded"
               :menu-class="
                 darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
@@ -156,16 +158,16 @@
                 stacked
               >
                 <b-form-checkbox
-                  class="d-flex align-items-center ml-2 my-2"
+                  class="d-flex align-items-center my-3 ml-3"
                   :class="darkMode ? 'checkbox-dark' : 'checkbox-light'"
                   v-for="(pool, index) in poolNames"
                   :key="pool.id"
                   :id="pool.id"
                   :value="index + 1"
                 >
-                  <pool-logos-overlapped :pool="pool" size="16" />
+                  <pool-logos-overlapped :pool="pool" size="16" class="ml-2" />
                   <div
-                    class="font-size-12 font-w500 ml-2"
+                    class="font-size-12 font-w500 ml-3"
                     :class="
                       indexSelected(index + 1)
                         ? darkMode
@@ -317,9 +319,8 @@ export default class ProtectionHome extends BaseComponent {
   searchClaim = "";
   positionFilters = {
     id: "position",
-    selectedIndex: 0,
+    selectedIndex: -1,
     items: [
-      { id: "0", title: i18n.t("all_positions") },
       { id: "1", title: i18n.t("fully_protected") },
       { id: "2", title: i18n.t("not_fully_protected") }
     ]
@@ -351,14 +352,14 @@ export default class ProtectionHome extends BaseComponent {
     const now = dayjs();
     let isFullyProtected: boolean = dayjs.unix(row.fullCoverage).isBefore(now);
     const selectedIndex = this.positionFilters.selectedIndex;
-    if (selectedIndex == 1) {
+    if (selectedIndex === 0) {
       row.collapsedData = row.collapsedData.filter(x => {
         const before = dayjs.unix(x.fullCoverage).isBefore(now);
         if (before) isFullyProtected = true;
         return before;
       });
       return isFullyProtected;
-    } else if (selectedIndex == 2) {
+    } else if (selectedIndex === 1) {
       row.collapsedData = row.collapsedData.filter(x => {
         const before = dayjs.unix(x.fullCoverage).isBefore(now);
         if (!before) isFullyProtected = false;
@@ -419,7 +420,7 @@ export default class ProtectionHome extends BaseComponent {
     this.modal = true;
   }
   positionsFiltering() {
-    return this.positionFilters.selectedIndex !== 0;
+    return this.positionFilters.selectedIndex !== -1;
   }
   poolsFiltering() {
     return this.poolFilters.selectedIndexes.length !== 0;
@@ -431,7 +432,7 @@ export default class ProtectionHome extends BaseComponent {
     return this.poolFilters.selectedIndexes.includes(index);
   }
   clearPositions() {
-    this.positionFilters.selectedIndex = 0;
+    this.positionFilters.selectedIndex = -1;
   }
   clearPools() {
     this.poolFilters.selectedIndexes = [];
