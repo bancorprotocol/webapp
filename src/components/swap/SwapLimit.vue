@@ -566,6 +566,7 @@ export default class SwapLimit extends BaseTxAction {
       ? Number(this.custom) / 100
       : Number(this.percentages[this.selectedPercentage]) / 100;
     this.limitRate = (Number(this.initialRate) * (1 + percentage)).toString();
+    this.userSettedRate = true;
     this.checkAlerts();
   }
 
