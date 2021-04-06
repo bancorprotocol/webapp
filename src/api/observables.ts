@@ -25,7 +25,10 @@ import { getNetworkVariables } from "./config";
 import dayjs from "dayjs";
 import { RegisteredContracts } from "@/types/bancor";
 import { compareString, findOrThrow } from "./helpers";
-import { buildStakingRewardsContract } from "./eth/contractTypes";
+import {
+  buildLiquidityProtectionContract,
+  buildStakingRewardsContract
+} from "./eth/contractTypes";
 import { filterAndWarn } from "./pureHelpers";
 
 interface DataCache<T> {
@@ -155,8 +158,12 @@ export const liquidityProtection$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
-export const liquidityProtectionStore$ = contractAddresses$.pipe(
-  pluck("LiquidityProtectionStore"),
+export const liquidityProtectionStore$ = liquidityProtection$.pipe(
+  switchMapIgnoreThrow(async liquidityProtection => {
+    const contract = buildLiquidityProtectionContract(liquidityProtection);
+    const store = await contract.methods.store().call();
+    return store;
+  }),
   distinctUntilChanged(compareString),
   shareReplay(1)
 );
@@ -281,6 +288,5 @@ onLogin$.pipe(withLatestFrom(apiData$)).subscribe(([userAddress, apiData]) => {
     vxm.ethBancor.fetchAndSetTokenBalances(allTokens);
   }
 });
-
 
 export const selectedPromptReceiver$ = new Subject<string>();
