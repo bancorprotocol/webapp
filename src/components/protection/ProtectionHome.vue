@@ -2,12 +2,12 @@
   <div>
     <b-row>
       <b-col cols="12" class="mb-5">
-        <p
-          class="font-size-14 font-w400 my-3"
-          :class="darkMode ? 'text-dark' : 'text-light'"
+        <content-block
+          :title="$t('protect_tokens')"
+          :rounded="false"
+          :padding="false"
         >
-          {{ $t("protect_tokens") }}
-        </p>
+        </content-block>
       </b-col>
 
       <b-col lg="6">

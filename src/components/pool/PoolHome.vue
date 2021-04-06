@@ -2,12 +2,12 @@
   <div>
     <b-row>
       <b-col cols="12" class="mb-5">
-        <p
-          class="font-size-14 font-w400 my-3"
-          :class="darkMode ? 'text-dark' : 'text-light'"
+        <content-block
+          :title="$t('manage_pool_tokens')"
+          :rounded="false"
+          :padding="false"
         >
-          {{ $t("manage_pool_tokens") }}
-        </p>
+        </content-block>
       </b-col>
       <b-col cols="12">
         <pool-token />
@@ -19,10 +19,12 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import PoolToken from "@/components/pool/PoolToken.vue";
+import ContentBlock from "@/components/common/ContentBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 @Component({
   components: {
-    PoolToken
+    PoolToken,
+    ContentBlock
   }
 })
 export default class PoolHome extends BaseComponent {}
