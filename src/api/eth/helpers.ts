@@ -3,6 +3,7 @@ import { isAddress } from "web3-utils";
 import { web3 } from "@/api/web3";
 import { compareString, sortAlongSide } from "../helpers";
 
+
 const addZeros = (numberOfZeros: number, noLeadingZeros: string) => {
   const zeros = [...Array(numberOfZeros)].map(() => "0");
   const res = ["0", "x", ...zeros, ...noLeadingZeros.split("").slice(2)].join(

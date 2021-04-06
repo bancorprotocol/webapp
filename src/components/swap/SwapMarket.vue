@@ -139,6 +139,7 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import { addNotification } from "@/components/compositions/notifications";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 import { compareString } from "@/api/helpers";
+import wait from "waait";
 
 @Component({
   components: {
@@ -197,33 +198,26 @@ export default class SwapAction extends BaseTxAction {
     return vxm.bancor.slippageTolerance;
   }
 
-  inverseRate = false;
+  inverseRate = true;
 
   get rate() {
     let rate = "";
-    switch (this.inverseRate) {
-      case false: {
-        if (this.amount1 && this.amount2)
-          rate = this.prettifyNumber(
-            Number(this.amount1) / Number(this.amount2)
-          );
-        else rate = this.prettifyNumber(1 / Number(this.initialRate));
-        return (
-          "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
-        );
+    if (this.inverseRate) {
+      if (this.amount1 && this.amount2)
+        rate = this.prettifyNumber(Number(this.amount2) / Number(this.amount1));
+      else {
+        rate = this.prettifyNumber(Number(this.initialRate));
       }
-      default: {
-        if (this.amount1 && this.amount2)
-          rate = this.prettifyNumber(
-            Number(this.amount2) / Number(this.amount1)
-          );
-        else {
-          rate = this.prettifyNumber(Number(this.initialRate));
-        }
-        return (
-          "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
-        );
-      }
+      return (
+        "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
+      );
+    } else {
+      if (this.amount1 && this.amount2)
+        rate = this.prettifyNumber(Number(this.amount1) / Number(this.amount2));
+      else rate = this.prettifyNumber(1 / Number(this.initialRate));
+      return (
+        "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
+      );
     }
   }
 
@@ -311,7 +305,6 @@ export default class SwapAction extends BaseTxAction {
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
-      console.log(success);
       this.txMeta.showTxModal = false;
       addNotification({
         title: this.$tc("notifications.add.swap.title"),
@@ -399,6 +392,7 @@ export default class SwapAction extends BaseTxAction {
 
   async calculateRate() {
     this.rateLoading = true;
+    await wait(1000);
     try {
       const reward = await vxm.bancor.getReturn({
         from: {
@@ -465,6 +459,8 @@ export default class SwapAction extends BaseTxAction {
     await this.calculateRate();
   }
 
+  interval: any = null;
+
   async mounted() {
     if (this.$route.query.to && this.$route.query.from)
       await this.onTokenChange(this.$route.query);
@@ -479,6 +475,17 @@ export default class SwapAction extends BaseTxAction {
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.replace({ name: "Swap", query: defaultQuery });
     }
+
+    await this.calculateRate();
+
+    this.interval = setInterval(async () => {
+      await this.calculateRate();
+      if (this.amount1) await this.updatePriceReturn(this.amount1);
+    }, 15000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 }
 </script>

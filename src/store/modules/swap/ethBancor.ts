@@ -216,7 +216,7 @@ import {
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
-import { NewPool, WelcomeData, Pool } from "@/api/eth/bancorApi";
+import { NewPool, Pool, WelcomeData } from "@/api/eth/bancorApi";
 import { PoolProgram } from "../rewards";
 import { distinctArrayItem } from "@/api/observables/customOperators";
 import { immediateTokenMeta$ } from "@/api/observables";
@@ -2520,7 +2520,6 @@ export class EthBancorModule
     onHash?: (hash: string) => void;
     onConfirmation?: (hash: string) => void;
   }): Promise<string> {
-    console.log("received", tx);
     let adjustedGas: number | boolean = false;
     if (gas) {
       adjustedGas = gas;
@@ -6423,8 +6422,6 @@ export class EthBancorModule
     path: string[];
     amount: string;
   }): Promise<string> {
-    console.log("jan", this.contracts.BancorNetwork);
-    console.log(path);
     try {
       return await getReturnByPath({
         networkContract: this.contracts.BancorNetwork,
