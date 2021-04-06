@@ -43,17 +43,12 @@
           class="mb-2"
         />
         <div class="d-flex align-items-center mb-3">
-          <span
-            class="font-size-14 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-            style="white-space: nowrap"
-            >{{ `1 ${token1.symbol} =` }}</span
-          >
           <multi-input-field
             @input="rateCalcField()"
+            :prepend="`1 ${token1.symbol} =`"
             class="mx-2"
             v-model="limitRate"
-            :placeholder="rate"
+            :placeholder="`${prettifyNumber(initialRate)} ${token2.symbol}`"
             :append="$t('defined_rate')"
             :format="true"
             height="48"
@@ -215,8 +210,6 @@ import {
 } from "@/components/compositions/notifications";
 import { ethReserveAddress } from "@/api/eth/ethAbis";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
-import { Duration } from "dayjs/plugin/duration";
-import { Dayjs } from "dayjs";
 
 @Component({
   components: {
