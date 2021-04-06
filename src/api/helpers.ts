@@ -712,6 +712,13 @@ const wallets = [
   { walletName: "wallet.io", rpcUrl: RPC_URL }
 ];
 
+const walletChecks = [
+  { checkName: "derivationPath" },
+  { checkName: "accounts" },
+  { checkName: "connect" },
+  { checkName: "network" }
+];
+
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
   networkId: 1,
@@ -736,7 +743,8 @@ export const onboard = Onboard({
   },
   walletSelect: {
     wallets
-  }
+  },
+  walletCheck: walletChecks
 });
 
 export const fetchReserveBalance = async (
