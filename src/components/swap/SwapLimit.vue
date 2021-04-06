@@ -651,10 +651,9 @@ export default class SwapLimit extends BaseTxAction {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
-    this.checkAlerts();
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
-    this.checkAlerts();
+    this.changeLimitRateByPercentage();
   }
 
   async mounted() {
@@ -671,8 +670,6 @@ export default class SwapLimit extends BaseTxAction {
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.replace({ name: "SwapLimit", query: defaultQuery });
     }
-    await this.calculateRate();
-    this.changeLimitRateByPercentage();
   }
 }
 </script>
