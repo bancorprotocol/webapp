@@ -18,6 +18,7 @@
         </div>
       </b-input-group-prepend>
       <b-form-input
+        @blur.native="blur"
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
           fontSizeClass
@@ -81,6 +82,7 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: "error" }) alertVariant?: string;
   @Prop() autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
+  @Prop() blurFunc?: Function;
 
   get styleInput() {
     const height = "height: " + this.height + "px;";
@@ -108,6 +110,10 @@ export default class MultiInputField extends BaseComponent {
     if (this.fontSize === "sm") return "font-size-12";
     else if (this.fontSize === "md") return "font-size-14";
     else return "font-size-16";
+  }
+
+  blur() {
+    if (this.blurFunc) this.blurFunc();
   }
 
   formatter(text: String) {

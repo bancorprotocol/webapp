@@ -1,10 +1,12 @@
 <template>
   <div>
     <token-input-field
+      id="amount1"
       :label="$t('from')"
       v-model="amount1"
       @input="amount1CalcField()"
       @select="selectFromToken"
+      :blur-func="() => setlastChangedField(1, amount1)"
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
@@ -22,10 +24,12 @@
     </div>
 
     <token-input-field
+      id="amount2"
       :label="$t('to_estimated')"
       v-model="amount2"
       @input="amount2CalcField()"
       @select="selectToToken"
+      :blur-func="() => setlastChangedField(2, amount2)"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
@@ -44,8 +48,10 @@
         />
         <div class="d-flex align-items-center mb-3">
           <multi-input-field
+            id="limit"
             @input="rateCalcField()"
             :prepend="`1 ${token1.symbol} =`"
+            :blur-func="() => setlastChangedField(3, limitRate)"
             class="w-100 mx-2"
             v-model="limitRate"
             :placeholder="`${prettifyNumber(initialRate)} ${token2.symbol}`"
@@ -234,7 +240,12 @@ import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
 import dayjs from "@/utils/dayjs";
-import { compareString, durationTimer, formatDuration } from "@/api/helpers";
+import {
+  compareString,
+  durationTimer,
+  formatDuration,
+  calculatePercentageChange
+} from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -267,29 +278,6 @@ export default class SwapLimit extends BaseTxAction {
   selectedPercentage = 1;
   custom = "";
 
-  get durationTimer() {
-    return durationTimer(this.selectedDuration);
-  }
-
-  get modalTitle() {
-    if (this.isDepositingWeth) return "Confirm WETH deposit";
-    else return this.$t("modal.limit_order.title");
-  }
-
-  get modalIcon() {
-    if (this.isDepositingWeth) return "arrow-to-bottom";
-    else return "file-alt";
-  }
-
-  setPercentage(index: number) {
-    this.selectedPercentage = index;
-    this.custom = "";
-    this.changeLimitRateByPercentage();
-  }
-  setCustomPercentage() {
-    this.changeLimitRateByPercentage(this.custom ? true : false);
-  }
-
   durationList: plugin.Duration[] = [
     dayjs.duration({ minutes: 10 }),
     dayjs.duration({ hours: 1 }),
@@ -310,8 +298,7 @@ export default class SwapLimit extends BaseTxAction {
   rateVariant = "";
 
   rateLoading = false;
-  userSettedRate = false;
-  amount1LastChanged = true;
+  changedFields = [3];
   initialRate = "";
   limitRate = "";
   numeral = numeral;
@@ -372,6 +359,29 @@ export default class SwapLimit extends BaseTxAction {
   get swapButtonLabel() {
     if (!this.amount1) return i18n.t("enter_amount");
     else return i18n.t("swap");
+  }
+
+  get durationTimer() {
+    return durationTimer(this.selectedDuration);
+  }
+
+  get modalTitle() {
+    if (this.isDepositingWeth) return "Confirm WETH deposit";
+    else return this.$t("modal.limit_order.title");
+  }
+
+  get modalIcon() {
+    if (this.isDepositingWeth) return "arrow-to-bottom";
+    else return "file-alt";
+  }
+
+  setPercentage(index: number) {
+    this.selectedPercentage = index;
+    this.custom = "";
+    this.changeLimitRateByPercentage();
+  }
+  setCustomPercentage() {
+    this.changeLimitRateByPercentage(this.custom ? true : false);
   }
 
   formatDuration(duration: plugin.Duration) {
@@ -536,28 +546,46 @@ export default class SwapLimit extends BaseTxAction {
     this.limitRate = new BigNumber(this.amount2)
       .div(new BigNumber(this.amount1))
       .toString();
+    this.changePercentageByLimitRate();
   }
 
   amount1CalcField() {
-    if (this.amount1) {
-      if (this.amount2) {
-        if (this.userSettedRate) this.calcAmount2();
-        else this.calcLimitRate();
-      } else if (this.limitRate) this.calcAmount2();
+    if (this.amount1 && this.changedFields.length !== 0) {
+      const lastChangedField = this.changedFields[
+        this.changedFields.length - 1
+      ];
+      if (this.limitRate && lastChangedField === 3) this.calcAmount2();
+      else if (this.amount2 && lastChangedField === 2) this.calcLimitRate();
     }
-    this.amount1LastChanged = true;
     this.checkAlerts();
   }
 
   amount2CalcField() {
-    if (this.amount2) {
-      if (this.amount1)
-        if (this.userSettedRate) this.calcAmount1();
-        else this.calcLimitRate();
-      else if (this.limitRate) this.calcAmount1();
+    if (this.amount2 && this.changedFields.length !== 0) {
+      const lastChangedField = this.changedFields[
+        this.changedFields.length - 1
+      ];
+      if (this.limitRate && lastChangedField === 3) this.calcAmount1();
+      else if (this.amount1 && lastChangedField === 1) this.calcLimitRate();
     }
-    this.amount1LastChanged = false;
     this.checkAlerts();
+  }
+
+  rateCalcField() {
+    if (this.limitRate && this.changedFields.length !== 0) {
+      const lastChangedField = this.changedFields[
+        this.changedFields.length - 1
+      ];
+      if (this.amount2 && lastChangedField === 2) this.calcAmount1();
+      else if (this.amount1 && lastChangedField === 1) this.calcAmount2();
+    }
+    this.changePercentageByLimitRate();
+    this.checkAlerts();
+  }
+
+  setlastChangedField(field: number, txt: string) {
+    this.changedFields = this.changedFields.filter(x => x !== field);
+    if (txt) this.changedFields.push(field);
   }
 
   changeLimitRateByPercentage(custom: boolean = false) {
@@ -565,16 +593,16 @@ export default class SwapLimit extends BaseTxAction {
       ? Number(this.custom) / 100
       : Number(this.percentages[this.selectedPercentage]) / 100;
     this.limitRate = (Number(this.initialRate) * (1 + percentage)).toString();
-    this.userSettedRate = true;
+    this.setlastChangedField(3, this.limitRate);
     this.checkAlerts();
   }
 
-  rateCalcField() {
-    if (this.limitRate) {
-      this.userSettedRate = true;
-      if (this.amount1 && this.amount1LastChanged) this.calcAmount2();
-      else if (this.amount2 && !this.amount1LastChanged) this.calcAmount1();
-    } else this.userSettedRate = false;
+  changePercentageByLimitRate() {
+    this.custom = calculatePercentageChange(
+      Number(this.limitRate),
+      Number(this.initialRate)
+    ).toString();
+
     this.checkAlerts();
   }
 

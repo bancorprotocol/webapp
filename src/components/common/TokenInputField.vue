@@ -17,6 +17,7 @@
 
     <b-input-group>
       <b-form-input
+        @blur.native="blur"
         type="text"
         v-model="tokenAmount"
         style="border-right: 0 !important"
@@ -121,6 +122,7 @@ export default class TokenInputField extends BaseComponent {
   @Prop() tokens!: ViewModalToken[];
   @Prop() pools!: ViewRelay[];
   @Prop({ default: false }) allowTokenAdd!: boolean;
+  @Prop() blurFunc?: Function;
 
   get dropdown() {
     return (
@@ -131,6 +133,10 @@ export default class TokenInputField extends BaseComponent {
 
   get defaultImage() {
     return defaultImage;
+  }
+
+  blur() {
+    if (this.blurFunc) this.blurFunc();
   }
 
   @Emit()
