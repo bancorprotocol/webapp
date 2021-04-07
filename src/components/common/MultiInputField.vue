@@ -4,8 +4,9 @@
     <b-input-group>
       <b-input-group-prepend v-if="prepend">
         <div
-          class="rounded-left d-flex align-items-center pl-2 font-size-12 font-w500"
+          class="rounded-left d-flex align-items-center font-size-12 font-w500"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
+          style="padding-left: 12px"
           :style="stylePrepend"
         >
           <span v-if="prepend !== 'search'">{{ prepend }}</span>
@@ -30,7 +31,7 @@
         :autofocus="autofocus"
         :formatter="format ? formatter : null"
       />
-      <b-input-group-append v-if="append || clear">
+      <b-input-group-append v-if="append || clear || appendSlot">
         <div
           class="rounded-right d-flex align-items-center pr-2 pl-2 font-size-12 font-w500"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
@@ -39,6 +40,9 @@
           <div v-if="append" class="pr-2">
             {{ append }}
           </div>
+
+          <slot v-if="appendSlot"></slot>
+
           <font-awesome-icon
             v-if="clear && text"
             class="cursor"
@@ -82,6 +86,7 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: "error" }) alertVariant?: string;
   @Prop() autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
+  @Prop({ default: false }) appendSlot!: boolean;
   @Prop() blurFunc?: Function;
 
   get styleInput() {
@@ -89,7 +94,7 @@ export default class MultiInputField extends BaseComponent {
     const borderRight = "border-right: 0 !important;";
     const borderLeft = "border-left: 0 !important;";
     let border = "";
-    if (this.append || this.clear) border += borderRight;
+    if (this.append || this.clear || this.appendSlot) border += borderRight;
     if (this.prepend) border += borderLeft;
     return height + border;
   }

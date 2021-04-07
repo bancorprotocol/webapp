@@ -217,6 +217,17 @@
     color: $text-color-light !important;
   }
 
+  &.btn-outline-alt-light {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-alt-dark {
+    color: $light-white !important;
+    border-color: $light-white !important;
+    background-color: $bg-body-dark !important;
+  }
+
   &.btn-outline-primary:hover {
     background-color: $bg-btn-outline-light !important;
     color: $text-color-light !important;

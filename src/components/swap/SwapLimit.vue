@@ -52,17 +52,27 @@
             @input="rateCalcField()"
             :prepend="`1 ${token1.symbol} =`"
             :blur-func="() => setlastChangedField(3, limitRate)"
-            class="w-100 mx-2"
+            class="w-100"
             v-model="limitRate"
             :placeholder="`${prettifyNumber(initialRate)} ${token2.symbol}`"
             :format="true"
+            :append-slot="true"
             height="48"
-          />
-          <span
-            class="font-size-14 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-            >{{ token2.symbol }}</span
           >
+            <div class="d-flex align-items-center" style="padding-right: 6px">
+              <img
+                class="img-avatar img-avatar32 border-colouring bg-white"
+                :src="token2.logo"
+                alt="Token Logo"
+              />
+              <span
+                class="font-size-14 font-w600 pl-2"
+                :class="darkMode ? 'text-dark' : 'text-light'"
+              >
+                {{ token2.symbol }}
+              </span>
+            </div>
+          </multi-input-field>
         </div>
         <div class="d-flex justify-content-between my-3">
           <div v-for="(x, index) in percentages" :key="x" style="width: 80px">
