@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-row>
-      <b-col cols="12" class="mb-5">
+      <b-col cols="12">
         <content-block
           :title="$t('protect_tokens')"
-          :rounded="false"
+          :tabs="true"
           :padding="false"
         >
         </content-block>

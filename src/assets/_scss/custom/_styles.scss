@@ -328,6 +328,8 @@
 .large-tabs-light {
   .nav-tabs {
     border: white;
+    font-size: 20px !important;
+    font-weight: 600 !important;
   }
   .nav-tabs .nav-link {
     color: $text-muted-light;
@@ -344,6 +346,8 @@
 .large-tabs-dark {
   .nav-tabs {
     border: $bg-body-dark;
+    font-size: 20px !important;
+    font-weight: 600 !important;
   }
   .nav-tabs .nav-link {
     color: $text-muted-dark;
