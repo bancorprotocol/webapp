@@ -119,7 +119,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
-        key: "swap",
+        key: "data",
         feature: "Liquidity"
       }
     },

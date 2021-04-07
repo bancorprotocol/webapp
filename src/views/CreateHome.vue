@@ -215,7 +215,7 @@ export default class CreateHomeNew extends BaseTxAction {
   back() {
     const atStart = this.step == 1;
     if (atStart) {
-      this.$router.push({ name: "Portfolio" });
+      this.$router.push({ name: "Data" });
     } else {
       this.prevStep();
     }

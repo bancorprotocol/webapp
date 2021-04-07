@@ -1,6 +1,5 @@
 <template>
   <data-table
-    :createPool="true"
     :fields="fields"
     :items="items"
     :filter="filter"
