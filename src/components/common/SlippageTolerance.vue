@@ -13,6 +13,7 @@
           v-model="custom"
           @input="setCustomSlippage"
           :placeholder="$t('custom')"
+          :formatter="formatter"
         />
         <b-input-group-append>
           <div
@@ -61,6 +62,16 @@ export default class SlippageTolerance extends BaseComponent {
     if (this.currentSlippage === inDecimal) return "primary";
     else if (this.darkMode) return "outline-gray-dark";
     else return "outline-gray";
+  }
+
+  formatter(text: String) {
+    if (text === undefined) text = this.custom.toString();
+
+    return text
+      .replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
   }
 
   @Watch("currentSlippage")
