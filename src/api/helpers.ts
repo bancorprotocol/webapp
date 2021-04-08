@@ -1302,17 +1302,14 @@ export const defaultTableSort = (
   sortZero: boolean = false
 ) => {
   const value = row[sortBy];
-  const isEmpty =
-    value === null ||
-    value === undefined ||
-    isNaN(value) ||
-    (!sortZero && (value === 0 || value === "0"));
-  if (isEmpty) return null;
+  if (!value || isNaN(value) || (!sortZero && (value === 0 || value === "0")))
+    return null;
   if (isFinite(value)) {
     const number = new BigNumber(value);
     const isBigNumber = BigNumber.isBigNumber(number);
     if (isBigNumber) return number.toNumber();
   }
+
   return value;
 };
 

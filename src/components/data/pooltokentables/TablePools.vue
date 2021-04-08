@@ -164,7 +164,7 @@ export default class TablePools extends BaseComponent {
               label: "APR",
               key: "feesVsLiquidity",
               tooltip: i18n.tc("fees_24"),
-              minWidth: "83px"
+              minWidth: "80px"
             }
           ]
         : []),
