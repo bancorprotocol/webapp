@@ -95,8 +95,10 @@
             id="custom"
             v-model="custom"
             @input="setCustomPercentage"
-            style="width: 80px"
+            style="width: 110px"
             :placeholder="$t('custom')"
+            :padding="false"
+            append="%"
             height="24"
             :format="true"
           />
@@ -589,8 +591,6 @@ export default class SwapLimit extends BaseTxAction {
       if (this.amount2 && lastChangedField === 2) this.calcAmount1();
       else if (this.amount1 && lastChangedField === 1) this.calcAmount2();
     }
-    this.changePercentageByLimitRate();
-    this.checkAlerts();
   }
 
   setlastChangedField(field: number, txt: string) {
@@ -603,15 +603,17 @@ export default class SwapLimit extends BaseTxAction {
       ? Number(this.custom) / 100
       : Number(this.percentages[this.selectedPercentage]) / 100;
     this.limitRate = (Number(this.initialRate) * (1 + percentage)).toString();
-    this.setlastChangedField(3, this.limitRate);
     this.checkAlerts();
   }
 
   changePercentageByLimitRate() {
-    this.custom = calculatePercentageChange(
+    const percentage = calculatePercentageChange(
       Number(this.limitRate),
       Number(this.initialRate)
-    ).toString();
+    );
+    const index = this.percentages.indexOf(percentage);
+    if (index === -1) this.custom = percentage.toString();
+    else this.selectedPercentage = index;
 
     this.checkAlerts();
   }
