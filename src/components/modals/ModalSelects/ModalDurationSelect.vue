@@ -4,7 +4,7 @@
       <b-col cols="12" class="text-center">
         <font-awesome-icon
           :icon="['far', 'clock']"
-          class="text-primary"
+          class="icon-primary"
           size="3x"
         />
         <div
