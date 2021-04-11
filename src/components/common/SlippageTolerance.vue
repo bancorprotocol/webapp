@@ -11,6 +11,7 @@
           class="text-right custom-input-field pr-1"
           :class="formInputStyles"
           v-model="custom"
+          inputmode="decimal"
           @input="setCustomSlippage"
           :placeholder="$t('custom')"
           :formatter="formatter"
