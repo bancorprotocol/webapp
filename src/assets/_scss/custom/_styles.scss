@@ -413,3 +413,8 @@
     overflow-y: auto;
   }
 }
+
+.custom-input-active {
+  background-color: $primary !important;
+  color: white !important;
+}

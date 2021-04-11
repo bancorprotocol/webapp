@@ -22,9 +22,9 @@
         @blur.native="blur"
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
-          fontSizeClass
+          fontSizeClass,
+          active ? 'custom-input-active' : ''
         ]"
-        :dir="padding ? 'ltr' : 'rtl'"
         v-model="text"
         :placeholder="placeholder"
         :type="type"
@@ -91,6 +91,7 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: "error" }) alertVariant?: string;
   @Prop() autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
+  @Prop({ default: false }) active!: boolean;
   @Prop({ default: false }) appendSlot!: boolean;
   @Prop() blurFunc?: Function;
 
