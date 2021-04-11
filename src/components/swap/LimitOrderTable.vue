@@ -8,7 +8,12 @@
       class="mt-3"
     >
       <div class="d-flex justify-content-between py-2 px-3">
-        <h3 class="m-0 p-0 my-2 font-size-14 font-w600">Limit Orders</h3>
+        <h3
+          class="m-0 p-0 my-2 font-size-16 font-w600"
+          :class="darkMode ? 'text-dark' : 'text-light'"
+        >
+          Limit Orders
+        </h3>
 
         <div class="d-flex">
           <div class="d-flex mr-3">
