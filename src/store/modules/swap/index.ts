@@ -134,6 +134,11 @@ export class BancorModule extends VuexModule.With({
     return vxm[`${this.currentNetwork}Bancor`]["moreTokensAvailable"];
   }
 
+  get tokenBalance() {
+    // @ts-ignore
+    return vxm[`${this.currentNetwork}Bancor`]["tokenBalance"];
+  }
+
   get loadingTokens() {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["loadingTokens"];

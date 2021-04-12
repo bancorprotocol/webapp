@@ -328,8 +328,6 @@ export interface ViewReserve {
   logo: string[];
   symbol: string;
   contract: string;
-  balance?: string;
-  reserveWeight: number;
 }
 
 export interface ViewGroupedPositions {

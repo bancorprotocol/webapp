@@ -652,11 +652,11 @@ export default class SwapLimit extends BaseTxAction {
   }
 
   get balance1() {
-    return vxm.bancor.token(this.token1.id).balance ?? "0";
+    return vxm.bancor.tokenBalance(this.token1.id)?.balance ?? "0";
   }
 
   get balance2() {
-    return vxm.bancor.token(this.token2.id).balance ?? "0";
+    return vxm.bancor.tokenBalance(this.token2.id).balance ?? "0";
   }
 
   get usd1() {
