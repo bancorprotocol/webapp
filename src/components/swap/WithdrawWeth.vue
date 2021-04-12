@@ -68,8 +68,8 @@ export default class WithdrawWeth extends BaseTxAction {
   percentage = "50";
 
   get balance(): string {
-    const wethToken = vxm.bancor.token(wethTokenContractAddress);
-    return wethToken.balance ?? "0";
+    const wethToken = vxm.ethBancor.tokenBalance(wethTokenContractAddress);
+    return wethToken?.balance || "0";
   }
 
   get output() {
