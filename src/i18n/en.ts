@@ -473,7 +473,8 @@ export const en = {
     "The rate is lower than market rate, you can get a better rate on market tab",
   rate_above_market:
     "The rate is too high above market rate and will likely not be fulfilled",
-  exe_defined_rate:"Executing swap on defined rate",
-  exe_market_rate:"Executing swap on current market rate",
-  rate_swap_tokens:"Select the rate at which you would like to sell your tokens"
+  exe_defined_rate: "Executing swap on defined rate",
+  exe_market_rate: "Executing swap on current market rate",
+  rate_swap_tokens:
+    "Select the rate at which you would like to sell your tokens"
 };

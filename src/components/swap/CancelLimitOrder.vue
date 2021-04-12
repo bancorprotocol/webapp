@@ -1,6 +1,7 @@
 <template>
   <div>
     <b-btn
+      v-if="orders.length > 0"
       @click="cancelAll()"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       size="sm"
@@ -149,6 +150,10 @@ export default class CancelLimitOrder extends BaseTxAction {
     }
   }
 
+  get orders() {
+    return vxm.ethBancor.limitOrders;
+  }
+
   async cancelAll() {
     this.limitOrder = null;
     this.openModal();
@@ -156,7 +161,7 @@ export default class CancelLimitOrder extends BaseTxAction {
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
 
-    const orderIds = vxm.ethBancor.limitOrders.map(x => x.id);
+    const orderIds = this.orders.map(x => x.id);
     try {
       this.txMeta.success = await vxm.ethBancor.cancelOrders({
         orderIds,

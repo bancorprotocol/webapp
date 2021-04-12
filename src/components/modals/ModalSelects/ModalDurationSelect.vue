@@ -2,7 +2,11 @@
   <modal-base :title="title" v-model="show" size="sm">
     <b-row class="d-flex justify-content-center">
       <b-col cols="12" class="text-center">
-        <font-awesome-icon icon="clock" class="text-primary" size="3x" />
+        <font-awesome-icon
+          :icon="['far', 'clock']"
+          class="icon-primary"
+          size="3x"
+        />
         <div
           :class="darkMode ? 'text-dark' : 'text-light'"
           class="font-size-20 font-w600"

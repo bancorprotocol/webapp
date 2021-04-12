@@ -236,6 +236,9 @@
     background-color: $bg-btn-outline-dark !important;
     color: $text-color-dark !important;
   }
+  &.btn-primary:focus {
+    box-shadow: none !important;
+  }
   &.btn-outline-light {
     color: $primary !important;
     border-color: $gray-placeholder !important;
@@ -412,4 +415,16 @@
     max-height: 250px;
     overflow-y: auto;
   }
+}
+
+.custom-input-active {
+  background-color: $primary !important;
+  color: white !important;
+}
+
+.icon-primary {
+  background-color: $primary !important;
+  border-radius: 36px !important;
+  border: 8px solid $primary !important;
+  color: white !important;
 }

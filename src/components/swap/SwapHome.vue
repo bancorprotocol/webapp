@@ -57,4 +57,8 @@ export default class SwapHome extends BaseComponent {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style lang="scss">
+.popover {
+  max-width: 300px;
+}
+</style>

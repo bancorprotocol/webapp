@@ -22,7 +22,8 @@
         @blur.native="blur"
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
-          fontSizeClass
+          fontSizeClass,
+          active ? 'custom-input-active' : ''
         ]"
         v-model="text"
         :placeholder="placeholder"
@@ -33,8 +34,11 @@
       />
       <b-input-group-append v-if="append || clear || appendSlot">
         <div
-          class="rounded-right d-flex align-items-center pr-2 pl-2 font-size-12 font-w500"
-          :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
+          class="rounded-right d-flex align-items-center font-size-12 font-w500"
+          :class="[
+            darkMode ? 'form-control-alt-dark' : 'form-control-alt-light',
+            padding ? 'pr-2 pl-2' : ''
+          ]"
           :style="styleAppend"
         >
           <div v-if="append" class="pr-2">
@@ -82,10 +86,12 @@ export default class MultiInputField extends BaseComponent {
   @Prop() append?: string;
   @Prop() prepend?: string;
   @Prop() alertMsg?: string;
+  @Prop({ default: true }) padding?: boolean;
   @Prop({ default: false }) format?: boolean;
   @Prop({ default: "error" }) alertVariant?: string;
   @Prop() autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
+  @Prop({ default: false }) active!: boolean;
   @Prop({ default: false }) appendSlot!: boolean;
   @Prop() blurFunc?: Function;
 

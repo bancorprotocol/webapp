@@ -91,15 +91,26 @@
               +{{ x }}%
             </b-btn>
           </div>
-          <multi-input-field
-            id="custom"
-            v-model="custom"
-            @input="setCustomPercentage"
-            style="width: 80px"
-            :placeholder="$t('custom')"
-            height="24"
-            :format="true"
-          />
+          <div class="d-flex align-items-center">
+            <multi-input-field
+              id="custom"
+              v-model="custom"
+              class="mr-1"
+              :active="custom"
+              @input="setCustomPercentage"
+              style="width: 80px; text-center"
+              :placeholder="$t('custom')"
+              :padding="false"
+              height="24"
+              :format="true"
+            />
+            <div
+              class="font-w400 font-size-12"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+            >
+              %
+            </div>
+          </div>
           <b-popover
             target="custom"
             triggers="hover"
@@ -543,59 +554,62 @@ export default class SwapLimit extends BaseTxAction {
   }
 
   calcAmount1() {
-    this.amount1 = new BigNumber(this.amount2)
-      .div(new BigNumber(this.limitRate))
-      .toString();
+    if (this.amount2 && this.limitRate)
+      this.amount1 = new BigNumber(this.amount2)
+        .div(new BigNumber(this.limitRate))
+        .toString();
   }
   calcAmount2() {
-    this.amount2 = new BigNumber(this.amount1)
-      .times(new BigNumber(this.limitRate))
-      .toString();
+    if (this.amount1 && this.limitRate)
+      this.amount2 = new BigNumber(this.amount1)
+        .times(new BigNumber(this.limitRate))
+        .toString();
   }
   calcLimitRate() {
-    this.limitRate = new BigNumber(this.amount2)
-      .div(new BigNumber(this.amount1))
-      .toString();
-    this.changePercentageByLimitRate();
+    if (this.amount1 && this.amount2) {
+      this.limitRate = new BigNumber(this.amount2)
+        .div(new BigNumber(this.amount1))
+        .toString();
+      this.changePercentageByLimitRate();
+    }
   }
 
   amount1CalcField() {
     if (this.amount1 && this.changedFields.length !== 0) {
-      const lastChangedField = this.changedFields[
-        this.changedFields.length - 1
-      ];
-      if (this.limitRate && lastChangedField === 3) this.calcAmount2();
-      else if (this.amount2 && lastChangedField === 2) this.calcLimitRate();
+      const lastChangedField = this.getLastChangedField(1);
+      if (lastChangedField === 3) this.calcAmount2();
+      else if (lastChangedField === 2) this.calcLimitRate();
     }
     this.checkAlerts();
   }
 
   amount2CalcField() {
     if (this.amount2 && this.changedFields.length !== 0) {
-      const lastChangedField = this.changedFields[
-        this.changedFields.length - 1
-      ];
-      if (this.limitRate && lastChangedField === 3) this.calcAmount1();
-      else if (this.amount1 && lastChangedField === 1) this.calcLimitRate();
+      const lastChangedField = this.getLastChangedField(2);
+      if (lastChangedField === 3) this.calcAmount1();
+      else if (lastChangedField === 1) this.calcLimitRate();
     }
     this.checkAlerts();
   }
 
   rateCalcField() {
     if (this.limitRate && this.changedFields.length !== 0) {
-      const lastChangedField = this.changedFields[
-        this.changedFields.length - 1
-      ];
-      if (this.amount2 && lastChangedField === 2) this.calcAmount1();
-      else if (this.amount1 && lastChangedField === 1) this.calcAmount2();
+      const lastChangedField = this.getLastChangedField(3);
+      if (lastChangedField === 2) this.calcAmount1();
+      else if (lastChangedField === 1) this.calcAmount2();
     }
-    this.changePercentageByLimitRate();
-    this.checkAlerts();
   }
 
   setlastChangedField(field: number, txt: string) {
     this.changedFields = this.changedFields.filter(x => x !== field);
     if (txt) this.changedFields.push(field);
+  }
+
+  getLastChangedField(field: number) {
+    let lastChangedField = this.changedFields[this.changedFields.length - 1];
+    if (lastChangedField === field && this.changedFields.length > 1)
+      lastChangedField = this.changedFields[this.changedFields.length - 2];
+    return lastChangedField;
   }
 
   changeLimitRateByPercentage(custom: boolean = false) {
@@ -604,15 +618,19 @@ export default class SwapLimit extends BaseTxAction {
       : Number(this.percentages[this.selectedPercentage]) / 100;
     this.limitRate = (Number(this.initialRate) * (1 + percentage)).toString();
     this.setlastChangedField(3, this.limitRate);
+    this.changePercentageByLimitRate();
+    this.rateCalcField();
     this.checkAlerts();
   }
 
   changePercentageByLimitRate() {
-    this.custom = calculatePercentageChange(
+    const percentage = calculatePercentageChange(
       Number(this.limitRate),
       Number(this.initialRate)
-    ).toString();
-
+    );
+    const index = this.percentages.indexOf(percentage);
+    if (index === -1) this.custom = percentage.toString();
+    else this.selectedPercentage = index;
     this.checkAlerts();
   }
 
