@@ -17,8 +17,8 @@
 
     <b-input-group>
       <b-form-input
-        type="text"
         v-model="tokenAmount"
+        inputmode="decimal"
         style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         :placeholder="$t('enter_amount')"
