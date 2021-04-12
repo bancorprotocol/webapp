@@ -1346,6 +1346,62 @@
     cssnano-preset-default "^4.0.0"
     postcss "^7.0.0"
 
+"@intlify/core-base@9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@intlify/core-base/-/core-base-9.1.4.tgz#e5f7fb632b7063c65c8485845c879ad5903a4a0f"
+  integrity sha512-zDc1amVaqpiS3c9mmEpwbatORjS1g+GhYXai/x58q4nsGw5EODwFEabP7jqNczVTP6Oc8o/C5sVwCbcgXoCwPQ==
+  dependencies:
+    "@intlify/devtools-if" "9.1.4"
+    "@intlify/message-compiler" "9.1.4"
+    "@intlify/message-resolver" "9.1.4"
+    "@intlify/runtime" "9.1.4"
+    "@intlify/shared" "9.1.4"
+    "@intlify/vue-devtools" "9.1.4"
+
+"@intlify/devtools-if@9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@intlify/devtools-if/-/devtools-if-9.1.4.tgz#ba79e9dec3b1347842c93008c6bf6dab80f6c170"
+  integrity sha512-fw/LF2vRxm9OxR6btnvO/weUEMzMLkioNMjSgy83bZLsL2SyOj0pm7LiwVxiTcf3vDykC5AhiACp2q8RdeVoZQ==
+  dependencies:
+    "@intlify/shared" "9.1.4"
+
+"@intlify/message-compiler@9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@intlify/message-compiler/-/message-compiler-9.1.4.tgz#dbf09979c8ce8b656a3ec6fb80ece15d298ff461"
+  integrity sha512-4YsNMmwKrvH0UjhhCC3f3jt2YFIDKTcXiqgbNFw0SRILDgu00yD0nIR+E+LRrC3wRjhYoaYecmoOhhfqsGm/mQ==
+  dependencies:
+    "@intlify/message-resolver" "9.1.4"
+    "@intlify/shared" "9.1.4"
+    source-map "0.6.1"
+
+"@intlify/message-resolver@9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@intlify/message-resolver/-/message-resolver-9.1.4.tgz#6e2ca85435e8d9fe18b8c8fcde66d8aff50676e1"
+  integrity sha512-FZ6dZrc44HaoqaAyP5fkYA3inGrfwDgB9ErPulG/lOzwQrBwnOws9vwB5GfuGEK9Q97ksT/4hXK0Vvn2r0L+zA==
+
+"@intlify/runtime@9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@intlify/runtime/-/runtime-9.1.4.tgz#e4a9e9bebd3ba82603f465648c4668855617ebc2"
+  integrity sha512-NRQkuKpyF61jduFE9CGulzlnmdOTKKHYVCMMaDlnzbVY2nfCElkozZbpCC13iBaDnksWmIab5THve8KewYkbQA==
+  dependencies:
+    "@intlify/message-compiler" "9.1.4"
+    "@intlify/message-resolver" "9.1.4"
+    "@intlify/shared" "9.1.4"
+
+"@intlify/shared@9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@intlify/shared/-/shared-9.1.4.tgz#0388515e5458fe1a2314c8f844db31bad26b8558"
+  integrity sha512-2rlkzmgj6fdSW8gsVtuw0vebMMGXGvRI3CwsshtAdShwea1bUuHtjJqze0ZhiVaRi87yAl4U5CaGC/t721TD5Q==
+
+"@intlify/vue-devtools@9.1.4":
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/@intlify/vue-devtools/-/vue-devtools-9.1.4.tgz#1dc42b86da9d273803ba85a295caf4e7c32cdfa2"
+  integrity sha512-nUWlNIAKuZY5enD5CqKMXWKN8Viv6g1tIP/rddESrJCJnXIIReRGVXA1wL0zFNlYLuslj6d+rQjuVWUKDJOAlg==
+  dependencies:
+    "@intlify/message-resolver" "9.1.4"
+    "@intlify/runtime" "9.1.4"
+    "@intlify/shared" "9.1.4"
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -3727,6 +3783,11 @@
   integrity sha512-M3jsyDBozQFqAPYdM4GCoVZEljIHsTVdcq5fZx9axpKz9ChIlQngxNf1ziLVaJvWX7T+MO1rVTEx6Xjgg/gUcQ==
   dependencies:
     tslib "^2.1.0"
+
+"@vue/devtools-api@^6.0.0-beta.7":
+  version "6.0.0-beta.7"
+  resolved "https://registry.yarnpkg.com/@vue/devtools-api/-/devtools-api-6.0.0-beta.7.tgz#1d306613c93b9a837a3776b1b9255502662f850f"
+  integrity sha512-mIfqX8ZF6s2ulelIzfxGk9sFoigpoeK/2/DlWrtBGWfvwaK3kR1P2bxNkZ0LbJeuKHfcRP6hGZtGist7nxUN9A==
 
 "@vue/eslint-config-prettier@^6.0.0":
   version "6.0.0"
@@ -17431,6 +17492,11 @@ source-map-url@^0.4.0:
   resolved "https://registry.yarnpkg.com/source-map-url/-/source-map-url-0.4.1.tgz#0af66605a745a5a2f91cf1bbf8a7afbc283dec56"
   integrity sha512-cPiFOTLUKvJFIg4SKVScy4ilPPW6rFgMgfuZJPNoDuMs3nC1HbMUycBoJw77xFIp6z1UJQJOfx6C9GMH80DiTw==
 
+source-map@0.6.1, source-map@^0.6.0, source-map@^0.6.1, source-map@~0.6.0, source-map@~0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
+  integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
+
 source-map@^0.4.2:
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.4.4.tgz#eba4f5da9c0dc999de68032d8b4f76173652036b"
@@ -17442,11 +17508,6 @@ source-map@^0.5.0, source-map@^0.5.6, source-map@^0.5.7:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
   integrity sha1-igOdLRAh0i0eoUyA2OpGi6LvP8w=
-
-source-map@^0.6.0, source-map@^0.6.1, source-map@~0.6.0, source-map@~0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
-  integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
 source-map@^0.7.3, source-map@~0.7.2:
   version "0.7.3"
@@ -19185,10 +19246,20 @@ vue-i18n-extract@1.0.2:
     is-valid-glob "^1.0.0"
     yargs "^13.2.2"
 
-vue-i18n@^8.17.0, vue-i18n@^8.24.2:
+vue-i18n@^8.17.0:
   version "8.24.2"
   resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-8.24.2.tgz#4bfba15a89c0697220b55f787bbcb05a461d5482"
   integrity sha512-+TkAPBQw4Cp2bQrSPtPNkhET7XcWYjjDt1UjWYQs+xbT41q5OAl1I3IZyhg0drjn1nlC1K0f8sLVB/nshUcF1Q==
+
+vue-i18n@^9.1.4:
+  version "9.1.4"
+  resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-9.1.4.tgz#066e1b8ceff138064f074ee500a617c0d4de29fc"
+  integrity sha512-cHedbwyialWgNnJ8xhKgjHTjwOe5zPcqNMqc69TiXLlK4up6HHRDAqIOX/k6wWb8wP1OA4kq74/pnA0GubcWyg==
+  dependencies:
+    "@intlify/core-base" "9.1.4"
+    "@intlify/shared" "9.1.4"
+    "@intlify/vue-devtools" "9.1.4"
+    "@vue/devtools-api" "^6.0.0-beta.7"
 
 vue-jest@^3.0.5, vue-jest@^3.0.7:
   version "3.0.7"
