@@ -424,7 +424,7 @@ export interface ModuleParam {
 export interface ViewModalToken {
   id: string;
   symbol: string;
-  img: string;
+  logo: string;
   balance?: string;
 }
 

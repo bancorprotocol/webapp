@@ -253,7 +253,7 @@ import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
-import { ViewAmount, ViewToken } from "@/types/bancor";
+import { ViewAmount, ViewModalToken, ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import numeral from "numeral";
@@ -277,6 +277,13 @@ import {
 } from "@/components/compositions/notifications";
 import { ethReserveAddress } from "@/api/eth/ethAbis";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
+
+const viewTokenToViewModalToken = (token: ViewToken): ViewModalToken => ({
+  id: token.id,
+  symbol: token.symbol,
+  logo: token.logo,
+  balance: token.balance
+});
 
 @Component({
   components: {
@@ -326,12 +333,38 @@ export default class SwapLimit extends BaseTxAction {
 
   modalSelectDuration = false;
 
-  get tokensFrom() {
-    return vxm.bancor.tokens.filter(
-      token =>
-        token.tradeSupported &&
-        (token.limitOrderAvailable || token.id === ethReserveAddress)
+  getWethToken(): ViewModalToken | undefined {
+    const wethToken = vxm.ethBancor.tokenMeta.find(token =>
+      compareString(token.id, wethTokenContractAddress)
     );
+    if (wethToken) {
+      const wethTokenBalance = vxm.ethBancor.tokenBalance(
+        wethTokenContractAddress
+      );
+      const wethTokenModal: ViewModalToken = {
+        id: wethTokenContractAddress,
+        balance: wethTokenBalance?.balance,
+        logo: wethToken.image,
+        symbol: wethToken.symbol
+      };
+      return wethTokenModal;
+    }
+  }
+
+  get tokensFrom() {
+    const tokens = vxm.bancor.tokens
+      .filter(
+        token =>
+          token.tradeSupported &&
+          (token.limitOrderAvailable || token.id === ethReserveAddress)
+      )
+      .map(viewTokenToViewModalToken);
+
+    const wethToken = this.getWethToken();
+    if (wethToken) {
+      tokens.push(wethToken);
+    }
+    return tokens;
   }
 
   get tokensTo() {
@@ -678,7 +711,11 @@ export default class SwapLimit extends BaseTxAction {
   }
 
   get usd1() {
-    const token1 = vxm.bancor.token(this.token1.id);
+    const tokenId =
+      this.token1.id == wethTokenContractAddress
+        ? ethReserveAddress
+        : this.token1.id;
+    const token1 = vxm.bancor.token(tokenId);
     if (token1.price && token1.balance)
       return new BigNumber(token1.price).times(token1.balance);
 
@@ -686,7 +723,12 @@ export default class SwapLimit extends BaseTxAction {
   }
 
   get usd2() {
-    const token2 = vxm.bancor.token(this.token2.id);
+    const tokenId =
+      this.token2.id == wethTokenContractAddress
+        ? ethReserveAddress
+        : this.token2.id;
+
+    const token2 = vxm.bancor.token(tokenId);
     if (token2.price && token2.balance)
       return new BigNumber(token2.price).times(token2.balance);
 
@@ -707,7 +749,18 @@ export default class SwapLimit extends BaseTxAction {
   @Watch("$route.query")
   async onTokenChange(query: any) {
     try {
-      this.token1 = await vxm.bancor.token(query.from);
+      const fromIsWeth = compareString(query.from, wethTokenContractAddress);
+
+      if (fromIsWeth) {
+        const wethToken = this.getWethToken();
+        if (wethToken) {
+          this.token1 = wethToken;
+        } else {
+          console.error("Failed finding weth token...");
+        }
+      } else {
+        this.token1 = await vxm.bancor.token(query.from);
+      }
     } catch (e) {
       this.token1 = vxm.bancor.tokens[0];
     }
