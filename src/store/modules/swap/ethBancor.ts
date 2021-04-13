@@ -1516,7 +1516,7 @@ export class EthBancorModule
       token => compareString(token.symbol, "BNT"),
       "failed finding BNT token in API data"
     );
-    const totalVolume24h = Number(apiData.total_volume_24h.usd || 0) || 0  
+    const totalVolume24h = Number(apiData.total_volume_24h.usd || 0) || 0;
     const totalLiquidityDepth = pools.reduce(
       (acc, item) => Number(item.liquidity.usd || 0) + acc,
       0
@@ -2670,9 +2670,10 @@ export class EthBancorModule
           const balanceString =
             balance && new BigNumber(balance.balance).toString();
 
-          const limitOrderAvailable = daoTokenAddresses.some(tokenAddress =>
-            compareString(token.dlt_id, tokenAddress)
-          );
+          const limitOrderAvailable =
+            daoTokenAddresses.some(tokenAddress =>
+              compareString(token.dlt_id, tokenAddress)
+            ) || compareString(token.dlt_id, ethReserveAddress);
 
           return {
             contract: token.dlt_id,
@@ -2694,28 +2695,30 @@ export class EthBancorModule
       )
       .sort(sortByLiqDepth);
 
-    const wEthBalance = tokenBalances.find(balance =>
-      compareString(balance.id, wethTokenContractAddress)
-    );
-    const wethBalanceString =
-      wEthBalance && new BigNumber(wEthBalance.balance).toString();
+    if (this.currentNetwork == EthNetworks.Mainnet) {
+      const wEthBalance = tokenBalances.find(balance =>
+        compareString(balance.id, wethTokenContractAddress)
+      );
+      const wethBalanceString =
+        wEthBalance && new BigNumber(wEthBalance.balance).toString();
 
-    const wethToken: ViewToken = {
-      ...(wEthBalance && { balance: wethBalanceString }),
-      contract: wethTokenContractAddress,
-      id: wethTokenContractAddress,
-      limitOrderAvailable: true,
-      tradeSupported: false,
-      logo: tokenMeta.find(meta =>
-        compareString(meta.contract, wethTokenContractAddress)
-      )!.image,
-      name: "WETH",
-      precision: 18,
-      symbol: "WETH",
-      liquidityProtection: false
-    };
+      const wethToken: ViewToken = {
+        ...(wEthBalance && { balance: wethBalanceString }),
+        contract: wethTokenContractAddress,
+        id: wethTokenContractAddress,
+        limitOrderAvailable: true,
+        tradeSupported: false,
+        logo: tokenMeta.find(meta =>
+          compareString(meta.contract, wethTokenContractAddress)
+        )!.image,
+        name: "WETH",
+        precision: 18,
+        symbol: "WETH",
+        liquidityProtection: false
+      };
 
-    finalTokens.push(wethToken);
+      finalTokens.push(wethToken);
+    }
 
     return finalTokens;
   }
@@ -6752,8 +6755,8 @@ export class EthBancorModule
     const txOrigin = await getTxOrigin();
 
     const orderData = {
-      fromAddress: from.id,
-      toAddress: to.id,
+      fromAddress: fromToken.contract,
+      toAddress: toToken.contract,
       fromAmountWei,
       toAmountWei,
       currentUser,
