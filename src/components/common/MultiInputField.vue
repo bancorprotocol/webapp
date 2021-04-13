@@ -93,6 +93,7 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: false }) clear!: boolean;
   @Prop({ default: false }) active!: boolean;
   @Prop({ default: false }) appendSlot!: boolean;
+  @Prop({ default: false }) centerText!: boolean;
   @Prop() blurFunc?: Function;
 
   get styleInput() {
@@ -102,6 +103,7 @@ export default class MultiInputField extends BaseComponent {
     let border = "";
     if (this.append || this.clear || this.appendSlot) border += borderRight;
     if (this.prepend) border += borderLeft;
+    if (this.centerText) border += "text-align:center;";
     return height + border;
   }
 
