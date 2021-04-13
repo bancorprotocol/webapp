@@ -7,7 +7,12 @@
   >
     <div class="bancor-icon-wrapper">
       <b-navbar-brand class="pb-1 brand-icon mb-1">
-        <router-link :to="{ name: 'Data' }">
+        <router-link
+          :to="{
+            name: 'Data',
+            params: { service: currentService }
+          }"
+        >
           <img :src="imgLogo()" height="35px" />
         </router-link>
       </b-navbar-brand>
@@ -67,6 +72,10 @@ export default class SideBarLeft extends Vue {
   visibleLabel: boolean = true;
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
+
+  get currentService() {
+    return this.$route.params.service ?? "eth";
+  }
 
   classSideBar(): string {
     const classNames: string[] = [];
