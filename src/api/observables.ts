@@ -1,68 +1,65 @@
 import { uniqWith } from "lodash";
-import { Subject, combineLatest, merge } from "rxjs";
+import { combineLatest, merge, Subject } from "rxjs";
 import {
   distinctUntilChanged,
   map,
-  startWith,
-  shareReplay,
   pluck,
   share,
-  withLatestFrom,
-  switchMap,
+  shareReplay,
+  startWith,
   throttleTime,
-  tap
+  withLatestFrom
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
-import { EthNetworks, web3 } from "./web3";
+import { EthNetworks } from "./web3";
 import { NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
 import { ppmToDec } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
 import {
-  compareString,
-  findOrThrow,
+  calculatePercentIncrease,
   calculateProgressLevel,
-  calculatePercentIncrease
+  compareString,
+  findOrThrow
 } from "./helpers";
 import {
   buildStakingRewardsContract,
   buildTokenContract
 } from "./eth/contractTypes";
-import { filterAndWarn } from "./pureHelpers";
+import { expandToken, filterAndWarn } from "./pureHelpers";
 import {
-  ProtectedLiquidityCalculated,
-  ProtectedLiquidity,
-  ViewProtectedLiquidity,
   MinimalPool,
-  PoolLiqMiningApr
+  PoolLiqMiningApr,
+  ProtectedLiquidity,
+  ProtectedLiquidityCalculated,
+  ViewProtectedLiquidity
 } from "@/types/bancor";
 import {
   fetchLiquidityProtectionSettings,
+  fetchLockedBalances,
   fetchMinLiqForMinting,
+  fetchPoolLiqMiningApr,
   fetchPositionIds,
   fetchPositionsMulti,
+  fetchRewardsMultiplier,
   fetchWhiteListedV1Pools,
-  pendingRewardRewards,
-  removeLiquidityReturn,
   getHistoricBalances,
   getPoolAprs,
-  fetchRewardsMultiplier,
-  fetchLockedBalances,
-  fetchPoolLiqMiningApr
+  pendingRewardRewards,
+  removeLiquidityReturn
 } from "./eth/contractWrappers";
-import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
 import { ethReserveAddress } from "./eth/ethAbis";
 import { MinimalPoolWithReserveBalances, shrinkToken } from "./eth/helpers";
 import BigNumber from "bignumber.js";
 import {
-  optimisticPositionIds,
-  switchMapIgnoreThrow,
   compareIdArray,
-  optimisticObservable,
   logger,
+  optimisticObservable,
+  optimisticPositionIds,
   RankItem,
-  rankPriority
+  rankPriority,
+  switchMapIgnoreThrow
 } from "./observables/customOperators";
 import { networkVars$, networkVersion$ } from "./observables/network";
 import { apiData$, minimalPools$, tokens$ } from "./observables/pools";
@@ -73,7 +70,6 @@ import {
   settingsContractAddress$,
   stakingRewards$
 } from "./observables/contracts";
-import { DataTypes, MultiCall, ShapeWithLabel } from "eth-multicall";
 
 const tokenMetaDataEndpoint =
   "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
@@ -532,15 +528,24 @@ const rewardMultipliers$ = combineLatest([
   switchMapIgnoreThrow(([unVerifiedPositions, currentUser, stakingReward]) => {
     const poolReserves = uniquePoolReserves(unVerifiedPositions);
     return Promise.all(
-      poolReserves.map(async poolReserve => ({
-        ...poolReserve,
-        multiplier: await fetchRewardsMultiplier(
-          poolReserve.poolToken,
-          poolReserve.reserveToken,
-          stakingReward,
-          currentUser
-        )
-      }))
+      poolReserves.map(async poolReserve => {
+        let multiplier = new BigNumber(0);
+        try {
+          multiplier = await fetchRewardsMultiplier(
+            poolReserve.poolToken,
+            poolReserve.reserveToken,
+            stakingReward,
+            currentUser
+          );
+        } catch (e) {
+          console.error("Failed to fetch rewards multiplier", e);
+        }
+
+        return {
+          ...poolReserve,
+          multiplier
+        };
+      })
     );
   }),
   startWith(undefined)
@@ -586,7 +591,7 @@ const fullPositions$ = combineLatest([
             pendingReserveRewards &&
             pendingReserveRewards.find(
               r =>
-                compareString(r.poolId, position.id) &&
+                compareString(r.poolId, position.poolToken) &&
                 compareString(r.reserveId, position.reserveToken)
             );
 
@@ -621,7 +626,7 @@ const fullPositions$ = combineLatest([
             ...(day && { oneDayDec: day.calculatedAprDec }),
             ...(week && { oneWeekDec: week.calculatedAprDec }),
             ...(multiplier && {
-              multiplier: multiplier.multiplier.toNumber()
+              rewardsMultiplier: multiplier.multiplier.toNumber()
             })
           };
         }
