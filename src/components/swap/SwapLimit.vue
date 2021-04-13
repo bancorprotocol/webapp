@@ -231,7 +231,9 @@
           class="font-size-14 mb-4 text-center"
           :class="darkMode ? 'text-muted-dark' : 'text-muted'"
         >
-          You will receive
+          {{
+            $t("modal.deposit_weth.info_text")
+          }}
         </p>
 
         <gray-border-block>

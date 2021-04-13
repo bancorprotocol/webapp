@@ -441,6 +441,9 @@ export const en = {
       receive: "Receive",
       rate: "Rate"
     },
+    deposit_weth: {
+      info_text: "You will receive"
+    },
     withdraw_weth: {
       title: "Confirm Withdraw",
       balance: "Available Balance",
