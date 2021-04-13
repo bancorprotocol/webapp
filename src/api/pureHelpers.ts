@@ -11,7 +11,7 @@ import {
 import BigNumber from "bignumber.js";
 import { partition } from "lodash";
 import { compareString } from "@/api/helpers";
-import sort from "fast-sort";
+import { sort } from 'fast-sort';
 import numeral from "numeral";
 import wait from "waait";
 
