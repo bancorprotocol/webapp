@@ -250,12 +250,22 @@ keeperTokens$.subscribe(token =>
 
 const limitOrdersSupported$ = combineLatest([limitOrders$, tokens$]).pipe(
   map(([orders, apiTokens]) =>
-    orders.filter(order => {
-      const tokensTraded = [order.order.makerToken, order.order.takerToken];
-      return tokensTraded.every(token =>
-        apiTokens.some(apiToken => compareString(token, apiToken.dlt_id))
-      );
-    })
+    filterAndWarn(
+      orders,
+      order => {
+        const tokensTraded = [order.order.makerToken, order.order.takerToken];
+        return (
+          tokensTraded.every(
+            token =>
+              apiTokens.some(apiToken =>
+                compareString(token, apiToken.dlt_id)
+              ) || compareString(token, wethTokenContractAddress)
+          ) &&
+          tokensTraded.every(token => !compareString(token, ethReserveAddress))
+        );
+      },
+      "because they are not included in API tokens"
+    )
   ),
   filter(orders => orders.length > 0)
 );
@@ -274,17 +284,21 @@ const viewLimitOrders$ = combineLatest([
   limitOrdersSupported$,
   immediateTokenMeta$
 ]).pipe(
-  map(([tokens, orders, tokenMeta]) =>
+  map(([keeperTokens, orders, tokenMeta]) =>
     orders.map(
       (order): ViewLimitOrder => {
-        const fromToken = findOrThrow(tokens, token =>
-          compareString(token.address, order.order.makerToken)
+        const fromToken = findOrThrow(
+          keeperTokens,
+          token => compareString(token.address, order.order.makerToken),
+          `failed finding ${order.order.makerToken} in list of tokens ${keeperTokens}`
         );
 
         const fromTokenImage = imageOrDefault(fromToken.address, tokenMeta);
 
-        const toToken = findOrThrow(tokens, token =>
-          compareString(token.address, order.order.takerToken)
+        const toToken = findOrThrow(
+          keeperTokens,
+          token => compareString(token.address, order.order.takerToken),
+          `failed finding ${order.order.takerToken} in the list of keeper tokens `
         );
         const toTokenImage = imageOrDefault(toToken.address, tokenMeta);
 
@@ -6648,6 +6662,11 @@ export class EthBancorModule
     return ids.map(
       (id): TokenPrecision => {
         if (compareString(id, wethTokenContractAddress)) {
+          return {
+            contract: wethTokenContractAddress,
+            precision: 18
+          };
+        } else if (compareString(id, ethReserveAddress)) {
           return {
             contract: wethTokenContractAddress,
             precision: 18

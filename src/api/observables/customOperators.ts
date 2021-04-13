@@ -79,7 +79,11 @@ export const logger = <T>(label: string, hideReturn = false) => (
         }
         console.log(
           `Logger (Next): (${difference} ms): ${label} returned ${
-            hideReturn ? "" : JSON.stringify(data)
+            hideReturn
+              ? Array.isArray(data)
+                ? `${data.length} elements`
+                : ""
+              : JSON.stringify(data)
           }`
         );
         difference = Date.now();

@@ -9,8 +9,6 @@ export const authenticated$ = authenticatedReceiver$.pipe(
   share()
 );
 
-authenticated$.subscribe(x => console.log(x, "was the derp"));
-
 const [onLoginNoType$, onLogoutNoType$] = partition(
   authenticated$,
   currentUser => Boolean(currentUser)

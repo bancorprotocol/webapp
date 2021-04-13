@@ -184,7 +184,6 @@ const getTokenList = async () => {
 };
 
 const getOrders = async (currentUser: string) => {
-  console.log(currentUser, "get orders triggered");
   const res = await axios.get<OrderResponse>(
     `${baseUrl}/orders?maker=${currentUser}`,
     { transformResponse: res => JSONbig.parse(res) }
