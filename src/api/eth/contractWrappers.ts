@@ -6,7 +6,6 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   PoolHistoricBalance,
-  PoolLiqMiningApr,
   PositionReturn,
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
@@ -17,22 +16,21 @@ import { asciiToHex } from "web3-utils";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 import {
-  buildTokenContract,
-  buildNetworkContract,
-  buildV2Converter,
-  buildRegistryContract,
-  buildLiquidityProtectionContract,
   buildAddressLookupContract,
-  buildLiquidityProtectionStoreContract,
+  buildConverterContract,
+  buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
+  buildLiquidityProtectionStoreContract,
+  buildNetworkContract,
+  buildRegistryContract,
   buildStakingRewardsContract,
-  buildConverterContract
+  buildTokenContract,
+  buildV2Converter
 } from "./contractTypes";
 import {
   compareString,
   findOrThrow,
   LockedBalance,
-  RelayWithReserveBalances,
   rewindBlocksByDays,
   sortAlongSide,
   traverseLockedBalances,
@@ -513,6 +511,7 @@ export const fetchRelayReserveBalances = async (
   blockHeight?: number
 ) => {
   const contract = buildConverterContract(pool.converterAddress);
+  console.log("pool.converterAddress", pool.converterAddress);
   return Promise.all(
     pool.reserves.map(async reserve => ({
       contract: reserve,
@@ -543,10 +542,31 @@ export const fetchHistoricBalances = async (
       Promise.all(
         pools.map(async pool => {
           const blockHeight = scale.blockHeight;
-          const [smartTokenSupply, reserveBalances] = await Promise.all([
-            fetchTokenSupply(pool.anchorAddress, blockHeight),
-            fetchRelayReserveBalances(pool, blockHeight)
-          ]);
+          let smartTokenSupply = "";
+          try {
+            smartTokenSupply = await fetchTokenSupply(
+              pool.anchorAddress,
+              blockHeight
+            );
+          } catch (e) {
+            console.error("Failed to fetch token supply.", e);
+          }
+
+          console.log("blockHeight", blockHeight);
+
+          let reserveBalances: { weiAmount: string; contract: string }[] = [
+            { weiAmount: "0", contract: pool.reserves[0] },
+            { weiAmount: "0", contract: pool.reserves[1] }
+          ];
+          try {
+            reserveBalances = await fetchRelayReserveBalances(
+              pool,
+              blockHeight
+            );
+          } catch (e) {
+            console.log(pool);
+            console.error("Failed to fetch Relay Reserve Balances.", e);
+          }
           return {
             scale,
             pool,
