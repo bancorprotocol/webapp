@@ -94,7 +94,7 @@
         {{ $t("transaction_submitted") }}
       </h3>
       <div class="mt-2 mb-3">
-        {{ `${$t("unstaking")} ${stakeValue} ${symbol}` }}
+        {{ `${$t("unstaking")} ${unstakeValue} ${symbol}` }}
       </div>
       <a
         target="_blank"

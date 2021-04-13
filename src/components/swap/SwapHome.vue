@@ -34,7 +34,7 @@
       class="font-size-12 font-w400"
       :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
     >
-      {{ $t("exe_defined_rate") }}
+      {{ $t("trade_at_pre_det") }}
     </b-popover>
     <router-view />
   </content-block>
