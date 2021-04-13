@@ -2695,28 +2695,30 @@ export class EthBancorModule
       )
       .sort(sortByLiqDepth);
 
-    const wEthBalance = tokenBalances.find(balance =>
-      compareString(balance.id, wethTokenContractAddress)
-    );
-    const wethBalanceString =
-      wEthBalance && new BigNumber(wEthBalance.balance).toString();
+    if (this.currentNetwork == EthNetworks.Mainnet) {
+      const wEthBalance = tokenBalances.find(balance =>
+        compareString(balance.id, wethTokenContractAddress)
+      );
+      const wethBalanceString =
+        wEthBalance && new BigNumber(wEthBalance.balance).toString();
 
-    const wethToken: ViewToken = {
-      ...(wEthBalance && { balance: wethBalanceString }),
-      contract: wethTokenContractAddress,
-      id: wethTokenContractAddress,
-      limitOrderAvailable: true,
-      tradeSupported: false,
-      logo: tokenMeta.find(meta =>
-        compareString(meta.contract, wethTokenContractAddress)
-      )!.image,
-      name: "WETH",
-      precision: 18,
-      symbol: "WETH",
-      liquidityProtection: false
-    };
+      const wethToken: ViewToken = {
+        ...(wEthBalance && { balance: wethBalanceString }),
+        contract: wethTokenContractAddress,
+        id: wethTokenContractAddress,
+        limitOrderAvailable: true,
+        tradeSupported: false,
+        logo: tokenMeta.find(meta =>
+          compareString(meta.contract, wethTokenContractAddress)
+        )!.image,
+        name: "WETH",
+        precision: 18,
+        symbol: "WETH",
+        liquidityProtection: false
+      };
 
-    finalTokens.push(wethToken);
+      finalTokens.push(wethToken);
+    }
 
     return finalTokens;
   }
