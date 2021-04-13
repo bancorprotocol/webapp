@@ -2630,58 +2630,83 @@ export class EthBancorModule
 
     const tokenBalances = this.tokenBalances;
     const tokenMeta = this.tokenMeta;
-    const finalTokens = this.apiData.tokens
-      .map(token => {
-        const tokenWithBackground = tokensWithPoolBackground.find(t =>
-          compareString(t.contract, token.dlt_id)
-        );
-        const liquidityProtection = !!(
-          tokenWithBackground && tokenWithBackground.liquidityProtection
-        );
-        const tradeSupported = !!(
-          tokenWithBackground && tokenWithBackground.tradeSupported
-        );
-
-        const change24h =
-          priceChangePercent(
-            Number(token.rate_24h_ago.usd),
-            Number(token.rate.usd)
-          ) * 100;
-        const meta = tokenMeta.find(meta =>
-          compareString(meta.contract, token.dlt_id)
-        );
-        const balance = tokenBalances.find(balance =>
-          compareString(balance.id, token.dlt_id)
-        );
-        const balanceString =
-          balance && new BigNumber(balance.balance).toString();
-
-        return {
-          contract: token.dlt_id,
-          id: token.dlt_id,
-          name: token.symbol,
-          symbol: token.symbol,
-          precision: token.decimals,
-          logo: (meta && meta.image) || defaultImage,
-          change24h,
-          ...(balance && { balance: balanceString }),
-          liqDepth: Number(token.liquidity.usd || 0),
-          liquidityProtection,
-          price: Number(token.rate.usd),
-          volume24h: Number(1),
-          tradeSupported
-        };
-      })
-      .sort(sortByLiqDepth);
-
     const daoTokenAddresses = this.daoTokenAddresses;
 
-    return finalTokens.map(token => {
-      const limitOrderAvailable = daoTokenAddresses.some(tokenAddress =>
-        compareString(token.id, tokenAddress)
-      );
-      return { ...token, limitOrderAvailable };
-    });
+    const finalTokens = this.apiData.tokens
+      .map(
+        (token): ViewToken => {
+          const tokenWithBackground = tokensWithPoolBackground.find(t =>
+            compareString(t.contract, token.dlt_id)
+          );
+          const liquidityProtection = !!(
+            tokenWithBackground && tokenWithBackground.liquidityProtection
+          );
+          const tradeSupported = !!(
+            tokenWithBackground && tokenWithBackground.tradeSupported
+          );
+
+          const change24h =
+            priceChangePercent(
+              Number(token.rate_24h_ago.usd),
+              Number(token.rate.usd)
+            ) * 100;
+          const meta = tokenMeta.find(meta =>
+            compareString(meta.contract, token.dlt_id)
+          );
+          const balance = tokenBalances.find(balance =>
+            compareString(balance.id, token.dlt_id)
+          );
+          const balanceString =
+            balance && new BigNumber(balance.balance).toString();
+
+          const limitOrderAvailable = daoTokenAddresses.some(tokenAddress =>
+            compareString(token.dlt_id, tokenAddress)
+          );
+
+          return {
+            contract: token.dlt_id,
+            id: token.dlt_id,
+            name: token.symbol,
+            symbol: token.symbol,
+            precision: token.decimals,
+            logo: (meta && meta.image) || defaultImage,
+            change24h,
+            ...(balance && { balance: balanceString }),
+            liqDepth: Number(token.liquidity.usd || 0),
+            liquidityProtection,
+            price: Number(token.rate.usd),
+            volume24h: Number(1),
+            tradeSupported,
+            limitOrderAvailable
+          };
+        }
+      )
+      .sort(sortByLiqDepth);
+
+    const wEthBalance = tokenBalances.find(balance =>
+      compareString(balance.id, wethTokenContractAddress)
+    );
+    const wethBalanceString =
+      wEthBalance && new BigNumber(wEthBalance.balance).toString();
+
+    const wethToken: ViewToken = {
+      ...(wEthBalance && { balance: wethBalanceString }),
+      contract: wethTokenContractAddress,
+      id: wethTokenContractAddress,
+      limitOrderAvailable: true,
+      tradeSupported: false,
+      logo: tokenMeta.find(meta =>
+        compareString(meta.contract, wethTokenContractAddress)
+      )!.image,
+      name: "WETH",
+      precision: 18,
+      symbol: "WETH",
+      liquidityProtection: false
+    };
+
+    finalTokens.push(wethToken);
+
+    return finalTokens;
   }
 
   get tokenMetaObj() {

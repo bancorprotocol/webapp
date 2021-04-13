@@ -733,7 +733,6 @@ const walletChecks = [
   { checkName: "network" }
 ];
 
-
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
   networkId: 1,
@@ -906,7 +905,7 @@ export interface PoolToken {
 }
 
 interface LiqDepth {
-  liqDepth: number;
+  liqDepth?: number;
 }
 
 export const assetToDecNumberString = (asset: Asset): string =>
@@ -918,6 +917,9 @@ export const decNumberStringToAsset = (
 ): Asset => new Asset(`${decNumberString} ${symbolName}`);
 
 export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
+  if (a.liqDepth == undefined && b.liqDepth == undefined) return 0;
+  if (a.liqDepth == undefined) return 1;
+  if (b.liqDepth == undefined) return -1;
   if (isNaN(a.liqDepth) && isNaN(b.liqDepth)) return 0;
   if (isNaN(a.liqDepth)) return 1;
   if (isNaN(b.liqDepth)) return -1;

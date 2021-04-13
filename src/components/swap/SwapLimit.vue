@@ -328,9 +328,7 @@ export default class SwapLimit extends BaseTxAction {
 
   get tokensFrom() {
     return vxm.bancor.tokens.filter(
-      token =>
-        token.tradeSupported &&
-        (token.limitOrderAvailable || token.id === ethReserveAddress)
+      token => token.limitOrderAvailable || token.id === ethReserveAddress
     );
   }
 
