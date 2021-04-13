@@ -2700,16 +2700,16 @@ export class EthBancorModule
     );
     const wethBalanceString =
       wEthBalance && new BigNumber(wEthBalance.balance).toString();
-
+    const weth = tokenMeta.find(meta =>
+      compareString(meta.contract, wethTokenContractAddress)
+    );
     const wethToken: ViewToken = {
       ...(wEthBalance && { balance: wethBalanceString }),
       contract: wethTokenContractAddress,
       id: wethTokenContractAddress,
       limitOrderAvailable: true,
       tradeSupported: false,
-      logo: tokenMeta.find(meta =>
-        compareString(meta.contract, wethTokenContractAddress)
-      )!.image,
+      logo: weth ? weth.image : "",
       name: "WETH",
       precision: 18,
       symbol: "WETH",
