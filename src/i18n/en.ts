@@ -437,6 +437,7 @@ export const en = {
       title: "Transaction Confirmation",
       sub_title: "You are creating a limit order",
       info_text: "Transaction will expire in {timer}",
+      info_text2: "Orders might not be fulfilled by the KeeperDAO Keepers",
       sell: "Sell",
       receive: "Receive",
       rate: "Rate"

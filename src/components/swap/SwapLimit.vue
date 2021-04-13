@@ -179,7 +179,14 @@
       :loading="rateLoading"
       :disabled="disableButton"
     />
-    <p class="font-size-10 font-w500 mt-2 mb-0 text-center" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">{{$t("powered_by_keeper_dao")}}</p>
+
+    <p
+      class="font-size-10 font-w500 mt-2 mb-0 text-center"
+      :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+    >
+      {{ $t("powered_by_keeper_dao") }}
+    </p>
+
     <modal-duration-select
       :initial-duration="selectedDuration"
       v-model="modalSelectDuration"
@@ -216,7 +223,14 @@
         </gray-border-block>
 
         <p
-          class="font-size-12 my-3 text-left pl-3"
+          class="font-size-10 font-w500 mt-2 mb-0 text-left pl-3"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          {{ $t("modal.limit_order.info_text2") }}
+        </p>
+
+        <p
+          class="font-size-12 mb-3 mt-2 text-left pl-3"
           :class="darkMode ? 'text-muted-dark' : 'text-muted'"
         >
           {{
@@ -231,9 +245,7 @@
           class="font-size-14 mb-4 text-center"
           :class="darkMode ? 'text-muted-dark' : 'text-muted'"
         >
-          {{
-            $t("modal.deposit_weth.info_text")
-          }}
+          {{ $t("modal.deposit_weth.info_text") }}
         </p>
 
         <gray-border-block>
