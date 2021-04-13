@@ -4,7 +4,7 @@
     <b-input-group>
       <b-input-group-prepend v-if="prepend">
         <div
-          class="rounded-left d-flex align-items-center font-size-12 font-w500"
+          class="rounded-left d-flex align-items-center pl-2 font-size-12 font-w500"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
           :style="stylePrepend"
         >
