@@ -1516,7 +1516,7 @@ export class EthBancorModule
       token => compareString(token.symbol, "BNT"),
       "failed finding BNT token in API data"
     );
-    const totalVolume24h = Number(apiData.total_volume_24h.usd || 0) || 0  
+    const totalVolume24h = Number(apiData.total_volume_24h.usd || 0) || 0;
     const totalLiquidityDepth = pools.reduce(
       (acc, item) => Number(item.liquidity.usd || 0) + acc,
       0
@@ -2670,9 +2670,10 @@ export class EthBancorModule
           const balanceString =
             balance && new BigNumber(balance.balance).toString();
 
-          const limitOrderAvailable = daoTokenAddresses.some(tokenAddress =>
-            compareString(token.dlt_id, tokenAddress)
-          );
+          const limitOrderAvailable =
+            daoTokenAddresses.some(tokenAddress =>
+              compareString(token.dlt_id, tokenAddress)
+            ) || compareString(token.dlt_id, ethReserveAddress);
 
           return {
             contract: token.dlt_id,
@@ -6752,8 +6753,8 @@ export class EthBancorModule
     const txOrigin = await getTxOrigin();
 
     const orderData = {
-      fromAddress: from.id,
-      toAddress: to.id,
+      fromAddress: fromToken.contract,
+      toAddress: toToken.contract,
       fromAmountWei,
       toAmountWei,
       currentUser,
