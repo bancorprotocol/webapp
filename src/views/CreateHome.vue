@@ -28,7 +28,7 @@
       :title="$t('create_Pool')"
       icon="plus"
       :tx-meta.sync="txMeta"
-      redirect-on-success="Pool"
+      redirect-on-success="Portfolio"
     >
       .
     </modal-tx-action>
