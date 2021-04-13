@@ -6,7 +6,6 @@
         <div
           class="rounded-left d-flex align-items-center font-size-12 font-w500"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-          style="padding-left: 12px"
           :style="stylePrepend"
         >
           <span v-if="prepend !== 'search'">{{ prepend }}</span>
@@ -19,12 +18,12 @@
         </div>
       </b-input-group-prepend>
       <b-form-input
-        @blur.native="blur"
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
           fontSizeClass,
           active ? 'custom-input-active' : ''
         ]"
+        @blur.native="blur"
         v-model="text"
         :placeholder="placeholder"
         :type="type"
@@ -89,7 +88,7 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: true }) padding?: boolean;
   @Prop({ default: false }) format?: boolean;
   @Prop({ default: "error" }) alertVariant?: string;
-  @Prop() autofocus?: boolean;
+  @Prop({ default: false }) autofocus?: boolean;
   @Prop({ default: false }) clear!: boolean;
   @Prop({ default: false }) active!: boolean;
   @Prop({ default: false }) appendSlot!: boolean;

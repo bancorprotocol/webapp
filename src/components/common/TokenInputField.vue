@@ -17,9 +17,9 @@
 
     <b-input-group>
       <b-form-input
-        @blur.native="blur"
-        type="text"
         v-model="tokenAmount"
+        @blur.native="blur"
+        inputmode="decimal"
         style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         :placeholder="$t('enter_amount')"
@@ -135,10 +135,6 @@ export default class TokenInputField extends BaseComponent {
     return defaultImage;
   }
 
-  blur() {
-    if (this.blurFunc) this.blurFunc();
-  }
-
   @Emit()
   select(id: string) {
     return id;
@@ -160,6 +156,10 @@ export default class TokenInputField extends BaseComponent {
     } else {
       this.tokenAmount = this.balance;
     }
+  }
+
+  blur() {
+    if (this.blurFunc) this.blurFunc();
   }
 
   formatter(text: String) {

@@ -1502,10 +1502,7 @@ export class EthBancorModule
       token => compareString(token.symbol, "BNT"),
       "failed finding BNT token in API data"
     );
-    const totalVolume24h = pools.reduce(
-      (acc, item) => Number(item.volume_24h.usd || 0) + acc,
-      0
-    );
+    const totalVolume24h = Number(apiData.total_volume_24h.usd || 0) || 0  
     const totalLiquidityDepth = pools.reduce(
       (acc, item) => Number(item.liquidity.usd || 0) + acc,
       0
