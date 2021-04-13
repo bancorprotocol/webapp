@@ -400,6 +400,7 @@ export default class SwapLimit extends BaseTxAction {
     this.custom = "";
     this.changeLimitRateByPercentage();
   }
+
   setCustomPercentage() {
     this.changeLimitRateByPercentage(this.custom ? true : false);
   }
@@ -597,6 +598,7 @@ export default class SwapLimit extends BaseTxAction {
       if (lastChangedField === 2) this.calcAmount1();
       else if (lastChangedField === 1) this.calcAmount2();
     }
+    this.changePercentageByLimitRate();
   }
 
   setlastChangedField(field: number, txt: string) {
