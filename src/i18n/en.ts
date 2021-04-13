@@ -476,5 +476,6 @@ export const en = {
   exe_defined_rate: "Executing swap on defined rate",
   exe_market_rate: "Executing swap on current market rate",
   rate_swap_tokens:
-    "Select the rate at which you would like to sell your tokens"
+    "Select the rate at which you would like to sell your tokens",
+  powered_by_keeper_dao: "Limit orders are powered by KeeperDAO"
 };

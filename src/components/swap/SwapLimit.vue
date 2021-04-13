@@ -179,6 +179,7 @@
       :loading="rateLoading"
       :disabled="disableButton"
     />
+    <p class="font-size-10 font-w500 mt-2 mb-0 text-center" :class="darkMode ? 'text-muted-dark' : 'text-muted-light'">{{$t("powered_by_keeper_dao")}}</p>
     <modal-duration-select
       :initial-duration="selectedDuration"
       v-model="modalSelectDuration"
