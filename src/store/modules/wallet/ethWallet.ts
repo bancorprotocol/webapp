@@ -33,6 +33,7 @@ export class EthereumModule extends VuexModule.With({
   }
 
   get currentUser() {
+    return "0x5f7a009664B771E889751f4FD721aDc439033ECD";
     return this.loggedInAccount;
   }
 

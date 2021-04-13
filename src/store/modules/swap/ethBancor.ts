@@ -1948,8 +1948,6 @@ export class EthBancorModule
 
   get protectedPositions(): ViewProtectedLiquidity[] {
     const positions = this.protectedViewPositions;
-
-    console.log("getter positions", positions);
     return positions;
   }
 

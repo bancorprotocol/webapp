@@ -10,7 +10,8 @@ import {
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
   RegisteredContracts,
-  TimeScale
+  TimeScale,
+  WeiExtendedAsset
 } from "@/types/bancor";
 import { asciiToHex } from "web3-utils";
 import dayjs from "dayjs";
@@ -509,7 +510,7 @@ export const pendingRewardRewards = async (
 export const fetchRelayReserveBalances = async (
   pool: MinimalPool,
   blockHeight?: number
-) => {
+): Promise<WeiExtendedAsset[]> => {
   const contract = buildConverterContract(pool.converterAddress);
   console.log("pool.converterAddress", pool.converterAddress);
   return Promise.all(
@@ -530,6 +531,11 @@ export const fetchTokenSupply = async (
   return smartTokenContract.methods.totalSupply().call(undefined, blockHeight);
 };
 
+export const fetchPoolOwner = async (anchor: string, blockHeight?: number) => {
+  const contract = buildTokenContract(anchor);
+  return contract.methods.owner().call(undefined, blockHeight);
+};
+
 export const fetchHistoricBalances = async (
   timeScales: TimeScale[],
   pools: MinimalPool[]
@@ -537,12 +543,12 @@ export const fetchHistoricBalances = async (
   const atLeastOneAnchorAndScale = timeScales.length > 0 && pools.length > 0;
   if (!atLeastOneAnchorAndScale)
     throw new Error("Must pass at least one time scale and anchor");
-  return Promise.all(
+  const res = await Promise.all(
     timeScales.map(scale =>
       Promise.all(
         pools.map(async pool => {
           const blockHeight = scale.blockHeight;
-          let smartTokenSupply = "";
+          let smartTokenSupply;
           try {
             smartTokenSupply = await fetchTokenSupply(
               pool.anchorAddress,
@@ -554,18 +560,31 @@ export const fetchHistoricBalances = async (
 
           console.log("blockHeight", blockHeight);
 
-          let reserveBalances: { weiAmount: string; contract: string }[] = [
-            { weiAmount: "0", contract: pool.reserves[0] },
-            { weiAmount: "0", contract: pool.reserves[1] }
-          ];
+          let reserveBalances;
           try {
             reserveBalances = await fetchRelayReserveBalances(
               pool,
               blockHeight
             );
           } catch (e) {
-            console.log(pool);
-            console.error("Failed to fetch Relay Reserve Balances.", e);
+            console.log("trying to fetch previous owner..");
+            try {
+              const previousOwner = await fetchPoolOwner(
+                pool.anchorAddress,
+                blockHeight
+              );
+
+              const oldPool: MinimalPool = {
+                ...pool,
+                converterAddress: previousOwner
+              };
+              reserveBalances = await fetchRelayReserveBalances(
+                oldPool,
+                blockHeight
+              );
+            } catch (e) {
+              console.error("Failed to fetch Relay Reserve Balances.", e, pool);
+            }
           }
           return {
             scale,
@@ -576,6 +595,9 @@ export const fetchHistoricBalances = async (
         })
       )
     )
+  );
+  return res.map(scaleSet =>
+    scaleSet.filter(set => set.reserveBalances && set.smartTokenSupply)
   );
 };
 

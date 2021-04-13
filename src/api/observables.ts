@@ -460,8 +460,7 @@ const removeLiquidityReturn$ = combineLatest([
       )
     )
   ),
-  startWith(undefined),
-  logger("simple")
+  startWith(undefined)
 );
 
 const uniquePoolReserves = (
@@ -504,8 +503,14 @@ const historicPoolBalances$ = combineLatest([
   minimalPools$
 ]).pipe(
   withLatestFrom(currentBlock$),
-  switchMapIgnoreThrow(([[unverified, minimal], currentBlock]) => {
-    return getHistoricBalances(unverified, currentBlock.blockNumber, minimal);
+  switchMapIgnoreThrow(async ([[unverified, minimal], currentBlock]) => {
+    const res = await getHistoricBalances(
+      unverified,
+      currentBlock.blockNumber,
+      minimal
+    );
+    console.log(res, "was the res...");
+    return res;
   })
 );
 

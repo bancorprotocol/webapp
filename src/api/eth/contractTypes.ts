@@ -40,6 +40,7 @@ const buildContract = (
 interface TokenContractType {
   symbol: () => CallReturn<string>;
   decimals: () => CallReturn<string>;
+  owner: () => CallReturn<string>;
   totalSupply: () => CallReturn<string>;
   allowance: (owner: string, spender: string) => CallReturn<string>;
   balanceOf: (owner: string) => CallReturn<string>;
