@@ -147,8 +147,13 @@ export default class SideBar extends BaseComponent {
 
   navigateToRoute(link: ViewSideBarLink) {
     this.showMore = false;
+    const currentService = this.$route.params.service ?? "eth";
+
     if (!link.newTab) {
-      this.$router.push({ name: link.route });
+      this.$router.push({
+        name: link.route,
+        params: { service: currentService }
+      });
     } else {
       this.openNewTab(link.route);
     }
