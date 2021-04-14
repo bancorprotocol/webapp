@@ -96,6 +96,7 @@ export default class Navigation extends BaseComponent {
   async loginActionEth() {
     if (vxm.ethWallet.currentUser) {
       onboard.walletReset();
+      localStorage.removeItem("SELECTED_WEB3_WALLET");
     } else {
       await vxm.ethWallet.connect();
     }
