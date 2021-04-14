@@ -19418,10 +19418,10 @@ vue-functional-data-merge@^3.1.0:
   resolved "https://registry.yarnpkg.com/vue-functional-data-merge/-/vue-functional-data-merge-3.1.0.tgz#08a7797583b7f35680587f8a1d51d729aa1dc657"
   integrity sha512-leT4kdJVQyeZNY1kmnS1xiUlQ9z1B/kdBFCILIjYYQDqZgLqCLa0UhjSSeRX6c3mUe6U5qYeM8LrEqkHJ1B4LA==
 
-vue-gtag@^1.12.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/vue-gtag/-/vue-gtag-1.12.0.tgz#73630d4e6a91f4c4828551399e00aea71f339678"
-  integrity sha512-besIPtTvF1VhM9/8N1lm/pUaqUKn8zz5mFECUqzlw0WEHfThAWquVbM1gppC7PoBfsHLbcdJVz+GXv5g/1MZrA==
+vue-gtag@^1.13.0:
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/vue-gtag/-/vue-gtag-1.13.0.tgz#3014c463a585ed589998c8b7d3342206ddb5d02d"
+  integrity sha512-rgTVQ8iYzARF6+Tbme7ZNawVAqfQ1apltRqn04F+CA/dAZH4JXG6JLvvnKpD1cEx4Mpcm9T92FNA5rcZwkX0vQ==
 
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
