@@ -539,7 +539,7 @@ export const fetchPoolOwner = async (anchor: string, blockHeight?: number) => {
 export const fetchHistoricBalances = async (
   timeScales: TimeScale[],
   pools: MinimalPool[]
-) => {
+): Promise<PoolHistoricBalance[]> => {
   const atLeastOneAnchorAndScale = timeScales.length > 0 && pools.length > 0;
   if (!atLeastOneAnchorAndScale)
     throw new Error("Must pass at least one time scale and anchor");
@@ -596,6 +596,7 @@ export const fetchHistoricBalances = async (
       )
     )
   );
+  // @ts-ignore
   return res.map(scaleSet =>
     scaleSet.filter(set => set.reserveBalances && set.smartTokenSupply)
   );
@@ -720,6 +721,7 @@ export const getHistoricBalances = async (
   const relevantPools = pools.filter(pool =>
     uniqueAnchors.some(anchor => compareString(pool.anchorAddress, anchor))
   );
+  // @ts-ignore
   return fetchHistoricBalances(timeScales, relevantPools);
 };
 

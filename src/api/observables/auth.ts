@@ -6,7 +6,6 @@ export const authenticatedReceiver$ = new Subject<string | false>();
 
 export const authenticated$ = authenticatedReceiver$.pipe(
   distinctUntilChanged(),
-  map(() => "0x5f7a009664B771E889751f4FD721aDc439033ECD" as string | false),
   share()
 );
 
