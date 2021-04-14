@@ -428,7 +428,8 @@ whitelistedPools$.subscribe(whitelistedPools => {
 
 const localAndRemotePositionIds$ = combineLatest([
   onLogin$,
-  liquidityProtectionStore$
+  liquidityProtectionStore$,
+  fetchPositionsTrigger$
 ]).pipe(
   switchMapIgnoreThrow(([currentUser, storeAddress]) =>
     fetchPositionIds(currentUser, storeAddress)

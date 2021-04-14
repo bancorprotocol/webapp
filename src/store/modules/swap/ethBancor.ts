@@ -5402,11 +5402,6 @@ export class EthBancorModule
           lowestTwoCounts.some(([t]) => compareString(token, t))
         );
         if (!toToken) {
-          console.warn(
-            "Unable to find terminating token in swap for hash",
-            x.hash,
-            { trades: x.trades }
-          );
           return false;
         }
 
