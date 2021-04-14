@@ -445,7 +445,6 @@ const unVerifiedPositions$ = combineLatest([
   optimisticObservable("positionsss", ([positionIds, storeAddress]) =>
     fetchPositionsMulti(positionIds, storeAddress)
   ),
-  logger("positions"),
   shareReplay(1)
 );
 
