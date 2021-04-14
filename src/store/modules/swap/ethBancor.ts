@@ -229,7 +229,7 @@ import {
   exchangeProxy$,
   liquidityProtectionStore$
 } from "@/api/observables/contracts";
-import { authenticatedReceiver$ } from "@/api/observables/auth";
+import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 import {
   getTxOrigin,
   keeperTokens$,
@@ -340,6 +340,7 @@ const viewLimitOrders$ = combineLatest([
 
 viewLimitOrders$.subscribe(orders => vxm.ethBancor.setLimitOrders(orders));
 limitOrders$.subscribe(orders => vxm.ethBancor.setRawLimitOrders(orders));
+onLogout$.subscribe(() => vxm.ethBancor.setLimitOrders([]));
 
 type DecPercent = number;
 
