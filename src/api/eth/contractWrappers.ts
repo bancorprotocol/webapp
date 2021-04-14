@@ -6,33 +6,32 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   PoolHistoricBalance,
-  PoolLiqMiningApr,
   PositionReturn,
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
   RegisteredContracts,
-  TimeScale
+  TimeScale,
+  WeiExtendedAsset
 } from "@/types/bancor";
 import { asciiToHex } from "web3-utils";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 import {
-  buildTokenContract,
-  buildNetworkContract,
-  buildV2Converter,
-  buildRegistryContract,
-  buildLiquidityProtectionContract,
   buildAddressLookupContract,
-  buildLiquidityProtectionStoreContract,
+  buildConverterContract,
+  buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
+  buildLiquidityProtectionStoreContract,
+  buildNetworkContract,
+  buildRegistryContract,
   buildStakingRewardsContract,
-  buildConverterContract
+  buildTokenContract,
+  buildV2Converter
 } from "./contractTypes";
 import {
   compareString,
   findOrThrow,
   LockedBalance,
-  RelayWithReserveBalances,
   rewindBlocksByDays,
   sortAlongSide,
   traverseLockedBalances,
@@ -511,8 +510,9 @@ export const pendingRewardRewards = async (
 export const fetchRelayReserveBalances = async (
   pool: MinimalPool,
   blockHeight?: number
-) => {
+): Promise<WeiExtendedAsset[]> => {
   const contract = buildConverterContract(pool.converterAddress);
+  console.log("pool.converterAddress", pool.converterAddress);
   return Promise.all(
     pool.reserves.map(async reserve => ({
       contract: reserve,
@@ -531,22 +531,61 @@ export const fetchTokenSupply = async (
   return smartTokenContract.methods.totalSupply().call(undefined, blockHeight);
 };
 
+export const fetchPoolOwner = async (anchor: string, blockHeight?: number) => {
+  const contract = buildTokenContract(anchor);
+  return contract.methods.owner().call(undefined, blockHeight);
+};
+
 export const fetchHistoricBalances = async (
   timeScales: TimeScale[],
   pools: MinimalPool[]
-) => {
+): Promise<PoolHistoricBalance[]> => {
   const atLeastOneAnchorAndScale = timeScales.length > 0 && pools.length > 0;
   if (!atLeastOneAnchorAndScale)
     throw new Error("Must pass at least one time scale and anchor");
-  return Promise.all(
+  const res = await Promise.all(
     timeScales.map(scale =>
       Promise.all(
         pools.map(async pool => {
           const blockHeight = scale.blockHeight;
-          const [smartTokenSupply, reserveBalances] = await Promise.all([
-            fetchTokenSupply(pool.anchorAddress, blockHeight),
-            fetchRelayReserveBalances(pool, blockHeight)
-          ]);
+          let smartTokenSupply;
+          try {
+            smartTokenSupply = await fetchTokenSupply(
+              pool.anchorAddress,
+              blockHeight
+            );
+          } catch (e) {
+            console.error("Failed to fetch token supply.", e);
+          }
+
+          console.log("blockHeight", blockHeight);
+
+          let reserveBalances;
+          try {
+            reserveBalances = await fetchRelayReserveBalances(
+              pool,
+              blockHeight
+            );
+          } catch (e) {
+            console.log("trying to fetch previous owner..");
+            try {
+              const previousOwner = await fetchPoolOwner(
+                pool.anchorAddress,
+                blockHeight
+              );
+
+              const oldPool: MinimalPool = {
+                ...pool,
+                converterAddress: previousOwner
+              };
+              reserveBalances = await fetchRelayReserveBalances(
+                oldPool,
+                blockHeight
+              );
+            } catch (e) {
+              console.error("Failed to fetch Relay Reserve Balances.", e, pool);
+            }
+          }
           return {
             scale,
             pool,
@@ -556,6 +595,10 @@ export const fetchHistoricBalances = async (
         })
       )
     )
+  );
+  // @ts-ignore
+  return res.map(scaleSet =>
+    scaleSet.filter(set => set.reserveBalances && set.smartTokenSupply)
   );
 };
 
@@ -568,37 +611,56 @@ export const getPoolAprs = async (
     const res = await Promise.all(
       positions.map(position =>
         Promise.all(
-          historicBalances.map(async historicBalance => {
-            const poolTokenSupply = historicBalance.smartTokenSupply;
+          historicBalances
+            .filter(historicBalance =>
+              compareString(
+                historicBalance.pool.anchorAddress,
+                position.poolToken
+              )
+            )
+            .map(async historicBalance => {
+              const poolTokenSupply = historicBalance.smartTokenSupply;
 
-            const [
-              tknReserveBalance,
-              opposingTknBalance
-            ] = sortAlongSide(
-              historicBalance.reserveBalances,
-              balance => balance.contract,
-              [position.reserveToken]
-            );
+              const [
+                tknReserveBalance,
+                opposingTknBalance
+              ] = sortAlongSide(
+                historicBalance.reserveBalances,
+                balance => balance.contract,
+                [position.reserveToken]
+              );
 
-            const poolToken = position.poolToken;
-            const reserveToken = position.reserveToken;
-            const reserveAmount = position.reserveAmount;
-            const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
-              .times(2)
-              .toString();
-            const poolRateD = poolTokenSupply;
+              const poolToken = position.poolToken;
+              const reserveToken = position.reserveToken;
+              const reserveAmount = position.reserveAmount;
+              const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+                .times(2)
+                .toString();
+              const poolRateD = poolTokenSupply;
 
-            const reserveRateN = opposingTknBalance.weiAmount;
-            const reserveRateD = tknReserveBalance.weiAmount;
+              const reserveRateN = opposingTknBalance.weiAmount;
+              const reserveRateD = tknReserveBalance.weiAmount;
 
-            let poolRoi = "";
-            const lpContract = buildLiquidityProtectionContract(
-              liquidityProtectionContract
-            );
+              let poolRoi = "";
+              const lpContract = buildLiquidityProtectionContract(
+                liquidityProtectionContract
+              );
 
-            try {
-              poolRoi = await lpContract.methods
-                .poolROI(
+              try {
+                poolRoi = await lpContract.methods
+                  .poolROI(
+                    poolToken,
+                    reserveToken,
+                    reserveAmount,
+                    poolRateN,
+                    poolRateD,
+                    reserveRateN,
+                    reserveRateD
+                  )
+                  .call();
+              } catch (err) {
+                console.error("getting pool roi failed!", err, {
+                  address: liquidityProtectionContract,
                   poolToken,
                   reserveToken,
                   reserveAmount,
@@ -606,42 +668,30 @@ export const getPoolAprs = async (
                   poolRateD,
                   reserveRateN,
                   reserveRateD
-                )
-                .call();
-            } catch (err) {
-              console.error("getting pool roi failed!", err, {
-                address: liquidityProtectionContract,
-                poolToken,
-                reserveToken,
-                reserveAmount,
-                poolRateN,
-                poolRateD,
-                reserveRateN,
-                reserveRateD
-              });
-            }
+                });
+              }
 
-            const scale = historicBalance.scale;
-            const magnitude =
-              scale.label == "day"
-                ? 365
-                : scale.label == "week"
-                ? 52
-                : 365 / scale.days;
+              const scale = historicBalance.scale;
+              const magnitude =
+                scale.label == "day"
+                  ? 365
+                  : scale.label == "week"
+                  ? 52
+                  : 365 / scale.days;
 
-            const calculatedAprDec = new BigNumber(poolRoi)
-              .div(1000000)
-              .minus(1)
-              .times(magnitude);
+              const calculatedAprDec = new BigNumber(poolRoi)
+                .div(1000000)
+                .minus(1)
+                .times(magnitude);
 
-            return {
-              calculatedAprDec: calculatedAprDec.isNegative()
-                ? "0"
-                : calculatedAprDec.toString(),
-              positionId: position.id,
-              scaleId: historicBalance.scale.label
-            };
-          })
+              return {
+                calculatedAprDec: calculatedAprDec.isNegative()
+                  ? "0"
+                  : calculatedAprDec.toString(),
+                positionId: position.id,
+                scaleId: historicBalance.scale.label
+              };
+            })
         )
       )
     );
@@ -671,6 +721,7 @@ export const getHistoricBalances = async (
   const relevantPools = pools.filter(pool =>
     uniqueAnchors.some(anchor => compareString(pool.anchorAddress, anchor))
   );
+  // @ts-ignore
   return fetchHistoricBalances(timeScales, relevantPools);
 };
 
