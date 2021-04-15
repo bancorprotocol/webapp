@@ -1,26 +1,38 @@
 import { action, createModule, mutation } from "vuex-class-component";
 import {
-  ProposedCreateOrder,
   BaseToken,
+  ConverterAndAnchor,
   ConvertReturn,
   CreatePoolModule,
   CreateV1PoolEthParams,
   HistoryModule,
   LiquidityModule,
   LiquidityParams,
+  LiquidityProtectionSettings,
+  MinimalPool,
   ModalChoice,
   ModuleParam,
+  OnPrompt,
+  OnUpdate,
   OpposingLiquid,
   OpposingLiquidParams,
+  PoolLiqMiningApr,
   PoolTokenPosition,
   ProposedConvertTransaction,
+  ProposedCreateOrder,
   ProposedFromTransaction,
   ProposedToTransaction,
-  ProtectedLiquidityCalculated,
+  ProtectedLiquidity,
+  ProtectionRes,
+  ProtectLiquidityParams,
+  RawLiquidityProtectionSettings,
+  RegisteredContracts,
   ReserveFeed,
   Section,
   Step,
+  TokenPrecision,
   TokenPrice,
+  TokenWei,
   TradingModule,
   TxResponse,
   UserPoolBalances,
@@ -28,49 +40,36 @@ import {
   ViewAmount,
   ViewAmountDetail,
   ViewLiquidityEvent,
-  ProtectLiquidityParams,
-  OnUpdate,
-  ProtectionRes,
-  TokenWei,
-  PoolLiqMiningApr,
-  ProtectedLiquidity,
-  ConverterAndAnchor,
-  RegisteredContracts,
-  RawLiquidityProtectionSettings,
-  LiquidityProtectionSettings,
-  OnPrompt,
-  MinimalPool,
-  TokenPrecision,
-  ViewTokenAmount,
   ViewLockedBalance,
   ViewProtectedLiquidity,
   ViewRelay,
   ViewReserve,
   ViewToken,
+  ViewTokenAmount,
   ViewTradeEvent
 } from "@/types/bancor";
 import { RfqOrder, Signature, SignatureType } from "@0x/protocol-utils";
 import {
+  buildPoolNameFromReserves,
+  buildSingleUnitCosts,
+  calculatePercentageChange,
   ChainLinkRelay,
   compareString,
   fetchReserveBalance,
+  findChangedReserve,
   findOrThrow,
   generateEtherscanTxLink,
   isOdd,
+  LockedBalance,
   multiSteps,
   PoolContainer,
   PoolType,
   Relay,
   RelayWithReserveBalances,
+  rewindBlocksByDays,
   SmartToken,
   sortAlongSide,
   sortByLiqDepth,
-  buildSingleUnitCosts,
-  findChangedReserve,
-  LockedBalance,
-  rewindBlocksByDays,
-  buildPoolNameFromReserves,
-  calculatePercentageChange,
   Token,
   TraditionalRelay,
   updateArray,
@@ -107,11 +106,11 @@ import {
   zip
 } from "lodash";
 import {
+  buildAddressLookupContract,
   buildConverterContract,
+  buildExchangeProxyContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
-  buildAddressLookupContract,
-  buildWethContract,
   buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSystemStoreContract,
   buildNetworkContract,
@@ -119,14 +118,14 @@ import {
   buildTokenContract,
   buildV28ConverterContract,
   buildV2Converter,
-  buildExchangeProxyContract
+  buildWethContract
 } from "@/api/eth/contractTypes";
 import {
   generateEthPath,
-  MinimalRelay,
-  shrinkToken,
-  removeLeadingZeros,
   MinimalPoolWithReserveBalances,
+  MinimalRelay,
+  removeLeadingZeros,
+  shrinkToken,
   TokenSymbol
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
@@ -151,9 +150,9 @@ import * as Sentry from "@sentry/browser";
 import {
   combineLatest,
   from,
+  merge,
   Observable,
   partition as partitionOb,
-  merge,
   Subject
 } from "rxjs";
 import {
@@ -180,66 +179,58 @@ import {
   expandToken,
   filterAndWarn,
   mapIgnoreThrown,
-  miningBntReward,
-  miningTknReward,
   parseRawDynamic,
   reserveContractsInStatic,
   throwAfter
 } from "@/api/pureHelpers";
 import {
-  fetchPositionsTrigger$,
-  lockedBalancesTrigger$,
-  minimalPoolReceiver$,
   currentBlock$,
   currentBlockReceiver$,
+  fetchPositionsTrigger$,
+  immediateTokenMeta$,
+  lockedBalancesTrigger$,
+  minimalPoolReceiver$,
   newPools$,
-  poolPrograms$,
   selectedPromptReceiver$,
   usdPriceOfBnt$
 } from "@/api/observables";
 import {
   balanceShape,
-  dualPoolRoiShape,
   dynamicRelayShape,
   liquidityProtectionSettingsShape,
   liquidityProtectionShape,
   poolTokenShape,
   protectedPositionShape,
-  protectedReservesShape,
   relayShape,
   reserveBalanceShape,
   slimBalanceShape,
   staticRelayShape,
   tokenShape,
-  tokenSupplyShape,
   v2PoolBalanceShape
 } from "@/api/eth/shapes";
 import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
 import { NewPool, Pool, WelcomeData } from "@/api/eth/bancorApi";
-import { PoolProgram } from "../rewards";
 import { distinctArrayItem } from "@/api/observables/customOperators";
-import { immediateTokenMeta$ } from "@/api/observables";
 import {
   networkVersion$,
   networkVersionReceiver$
 } from "@/api/observables/network";
 import {
   bancorConverterRegistry$,
-  exchangeProxy$,
-  liquidityProtectionStore$
+  exchangeProxy$
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 import {
   getTxOrigin,
   keeperTokens$,
   limitOrders$,
+  limitOrderTrigger$,
   OrderElement,
-  RfqOrderJson,
-  sendOrders,
   OrderStatus,
   orderToStringOrder,
-  limitOrderTrigger$
+  RfqOrderJson,
+  sendOrders
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
@@ -1801,7 +1792,7 @@ export class EthBancorModule
 
     const position = findOrThrow(
       this.protectedViewPositions,
-      position => compareString(position.id, dbId),
+      position => compareString(position.id.split(":")[1], dbId),
       `failed to find the referenced position of ${dbId}`
     );
     const isDissolvingNetworkToken = compareString(
@@ -6527,7 +6518,7 @@ export class EthBancorModule
 
     const position = findOrThrow(
       this.protectedViewPositions,
-      pos => compareString(pos.id, posId),
+      pos => compareString(pos.id.split(":")[1], posId),
       "failed finding protected position"
     );
 
