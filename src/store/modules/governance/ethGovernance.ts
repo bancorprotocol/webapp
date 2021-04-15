@@ -12,6 +12,7 @@ import axios from "axios";
 import BigNumber from "bignumber.js";
 import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import { getNetworkVariables } from "@/api/config";
+import { buildRange } from "@/api/helpers";
 
 export const ipfsViewUrl = "https://ipfs.io/ipfs/";
 const ipfsUrl = "https://ipfs.infura.io:5001/";
@@ -511,22 +512,14 @@ export class EthereumGovernance extends VuexModule.With({
   }: {
     voter?: string;
   }): Promise<Proposal[]> {
-    const proposalCount = await this.governanceContract.methods
-      .proposalCount()
-      .call();
+    const proposalCount = Number(
+      await this.governanceContract.methods.proposalCount().call()
+    );
 
-    const p: Promise<Proposal>[] = [];
-
-    for (let i = 0; i < proposalCount; i++) {
-      p.push(
-        this.getProposal({
-          proposalId: i,
-          voter
-        })
-      );
-    }
-
-    const proposals: Proposal[] = await Promise.all(p);
+    const proposalIds = buildRange(proposalCount);
+    const proposals = await Promise.all(
+      proposalIds.map(proposalId => this.getProposal({ proposalId, voter }))
+    );
 
     return proposals.reverse();
   }

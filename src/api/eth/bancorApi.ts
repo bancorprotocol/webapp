@@ -1,3 +1,5 @@
+import axios from "axios";
+import { EthNetworks } from "../web3";
 interface TokenMeta {
   id: string;
   image: string;
@@ -6,9 +8,6 @@ interface TokenMeta {
   name: string;
   precision?: number;
 }
-
-import axios from "axios";
-import { EthNetworks } from "../web3";
 
 export interface WelcomeData {
   total_liquidity: BntPrice;

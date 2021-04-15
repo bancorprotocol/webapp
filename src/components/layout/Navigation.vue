@@ -26,6 +26,7 @@ import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import Notifications from "@/components/compositions/notifications/Notifications.vue";
+import { onLogout$ } from "@/api/observables/auth";
 
 @Component({
   components: { BancorMenu, SettingsMenu, Notifications }
@@ -96,6 +97,9 @@ export default class Navigation extends BaseComponent {
   async loginActionEth() {
     if (vxm.ethWallet.currentUser) {
       onboard.walletReset();
+      onLogout$.subscribe(() =>
+        localStorage.removeItem("SELECTED_WEB3_WALLET")
+      );
     } else {
       await vxm.ethWallet.connect();
     }

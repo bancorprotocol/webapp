@@ -217,6 +217,17 @@
     color: $text-color-light !important;
   }
 
+  &.btn-outline-alt-light {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-alt-dark {
+    color: $light-white !important;
+    border-color: $light-white !important;
+    background-color: $bg-body-dark !important;
+  }
+
   &.btn-outline-primary:hover {
     background-color: $bg-btn-outline-light !important;
     color: $text-color-light !important;
@@ -224,6 +235,9 @@
   &.btn-outline-primary-dark:hover {
     background-color: $bg-btn-outline-dark !important;
     color: $text-color-dark !important;
+  }
+  &.btn-primary:focus {
+    box-shadow: none !important;
   }
   &.btn-outline-light {
     color: $primary !important;
@@ -325,6 +339,42 @@
   }
 }
 
+.large-tabs-light {
+  .nav-tabs {
+    border: white;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+  .nav-tabs .nav-link {
+    color: $text-muted-light;
+    background: $gray-border;
+    border-bottom: 0px;
+  }
+  .nav-link.active {
+    color: $text-color-light;
+    background: white;
+    border: white;
+  }
+}
+
+.large-tabs-dark {
+  .nav-tabs {
+    border: $bg-body-dark;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+  .nav-tabs .nav-link {
+    color: $text-muted-dark;
+    background: $gray-border-dark;
+    border-bottom: 0px;
+  }
+  .nav-link.active {
+    color: $text-color-dark;
+    background: $text-color-light;
+    border: $text-color-light;
+  }
+}
+
 .border-gray {
   border: 1px solid $gray-border !important;
 }
@@ -358,4 +408,23 @@
 
 .progress {
   height: 4px !important;
+}
+
+.limited-dropdown {
+  .dropdown-menu {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+}
+
+.custom-input-active {
+  background-color: $primary !important;
+  color: white !important;
+}
+
+.icon-primary {
+  background-color: $primary !important;
+  border-radius: 36px !important;
+  border: 8px solid $primary !important;
+  color: white !important;
 }

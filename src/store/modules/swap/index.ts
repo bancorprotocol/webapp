@@ -16,7 +16,8 @@ import {
   PoolTokenPosition,
   ViewRelay,
   ViewToken,
-  LiquidityModule
+  LiquidityModule,
+  ConvertReturn
 } from "@/types/bancor";
 import { vxm, store } from "@/store";
 import {
@@ -131,6 +132,11 @@ export class BancorModule extends VuexModule.With({
   get moreTokensAvailable() {
     // @ts-ignore
     return vxm[`${this.currentNetwork}Bancor`]["moreTokensAvailable"];
+  }
+
+  get tokenBalance() {
+    // @ts-ignore
+    return vxm[`${this.currentNetwork}Bancor`]["tokenBalance"];
   }
 
   get loadingTokens() {
@@ -357,8 +363,13 @@ export class BancorModule extends VuexModule.With({
     return this.dispatcher(["getCost", proposedTransaction]);
   }
 
-  @action async getReturn(proposedTransaction: ProposedFromTransaction) {
-    return this.dispatcher(["getReturn", proposedTransaction]);
+  @action async getReturn(
+    proposedTransaction: ProposedFromTransaction
+  ): Promise<ConvertReturn> {
+    return this.dispatcher([
+      "getReturn",
+      proposedTransaction
+    ]) as Promise<ConvertReturn>;
   }
 
   @action async addLiquidity(addLiquidityParams: LiquidityParams) {

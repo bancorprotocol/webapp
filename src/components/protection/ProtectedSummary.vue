@@ -77,17 +77,21 @@ export default class ProtectedSummary extends BaseComponent {
         { key: i18n.t("total_fees"), value: "--" }
       ];
     } else {
-      const initialStake = this.positions
+      const positions = this.positions;
+
+      const initialStake = positions
         .map(x => Number(x.stake.usdValue || 0))
-        .reduce((sum, current) => sum + current);
+        .reduce((sum, current) => sum + current, 0);
 
-      const protectedValue = this.positions
-        .map(x => Number(x.fullyProtected.usdValue || 0))
-        .reduce((sum, current) => sum + current);
+      const protectedValue = positions
+        .map(x => Number((x.fullyProtected && x.fullyProtected.usdValue) || 0))
+        .reduce((sum, current) => sum + current, 0);
 
-      const claimableValue = this.positions
-        .map(x => Number(x.protectedAmount.usdValue || 0))
-        .reduce((sum, current) => sum + current);
+      const claimableValue = positions
+        .map(x =>
+          Number((x.protectedAmount && x.protectedAmount.usdValue) || 0)
+        )
+        .reduce((sum, current) => sum + current, 0);
 
       const fees = protectedValue - initialStake;
 
