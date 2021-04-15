@@ -478,7 +478,7 @@ export const en = {
   rate_above_market:
     "The rate is too high above market rate and will likely not be fulfilled",
   trade_at_pre_det: "Trade at a pre-determined price",
-  exe_market_rate: "Executing swap on current market rate",
+  exe_market_rate: "Executing trade on current market rate",
   rate_swap_tokens:
     "Select the rate at which you would like to sell your tokens",
   powered_by_keeper_dao: "Limit orders are powered by KeeperDAO"
