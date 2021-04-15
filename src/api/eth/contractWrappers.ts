@@ -10,6 +10,7 @@ import {
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
   RegisteredContracts,
+  RemoveLiquidityReturn,
   TimeScale,
   WeiExtendedAsset
 } from "@/types/bancor";
@@ -207,27 +208,17 @@ export const getRemoveLiquidityReturn = async (
   ppm: string,
   removeTimestamp: number,
   web3?: Web3
-): Promise<PositionReturn | false> => {
+): Promise<PositionReturn> => {
   throwIfNotContract(protectionContract);
   const contract = buildLiquidityProtectionContract(protectionContract, web3);
 
-  try {
-    const res = await contract.methods
-      .removeLiquidityReturn(id, ppm, String(removeTimestamp))
-      .call();
-    const keys = ["targetAmount", "baseAmount", "networkAmount"];
-    const pairs = toPairs(res).map(([, value], index) => [keys[index], value]);
+  const res = await contract.methods
+    .removeLiquidityReturn(id, ppm, String(removeTimestamp))
+    .call();
+  const keys = ["targetAmount", "baseAmount", "networkAmount"];
+  const pairs = toPairs(res).map(([, value], index) => [keys[index], value]);
 
-    return fromPairs(pairs) as PositionReturn;
-  } catch (e) {
-    console.log(`failed fetching position id ${e.message} `, {
-      protectionContract,
-      id,
-      ppm,
-      removeTimestamp
-    });
-    return false;
-  }
+  return fromPairs(pairs) as PositionReturn;
 
   // targetAmount - expected return amount in the reserve token
   // baseAmount - actual return amount in the reserve token
@@ -448,13 +439,6 @@ const calculateReturnOnInvestment = (
   return new BigNumber(newReturn).div(investment).minus(1).toString();
 };
 
-interface RemoveLiquidityReturn {
-  positionId: string;
-  fullLiquidityReturn: PositionReturn | false;
-  currentLiquidityReturn: PositionReturn | false;
-  roiDec: string | false;
-}
-
 export const removeLiquidityReturn = async (
   position: ProtectedLiquidity,
   liquidityProtectionContract: string
@@ -526,7 +510,6 @@ export const fetchRelayReserveBalances = async (
   blockHeight?: number
 ): Promise<WeiExtendedAsset[]> => {
   const contract = buildConverterContract(pool.converterAddress);
-  console.log("pool.converterAddress", pool.converterAddress);
   return Promise.all(
     pool.reserves.map(async reserve => ({
       contract: reserve,
@@ -571,8 +554,6 @@ export const fetchHistoricBalances = async (
           } catch (e) {
             console.error("Failed to fetch token supply.", e);
           }
-
-          console.log("blockHeight", blockHeight);
 
           let reserveBalances;
           try {

@@ -32,6 +32,7 @@ import {
   PoolLiqMiningApr,
   ProtectedLiquidity,
   ProtectedLiquidityCalculated,
+  RemoveLiquidityReturn,
   ViewProtectedLiquidity
 } from "@/types/bancor";
 import {
@@ -164,8 +165,9 @@ export const getTokenMeta = async (currentNetwork: EthNetworks) => {
   return uniqWith(final, (a, b) => compareString(a.id, b.id));
 };
 
-export const fetchPositionsTrigger$ = new Subject<null>();
-fetchPositionsTrigger$.next(null);
+export const fetchPositionsTrigger$ = new Subject<true>();
+fetchPositionsTrigger$.next(true);
+const fetchPositionsTrig$ = fetchPositionsTrigger$.pipe(shareReplay(1));
 
 onLogout$.subscribe(() => {
   vxm.ethBancor.setProtectedViewPositions([]);
@@ -429,7 +431,7 @@ whitelistedPools$.subscribe(whitelistedPools => {
 const localAndRemotePositionIds$ = combineLatest([
   onLogin$,
   liquidityProtectionStore$,
-  fetchPositionsTrigger$
+  fetchPositionsTrig$
 ]).pipe(
   switchMapIgnoreThrow(([currentUser, storeAddress]) =>
     fetchPositionIds(currentUser, storeAddress)
@@ -439,6 +441,8 @@ const localAndRemotePositionIds$ = combineLatest([
   logger("position ids"),
   shareReplay(1)
 );
+
+fetchPositionsTrigger$.next(true);
 
 const unVerifiedPositions$ = combineLatest([
   localAndRemotePositionIds$,
@@ -457,10 +461,11 @@ const removeLiquidityReturn$ = combineLatest([
   switchMapIgnoreThrow(([positions, contractAddress]) =>
     Promise.all(
       positions.map(position =>
-        removeLiquidityReturn(position, contractAddress)
+        removeLiquidityReturn(position, contractAddress).catch(() => false)
       )
     )
   ),
+  map(positions => positions.filter(Boolean) as RemoveLiquidityReturn[]),
   startWith(undefined)
 );
 

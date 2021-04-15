@@ -33,6 +33,12 @@ export interface ProtectedLiquidity {
   timestamp: string;
 }
 
+export interface RemoveLiquidityReturn {
+  positionId: string;
+  fullLiquidityReturn: PositionReturn;
+  currentLiquidityReturn: PositionReturn;
+  roiDec: string;
+}
 export interface PoolHistoricBalance {
   scale: TimeScale;
   pool: MinimalPool;

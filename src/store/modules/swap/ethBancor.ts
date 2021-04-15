@@ -1617,7 +1617,7 @@ export class EthBancorModule
   }
 
   @action async fetchProtectionPositions() {
-    fetchPositionsTrigger$.next(null);
+    fetchPositionsTrigger$.next(true);
   }
 
   @mutation updateReserveBalances(pools: MinimalPoolWithReserveBalances[]) {
@@ -6524,7 +6524,6 @@ export class EthBancorModule
       dayjs().unix(),
       w3
     );
-    if (res == false) throw new Error("Position does not exist");
 
     const position = findOrThrow(
       this.protectedViewPositions,

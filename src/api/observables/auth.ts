@@ -1,8 +1,13 @@
 import { vxm } from "@/store";
 import { Subject, combineLatest, partition, merge } from "rxjs";
-import { distinctUntilChanged, share, map, filter, tap } from "rxjs/operators";
+import {
+  distinctUntilChanged,
+  share,
+  map,
+  filter,
+  shareReplay
+} from "rxjs/operators";
 import { compareString } from "../helpers";
-import { logger } from "./customOperators";
 
 export const mockModeReceiver$ = new Subject<boolean>();
 export const authenticatedReceiver$ = new Subject<string | false>();
@@ -34,7 +39,7 @@ const [onLoginNoType$, onLogoutNoType$] = partition(
 
 export const onLogin$ = onLoginNoType$.pipe(
   map(currentUser => currentUser as string),
-  share()
+  shareReplay(1)
 );
 
 const adminAddresses = ["0xCf057A4Ce6D27da5F0320D4e2A5b3deAF608971C"];
@@ -58,7 +63,6 @@ export const onLogout$ = onLogoutNoType$.pipe(
 
 merge(onLogin$, onLogout$).subscribe(address => {
   const stringForm = address == false ? "" : address;
-  console.log("setting shit...");
   try {
     vxm.ethBancor.onAuthChange(stringForm);
     vxm.ethWallet.setLoggedInAccount(stringForm);

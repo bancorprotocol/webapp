@@ -19,6 +19,8 @@ import {
 import { RegisteredContracts } from "@/types/bancor";
 import { isEqual } from "lodash";
 import { getContractAddressesForChainOrThrow } from "@0x/contract-addresses";
+import { buildLiquidityProtectionContract } from "../eth/contractTypes";
+import { compareString } from "../helpers";
 
 const zeroXContracts$ = networkVersion$.pipe(
   switchMapIgnoreThrow(async networkVersion =>
@@ -53,9 +55,13 @@ export const liquidityProtection$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
-export const liquidityProtectionStore$ = contractAddresses$.pipe(
-  pluck("LiquidityProtectionStore"),
-  optimisticContract("LiquidityProtectionStore"),
+export const liquidityProtectionStore$ = liquidityProtection$.pipe(
+  switchMapIgnoreThrow(liquidityProtection => {
+    const contract = buildLiquidityProtectionContract(liquidityProtection);
+    return contract.methods.store().call();
+  }),
+  distinctUntilChanged(compareString),
+  logger("store"),
   shareReplay(1)
 );
 
