@@ -7871,10 +7871,10 @@ csstype@^3.0.2:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.0.7.tgz#2a5fb75e1015e84dd15692f71e89a1450290950b"
   integrity sha512-KxnUB0ZMlnUWCsx2Z8MUsr6qV6ja1w9ArPErJaJaF8a5SOWoHLIszeCTKGRGRgtLgYrs1E8CHkNSP1VZTTPc9g==
 
-csv-parse@^4.15.3:
-  version "4.15.3"
-  resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-4.15.3.tgz#8a62759617a920c328cb31c351b05053b8f92b10"
-  integrity sha512-jlTqDvLdHnYMSr08ynNfk4IAUSJgJjTKy2U5CQBSu4cN9vQOJonLVZP4Qo4gKKrIgIQ5dr07UwOJdi+lRqT12w==
+csv-parse@^4.15.4:
+  version "4.15.4"
+  resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-4.15.4.tgz#ad1ec62aaf71a642982dfcb81f1848184d691db5"
+  integrity sha512-OdBbFc0yZhOm17lSxqkirrHlFFVpKRT0wp4DAGoJelsP3LbGzV9LNr7XmM/lrr0uGkCtaqac9UhP8PDHXOAbMg==
 
 currently-unhandled@^0.4.1:
   version "0.4.1"
