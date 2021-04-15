@@ -196,28 +196,38 @@ const throwIfNotContract = (contractAddress: string) => {
     throw new Error(`${contractAddress} is an invalid contract address`);
 };
 
+// id: "191"
+// ppm: "1000000"
+// protectionContract: "0xeead394A017b8428E2D5a976a054F303F78f3c0C"
+// removeTimestamp: 1650001311
+
 export const getRemoveLiquidityReturn = async (
   protectionContract: string,
   id: string,
   ppm: string,
   removeTimestamp: number,
   web3?: Web3
-) => {
+): Promise<PositionReturn | false> => {
   throwIfNotContract(protectionContract);
   const contract = buildLiquidityProtectionContract(protectionContract, web3);
 
-  const res = await contract.methods
-    .removeLiquidityReturn(id, ppm, String(removeTimestamp))
-    .call();
+  try {
+    const res = await contract.methods
+      .removeLiquidityReturn(id, ppm, String(removeTimestamp))
+      .call();
+    const keys = ["targetAmount", "baseAmount", "networkAmount"];
+    const pairs = toPairs(res).map(([, value], index) => [keys[index], value]);
 
-  const keys = ["targetAmount", "baseAmount", "networkAmount"];
-  const pairs = toPairs(res).map(([, value], index) => [keys[index], value]);
-
-  return fromPairs(pairs) as {
-    targetAmount: string;
-    baseAmount: string;
-    networkAmount: string;
-  };
+    return fromPairs(pairs) as PositionReturn;
+  } catch (e) {
+    console.log(`failed fetching position id ${e.message} `, {
+      protectionContract,
+      id,
+      ppm,
+      removeTimestamp
+    });
+    return false;
+  }
 
   // targetAmount - expected return amount in the reserve token
   // baseAmount - actual return amount in the reserve token
@@ -440,9 +450,9 @@ const calculateReturnOnInvestment = (
 
 interface RemoveLiquidityReturn {
   positionId: string;
-  fullLiquidityReturn: PositionReturn;
-  currentLiquidityReturn: PositionReturn;
-  roiDec: string;
+  fullLiquidityReturn: PositionReturn | false;
+  currentLiquidityReturn: PositionReturn | false;
+  roiDec: string | false;
 }
 
 export const removeLiquidityReturn = async (
@@ -470,14 +480,18 @@ export const removeLiquidityReturn = async (
     )
   ]);
 
+  const roiDec =
+    fullLiquidityReturn &&
+    calculateReturnOnInvestment(
+      position.reserveAmount,
+      fullLiquidityReturn.targetAmount
+    );
+
   return {
     positionId: position.id,
     fullLiquidityReturn,
     currentLiquidityReturn,
-    roiDec: calculateReturnOnInvestment(
-      position.reserveAmount,
-      fullLiquidityReturn.targetAmount
-    )
+    roiDec
   };
 };
 

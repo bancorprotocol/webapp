@@ -260,7 +260,10 @@ export const calculatePercentageChange = (
   return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
 };
 
-export const compareString = (stringOne: string, stringTwo: string) => {
+export const compareString = (
+  stringOne: string,
+  stringTwo: string
+): boolean => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))
     throw new Error(
@@ -739,7 +742,6 @@ export const onboard = Onboard({
   hideBranding: true,
   subscriptions: {
     address: address => {
-      vxm.ethWallet.accountChange(address);
       authenticatedReceiver$.next(address);
     },
     balance: balance => vxm.ethWallet.nativeBalanceChange(balance),

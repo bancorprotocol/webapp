@@ -436,6 +436,7 @@ const localAndRemotePositionIds$ = combineLatest([
   ),
   optimisticPositionIds(),
   distinctUntilChanged(compareIdArray),
+  logger("position ids"),
   shareReplay(1)
 );
 
@@ -800,6 +801,7 @@ combineLatest([
 combineLatest([onLogin$, minimalPools$]).subscribe(
   ([userAddress, minimalPools]) => {
     if (userAddress) {
+      vxm.ethBancor.wipeTokenBalances();
       const allTokens = minimalPools.flatMap(pool => [
         ...pool.reserves,
         pool.anchorAddress

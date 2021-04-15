@@ -33,10 +33,6 @@ export interface StringRfq {
   expiry: string;
   salt: string;
 }
-
-authenticated$.subscribe(x => console.log("regular joe 3", x));
-onLogin$.subscribe(x => console.log(x, "regular joe 2"));
-
 export interface KeeperTokenResponse {
   result: Result;
   message: string;

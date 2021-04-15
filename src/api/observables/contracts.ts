@@ -33,6 +33,7 @@ export const exchangeProxy$ = zeroXContracts$.pipe(
 
 export const contractAddresses$ = networkVars$.pipe(
   switchMapIgnoreThrow(networkVariables => {
+    console.log(networkVariables.contractRegistry, "contract registry");
     return fetchContractAddresses(networkVariables.contractRegistry).catch(() =>
       vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
     );

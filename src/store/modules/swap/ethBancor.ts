@@ -1232,10 +1232,6 @@ interface StakedAndReserve {
   }[];
 }
 
-exchangeProxy$.subscribe(x => {
-  console.log(x, "is the address!");
-});
-
 const polishTokens = (tokenMeta: TokenMeta[], tokens: Token[]) => {
   const ethReserveToken: Token = {
     contract: ethReserveAddress,
@@ -4749,6 +4745,7 @@ export class EthBancorModule
       ) as RegisteredContracts;
 
       this.setContractAddresses(registeredContracts);
+      console.log(registeredContracts, "are registered contracts");
       return registeredContracts;
     } catch (e) {
       throw new Error(e.message);
@@ -5923,9 +5920,9 @@ export class EthBancorModule
     }
 
     const uniqueAddresses = uniqWith(
-      tokenContractAddresses.filter(web3.utils.isAddress),
+      tokenContractAddresses,
       compareString
-    );
+    ).filter(web3.utils.isAddress);
 
     const ethAddresses = [
       ethReserveAddress,
@@ -6527,6 +6524,7 @@ export class EthBancorModule
       dayjs().unix(),
       w3
     );
+    if (res == false) throw new Error("Position does not exist");
 
     const position = findOrThrow(
       this.protectedViewPositions,
