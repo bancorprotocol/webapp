@@ -2,6 +2,7 @@ import { uniqWith } from "lodash";
 import { combineLatest, merge, Subject } from "rxjs";
 import {
   distinctUntilChanged,
+  filter,
   map,
   pluck,
   share,
@@ -166,8 +167,8 @@ export const getTokenMeta = async (currentNetwork: EthNetworks) => {
 };
 
 export const fetchPositionsTrigger$ = new Subject<true>();
-fetchPositionsTrigger$.next(true);
 const fetchPositionsTrig$ = fetchPositionsTrigger$.pipe(shareReplay(1));
+fetchPositionsTrigger$.next(true);
 
 onLogout$.subscribe(() => {
   vxm.ethBancor.setProtectedViewPositions([]);
@@ -363,7 +364,6 @@ bntSupply$.subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
 tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
 
 export const lockedBalancesTrigger$ = new Subject<null>();
-lockedBalancesTrigger$.next(null);
 
 combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
   .pipe(
@@ -374,6 +374,8 @@ combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
   .subscribe(balances => {
     vxm.ethBancor.setLockedBalances(balances);
   });
+
+lockedBalancesTrigger$.next(null);
 
 export const minNetworkTokenLiquidityForMinting$ = settingsContractAddress$.pipe(
   switchMapIgnoreThrow(settingsContractAddress =>
@@ -428,6 +430,15 @@ whitelistedPools$.subscribe(whitelistedPools => {
   vxm.ethBancor.setWhiteListedPoolsLoading(false);
 });
 
+const doNothing = () => {
+  // seems some observables need to be subscribed too for other observables to receive them?
+  // unknown behavior
+};
+
+onLogin$.subscribe(doNothing);
+liquidityProtectionStore$.subscribe(doNothing);
+fetchPositionsTrig$.subscribe(doNothing);
+
 const localAndRemotePositionIds$ = combineLatest([
   onLogin$,
   liquidityProtectionStore$,
@@ -438,7 +449,7 @@ const localAndRemotePositionIds$ = combineLatest([
   ),
   optimisticPositionIds(),
   distinctUntilChanged(compareIdArray),
-  logger("position ids"),
+  filter(positions => positions.length > 0),
   shareReplay(1)
 );
 
@@ -803,10 +814,11 @@ combineLatest([
     vxm.ethBancor.setLoadingPositions(false);
   });
 
+onLogout$.subscribe(() => vxm.ethBancor.wipeTokenBalances());
+
 combineLatest([onLogin$, minimalPools$]).subscribe(
   ([userAddress, minimalPools]) => {
     if (userAddress) {
-      vxm.ethBancor.wipeTokenBalances();
       const allTokens = minimalPools.flatMap(pool => [
         ...pool.reserves,
         pool.anchorAddress
