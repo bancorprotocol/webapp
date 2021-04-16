@@ -2,7 +2,12 @@
   <div class="side-bar" :class="darkMode ? ' side-bar-dark' : ''">
     <div class="bancor-icon-wrapper">
       <b-navbar-brand class="pb-1 brand-icon mb-1">
-        <router-link :to="{ name: 'Data' }">
+        <router-link
+          :to="{
+            name: 'Data',
+            params: { service: currentService }
+          }"
+        >
           <img :src="imgLogo()" height="35px" />
         </router-link>
       </b-navbar-brand>
@@ -65,6 +70,21 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 export default class SideBarLeft extends Vue {
   @Prop() links!: ViewSideBarLink[];
   @Prop() darkMode!: boolean;
+
+  get currentService() {
+    return this.$route.params.service ?? "eth";
+  }
+
+  classSideBar(): string {
+    const classNames: string[] = [];
+    if (this.darkMode) {
+      classNames.push("side-bar-dark");
+    }
+    if (this.showMinimize) {
+      classNames.push("side-bar-minimize");
+    }
+    return classNames.join(" ");
+  }
 
   imgLogo(): string {
     if (this.darkMode) return require("@/assets/media/logos/bancor-white.png");

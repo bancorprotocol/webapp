@@ -67,9 +67,9 @@ export default class SideBar extends BaseComponent {
         icon: "swap.svg"
       },
       {
-        route: "LiqProtection",
-        key: "protection",
-        label: i18n.t("protection"),
+        route: "Portfolio",
+        key: "portfolio",
+        label: i18n.t("portfolio"),
         newTab: false,
         hideMobile: false,
         icon: "liquidity.svg"
@@ -143,8 +143,12 @@ export default class SideBar extends BaseComponent {
   }
 
   navigateToRoute(link: ViewSideBarLink) {
+    const currentService = this.$route.params.service ?? "eth";
     if (!link.newTab) {
-      this.$router.push({ name: link.route });
+      this.$router.push({
+        name: link.route,
+        params: { service: currentService }
+      });
     } else {
       this.openNewTab(link.route);
     }

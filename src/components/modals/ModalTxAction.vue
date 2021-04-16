@@ -7,7 +7,8 @@
     >
       <div class="d-flex justify-content-center mb-3">
         <div
-          class="d-flex justify-content-center align-items-center bg-primary rounded-circle"
+          class="d-flex justify-content-center align-items-center rounded-circle"
+          :class="`bg-${iconVariant}`"
           style="width: 60px; height: 60px"
         >
           <font-awesome-icon
@@ -97,6 +98,7 @@ export default class ModalTxAction extends BaseComponent {
   @PropSync("txMeta") txMetaData!: ITxMeta;
   @Prop({ default: "" }) title!: string;
   @Prop({ required: false }) icon?: string;
+  @Prop({ default: "primary" }) iconVariant!: string;
   @Prop({ required: false }) redirectOnSuccess?: string;
 
   get currentStatus() {

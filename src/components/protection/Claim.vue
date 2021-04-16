@@ -30,7 +30,7 @@
       </b-col>
     </b-row>
 
-    <modal-tx-action title="Claim your BNT" icon="coins" :tx-meta="txMeta" />
+    <modal-tx-action :title="$t('claim_bnt')" icon="coins" :tx-meta="txMeta" />
   </div>
 </template>
 
@@ -65,12 +65,14 @@ export default class Claim extends BaseTxAction {
   }
 
   async onClick() {
+    // @ts-ignore
     this.openModal();
 
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
 
     try {
+      // @ts-ignore
       this.txMeta.success = await vxm.ethBancor.claimBnt(this.onPrompt);
     } catch (err) {
       this.txMeta.txBusy = err.message;
@@ -80,7 +82,7 @@ export default class Claim extends BaseTxAction {
   }
 
   async refresh() {
-    await vxm.ethBancor.fetchAndSetLockedBalances({});
+    await vxm.ethBancor.fetchAndSetLockedBalances();
     this.$forceUpdate();
   }
 

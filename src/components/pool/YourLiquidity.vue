@@ -11,10 +11,7 @@
         >
           {{ $t("your_liquidity") }}
         </span>
-        <router-link
-          :to="{ name: 'LiqProtection' }"
-          class="font-size-12 font-w500"
-        >
+        <router-link :to="{ name: 'Portfolio' }" class="font-size-12 font-w500">
           {{ $t("view_protected_tokens") }}
         </router-link>
       </b-col>

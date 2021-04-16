@@ -1,6 +1,8 @@
 import BigNumber from "bignumber.js";
 import { isAddress } from "web3-utils";
 import { web3 } from "@/api/web3";
+import { compareString, sortAlongSide } from "../helpers";
+
 
 const addZeros = (numberOfZeros: number, noLeadingZeros: string) => {
   const zeros = [...Array(numberOfZeros)].map(() => "0");
@@ -55,31 +57,53 @@ export interface MinimalRelay {
   reserves: TokenSymbol[];
 }
 
+export interface ViewAmount {
+  id: string;
+  amount: string;
+}
 export interface MinimalPool {
   anchorAddress: string;
   converterAddress: string;
   reserves: string[];
+}
+export interface MinimalPoolWithReserveBalances extends MinimalPool {
+  reserveBalances: ViewAmount[];
 }
 
 export const generateEthPath = (from: string, relays: MinimalRelay[]) => {
   if (!Array.isArray(relays))
     throw new Error("Array was not passed to generate eth");
   if (typeof from !== "string") throw new Error("From Symbol must be passed");
-  return relays.reduce<{ lastSymbol: string; path: string[] }>(
+  return relays.reduce<{
+    lastSymbol: string;
+    path: string[];
+    sortedRelays: MinimalRelay[];
+  }>(
     (acc, item) => {
       const destinationSymbol = item.reserves.find(
         reserve => reserve.symbol !== acc.lastSymbol
       )!;
+      const anchorAddress = item.anchorAddress;
+      const [fromReserve, toReserve] = sortAlongSide(
+        item.reserves,
+        reserve => reserve.symbol,
+        [acc.lastSymbol]
+      );
       return {
-        path: [...acc.path, item.anchorAddress, destinationSymbol.contract],
-        lastSymbol: destinationSymbol.symbol
+        path: [...acc.path, anchorAddress, destinationSymbol.contract],
+        lastSymbol: destinationSymbol.symbol,
+        sortedRelays: [
+          ...acc.sortedRelays,
+          { ...item, reserves: [fromReserve, toReserve] }
+        ]
       };
     },
     {
       lastSymbol: from,
       path: [
         relays[0].reserves.find(reserve => reserve.symbol == from)!.contract
-      ]
+      ],
+      sortedRelays: []
     }
-  ).path;
+  );
 };

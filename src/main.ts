@@ -12,7 +12,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import "@/assets/_scss/main.scss";
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { fab, fal, fas } from "@/assets/fontawesome";
+import { fab, fal, fas, far } from "@/assets/fontawesome";
 
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
@@ -69,7 +69,7 @@ Vue.use(
 
 Vue.use(BootstrapVue);
 
-library.add(...fas, ...fab, ...fal);
+library.add(...fas, ...fab, ...fal, ...far);
 
 Vue.component("FontAwesomeIcon", FontAwesomeIcon);
 

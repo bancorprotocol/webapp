@@ -2,6 +2,7 @@
   <div
     class="block"
     :class="[
+      { 'block-rounded-tabs': tabs },
       { 'block-rounded': rounded },
       { 'block-shadow': shadow },
       { 'block-shadow-light': shadowLight },
@@ -15,7 +16,7 @@
       v-else-if="title"
       class="d-flex justify-content-between align-items-center py-2 px-3 font-size-14 font-w600"
       :class="[
-        darkMode ? 'border-bottom-dark' : 'border-bottom-light',
+        tabs ? '' : darkMode ? 'border-bottom-dark' : 'border-bottom-light',
         searchInput !== null ? 'pr-2' : ''
       ]"
     >
@@ -24,8 +25,11 @@
       </div>
 
       <h3
-        class="m-0 p-0 my-2 font-size-14 font-w600 w-100"
-        :class="titleClasses"
+        class="m-0 p-0 my-2 w-100"
+        :class="[
+          ...titleClasses,
+          tabs ? 'font-size-14 font-w400' : 'font-size-16 font-w500'
+        ]"
       >
         {{ title }}
       </h3>
@@ -97,6 +101,7 @@ export default class ContentBlock extends BaseComponent {
   @Prop() title?: string;
   @Prop({ default: false }) noHeader?: boolean;
   @Prop({ default: true }) rounded?: boolean;
+  @Prop({ default: false }) tabs?: boolean;
   @Prop({ default: false }) shadow?: boolean;
   @Prop({ default: false }) shadowLight?: boolean;
   @Prop({ default: false }) px0?: boolean;
