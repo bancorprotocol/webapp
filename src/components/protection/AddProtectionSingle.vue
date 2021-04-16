@@ -53,6 +53,7 @@
       :error-msg="inputError"
       :tokens="tokens"
       @select="toggleReserveIndex"
+      :use-dropdown="true"
     />
 
     <alert-block
