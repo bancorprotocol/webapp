@@ -63,7 +63,7 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Vue, Emit } from "vue-property-decorator";
+import { Component, Emit, Prop, Vue } from "vue-property-decorator";
 import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 
 @Component
@@ -79,9 +79,6 @@ export default class SideBarLeft extends Vue {
     const classNames: string[] = [];
     if (this.darkMode) {
       classNames.push("side-bar-dark");
-    }
-    if (this.showMinimize) {
-      classNames.push("side-bar-minimize");
     }
     return classNames.join(" ");
   }
