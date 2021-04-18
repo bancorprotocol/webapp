@@ -22,13 +22,13 @@
           :padding="false"
           :px0="true"
           :shadow-light="true"
-          :filters="true"
+          :filters="positions.length"
           :title="
             positions.length ? $t('protected_positions') : $t('protected')
           "
           :search.sync="searchProtected"
         >
-          <div v-if="loading" class="d-flex justify-content-center mt-3">
+          <div v-if="loading" class="d-flex justify-content-center mt-3 pb-3">
             <b-spinner
               style="width: 3rem; height: 3rem"
               class="text-primary"
@@ -37,7 +37,7 @@
           </div>
           <div
             v-else-if="!positions.length"
-            class="mx-3 mt-3 font-size-14 font-w500"
+            class="mx-3 mt-3 pb-3 font-size-14 font-w500"
           >
             {{ $t("no_positions_found") }}
           </div>

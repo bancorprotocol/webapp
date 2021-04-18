@@ -479,7 +479,6 @@ export const en = {
     order_expired:
       "Expired orders cannot be fulfil, yet they are still available on the contract. In order to remove them from the table, please cancel them."
   },
-  protected_not_found: "No protected positions found.",
   claim_bnt: "Claim your BNT",
   pool_tokens: "Pool tokens",
   rate_below_market:
