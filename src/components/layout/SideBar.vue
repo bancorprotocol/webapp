@@ -11,10 +11,9 @@
       :dark-mode="darkMode"
       :links="links"
       @linkClicked="navigateToRoute"
-      @moreClicked="showMore = !showMore"
     />
 
-    <div v-if="showMore" class="sidebar-more">
+    <div class="sidebar-more">
       <side-bar-bottom-more
         :dark-mode="darkMode"
         :links="links"
@@ -46,8 +45,6 @@ export interface ViewSideBarLink {
   components: { SideBarBottom, SideBarBottomMore, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {
-  showMore: boolean = false;
-
   get links() {
     const currentKeys = this.$route.matched.map(
       match => match.meta.key as string
@@ -146,9 +143,7 @@ export default class SideBar extends BaseComponent {
   }
 
   navigateToRoute(link: ViewSideBarLink) {
-    this.showMore = false;
     const currentService = this.$route.params.service ?? "eth";
-
     if (!link.newTab) {
       this.$router.push({
         name: link.route,
