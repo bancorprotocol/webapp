@@ -14,7 +14,7 @@
     <alert-block
       v-if="priceDeviationTooHigh && !inputError"
       variant="error"
-      class="mb-3 mt-3"
+      class="mb-3"
       msg="Due to price volatility, withdrawing your tokens is currently not available. Please try again in a few minutes."
     />
 
@@ -77,7 +77,7 @@
 
     <main-button
       :label="$t('continue')"
-      @click="initWithdraw"
+      @click="initAction"
       :active="true"
       :large="true"
       :disabled="disableActionButton"
@@ -134,22 +134,27 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
-import { ViewAmountDetail, ViewRelay } from "@/types/bancor";
+import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import { compareString, findOrThrow } from "@/api/helpers";
+import ModalBase from "@/components/modals/ModalBase.vue";
+import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
 import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
-import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
+import { addNotification } from "@/components/compositions/notifications";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
 @Component({
   components: {
     ModalTxAction,
     LogoAmountSymbol,
+    ActionModalStatus,
+    ModalBase,
     AlertBlock,
     PercentageSlider,
     LabelContentSplit,
@@ -162,6 +167,10 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
     return vxm.bancor.relay(this.position.stake.poolId);
   }
   percentage: string = "50";
+  modal = false;
+  txBusy = false;
+  success: TxResponse | string | null = null;
+  error = "";
 
   outputs: ViewAmountDetail[] = [];
   expectedValue: ViewAmountDetail | null = null;
@@ -177,7 +186,7 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
     if (this.vBntWarning) return true;
     else if (parseFloat(this.percentage) === 0) return true;
     else if (this.priceDeviationTooHigh) return true;
-    else return !!this.inputError;
+    else return this.inputError ? true : false;
   }
 
   get inputError() {
@@ -196,14 +205,15 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
   }
 
   get position() {
-    return findOrThrow(vxm.ethBancor.protectedPositions, position =>
+    const pos = findOrThrow(vxm.ethBancor.protectedPositions, position =>
       compareString(position.id, this.$route.params.id)
     );
+    return pos;
   }
 
   get rewardsWithMultiplier() {
     return vxm.ethBancor.protectedPositions.some(
-      position => position.rewardsMultiplier > 1
+      position => position.rewardsMultiplier && position.rewardsMultiplier > 1
     );
   }
 
@@ -245,17 +255,25 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
       : new BigNumber(0);
   }
 
-  async initWithdraw() {
+  async initAction() {
     this.openModal();
-
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
-
     try {
       this.txMeta.success = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
         id: this.position.id,
         onPrompt: this.onPrompt
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: "Withdraw Protection",
+        description: `Withdraw ~${this.prettifyNumber(
+          this.expectedValue!.amount
+        )} ${this.expectedValue!.symbol} from your protected position in pool ${
+          this.pool.name
+        }.`,
+        txHash: this.txMeta.success.txId
       });
     } catch (err) {
       this.txMeta.txError = err.message;
@@ -264,7 +282,24 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
     }
   }
 
-  async onPercentUpdate() {
+  onModalClick() {
+    if (this.success) {
+      this.setDefault();
+      this.modal = false;
+      this.$router.push({ name: "Portfolio", params: { scroll: "true" } });
+    } else if (this.error) {
+      this.setDefault();
+      this.modal = false;
+    }
+  }
+
+  setDefault() {
+    this.error = "";
+    this.success = null;
+    this.txBusy = false;
+  }
+
+  async onPercentUpdate(newPercent: string) {
     const percentage = Number(this.percentage) / 100;
     if (!percentage) return;
     const res = await vxm.ethBancor.calculateSingleWithdraw({
@@ -296,7 +331,7 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
 
   async mounted() {
     if (!this.isVoteLoaded) await vxm.ethGovernance.init();
-    await this.onPercentUpdate();
+    await this.onPercentUpdate(this.percentage);
     await this.loadVBntBalance();
     this.interval = setInterval(async () => {
       await this.loadVBntBalance();
@@ -306,6 +341,16 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
 
   destroyed() {
     clearInterval(this.interval);
+  }
+
+  get modalConfirmButton() {
+    return this.error
+      ? i18n.t("close")
+      : this.success
+      ? i18n.t("close")
+      : this.txBusy
+      ? `${i18n.t("processing")}...`
+      : i18n.t("confirm");
   }
 }
 </script>

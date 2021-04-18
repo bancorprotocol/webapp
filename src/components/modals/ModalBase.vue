@@ -48,7 +48,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, VModel } from "vue-property-decorator";
+import {
+  Component,
+  Emit,
+  Prop,
+  PropSync,
+  VModel
+} from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -70,6 +76,7 @@ export default class ModalBase extends BaseComponent {
     ];
   }
 
+  @Emit("onHide")
   onHide() {
     this.show = false;
   }

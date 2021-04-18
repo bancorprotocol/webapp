@@ -3,6 +3,16 @@
     <div id="navigation-top" class="d-flex justify-content-end">
       <b-form-input class="width 800px !important" v-model="user" />
       <b-btn @click="setUser"> SetUser </b-btn>
+      <b-btn
+        @click="loginAction"
+        :variant="darkMode ? 'outline-dark' : 'outline-light'"
+        class="block-rounded"
+        size="sm"
+      >
+        <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
+        <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
+      </b-btn>
+      <Notifications />
       <settings-menu />
       <bancor-menu />
     </div>
@@ -17,9 +27,11 @@ import SettingsMenu from "@/components/layout/SettingsMenu.vue";
 import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
+import Notifications from "@/components/compositions/notifications/Notifications.vue";
+import { onLogout$ } from "@/api/observables/auth";
 
 @Component({
-  components: { BancorMenu, SettingsMenu }
+  components: { BancorMenu, SettingsMenu, Notifications }
 })
 export default class Navigation extends BaseComponent {
   user = "";
@@ -94,6 +106,9 @@ export default class Navigation extends BaseComponent {
   async loginActionEth() {
     if (vxm.ethWallet.currentUser) {
       onboard.walletReset();
+      onLogout$.subscribe(() =>
+        localStorage.removeItem("SELECTED_WEB3_WALLET")
+      );
     } else {
       await vxm.ethWallet.connect();
     }

@@ -11,8 +11,20 @@ import {
 import BigNumber from "bignumber.js";
 import { partition } from "lodash";
 import { compareString } from "@/api/helpers";
-import sort from "fast-sort";
+import { sort } from 'fast-sort';
 import numeral from "numeral";
+import wait from "waait";
+
+export const mapIgnoreThrown = async <T, V>(
+  input: readonly T[],
+  iteratee: (value: T, index: number) => Promise<V>
+): Promise<V[]> => {
+  const IGNORE_TOKEN = "IGNORE_TOKEN";
+  const res = await Promise.all(
+    input.map((val, index) => iteratee(val, index).catch(() => IGNORE_TOKEN))
+  );
+  return res.filter(res => res !== IGNORE_TOKEN) as V[];
+};
 
 const oneMillion = new BigNumber(1000000);
 
@@ -31,6 +43,14 @@ export const calculateAmountToGetSpace = (
     .plus(networkTokensMintedDecimal)
     .minus(limitAmount)
     .toString();
+};
+
+export const throwAfter = async (
+  milliseconds: number,
+  errorMessage?: string
+): Promise<never> => {
+  await wait(milliseconds);
+  throw new Error(errorMessage || "Timeout");
 };
 
 export const groupPositionsArray = (
@@ -57,20 +77,22 @@ export const groupPositionsArray = (
         item.insuranceStart = val.insuranceStart;
         item.coverageDecPercent = val.coverageDecPercent;
         item.fullCoverage = val.fullCoverage;
-        item.pendingReserveReward = val.pendingReserveReward;
-        item.rewardsMultiplier = val.rewardsMultiplier;
+        item.pendingReserveReward = new BigNumber(
+          val.pendingReserveReward ?? 0
+        );
+        item.rewardsMultiplier = val.rewardsMultiplier ?? 0;
 
         const sumStakeAmount = filtered
           .map(x => Number(x.stake.amount || 0))
-          .reduce((sum, current) => sum + current);
+          .reduce((sum, current) => sum + current, 0);
 
         const sumFullyProtected = filtered
           .map(x => Number(x.fullyProtected ? x.fullyProtected.amount : 0))
-          .reduce((sum, current) => sum + current);
+          .reduce((sum, current) => sum + current, 0);
 
         const sumProtectedAmount = filtered
           .map(x => Number(x.protectedAmount ? x.protectedAmount.amount : 0))
-          .reduce((sum, current) => sum + current);
+          .reduce((sum, current) => sum + current, 0);
 
         const sumFullyProtectedUSD = sumFullyProtected * val.reserveTokenPrice;
 

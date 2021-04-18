@@ -39,10 +39,10 @@
     />
 
     <modal-tx-action
-      title="Add Liquidity"
+      :title="$t('add_liquidity')"
       icon="plus"
       :tx-meta.sync="txMeta"
-      redirect-on-success="Pool"
+      redirect-on-success="Portfolio"
     >
       <gray-border-block>
         <label-content-split
@@ -82,6 +82,7 @@ import { compareString, formatNumber, formatPercent } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -138,6 +139,22 @@ export default class PoolActionsAddV1 extends BaseTxAction {
         ],
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.add_liquidity.title"),
+        description: this.$tc(
+          "notifications.add.add_liquidity.description",
+          0,
+          {
+            amount1: this.prettifyNumber(this.amount1),
+            symbol1: this.reserveOne.symbol,
+            amount2: this.prettifyNumber(this.amount2),
+            symbol2: this.reserveTwo.symbol,
+            pool: this.pool.name
+          }
+        ),
+        txHash: this.txMeta.success!.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;

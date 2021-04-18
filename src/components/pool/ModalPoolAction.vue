@@ -78,7 +78,7 @@ export default class ModalPoolAction extends BaseComponent {
     if (this.success) {
       this.$bvModal.hide("modal-pool-action");
       this.success = null;
-      await this.$router.push({ name: "Pool" });
+      await this.$router.push({ name: "Portfolio" });
       return;
     }
 

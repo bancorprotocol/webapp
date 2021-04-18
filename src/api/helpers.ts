@@ -11,15 +11,15 @@ import {
   OnUpdate,
   ReserveFeed,
   Step,
+  TableItem,
   TokenBalanceParam,
   TokenBalanceReturn,
   TokenBalances,
   TokenMeta,
   ViewAmount,
   ViewRelay,
-  ViewToken,
-  TableItem,
-  ViewReserve
+  ViewReserve,
+  ViewToken
 } from "@/types/bancor";
 import Web3 from "web3";
 import { EosTransitModule } from "@/store/modules/wallet/eosWallet";
@@ -34,7 +34,11 @@ import BigNumber from "bignumber.js";
 import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
-import { getAlchemyUrl, web3, getInfuraAddress, EthNetworks } from "@/api/web3";
+import { authenticatedReceiver$ } from "./observables/auth";
+import { EthNetworks, getAlchemyUrl, getInfuraAddress, web3 } from "@/api/web3";
+import { i18n } from "@/i18n";
+import { Duration } from "dayjs/plugin/duration";
+import { Dayjs } from "dayjs";
 
 export enum PositionType {
   single,
@@ -59,13 +63,15 @@ export interface LockedBalance {
   expirationTime: number;
 }
 
+export const buildRange = (count: number): number[] =>
+  [...new Array(count)].map((_, index) => index);
+
 export const traverseLockedBalances = async (
   contract: string,
   owner: string,
-  expectedCount: number,
-  w3: Web3
+  expectedCount: number
 ): Promise<LockedBalance[]> => {
-  const storeContract = buildLiquidityProtectionStoreContract(contract, w3);
+  const storeContract = buildLiquidityProtectionStoreContract(contract, web3);
   let lockedBalances: LockedBalance[] = [];
 
   const scopeRange = 5;
@@ -250,11 +256,14 @@ export const calculateProgressLevel = (
 export const calculatePercentageChange = (
   numberNow: number,
   numberBefore: number
-):number  => {
+): number => {
   return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
 };
 
-export const compareString = (stringOne: string, stringTwo: string) => {
+export const compareString = (
+  stringOne: string,
+  stringTwo: string
+): boolean => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))
     throw new Error(
@@ -712,13 +721,28 @@ const wallets = [
   { walletName: "wallet.io", rpcUrl: RPC_URL }
 ];
 
+export const calculatePercentIncrease = (
+  small: number | string,
+  big: number | string
+): string => {
+  const profit = new BigNumber(big).minus(small);
+  return profit.div(small).toString();
+};
+
+const walletChecks = [
+  { checkName: "derivationPath" },
+  { checkName: "accounts" },
+  { checkName: "connect" },
+  { checkName: "network" }
+];
+
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
   networkId: 1,
   hideBranding: true,
   subscriptions: {
     address: address => {
-      vxm.ethWallet.accountChange(address);
+      authenticatedReceiver$.next(address);
     },
     balance: balance => vxm.ethWallet.nativeBalanceChange(balance),
     network: (network: EthNetworks) => {
@@ -736,7 +760,8 @@ export const onboard = Onboard({
   },
   walletSelect: {
     wallets
-  }
+  },
+  walletCheck: walletChecks
 });
 
 export const fetchReserveBalance = async (
@@ -882,7 +907,7 @@ export interface PoolToken {
 }
 
 interface LiqDepth {
-  liqDepth: number;
+  liqDepth?: number;
 }
 
 export const assetToDecNumberString = (asset: Asset): string =>
@@ -894,6 +919,9 @@ export const decNumberStringToAsset = (
 ): Asset => new Asset(`${decNumberString} ${symbolName}`);
 
 export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
+  if (a.liqDepth == undefined && b.liqDepth == undefined) return 0;
+  if (a.liqDepth == undefined) return 1;
+  if (b.liqDepth == undefined) return -1;
   if (isNaN(a.liqDepth) && isNaN(b.liqDepth)) return 0;
   if (isNaN(a.liqDepth)) return 1;
   if (isNaN(b.liqDepth)) return -1;
@@ -1288,6 +1316,17 @@ export const formatUnixTime = (
   return { date, time, dateTime };
 };
 
+export const formatDuration = (duration: plugin.Duration): string => {
+  let sentence = "";
+  const days = duration.days();
+  const minutes = duration.minutes();
+  const hours = duration.hours();
+  if (days > 0) sentence += i18n.tc("days", days);
+  if (hours > 0) sentence += " " + i18n.tc("hours", hours);
+  if (minutes > 0) sentence += " " + i18n.tc("minutes", minutes);
+  return sentence;
+};
+
 export const defaultTableSort = (
   row: TableItem,
   sortBy: string,
@@ -1307,4 +1346,19 @@ export const defaultTableSort = (
     if (isDefined) return number.toNumber();
     else return null;
   } else return value;
+};
+
+export const generateEtherscanTxLink = (
+  txHash: string,
+  ropsten: boolean = false
+): string => `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
+
+export const durationTimer = (
+  duration: Duration,
+  start: Dayjs = dayjs(),
+  format: string = "DD[d:]HH[h:]mm[m]"
+): string => {
+  const end = start.add(duration);
+  const result = dayjs.duration(end.diff(start));
+  return result.format(format);
 };

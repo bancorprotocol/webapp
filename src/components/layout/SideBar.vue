@@ -11,10 +11,9 @@
       :dark-mode="darkMode"
       :links="links"
       @linkClicked="navigateToRoute"
-      @moreClicked="showMore = !showMore"
     />
 
-    <div v-if="showMore" class="sidebar-more">
+    <div class="sidebar-more">
       <side-bar-bottom-more
         :dark-mode="darkMode"
         :links="links"
@@ -46,8 +45,6 @@ export interface ViewSideBarLink {
   components: { SideBarBottom, SideBarBottomMore, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {
-  showMore: boolean = false;
-
   get links() {
     const currentKeys = this.$route.matched.map(
       match => match.meta.key as string
@@ -70,9 +67,9 @@ export default class SideBar extends BaseComponent {
         icon: "swap.svg"
       },
       {
-        route: "LiqProtection",
-        key: "protection",
-        label: i18n.t("protection"),
+        route: "Portfolio",
+        key: "portfolio",
+        label: i18n.t("portfolio"),
         newTab: false,
         hideMobile: false,
         icon: "liquidity.svg"
@@ -127,7 +124,7 @@ export default class SideBar extends BaseComponent {
         icon: "bntee.png"
       },
       {
-        route: "https://www.duneanalytics.com/bancor",
+        route: "https://duneanalytics.com/Bancor/bancor_1",
         key: "analytics",
         label: "Bancor Analytics",
         newTab: true,
@@ -146,9 +143,12 @@ export default class SideBar extends BaseComponent {
   }
 
   navigateToRoute(link: ViewSideBarLink) {
-    this.showMore = false;
+    const currentService = this.$route.params.service ?? "eth";
     if (!link.newTab) {
-      this.$router.push({ name: link.route });
+      this.$router.push({
+        name: link.route,
+        params: { service: currentService }
+      });
     } else {
       this.openNewTab(link.route);
     }

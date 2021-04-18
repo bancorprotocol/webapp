@@ -1,6 +1,13 @@
 <template>
   <div class="pt-2">
-    <div class="float-right mr-2">
+    <div class="float-right d-flex align-items-center mr-2">
+      <b-btn
+        @click="$router.push({ name: 'PoolCreate' })"
+        class="d-lg-none mx-2"
+        :variant="darkMode ? 'outline-alt-dark' : 'outline-alt-light'"
+      >
+        {{ `+ ${$t("pool")}` }}
+      </b-btn>
       <multi-input-field
         class="max-search-width-xs"
         v-model="search"
@@ -8,7 +15,17 @@
         :placeholder="$t('search')"
         prepend="search"
       />
+      <b-btn
+        @click="$router.push({ name: 'PoolCreate' })"
+        class="d-none d-lg-block mx-2"
+        :variant="darkMode ? 'outline-alt-dark' : 'outline-alt-light'"
+      >
+        <div style="width: 150px">
+          {{ $t("create_pool") }}
+        </div>
+      </b-btn>
     </div>
+
     <div class="float-right mr-2" v-if="loading">
       <b-spinner
         style="display: block; width: 1.5rem; height: 1.5rem"

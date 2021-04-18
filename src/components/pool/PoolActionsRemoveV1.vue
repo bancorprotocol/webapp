@@ -78,9 +78,9 @@
 
     <modal-tx-action
       title="Remove Liquidity"
-      icon="minus"
+      icon="arrow-from-bottom"
       :tx-meta.sync="txMeta"
-      redirect-on-success="Pool"
+      redirect-on-success="Portfolio"
     >
       <div
         class="font-size-12 mb-2"
@@ -118,6 +118,7 @@ import AlertBlock from "@/components/common/AlertBlock.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -175,6 +176,22 @@ export default class PoolActionsRemoveV1 extends BaseTxAction {
         ],
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.remove_liquidity.title"),
+        description: this.$tc(
+          "notifications.add.remove_liquidity.description",
+          0,
+          {
+            amount1: this.prettifyNumber(this.amountToken1 ?? 0),
+            symbol1: this.reserveOne.symbol,
+            amount2: this.prettifyNumber(this.amountToken2 ?? 0),
+            symbol2: this.reserveTwo.symbol,
+            pool: this.pool.name
+          }
+        ),
+        txHash: this.txMeta.success!.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;

@@ -7,7 +7,8 @@
     >
       <div class="d-flex justify-content-center mb-3">
         <div
-          class="d-flex justify-content-center align-items-center bg-primary rounded-circle"
+          class="d-flex justify-content-center align-items-center rounded-circle"
+          :class="`bg-${iconVariant}`"
           style="width: 60px; height: 60px"
         >
           <font-awesome-icon
@@ -83,7 +84,7 @@
   </modal-base>
 </template>
 <script lang="ts">
-import { Component, Emit, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync } from "vue-property-decorator";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import { ITxMeta } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -97,6 +98,7 @@ export default class ModalTxAction extends BaseComponent {
   @PropSync("txMeta") txMetaData!: ITxMeta;
   @Prop({ default: "" }) title!: string;
   @Prop({ required: false }) icon?: string;
+  @Prop({ default: "primary" }) iconVariant!: string;
   @Prop({ required: false }) redirectOnSuccess?: string;
 
   get currentStatus() {

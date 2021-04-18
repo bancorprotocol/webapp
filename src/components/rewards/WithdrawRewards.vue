@@ -37,7 +37,7 @@
       :pools="pools"
     />
 
-    <modal-tx-action :tx-meta="txMeta" redirect-on-success="LiqProtection" />
+    <modal-tx-action :tx-meta="txMeta" :title="$t('you_withdrawing_rewards')" />
   </div>
 </template>
 
@@ -53,6 +53,7 @@ import MainButton from "@/components/common/Button.vue";
 import ModalPoolSelect from "@/components/modals/ModalSelects/ModalPoolSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
@@ -111,6 +112,14 @@ export default class WithdrawRewards extends BaseTxAction {
     try {
       this.txMeta.success = await vxm.rewards.claimRewards({
         onUpdate: this.onUpdate
+      });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.withdraw.title"),
+        description: this.$tc("notifications.add.withdraw.description", 0, {
+          amount: this.prettifyNumber(this.pendingRewards.bnt)
+        }),
+        txHash: this.txMeta.success.txId
       });
     } catch (e) {
       this.txMeta.txError = e.message;

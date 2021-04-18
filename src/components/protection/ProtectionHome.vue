@@ -1,22 +1,13 @@
 <template>
-  <b-container fluid="xl" class="px-xl-0">
+  <div>
     <b-row>
       <b-col cols="12">
-        <div>
-          <span
-            class="font-size-20 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ $t("liquidity_protection") }}
-          </span>
-        </div>
-
-        <p
-          class="font-size-14 font-w400 my-3"
-          :class="darkMode ? 'text-dark' : 'text-light'"
+        <content-block
+          :title="$t('protect_tokens')"
+          :tabs="true"
+          :padding="false"
         >
-          {{ $t("protect_tokens") }}
-        </p>
+        </content-block>
       </b-col>
 
       <b-col lg="6">
@@ -28,6 +19,7 @@
 
       <b-col cols="12">
         <content-block
+          :padding="false"
           :px0="true"
           :shadow-light="true"
           :title="
@@ -35,18 +27,15 @@
           "
           :search.sync="searchProtected"
         >
-          <div v-if="loading" class="d-flex justify-content-center mt-3">
+          <div v-if="loading" class="d-flex justify-content-center py-3">
             <b-spinner
               style="width: 3rem; height: 3rem"
               class="text-primary"
               :label="`${$t('loading')}... `"
             />
           </div>
-          <div
-            v-else-if="!positions.length"
-            class="mx-3 mt-3 font-size-14 font-w500"
-          >
-            No protected positions found.
+          <div v-else-if="!positions.length" class="p-3 font-size-14 font-w500">
+            {{ $t("protected_not_found") }}
           </div>
           <div v-else>
             <ProtectedTable :positions="positions" :search="searchProtected" />
@@ -77,7 +66,7 @@
         </content-block>
       </b-col>
     </b-row>
-  </b-container>
+  </div>
 </template>
 
 <script lang="ts">

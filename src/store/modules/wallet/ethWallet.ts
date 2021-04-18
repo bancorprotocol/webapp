@@ -66,13 +66,6 @@ export class EthereumModule extends VuexModule.With({
     }
   }
 
-  @action async accountChange(loggedInAccount: string) {
-    if (loggedInAccount !== this.currentUser) {
-      this.setLoggedInAccount(loggedInAccount);
-      vxm.ethBancor.onAuthChange(loggedInAccount);
-    }
-  }
-
   @action async nativeBalanceChange(nativeBalance: string) {
     vxm.ethBancor.updateUserBalances([
       { balance: fromWei(nativeBalance), id: ethReserveAddress }

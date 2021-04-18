@@ -4,12 +4,13 @@ import Data from "@/views/Data.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import Navigation from "@/components/layout/Navigation.vue";
 import { services } from "@/api/helpers";
-import PoolHome from "@/components/pool/PoolHome.vue";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
+import SwapMarket from "@/components/swap/SwapMarket.vue";
+import SwapLimit from "@/components/swap/SwapLimit.vue";
 import CreateHome from "@/views/CreateHome.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
-import ProtectionHome from "@/views/ProtectionHome.vue";
+import Portfolio from "@/views/Portfolio.vue";
 import AddProtectionHome from "@/views/AddProtectionHome.vue";
 import ProtectionActions from "@/components/protection/ProtectionActions.vue";
 import PrivacyPolicy from "@/views/PrivacyPolicy.vue";
@@ -22,10 +23,12 @@ import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
-import VotePage from "@/components/vote/VotePage.vue";
+import VotePage from "@/components/vote-new/VotePage.vue";
 import FiatPage from "@/components/fiat/FiatPage.vue";
 import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
+import LimitOrderTable from "@/components/swap/LimitOrderTable.vue";
+import VoteLegacy from "@/components/vote/VoteLegacy.vue";
 
 Vue.use(Router);
 
@@ -108,19 +111,6 @@ export const router = new Router({
       redirect: `/${defaultModule}/vote`
     },
     {
-      path: "/:service/pool",
-      name: "Pool",
-      components: {
-        Nav: Navigation,
-        Hero: PoolHome
-      },
-      props: true,
-      meta: {
-        key: "swap",
-        feature: "Liquidity"
-      }
-    },
-    {
       path: "/:service/pool/create",
       name: "PoolCreate",
       components: {
@@ -129,7 +119,7 @@ export const router = new Router({
       },
       props: true,
       meta: {
-        key: "swap",
+        key: "data",
         feature: "Liquidity"
       }
     },
@@ -160,22 +150,22 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/protection",
-      name: "LiqProtection",
+      path: "/:service/portfolio",
+      name: "Portfolio",
       components: {
         Nav: Navigation,
-        default: ProtectionHome
+        default: Portfolio
       },
       meta: {
-        key: "protection",
-        feature: "Protection"
+        key: "portfolio",
+        feature: "Portfolio"
       }
     },
     {
-      path: "/:service/protection/whitelistedpools",
+      path: "/:service/portfolio/whitelistedpools",
       name: "WhitelistedPools",
       meta: {
-        key: "protection"
+        key: "portfolio"
       },
       components: {
         Nav: Navigation,
@@ -183,14 +173,14 @@ export const router = new Router({
       }
     },
     {
-      path: "/:service/protection/stake",
+      path: "/:service/portfolio/stake",
       components: {
         Nav: Navigation,
         Hero: ProtectionActions
       },
       props: true,
       meta: {
-        key: "protection"
+        key: "portfolio"
       },
       children: [
         {
@@ -232,16 +222,28 @@ export const router = new Router({
     },
     {
       path: "/:service/swap",
-      name: "Swap",
       components: {
         Nav: Navigation,
-        Hero: SwapHome
+        Hero: SwapHome,
+        default: LimitOrderTable
       },
       props: true,
       meta: {
         key: "swap",
         feature: "Trade"
-      }
+      },
+      children: [
+        {
+          path: "",
+          name: "Swap",
+          component: SwapMarket
+        },
+        {
+          path: "limit",
+          name: "SwapLimit",
+          component: SwapLimit
+        }
+      ]
     },
     {
       path: "/:service/data",
@@ -274,6 +276,25 @@ export const router = new Router({
           path: "",
           name: "Vote",
           component: VotePage,
+          meta: {
+            key: "vote",
+            feature: "Vote"
+          }
+        }
+      ]
+    },
+    {
+      path: "/:service/vote-legacy",
+      components: {
+        Nav: Navigation,
+        default: Vote
+      },
+      props: true,
+      children: [
+        {
+          path: "",
+          name: "VoteLegacy",
+          component: VoteLegacy,
           meta: {
             key: "vote",
             feature: "Vote"

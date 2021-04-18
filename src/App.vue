@@ -47,7 +47,7 @@
       darkMode ? 'bg-body-dark text-body-dark' : 'bg-body-light text-body-light'
     "
   >
-    <NetworkAlert />
+    <NetworkAlert v-if="!isMainNet" />
     <div name="MainLayout" class="main-layout">
       <side-bar />
       <main
@@ -84,6 +84,7 @@ import { vxm } from "@/store/";
 import wait from "waait";
 import BaseComponent from "@/components/BaseComponent.vue";
 import NetworkAlert from "@/components/layout/NetworkAlert.vue";
+import { EthNetworks } from "./api/web3";
 
 @Component({
   components: {
@@ -95,6 +96,10 @@ import NetworkAlert from "@/components/layout/NetworkAlert.vue";
 export default class App extends BaseComponent {
   loading = true;
   error = false;
+
+  get isMainNet() {
+    return vxm.ethBancor.currentNetwork == EthNetworks.Mainnet;
+  }
 
   get isDevOrStaging() {
     return (
@@ -147,12 +152,14 @@ export default class App extends BaseComponent {
 
   async created() {
     const darkMode = localStorage.getItem("darkMode") === "true";
+    const adminMode = localStorage.getItem("adminMode") === "true";
     // const locale = localStorage.getItem("locale");
     // const lang =
     //   navigator.languages && navigator.languages.length
     //     ? navigator.languages[0]
     //     : navigator.language;
     if (darkMode) vxm.general.toggleDarkMode();
+    if (adminMode) vxm.general.toggleAdminMode();
     // if (locale) vxm.general.setLocale(locale);
     // else vxm.general.setLocale(lang);
     vxm.general.setLocale("en");

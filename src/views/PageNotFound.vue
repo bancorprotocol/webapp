@@ -32,7 +32,7 @@
     >
       <main-button
         @click="
-          $router.push({ name: 'Swap', params: { service: currentNetwork } })
+          $router.push({ name: 'Data', params: { service: currentNetwork } })
         "
         class="px-5 mt-2"
         :label="$t('go_homepage')"

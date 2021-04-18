@@ -24,7 +24,7 @@
     <token-input-field
       :label="$t('to_estimated')"
       v-model="amount2"
-      @input="sanitizeAmount"
+      @input="sanitizeAmount()"
       @select="selectToToken"
       :token="token2"
       :balance="balance2"
@@ -53,7 +53,6 @@
           <slippage-tolerance />
         </b-collapse>
       </div>
-
       <label-content-split
         :label="$t('rate')"
         :value="rate"
@@ -70,12 +69,8 @@
         :is-alert="overSlippageLimit"
         :value="priceImpact"
       />
-      <label-content-split
-        v-if="fee !== null"
-        :label="$t('fee')"
-        :value="fee"
-      />
     </div>
+    <label-content-split v-if="fee !== null" :label="$t('fee')" :value="fee" />
 
     <main-button
       :label="swapButtonLabel"
@@ -87,18 +82,18 @@
     />
 
     <modal-tx-action
-      title="Confirm Token Swap"
+      :title="$t('confirm_token_swap')"
       icon="exchange-alt"
       :tx-meta.sync="txMeta"
     >
       <gray-border-block>
         <label-content-split
-          label="Sell"
+          :label="$t('modal.limit_order.sell')"
           :value="`${prettifyNumber(amount1)} ${token1.symbol}`"
           class="mb-2"
         />
         <label-content-split
-          label="Receive"
+          :label="$t('modal.limit_order.receive')"
           :value="`${prettifyNumber(amount2)} ${token2.symbol}`"
         />
       </gray-border-block>
@@ -115,8 +110,12 @@
       </p>
 
       <gray-border-block gray-bg="true">
-        <label-content-split label="Rate" :value="rate" class="mb-2" />
-        <label-content-split label="Price Impact" :value="priceImpact" />
+        <label-content-split
+          :label="$t('modal.limit_order.rate')"
+          :value="rate"
+          class="mb-2"
+        />
+        <label-content-split :label="$t('price_impact')" :value="priceImpact" />
       </gray-border-block>
     </modal-tx-action>
   </div>
@@ -128,14 +127,19 @@ import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
-import { ViewToken } from "@/types/bancor";
+import { ViewAmount, ViewToken } from "@/types/bancor";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import numeral from "numeral";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
-import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
+import { addNotification } from "@/components/compositions/notifications";
+import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
+import { compareString } from "@/api/helpers";
+import wait from "waait";
 
 @Component({
   components: {
@@ -144,6 +148,7 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
     SlippageTolerance,
     LabelContentSplit,
     TokenInputField,
+    MultiInputField,
     MainButton
   }
 })
@@ -158,70 +163,75 @@ export default class SwapAction extends BaseTxAction {
   fee: string | null = null;
 
   errorToken1 = "";
-  errorToken2 = "";
 
   rateLoading = false;
+  userSettedRate = false;
   initialRate = "";
+  limitRate = "";
   numeral = numeral;
 
-  modal = false;
   advancedOpen = false;
 
+  get orders() {
+    return vxm.ethBancor.limitOrders;
+  }
+
   get tokens() {
-    return vxm.bancor.tokens.filter(token => token.tradeSupported);
+    return vxm.bancor.tokens.filter(
+      token =>
+        token.tradeSupported &&
+        !compareString(token.id, wethTokenContractAddress)
+    );
   }
 
   get priceImpact() {
-    return this.slippage !== null && this.slippage !== undefined
-      ? numeral(this.slippage).format("0.0000%")
-      : "0.0000%";
+    const baseFormat = "0.0000%";
+    if (this.slippage !== null && this.slippage !== undefined) {
+      const formatted = numeral(this.slippage).format("0.0000%");
+      return formatted !== "NaN%" ? formatted : baseFormat;
+    } else {
+      return baseFormat;
+    }
   }
 
   get slippageTolerance() {
     return vxm.bancor.slippageTolerance;
   }
 
-  inverseRate = false;
+  inverseRate = true;
 
   get rate() {
     let rate = "";
-    switch (this.inverseRate) {
-      case false: {
-        if (this.amount1 && this.amount2)
-          rate = this.prettifyNumber(
-            Number(this.amount1) / Number(this.amount2)
-          );
-        else rate = this.prettifyNumber(1 / Number(this.initialRate));
-        return (
-          "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
-        );
+    if (this.inverseRate) {
+      if (this.amount1 && this.amount2)
+        rate = this.prettifyNumber(Number(this.amount2) / Number(this.amount1));
+      else {
+        rate = this.prettifyNumber(Number(this.initialRate));
       }
-      default: {
-        if (this.amount1 && this.amount2)
-          rate = this.prettifyNumber(
-            Number(this.amount2) / Number(this.amount1)
-          );
-        else {
-          rate = this.prettifyNumber(Number(this.initialRate));
-        }
-        return (
-          "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
-        );
-      }
+      return (
+        "1 " + this.token1.symbol + " = " + rate + " " + this.token2.symbol
+      );
+    } else {
+      if (this.amount1 && this.amount2)
+        rate = this.prettifyNumber(Number(this.amount1) / Number(this.amount2));
+      else rate = this.prettifyNumber(1 / Number(this.initialRate));
+      return (
+        "1 " + this.token2.symbol + " = " + rate + " " + this.token1.symbol
+      );
     }
   }
 
   get disableButton() {
     if (!this.currentUser && this.amount1) return false;
-    else
-      return !(
-        this.amount1 &&
-        this.amount2 &&
-        !new BigNumber(this.amount1).isZero() &&
-        !new BigNumber(this.amount2).isZero() &&
-        !this.errorToken1 &&
-        !this.errorToken2
-      );
+    else if (
+      this.amount1 &&
+      this.amount2 &&
+      !new BigNumber(this.amount1).isZero() &&
+      !new BigNumber(this.amount2).isZero() &&
+      !this.errorToken1
+    )
+      return false;
+    else return true;
   }
 
   get swapButtonLabel() {
@@ -278,13 +288,12 @@ export default class SwapAction extends BaseTxAction {
   }
 
   async initSwap() {
+    // @ts-ignore
     this.openModal();
-
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
-
     try {
-      this.txMeta.success = await vxm.bancor.convert({
+      const success = await vxm.bancor.convert({
         from: {
           id: this.token1.id,
           amount: this.amount1
@@ -296,12 +305,40 @@ export default class SwapAction extends BaseTxAction {
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.swap.title"),
+        description: this.$tc("notifications.add.swap.description", 0, {
+          amount1: this.prettifyNumber(this.amount1),
+          symbol1: this.token1.symbol,
+          amount2: this.prettifyNumber(this.amount2),
+          symbol2: this.token2.symbol
+        }),
+        txHash: success.txId
+      });
       this.setDefault();
     } catch (e) {
       this.txMeta.txError = e.message;
     } finally {
       this.txMeta.txBusy = false;
     }
+  }
+
+  lastReturn: { from: ViewAmount; to: ViewAmount } = {
+    from: {
+      id: "",
+      amount: ""
+    },
+    to: {
+      id: "",
+      amount: ""
+    }
+  };
+
+  isSmallerThanLastReturn() {}
+
+  async onRateInput(rateInput: string) {
+    console.log("rate input", rateInput);
   }
 
   async updatePriceReturn(amount: string) {
@@ -311,13 +348,23 @@ export default class SwapAction extends BaseTxAction {
     }
     try {
       this.rateLoading = true;
-      const reward = await vxm.bancor.getReturn({
+
+      const returnAmount = {
         from: {
           id: this.token1.id,
           amount: this.amount1
         },
         toId: this.token2.id
-      });
+      };
+
+      const reward = await vxm.bancor.getReturn(returnAmount);
+      this.lastReturn = {
+        ...returnAmount,
+        to: {
+          id: returnAmount.toId,
+          amount: reward.amount
+        }
+      };
       if (reward.slippage) {
         this.slippage = reward.slippage;
       } else {
@@ -329,10 +376,8 @@ export default class SwapAction extends BaseTxAction {
       this.amount2 = reward.amount;
       const raiseError = new BigNumber(this.balance1).isLessThan(amount);
       this.errorToken1 = raiseError ? i18n.tc("insufficient_token") : "";
-      this.errorToken2 = "";
     } catch (e) {
       this.errorToken1 = e.message;
-      this.errorToken2 = "";
     } finally {
       this.rateLoading = false;
     }
@@ -342,12 +387,12 @@ export default class SwapAction extends BaseTxAction {
     this.amount1 = "";
     this.amount2 = "";
     this.fee = this.slippage = null;
-    this.errorToken2 = "";
     this.errorToken1 = "";
   }
 
   async calculateRate() {
     this.rateLoading = true;
+    await wait(1000);
     try {
       const reward = await vxm.bancor.getReturn({
         from: {
@@ -388,11 +433,14 @@ export default class SwapAction extends BaseTxAction {
   }
 
   get overSlippageLimit() {
-    return (
+    if (
       this.slippage !== null &&
       this.slippage !== undefined &&
       this.slippage >= 0.03
-    );
+    ) {
+      return true;
+    }
+    return false;
   }
 
   @Watch("$route.query")
@@ -411,6 +459,8 @@ export default class SwapAction extends BaseTxAction {
     await this.calculateRate();
   }
 
+  interval: any = null;
+
   async mounted() {
     if (this.$route.query.to && this.$route.query.from)
       await this.onTokenChange(this.$route.query);
@@ -427,6 +477,15 @@ export default class SwapAction extends BaseTxAction {
     }
 
     await this.calculateRate();
+
+    this.interval = setInterval(async () => {
+      await this.calculateRate();
+      if (this.amount1) await this.updatePriceReturn(this.amount1);
+    }, 15000);
+  }
+
+  destroyed() {
+    clearInterval(this.interval);
   }
 }
 </script>

@@ -160,9 +160,9 @@ export const en = {
   tokens_can_withdraw_now:
     "Amount of tokens you can withdraw right now (assuming you have not earned full protection, this value will be lower than Protected Value)",
   fees: "Fees (24h)",
-  fees_generated:
-    "Fees are generated when traders swap in pools where you provide liquidity. Rewards are bonuses paid in BNT to liquidity providers.",
-  roi_protected_value:
+  fees_stake_earned:
+    "Fees and rewards earned by your stake since you entered the pool.",
+  roi__protected_value:
     "The ROI of your fully protected value vs. your initial stake.",
   estimated_calculation_annual_returns:
     "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
@@ -268,7 +268,7 @@ export const en = {
   about: "About (Coming Soon)",
   apps: "Apps",
   data: "Data",
-  developer_resources: "Developer Resources",
+  developers: "Developers",
   chat: "Chat",
   community_support: "Community & Support",
   terms_of_use: "Terms of Use",
@@ -277,6 +277,7 @@ export const en = {
   unsupported_network:
     "Unsupported Network. Switch to mainnet network to use the app!",
   transaction_settings: "Transaction Settings",
+  admin_mode: "Admin Mode",
   interface_settings: "Interface Settings",
   dark_mode: "Dark Mode",
   off: "Off",
@@ -284,7 +285,7 @@ export const en = {
   language: "Language",
   blockchains: "Blockchains",
   version: "Version",
-  protection: "Protection",
+  portfolio: "Portfolio",
   name: "Name",
   value_tokens_pool: "The value of tokens in the pool.",
   estimated_apr:
@@ -358,10 +359,127 @@ export const en = {
   pool_not_accepting: "This pool is not accepting additional liquidity.",
   wait_until_space_opens:
     "{token} limit reached. Please wait until some space opens up.",
+  market: "Market",
+  limit: "Limit",
+  expires_in: "Expires in",
+  manage_pool_tokens: "Manage your Bancor pool tokens.",
+  protect: "Protect",
+  reserve_breakdown: "Reserve Breakdown",
+  value: "Value",
   data_refreshes_auto: "Data refreshes automatically",
   multiplier_changes:
     "Starting at 1, your multiplier increase .25 each week until reaching 2. At which point, you are getting twice the rewards you were on week 1. The number to the left already takes this into account.",
   current_protection: "Current protection is {amount}",
   roi_protected_split:
-    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI."
+    "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
+  days: "1 Day | {count} Days",
+  hours: "1 Hour | {count} Hours",
+  minutes: "1 Minute | {count} Minutes",
+  custom_time: "Custom time",
+  set_up_time: "Set up your custom period of time",
+  current_rate: "Current rate",
+  notifications: {
+    title: "Notifications",
+    buttons: {
+      clear: "clear"
+    },
+    nothing_here: "Nothing here yet.",
+    add: {
+      swap: {
+        title: "Swap",
+        description: "Sell {amount1} {symbol1} and receive {amount2} {symbol2}."
+      },
+      stake: {
+        title: "Add Single-Sided Liquidity",
+        description: "Stake & Protect {amount} {symbol} in {pool} pool."
+      },
+      unstake: {
+        title: "Withdraw Protection",
+        description:
+          "Withdraw ~{amount} {symbol} from your protected position in {pool} pool."
+      },
+      restake: {
+        title: "Stake Rewards",
+        description: "Stake {amount} BNT from your rewards in {pool} pool."
+      },
+      withdraw: {
+        title: "Withdraw Rewards",
+        description: "Withdraw {amount} BNT from your rewards."
+      },
+      add_liquidity: {
+        title: "Add Liquidity",
+        description:
+          "Add {amount1} {symbol1} and {amount2} {symbol2} in liquidity to {pool} pool."
+      },
+      remove_liquidity: {
+        title: "Remove Liquidity",
+        description:
+          "Remove {amount1} {symbol1} and {amount2} {symbol2} in liquidity from {pool} pool."
+      },
+      withdraw_weth: {
+        title: "Withdraw Weth",
+        description: "Successfully withdrawn {amount} WETH."
+      },
+      cancel_order: {
+        title: "Cancel Limit Order",
+        description: "Limit Order canceled successfully.",
+        description_error: "Failed to cancel Limit Order."
+      },
+      cancel_all_orders: {
+        title: "Cancel All Limit Orders",
+        description: "All Limit Orders canceled successfully.",
+        description_error: "Failed to cancel all Limit Orders."
+      }
+    }
+  },
+  modal: {
+    limit_order: {
+      title: "Transaction Confirmation",
+      sub_title: "You are creating a limit order",
+      info_text: "Transaction will expire in {timer}",
+      info_text2: "Orders might not be fulfilled by the KeeperDAO Keepers",
+      sell: "Sell",
+      receive: "Receive",
+      rate: "Rate"
+    },
+    deposit_weth: {
+      info_text: "You will receive"
+    },
+    withdraw_weth: {
+      title: "Confirm Withdraw",
+      balance: "Available Balance",
+      amount: "Withdraw Amount",
+      output_amount: "Your Output amount is",
+      info:
+        "WETH, is a token that represents ETH 1:1 and conforms to the ERC20 token standard."
+    },
+    cancel_order: {
+      title: "Cancel Transaction",
+      description: "You are canceling a limit order"
+    },
+    cancel_all_orders: {
+      title: "Cancel all Transactions",
+      description: "You are about to cancel all open orders"
+    }
+  },
+  button: {
+    confirm: "Confirm",
+    withdraw_weth: "Withdraw {amount} WETH"
+  },
+  tooltip: {
+    order_expired:
+      "Expired orders cannot be fulfil, yet they are still available on the contract. In order to remove them from the table, please cancel them."
+  },
+  protected_not_found: "No protected positions found.",
+  claim_bnt: "Claim your BNT",
+  pool_tokens: "Pool tokens",
+  rate_below_market:
+    "The rate is lower than market rate, you can get a better rate on market tab",
+  rate_above_market:
+    "The rate is too high above market rate and will likely not be fulfilled",
+  trade_at_pre_det: "Trade at a pre-determined price",
+  exe_market_rate: "Executing trade on current market rate",
+  rate_swap_tokens:
+    "Select the rate at which you would like to sell your tokens",
+  powered_by_keeper_dao: "Limit orders are powered by KeeperDAO"
 };

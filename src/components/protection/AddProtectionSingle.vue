@@ -140,7 +140,7 @@
       title="Confirm Stake & Protect"
       icon="coins"
       :tx-meta.sync="txMeta"
-      redirect-on-success="LiqProtection"
+      redirect-on-success="Portfolio"
     >
       <gray-border-block>
         <span
@@ -178,12 +178,13 @@ import PriceDeviationError from "@/components/common/PriceDeviationError.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import wait from "waait";
+import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
   components: {
-    ModalTxAction,
     PriceDeviationError,
     ModalPoolSelect,
+    ModalTxAction,
     PoolLogos,
     AlertBlock,
     LabelContentSplit,
@@ -342,7 +343,16 @@ export default class AddProtectionSingle extends BaseTxAction {
         onUpdate: this.onUpdate,
         onPrompt: this.onPrompt
       });
-      this.amount = "";
+      this.txMeta.showTxModal = false;
+      addNotification({
+        title: this.$tc("notifications.add.stake.title"),
+        description: this.$tc("notifications.add.stake.description", 0, {
+          amount: this.prettifyNumber(this.amount),
+          symbol: this.token.symbol,
+          pool: this.pool.name
+        }),
+        txHash: this.txMeta.success.txId
+      });
     } catch (e) {
       this.txMeta.txError = e.message;
     } finally {
