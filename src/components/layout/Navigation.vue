@@ -53,7 +53,7 @@ export default class Navigation extends BaseComponent {
 
   setUser() {
     vxm.wallet.setUser(this.user);
-    vxm.ethBancor.fetchProtectionPositions({});
+    vxm.ethBancor.fetchProtectionPositions();
   }
 
   get loginStatus() {
