@@ -71,7 +71,7 @@
               :menu-class="
                 darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
               "
-              style="width: 200px !important; height: 35px !important"
+              style="width: 220px !important"
               :no-caret="true"
             >
               <template #button-content>
@@ -83,9 +83,11 @@
                           .title
                   }}
                   <font-awesome-icon
-                    :icon="positionsFiltering() ? 'times' : 'caret-down'"
+                    v-if="positionsFiltering()"
+                    icon="times"
                     @click.stop="clearPositions()"
                   />
+                  <font-awesome-icon v-else icon="caret-down" />
                 </div>
               </template>
 
@@ -123,7 +125,7 @@
               :menu-class="
                 darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
               "
-              style="width: 200px !important; height: 35px !important"
+              style="width: 220px !important"
               :no-caret="true"
             >
               <template #button-content>
@@ -137,9 +139,11 @@
                       : poolFilters.items[0].title
                   }}
                   <font-awesome-icon
-                    :icon="poolsFiltering() ? 'times' : 'caret-down'"
+                    v-if="poolsFiltering()"
+                    icon="times"
                     @click.stop="clearPools()"
                   />
+                  <font-awesome-icon v-else icon="caret-down" />
                 </div>
               </template>
               <b-form-checkbox-group

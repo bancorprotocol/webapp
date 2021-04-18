@@ -65,7 +65,11 @@
         </b-popover>
       </div>
 
-      <div v-if="searchInput !== null" class="float-right">
+      <div
+        v-if="searchInput !== null"
+        class="float-right"
+        style="width: 220px !important"
+      >
         <multi-input-field
           class="d-none d-lg-inline"
           :style="searchStyle"
