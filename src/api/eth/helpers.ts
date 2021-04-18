@@ -1,7 +1,8 @@
 import BigNumber from "bignumber.js";
 import { isAddress } from "web3-utils";
 import { web3 } from "@/api/web3";
-import { sortAlongSide } from "../helpers";
+import { compareString, sortAlongSide } from "../helpers";
+
 
 const addZeros = (numberOfZeros: number, noLeadingZeros: string) => {
   const zeros = [...Array(numberOfZeros)].map(() => "0");
@@ -56,10 +57,17 @@ export interface MinimalRelay {
   reserves: TokenSymbol[];
 }
 
+export interface ViewAmount {
+  id: string;
+  amount: string;
+}
 export interface MinimalPool {
   anchorAddress: string;
   converterAddress: string;
   reserves: string[];
+}
+export interface MinimalPoolWithReserveBalances extends MinimalPool {
+  reserveBalances: ViewAmount[];
 }
 
 export const generateEthPath = (from: string, relays: MinimalRelay[]) => {

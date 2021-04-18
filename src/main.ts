@@ -69,7 +69,7 @@ Vue.use(
 
 Vue.use(BootstrapVue);
 
-library.add(...fas, ...fab, ...far, ...fal);
+library.add(...fas, ...fab, ...fal, ...far);
 
 Vue.component("FontAwesomeIcon", FontAwesomeIcon);
 

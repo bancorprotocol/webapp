@@ -97,8 +97,10 @@ export const getInfuraAddress = (
   throw new Error("Infura address for network not supported ");
 };
 
-export const web3 = new Web3(
-  Web3.givenProvider || getAlchemyUrl(EthNetworks.Mainnet)
-);
+export const alchemyAddress = getAlchemyUrl(EthNetworks.Mainnet);
+
+export const provider = Web3.givenProvider || alchemyAddress;
+
+export const web3 = new Web3(provider);
 
 web3.eth.transactionBlockTimeout = 100;

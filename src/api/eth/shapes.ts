@@ -30,7 +30,10 @@ export const protectedPositionShape = (
   };
 };
 
-export const liquidityProtectionShape = (contractAddress: string, w3: Web3) => {
+export const liquidityProtectionShape = (
+  contractAddress: string,
+  w3?: Web3
+) => {
   const contract = buildLiquidityProtectionContract(contractAddress, w3);
   return {
     govToken: contract.methods.govToken()
@@ -39,7 +42,7 @@ export const liquidityProtectionShape = (contractAddress: string, w3: Web3) => {
 
 export const liquidityProtectionSettingsShape = (
   contractAddress: string,
-  w3: Web3
+  w3?: Web3
 ) => {
   const contract = buildLiquidityProtectionSettingsContract(
     contractAddress,

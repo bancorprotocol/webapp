@@ -16,11 +16,11 @@ Daily standups
 
 #### Weekday work times
 
-|                  | City                                                                        |
-| ---------------- | --------------------------------------------------------------------------- |
-| John Williamson  | [Brisbane](https://www.timeanddate.com/worldclock/australia/)               |
-| Jan Langheimer   | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg)         |
-| Ran Cohen        | [Tel Aviv](https://www.timeanddate.com/worldclock/israel/tel-aviv)          |
+|                 | City                                                                |
+| --------------- | ------------------------------------------------------------------- |
+| John Williamson | [Brisbane](https://www.timeanddate.com/worldclock/australia/)       |
+| Jan Langheimer  | [Freiburg](https://www.timeanddate.com/worldclock/germany/freiburg) |
+| Ran Cohen       | [Tel Aviv](https://www.timeanddate.com/worldclock/israel/tel-aviv)  |
 
 ### Git Strategy
 
@@ -33,7 +33,7 @@ Please create new features as Pull Requests in new branches forked from `master`
 
 ## Project setup
 
-Node Version: `12.18.2`
+Node Version: `14.16.0`
 
 ```
 yarn install
