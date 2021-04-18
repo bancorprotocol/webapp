@@ -2,21 +2,12 @@
   <b-container fluid="xl" class="px-xl-0">
     <b-row>
       <b-col cols="12">
-        <div>
-          <span
-            class="font-size-20 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ $t("liquidity_protection") }}
-          </span>
-        </div>
-
-        <p
-          class="font-size-14 font-w400 my-3"
-          :class="darkMode ? 'text-dark' : 'text-light'"
+        <content-block
+          :title="$t('protect_tokens')"
+          :tabs="true"
+          :padding="false"
         >
-          {{ $t("protect_tokens") }}
-        </p>
+        </content-block>
       </b-col>
 
       <b-col lg="6">
