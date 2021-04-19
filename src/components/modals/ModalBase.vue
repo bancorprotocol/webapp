@@ -9,6 +9,7 @@
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
+    class="full-modal"
   >
     <template slot="modal-header">
       <div class="w-100">

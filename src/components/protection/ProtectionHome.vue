@@ -66,7 +66,7 @@
                   : 'active-light'
               "
               :block="true"
-              class="d-none d-lg-inline"
+              class="d-none d-lg-inline full-dropdown"
               toggle-class="block-rounded"
               :menu-class="
                 darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
@@ -120,7 +120,7 @@
                   : 'active-light'
               "
               :block="true"
-              class="d-none d-lg-inline limited-dropdown"
+              class="d-none d-lg-inline limited-dropdown full-dropdown"
               toggle-class="block-rounded"
               :menu-class="
                 darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
