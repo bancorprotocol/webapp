@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid="xl" class="px-xl-0">
+  <div>
     <b-row>
       <b-col cols="12">
         <content-block
@@ -274,7 +274,7 @@
       :poolNames="poolNames"
       @confirm="setFilters"
     />
-  </b-container>
+  </div>
 </template>
 
 <script lang="ts">
