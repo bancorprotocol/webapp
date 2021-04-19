@@ -28,15 +28,16 @@
         <font-awesome-icon icon="chevron-left" @click="back" class="cursor" />
       </div>
 
-      <h3
+      <div
         class="m-0 p-0 my-2"
+        style="min-width: 190px !important"
         :class="[
           ...titleClasses,
           tabs ? 'font-size-14 font-w400' : 'font-size-16 font-w500'
         ]"
       >
         {{ title }}
-      </h3>
+      </div>
 
       <slot name="dropDowns"> </slot>
       <div class="d-none d-lg-inline">

@@ -1,5 +1,5 @@
 <template>
-  <modal-base v-model="modal" :fullmodal="true">
+  <modal-base v-model="modal">
     <template #title>
       <div
         :class="darkMode ? 'text-dark' : 'text-light'"

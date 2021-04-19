@@ -19,7 +19,7 @@
         @click="$router.push({ name: 'PoolCreate' })"
         class="d-none d-lg-block ml-3 mr-2"
         :variant="darkMode ? 'outline-alt-dark' : 'outline-alt-light'"
-        style="height: 34px"
+        style="height: 35x; width: 121px"
       >
         <div>
           {{ $t("create_pool") }}

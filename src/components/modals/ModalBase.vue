@@ -6,7 +6,6 @@
     v-model="show"
     hide-footer
     :content-class="contentClass"
-    :modal-class="fullmodal ? 'full-modal' : ''"
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
@@ -73,7 +72,6 @@ export default class ModalBase extends BaseComponent {
   @PropSync("search", { type: String }) searchField?: string;
   @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
   @Prop({ default: false }) fixedHeight!: boolean;
-  @Prop({ default: false }) fullmodal!: boolean;
 
   get contentClass() {
     return [
