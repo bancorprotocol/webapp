@@ -162,7 +162,7 @@
                 >
                   <pool-logos-overlapped :pool="pool" size="16" class="ml-2" />
                   <div
-                    class="font-size-12 font-w500 ml-3"
+                    class="font-size-14 font-w500 ml-3"
                     :class="
                       indexSelected(index + 1)
                         ? darkMode

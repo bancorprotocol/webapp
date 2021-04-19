@@ -15,10 +15,15 @@
         <b-row>
           <b-col cols="12" class="d-flex justify-content-between mb-2">
             <span
+              v-if="title"
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              >{{ title }}</span
             >
+              {{ title }}
+            </span>
+            <div v-else>
+              <slot name="title" />
+            </div>
             <font-awesome-icon
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"

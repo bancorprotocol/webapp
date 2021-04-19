@@ -1,5 +1,13 @@
 <template>
-  <modal-base v-model="modal" :title="$t('all_positions')" size="sm">
+  <modal-base v-model="modal" class="full-modal">
+    <template #title>
+      <div
+        :class="darkMode ? 'text-dark' : 'text-light'"
+        class="font-size-16 font-w500"
+      >
+        {{ $t("all_positions") }}
+      </div>
+    </template>
     <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
       <b-btn
         @click="setSelectedPosition(-1)"
@@ -41,6 +49,7 @@
         {{ $t("not_protected") }}
       </b-btn>
     </div>
+    <div :class="darkMode ? 'seperator-dark' : 'seperator-light'" />
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div
         :class="darkMode ? 'text-dark' : 'text-light'"
@@ -92,6 +101,7 @@
         </date-range-picker>
       </div>
     </div>
+    <div :class="darkMode ? 'seperator-dark' : 'seperator-light'" />
     <b-form-checkbox-group
       id="checkbox-group-prot-modal"
       style="height: 150px"
@@ -124,6 +134,7 @@
         </div>
       </b-form-checkbox>
     </b-form-checkbox-group>
+    <div :class="darkMode ? 'seperator-dark' : 'seperator-light'" />
     <div
       class="text-center text-link font-size-12 font-w400"
       @click="clearAllFilters"
@@ -228,6 +239,7 @@ export default class ModalProtectedFilters extends BaseComponent {
   }
 
   clearAllFilters() {
+    this.selectedPosition = 1; //The vue way to setState
     this.selectedPosition = -1;
     if (this.poolFilters) this.poolFilters.selectedIndexes = [];
     this.clearDateRange();

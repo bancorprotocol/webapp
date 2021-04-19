@@ -274,7 +274,7 @@
     color: $text-color-dark !important;
   }
   &.btn-muted-white-light {
-    color: $gray-placeholder !important;
+    color: $text-muted-light !important;
     border-color: $gray-placeholder !important;
     background-color: white !important;
   }
@@ -301,10 +301,10 @@
   &.btn-primary:focus {
     box-shadow: none !important;
   }
-  &.btn-outline-light {
-    color: $primary !important;
-    border-color: $gray-placeholder !important;
-    background-color: $bg-body-light !important;
+  &.btn-outline-dark {
+    color: $light-white !important;
+    border-color: $light-white !important;
+    background-color: $bg-body-dark !important;
   }
   &.btn-outline-light {
     color: $primary !important;
@@ -426,7 +426,7 @@
     color: $text-color-light;
     background: white;
     border: white;
-    padding: 17px 20px;
+    padding: 10px 20px;
   }
 }
 
@@ -445,7 +445,7 @@
     color: $text-color-dark;
     background: $text-color-light;
     border: $text-color-light;
-    padding: 17px 20px;
+    padding: 10px 20px;
   }
 }
 
@@ -493,7 +493,7 @@
   cursor: pointer;
 
   &.date-range-light {
-    color: $gray-placeholder !important;
+    color: $text-muted-light !important;
     background-color: $white !important;
     border-color: $gray-placeholder !important;
   }
@@ -609,11 +609,11 @@
 }
 
 .dropdown-item-light {
-  font-size: 12px !important;
+  font-size: 14px !important;
   font-weight: 400 !important;
   margin-top: 5px !important;
   a {
-    color: $dropdown-light !important;
+    color: $text-muted-light !important;
     background-color: white !important;
   }
   a:hover {
@@ -623,7 +623,7 @@
 }
 
 .dropdown-item-dark {
-  font-size: 12px !important;
+  font-size: 14px !important;
   font-weight: 400 !important;
   margin-top: 5px !important;
   a {
@@ -677,4 +677,33 @@
   border-radius: 36px !important;
   border: 8px solid $primary !important;
   color: white !important;
+}
+
+.seperator-dark {
+  margin-bottom: 1rem;
+  border: 1px solid $gray-border-dark;
+}
+
+.seperator-light {
+  margin-bottom: 1rem;
+  border: 1px solid $gray-border;
+}
+
+.full-modal {
+  .modal {
+    padding: 0 !important;
+    .modal-content {
+      border-radius: 0 !important;
+    }
+  }
+  .modal-dialog {
+    max-width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+  }
+  .modal-content {
+    border: 0 !important;
+    min-height: 100% !important;
+    height: auto !important;
+  }
 }
