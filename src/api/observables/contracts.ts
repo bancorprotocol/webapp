@@ -68,7 +68,7 @@ export const liquidityProtectionStore$ = liquidityProtection$.pipe(
 export const bancorConverterRegistry$ = contractAddresses$.pipe(
   pluck("BancorConverterRegistry"),
   optimisticContract("BancorConverterRegistry"),
-  share()
+  shareReplay(1)
 );
 
 export const stakingRewards$ = contractAddresses$.pipe(
