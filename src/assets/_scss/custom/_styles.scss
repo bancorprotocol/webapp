@@ -695,3 +695,24 @@
   margin-bottom: 1rem;
   border: 1px solid $gray-border;
 }
+
+.full-modal .modal {
+  padding: 0 !important;
+}
+.full-modal .modal-dialog {
+  max-width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+.full-modal .modal-dialog-scrollable {
+  max-height: 100% !important;
+}
+.full-modal .dialog-centered {
+  max-height: 100% !important;
+}
+
+.full-modal .modal-content {
+  border: 0 !important;
+  border-radius: 0 !important;
+  height: 100% !important;
+}

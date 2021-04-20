@@ -489,5 +489,7 @@ export const en = {
   exe_market_rate: "Executing trade on current market rate",
   rate_swap_tokens:
     "Select the rate at which you would like to sell your tokens",
-  powered_by_keeper_dao: "Limit orders are powered by KeeperDAO"
+  powered_by_keeper_dao: "Limit orders are powered by KeeperDAO",
+  filters:"Filters",
+  group_by:"Group By Pool Token"
 };

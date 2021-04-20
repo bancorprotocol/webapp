@@ -1,13 +1,20 @@
 <template>
-  <modal-base v-model="modal">
+  <modal-base v-model="modal" :fullmodal="true" :backButton="true">
     <template #title>
       <div
         :class="darkMode ? 'text-dark' : 'text-light'"
         class="font-size-16 font-w500"
       >
-        {{ $t("all_positions") }}
+        {{ $t("filters") }}
       </div>
     </template>
+    <div :class="darkMode ? 'seperator-dark' : 'seperator-light'" />
+    <div
+      :class="darkMode ? 'text-dark' : 'text-light'"
+      class="font-size-16 font-w500 pb-2"
+    >
+      {{ $t("all_positions") }}
+    </div>
     <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
       <b-btn
         @click="setSelectedPosition(-1)"
@@ -101,10 +108,24 @@
         </date-range-picker>
       </div>
     </div>
+
     <div :class="darkMode ? 'seperator-dark' : 'seperator-light'" />
+    <multi-input-field
+      class="py-3"
+      v-model="search"
+      :clear="true"
+      :placeholder="$t('search')"
+      prepend="search"
+    />
+    <div
+      :class="darkMode ? 'text-dark' : 'text-light'"
+      class="font-size-16 font-w500 pb-2 pl-1"
+    >
+      {{ $t("group_by") }}
+    </div>
     <b-form-checkbox-group
       id="checkbox-group-prot-modal"
-      style="height: 150px"
+      style="height: 170px; overflow: auto"
       v-model="poolFilters.selectedIndexes"
       name="selectedPools-prot-modal"
       stacked
@@ -158,6 +179,7 @@ import ModalBase from "@/components/modals/ModalBase.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import MainButton from "@/components/common/Button.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 import DateRangePicker from "vue2-daterange-picker";
 import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
 import dayjs from "@/utils/dayjs";
@@ -167,7 +189,8 @@ import dayjs from "@/utils/dayjs";
     ModalBase,
     MainButton,
     DateRangePicker,
-    PoolLogosOverlapped
+    PoolLogosOverlapped,
+    MultiInputField
   }
 })
 export default class ModalProtectedFilters extends BaseComponent {
@@ -192,6 +215,7 @@ export default class ModalProtectedFilters extends BaseComponent {
   }[];
 
   poolFilters: any;
+  search: string = "";
 
   dateRange: {
     startDate: dayjs.Dayjs | null;
