@@ -8,6 +8,7 @@
         class="mt-2"
       />
       <percentage-slider
+        :disabled="true"
         class="mt-3"
         :label="$t('token_reserve_ratio')"
         v-model="percent"
