@@ -235,14 +235,25 @@
             </div>
           </template>
           <template v-if="positions.length" #mobileFilters>
-            <b-btn class="d-flex" variant="primary">
-              <font-awesome-icon icon="filter" @click="showMobileFilters" />
-              <font-awesome-icon
-                icon="times"
-                v-if="anyAreFiltering"
-                class="ml-2"
-                @click="clearAllFilters"
-              />
+            <b-button-group v-if="anyAreFiltering">
+              <b-btn variant="primary">
+                <font-awesome-icon
+                  icon="sliders-h"
+                  @click="showMobileFilters"
+                />
+              </b-btn>
+              <b-button
+                :variant="darkMode ? 'active-alt-dark' : 'active-alt-light'"
+              >
+                <font-awesome-icon icon="times" @click="clearAllFilters" />
+              </b-button>
+            </b-button-group>
+
+            <b-btn
+              v-else
+              :variant="darkMode ? 'muted-dark' : 'muted-white-light'"
+            >
+              <font-awesome-icon icon="sliders-h" @click="showMobileFilters" />
             </b-btn>
           </template>
         </content-block>

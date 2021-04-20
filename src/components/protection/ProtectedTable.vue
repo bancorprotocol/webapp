@@ -44,7 +44,7 @@
         <span class="font-w400">
           {{ item.stake.symbol }}
           <div
-            class="font-size-12 ml-4 mt-1"
+            class="font-size-12 mt-1"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             {{ poolName(item.stake.poolId) }}

@@ -50,6 +50,7 @@ import { faFileAlt } from "@fortawesome/pro-solid-svg-icons/faFileAlt";
 import { faArrowFromBottom } from "@fortawesome/pro-solid-svg-icons/faArrowFromBottom";
 import { faCommentExclamation } from "@fortawesome/pro-solid-svg-icons/faCommentExclamation";
 import { faArrowToBottom } from "@fortawesome/pro-solid-svg-icons/faArrowToBottom";
+import { faSlidersH as faSliders } from "@fortawesome/pro-solid-svg-icons/faSlidersH";
 
 export const fas = [
   faAngleDoubleLeft,
@@ -105,5 +106,6 @@ export const fas = [
   faFileAlt,
   faArrowFromBottom,
   faCommentExclamation,
-  faArrowToBottom
+  faArrowToBottom,
+  faSliders,
 ];

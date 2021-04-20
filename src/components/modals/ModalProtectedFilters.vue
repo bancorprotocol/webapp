@@ -108,15 +108,7 @@
         </date-range-picker>
       </div>
     </div>
-
     <div :class="darkMode ? 'seperator-dark' : 'seperator-light'" />
-    <multi-input-field
-      class="py-3"
-      v-model="search"
-      :clear="true"
-      :placeholder="$t('search')"
-      prepend="search"
-    />
     <div
       :class="darkMode ? 'text-dark' : 'text-light'"
       class="font-size-16 font-w500 pb-2 pl-1"
@@ -140,7 +132,7 @@
       >
         <pool-logos-overlapped :pool="pool" size="16" />
         <div
-          class="font-size-12 font-w500 ml-2"
+          class="font-size-14 font-w500 ml-2"
           :class="
             indexSelected(index + 1)
               ? darkMode
