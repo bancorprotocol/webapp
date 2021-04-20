@@ -133,7 +133,7 @@
       <b-form-checkbox
         class="d-flex align-items-center ml-2 my-2"
         :class="darkMode ? 'checkbox-dark' : 'checkbox-light'"
-        v-for="(pool, index) in poolNames"
+        v-for="(pool, index) in filteredPoolNames"
         :key="pool.id + 'modal-prot'"
         :id="pool.id + 'modal-prot'"
         :value="index + 1"
@@ -213,6 +213,12 @@ export default class ModalProtectedFilters extends BaseComponent {
     title: string;
     reserves: any;
   }[];
+
+  get filteredPoolNames() {
+    return this.poolNames?.filter(pool =>
+      pool.title.toLowerCase().includes(this.search.toLowerCase())
+    );
+  }
 
   poolFilters: any;
   search: string = "";

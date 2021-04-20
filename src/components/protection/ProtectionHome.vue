@@ -82,11 +82,13 @@
                       : positionFilters.items[positionFilters.selectedIndex]
                           .title
                   }}
-                  <font-awesome-icon
+                  <div
                     v-if="positionsFiltering()"
-                    icon="times"
+                    class="clickable-expand"
                     @click.stop="clearPositions()"
-                  />
+                  >
+                    <font-awesome-icon icon="times" />
+                  </div>
                   <font-awesome-icon v-else icon="caret-down" />
                 </div>
               </template>
@@ -138,11 +140,13 @@
                             .title
                       : poolFilters.items[0].title
                   }}
-                  <font-awesome-icon
+                  <div
                     v-if="poolsFiltering()"
-                    icon="times"
+                    class="clickable-expand"
                     @click.stop="clearPools()"
-                  />
+                  >
+                    <font-awesome-icon icon="times" />
+                  </div>
                   <font-awesome-icon v-else icon="caret-down" />
                 </div>
               </template>
@@ -211,10 +215,12 @@
                       <div>
                         {{ formatDateRange(picker.startDate, picker.endDate) }}
                       </div>
-                      <font-awesome-icon
-                        icon="times"
+                      <div
+                        class="clickable-expand"
                         @click.stop="clearDateRange"
-                      />
+                      >
+                        <font-awesome-icon icon="times" />
+                      </div>
                     </div>
                     <div
                       v-else
@@ -489,4 +495,12 @@ export default class ProtectionHome extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.clickable-expand {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  padding: 10px;
+  margin: -10px;
+}
+</style>
