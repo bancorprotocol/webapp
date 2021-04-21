@@ -45,7 +45,10 @@ export default class SlippageTolerance extends BaseComponent {
   }
 
   get formInputStyles() {
-    if (this.custom !== "") return "custom-input-active";
+    if (this.custom !== "")
+      return this.darkMode
+        ? "custom-input-active-dark"
+        : "custom-input-active-light";
     else return this.darkMode ? "text-dark" : "text-light";
   }
 
@@ -114,11 +117,6 @@ export default class SlippageTolerance extends BaseComponent {
   border-left: none !important;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
-}
-.custom-input-active {
-  background-color: $primary !important;
-  color: #fff !important;
-  border-color: $primary !important;
 }
 .btn-xs {
   padding: 0.25rem 0.4rem !important;

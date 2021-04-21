@@ -93,8 +93,14 @@
   font-weight: 700 !important;
 }
 
-.text-link {
+.text-link-light {
   color: $primary;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-link-dark {
+  color: $primary-dark;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -105,14 +111,6 @@
 
 .text-muted-dark {
   color: $text-muted-dark !important;
-}
-
-.text-link-light {
-  color: $text-link-light !important;
-}
-
-.text-link-dark {
-  color: $text-link-dark !important;
 }
 
 .block-light-blue-light {
@@ -606,7 +604,7 @@
       font-weight: 800 !important;
     }
     .in-range {
-      background: $primary !important;
+      background: $primary-dark !important;
       color: white !important;
     }
     .active {
@@ -682,16 +680,27 @@
   }
 }
 
-.custom-input-active {
+.custom-input-active-light {
   background-color: $primary !important;
   color: white !important;
 }
+.custom-input-active-dark {
+  background-color: $primary-dark !important;
+  color: black !important;
+}
 
-.icon-primary {
+.icon-primary-light {
   background-color: $primary !important;
   border-radius: 36px !important;
   border: 8px solid $primary !important;
   color: white !important;
+}
+
+.icon-primary-dark {
+  background-color: $primary-dark !important;
+  border-radius: 36px !important;
+  border: 8px solid $primary-dark !important;
+  color: black !important;
 }
 
 .seperator-dark {

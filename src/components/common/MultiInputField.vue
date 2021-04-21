@@ -21,7 +21,11 @@
         :class="[
           !darkMode ? 'form-control-alt-light' : 'form-control-alt-dark',
           fontSizeClass,
-          active ? 'custom-input-active' : ''
+          active
+            ? darkMode
+              ? 'custom-input-active-dark'
+              : 'custom-input-active-light'
+            : ''
         ]"
         @blur.native="blur"
         v-model="text"
