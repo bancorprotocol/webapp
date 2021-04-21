@@ -22,7 +22,7 @@
         </p>
 
         <b-btn
-          variant="primary"
+          :variant="darkMode ? 'primary-dark' : 'primary-light'"
           size="lg"
           href="https://vote.bancor.network"
           target="_blank"
@@ -62,7 +62,7 @@
       <b-spinner
         style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
-        :class="darkMode ? 'text-primary' : 'text-primary'"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         :label="`${$t('loading')}... `"
       ></b-spinner>
       <h5

@@ -46,7 +46,7 @@
 
       <template #cell(actions)="{ item }">
         <b-btn
-          variant="primary"
+          :variant="darkMode ? 'primary-dark' : 'primary-light'"
           class="table-button mr-3"
           style="width: 100px; height: 40px"
           :disabled="poolDisabled(item)"

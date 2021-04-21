@@ -3,8 +3,8 @@
     <b-btn
       v-if="pool"
       @click="goToPool"
-      variant="primary"
       class="mr-3"
+      :variant="darkMode ? 'primary-dark' : 'primary-light'"
       :class="small ? 'table-button-small' : 'table-button'"
       :disabled="loading"
     >

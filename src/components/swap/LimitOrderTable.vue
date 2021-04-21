@@ -38,7 +38,7 @@
         default-sort="expiryTime"
       >
         <template #cell(expiryTime)="{ value, item }">
-          <span class="text-primary">
+          <span :class="darkMode ? 'text-primary-dark' : 'text-primary-light'">
             {{ dayjs.unix(value).format("DD/MM/YYYY") }}
           </span>
           <span class="ml-3 mr-2">
@@ -80,7 +80,10 @@
         </template>
 
         <template #cell(percentFilled)="{ value }">
-          <span class="text-primary">{{ formatPercent(value) }}</span>
+          <span
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+            >{{ formatPercent(value) }}</span
+          >
         </template>
 
         <template #cell(cancel)="{ item }">

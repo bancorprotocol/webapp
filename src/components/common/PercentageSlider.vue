@@ -46,9 +46,9 @@ export default class PercentageSlider extends BaseComponent {
   percentages = ["25", "50", "75", "100"];
 
   getVariant(percentage: string) {
-    if (this.percentage === percentage) return "primary";
-    else if (this.darkMode) return "outline-gray-dark";
-    else return "outline-gray";
+    if (this.percentage === percentage)
+      return this.darkMode ? "primary-dark" : "primary-light";
+    else return this.darkMode ? "outline-gray-dark" : "outline-gray";
   }
 }
 </script>

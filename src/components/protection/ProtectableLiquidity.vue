@@ -34,7 +34,7 @@
       <div>
         <b-btn
           @click="goTo(item.poolId)"
-          variant="primary"
+          :variant="darkMode ? 'primary-dark' : 'primary-light'"
           class="table-button"
         >
           {{ $t("add_liquidity") }}

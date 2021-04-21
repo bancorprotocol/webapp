@@ -63,9 +63,9 @@ export default class SlippageTolerance extends BaseComponent {
 
   getVariant(percentage: number) {
     const inDecimal = percentage / 100;
-    if (this.currentSlippage === inDecimal) return "primary";
-    else if (this.darkMode) return "outline-gray-dark";
-    else return "outline-gray";
+    if (this.currentSlippage === inDecimal)
+      return this.darkMode ? "primary-dark" : "primary-light";
+    else return this.darkMode ? "outline-gray-dark" : "outline-gray";
   }
 
   formatter(text: String) {

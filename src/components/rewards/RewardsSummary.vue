@@ -31,7 +31,7 @@
             </b-btn>
             <b-btn
               @click="openModal"
-              variant="primary"
+              :variant="darkMode ? 'primary-dark' : 'primary-light'"
               size="sm"
               class="rounded"
             >
@@ -58,7 +58,10 @@
                 trailing-text="BNT"
               />
             </div>
-            <div class="font-size-12 font-w500 text-primary">
+            <div
+              class="font-size-12 font-w500"
+              :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+            >
               <animation-number
                 :target-value="item.usd.toNumber()"
                 :usd="true"
@@ -69,7 +72,13 @@
               />
             </div>
           </div>
-          <div v-else class="font-size-14 font-w600 text-primary">--</div>
+          <div
+            v-else
+            class="font-size-14 font-w600"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+          >
+            --
+          </div>
           <div
             class="text-uppercase font-size-10 font-w500"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"

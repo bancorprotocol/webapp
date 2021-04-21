@@ -21,7 +21,7 @@
         <font-awesome-icon
           v-else
           icon="external-link-alt"
-          class="text-primary"
+          :class="darkMode ? 'text-dark' : 'text-primary'"
           fixed-width
         />
       </div>

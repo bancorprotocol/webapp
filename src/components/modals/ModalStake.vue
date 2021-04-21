@@ -68,7 +68,9 @@
       class="text-center"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <b-spinner variant="primary"></b-spinner>
+      <b-spinner
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      ></b-spinner>
       <h3
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"

@@ -7,7 +7,12 @@
       <template #header>
         <div class="d-flex justify-content-between align-items-center w-100">
           <div class="font-size-16 font-w500">{{ $t("my_stake") }}</div>
-          <b-btn @click="openModal" size="sm" variant="primary" class="rounded">
+          <b-btn
+            @click="openModal"
+            size="sm"
+            :variant="darkMode ? 'primary-dark' : 'primary-light'"
+            class="rounded"
+          >
             <font-awesome-icon icon="plus" class="d-lg-none" />
             <span class="d-none d-lg-inline">{{ $t("stake") }} </span>
           </b-btn>
@@ -20,7 +25,10 @@
             :key="item.key"
             class="text-center"
           >
-            <div class="font-size-14 font-w600 text-primary">
+            <div
+              class="font-size-14 font-w600"
+              :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+            >
               {{ item.value }}
             </div>
             <div class="text-uppercase font-size-10 font-w500">
