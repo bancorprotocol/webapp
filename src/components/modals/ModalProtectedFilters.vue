@@ -166,7 +166,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, VModel } from "vue-property-decorator";
+import { Component, Emit, Prop, VModel, Watch } from "vue-property-decorator";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import MainButton from "@/components/common/Button.vue";
@@ -265,6 +265,11 @@ export default class ModalProtectedFilters extends BaseComponent {
     this.selectedPosition = -1;
     if (this.poolFilters) this.poolFilters.selectedIndexes = [];
     this.clearDateRange();
+  }
+
+  @Watch("modal")
+  modalChanged() {
+    this.init();
   }
 
   init() {

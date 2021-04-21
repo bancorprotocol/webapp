@@ -319,23 +319,28 @@
           class="progress-bar-positive mt-3"
           style="width: 80% !important"
         />
-        <span
-          :id="`popover-currentCoverage-${item.id}`"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+        <div
+          class="d-flex justify-content-between align-items-center"
+          style="width: 140px !important"
         >
-          <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
-          <countdown-timer
-            :date-unix="item.fullCoverage"
-            :msg-countdown-ended="$t('full_protection')"
+          <span
+            :id="`popover-currentCoverage-${item.id}`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
+            <countdown-timer
+              :date-unix="item.fullCoverage"
+              :msg-countdown-ended="$t('full_protection')"
+            />
+          </span>
+          <font-awesome-icon
+            v-if="!insuranceStarted(item.insuranceStart)"
+            :id="'popover-cliff-' + item.id"
+            icon="exclamation-circle"
+            class="text-danger"
           />
-        </span>
-        <font-awesome-icon
-          v-if="!insuranceStarted(item.insuranceStart)"
-          :id="'popover-cliff-' + item.id"
-          icon="exclamation-circle"
-          class="text-danger"
-        />
+        </div>
 
         <b-popover
           v-if="!insuranceStarted(item.insuranceStart)"
@@ -366,23 +371,25 @@
           class="progress-bar-positive mt-3"
           style="width: 80% !important"
         />
-        <span
-          :id="`popover-currentCoverage-${item.id}`"
-          class="font-size-12 font-w400"
-          :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-        >
-          <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
-          <countdown-timer
-            :date-unix="item.fullCoverage"
-            :msg-countdown-ended="$t('full_protection')"
+        <div class="d-flex justify-content-between">
+          <span
+            :id="`popover-currentCoverage-${item.id}`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
+            <countdown-timer
+              :date-unix="item.fullCoverage"
+              :msg-countdown-ended="$t('full_protection')"
+            />
+          </span>
+          <font-awesome-icon
+            v-if="!insuranceStarted(item.insuranceStart)"
+            :id="'popover-cliff-' + item.id"
+            icon="exclamation-circle"
+            class="text-danger"
           />
-        </span>
-        <font-awesome-icon
-          v-if="!insuranceStarted(item.insuranceStart)"
-          :id="'popover-cliff-' + item.id"
-          icon="exclamation-circle"
-          class="text-danger"
-        />
+        </div>
 
         <b-popover
           v-if="!insuranceStarted(item.insuranceStart)"
