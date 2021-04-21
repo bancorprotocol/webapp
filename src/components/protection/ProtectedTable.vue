@@ -186,8 +186,9 @@
 
       <template #cell(fees)="{ item, value }">
         <div :id="`popover-fees-${item.id}`" class="text-center font-w400">
-          {{ `${prettifyNumber(value)} ${item.symbol}` }}
-
+          <div>
+            {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          </div>
           <b-badge
             v-if="new BigNumber(item.pendingReserveReward).gt(0)"
             variant="primary"
