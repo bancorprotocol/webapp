@@ -137,6 +137,10 @@ export const router = new Router({
       }
     },
     {
+      path: "/:service/protection",
+      redirect: "/:service/portfolio"
+    },
+    {
       path: "/:service/pool/:poolAction/:account",
       name: "PoolAction",
       components: {

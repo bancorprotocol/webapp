@@ -491,5 +491,6 @@ export const en = {
     "Select the rate at which you would like to sell your tokens",
   powered_by_keeper_dao: "Limit orders are powered by KeeperDAO",
   filters:"Filters",
-  group_by:"Group By Pool Token"
+  group_by:"Group By Pool Token",
+  vbnt_read_more: "Read more about vBNT"
 };
