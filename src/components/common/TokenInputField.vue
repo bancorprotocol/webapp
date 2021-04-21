@@ -17,8 +17,9 @@
 
     <b-input-group>
       <b-form-input
-        type="text"
         v-model="tokenAmount"
+        @blur.native="blur"
+        inputmode="decimal"
         style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         :placeholder="$t('enter_amount')"
@@ -121,6 +122,7 @@ export default class TokenInputField extends BaseComponent {
   @Prop() tokens!: ViewModalToken[];
   @Prop() pools!: ViewRelay[];
   @Prop({ default: false }) allowTokenAdd!: boolean;
+  @Prop() blurFunc?: Function;
 
   get dropdown() {
     return (
@@ -154,6 +156,10 @@ export default class TokenInputField extends BaseComponent {
     } else {
       this.tokenAmount = this.balance;
     }
+  }
+
+  blur() {
+    if (this.blurFunc) this.blurFunc();
   }
 
   formatter(text: String) {

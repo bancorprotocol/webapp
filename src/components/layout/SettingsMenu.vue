@@ -27,37 +27,18 @@
     <b-dropdown-group id="dropdown-group-2" v-if="!showLocale">
       <b-dropdown-header>{{ $t("interface_settings") }}</b-dropdown-header>
       <b-dropdown-text :variant="darkMode ? 'dark' : 'light'">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="font-size-sm">{{ $t("dark_mode") }}</span>
-          <div>
-            <b-button-group class="d-flex">
-              <b-button
-                class="shadow-none"
-                size="sm"
-                :variant="
-                  darkMode
-                    ? 'outline-primary' + (darkMode ? '-dark' : '')
-                    : 'primary'
-                "
-                style="width: 50%"
-                @click="toggleDarkMode"
-                >{{ $t("off") }}</b-button
-              >
-              <b-button
-                class="shadow-none"
-                size="sm"
-                :variant="
-                  !darkMode
-                    ? 'outline-primary' + (darkMode ? '-dark' : '')
-                    : 'primary'
-                "
-                style="width: 50%"
-                @click="toggleDarkMode"
-                >{{ $t("on") }}</b-button
-              >
-            </b-button-group>
-          </div>
-        </div>
+        <MenuToggle
+          :label="$t('dark_mode')"
+          :value="darkMode"
+          @input="darkModeChange"
+        />
+        <MenuToggle
+          class="padme"
+          v-if="isAdmin"
+          label="Admin Mode"
+          :value="adminMode"
+          @input="adminModeChange"
+        />
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-text
@@ -137,11 +118,12 @@
 import { Prop, Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
+import MenuToggle from "@/components/common/MenuToggle.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { i18n, getLanguageByLocale } from "@/i18n";
 
 @Component({
-  components: { SlippageTolerance }
+  components: { MenuToggle, SlippageTolerance }
 })
 export default class SettingsMenu extends BaseComponent {
   @Prop({ default: true }) showTx!: boolean;
@@ -149,6 +131,26 @@ export default class SettingsMenu extends BaseComponent {
   showLocale: boolean = false;
   goBack: boolean = false;
   goLocale: boolean = false;
+
+  darkModeChange(status: boolean) {
+    if (status !== this.darkMode) {
+      vxm.general.toggleDarkMode();
+    }
+  }
+
+  get adminMode() {
+    return vxm.general.adminMode;
+  }
+
+  adminModeChange(status: boolean) {
+    if (status !== vxm.general.adminMode) {
+      vxm.general.toggleAdminMode();
+    }
+  }
+
+  get isAdmin() {
+    return localStorage.getItem("IS_ADMIN") == String(true);
+  }
 
   get i18n() {
     return i18n;
@@ -175,10 +177,6 @@ export default class SettingsMenu extends BaseComponent {
     this.$refs.dropdown.hide(true);
   }
 
-  toggleDarkMode() {
-    vxm.general.toggleDarkMode();
-  }
-
   switchlocale(locale: string) {
     vxm.general.setLocale(locale);
   }
@@ -203,4 +201,8 @@ export default class SettingsMenu extends BaseComponent {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.padme {
+  margin-top: 15px;
+}
+</style>

@@ -72,9 +72,31 @@
   color: $text-color-dark !important;
 }
 
+.label-muted-light {
+  color: $text-muted-light !important;
+}
+
+.label-active-light {
+  color: $text-color-light !important;
+}
+
+.label-muted-dark {
+  color: $dropdown-light !important;
+}
+
+.label-active-dark {
+  color: $text-color-dark !important;
+}
+
 .text-red {
   color: $text-error-dark !important;
   font-weight: 700 !important;
+}
+
+.text-link {
+  color: $primary;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .text-muted-light {
@@ -157,6 +179,10 @@
   color: $percentage-positive-light;
 }
 
+.progress-bar {
+  background-color: $percentage-positive-light;
+}
+
 .cursor {
   cursor: pointer;
 }
@@ -213,10 +239,32 @@
     color: $text-color-dark !important;
   }
 
+  &.btn-circle-gray {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    border-radius: $border-radius-circle !important;
+  }
+
+  &.btn-circle-gray-dark {
+    color: $text-color-dark !important;
+    border-color: $light-white !important;
+    border-radius: $border-radius-circle !important;
+  }
+
   &.btn-outline-gray-dark:hover {
     color: $text-color-light !important;
   }
 
+  &.btn-outline-alt-light {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-alt-dark {
+    color: $light-white !important;
+    border-color: $light-white !important;
+    background-color: $bg-body-dark !important;
+  }
   &.btn-outline-primary:hover {
     background-color: $bg-btn-outline-light !important;
     color: $text-color-light !important;
@@ -225,15 +273,56 @@
     background-color: $bg-btn-outline-dark !important;
     color: $text-color-dark !important;
   }
-  &.btn-outline-light {
-    color: $primary !important;
+  &.btn-muted-white-light {
+    color: $text-muted-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: white !important;
+  }
+  &.btn-muted-light {
+    color: $gray-placeholder !important;
     border-color: $gray-placeholder !important;
     background-color: $bg-body-light !important;
+  }
+  &.btn-muted-dark {
+    color: $gray-placeholder !important;
+    border-color: $gray-placeholder !important;
+    background-color: $gray-border-dark !important;
+  }
+  &.btn-active-light {
+    color: $text-color-light !important;
+    border-color: $text-color-light !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-active-dark {
+    color: $text-color-dark !important;
+    border-color: $text-color-dark !important;
+    background-color: $bg-body-dark !important;
+  }
+  &.btn-active-alt-light {
+    color: white !important;
+    background-color: $bg-active-light !important;
+  }
+  &.btn-active-alt-dark {
+    color: white !important;
+    background-color: $gray-border-dark !important;
+  }
+  &.btn-primary:focus {
+    box-shadow: none !important;
   }
   &.btn-outline-dark {
     color: $light-white !important;
     border-color: $light-white !important;
     background-color: $bg-body-dark !important;
+  }
+  &.btn-outline-light {
+    color: $primary !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-light-alt {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: white !important;
   }
   &.btn-outline-dark:hover {
     background-color: $light-white !important;
@@ -243,6 +332,11 @@
     background-color: $primary !important;
     color: $light-white !important;
     border-color: $primary !important;
+  }
+  &.btn-outline-light-alt:hover {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: white !important;
   }
 }
 
@@ -325,6 +419,44 @@
   }
 }
 
+.large-tabs-light {
+  .nav-tabs {
+    border: white;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+  .nav-tabs .nav-link {
+    color: $text-muted-light;
+    background: $gray-border;
+    border-bottom: 0px;
+  }
+  .nav-link.active {
+    color: $text-color-light;
+    background: white;
+    border: white;
+    padding: 10px 20px;
+  }
+}
+
+.large-tabs-dark {
+  .nav-tabs {
+    border: $bg-body-dark;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+  .nav-tabs .nav-link {
+    color: $text-muted-dark;
+    background: $gray-border-dark;
+    border-bottom: 0px;
+  }
+  .nav-link.active {
+    color: $text-color-dark;
+    background: $text-color-light;
+    border: $text-color-light;
+    padding: 10px 20px;
+  }
+}
+
 .border-gray {
   border: 1px solid $gray-border !important;
 }
@@ -358,4 +490,237 @@
 
 .progress {
   height: 4px !important;
+}
+
+.form-control-date {
+  height: 35px !important;
+  width: 220px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  padding: 0.375rem 0.75rem;
+  cursor: pointer;
+
+  &.date-range-light {
+    color: $text-muted-light !important;
+    background-color: $white !important;
+    border-color: $gray-placeholder !important;
+  }
+  &.date-range-light-active {
+    color: $text-color-light !important;
+    border-color: $text-color-light !important;
+    background-color: $bg-body-light !important;
+  }
+
+  &.date-range-dark {
+    color: $gray-placeholder-dark !important;
+    background-color: $gray-border-dark !important;
+    border-color: $gray-placeholder-dark !important;
+  }
+  &.date-range-dark-active {
+    color: $text-color-dark !important;
+    border-color: $text-color-dark !important;
+    background-color: $bg-body-dark !important;
+  }
+}
+
+.date-range-picker-light {
+  .daterangepicker {
+    &.dropdown-menu {
+      background: $bg-body-light !important;
+    }
+  }
+  .calendar-table {
+    background: $bg-body-light !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-light !important;
+  }
+  .drp-calendar {
+    background: $bg-body-light !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-light !important;
+  }
+  thead {
+    background: $bg-body-light !important;
+    th {
+      background: $bg-body-light !important;
+      color: $text-color-light !important;
+    }
+  }
+  tbody {
+    color: $text-color-light !important;
+    tr {
+      background: $bg-body-light !important;
+    }
+    td {
+      background: $bg-body-light !important;
+    }
+    th {
+      background: $bg-body-light !important;
+      color: $text-color-light !important;
+    }
+    .in-range {
+      background: $bg-btn-outline-light !important;
+      color: $primary !important;
+    }
+    .active {
+      background: $primary !important;
+      color: white !important;
+    }
+  }
+}
+
+.date-range-picker-dark {
+  .daterangepicker {
+    &.dropdown-menu {
+      background: $bg-body-dark !important;
+    }
+  }
+  .calendar-table {
+    background: $bg-body-dark !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-dark !important;
+  }
+  .drp-calendar {
+    background: $bg-body-dark !important;
+    border-radius: 8px !important;
+    border-color: $bg-body-dark !important;
+  }
+  thead {
+    background: $bg-body-dark !important;
+    th {
+      background: $bg-body-dark !important;
+      color: $text-color-dark !important;
+    }
+  }
+  tbody {
+    color: $text-color-dark !important;
+    tr {
+      background: $bg-body-dark !important;
+    }
+    td {
+      background: $bg-body-dark !important;
+    }
+    th {
+      background: $bg-body-dark !important;
+      color: $text-color-dark !important;
+      font-weight: 800 !important;
+    }
+    .in-range {
+      background: $primary !important;
+      color: white !important;
+    }
+    .active {
+      background: $primary !important;
+      color: white !important;
+    }
+  }
+}
+
+.dropdown-item-light {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  margin-top: 5px !important;
+  a {
+    color: $text-muted-light !important;
+    background-color: white !important;
+  }
+  a:hover {
+    color: $primary !important;
+    background-color: $bg-btn-outline-light !important;
+  }
+}
+
+.dropdown-item-dark {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  margin-top: 5px !important;
+  a {
+    color: $dropdown-light !important;
+    background-color: $dropdown-dark !important;
+  }
+  a:hover {
+    color: white !important;
+    background-color: $bg-btn-outline-dark !important;
+  }
+}
+
+.checkbox-dark {
+  .custom-control-label::before {
+    border-radius: 2px;
+  }
+
+  .custom-control-input:checked {
+    ~ .custom-control-label::before {
+      background-color: $dropdown-dark;
+      border-color: white;
+    }
+  }
+}
+
+.checkbox-light {
+  .custom-control-label::before {
+    border-radius: 2px;
+  }
+  .custom-control-input:checked {
+    ~ .custom-control-label::before {
+      background-color: $primary;
+      border-color: $text-muted-light;
+    }
+  }
+}
+
+.limited-dropdown {
+  .dropdown-menu {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+}
+
+.full-dropdown {
+  .dropdown-menu {
+    width: 100%;
+  }
+}
+
+.custom-input-active {
+  background-color: $primary !important;
+  color: white !important;
+}
+
+.icon-primary {
+  background-color: $primary !important;
+  border-radius: 36px !important;
+  border: 8px solid $primary !important;
+  color: white !important;
+}
+
+.seperator-dark {
+  margin-bottom: 1rem;
+  border: 1px solid $gray-border-dark;
+}
+
+.seperator-light {
+  margin-bottom: 1rem;
+  border: 1px solid $gray-border;
+}
+
+.full-modal .modal {
+  padding: 0 !important;
+}
+.full-modal .modal-dialog {
+  max-width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+.full-modal .modal-dialog-scrollable {
+  max-height: 100% !important;
+}
+.full-modal .dialog-centered {
+  max-height: 100% !important;
+}
+
+.full-modal .modal-content {
+  border: 0 !important;
+  border-radius: 0 !important;
+  height: 100% !important;
 }

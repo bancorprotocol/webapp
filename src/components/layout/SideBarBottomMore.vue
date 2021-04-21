@@ -1,12 +1,12 @@
 <template>
-  <div class="side-bar-bottom-more" :class="darkMode ? 'side-bar-dark' : ''">    
+  <div class="side-bar-bottom-more" :class="darkMode ? 'side-bar-dark' : ''">
     <div class="side-bar-links">
       <div
         @click="linkClicked(link)"
         v-for="link in links.filter(l => l.hideMobile)"
         :key="link.key"
         :to="{ name: link.route }"
-        class="side-bar-link"        
+        class="side-bar-link"
       >
         <img
           class="side-bar-link-icon"
@@ -14,7 +14,7 @@
         />
         <span>{{ link.label }}</span>
       </div>
-    </div>    
+    </div>
   </div>
 </template>
 
@@ -25,7 +25,7 @@ import { ViewSideBarLink } from "@/components/layout/SideBar.vue";
 @Component
 export default class SideBarBottomMore extends Vue {
   @Prop() links!: ViewSideBarLink[];
-  @Prop() darkMode!: boolean;  
+  @Prop() darkMode!: boolean;
 
   @Emit("linkClicked")
   linkClicked(link: ViewSideBarLink) {
@@ -73,7 +73,7 @@ export default class SideBarBottomMore extends Vue {
   }
   .middle-space {
     flex-grow: 1;
-  }  
+  }
 }
 .side-bar-link-dark {
   span {

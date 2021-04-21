@@ -1,4 +1,4 @@
-import { createModule, action } from "vuex-class-component";
+import { createModule, action, mutation } from "vuex-class-component";
 import { buildLiquidityProtectionSettingsContract } from "@/api/eth/contractTypes";
 import { web3 } from "@/api/web3";
 import { shrinkToken } from "@/api/eth/helpers";
@@ -14,7 +14,7 @@ export class MintingModule extends VuexModule.With({
   public minNetworkTokenLiquidityforMinting: BigNumber | null = null;
 
   @action async fetchMinLiqForMinting(protectionSettingsContract: string) {
-    const contract = await buildLiquidityProtectionSettingsContract(
+    const contract = buildLiquidityProtectionSettingsContract(
       protectionSettingsContract,
       web3
     );
@@ -23,6 +23,10 @@ export class MintingModule extends VuexModule.With({
       .minNetworkTokenLiquidityForMinting()
       .call();
 
+    this.setMinNetworkTokenLiquidityForMinting(result);
+  }
+
+  @mutation setMinNetworkTokenLiquidityForMinting(result: string) {
     this.minNetworkTokenLiquidityforMinting = new BigNumber(
       shrinkToken(result, 18)
     );

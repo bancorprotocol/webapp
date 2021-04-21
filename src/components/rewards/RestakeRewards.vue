@@ -38,10 +38,7 @@
       :disabled="disableActionButton"
     />
 
-    <modal-tx-action
-      :tx-meta.sync="txMeta"
-      redirect-on-success="LiqProtection"
-    />
+    <modal-tx-action :tx-meta="txMeta" />
   </div>
 </template>
 
@@ -60,7 +57,6 @@ import { compareString } from "@/api/helpers";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 import BigNumber from "bignumber.js";
-import wait from "waait";
 import { addNotification } from "@/components/compositions/notifications";
 
 @Component({
@@ -190,7 +186,7 @@ export default class RestakeRewards extends BaseTxAction {
     this.loading = true;
     try {
       await Promise.all([
-        wait(1000),
+        new Promise(r => setTimeout(r, 1000)),
         this.loadMaxStakes(),
         vxm.rewards.fetchAndSetPendingRewards(),
         this.pools.forEach(async x => {

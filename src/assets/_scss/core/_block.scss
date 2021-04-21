@@ -88,6 +88,19 @@
     border: 1px solid $body-bg-dark;
     box-shadow: none;
   }
+  &.block-rounded-tabs {
+    border-radius: 0 $border-radius $border-radius $border-radius !important;
+
+    > .block-content {
+      &:first-child {
+        @include border-top-radius($border-radius-sm);
+      }
+
+      &:last-child {
+        @include border-bottom-radius($border-radius-sm);
+      }
+    }
+  }
 
   &.block-rounded {
     border-radius: $border-radius;
