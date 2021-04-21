@@ -117,6 +117,18 @@
         />
         <label-content-split :label="$t('price_impact')" :value="priceImpact" />
       </gray-border-block>
+
+      <div class="my-3 text-center">
+        <a
+          v-if="isVbnt"
+          href="https://blog.bancor.network/using-bancor-vortex-46974a1c14f9"
+          target="_blank"
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          <u>{{ $t("vbnt_read_more") }}</u>
+        </a>
+      </div>
     </modal-tx-action>
   </div>
 </template>
@@ -182,6 +194,12 @@ export default class SwapAction extends BaseTxAction {
         token.tradeSupported &&
         !compareString(token.id, wethTokenContractAddress)
     );
+  }
+
+  get isVbnt() {
+    const symbol1 = this.token1.symbol.toLowerCase();
+    const symbol2 = this.token2.symbol.toLowerCase();
+    return symbol1 === "vbnt" || symbol2 === "vbnt";
   }
 
   get priceImpact() {
