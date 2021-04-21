@@ -18,7 +18,11 @@ $gray-placeholder-dark: #516175;
 
 $light-white: #eeeeee;
 
+$dropdown-light: #97a5b8;
+$dropdown-dark: #0a2540;
+
 $border-radius: 8px;
+$border-radius-circle: 20px;
 $modal-sm: 379px;
 
 $modal-backdrop-bg: #1d3144;
@@ -46,6 +50,8 @@ $percentage-positive-light: #3ec8c8;
 
 $bg-body-dark: #1c344e;
 $bg-body-light: #f8f9fd;
+
+$bg-active-light: #244185;
 
 $bg-error-light: rgba($text-error-light, 0.1);
 $bg-error-dark: rgba($text-error-light, 0.1);

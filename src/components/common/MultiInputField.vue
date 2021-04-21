@@ -81,7 +81,7 @@ export default class MultiInputField extends BaseComponent {
   @Prop({ default: "text" }) type!: string;
   @Prop() label?: string;
   @Prop({ default: "md" }) fontSize!: "sm" | "md" | "lg";
-  @Prop({ default: 32 }) height!: number;
+  @Prop({ default: 35 }) height!: number;
   @Prop() append?: string;
   @Prop() prepend?: string;
   @Prop() alertMsg?: string;

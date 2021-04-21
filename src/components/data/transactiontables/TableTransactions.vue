@@ -3,7 +3,7 @@
     :fields="fields"
     :items="items"
     :filter="filter"
-    :filter-function="doFilter"
+    :filter-functions="[doFilter]"
     :sort-function="customSort"
     default-sort="unixTime"
   >
@@ -43,7 +43,12 @@ import { i18n } from "@/i18n";
 import { defaultTableSort, shortenEthAddress } from "@/api/helpers";
 import dayjs from "@/utils/dayjs";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { TableItem, ViewTableField } from "@/types/bancor";
+import {
+  TableItem,
+  ViewLiquidityEvent,
+  ViewTableField,
+  ViewTradeEvent
+} from "@/types/bancor";
 import DataTable from "@/components/common/DataTable.vue";
 
 @Component({
@@ -99,10 +104,10 @@ export default class TableTransactions extends BaseComponent {
     ];
   }
 
-  doFilter(row: any, filter: string) {
+  doFilter(row: ViewLiquidityEvent<ViewTradeEvent>) {
     const fromSymbol = row.data.from.symbol;
     const toSymbol = row.data.to.symbol;
-    const lowerFilter = filter.toLowerCase();
+    const lowerFilter = this.filter.toLowerCase();
     return (
       (fromSymbol && fromSymbol.toLowerCase().indexOf(lowerFilter) >= 0) ||
       (toSymbol && toSymbol.toLowerCase().indexOf(lowerFilter) >= 0)

@@ -130,7 +130,7 @@
         />
         <label-content-split :label="$t('expires_in')">
           <b-dropdown
-            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            :variant="darkMode ? 'outline-dark' : 'outline-light-alt'"
             toggle-class="block-rounded"
             :menu-class="
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'

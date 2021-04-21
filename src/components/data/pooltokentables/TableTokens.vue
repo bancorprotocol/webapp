@@ -4,7 +4,7 @@
     :items="items"
     :filter="filter"
     filter-by="symbol"
-    :filter-function="doFilter"
+    :filter-functions="[doFilter]"
     :sort-function="customSort"
     default-sort="liqDepth"
   >
@@ -129,8 +129,8 @@ export default class TableTokens extends BaseComponent {
     return this.$route.params.service == "eth";
   }
 
-  doFilter(row: ViewToken, filter: string) {
-    const searchTerm = filter.toLowerCase();
+  doFilter(row: ViewToken) {
+    const searchTerm = this.filter.toLowerCase();
     return (
       (row.name && row.name.toLowerCase().includes(searchTerm)) ||
       (row.symbol && row.symbol.toLowerCase().includes(searchTerm))
