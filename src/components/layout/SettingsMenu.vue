@@ -14,9 +14,7 @@
       <font-awesome-icon icon="cog" fixed-width />
     </template>
     <b-dropdown-group id="dropdown-group-1" v-if="showTx && !showLocale">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("transaction_settings")
-      }}</b-dropdown-header>
+      <b-dropdown-header>{{ $t("transaction_settings") }}</b-dropdown-header>
       <b-dropdown-text
         style="width: 300px"
         :variant="darkMode ? 'dark' : 'light'"
@@ -27,9 +25,7 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="showTx && !showLocale"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-2" v-if="!showLocale">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("interface_settings")
-      }}</b-dropdown-header>
+      <b-dropdown-header>{{ $t("interface_settings") }}</b-dropdown-header>
       <b-dropdown-text :variant="darkMode ? 'dark' : 'light'">
         <MenuToggle
           :label="$t('dark_mode')"
@@ -61,7 +57,6 @@
     <b-dropdown-divider v-if="!showLocale"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3" v-if="!showLocale">
       <b-dropdown-header
-        class="text-uppercase"
         v-if="showLocale"
         style="width: 300px !important"
         @click="goToSettings"

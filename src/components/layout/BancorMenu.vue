@@ -13,7 +13,7 @@
     </template>
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
-      <b-dropdown-header class="text-uppercase">Bancor</b-dropdown-header>
+      <b-dropdown-header>Bancor</b-dropdown-header>
       <b-dropdown-item style="width: 230px" disabled>
         <font-awesome-icon icon="info" class="mr-2" fixed-width />
         {{ $t("about") }}
@@ -21,9 +21,7 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group v-if="false" id="dropdown-group-2">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("apps")
-      }}</b-dropdown-header>
+      <b-dropdown-header>{{ $t("apps") }}</b-dropdown-header>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
           <img
@@ -76,7 +74,51 @@
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header>
-        {{ $t("community_support") }}
+        <div class="font-size-16">
+          {{ $t("community_support") }}
+        </div>
+      </b-dropdown-header>
+      <b-dropdown-text>
+        <div class="d-flex justify-content-between cursor">
+          <font-awesome-icon
+            @click="openUrl('https://twitter.com/Bancor')"
+            :icon="['fab', 'twitter']"
+            class="mr-2 menu-icon"
+            fixed-width
+          />
+          <font-awesome-icon
+            @click="openUrl('https://www.reddit.com/r/Bancor/')"
+            :icon="['fab', 'reddit-alien']"
+            class="mr-2 menu-icon"
+            fixed-width
+          />
+          <font-awesome-icon
+            @click="openUrl('https://t.me/bancor')"
+            :icon="['fab', 'telegram-plane']"
+            class="mr-2 menu-icon"
+            fixed-width
+          />
+          <font-awesome-icon
+            @click="openUrl('https://discord.gg/EHK8wHbgau')"
+            :icon="['fab', 'discord']"
+            class="mr-2 menu-icon"
+            fixed-width
+          />
+          <font-awesome-icon
+            @click="openUrl('https://gov.bancor.network')"
+            :icon="['fab', 'discourse']"
+            class="mr-2 menu-icon"
+            fixed-width
+          />
+        </div>
+      </b-dropdown-text>
+    </b-dropdown-group>
+    <b-dropdown-divider></b-dropdown-divider>
+    <b-dropdown-group id="dropdown-group-4">
+      <b-dropdown-header>
+        <div class="font-size-16">
+          {{ $t("developers") }}
+        </div>
       </b-dropdown-header>
       <b-dropdown-item
         @click="openUrl('https://twitter.com/Bancor')"
@@ -167,7 +209,7 @@
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-5" class="font-size-12">
+    <b-dropdown-group id="dropdown-group-5" class="font-size-16">
       <b-dropdown-item
         @click="navPrivacy"
         :variant="darkMode ? 'dark' : 'light'"

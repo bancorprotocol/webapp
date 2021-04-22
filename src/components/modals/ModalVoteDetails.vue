@@ -34,7 +34,7 @@
 
     <div class="w-100 p-3">
       <span
-        class="text-uppercase font-size-12 font-w600"
+        class="font-size-12 font-w600"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         {{ `${$t("proposal_title")}:` }}
@@ -72,7 +72,7 @@
       </template>
 
       <template #cell(voted)="data">
-        <div class="text-uppercase" :class="getVoteClass(data.value)">
+        <div :class="getVoteClass(data.value)">
           {{ data.value === 1 ? $t("for") : $t("against") }}
         </div>
       </template>
