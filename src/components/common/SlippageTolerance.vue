@@ -45,7 +45,7 @@ export default class SlippageTolerance extends BaseComponent {
   }
 
   get formInputStyles() {
-    if (this.custom !== "") return "custom-input-active";
+    if (this.custom !== "") return "custom-input-active-borderless";
     else return this.darkMode ? "text-dark" : "text-light";
   }
 
