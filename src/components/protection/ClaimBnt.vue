@@ -18,7 +18,7 @@
     </div>
     <div v-if="!locked">
       <b-btn
-        :variant="darkMode ? 'primary-dark' : 'primary-light'"
+        variant="primary"
         @click="click"
         class="font-size-14 font-w500 px-4"
         >{{ `${$t("claim")} BNT` }}</b-btn

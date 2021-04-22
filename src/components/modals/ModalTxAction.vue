@@ -47,7 +47,7 @@
             v-if="question.label === 'unlimited'"
             @click="selectedPromptReceiver(question.id)"
             class="mt-2 rounded py-2 btn-block"
-            :variant="darkMode ? 'primary-dark' : 'primary-light'"
+            variant="primary"
           >
             Unlimited Approval
           </b-btn>
@@ -68,7 +68,7 @@
             v-if="question.label === 'confirm'"
             @click="selectedPromptReceiver(question.id)"
             class="mt-2 rounded py-2 btn-block"
-            :variant="darkMode ? 'primary-dark' : 'primary-light'"
+            variant="primary"
           >
             Confirm
           </b-btn>

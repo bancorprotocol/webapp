@@ -31,7 +31,7 @@
             </b-btn>
             <b-btn
               @click="openModal"
-              :variant="darkMode ? 'primary-dark' : 'primary-light'"
+              variant="primary"
               size="sm"
               class="rounded"
             >

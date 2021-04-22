@@ -236,7 +236,7 @@
           </template>
           <template v-if="positions.length" #mobileFilters>
             <b-button-group v-if="anyAreFiltering">
-              <b-btn :variant="darkMode ? 'primary-dark' : 'primary-light'">
+              <b-btn variant="primary">
                 <font-awesome-icon
                   icon="sliders-h"
                   @click="showMobileFilters"

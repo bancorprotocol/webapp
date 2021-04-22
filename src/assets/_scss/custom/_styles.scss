@@ -178,6 +178,17 @@
   color: $text-warning-dark;
 }
 
+.badge-light {
+  color: $primary;
+  background: $bg-btn-outline-light;
+}
+
+.badge-dark {
+  color: black;
+  background: $primary-dark;
+  opacity: 0.65;
+}
+
 .percentage-negative {
   color: $text-error-light;
 }
@@ -343,26 +354,6 @@
     color: $text-color-light !important;
     border-color: $gray-placeholder !important;
     background-color: white !important;
-  }
-  &.btn-primary-light {
-    background-color: $primary !important;
-    color: $light-white !important;
-    border-color: $light-white !important;
-  }
-  &.btn-primary-light:hover {
-    background-color: $primary !important;
-    color: $light-white !important;
-    border-color: $light-white !important;
-  }
-  &.btn-primary-dark {
-    background-color: $primary-dark !important;
-    color: white !important;
-    border-color: white !important;
-  }
-  &.btn-primary-dark:hover {
-    background-color: $primary-dark !important;
-    color: white !important;
-    border-color: white !important;
   }
 }
 
@@ -632,8 +623,9 @@
       font-weight: 800 !important;
     }
     .in-range {
+      color: $primary !important;
       background: $primary-dark !important;
-      color: white !important;
+      opacity: 0.65 !important;
     }
     .active {
       background: $primary !important;

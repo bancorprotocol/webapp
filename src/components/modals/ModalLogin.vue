@@ -77,7 +77,7 @@
           <b-btn
             @click="error = false"
             size="lg"
-            :variant="darkMode ? 'primary-dark' : 'primary-light'"
+            variant="primary"
             class="btn-block block-rounded"
           >
             {{ $t("try_again") }}</b-btn

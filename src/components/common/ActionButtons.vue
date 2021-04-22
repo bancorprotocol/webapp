@@ -4,7 +4,7 @@
       v-if="pool"
       @click="goToPool"
       class="mr-3"
-      :variant="darkMode ? 'primary-dark' : 'primary-light'"
+      variant="primary"
       :class="small ? 'table-button-small' : 'table-button'"
       :disabled="loading"
     >

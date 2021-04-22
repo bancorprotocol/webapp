@@ -13,7 +13,7 @@
         <b-col sm="6">
           <b-btn
             @click="stakeModal = true"
-            :variant="darkMode ? 'primary-dark' : 'primary-light'"
+            variant="primary"
             size="lg"
             class="btn-rounded btn-block"
           >

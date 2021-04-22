@@ -22,7 +22,7 @@
         </p>
 
         <b-btn
-          :variant="darkMode ? 'primary-dark' : 'primary-light'"
+          variant="primary"
           size="lg"
           href="https://vote.bancor.network"
           target="_blank"

@@ -40,13 +40,13 @@
         </div>
         <div class="mt-3 mb-2">
           <b-btn
-            :variant="darkMode ? 'primary-dark' : 'primary-light'"
+            variant="primary"
             @click="buy"
             class="font-size-14 font-w500 px-5 py-2 mr-2"
             >Buy</b-btn
           >
           <b-btn
-            :variant="darkMode ? 'primary-dark' : 'primary-light'"
+            variant="primary"
             @click="sell"
             class="font-size-14 font-w500 px-5 py-2 ml-2"
             >Sell</b-btn

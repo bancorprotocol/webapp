@@ -28,7 +28,7 @@ export default class NetworkAlert extends BaseComponent {
       case EthNetworks.Mainnet:
         return {
           msg: i18n.t("beta"),
-          variant: this.darkMode ? "primary-dark" : "primary-light"
+          variant: "primary"
         };
       case EthNetworks.Ropsten:
         return {

@@ -24,7 +24,7 @@
         </a>
         <b-btn
           @click="showNewProposal = true"
-          :variant="darkMode ? 'primary-dark' : 'primary-light'"
+          variant="primary"
           class="proposal-cta-button"
         >
           + <span class="d-none d-lg-block ml-2">{{ $t("new_proposal") }}</span>
