@@ -378,7 +378,6 @@ export const en = {
   current_protection: "Current protection is {amount}",
   roi_protected_split:
     "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
-  developers: "Developers",
   not_protected: "Not Protected",
   clear_all_filters: "Clear all filters",
   multiple_token_pairs: "Multiple Token Pairs",
