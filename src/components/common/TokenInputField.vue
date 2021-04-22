@@ -1,7 +1,7 @@
 <template>
   <div>
     <label-content-split :label="label" class="mb-1">
-      <div v-if="currentUser" class="d-flex flex-row font-size-14 font-w500">
+      <div v-if="currentUser" class="d-flex flex-row font-size-14 font-w400">
         <div @click="maxBalance" class="cursor">
           {{ `${$t("balance")}: ${prettifyNumber(balance)}` }}
         </div>
