@@ -28,9 +28,8 @@ export default class SubContentBlock extends BaseComponent {
   border-radius: $border-radius;
 
   .sub-content-header {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
-    text-transform: uppercase;
     color: $text-muted-light;
     background-color: $block-bg-blue;
     border-top-left-radius: $border-radius;

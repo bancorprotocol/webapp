@@ -6,7 +6,7 @@
     ></div>
     <div class="button-progress__content">
       <div class="pb-1">
-        <span class="font-size-14 font-w500 text-uppercase"> {{ title }} </span
+        <span class="font-size-14 font-w500"> {{ title }} </span
         ><!--
      --><span class="font-size-12 font-w500 text-muted-light pl-1">
           {{ percentageValue }}
