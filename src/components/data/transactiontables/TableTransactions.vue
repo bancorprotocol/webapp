@@ -8,7 +8,11 @@
     default-sort="unixTime"
   >
     <template #cell(description)="{ item }">
-      <a :href="item.txLink" target="_blank">
+      <a
+        :href="item.txLink"
+        target="_blank"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      >
         {{ `Swap ${item.data.from.symbol} for ${item.data.to.symbol}` }}
       </a>
     </template>
@@ -26,7 +30,11 @@
     </template>
 
     <template #cell(account)="{ item, value }">
-      <a :href="item.accountLink" target="_blank">
+      <a
+        :href="item.accountLink"
+        target="_blank"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      >
         {{ value.length > 12 ? shortenEthAddress(value) : value }}
       </a>
     </template>

@@ -282,6 +282,15 @@
     border-color: $light-white !important;
     background-color: $bg-body-dark !important;
   }
+  &.btn-outline-primary {
+    background-color: $bg-btn-outline-light !important;
+    color: $text-color-light !important;
+  }
+  &.btn-outline-primary-dark {
+    background-color: $text-color-light !important;
+    color: $primary !important;
+    border: 1px solid $primary !important;
+  }
   &.btn-outline-primary:hover {
     background-color: $bg-btn-outline-light !important;
     color: $text-color-light !important;
@@ -301,8 +310,8 @@
     background-color: $bg-body-light !important;
   }
   &.btn-muted-dark {
-    color: $gray-placeholder !important;
-    border-color: $gray-placeholder !important;
+    color: $gray-placeholder-dark !important;
+    border-color: $gray-placeholder-dark !important;
     background-color: $gray-border-dark !important;
   }
   &.btn-active-light {
@@ -703,7 +712,7 @@
 .custom-input-active {
   background-color: $primary !important;
   color: white !important;
-  border-color: white;
+  border: 1px solid white !important;
 }
 
 .icon-primary {

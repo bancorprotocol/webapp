@@ -44,7 +44,9 @@
       </content-block>
     </b-col>
     <b-col cols="12">
-      <h6 class="mb-0">Legacy onchain contract</h6>
+      <h6 class="mb-0" :class="darkMode ? 'text-dark' : 'text-light'">
+        Legacy onchain contract
+      </h6>
       <hr class="my-2" />
       <p
         class="font-w500 font-size-14 mb-2"

@@ -513,14 +513,15 @@ export default class SwapAction extends BaseTxAction {
 .inactive {
   pointer-events: none;
   cursor: default;
-  opacity: 0.6;
   color: #0f59d1;
+  opacity: 0.6;
   font-size: 1rem;
 }
 
 .active {
   cursor: pointer;
   color: #0f59d1;
+  opacity: 0.6;
   font-size: 1rem;
 }
 </style>
