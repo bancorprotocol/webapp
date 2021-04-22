@@ -25,7 +25,10 @@
       >
     </div>
     <div v-else class="time-left text-center">
-      <div class="text-primary font-size-18">
+      <div
+        class="font-size-18"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      >
         {{ lockDuration }}
       </div>
       <div class="font-size-12 font-w400" :class="textMutedClass">

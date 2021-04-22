@@ -28,9 +28,7 @@ export default class MainButton extends BaseComponent {
 
   get variant() {
     return this.active
-      ? this.darkMode
-        ? "primary-dark"
-        : "primary-light"
+      ? "primary"
       : this.darkMode
       ? "outline-gray-dark"
       : "outline-gray";

@@ -41,7 +41,8 @@
         >
           <span
             @click="advancedOpen = !advancedOpen"
-            class="text-primary font-size-12 font-w500 cursor"
+            class="font-size-12 font-w500 cursor"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           >
             {{ $t("advanced_settings") }}
             <font-awesome-icon

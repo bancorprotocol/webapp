@@ -105,7 +105,8 @@
       </div>
       <a
         target="_blank"
-        class="text-primary font-w500 cursor"
+        class="font-w500 cursor"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         :href="getEtherscanUrl()"
         >{{ $t("view_etherscan") }}</a
       >

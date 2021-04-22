@@ -700,27 +700,17 @@
   }
 }
 
-.custom-input-active-light {
+.custom-input-active {
   background-color: $primary !important;
   color: white !important;
-}
-.custom-input-active-dark {
-  background-color: $primary-dark !important;
-  color: black !important;
+  border-color: white;
 }
 
-.icon-primary-light {
+.icon-primary {
   background-color: $primary !important;
   border-radius: 36px !important;
   border: 8px solid $primary !important;
   color: white !important;
-}
-
-.icon-primary-dark {
-  background-color: $primary-dark !important;
-  border-radius: 36px !important;
-  border: 8px solid $primary-dark !important;
-  color: black !important;
 }
 
 .seperator-dark {

@@ -4,7 +4,7 @@
       <b-col cols="12" class="text-center">
         <font-awesome-icon
           :icon="['far', 'clock']"
-          :class="darkMode ? 'icon-primary-dark' : 'icon-primary-light'"
+          class="icon-primary"
           size="3x"
         />
         <div
