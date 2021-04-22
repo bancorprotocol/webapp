@@ -344,7 +344,7 @@ export const fetchLiquidityProtectionSettings = async ({
     minDelay: Number(settings.minProtectionDelay),
     maxDelay: Number(settings.maxProtectionDelay),
     lockedDelay: Number(settings.lockDuration),
-    govToken: protection.govToken,
+    govToken: "0x48Fb253446873234F2fEBbF9BdeAA72d9d387f94",
     networkToken: settings.networkToken,
     defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
   } as LiquidityProtectionSettings;
