@@ -85,6 +85,8 @@ describe("calculate grouped positions for protected table", () => {
     const positions: ViewProtectedLiquidity[] = [
       {
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
+        initialProtectedWei: "0",
+        inititalProtectedToken: "0",
         stake: {
           amount: "0.999999999999999999",
           symbol: "BNT",
@@ -93,16 +95,19 @@ describe("calculate grouped positions for protected table", () => {
           usdValue: 0.99741083
         },
         protectedAmount: {
+          id: "1",
           amount: "0.988304322300486270",
           symbol: "BNT",
           usdValue: 0.9857454343983155
         },
         fullyProtected: {
+          id: "1",
           amount: "1.005877144022078272",
           symbol: "BNT",
           usdValue: 1.0032727570970905
         },
         fees: {
+          id: "1",
           amount: "0.006127116288703279",
           symbol: "BNT"
         },
@@ -117,13 +122,15 @@ describe("calculate grouped positions for protected table", () => {
         coverageDecPercent: 0.5692694444444445,
         fullCoverage: 1611157590,
         givenVBnt: "0.999999999999999999",
-        pendingReserveReward: new BigNumber(0),
+        pendingReserveReward: "0",
         rewardsMultiplier: 1,
         reserveTokenPrice: 1,
         bntTokenPrice: 1
       },
       {
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:3",
+        initialProtectedWei: "0",
+        inititalProtectedToken: "0",
         stake: {
           amount: "0.003102978944697264",
           symbol: "ETH",
@@ -132,16 +139,19 @@ describe("calculate grouped positions for protected table", () => {
           usdValue: 1.7846539507916555
         },
         protectedAmount: {
+          id: "1",
           amount: "0.003066687503051707",
           symbol: "ETH",
           usdValue: 1.7637812133780322
         },
         fullyProtected: {
+          id: "1",
           amount: "0.003121215598852726",
           symbol: "ETH",
           usdValue: 1.795142619090029
         },
         fees: {
+          id: "1",
           amount: "0.000019012312835558",
           symbol: "ETH"
         },
@@ -156,13 +166,15 @@ describe("calculate grouped positions for protected table", () => {
         coverageDecPercent: 0.5692694444444445,
         fullCoverage: 1611157590,
         givenVBnt: "0.999999999999999999",
-        pendingReserveReward: new BigNumber(0),
+        pendingReserveReward: "0",
         rewardsMultiplier: 1,
         reserveTokenPrice: 1,
         bntTokenPrice: 1
       },
       {
         id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:22",
+        initialProtectedWei: "0",
+        inititalProtectedToken: "0",
         stake: {
           amount: "1.119976353898094348",
           symbol: "BNT",
@@ -171,16 +183,19 @@ describe("calculate grouped positions for protected table", () => {
           usdValue: 1.117076544721872
         },
         protectedAmount: {
+          id: "1",
           amount: "1.127341412993218302",
           symbol: "BNT",
           usdValue: 1.1244225344269387
         },
         fullyProtected: {
+          id: "1",
           amount: "1.131695940901228608",
           symbol: "BNT",
           usdValue: 1.1287657877219255
         },
         fees: {
+          id: "1",
           amount: "0.011825823889716568",
           symbol: "BNT"
         },
@@ -195,13 +210,15 @@ describe("calculate grouped positions for protected table", () => {
         coverageDecPercent: 0.5671990740740741,
         fullCoverage: 1611175478,
         givenVBnt: "1.119976353898094348",
-        pendingReserveReward: new BigNumber(0),
+        pendingReserveReward: "0",
         rewardsMultiplier: 1,
         reserveTokenPrice: 1,
         bntTokenPrice: 1
       },
       {
         id: "0x9Cbb076C3dc14F025bE30b4Cc34c33107D602A44:23",
+        initialProtectedWei: "0",
+        inititalProtectedToken: "0",
         stake: {
           amount: "0.048010344040805995",
           symbol: "NMR",
@@ -210,16 +227,19 @@ describe("calculate grouped positions for protected table", () => {
           usdValue: 1.4617575474277011
         },
         protectedAmount: {
+          id: "1",
           amount: "0.048334066249605458",
           symbol: "NMR",
           usdValue: 1.4716138271823387
         },
         fullyProtected: {
+          id: "1",
           amount: "0.048520733032588171",
           symbol: "NMR",
           usdValue: 1.4772972186332958
         },
         fees: {
+          id: "1",
           amount: "0.000515015617056458",
           symbol: "NMR"
         },
@@ -234,13 +254,15 @@ describe("calculate grouped positions for protected table", () => {
         coverageDecPercent: 0.5671990740740741,
         fullCoverage: 1611175478,
         givenVBnt: "0.999999999999999999",
-        pendingReserveReward: new BigNumber(0),
+        pendingReserveReward: "0",
         rewardsMultiplier: 1,
         reserveTokenPrice: 1,
         bntTokenPrice: 1
       },
       {
         id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:939",
+        initialProtectedWei: "0",
+        inititalProtectedToken: "0",
         stake: {
           amount: "1.000000000000000000",
           symbol: "BNT",
@@ -249,16 +271,19 @@ describe("calculate grouped positions for protected table", () => {
           usdValue: 0.99741083
         },
         protectedAmount: {
+          id: "1",
           amount: "1.000825163770841809",
           symbol: "BNT",
           usdValue: 0.9982338572815612
         },
         fullyProtected: {
+          id: "1",
           amount: "1.002608722329711269",
           symbol: "BNT",
           usdValue: 1.000012797904117
         },
         fees: {
+          id: "1",
           amount: "0.002613383452134935",
           symbol: "BNT"
         },
@@ -273,7 +298,7 @@ describe("calculate grouped positions for protected table", () => {
         coverageDecPercent: 0.27942083333333334,
         fullCoverage: 1613661882,
         givenVBnt: "1.000000000000000000",
-        pendingReserveReward: new BigNumber(0),
+        pendingReserveReward: "0",
         rewardsMultiplier: 1,
         reserveTokenPrice: 1,
         bntTokenPrice: 1
@@ -288,11 +313,14 @@ describe("calculate grouped positions for protected table", () => {
         collapsedData: [
           {
             apr: { day: 0.02117, week: 0.03276 },
+            initialProtectedWei: "0",
+            inititalProtectedToken: "0",
             bntTokenPrice: 1,
             coverageDecPercent: 0.27942083333333334,
-            fees: { amount: "0.002613383452134935", symbol: "BNT" },
+            fees: { id: "1", amount: "0.002613383452134935", symbol: "BNT" },
             fullCoverage: 1613661882,
             fullyProtected: {
+              id: "1",
               amount: "1.002608722329711269",
               symbol: "BNT",
               usdValue: 1.000012797904117
@@ -300,8 +328,9 @@ describe("calculate grouped positions for protected table", () => {
             givenVBnt: "1.000000000000000000",
             id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:939",
             insuranceStart: 1607613882,
-            pendingReserveReward: new BigNumber(0),
+            pendingReserveReward: "0",
             protectedAmount: {
+              id: "1",
               amount: "1.000825163770841809",
               symbol: "BNT",
               usdValue: 0.9982338572815612
@@ -321,11 +350,14 @@ describe("calculate grouped positions for protected table", () => {
           },
           {
             apr: { day: 0.02117, week: 0.03276 },
+            initialProtectedWei: "0",
+            inititalProtectedToken: "0",
             bntTokenPrice: 1,
             coverageDecPercent: 0.5692694444444445,
-            fees: { amount: "0.006127116288703279", symbol: "BNT" },
+            fees: { id: "1", amount: "0.006127116288703279", symbol: "BNT" },
             fullCoverage: 1611157590,
             fullyProtected: {
+              id: "1",
               amount: "1.005877144022078272",
               symbol: "BNT",
               usdValue: 1.0032727570970905
@@ -333,8 +365,9 @@ describe("calculate grouped positions for protected table", () => {
             givenVBnt: "0.999999999999999999",
             id: "0xb1CD6e4153B2a390Cf00A6556b0fC1458C4A5533:2",
             insuranceStart: 1605109590,
-            pendingReserveReward: new BigNumber(0),
+            pendingReserveReward: "0",
             protectedAmount: {
+              id: "1",
               amount: "0.988304322300486270",
               symbol: "BNT",
               usdValue: 0.9857454343983155

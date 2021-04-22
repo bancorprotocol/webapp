@@ -39,10 +39,10 @@
     />
 
     <modal-tx-action
-      title="Add Liquidity"
+      :title="$t('add_liquidity')"
       icon="plus"
       :tx-meta.sync="txMeta"
-      redirect-on-success="Pool"
+      redirect-on-success="Portfolio"
     >
       <gray-border-block>
         <label-content-split

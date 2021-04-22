@@ -6,6 +6,7 @@
     v-model="show"
     hide-footer
     :content-class="contentClass"
+    :modal-class="fullmodal ? 'full-modal' : ''"
     @close="onHide"
     @cancel="onHide"
     @hide="onHide"
@@ -13,13 +14,28 @@
     <template slot="modal-header">
       <div class="w-100">
         <b-row>
-          <b-col cols="12" class="d-flex justify-content-between mb-2">
+          <b-col cols="12" class="d-flex justify-content-between">
+            <div v-if="backButton">
+              <font-awesome-icon
+                icon="chevron-left"
+                :class="darkMode ? 'text-dark' : 'text-light'"
+                class="cursor"
+                @click="onHide"
+              />
+            </div>
             <span
+              v-if="title"
               class="font-size-14 font-w600"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              >{{ title }}</span
             >
+              {{ title }}
+            </span>
+            <div v-else class="text-center">
+              <slot name="title" />
+            </div>
+            <div style="width: 10px" v-if="backButton"></div>
             <font-awesome-icon
+              v-else
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
               @click="onHide"
@@ -48,7 +64,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, VModel } from "vue-property-decorator";
+import {
+  Component,
+  Emit,
+  Prop,
+  PropSync,
+  VModel
+} from "vue-property-decorator";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -61,6 +83,8 @@ export default class ModalBase extends BaseComponent {
   @PropSync("search", { type: String }) searchField?: string;
   @Prop({ default: "md" }) size!: "sm" | "md" | "lg";
   @Prop({ default: false }) fixedHeight!: boolean;
+  @Prop({ default: false }) fullmodal!: boolean;
+  @Prop({ default: false }) backButton!: boolean;
 
   get contentClass() {
     return [
@@ -70,6 +94,7 @@ export default class ModalBase extends BaseComponent {
     ];
   }
 
+  @Emit("onHide")
   onHide() {
     this.show = false;
   }

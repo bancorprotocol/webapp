@@ -18,12 +18,15 @@ import {
   ABIStakingRewardsStore,
   ABIV2Converter,
   V2PoolsTokenContainer,
-  ABILiquidityProtectionSystemStore
+  ABILiquidityProtectionSystemStore,
+  ABIWethToken,
+  ABIExchangeProxy
 } from "@/api/eth/ethAbis";
 import { AbiItem } from "web3-utils";
 import { Proposal } from "@/store/modules/governance/ethGovernance";
 import Web3 from "web3";
 import { web3 } from "@/api/web3";
+import { StringRfq } from "@/api/observables/keeperDao";
 
 const buildContract = (
   abi: AbiItem[],
@@ -34,12 +37,10 @@ const buildContract = (
     ? new (injectedWeb3 || web3).eth.Contract(abi, contractAddress)
     : new (injectedWeb3 || web3).eth.Contract(abi);
 
-export const buildTokenContract = (
-  contractAddress?: string,
-  web3?: Web3
-): ContractMethods<{
+interface TokenContractType {
   symbol: () => CallReturn<string>;
   decimals: () => CallReturn<string>;
+  owner: () => CallReturn<string>;
   totalSupply: () => CallReturn<string>;
   allowance: (owner: string, spender: string) => CallReturn<string>;
   balanceOf: (owner: string) => CallReturn<string>;
@@ -50,7 +51,23 @@ export const buildTokenContract = (
     approvedAddress: string,
     approvedAmount: string
   ) => ContractSendMethod;
-}> => buildContract(ABISmartToken, contractAddress, web3);
+}
+interface WethContractType extends TokenContractType {
+  deposit: () => ContractSendMethod;
+  withdraw: (amount: string) => ContractSendMethod;
+}
+
+export const buildTokenContract = (
+  contractAddress?: string,
+  web3?: Web3
+): ContractMethods<TokenContractType> =>
+  buildContract(ABISmartToken, contractAddress, web3);
+
+export const buildWethContract = (
+  contractAddress?: string,
+  web3?: Web3
+): ContractMethods<WethContractType> =>
+  buildContract(ABIWethToken, contractAddress, web3);
 
 export const buildGovernanceContract = (
   contractAddress?: string,
@@ -326,6 +343,13 @@ export const buildLiquidityProtectionContract = (
     poolAnchor: string
   ) => CallReturn<{ "0": string; "1": string }>;
 }> => buildContract(ABILiquidityProtection, contractAddress, web3);
+
+export const buildExchangeProxyContract = (
+  contractAddress: string
+): ContractMethods<{
+  cancelRfqOrder: (order: StringRfq) => ContractSendMethod;
+  batchCancelRfqOrders: (orders: StringRfq[]) => ContractSendMethod;
+}> => buildContract(ABIExchangeProxy, contractAddress);
 
 export const buildLiquidityProtectionSettingsContract = (
   contractAddress: string,

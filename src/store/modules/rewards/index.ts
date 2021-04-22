@@ -86,12 +86,12 @@ export class RewardsModule extends VuexModule.With({
               onConfirmation: async () => {
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchProtectionPositions();
+                vxm.ethBancor.fetchAndSetLockedBalances();
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchProtectionPositions();
+                vxm.ethBancor.fetchAndSetLockedBalances();
               },
               resolveImmediately: true
             });
@@ -119,12 +119,12 @@ export class RewardsModule extends VuexModule.With({
               onConfirmation: async () => {
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchProtectionPositions();
+                vxm.ethBancor.fetchAndSetLockedBalances();
                 await wait(3000);
                 await this.loadData();
-                vxm.ethBancor.fetchProtectionPositions({});
-                vxm.ethBancor.fetchAndSetLockedBalances({});
+                vxm.ethBancor.fetchProtectionPositions();
+                vxm.ethBancor.fetchAndSetLockedBalances();
               },
               resolveImmediately: true
             });
@@ -139,6 +139,7 @@ export class RewardsModule extends VuexModule.With({
 
   @action async loadData() {
     try {
+      await wait(1000);
       await this.fetchPoolPrograms();
       await this.fetchAndSetPendingRewards();
       await this.fetchAndSetTotalClaimedRewards();
@@ -178,9 +179,9 @@ export class RewardsModule extends VuexModule.With({
       return this.poolPrograms;
     }
 
+    const storeContract =
+      rewardsStoreContract || (await this.contract.methods.store().call());
     try {
-      const storeContract =
-        rewardsStoreContract || (await this.contract.methods.store().call());
       const store = buildStakingRewardsStoreContract(storeContract);
       const result = await store.methods.poolPrograms().call();
 
@@ -209,7 +210,9 @@ export class RewardsModule extends VuexModule.With({
 
       return poolPrograms;
     } catch (e) {
-      throw new Error(`Failed fetching pool programs ${e.message}`);
+      throw new Error(
+        `Failed fetching pool programs ${e.message} ${storeContract}`
+      );
     }
   }
 
