@@ -20,8 +20,6 @@ export default class ProtectionActions extends Vue {
   get title() {
     const name = this.$route.name;
     switch (name) {
-      case "AddProtectionDouble":
-        return i18n.t("add_liquidity_protection");
       case "AddProtectionSingle":
         return i18n.t("add_single_sided_liquidity");
       case "WithdrawProtectionSingle":

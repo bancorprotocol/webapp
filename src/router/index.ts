@@ -19,7 +19,6 @@ import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
 import Vote from "@/views/Vote.vue";
 import Fiat from "@/views/Fiat.vue";
 import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
-import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
 import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
@@ -196,11 +195,6 @@ export const router = new Router({
           path: "add/single/:id",
           name: "AddProtectionSingle",
           component: AddProtectionSingle
-        },
-        {
-          path: "add/double/:id",
-          name: "AddProtectionDouble",
-          component: AddProtectionDouble
         },
         {
           path: "withdraw/single/:id",
