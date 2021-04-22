@@ -2,7 +2,7 @@
   <div class="d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center">
       <span
-        class="font-size-12 font-w500 text-uppercase"
+        class="font-size-14 font-w400"
         :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
       >
         {{ label }}
@@ -29,14 +29,14 @@
 
     <span
       v-if="!loading"
-      class="font-size-12 font-w600"
+      class="font-size-14 font-w400"
       :class="isAlert ? 'text-red' : darkMode ? 'text-dark' : 'text-light'"
     >
       <slot>{{ value }}</slot>
     </span>
     <span
       v-else
-      class="font-size-12 font-w600"
+      class="font-size-14 font-w400"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
       <font-awesome-icon icon="circle-notch" spin />
