@@ -584,7 +584,7 @@ export default class ProtectedTable extends BaseComponent {
         id: 1,
         key: "pool",
         label: i18n.tc("pool"),
-        tooltip: "Place holder",
+        tooltip: i18n.tc("pool_staked"),
         minWidth: "120px"
       },
       {
