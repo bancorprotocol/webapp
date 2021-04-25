@@ -57,9 +57,27 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async connect() {
+    const dataLayer = window.dataLayer as {}[];
+
     try {
+      dataLayer.push({
+        "event": "CE Wallet Connect Select a Wallet Popup",
+        "event_properties": {}
+      });
       await onboard.walletSelect();
+      const state = onboard.getState();
+      dataLayer.push({
+        "event": "CE Wallet Connect Wallet Icon Click",
+        "event_properties": {
+          "wallet_id": state.address,
+          "wallet_name": state.wallet.name
+        }
+      });
       await onboard.walletCheck();
+      dataLayer.push({
+        "event": "CE Wallet Connect",
+        "event_properties": {}
+      });
     } catch (e) {
       console.error(e, "was the error");
       throw new Error(`error: ${e}`);
