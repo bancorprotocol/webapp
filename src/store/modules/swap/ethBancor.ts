@@ -6184,7 +6184,6 @@ export class EthBancorModule
         description: "Done!"
       }
     ];
-
     onUpdate!(0, steps);
 
     const fromTokenDecimals = await this.getDecimalsByTokenAddress(
@@ -6207,7 +6206,12 @@ export class EthBancorModule
     });
 
     const ethPath = generateEthPath(fromSymbol, relays);
+    const dataLayer = window.dataLayer as {}[];
 
+    dataLayer.push({
+      "event": "CE Conversion Swap Click",
+      "event_properties": {}
+    });
     onUpdate!(1, steps);
     await this.triggerApprovalIfRequired({
       owner: this.currentUser,
@@ -6217,6 +6221,10 @@ export class EthBancorModule
       onPrompt
     });
 
+    dataLayer.push({
+      "event": "CE Conversion Receipt Confirmation Request",
+      "event_properties": {}
+    });
     onUpdate!(2, steps);
 
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
@@ -6234,10 +6242,19 @@ export class EthBancorModule
         0
       ),
       onConfirmation: () =>
-        this.spamBalances([fromTokenContract, toTokenContract]),
+        {
+          // dataLayer.push({
+          //   "event": "CE Conversion Wallet Confirmation Request",
+          //   "event_properties": {}
+          // });
+          console.log('SUCCESS')
+          return this.spamBalances([fromTokenContract, toTokenContract])
+        },
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
-      onHash: () => onUpdate!(3, steps)
+      onHash: () => {
+        console.log('Confirm')
+        return onUpdate!(3, steps)}
     });
     onUpdate!(4, steps);
 

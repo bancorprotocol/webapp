@@ -1,5 +1,10 @@
 <template>
-  <modal-base v-model="txMetaData.showTxModal" size="sm" @input="close">
+  <modal-base
+    v-model="txMetaData.showTxModal"
+    size="sm"
+    @input="close"
+    @onHide="onHideCallBack"
+  >
     <div
       v-if="showSlotContent"
       class="text-center"
@@ -100,6 +105,7 @@ export default class ModalTxAction extends BaseComponent {
   @Prop({ required: false }) icon?: string;
   @Prop({ default: "primary" }) iconVariant!: string;
   @Prop({ required: false }) redirectOnSuccess?: string;
+  @Prop() onHide!: Function;
 
   get currentStatus() {
     if (this.txMetaData.sections.length)
@@ -132,6 +138,10 @@ export default class ModalTxAction extends BaseComponent {
   selectedPromptReceiver(id: string) {
     this.txMetaData.txBusy = true;
     selectedPromptReceiver$.next(id);
+  }
+
+  onHideCallBack() {
+    this.onHide();
   }
 
   async close() {

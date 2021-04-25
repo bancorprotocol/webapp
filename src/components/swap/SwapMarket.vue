@@ -85,6 +85,7 @@
       :title="$t('confirm_token_swap')"
       icon="exchange-alt"
       :tx-meta.sync="txMeta"
+      :onHide="onHide"
     >
       <gray-border-block>
         <label-content-split
@@ -306,7 +307,6 @@ export default class SwapAction extends BaseTxAction {
   }
 
   async initSwap() {
-    // @ts-ignore
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
@@ -336,10 +336,27 @@ export default class SwapAction extends BaseTxAction {
       });
       this.setDefault();
     } catch (e) {
+      //if (e.message.includes('rejected'))
+      // dataLayer.push({
+      //   "event": "CE Conversion Wallet Confirmation Reject",
+      //   "event_properties": {}
+      // });
+      //else
+      // dataLayer.push({
+      //   "event": "CE Conversion Failed",
+      //   "event_properties": {}
+      // });
       this.txMeta.txError = e.message;
     } finally {
       this.txMeta.txBusy = false;
     }
+  }
+  onHide() {
+    // dataLayer.push({
+    //   "event": "CE Conversion Receipt Confirmation Reject",
+    //   "event_properties": {}
+    // });
+    console.log("HIDED");
   }
 
   lastReturn: { from: ViewAmount; to: ViewAmount } = {
