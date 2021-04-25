@@ -100,6 +100,7 @@
             <a
               :href="getEtherscanUrl(governanceContractAddress)"
               class="font-w500"
+              :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
               target="_blank"
             >
               {{ shortAddress(governanceContractAddress) }}
@@ -118,6 +119,7 @@
             <a
               :href="getEtherscanUrl(tokenAddress)"
               class="font-w500"
+              :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
               target="_blank"
             >
               {{ shortAddress(tokenAddress) }}

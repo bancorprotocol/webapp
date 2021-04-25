@@ -35,6 +35,7 @@
 
         <a
           class="font-w500 font-size-14"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           href="https://blog.bancor.network/gasless-voting-is-live-on-bancor-governance-82d232da16b9"
           target="_blank"
         >
