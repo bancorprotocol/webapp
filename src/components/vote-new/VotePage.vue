@@ -1,7 +1,7 @@
 <template>
   <b-row v-if="loaded">
     <b-col cols="12">
-      <h3>Vote</h3>
+      <h3 :class="darkMode ? 'text-dark' : 'text-light'">Vote</h3>
       <p class="font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
         Bancor is a DAO managed by vBNT stakers who determine the future of the
         protocol with their proposals.
@@ -55,9 +55,13 @@
       >
         View previous votes and decisions made onchain.
       </p>
-      <router-link :to="{ name: 'VoteLegacy' }" class="font-w500 font-size-14"
-        >View Legacy Gov</router-link
+      <router-link
+        :to="{ name: 'VoteLegacy' }"
+        class="font-w500 font-size-14"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
       >
+        View Legacy Gov
+      </router-link>
     </b-col>
   </b-row>
   <span v-else>
