@@ -150,6 +150,27 @@ export default class GatewayProviders extends BaseComponent {
     },
     {
       id: 3,
+      name: "Ramp network",
+      logo: "ramp.svg",
+      description:
+        "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible products focuses excellent UX, supporting multiple payment options and ensuring lowest slippage and transactional fees.",
+      jurisdictions: ["Global"],
+      depositMethods: [
+        "Open Banking",
+        "SEPA Instant",
+        "Faster Payments",
+        "Debit Card",
+        "Credit Card",
+        "ApplePay"
+      ],
+      buyUrl:
+        "https://buy.ramp.network/?hostApiKey=qg4s4spwnm7nahqdxfsjyzsjvtxbbzg8dxnxxrum" +
+        this.currentUser
+          ? `&userAddress=${this.currentUser}`
+          : ""
+    },
+    {
+      id: 4,
       name: "BANXA",
       logo: "banxa.svg",
       description:
