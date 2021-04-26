@@ -1330,22 +1330,17 @@ export const formatDuration = (duration: plugin.Duration): string => {
 export const defaultTableSort = (
   row: TableItem,
   sortBy: string,
-  sortZero: boolean = false
 ) => {
   const value = row[sortBy];
-  let isDefined: boolean;
-  if (!sortZero) {
-    isDefined =
-      value !== 0 && value !== "0" && value !== undefined && value !== null;
-  } else {
-    isDefined = value !== undefined && value !== null;
+  if (!value || isNaN(value))
+    return null;
+  if (isFinite(value)) {
+    const number = new BigNumber(value);
+    const isBigNumber = BigNumber.isBigNumber(number);
+    if (isBigNumber) return number.toNumber();
   }
-  const number = new BigNumber(value);
-  const isBigNumber = BigNumber.isBigNumber(number);
-  if (isBigNumber) {
-    if (isDefined) return number.toNumber();
-    else return null;
-  } else return value;
+
+  return value;
 };
 
 export const generateEtherscanTxLink = (
