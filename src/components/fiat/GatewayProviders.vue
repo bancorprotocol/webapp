@@ -163,11 +163,9 @@ export default class GatewayProviders extends BaseComponent {
         "Credit Card",
         "ApplePay"
       ],
-      buyUrl:
-        "https://buy.ramp.network/?hostApiKey=qg4s4spwnm7nahqdxfsjyzsjvtxbbzg8dxnxxrum" +
-        this.currentUser
-          ? `&userAddress=${this.currentUser}`
-          : ""
+      buyUrl: `https://buy.ramp.network/?hostApiKey=qg4s4spwnm7nahqdxfsjyzsjvtxbbzg8dxnxxrum${
+        this.currentUser ? `&userAddress=${this.currentUser}` : ""
+      }`
     },
     {
       id: 4,
