@@ -171,7 +171,7 @@ export default class GatewayProviders extends BaseComponent {
         name: "Ramp network",
         logo: "ramp.svg",
         description:
-          "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible products focuses excellent UX, supporting multiple payment options and ensuring lowest slippage and transactional fees.",
+          "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible products focuses on excellent UX, supporting multiple payment options and ensuring lowest slippage and transactional fees.",
         jurisdictions: ["Global"],
         depositMethods: [
           "Open Banking",
