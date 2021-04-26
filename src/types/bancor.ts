@@ -678,10 +678,6 @@ export interface CreatePoolModule {
   readonly newNetworkTokenChoices: ModalChoice[];
 }
 
-export interface HistoryModule {
-  fetchHistoryData: (relayId: string) => Promise<any[]>;
-}
-
 export interface FeeParams {
   fee: number;
   id: string;

@@ -5,7 +5,6 @@ import {
   ConvertReturn,
   CreatePoolModule,
   CreateV1PoolEthParams,
-  HistoryModule,
   LiquidityModule,
   LiquidityParams,
   LiquidityProtectionSettings,
@@ -129,7 +128,6 @@ import {
   TokenSymbol
 } from "@/api/eth/helpers";
 import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
-import { getSmartTokenHistory } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {
@@ -1416,7 +1414,7 @@ const VuexModule = createModule({
 
 export class EthBancorModule
   extends VuexModule.With({ namespaced: "ethBancor/" })
-  implements TradingModule, LiquidityModule, CreatePoolModule, HistoryModule {
+  implements TradingModule, LiquidityModule, CreatePoolModule {
   registeredAnchorAddresses: string[] = [];
   convertibleTokenAddresses: string[] = [];
   loadingPools: boolean = false;
@@ -2270,14 +2268,6 @@ export class EthBancorModule
         reserveWeights
       )
     });
-  }
-
-  @action async fetchHistoryData(poolId: string) {
-    const pool = await this.relayById(poolId);
-    const reserveSymbols = pool.reserves.map(reserve => reserve.symbol);
-    const sortedSymbols = sortByNetworkTokens(reserveSymbols, x => x);
-    const [, primaryReserveToken] = sortedSymbols;
-    return getSmartTokenHistory(primaryReserveToken.toLowerCase());
   }
 
   @action async createV1Pool({
