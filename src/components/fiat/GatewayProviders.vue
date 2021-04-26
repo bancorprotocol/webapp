@@ -109,82 +109,84 @@ import ContentBlock from "@/components/common/ContentBlock.vue";
   }
 })
 export default class GatewayProviders extends BaseComponent {
-  fiatProviders = [
-    {
-      id: 1,
-      name: "MoonPay",
-      logo: "mp-logo.png",
-      logoDark: "mp-logo-dark.png",
-      description:
-        "MoonPay is a financial technology company that builds payments infrastructure for crypto. Our on-and-off-ramp suite of products provides a seamless experience for converting between fiat currencies and cryptocurrencies using all major payment methods.",
-      jurisdictions: ["Global"],
-      depositMethods: [
-        "Wire Transfer",
-        "Credit Card",
-        "Debit Card",
-        "Apple Pay",
-        "Google Pay",
-        "Samsung Pay"
-      ],
-      buyUrl:
-        "https://buy.moonpay.com/?apiKey=pk_live_qiJRayRj9iKRUWCfaWX5Vo6Sn0rnNsj&defaultCurrencyCode=ETH",
-      sellUrl:
-        "https://sell.moonpay.com/?apiKey=pk_live_qiJRayRj9iKRUWCfaWX5Vo6Sn0rnNsj&defaultCurrencyCode=ETH"
-    },
-    {
-      id: 2,
-      name: "Simplex",
-      logo: "simplex.svg",
-      description:
-        "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
-      jurisdictions: ["Global"],
-      depositMethods: [
-        "Wire Transfer",
-        "Credit Card",
-        "Debit Card",
-        "Apple Pay"
-      ],
-      buyUrl: "https://b.buy-crypto-with-simplex.com/?crypto=ETH",
-      sellUrl:
-        "https://www.simplex.com/account/sell?ref=b1990d7be52dfae9fa894a0d56317f28"
-    },
-    {
-      id: 3,
-      name: "Ramp network",
-      logo: "ramp.svg",
-      description:
-        "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible products focuses excellent UX, supporting multiple payment options and ensuring lowest slippage and transactional fees.",
-      jurisdictions: ["Global"],
-      depositMethods: [
-        "Open Banking",
-        "SEPA Instant",
-        "Faster Payments",
-        "Debit Card",
-        "Credit Card",
-        "ApplePay"
-      ],
-      buyUrl: `https://buy.ramp.network/?hostApiKey=qg4s4spwnm7nahqdxfsjyzsjvtxbbzg8dxnxxrum${
-        this.currentUser ? `&userAddress=${this.currentUser}` : ""
-      }`
-    },
-    {
-      id: 4,
-      name: "BANXA",
-      logo: "banxa.svg",
-      description:
-        "Banxa is a globally operating fiat-to-crypto on-ramp providing the easiest way for anyone looking to enter the digital asset ecosystem. Banxa users can choose from a variety of the most popular and convenient payment methods.",
-      jurisdictions: ["Global"],
-      depositMethods: [
-        "Credit Card",
-        "Debit Card",
-        "Apple Pay",
-        "iDeal",
-        "Interac",
-        "SEPA"
-      ],
-      buyUrl: "https://pay.banxa.com"
-    }
-  ];
+  get fiatProviders() {
+    return [
+      {
+        id: 1,
+        name: "MoonPay",
+        logo: "mp-logo.png",
+        logoDark: "mp-logo-dark.png",
+        description:
+          "MoonPay is a financial technology company that builds payments infrastructure for crypto. Our on-and-off-ramp suite of products provides a seamless experience for converting between fiat currencies and cryptocurrencies using all major payment methods.",
+        jurisdictions: ["Global"],
+        depositMethods: [
+          "Wire Transfer",
+          "Credit Card",
+          "Debit Card",
+          "Apple Pay",
+          "Google Pay",
+          "Samsung Pay"
+        ],
+        buyUrl:
+          "https://buy.moonpay.com/?apiKey=pk_live_qiJRayRj9iKRUWCfaWX5Vo6Sn0rnNsj&defaultCurrencyCode=ETH",
+        sellUrl:
+          "https://sell.moonpay.com/?apiKey=pk_live_qiJRayRj9iKRUWCfaWX5Vo6Sn0rnNsj&defaultCurrencyCode=ETH"
+      },
+      {
+        id: 2,
+        name: "Simplex",
+        logo: "simplex.svg",
+        description:
+          "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
+        jurisdictions: ["Global"],
+        depositMethods: [
+          "Wire Transfer",
+          "Credit Card",
+          "Debit Card",
+          "Apple Pay"
+        ],
+        buyUrl: "https://b.buy-crypto-with-simplex.com/?crypto=ETH",
+        sellUrl:
+          "https://www.simplex.com/account/sell?ref=b1990d7be52dfae9fa894a0d56317f28"
+      },
+      {
+        id: 3,
+        name: "Ramp network",
+        logo: "ramp.svg",
+        description:
+          "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible products focuses excellent UX, supporting multiple payment options and ensuring lowest slippage and transactional fees.",
+        jurisdictions: ["Global"],
+        depositMethods: [
+          "Open Banking",
+          "SEPA Instant",
+          "Faster Payments",
+          "Debit Card",
+          "Credit Card",
+          "ApplePay"
+        ],
+        buyUrl: `https://buy.ramp.network/?hostApiKey=qg4s4spwnm7nahqdxfsjyzsjvtxbbzg8dxnxxrum${
+          this.currentUser ? `&userAddress=${this.currentUser}` : ""
+        }`
+      },
+      {
+        id: 4,
+        name: "BANXA",
+        logo: "banxa.svg",
+        description:
+          "Banxa is a globally operating fiat-to-crypto on-ramp providing the easiest way for anyone looking to enter the digital asset ecosystem. Banxa users can choose from a variety of the most popular and convenient payment methods.",
+        jurisdictions: ["Global"],
+        depositMethods: [
+          "Credit Card",
+          "Debit Card",
+          "Apple Pay",
+          "iDeal",
+          "Interac",
+          "SEPA"
+        ],
+        buyUrl: "https://pay.banxa.com"
+      }
+    ];
+  }
 }
 </script>
 <style lang="scss" scoped>
