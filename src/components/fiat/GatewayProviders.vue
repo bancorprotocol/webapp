@@ -151,6 +151,23 @@ export default class GatewayProviders extends BaseComponent {
       },
       {
         id: 3,
+        name: "BANXA",
+        logo: "banxa.svg",
+        description:
+          "Banxa is a globally operating fiat-to-crypto on-ramp providing the easiest way for anyone looking to enter the digital asset ecosystem. Banxa users can choose from a variety of the most popular and convenient payment methods.",
+        jurisdictions: ["Global"],
+        depositMethods: [
+          "Credit Card",
+          "Debit Card",
+          "Apple Pay",
+          "iDeal",
+          "Interac",
+          "SEPA"
+        ],
+        buyUrl: "https://pay.banxa.com"
+      },
+      {
+        id: 4,
         name: "Ramp network",
         logo: "ramp.svg",
         description:
@@ -167,23 +184,6 @@ export default class GatewayProviders extends BaseComponent {
         buyUrl: `https://buy.ramp.network/?hostApiKey=qg4s4spwnm7nahqdxfsjyzsjvtxbbzg8dxnxxrum${
           this.currentUser ? `&userAddress=${this.currentUser}` : ""
         }`
-      },
-      {
-        id: 4,
-        name: "BANXA",
-        logo: "banxa.svg",
-        description:
-          "Banxa is a globally operating fiat-to-crypto on-ramp providing the easiest way for anyone looking to enter the digital asset ecosystem. Banxa users can choose from a variety of the most popular and convenient payment methods.",
-        jurisdictions: ["Global"],
-        depositMethods: [
-          "Credit Card",
-          "Debit Card",
-          "Apple Pay",
-          "iDeal",
-          "Interac",
-          "SEPA"
-        ],
-        buyUrl: "https://pay.banxa.com"
       }
     ];
   }
