@@ -1330,10 +1330,9 @@ export const formatDuration = (duration: plugin.Duration): string => {
 export const defaultTableSort = (
   row: TableItem,
   sortBy: string,
-  sortZero: boolean = false
 ) => {
   const value = row[sortBy];
-  if (!value || isNaN(value) || (!sortZero && (value === 0 || value === "0")))
+  if (!value || isNaN(value))
     return null;
   if (isFinite(value)) {
     const number = new BigNumber(value);

@@ -673,7 +673,7 @@ export default class ProtectedTable extends BaseComponent {
       case "currentCoverage":
         return row.coverageDecPercent;
       default:
-        return defaultTableSort(row, sortBy, true);
+        return defaultTableSort(row, sortBy);
     }
   }
 }
