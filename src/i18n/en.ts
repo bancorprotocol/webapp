@@ -151,6 +151,8 @@ export const en = {
   left_until_coverage: "{time} left until full coverage",
   failed_find_position:
     "Failed to find position of ID {id} from position ids {ids}",
+  pool_staked:
+    "Pools you entered.",
   tokens_originally_staked:
     "Amount of tokens you originally staked in the pool.",
   tokens_can_withdraw:
@@ -162,7 +164,7 @@ export const en = {
   fees: "Fees (24h)",
   fees_stake_earned:
     "Fees and rewards earned by your stake since you entered the pool.",
-  roi__protected_value:
+  roi_protected_value:
     "The ROI of your fully protected value vs. your initial stake.",
   estimated_calculation_annual_returns:
     "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
