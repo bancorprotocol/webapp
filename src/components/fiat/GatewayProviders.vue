@@ -135,7 +135,8 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 2,
         name: "Simplex",
-        logo: "simplex.svg",
+        logo: "simplex-dark.png",
+        logoDark: "mp-logo-dark.png",
         description:
           "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
         jurisdictions: ["Global"],
@@ -169,9 +170,10 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 4,
         name: "Ramp network",
-        logo: "ramp.svg",
+        logo: "ramp.png",
+        logoDark: "ramp-dark.png",
         description:
-          "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible products focuses on excellent UX, supporting multiple payment options and ensuring lowest slippage and transactional fees.",
+          "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible product focuses on excellent UX, supports multiple payment options and ensures lowest slippage and transactional fees.",
         jurisdictions: ["Global"],
         depositMethods: [
           "Open Banking",
