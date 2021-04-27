@@ -565,9 +565,7 @@ export default class ProtectedTable extends BaseComponent {
         })
         .toString()
     );
-    const routeName = position.single
-      ? "WithdrawProtectionSingle"
-      : "WithdrawProtectionDouble";
+    const routeName = "WithdrawProtectionSingle";
     this.$router.push({
       name: routeName,
       params: { id }
