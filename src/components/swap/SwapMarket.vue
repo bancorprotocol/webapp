@@ -480,7 +480,6 @@ export default class SwapAction extends BaseTxAction {
   interval: any = null;
 
   async mounted() {
-    console.log("debug jan", vxm.bancor.tokens);
     this.token1 = vxm.bancor.tokens[0];
     this.token2 = vxm.bancor.tokens[1];
     if (this.$route.query.to && this.$route.query.from)
