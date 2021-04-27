@@ -135,8 +135,8 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 2,
         name: "Simplex",
-        logo: "simplex-dark.png",
-        logoDark: "mp-logo-dark.png",
+        logo: "simplex.png",
+        logoDark: "simplex-dark.png",
         description:
           "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
         jurisdictions: ["Global"],
