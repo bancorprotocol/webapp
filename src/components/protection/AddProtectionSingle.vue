@@ -84,7 +84,10 @@
       "
       class="mt-3 mb-3"
     />
-
+    <a :href="notificationURL" class="font-size-14" target="_blank">
+      <font-awesome-icon icon="bell" />
+      {{ $t("notify_me") }}
+    </a>
     <gray-border-block
       :gray-bg="true"
       class="my-3"
@@ -229,6 +232,16 @@ export default class AddProtectionSingle extends BaseTxAction {
       reserve => reserve.id == x
     );
     this.amountChanged(this.amount);
+  }
+
+  get notificationURL() {
+    return (
+      "https://9000.hal.xyz/recipes/bancor-pool-liquidity-protocol?pool=" +
+      this.pool.id +
+      "&token=" +
+      this.token.symbol +
+      "&value=10000&currency=USD"
+    );
   }
 
   get token() {

@@ -494,5 +494,6 @@ export const en = {
   powered_by_keeper_dao: "Limit orders are powered by KeeperDAO",
   filters:"Filters",
   group_by:"Group By Pool Token",
-  vbnt_read_more: "Read more about vBNT"
+  vbnt_read_more: "Read more about vBNT",
+  notify_me:"Notify Me"
 };
