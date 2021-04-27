@@ -2678,6 +2678,7 @@ export class EthBancorModule
       finalTokens.push(wethToken);
     }
 
+    console.log(finalTokens, "are final tokens");
     return finalTokens;
   }
 
@@ -5675,6 +5676,9 @@ export class EthBancorModule
       );
 
       await newPools$.pipe(firstItem()).toPromise();
+      if (this.tokens.length == 0) {
+        await wait(1000);
+      }
     } catch (e) {
       console.error("thrown in x", e);
     }
