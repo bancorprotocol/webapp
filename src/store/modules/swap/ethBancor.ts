@@ -6211,9 +6211,14 @@ export class EthBancorModule
 
     await this.awaitConfirmation(onPrompt);
 
+    const tx = tokenContract.methods.deposit();
+    const estimatedGas = await this.determineTxGas(tx);
+    const manualBuffer = 2;
+
     const txHash = await this.resolveTxOnConfirmation({
       value: wei,
-      tx: tokenContract.methods.deposit()
+      tx,
+      gas: estimatedGas * manualBuffer
     });
 
     return this.createTxResponse(txHash);
