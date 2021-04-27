@@ -1387,9 +1387,6 @@ const calculateLiquidateCost = (
 const percentDifference = (smallAmount: string, bigAmount: string) =>
   new Decimal(smallAmount).div(bigAmount).toNumber();
 
-const tokenMetaDataEndpoint =
-  "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
-
 interface TokenMeta {
   id: string;
   image: string;
@@ -2540,20 +2537,6 @@ export class EthBancorModule
     });
   }
 
-  @action async addReserveToken({
-    converterAddress,
-    reserveTokenAddress
-  }: {
-    converterAddress: string;
-    reserveTokenAddress: string;
-  }) {
-    const converter = buildConverterContract(converterAddress);
-
-    return this.resolveTxOnConfirmation({
-      tx: converter.methods.addReserve(reserveTokenAddress, 500000)
-    });
-  }
-
   get supportedFeatures() {
     return () => {
       return ["addLiquidity", "removeLiquidity"];
@@ -3254,17 +3237,6 @@ export class EthBancorModule
       singleUnitCosts
     };
     return result;
-  }
-
-  @action async fetchSystemBalance(tokenAddress: string): Promise<string> {
-    const isValidAddress = web3.utils.isAddress(tokenAddress);
-    if (!isValidAddress)
-      throw new Error(`${tokenAddress} is not a valid address`);
-    const contract = buildLiquidityProtectionStoreContract(
-      this.contracts.LiquidityProtectionStore,
-      w3
-    );
-    return contract.methods.systemBalance(tokenAddress).call();
   }
 
   @action async getMaxStakes({ poolId }: { poolId: string }) {
@@ -4832,85 +4804,6 @@ export class EthBancorModule
     });
   }
 
-  @action async relaysRequiredForTrade({
-    from,
-    to,
-    networkContractAddress
-  }: {
-    from: string;
-    to: string;
-    networkContractAddress: string;
-  }) {
-    try {
-      const path = await this.conversionPathFromNetworkContract({
-        from,
-        to,
-        networkContractAddress
-      });
-      const smartTokenAddresses = path.filter((_, index) => isOdd(index));
-      if (smartTokenAddresses.length == 0)
-        throw new Error("Failed to find any smart token addresses for path.");
-      return smartTokenAddresses;
-    } catch (e) {
-      console.error(`relays required for trade failed ${e.message}`);
-      throw new Error(`relays required for trade failed ${e.message}`);
-    }
-  }
-
-  @action async poolsByPriority({
-    anchorAddressess,
-    tokenPrices
-  }: {
-    anchorAddressess: string[];
-    tokenPrices?: TokenPrice[];
-  }) {
-    if (tokenPrices && tokenPrices.length > 0) {
-      return sortSmartTokenAddressesByHighestLiquidity(
-        tokenPrices,
-        anchorAddressess
-      );
-    } else {
-      return sortAlongSide(anchorAddressess, x => x, priorityEthPools);
-    }
-  }
-
-  @action async bareMinimumPools({
-    params,
-    networkContractAddress,
-    anchorAddressess,
-    tokenPrices
-  }: {
-    params?: ModuleParam;
-    networkContractAddress: string;
-    anchorAddressess: string[];
-    tokenPrices?: TokenPrice[];
-  }): Promise<string[]> {
-    const fromToken =
-      params! && params!.tradeQuery! && params!.tradeQuery!.base!;
-    const toToken =
-      params! && params!.tradeQuery! && params!.tradeQuery!.quote!;
-
-    const tradeIncluded = fromToken && toToken;
-    const poolIncluded = params && params.poolQuery;
-
-    if (tradeIncluded) {
-      const res = await this.relaysRequiredForTrade({
-        from: fromToken,
-        to: toToken,
-        networkContractAddress
-      });
-      return res;
-    } else if (poolIncluded) {
-      return [poolIncluded];
-    } else {
-      const allPools = await this.poolsByPriority({
-        anchorAddressess,
-        tokenPrices
-      });
-      return allPools.slice(0, 3);
-    }
-  }
-
   @action async multi({
     groupsOfShapes,
     blockHeight,
@@ -5518,27 +5411,6 @@ export class EthBancorModule
     this.bntSupply = weiAmount;
   }
 
-  @action async fetchAndSetBntSupply(bntTokenAddress: string) {
-    const contract = buildTokenContract(bntTokenAddress);
-    const weiSupply = await contract.methods.totalSupply().call();
-    this.setBntSupply(weiSupply);
-  }
-
-  @action async fetchLiquidityProtectionSettingsContract(
-    liquidityProtectionContract: string
-  ): Promise<string> {
-    try {
-      const contract = buildLiquidityProtectionContract(
-        liquidityProtectionContract
-      );
-      return contract.methods.settings().call();
-    } catch (e) {
-      const error = `Failed fetching settings contract via address ${liquidityProtectionContract}`;
-      console.error(error);
-      throw new Error(error);
-    }
-  }
-
   @action async fetchTokens(tokenContracts: string[]): Promise<RawAbiToken[]> {
     const tokenShapes = tokenContracts.map(tokenShape);
     const [res] = await this.multi({
@@ -5818,17 +5690,6 @@ export class EthBancorModule
       apr => !liqMiningApr.some(a => compareString(a.poolId, apr.poolId))
     );
     this.poolLiqMiningAprs = [...withoutOld, ...liqMiningApr];
-  }
-
-  poolAprs: PoolApr[] = [];
-
-  @mutation updatePoolAprs(newPoolAprs: PoolApr[]) {
-    console.log(newPoolAprs, "update pool aprs is a thing");
-    const existing = this.poolAprs;
-    const withoutOld = existing.filter(
-      apr => !newPoolAprs.some(a => compareString(apr.poolId, a.poolId))
-    );
-    this.poolAprs = [...withoutOld, ...newPoolAprs];
   }
 
   @action async checkFees(pools: Relay[]) {
@@ -6626,8 +6487,6 @@ export class EthBancorModule
   @mutation setDaoTokens(tokenAddresses: string[]) {
     this.daoTokenAddresses = tokenAddresses;
   }
-
-  @action async getReturnOrder({}) {}
 
   @action async tokenPrecisionsById(ids: string[]): Promise<TokenPrecision[]> {
     const tokens = this.tokens;
