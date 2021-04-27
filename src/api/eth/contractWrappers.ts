@@ -1,4 +1,4 @@
-import { fromPairs, toPairs, uniqWith } from "lodash";
+import { chunk, fromPairs, toPairs, uniqWith } from "lodash";
 import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import Web3 from "web3";
 import { MultiCall } from "eth-multicall";
@@ -273,6 +273,26 @@ export const fetchPositionIds = async (
   }
 };
 
+const mapSeries = async <T, Y>(
+  arr: T[],
+  count: number,
+  iterator: (v: T) => Y
+): Promise<(Y | undefined)[]> => {
+  let res: (Y | undefined)[] = [];
+  const chunked = chunk(arr, count);
+  for (const chunk of chunked) {
+    const response = await Promise.all(chunk.map(iterator)).catch(
+      () => undefined
+    );
+    if (response === undefined) {
+      res = [...res, undefined];
+    } else {
+      res = [...res, ...response];
+    }
+  }
+  return res;
+};
+
 export const fetchPositionsMulti = async (
   positionIds: string[],
   liquidityStore: string
@@ -283,8 +303,8 @@ export const fetchPositionsMulti = async (
 
   // @ts-ignore
   const ethMulti = new MultiCall(web3);
-  const [multiPositions] = await ethMulti.all([positionShapes]);
 
+  const contract = buildLiquidityProtectionStoreContract(liquidityStore);
   const keys = [
     "owner",
     "poolToken",
@@ -297,15 +317,31 @@ export const fetchPositionsMulti = async (
     "id"
   ];
 
-  const protectedLiquidity = multiPositions
-    // @ts-ignore
-    .map(res => ({ ...res.position, "8": res.positionId }))
-    // @ts-ignore
-    .map(res =>
+  try {
+    const [multiPositions] = await ethMulti.all([positionShapes]);
+
+    const protectedLiquidity = multiPositions
+      // @ts-ignore
+      .map(res => ({ ...res.position, "8": res.positionId }))
+      // @ts-ignore
+      .map(res =>
+        fromPairs(keys.map((key, index) => [key, res[index]]))
+      ) as ProtectedLiquidity[];
+
+    return protectedLiquidity.filter(pos => typeof pos.owner == "string");
+  } catch (e) {
+    const response = await mapSeries(positionIds, 3, async id => {
+      const raw = await contract.methods.protectedLiquidity(id).call();
+      return { ...raw, "8": id };
+    });
+
+    const protectedLiquidity = response.filter(Boolean).map(res =>
+      // @ts-ignore
       fromPairs(keys.map((key, index) => [key, res[index]]))
     ) as ProtectedLiquidity[];
 
-  return protectedLiquidity.filter(pos => typeof pos.owner == "string");
+    return protectedLiquidity;
+  }
 };
 
 export const addLiquidityDisabled = async (
