@@ -322,29 +322,22 @@ export const addLiquidityDisabled = async (
 };
 
 export const fetchLiquidityProtectionSettings = async ({
-  settingsContractAddress,
-  protectionContractAddress
+  settingsContractAddress
 }: {
   settingsContractAddress: string;
-  protectionContractAddress: string;
 }) => {
   // @ts-ignore
   const ethMulti = new MultiCall(web3);
 
-  const [[settings], [protection]] = ((await ethMulti.all([
-    [liquidityProtectionSettingsShape(settingsContractAddress)],
-    [liquidityProtectionShape(protectionContractAddress)]
-  ])) as [unknown, unknown]) as [
-    RawLiquidityProtectionSettings[],
-    { govToken: string }[]
-  ];
+  const [[settings]] = ((await ethMulti.all([
+    [liquidityProtectionSettingsShape(settingsContractAddress)]
+  ])) as [unknown]) as [RawLiquidityProtectionSettings[]];
 
   const newSettings = {
     contract: settingsContractAddress,
     minDelay: Number(settings.minProtectionDelay),
     maxDelay: Number(settings.maxProtectionDelay),
     lockedDelay: Number(settings.lockDuration),
-    govToken: "0x48Fb253446873234F2fEBbF9BdeAA72d9d387f94",
     networkToken: settings.networkToken,
     defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
   } as LiquidityProtectionSettings;

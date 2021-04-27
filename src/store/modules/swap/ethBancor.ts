@@ -216,7 +216,8 @@ import {
 } from "@/api/observables/network";
 import {
   bancorConverterRegistry$,
-  exchangeProxy$
+  exchangeProxy$,
+  govTokenAddress$
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 import {
@@ -1440,7 +1441,6 @@ export class EthBancorModule
     maxDelay: dayjs.duration(100, "days").asSeconds(),
     lockedDelay: dayjs.duration(24, "hours").asSeconds(),
     networkToken: "",
-    govToken: "",
     defaultNetworkTokenMintingLimit: "0"
   };
 
@@ -1725,6 +1725,8 @@ export class EthBancorModule
 
     const depositIsEth = compareString(reserveAmount.id, ethReserveAddress);
 
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
+
     const txHash = (await multiSteps({
       items: [
         {
@@ -1749,10 +1751,7 @@ export class EthBancorModule
                 reserveAmountWei
               ),
               onConfirmation: async () => {
-                this.spamBalances([
-                  this.liquidityProtectionSettings.govToken,
-                  reserveTokenAddress
-                ]);
+                this.spamBalances([govToken, reserveTokenAddress]);
                 this.fetchProtectionPositions();
                 await wait(3000);
                 this.fetchProtectionPositions();
@@ -1795,6 +1794,7 @@ export class EthBancorModule
       position.inititalProtectedToken
     );
     const ppmPercent = decToPpm(decPercent);
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
 
     if (isDissolvingNetworkToken) {
       const dissolvingFullPosition = decPercent === 1;
@@ -1808,7 +1808,7 @@ export class EthBancorModule
         owner: this.currentUser,
         spender: liquidityProtectionContract,
         amount: weiApprovalAmount,
-        tokenAddress: this.liquidityProtectionSettings.govToken,
+        tokenAddress: govToken,
         onPrompt
       });
     }
@@ -1843,6 +1843,8 @@ export class EthBancorModule
       throw new Error("Pool token does not match anchor ID");
     const poolTokenWei = expandToken(amount.amount, poolToken.decimals);
 
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
+
     const txHash = await multiSteps({
       items: [
         {
@@ -1864,10 +1866,7 @@ export class EthBancorModule
               anchorAddress: poolToken.contract,
               amountWei: poolTokenWei,
               onConfirmation: async () => {
-                this.spamBalances([
-                  poolToken.contract,
-                  this.liquidityProtectionSettings.govToken
-                ]);
+                this.spamBalances([poolToken.contract, govToken]);
                 this.fetchProtectionPositions();
                 await wait(3000);
                 this.fetchProtectionPositions();
@@ -5753,12 +5752,12 @@ export class EthBancorModule
   @action async fetchAndSetTokenBalances(tokenContractAddresses: string[]) {
     if (!this.currentUser) return;
 
-    const governanceToken =
-      web3.utils.isAddress(this.liquidityProtectionSettings.govToken) &&
-      this.liquidityProtectionSettings.govToken;
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
+
+    const governanceToken = web3.utils.isAddress(govToken) && govToken;
 
     if (governanceToken) {
-      tokenContractAddresses.push(this.liquidityProtectionSettings.govToken);
+      tokenContractAddresses.push(govToken);
     }
 
     const uniqueAddresses = uniqWith(
@@ -5877,15 +5876,12 @@ export class EthBancorModule
 
   @action async onAuthChange(userAddress: string) {
     this.wipeTokenBalances();
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
     if (userAddress) {
       Sentry.setUser({ id: userAddress.toLowerCase() });
-      const govAddress = web3.utils.isAddress(
-        this.liquidityProtectionSettings.govToken
-      );
+      const govAddress = web3.utils.isAddress(govToken);
       if (govAddress) {
-        this.fetchAndSetTokenBalances([
-          this.liquidityProtectionSettings.govToken
-        ]);
+        this.fetchAndSetTokenBalances([govToken]);
       }
       authenticatedReceiver$.next(userAddress);
       if (this.apiData && this.apiData.tokens) {

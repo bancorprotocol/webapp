@@ -1327,13 +1327,9 @@ export const formatDuration = (duration: plugin.Duration): string => {
   return sentence;
 };
 
-export const defaultTableSort = (
-  row: TableItem,
-  sortBy: string,
-) => {
+export const defaultTableSort = (row: TableItem, sortBy: string) => {
   const value = row[sortBy];
-  if (!value || isNaN(value))
-    return null;
+  if (!value || isNaN(value)) return null;
   if (isFinite(value)) {
     const number = new BigNumber(value);
     const isBigNumber = BigNumber.isBigNumber(number);
