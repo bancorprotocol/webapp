@@ -2660,15 +2660,18 @@ export class EthBancorModule
       const wethBalanceString =
         wEthBalance && new BigNumber(wEthBalance.balance).toString();
 
+      const wethTokenImage = imageOrDefault(
+        wethTokenContractAddress,
+        tokenMeta
+      );
+
       const wethToken: ViewToken = {
         ...(wEthBalance && { balance: wethBalanceString }),
         contract: wethTokenContractAddress,
         id: wethTokenContractAddress,
         limitOrderAvailable: true,
         tradeSupported: false,
-        logo: tokenMeta.find(meta =>
-          compareString(meta.contract, wethTokenContractAddress)
-        )!.image,
+        logo: wethTokenImage,
         name: "WETH",
         precision: 18,
         symbol: "WETH",
@@ -2677,8 +2680,6 @@ export class EthBancorModule
 
       finalTokens.push(wethToken);
     }
-
-    console.log(finalTokens, "are final tokens");
     return finalTokens;
   }
 
@@ -5676,9 +5677,6 @@ export class EthBancorModule
       );
 
       await newPools$.pipe(firstItem()).toPromise();
-      if (this.tokens.length == 0) {
-        await wait(1000);
-      }
     } catch (e) {
       console.error("thrown in x", e);
     }
