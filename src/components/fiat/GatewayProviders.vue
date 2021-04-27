@@ -113,8 +113,8 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 1,
         name: "MoonPay",
-        logo: "moonpay.png",
-        logoDark: "moonpay-dark.png",
+        logo: "moonpay.svg",
+        logoDark: "moonpay-dark.svg",
         description:
           "MoonPay is a financial technology company that builds payments infrastructure for crypto. Our on-and-off-ramp suite of products provides a seamless experience for converting between fiat currencies and cryptocurrencies using all major payment methods.",
         jurisdictions: ["Global"],
@@ -134,8 +134,8 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 2,
         name: "Simplex",
-        logo: "simplex.png",
-        logoDark: "simplex-dark.png",
+        logo: "simplex.svg",
+        logoDark: "simplex-dark.svg",
         description:
           "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
         jurisdictions: ["Global"],
@@ -152,8 +152,8 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 3,
         name: "BANXA",
-        logo: "banxa.png",
-        logoDark: "banxa-dark.png",
+        logo: "banxa.svg",
+        logoDark: "banxa-dark.svg",
         description:
           "Banxa is a globally operating fiat-to-crypto on-ramp providing the easiest way for anyone looking to enter the digital asset ecosystem. Banxa users can choose from a variety of the most popular and convenient payment methods.",
         jurisdictions: ["Global"],
@@ -170,8 +170,8 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 4,
         name: "Ramp network",
-        logo: "ramp.png",
-        logoDark: "ramp-dark.png",
+        logo: "ramp.svg",
+        logoDark: "ramp-dark.svg",
         description:
           "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible product focuses on excellent UX, supports multiple payment options and ensures lowest slippage and transactional fees.",
         jurisdictions: ["Global"],
