@@ -330,7 +330,7 @@ export const fetchPositionsMulti = async (
 
     return protectedLiquidity.filter(pos => typeof pos.owner == "string");
   } catch (e) {
-    const response = await mapSeries(positionIds, 2, async id => {
+    const response = await mapSeries(positionIds, 3, async id => {
       const raw = await contract.methods.protectedLiquidity(id).call();
       return { ...raw, "8": id };
     });
@@ -339,8 +339,6 @@ export const fetchPositionsMulti = async (
       // @ts-ignore
       fromPairs(keys.map((key, index) => [key, res[index]]))
     ) as ProtectedLiquidity[];
-
-    console.log(protectedLiquidity, "is thing");
 
     return protectedLiquidity;
   }
