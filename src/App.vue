@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="isLoading"
+    v-if="loading"
     class="loading d-flex justify-content-center align-items-center"
     :class="darkMode ? 'bg-body-dark' : 'bg-body-light'"
   >
@@ -95,12 +95,6 @@ import { EthNetworks } from "./api/web3";
 })
 export default class App extends BaseComponent {
   loading = true;
-
-  get isLoading() {
-    const tokens = vxm.bancor.tokens;
-    return !(tokens && tokens.length && !this.loading);
-  }
-
   error = false;
 
   get isMainNet() {
@@ -134,6 +128,7 @@ export default class App extends BaseComponent {
 
     try {
       await vxm.bancor.init(initParams);
+      // @ts-ignore
       this.loading = false;
       // @ts-ignore
       this.$gtag.event("initBancor", {
