@@ -438,7 +438,6 @@ export interface RawLiquidityProtectionSettings {
   minProtectionDelay: string;
   maxProtectionDelay: string;
   lockDuration: string;
-  govToken: string;
   networkToken: string;
   defaultNetworkTokenMintingLimit: string;
 }
@@ -448,7 +447,6 @@ export interface LiquidityProtectionSettings {
   minDelay: number;
   maxDelay: number;
   lockedDelay: number;
-  govToken: string;
   networkToken: string;
   defaultNetworkTokenMintingLimit: string;
 }
