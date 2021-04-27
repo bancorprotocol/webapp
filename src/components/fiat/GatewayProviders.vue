@@ -18,7 +18,6 @@
                   : require(`@/assets/media/logos/${p.logo}`)
               "
               width="135"
-              height="40"
             />
           </b-row>
         </b-col>
@@ -135,7 +134,7 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 2,
         name: "Simplex",
-        logo: "simplex.png",
+        logo: "simplex.svg",
         logoDark: "simplex-dark.png",
         description:
           "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
@@ -170,7 +169,7 @@ export default class GatewayProviders extends BaseComponent {
       {
         id: 4,
         name: "Ramp network",
-        logo: "ramp.png",
+        logo: "ramp.svg",
         logoDark: "ramp-dark.png",
         description:
           "Ramp Network provides the ultimate crypto on-boarding flow. This globally accessible product focuses on excellent UX, supports multiple payment options and ensures lowest slippage and transactional fees.",
