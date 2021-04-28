@@ -87,7 +87,7 @@
       title="Confirm Withdraw"
       icon="arrow-up"
       :tx-meta.sync="txMeta"
-      redirect-on-success="LiqProtection"
+      redirect-on-success="Portfolio"
     >
       <gray-border-block>
         <span
