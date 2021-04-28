@@ -6,6 +6,7 @@ import { fromWei, isAddress, toHex, toWei } from "web3-utils";
 import { shrinkToken } from "@/api/eth/helpers";
 import { vxm } from "@/store";
 import { EthNetworks, getWeb3, Provider, web3 } from "@/api/web3";
+import { sendGTMEvent } from "@/gtm";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
@@ -60,23 +61,23 @@ export class EthereumModule extends VuexModule.With({
     const dataLayer = window.dataLayer as {}[];
 
     try {
-      dataLayer.push({
-        "event": "CE Wallet Connect Select a Wallet Popup",
-        "event_properties": {}
+      sendGTMEvent({
+        event: "CE Wallet Connect Select a Wallet Popup",
+        event_properties: {}
       });
       await onboard.walletSelect();
       const state = onboard.getState();
-      dataLayer.push({
-        "event": "CE Wallet Connect Wallet Icon Click",
-        "event_properties": {
-          "wallet_id": state.address,
-          "wallet_name": state.wallet.name
+      sendGTMEvent({
+        event: "CE Wallet Connect Wallet Icon Click",
+        event_properties: {
+          wallet_id: state.address,
+          wallet_name: state.wallet.name
         }
       });
       await onboard.walletCheck();
-      dataLayer.push({
-        "event": "CE Wallet Connect",
-        "event_properties": {}
+      sendGTMEvent({
+        event: "CE Wallet Connect",
+        event_properties: {}
       });
     } catch (e) {
       console.error(e, "was the error");

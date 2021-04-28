@@ -234,6 +234,7 @@ import {
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
+import { sendGTMEvent } from "@/gtm";
 
 keeperTokens$.subscribe(token =>
   vxm.ethBancor.setDaoTokens(token.map(x => x.address))
@@ -6207,11 +6208,11 @@ export class EthBancorModule
 
     const ethPath = generateEthPath(fromSymbol, relays);
     const dataLayer = window.dataLayer as {}[];
-
-    dataLayer.push({
-      "event": "CE Conversion Swap Click",
-      "event_properties": {}
+    sendGTMEvent({
+      event: "CE Conversion Swap Click",
+      event_properties: {}
     });
+
     onUpdate!(1, steps);
     await this.triggerApprovalIfRequired({
       owner: this.currentUser,
@@ -6221,9 +6222,9 @@ export class EthBancorModule
       onPrompt
     });
 
-    dataLayer.push({
-      "event": "CE Conversion Receipt Confirmation Request",
-      "event_properties": {}
+    sendGTMEvent({
+      event: "CE Conversion Receipt Confirmation Request",
+      event_properties: {}
     });
     onUpdate!(2, steps);
 
@@ -6241,20 +6242,20 @@ export class EthBancorModule
         zeroAddress,
         0
       ),
-      onConfirmation: () =>
-        {
-          // dataLayer.push({
-          //   "event": "CE Conversion Wallet Confirmation Request",
-          //   "event_properties": {}
-          // });
-          console.log('SUCCESS')
-          return this.spamBalances([fromTokenContract, toTokenContract])
-        },
+      onConfirmation: () => {
+        // sendGTMEvent({
+        //   "event": "CE Conversion Wallet Confirmation Request",
+        //   "event_properties": {}
+        // });
+        console.log("SUCCESS");
+        return this.spamBalances([fromTokenContract, toTokenContract]);
+      },
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
       onHash: () => {
-        console.log('Confirm')
-        return onUpdate!(3, steps)}
+        console.log("Confirm");
+        return onUpdate!(3, steps);
+      }
     });
     onUpdate!(4, steps);
 

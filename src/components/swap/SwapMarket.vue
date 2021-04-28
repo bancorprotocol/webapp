@@ -337,12 +337,12 @@ export default class SwapAction extends BaseTxAction {
       this.setDefault();
     } catch (e) {
       //if (e.message.includes('rejected'))
-      // dataLayer.push({
+      // sendGTMEvent({
       //   "event": "CE Conversion Wallet Confirmation Reject",
       //   "event_properties": {}
       // });
       //else
-      // dataLayer.push({
+      // sendGTMEvent({
       //   "event": "CE Conversion Failed",
       //   "event_properties": {}
       // });
@@ -352,7 +352,7 @@ export default class SwapAction extends BaseTxAction {
     }
   }
   onHide() {
-    // dataLayer.push({
+    // sendGTMEvent({
     //   "event": "CE Conversion Receipt Confirmation Reject",
     //   "event_properties": {}
     // });
