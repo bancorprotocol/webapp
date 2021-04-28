@@ -282,6 +282,16 @@
     border-color: $light-white !important;
     background-color: $bg-body-dark !important;
   }
+  &.btn-outline-alt-light:hover {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-alt-dark:hover {
+    color: $bg-body-dark !important;
+    border-color: $bg-body-dark !important;
+    background-color: $light-white !important;
+  }
   &.btn-outline-primary {
     background-color: $bg-btn-outline-light !important;
     color: $text-color-light !important;
@@ -314,6 +324,11 @@
     color: $gray-placeholder-dark !important;
     border-color: $gray-placeholder-dark !important;
     background-color: $gray-border-dark !important;
+  }
+  &.btn-muted-alt-dark {
+    color: $gray-placeholder-dark !important;
+    border-color: $gray-placeholder-dark !important;
+    background-color: $bg-body-dark !important;
   }
   &.btn-active-light {
     color: $text-color-light !important;

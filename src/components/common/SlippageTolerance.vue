@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex justify-content-between mt-2">
-    <div v-for="x in options" :key="x" class="w-100 mr-2">
+    <div v-for="x in options" :key="x" class="w-50 mr-2">
       <b-btn @click="setSlippage(x)" :variant="getVariant(x)" size="xs" block>
         {{ x }}%
       </b-btn>
@@ -110,6 +110,7 @@ export default class SlippageTolerance extends BaseComponent {
 
 .custom-input-append {
   @extend .custom-input;
+  color: red;
   border-left: none !important;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
