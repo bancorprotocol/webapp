@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@0x/contract-addresses": "^6.0.0",
-    "@0x/protocol-utils": "^1.3.0",
+    "@0x/protocol-utils": "^1.5.1",
     "@0x/web3-wrapper": "^7.5.0",
     "@dfuse/client": "^0.3.20",
     "@firebase/analytics": "^0.6.9",
