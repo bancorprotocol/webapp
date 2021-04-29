@@ -438,7 +438,6 @@ export interface RawLiquidityProtectionSettings {
   minProtectionDelay: string;
   maxProtectionDelay: string;
   lockDuration: string;
-  govToken: string;
   networkToken: string;
   defaultNetworkTokenMintingLimit: string;
 }
@@ -448,7 +447,6 @@ export interface LiquidityProtectionSettings {
   minDelay: number;
   maxDelay: number;
   lockedDelay: number;
-  govToken: string;
   networkToken: string;
   defaultNetworkTokenMintingLimit: string;
 }
@@ -676,10 +674,6 @@ export interface CreatePoolModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly newPoolTokenChoices: (networkToken: string) => ModalChoice[];
   readonly newNetworkTokenChoices: ModalChoice[];
-}
-
-export interface HistoryModule {
-  fetchHistoryData: (relayId: string) => Promise<any[]>;
 }
 
 export interface FeeParams {

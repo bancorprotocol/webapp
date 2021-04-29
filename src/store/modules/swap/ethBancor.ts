@@ -5,7 +5,6 @@ import {
   ConvertReturn,
   CreatePoolModule,
   CreateV1PoolEthParams,
-  HistoryModule,
   LiquidityModule,
   LiquidityParams,
   LiquidityProtectionSettings,
@@ -128,8 +127,6 @@ import {
   shrinkToken,
   TokenSymbol
 } from "@/api/eth/helpers";
-import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
-import { getSmartTokenHistory } from "@/api/eth/zumZoom";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {
@@ -218,7 +215,8 @@ import {
 } from "@/api/observables/network";
 import {
   bancorConverterRegistry$,
-  exchangeProxy$
+  exchangeProxy$,
+  govTokenAddress$
 } from "@/api/observables/contracts";
 import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 import {
@@ -1133,38 +1131,6 @@ const relayToMinimal = (relay: Relay): MinimalRelay => ({
     ? (relay.anchor as SmartToken).contract
     : (relay.anchor as PoolContainer).poolContainerAddress
 });
-
-const sortSmartTokenAddressesByHighestLiquidity = (
-  tokens: TokenPrice[],
-  smartTokenAddresses: string[]
-): string[] => {
-  const sortedTokens = tokens
-    .slice()
-    .sort((a, b) => b.liquidityDepth - a.liquidityDepth);
-
-  const sortedDictionary = sortedTokens
-    .map(
-      token =>
-        ethBancorApiDictionary.find(dic =>
-          compareString(token.id, dic.tokenId)
-        )!
-    )
-    .filter(Boolean);
-
-  const res = sortAlongSide(
-    smartTokenAddresses,
-    pool => pool,
-    sortedDictionary.map(x => x.smartTokenAddress)
-  );
-
-  const isSame = res.every((item, index) => smartTokenAddresses[index] == item);
-  if (isSame)
-    console.warn(
-      "Sorted by Highest liquidity sorter is returning the same array passed"
-    );
-  return res;
-};
-
 interface TokenWithdrawParam {
   owner: string;
   spender: string;
@@ -1389,9 +1355,6 @@ const calculateLiquidateCost = (
 const percentDifference = (smallAmount: string, bigAmount: string) =>
   new Decimal(smallAmount).div(bigAmount).toNumber();
 
-const tokenMetaDataEndpoint =
-  "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
-
 interface TokenMeta {
   id: string;
   image: string;
@@ -1416,7 +1379,7 @@ const VuexModule = createModule({
 
 export class EthBancorModule
   extends VuexModule.With({ namespaced: "ethBancor/" })
-  implements TradingModule, LiquidityModule, CreatePoolModule, HistoryModule {
+  implements TradingModule, LiquidityModule, CreatePoolModule {
   registeredAnchorAddresses: string[] = [];
   convertibleTokenAddresses: string[] = [];
   loadingPools: boolean = false;
@@ -1445,7 +1408,6 @@ export class EthBancorModule
     maxDelay: dayjs.duration(100, "days").asSeconds(),
     lockedDelay: dayjs.duration(24, "hours").asSeconds(),
     networkToken: "",
-    govToken: "",
     defaultNetworkTokenMintingLimit: "0"
   };
 
@@ -1477,7 +1439,7 @@ export class EthBancorModule
       minDelay: Number(settings.minProtectionDelay),
       maxDelay: Number(settings.maxProtectionDelay),
       lockedDelay: Number(settings.lockDuration),
-      govToken: protection.govToken,
+      govToken: "0x48Fb253446873234F2fEBbF9BdeAA72d9d387f94",
       networkToken: settings.networkToken,
       defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
     } as LiquidityProtectionSettings;
@@ -1730,6 +1692,8 @@ export class EthBancorModule
 
     const depositIsEth = compareString(reserveAmount.id, ethReserveAddress);
 
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
+
     const txHash = (await multiSteps({
       items: [
         {
@@ -1754,10 +1718,7 @@ export class EthBancorModule
                 reserveAmountWei
               ),
               onConfirmation: async () => {
-                this.spamBalances([
-                  this.liquidityProtectionSettings.govToken,
-                  reserveTokenAddress
-                ]);
+                this.spamBalances([govToken, reserveTokenAddress]);
                 this.fetchProtectionPositions();
                 await wait(3000);
                 this.fetchProtectionPositions();
@@ -1800,6 +1761,7 @@ export class EthBancorModule
       position.inititalProtectedToken
     );
     const ppmPercent = decToPpm(decPercent);
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
 
     if (isDissolvingNetworkToken) {
       const dissolvingFullPosition = decPercent === 1;
@@ -1813,7 +1775,7 @@ export class EthBancorModule
         owner: this.currentUser,
         spender: liquidityProtectionContract,
         amount: weiApprovalAmount,
-        tokenAddress: this.liquidityProtectionSettings.govToken,
+        tokenAddress: govToken,
         onPrompt
       });
     }
@@ -1848,6 +1810,8 @@ export class EthBancorModule
       throw new Error("Pool token does not match anchor ID");
     const poolTokenWei = expandToken(amount.amount, poolToken.decimals);
 
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
+
     const txHash = await multiSteps({
       items: [
         {
@@ -1869,10 +1833,7 @@ export class EthBancorModule
               anchorAddress: poolToken.contract,
               amountWei: poolTokenWei,
               onConfirmation: async () => {
-                this.spamBalances([
-                  poolToken.contract,
-                  this.liquidityProtectionSettings.govToken
-                ]);
+                this.spamBalances([poolToken.contract, govToken]);
                 this.fetchProtectionPositions();
                 await wait(3000);
                 this.fetchProtectionPositions();
@@ -2272,14 +2233,6 @@ export class EthBancorModule
     });
   }
 
-  @action async fetchHistoryData(poolId: string) {
-    const pool = await this.relayById(poolId);
-    const reserveSymbols = pool.reserves.map(reserve => reserve.symbol);
-    const sortedSymbols = sortByNetworkTokens(reserveSymbols, x => x);
-    const [, primaryReserveToken] = sortedSymbols;
-    return getSmartTokenHistory(primaryReserveToken.toLowerCase());
-  }
-
   @action async createV1Pool({
     onUpdate,
     decFee,
@@ -2550,20 +2503,6 @@ export class EthBancorModule
     });
   }
 
-  @action async addReserveToken({
-    converterAddress,
-    reserveTokenAddress
-  }: {
-    converterAddress: string;
-    reserveTokenAddress: string;
-  }) {
-    const converter = buildConverterContract(converterAddress);
-
-    return this.resolveTxOnConfirmation({
-      tx: converter.methods.addReserve(reserveTokenAddress, 500000)
-    });
-  }
-
   get supportedFeatures() {
     return () => {
       return ["addLiquidity", "removeLiquidity"];
@@ -2688,15 +2627,18 @@ export class EthBancorModule
       const wethBalanceString =
         wEthBalance && new BigNumber(wEthBalance.balance).toString();
 
+      const wethTokenImage = imageOrDefault(
+        wethTokenContractAddress,
+        tokenMeta
+      );
+
       const wethToken: ViewToken = {
         ...(wEthBalance && { balance: wethBalanceString }),
         contract: wethTokenContractAddress,
         id: wethTokenContractAddress,
         limitOrderAvailable: true,
         tradeSupported: false,
-        logo: tokenMeta.find(meta =>
-          compareString(meta.contract, wethTokenContractAddress)
-        )!.image,
+        logo: wethTokenImage,
         name: "WETH",
         precision: 18,
         symbol: "WETH",
@@ -2705,7 +2647,6 @@ export class EthBancorModule
 
       finalTokens.push(wethToken);
     }
-
     return finalTokens;
   }
 
@@ -3264,17 +3205,6 @@ export class EthBancorModule
       singleUnitCosts
     };
     return result;
-  }
-
-  @action async fetchSystemBalance(tokenAddress: string): Promise<string> {
-    const isValidAddress = web3.utils.isAddress(tokenAddress);
-    if (!isValidAddress)
-      throw new Error(`${tokenAddress} is not a valid address`);
-    const contract = buildLiquidityProtectionStoreContract(
-      this.contracts.LiquidityProtectionStore,
-      w3
-    );
-    return contract.methods.systemBalance(tokenAddress).call();
   }
 
   @action async getMaxStakes({ poolId }: { poolId: string }) {
@@ -4842,85 +4772,6 @@ export class EthBancorModule
     });
   }
 
-  @action async relaysRequiredForTrade({
-    from,
-    to,
-    networkContractAddress
-  }: {
-    from: string;
-    to: string;
-    networkContractAddress: string;
-  }) {
-    try {
-      const path = await this.conversionPathFromNetworkContract({
-        from,
-        to,
-        networkContractAddress
-      });
-      const smartTokenAddresses = path.filter((_, index) => isOdd(index));
-      if (smartTokenAddresses.length == 0)
-        throw new Error("Failed to find any smart token addresses for path.");
-      return smartTokenAddresses;
-    } catch (e) {
-      console.error(`relays required for trade failed ${e.message}`);
-      throw new Error(`relays required for trade failed ${e.message}`);
-    }
-  }
-
-  @action async poolsByPriority({
-    anchorAddressess,
-    tokenPrices
-  }: {
-    anchorAddressess: string[];
-    tokenPrices?: TokenPrice[];
-  }) {
-    if (tokenPrices && tokenPrices.length > 0) {
-      return sortSmartTokenAddressesByHighestLiquidity(
-        tokenPrices,
-        anchorAddressess
-      );
-    } else {
-      return sortAlongSide(anchorAddressess, x => x, priorityEthPools);
-    }
-  }
-
-  @action async bareMinimumPools({
-    params,
-    networkContractAddress,
-    anchorAddressess,
-    tokenPrices
-  }: {
-    params?: ModuleParam;
-    networkContractAddress: string;
-    anchorAddressess: string[];
-    tokenPrices?: TokenPrice[];
-  }): Promise<string[]> {
-    const fromToken =
-      params! && params!.tradeQuery! && params!.tradeQuery!.base!;
-    const toToken =
-      params! && params!.tradeQuery! && params!.tradeQuery!.quote!;
-
-    const tradeIncluded = fromToken && toToken;
-    const poolIncluded = params && params.poolQuery;
-
-    if (tradeIncluded) {
-      const res = await this.relaysRequiredForTrade({
-        from: fromToken,
-        to: toToken,
-        networkContractAddress
-      });
-      return res;
-    } else if (poolIncluded) {
-      return [poolIncluded];
-    } else {
-      const allPools = await this.poolsByPriority({
-        anchorAddressess,
-        tokenPrices
-      });
-      return allPools.slice(0, 3);
-    }
-  }
-
   @action async multi({
     groupsOfShapes,
     blockHeight,
@@ -5528,27 +5379,6 @@ export class EthBancorModule
     this.bntSupply = weiAmount;
   }
 
-  @action async fetchAndSetBntSupply(bntTokenAddress: string) {
-    const contract = buildTokenContract(bntTokenAddress);
-    const weiSupply = await contract.methods.totalSupply().call();
-    this.setBntSupply(weiSupply);
-  }
-
-  @action async fetchLiquidityProtectionSettingsContract(
-    liquidityProtectionContract: string
-  ): Promise<string> {
-    try {
-      const contract = buildLiquidityProtectionContract(
-        liquidityProtectionContract
-      );
-      return contract.methods.settings().call();
-    } catch (e) {
-      const error = `Failed fetching settings contract via address ${liquidityProtectionContract}`;
-      console.error(error);
-      throw new Error(error);
-    }
-  }
-
   @action async fetchTokens(tokenContracts: string[]): Promise<RawAbiToken[]> {
     const tokenShapes = tokenContracts.map(tokenShape);
     const [res] = await this.multi({
@@ -5830,17 +5660,6 @@ export class EthBancorModule
     this.poolLiqMiningAprs = [...withoutOld, ...liqMiningApr];
   }
 
-  poolAprs: PoolApr[] = [];
-
-  @mutation updatePoolAprs(newPoolAprs: PoolApr[]) {
-    console.log(newPoolAprs, "update pool aprs is a thing");
-    const existing = this.poolAprs;
-    const withoutOld = existing.filter(
-      apr => !newPoolAprs.some(a => compareString(apr.poolId, a.poolId))
-    );
-    this.poolAprs = [...withoutOld, ...newPoolAprs];
-  }
-
   @action async checkFees(pools: Relay[]) {
     const convertersAndAnchors: ConverterAndAnchor[] = pools.map(relay => ({
       anchorAddress: relay.id,
@@ -5902,12 +5721,12 @@ export class EthBancorModule
   @action async fetchAndSetTokenBalances(tokenContractAddresses: string[]) {
     if (!this.currentUser) return;
 
-    const governanceToken =
-      web3.utils.isAddress(this.liquidityProtectionSettings.govToken) &&
-      this.liquidityProtectionSettings.govToken;
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
+
+    const governanceToken = web3.utils.isAddress(govToken) && govToken;
 
     if (governanceToken) {
-      tokenContractAddresses.push(this.liquidityProtectionSettings.govToken);
+      tokenContractAddresses.push(govToken);
     }
 
     const uniqueAddresses = uniqWith(
@@ -6026,15 +5845,12 @@ export class EthBancorModule
 
   @action async onAuthChange(userAddress: string) {
     this.wipeTokenBalances();
+    const govToken = await govTokenAddress$.pipe(take(1)).toPromise();
     if (userAddress) {
       Sentry.setUser({ id: userAddress.toLowerCase() });
-      const govAddress = web3.utils.isAddress(
-        this.liquidityProtectionSettings.govToken
-      );
+      const govAddress = web3.utils.isAddress(govToken);
       if (govAddress) {
-        this.fetchAndSetTokenBalances([
-          this.liquidityProtectionSettings.govToken
-        ]);
+        this.fetchAndSetTokenBalances([govToken]);
       }
       authenticatedReceiver$.next(userAddress);
       if (this.apiData && this.apiData.tokens) {
@@ -6360,9 +6176,14 @@ export class EthBancorModule
 
     await this.awaitConfirmation(onPrompt);
 
+    const tx = tokenContract.methods.deposit();
+    const estimatedGas = await this.determineTxGas(tx);
+    const manualBuffer = 2;
+
     const txHash = await this.resolveTxOnConfirmation({
       value: wei,
-      tx: tokenContract.methods.deposit()
+      tx,
+      gas: estimatedGas * manualBuffer
     });
 
     return this.createTxResponse(txHash);
@@ -6636,8 +6457,6 @@ export class EthBancorModule
   @mutation setDaoTokens(tokenAddresses: string[]) {
     this.daoTokenAddresses = tokenAddresses;
   }
-
-  @action async getReturnOrder({}) {}
 
   @action async tokenPrecisionsById(ids: string[]): Promise<TokenPrecision[]> {
     const tokens = this.tokens;

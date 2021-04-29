@@ -19,9 +19,7 @@ import PoolActionsAddHome from "@/components/pool/PoolActionsAddHome.vue";
 import Vote from "@/views/Vote.vue";
 import Fiat from "@/views/Fiat.vue";
 import AddProtectionSingle from "@/components/protection/AddProtectionSingle.vue";
-import AddProtectionDouble from "@/components/protection/AddProtectionDouble.vue";
 import WithdrawProtectionSingle from "@/components/protection/WithdrawProtectionSingle.vue";
-import WithdrawProtectionDouble from "@/components/protection/WithdrawProtectionDouble.vue";
 import WhitelistedPools from "@/components/protection/WhitelistedPools.vue";
 import VotePage from "@/components/vote-new/VotePage.vue";
 import FiatPage from "@/components/fiat/FiatPage.vue";
@@ -198,19 +196,9 @@ export const router = new Router({
           component: AddProtectionSingle
         },
         {
-          path: "add/double/:id",
-          name: "AddProtectionDouble",
-          component: AddProtectionDouble
-        },
-        {
           path: "withdraw/single/:id",
           name: "WithdrawProtectionSingle",
           component: WithdrawProtectionSingle
-        },
-        {
-          path: "withdraw/double/:id",
-          name: "WithdrawProtectionDouble",
-          component: WithdrawProtectionDouble
         },
         {
           path: "rewards/restake/:id",

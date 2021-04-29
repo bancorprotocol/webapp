@@ -129,7 +129,7 @@ export default class TableTransactions extends BaseComponent {
       case "account":
         return row.data.account;
       default:
-        return defaultTableSort(row, sortBy, true);
+        return defaultTableSort(row, sortBy);
     }
   }
 }

@@ -82,48 +82,6 @@
           {{ $t("community_support") }}
         </div>
       </b-dropdown-item>
-      <b-dropdown-text>
-        <div class="d-flex justify-content-between cursor">
-          <font-awesome-icon
-            @click="openUrl('https://twitter.com/Bancor')"
-            :icon="['fab', 'twitter']"
-            class="mr-2 menu-icon"
-            fixed-width
-          />
-          <font-awesome-icon
-            @click="openUrl('https://www.reddit.com/r/Bancor/')"
-            :icon="['fab', 'reddit-alien']"
-            class="mr-2 menu-icon"
-            fixed-width
-          />
-          <font-awesome-icon
-            @click="openUrl('https://t.me/bancor')"
-            :icon="['fab', 'telegram-plane']"
-            class="mr-2 menu-icon"
-            fixed-width
-          />
-          <font-awesome-icon
-            @click="openUrl('https://discord.gg/EHK8wHbgau')"
-            :icon="['fab', 'discord']"
-            class="mr-2 menu-icon"
-            fixed-width
-          />
-          <font-awesome-icon
-            @click="openUrl('https://gov.bancor.network')"
-            :icon="['fab', 'discourse']"
-            class="mr-2 menu-icon"
-            fixed-width
-          />
-        </div>
-      </b-dropdown-text>
-    </b-dropdown-group>
-    <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-4">
-      <b-dropdown-item :variant="darkMode ? 'dark' : 'light'">
-        <div class="font-size-16">
-          {{ $t("developers") }}
-        </div>
-      </b-dropdown-item>
       <b-dropdown-item
         @click="openUrl('https://twitter.com/Bancor')"
         :variant="darkMode ? 'dark' : 'light'"
@@ -184,7 +142,9 @@
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
       <b-dropdown-item :variant="darkMode ? 'dark' : 'light'">
-        {{ $t("developers") }}
+        <div class="font-size-16">
+          {{ $t("developers") }}
+        </div>
       </b-dropdown-item>
       <b-dropdown-text>
         <div
@@ -213,16 +173,18 @@
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-5" class="font-size-16">
+    <b-dropdown-group id="dropdown-group-5" class="font-size-14">
       <b-dropdown-item
         @click="navPrivacy"
         :variant="darkMode ? 'dark' : 'light'"
+        class="font-size-16"
       >
         {{ $t("privacy_policy") }}
       </b-dropdown-item>
       <b-dropdown-item
         @click="navTermsOfUse"
         :variant="darkMode ? 'dark' : 'light'"
+        class="font-size-16"
       >
         {{ $t("terms_of_use") }}
       </b-dropdown-item>
@@ -234,21 +196,17 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import BaseComponent from "@/components/BaseComponent.vue";
-
 @Component
 export default class BancorMenu extends BaseComponent {
   get isDataPage() {
     return this.$route.fullPath.includes("data");
   }
-
   navData() {
     const hostbase = window.location.hostname;
     const service = this.$route.params.service;
-
     const isDev = hostbase == "localhost";
     const isStaging = hostbase.includes("staging");
     const isProd = !isDev && !isStaging;
-
     if (isDev) {
       this.openUrl(`http://localhost:8080/${service}/data`);
     } else if (isStaging) {
@@ -259,24 +217,19 @@ export default class BancorMenu extends BaseComponent {
       this.openUrl(`https://swap.bancor.network/${service}/data`);
     }
   }
-
   navSwap() {
     let routeData = this.$router.resolve({ name: "Swap" });
     this.openUrl(routeData.href);
   }
-
   navPrivacy() {
     this.$router.push({ name: "PrivacyPolicy" });
   }
-
   navTermsOfUse() {
     this.$router.push({ name: "TermsOfUse" });
   }
-
   openUrl(url: string) {
     window.open(url, "_blank");
   }
-
   toggleDarkMode() {
     vxm.general.toggleDarkMode();
   }
