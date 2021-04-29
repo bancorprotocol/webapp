@@ -5,12 +5,12 @@
         cols="12"
         class="d-flex justify-content-center align-items-center mt-3"
       >
-        <span class="text-primary font-size-24 font-w600">
+        <div class="text-primary font-size-24 font-w600">
           Network not supported
-        </span>
-        <span class="text-light font-w400">
+        </div>
+        <div class="text-light font-w400">
           Please switch to Ethereum Mainnet or Ropsten and refresh the site.
-        </span>
+        </div>
       </b-col>
       <b-col
         cols="12"
