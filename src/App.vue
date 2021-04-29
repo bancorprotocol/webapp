@@ -1,16 +1,6 @@
 <template>
   <div v-if="networkNotSupported">
     <b-row>
-      <b-col cols="12" class="d-flex justify-content-center align-items-center">
-        <img
-          :src="
-            require('@/assets/media/photos/404-page' +
-              (darkMode ? '-dark' : '') +
-              '.svg')
-          "
-          class="mt-5"
-        />
-      </b-col>
       <b-col
         cols="12"
         class="d-flex justify-content-center align-items-center mt-3"
@@ -18,14 +8,14 @@
         <span class="text-primary font-size-24 font-w600">
           Network not supported
         </span>
+        <span class="text-light font-w400">
+          Please switch to Ethereum Mainnet or Ropsten and refresh the site.
+        </span>
       </b-col>
       <b-col
         cols="12"
         class="d-flex justify-content-center align-items-center mt-3"
       >
-        <span :class="darkMode ? 'text-dark' : 'text-light'" class="font-w400">
-          Please switch to Mainnet or Ropsten and refresh the site.
-        </span>
       </b-col>
     </b-row>
   </div>
