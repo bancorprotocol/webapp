@@ -1,6 +1,9 @@
 <template>
+  <div v-if="networkNotSupported">
+    <h2>Bad network</h2>
+  </div>
   <div
-    v-if="loading"
+    v-else-if="loading"
     class="loading d-flex justify-content-center align-items-center"
     :class="darkMode ? 'bg-body-dark' : 'bg-body-light'"
   >
@@ -96,6 +99,14 @@ import { EthNetworks } from "./api/web3";
 export default class App extends BaseComponent {
   loading = true;
   error = false;
+
+  get networkNotSupported() {
+    console.log(vxm.ethBancor.currentNetwork, "is the current network");
+    return !(
+      vxm.ethBancor.currentNetwork == EthNetworks.Mainnet ||
+      vxm.ethBancor.currentNetwork == EthNetworks.Ropsten
+    );
+  }
 
   get isMainNet() {
     return vxm.ethBancor.currentNetwork == EthNetworks.Mainnet;
