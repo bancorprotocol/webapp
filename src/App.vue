@@ -1,6 +1,13 @@
 <template>
   <div v-if="networkNotSupported">
     <b-row>
+      <b-col cols="12" class="d-flex justify-content-center align-items-center">
+        <img
+          :src="require('@/assets/media/logos/bancor-black.png')"
+          class="mt-5"
+          width="200px"
+        />
+      </b-col>
       <b-col
         cols="12"
         class="d-flex justify-content-center align-items-center mt-3"
@@ -8,14 +15,14 @@
         <div class="text-primary font-size-24 font-w600">
           Network not supported
         </div>
-        <div class="text-light font-w400">
-          Please switch to Ethereum Mainnet or Ropsten and refresh the site.
-        </div>
       </b-col>
       <b-col
         cols="12"
         class="d-flex justify-content-center align-items-center mt-3"
       >
+        <div class="text-light font-w400">
+          Please switch to Ethereum Mainnet or Ropsten and refresh the site.
+        </div>
       </b-col>
     </b-row>
   </div>
