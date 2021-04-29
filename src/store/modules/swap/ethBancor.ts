@@ -215,6 +215,7 @@ import {
 } from "@/api/observables/network";
 import {
   bancorConverterRegistry$,
+  bancorNetworkAddress$,
   exchangeProxy$,
   govTokenAddress$
 } from "@/api/observables/contracts";
@@ -6025,17 +6026,21 @@ export class EthBancorModule
     const ethPath = generateEthPath(fromSymbol, relays);
 
     onUpdate!(1, steps);
+
+    const networkContractAddress = await bancorNetworkAddress$
+      .pipe(firstItem())
+      .toPromise();
     await this.triggerApprovalIfRequired({
       owner: this.currentUser,
       amount: fromWei,
-      spender: this.contracts.BancorNetwork,
+      spender: networkContractAddress,
       tokenAddress: fromTokenContract,
       onPrompt
     });
 
     onUpdate!(2, steps);
 
-    const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
+    const networkContract = buildNetworkContract(networkContractAddress);
 
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
@@ -6264,16 +6269,24 @@ export class EthBancorModule
     path: string[];
     amount: string;
   }): Promise<string> {
+    const networkContract = await bancorNetworkAddress$
+      .pipe(firstItem())
+      .toPromise();
     try {
       return await getReturnByPath({
-        networkContract: this.contracts.BancorNetwork,
+        networkContract,
         path,
         amount,
         web3: w3
       });
     } catch (e) {
       throw new Error(
-        `Threw getting return by path ${JSON.stringify(e)} ${path}`
+        `Threw getting return by path ${JSON.stringify({
+          error: e,
+          path,
+          amount,
+          networkContract
+        })}`
       );
     }
   }
