@@ -28,7 +28,7 @@
       :title="$t('create_Pool')"
       icon="plus"
       :tx-meta.sync="txMeta"
-      redirect-on-success="Pool"
+      redirect-on-success="Portfolio"
     >
       .
     </modal-tx-action>
@@ -168,19 +168,15 @@ export default class CreateHomeNew extends BaseTxAction {
     if (suggestion.length !== draftedTokens) return false;
     const relays = vxm.ethBancor.relays.filter(relay => !relay.v2);
 
-    const existingPool = relays.find(relay =>
+    const existingPool = relays.some(relay =>
       suggestion.every(reserve => {
         const matchingReserve = relay.reserves.find(r =>
           compareString(reserve.tokenId, r.id)
         );
-        return (
-          matchingReserve &&
-          Number(matchingReserve.reserveWeight) ==
-            Number(reserve.decReserveWeight)
-        );
+        return matchingReserve;
       })
     );
-    return !!existingPool;
+    return existingPool;
   }
 
   async createPool() {
@@ -215,7 +211,7 @@ export default class CreateHomeNew extends BaseTxAction {
   back() {
     const atStart = this.step == 1;
     if (atStart) {
-      this.$router.push({ name: "Portfolio" });
+      this.$router.push({ name: "Data" });
     } else {
       this.prevStep();
     }

@@ -22,7 +22,7 @@
       </template>
 
       <template #cell(value)="{ item }">
-        {{ prettifyNumber(item.smartTokenAmount * 2, true) }}
+        {{ prettifyNumber(item.value, true) }}
       </template>
 
       <template #cell(reserve_breakdown)="{ item }">
@@ -94,6 +94,7 @@ export default class PoolToken extends BaseComponent {
     tkn: BigNumber;
     relay: ViewRelay;
     smartTokenAmount?: string | undefined;
+    value: string;
     poolTokens?:
       | {
           reserveId: string;
@@ -189,15 +190,33 @@ export default class PoolToken extends BaseComponent {
       vxm.bancor.poolTokenPositions.map(async x => {
         const res = await vxm.bancor.getUserBalances(x.relay.id);
         let bnt, tkn;
-        if (x.relay.reserves[0].id === res.maxWithdrawals[0].id) {
-          bnt = new BigNumber(res.maxWithdrawals[0].amount);
-          tkn = new BigNumber(res.maxWithdrawals[1].amount);
+        const res1 = res.maxWithdrawals[0];
+        const res2 = res.maxWithdrawals[1];
+        const tokenRes1 = vxm.bancor.token(res1.id);
+        const tokenRes2 = vxm.bancor.token(res2.id);
+        const res1Amount = new BigNumber(res1.amount);
+        const res2Amount = new BigNumber(res2.amount);
+        if (x.relay.reserves[0].id === res1.id) {
+          bnt = res1Amount;
+          tkn = res2Amount;
         } else {
-          bnt = new BigNumber(res.maxWithdrawals[1].amount);
-          tkn = new BigNumber(res.maxWithdrawals[0].amount);
+          bnt = res2Amount;
+          tkn = res1Amount;
         }
-
-        return { id: x.relay.id, ...x, bnt, tkn };
+        const value =
+          tokenRes1.price && tokenRes2.price
+            ? res1Amount
+                .times(tokenRes1.price)
+                .plus(res2Amount.times(tokenRes2.price))
+                .toString()
+            : "";
+        return {
+          id: x.relay.id,
+          ...x,
+          bnt,
+          tkn,
+          value
+        };
       })
     );
   }

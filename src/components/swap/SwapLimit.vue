@@ -1,10 +1,12 @@
 <template>
   <div>
     <token-input-field
+      id="amount1"
       :label="$t('from')"
       v-model="amount1"
       @input="amount1CalcField()"
       @select="selectFromToken"
+      :blur-func="() => setlastChangedField(1, amount1)"
       :token="token1"
       :balance="balance1"
       :error-msg="errorToken1"
@@ -22,10 +24,12 @@
     </div>
 
     <token-input-field
+      id="amount2"
       :label="$t('to_estimated')"
       v-model="amount2"
       @input="amount2CalcField()"
       @select="selectToToken"
+      :blur-func="() => setlastChangedField(2, amount2)"
       :token="token2"
       :balance="balance2"
       :dropdown="true"
@@ -43,26 +47,80 @@
           class="mb-2"
         />
         <div class="d-flex align-items-center mb-3">
-          <span
-            class="font-size-14 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-            style="white-space: nowrap"
-            >{{ `1 ${token1.symbol} =` }}</span
-          >
           <multi-input-field
+            id="limit"
             @input="rateCalcField()"
-            class="mx-2"
+            :prepend="`1 ${token1.symbol} =`"
+            :blur-func="() => setlastChangedField(3, limitRate)"
+            class="w-100"
             v-model="limitRate"
-            :placeholder="rate"
-            :append="$t('defined_rate')"
+            :placeholder="`${prettifyNumber(initialRate)} ${token2.symbol}`"
             :format="true"
+            :append-slot="true"
             height="48"
-          />
-          <span
-            class="font-size-14 font-w600"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-            >{{ token2.symbol }}</span
           >
+            <div class="d-flex align-items-center" style="padding-right: 6px">
+              <img
+                class="img-avatar img-avatar32 border-colouring bg-white"
+                :src="token2.logo"
+                alt="Token Logo"
+              />
+              <span
+                class="font-size-14 font-w600 pl-2"
+                :class="darkMode ? 'text-dark' : 'text-light'"
+              >
+                {{ token2.symbol }}
+              </span>
+            </div>
+          </multi-input-field>
+        </div>
+        <div class="d-flex justify-content-between my-3">
+          <div v-for="(x, index) in percentages" :key="x" style="width: 80px">
+            <b-btn
+              @click="setPercentage(index)"
+              :variant="
+                !custom && selectedPercentage === index
+                  ? 'primary'
+                  : darkMode
+                  ? 'outline-gray-dark'
+                  : 'outline-gray'
+              "
+              size="xs"
+              block
+            >
+              +{{ x }}%
+            </b-btn>
+          </div>
+          <div class="d-flex align-items-center">
+            <multi-input-field
+              id="custom"
+              v-model="custom"
+              class="mr-1"
+              :active="custom"
+              @input="setCustomPercentage"
+              style="width: 80px"
+              :center-text="true"
+              :placeholder="$t('custom')"
+              :padding="false"
+              height="24"
+              :format="true"
+            />
+            <div
+              class="font-w400 font-size-12"
+              :class="darkMode ? 'text-dark' : 'text-light'"
+            >
+              %
+            </div>
+          </div>
+          <b-popover
+            target="custom"
+            triggers="hover"
+            placement="right"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ $t("rate_swap_tokens") }}
+          </b-popover>
         </div>
         <alert-block
           class="mb-2"
@@ -72,7 +130,7 @@
         />
         <label-content-split :label="$t('expires_in')">
           <b-dropdown
-            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            :variant="darkMode ? 'outline-dark' : 'outline-light-alt'"
             toggle-class="block-rounded"
             :menu-class="
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
@@ -121,6 +179,14 @@
       :loading="rateLoading"
       :disabled="disableButton"
     />
+
+    <p
+      class="font-size-10 font-w500 mt-2 mb-0 text-center"
+      :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+    >
+      {{ $t("powered_by_keeper_dao") }}
+    </p>
+
     <modal-duration-select
       :initial-duration="selectedDuration"
       v-model="modalSelectDuration"
@@ -157,12 +223,19 @@
         </gray-border-block>
 
         <p
-          class="font-size-12 my-3 text-left pl-3"
+          class="font-size-10 font-w500 mt-2 mb-0 text-left pl-3"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          {{ $t("modal.limit_order.info_text2") }}
+        </p>
+
+        <p
+          class="font-size-12 mb-3 mt-2 text-left pl-3"
           :class="darkMode ? 'text-muted-dark' : 'text-muted'"
         >
           {{
             $t("modal.limit_order.info_text", {
-              timer: "?????"
+              timer: durationTimer
             })
           }}
         </p>
@@ -172,7 +245,7 @@
           class="font-size-14 mb-4 text-center"
           :class="darkMode ? 'text-muted-dark' : 'text-muted'"
         >
-          You will receive
+          {{ $t("modal.deposit_weth.info_text") }}
         </p>
 
         <gray-border-block>
@@ -194,7 +267,6 @@
 import { Component, Watch } from "vue-property-decorator";
 import { vxm } from "@/store";
 import { i18n } from "@/i18n";
-import { getTokenList, TokenList } from "@/api/eth/keeperDaoApi";
 import MainButton from "@/components/common/Button.vue";
 import TokenInputField from "@/components/common/TokenInputField.vue";
 import { ViewAmount, ViewToken } from "@/types/bancor";
@@ -205,7 +277,12 @@ import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import MultiInputField from "@/components/common/MultiInputField.vue";
 import BigNumber from "bignumber.js";
 import dayjs from "@/utils/dayjs";
-import { formatDuration } from "@/api/helpers";
+import {
+  compareString,
+  durationTimer,
+  formatDuration,
+  calculatePercentageChange
+} from "@/api/helpers";
 import ModalDurationSelect from "@/components/modals/ModalSelects/ModalDurationSelect.vue";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
@@ -234,15 +311,9 @@ export default class SwapLimit extends BaseTxAction {
   amount1 = "";
   amount2 = "";
 
-  get modalTitle() {
-    if (this.isDepositingWeth) return "Confirm WETH deposit";
-    else return this.$t("modal.limit_order.title");
-  }
-
-  get modalIcon() {
-    if (this.isDepositingWeth) return "arrow-to-bottom";
-    else return "file-alt";
-  }
+  percentages = [1, 3, 5];
+  selectedPercentage = 1;
+  custom = "";
 
   durationList: plugin.Duration[] = [
     dayjs.duration({ minutes: 10 }),
@@ -252,7 +323,6 @@ export default class SwapLimit extends BaseTxAction {
     dayjs.duration({ days: 7 })
   ];
   selectedDuration = this.durationList[4];
-  keeperDaoList: TokenList | null = null;
 
   token1: ViewToken = vxm.bancor.tokens[0];
   token2: ViewToken = vxm.bancor.tokens[1];
@@ -265,8 +335,7 @@ export default class SwapLimit extends BaseTxAction {
   rateVariant = "";
 
   rateLoading = false;
-  userSettedRate = false;
-  amount1LastChanged = true;
+  changedFields = [3];
   initialRate = "";
   limitRate = "";
   numeral = numeral;
@@ -275,18 +344,13 @@ export default class SwapLimit extends BaseTxAction {
 
   get tokensFrom() {
     return vxm.bancor.tokens.filter(
-      token =>
-        token.tradeSupported &&
-        (token.limitOrderAvailable || token.id === ethReserveAddress)
+      token => token.limitOrderAvailable || token.id === ethReserveAddress
     );
   }
 
   get tokensTo() {
     return vxm.bancor.tokens.filter(
-      token =>
-        token.tradeSupported &&
-        token.limitOrderAvailable &&
-        token.id !== ethReserveAddress
+      token => token.tradeSupported && token.limitOrderAvailable
     );
   }
 
@@ -327,6 +391,30 @@ export default class SwapLimit extends BaseTxAction {
   get swapButtonLabel() {
     if (!this.amount1) return i18n.t("enter_amount");
     else return i18n.t("swap");
+  }
+
+  get durationTimer() {
+    return durationTimer(this.selectedDuration);
+  }
+
+  get modalTitle() {
+    if (this.isDepositingWeth) return "Confirm WETH deposit";
+    else return this.$t("modal.limit_order.title");
+  }
+
+  get modalIcon() {
+    if (this.isDepositingWeth) return "arrow-to-bottom";
+    else return "file-alt";
+  }
+
+  setPercentage(index: number) {
+    this.selectedPercentage = index;
+    this.custom = "";
+    this.changeLimitRateByPercentage();
+  }
+
+  setCustomPercentage() {
+    this.changeLimitRateByPercentage(this.custom ? true : false);
   }
 
   formatDuration(duration: plugin.Duration) {
@@ -387,25 +475,11 @@ export default class SwapLimit extends BaseTxAction {
 
   isDepositingWeth = false;
 
-  async initWethDeposit(amount: string) {
-    this.isDepositingWeth = true;
-    try {
-      const success = await vxm.ethBancor.depositWeth({
-        decAmount: amount,
-        onPrompt: this.onPrompt
-      });
-    } catch (e) {
-      throw e;
-    } finally {
-      this.isDepositingWeth = false;
-    }
-  }
-
   async initSwap() {
-    console.log("init Limit Swap");
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
+    this.isDepositingWeth = false;
 
     const fromViewAmount = {
       id: this.token1.id,
@@ -415,22 +489,19 @@ export default class SwapLimit extends BaseTxAction {
     try {
       const fromIsEth = ethReserveAddress === fromViewAmount.id;
       if (fromIsEth) {
-        console.log("1 from is eth");
         this.isDepositingWeth = true;
         const success = await vxm.ethBancor.depositWeth({
           decAmount: fromViewAmount.amount,
           onPrompt: this.onPrompt
         });
-        console.log("2 deposit success", success);
         this.isDepositingWeth = false;
       }
 
       const correctedFrom: ViewAmount = fromIsEth
         ? { id: wethTokenContractAddress, amount: fromViewAmount.amount }
         : fromViewAmount;
-      console.log("3 init actual swap");
 
-      const success = await vxm.ethBancor.createOrder({
+      await vxm.ethBancor.createOrder({
         from: correctedFrom,
         to: {
           id: this.token2.id,
@@ -440,7 +511,6 @@ export default class SwapLimit extends BaseTxAction {
         onPrompt: this.onPrompt
       });
       this.txMeta.showTxModal = false;
-      console.log("4 Swap succuess");
       addNotification({
         title: this.$tc("notifications.add.swap.title"),
         description: this.$tc("notifications.add.swap.description", 0, {
@@ -453,10 +523,8 @@ export default class SwapLimit extends BaseTxAction {
       });
       this.setDefault();
     } catch (e) {
-      console.log("5 Swap error");
       this.txMeta.txError = e.message;
     } finally {
-      console.log("6 Swap finally");
       this.txMeta.txBusy = false;
       this.isDepositingWeth = false;
     }
@@ -467,10 +535,9 @@ export default class SwapLimit extends BaseTxAction {
       this.setDefault();
       return;
     }
-    const fromId =
-      this.token1.id === wethTokenContractAddress
-        ? ethReserveAddress
-        : this.token1.id;
+    const fromId = compareString(this.token1.id, wethTokenContractAddress)
+      ? ethReserveAddress
+      : this.token1.id;
     try {
       this.rateLoading = true;
       const reward = await vxm.bancor.getReturn({
@@ -499,58 +566,96 @@ export default class SwapLimit extends BaseTxAction {
   }
 
   calcAmount1() {
-    this.amount1 = new BigNumber(this.amount2)
-      .div(new BigNumber(this.limitRate))
-      .toString();
+    if (this.amount2 && this.limitRate)
+      this.amount1 = new BigNumber(this.amount2)
+        .div(new BigNumber(this.limitRate))
+        .toString();
   }
   calcAmount2() {
-    this.amount2 = new BigNumber(this.amount1)
-      .times(new BigNumber(this.limitRate))
-      .toString();
+    if (this.amount1 && this.limitRate)
+      this.amount2 = new BigNumber(this.amount1)
+        .times(new BigNumber(this.limitRate))
+        .toString();
   }
   calcLimitRate() {
-    this.limitRate = new BigNumber(this.amount2)
-      .div(new BigNumber(this.amount1))
-      .toString();
+    if (this.amount1 && this.amount2) {
+      this.limitRate = new BigNumber(this.amount2)
+        .div(new BigNumber(this.amount1))
+        .toString();
+      this.changePercentageByLimitRate();
+    }
   }
 
   amount1CalcField() {
-    if (this.amount1) {
-      if (this.amount2) {
-        if (this.userSettedRate) this.calcAmount2();
-        else this.calcLimitRate();
-      } else if (this.limitRate) this.calcAmount2();
+    if (this.amount1 && this.changedFields.length !== 0) {
+      const lastChangedField = this.getLastChangedField(1);
+      if (lastChangedField === 3) this.calcAmount2();
+      else if (lastChangedField === 2) this.calcLimitRate();
     }
-    this.amount1LastChanged = true;
     this.checkAlerts();
   }
 
   amount2CalcField() {
-    if (this.amount2) {
-      if (this.amount1)
-        if (this.userSettedRate) this.calcAmount1();
-        else this.calcLimitRate();
-      else if (this.limitRate) this.calcAmount1();
+    if (this.amount2 && this.changedFields.length !== 0) {
+      const lastChangedField = this.getLastChangedField(2);
+      if (lastChangedField === 3) this.calcAmount1();
+      else if (lastChangedField === 1) this.calcLimitRate();
     }
-    this.amount1LastChanged = false;
     this.checkAlerts();
   }
 
   rateCalcField() {
-    if (this.limitRate) {
-      this.userSettedRate = true;
-      if (this.amount1 && this.amount1LastChanged) this.calcAmount2();
-      else if (this.amount2 && !this.amount1LastChanged) this.calcAmount1();
-    } else this.userSettedRate = false;
+    if (this.limitRate && this.changedFields.length !== 0) {
+      const lastChangedField = this.getLastChangedField(3);
+      if (lastChangedField === 2) this.calcAmount1();
+      else if (lastChangedField === 1) this.calcAmount2();
+    }
+    this.changePercentageByLimitRate();
+  }
+
+  setlastChangedField(field: number, txt: string) {
+    this.changedFields = this.changedFields.filter(x => x !== field);
+    if (txt) this.changedFields.push(field);
+  }
+
+  getLastChangedField(field: number) {
+    let lastChangedField = this.changedFields[this.changedFields.length - 1];
+    if (lastChangedField === field && this.changedFields.length > 1)
+      lastChangedField = this.changedFields[this.changedFields.length - 2];
+    return lastChangedField;
+  }
+
+  changeLimitRateByPercentage(custom: boolean = false) {
+    const percentage = custom
+      ? Number(this.custom) / 100
+      : Number(this.percentages[this.selectedPercentage]) / 100;
+    this.limitRate = (Number(this.initialRate) * (1 + percentage)).toString();
+    this.setlastChangedField(3, this.limitRate);
+    this.changePercentageByLimitRate();
+    this.rateCalcField();
+    this.checkAlerts();
+  }
+
+  changePercentageByLimitRate() {
+    const percentage = calculatePercentageChange(
+      Number(this.limitRate),
+      Number(this.initialRate)
+    );
+    const index = this.percentages.indexOf(percentage);
+    if (index === -1) this.custom = percentage.toString();
+    else this.selectedPercentage = index;
     this.checkAlerts();
   }
 
   async calculateRate() {
     this.rateLoading = true;
+    const fromId = compareString(this.token1.id, wethTokenContractAddress)
+      ? ethReserveAddress
+      : this.token1.id;
     try {
       const rate = await vxm.bancor.getReturn({
         from: {
-          id: this.token1.id,
+          id: fromId,
           amount: "1"
         },
         toId: this.token2.id
@@ -624,9 +729,9 @@ export default class SwapLimit extends BaseTxAction {
     } catch (e) {
       this.token2 = vxm.bancor.tokens[1];
     }
-    this.checkAlerts();
     await this.updatePriceReturn(this.amount1);
     await this.calculateRate();
+    this.changeLimitRateByPercentage();
   }
 
   async mounted() {
@@ -643,10 +748,6 @@ export default class SwapLimit extends BaseTxAction {
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
       await this.$router.replace({ name: "SwapLimit", query: defaultQuery });
     }
-    [this.keeperDaoList] = await Promise.all([
-      getTokenList(),
-      this.calculateRate()
-    ]);
   }
 }
 </script>

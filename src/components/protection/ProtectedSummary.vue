@@ -23,7 +23,7 @@
             <div class="font-size-14 font-w600 text-primary">
               {{ item.value }}
             </div>
-            <div class="text-uppercase font-size-10 font-w500">
+            <div class="font-size-14 font-w400">
               {{ item.key }}
             </div>
           </b-col>

@@ -1,6 +1,7 @@
 <template>
   <div>
     <b-btn
+      v-if="orders.length > 0"
       @click="cancelAll()"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       size="sm"
@@ -49,7 +50,7 @@
         >
           {{
             $t("modal.limit_order.info_text", {
-              timer: "?????"
+              timer: durationTimer
             })
           }}
         </p>
@@ -70,6 +71,8 @@ import {
   addNotification,
   ENotificationStatus
 } from "@/components/compositions/notifications";
+import { durationTimer } from "@/api/helpers";
+import dayjs from "dayjs";
 
 @Component({
   components: {
@@ -92,6 +95,13 @@ export default class CancelLimitOrder extends BaseTxAction {
     return this.limitOrder
       ? this.$t("modal.cancel_order.description")
       : this.$t("modal.cancel_all_orders.description");
+  }
+
+  get durationTimer() {
+    if (!this.limitOrder) return "n/a";
+    const expiryTime = dayjs.unix(this.limitOrder.expiryTime);
+    const duration = dayjs.duration(expiryTime.diff(dayjs()));
+    return durationTimer(duration);
   }
 
   get rate() {
@@ -140,6 +150,10 @@ export default class CancelLimitOrder extends BaseTxAction {
     }
   }
 
+  get orders() {
+    return vxm.ethBancor.limitOrders;
+  }
+
   async cancelAll() {
     this.limitOrder = null;
     this.openModal();
@@ -147,7 +161,7 @@ export default class CancelLimitOrder extends BaseTxAction {
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
 
-    const orderIds = vxm.ethBancor.limitOrders.map(x => x.id);
+    const orderIds = this.orders.map(x => x.id);
     try {
       this.txMeta.success = await vxm.ethBancor.cancelOrders({
         orderIds,

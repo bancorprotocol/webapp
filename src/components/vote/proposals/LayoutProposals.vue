@@ -95,7 +95,6 @@
             :class="darkMode ? 'divider-dark' : 'divider-light'"
           />
         </template>
-
       </b-row>
     </b-container>
 
@@ -111,7 +110,7 @@
 <script lang="ts">
 import { Component, Prop, Watch } from "vue-property-decorator";
 import TablePagination from "@/components/common/TablePagination.vue";
-import sort from "fast-sort";
+import { sort } from "fast-sort";
 import { defaultTableSort } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import { TableItem, ViewProposalsField } from "@/types/bancor";
@@ -216,7 +215,6 @@ export default class LayoutProposals extends BaseComponent {
   font-size: 12px;
   font-weight: 500;
   padding: 0.75rem;
-  text-transform: uppercase;
 
   &-light {
     background-color: #f7f9fc;

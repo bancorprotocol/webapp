@@ -1,7 +1,7 @@
 <template>
   <div>
     <label-content-split :label="label" class="mb-1">
-      <div v-if="currentUser" class="d-flex flex-row font-size-12 font-w500">
+      <div v-if="currentUser" class="d-flex flex-row font-size-14 font-w400">
         <div @click="maxBalance" class="cursor">
           {{ `${$t("balance")}: ${prettifyNumber(balance)}` }}
         </div>
@@ -17,8 +17,9 @@
 
     <b-input-group>
       <b-form-input
-        type="text"
         v-model="tokenAmount"
+        @blur.native="blur"
+        inputmode="decimal"
         style="border-right: 0 !important"
         :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
         :placeholder="$t('enter_amount')"
@@ -121,6 +122,7 @@ export default class TokenInputField extends BaseComponent {
   @Prop() tokens!: ViewModalToken[];
   @Prop() pools!: ViewRelay[];
   @Prop({ default: false }) allowTokenAdd!: boolean;
+  @Prop() blurFunc?: Function;
 
   get dropdown() {
     return (
@@ -154,6 +156,10 @@ export default class TokenInputField extends BaseComponent {
     } else {
       this.tokenAmount = this.balance;
     }
+  }
+
+  blur() {
+    if (this.blurFunc) this.blurFunc();
   }
 
   formatter(text: String) {

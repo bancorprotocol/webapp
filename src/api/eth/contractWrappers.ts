@@ -1,4 +1,4 @@
-import { fromPairs, toPairs, uniqWith } from "lodash";
+import { chunk, fromPairs, toPairs, uniqWith } from "lodash";
 import { EthNetworks, getWeb3, web3 } from "@/api/web3";
 import Web3 from "web3";
 import { MultiCall } from "eth-multicall";
@@ -6,33 +6,33 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   PoolHistoricBalance,
-  PoolLiqMiningApr,
   PositionReturn,
   ProtectedLiquidity,
   RawLiquidityProtectionSettings,
   RegisteredContracts,
-  TimeScale
+  RemoveLiquidityReturn,
+  TimeScale,
+  WeiExtendedAsset
 } from "@/types/bancor";
 import { asciiToHex } from "web3-utils";
 import dayjs from "dayjs";
 import BigNumber from "bignumber.js";
 import {
-  buildTokenContract,
-  buildNetworkContract,
-  buildV2Converter,
-  buildRegistryContract,
-  buildLiquidityProtectionContract,
   buildAddressLookupContract,
-  buildLiquidityProtectionStoreContract,
+  buildConverterContract,
+  buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
+  buildLiquidityProtectionStoreContract,
+  buildNetworkContract,
+  buildRegistryContract,
   buildStakingRewardsContract,
-  buildConverterContract
+  buildTokenContract,
+  buildV2Converter
 } from "./contractTypes";
 import {
   compareString,
   findOrThrow,
   LockedBalance,
-  RelayWithReserveBalances,
   rewindBlocksByDays,
   sortAlongSide,
   traverseLockedBalances,
@@ -197,28 +197,28 @@ const throwIfNotContract = (contractAddress: string) => {
     throw new Error(`${contractAddress} is an invalid contract address`);
 };
 
+// id: "191"
+// ppm: "1000000"
+// protectionContract: "0xeead394A017b8428E2D5a976a054F303F78f3c0C"
+// removeTimestamp: 1650001311
+
 export const getRemoveLiquidityReturn = async (
   protectionContract: string,
   id: string,
   ppm: string,
   removeTimestamp: number,
   web3?: Web3
-) => {
+): Promise<PositionReturn> => {
   throwIfNotContract(protectionContract);
   const contract = buildLiquidityProtectionContract(protectionContract, web3);
 
   const res = await contract.methods
     .removeLiquidityReturn(id, ppm, String(removeTimestamp))
     .call();
-
   const keys = ["targetAmount", "baseAmount", "networkAmount"];
   const pairs = toPairs(res).map(([, value], index) => [keys[index], value]);
 
-  return fromPairs(pairs) as {
-    targetAmount: string;
-    baseAmount: string;
-    networkAmount: string;
-  };
+  return fromPairs(pairs) as PositionReturn;
 
   // targetAmount - expected return amount in the reserve token
   // baseAmount - actual return amount in the reserve token
@@ -273,6 +273,26 @@ export const fetchPositionIds = async (
   }
 };
 
+const mapSeries = async <T, Y>(
+  arr: T[],
+  count: number,
+  iterator: (v: T) => Y
+): Promise<(Y | undefined)[]> => {
+  let res: (Y | undefined)[] = [];
+  const chunked = chunk(arr, count);
+  for (const chunk of chunked) {
+    const response = await Promise.all(chunk.map(iterator)).catch(
+      () => undefined
+    );
+    if (response === undefined) {
+      res = [...res, undefined];
+    } else {
+      res = [...res, ...response];
+    }
+  }
+  return res;
+};
+
 export const fetchPositionsMulti = async (
   positionIds: string[],
   liquidityStore: string
@@ -283,8 +303,8 @@ export const fetchPositionsMulti = async (
 
   // @ts-ignore
   const ethMulti = new MultiCall(web3);
-  const [multiPositions] = await ethMulti.all([positionShapes]);
 
+  const contract = buildLiquidityProtectionStoreContract(liquidityStore);
   const keys = [
     "owner",
     "poolToken",
@@ -297,15 +317,31 @@ export const fetchPositionsMulti = async (
     "id"
   ];
 
-  const protectedLiquidity = multiPositions
-    // @ts-ignore
-    .map(res => ({ ...res.position, "8": res.positionId }))
-    // @ts-ignore
-    .map(res =>
+  try {
+    const [multiPositions] = await ethMulti.all([positionShapes]);
+
+    const protectedLiquidity = multiPositions
+      // @ts-ignore
+      .map(res => ({ ...res.position, "8": res.positionId }))
+      // @ts-ignore
+      .map(res =>
+        fromPairs(keys.map((key, index) => [key, res[index]]))
+      ) as ProtectedLiquidity[];
+
+    return protectedLiquidity.filter(pos => typeof pos.owner == "string");
+  } catch (e) {
+    const response = await mapSeries(positionIds, 3, async id => {
+      const raw = await contract.methods.protectedLiquidity(id).call();
+      return { ...raw, "8": id };
+    });
+
+    const protectedLiquidity = response.filter(Boolean).map(res =>
+      // @ts-ignore
       fromPairs(keys.map((key, index) => [key, res[index]]))
     ) as ProtectedLiquidity[];
 
-  return protectedLiquidity.filter(pos => typeof pos.owner == "string");
+    return protectedLiquidity;
+  }
 };
 
 export const addLiquidityDisabled = async (
@@ -322,29 +358,22 @@ export const addLiquidityDisabled = async (
 };
 
 export const fetchLiquidityProtectionSettings = async ({
-  settingsContractAddress,
-  protectionContractAddress
+  settingsContractAddress
 }: {
   settingsContractAddress: string;
-  protectionContractAddress: string;
 }) => {
   // @ts-ignore
   const ethMulti = new MultiCall(web3);
 
-  const [[settings], [protection]] = ((await ethMulti.all([
-    [liquidityProtectionSettingsShape(settingsContractAddress)],
-    [liquidityProtectionShape(protectionContractAddress)]
-  ])) as [unknown, unknown]) as [
-    RawLiquidityProtectionSettings[],
-    { govToken: string }[]
-  ];
+  const [[settings]] = ((await ethMulti.all([
+    [liquidityProtectionSettingsShape(settingsContractAddress)]
+  ])) as [unknown]) as [RawLiquidityProtectionSettings[]];
 
   const newSettings = {
     contract: settingsContractAddress,
     minDelay: Number(settings.minProtectionDelay),
     maxDelay: Number(settings.maxProtectionDelay),
     lockedDelay: Number(settings.lockDuration),
-    govToken: protection.govToken,
     networkToken: settings.networkToken,
     defaultNetworkTokenMintingLimit: settings.defaultNetworkTokenMintingLimit
   } as LiquidityProtectionSettings;
@@ -439,13 +468,6 @@ const calculateReturnOnInvestment = (
   return new BigNumber(newReturn).div(investment).minus(1).toString();
 };
 
-interface RemoveLiquidityReturn {
-  positionId: string;
-  fullLiquidityReturn: PositionReturn;
-  currentLiquidityReturn: PositionReturn;
-  roiDec: string;
-}
-
 export const removeLiquidityReturn = async (
   position: ProtectedLiquidity,
   liquidityProtectionContract: string
@@ -471,14 +493,18 @@ export const removeLiquidityReturn = async (
     )
   ]);
 
+  const roiDec =
+    fullLiquidityReturn &&
+    calculateReturnOnInvestment(
+      position.reserveAmount,
+      fullLiquidityReturn.targetAmount
+    );
+
   return {
     positionId: position.id,
     fullLiquidityReturn,
     currentLiquidityReturn,
-    roiDec: calculateReturnOnInvestment(
-      position.reserveAmount,
-      fullLiquidityReturn.targetAmount
-    )
+    roiDec
   };
 };
 
@@ -511,7 +537,7 @@ export const pendingRewardRewards = async (
 export const fetchRelayReserveBalances = async (
   pool: MinimalPool,
   blockHeight?: number
-) => {
+): Promise<WeiExtendedAsset[]> => {
   const contract = buildConverterContract(pool.converterAddress);
   return Promise.all(
     pool.reserves.map(async reserve => ({
@@ -531,22 +557,59 @@ export const fetchTokenSupply = async (
   return smartTokenContract.methods.totalSupply().call(undefined, blockHeight);
 };
 
+export const fetchPoolOwner = async (anchor: string, blockHeight?: number) => {
+  const contract = buildTokenContract(anchor);
+  return contract.methods.owner().call(undefined, blockHeight);
+};
+
 export const fetchHistoricBalances = async (
   timeScales: TimeScale[],
   pools: MinimalPool[]
-) => {
+): Promise<PoolHistoricBalance[]> => {
   const atLeastOneAnchorAndScale = timeScales.length > 0 && pools.length > 0;
   if (!atLeastOneAnchorAndScale)
     throw new Error("Must pass at least one time scale and anchor");
-  return Promise.all(
+  const res = await Promise.all(
     timeScales.map(scale =>
       Promise.all(
         pools.map(async pool => {
           const blockHeight = scale.blockHeight;
-          const [smartTokenSupply, reserveBalances] = await Promise.all([
-            fetchTokenSupply(pool.anchorAddress, blockHeight),
-            fetchRelayReserveBalances(pool, blockHeight)
-          ]);
+          let smartTokenSupply;
+          try {
+            smartTokenSupply = await fetchTokenSupply(
+              pool.anchorAddress,
+              blockHeight
+            );
+          } catch (e) {
+            console.error("Failed to fetch token supply.", e);
+          }
+
+          let reserveBalances;
+          try {
+            reserveBalances = await fetchRelayReserveBalances(
+              pool,
+              blockHeight
+            );
+          } catch (e) {
+            console.log("trying to fetch previous owner..");
+            try {
+              const previousOwner = await fetchPoolOwner(
+                pool.anchorAddress,
+                blockHeight
+              );
+
+              const oldPool: MinimalPool = {
+                ...pool,
+                converterAddress: previousOwner
+              };
+              reserveBalances = await fetchRelayReserveBalances(
+                oldPool,
+                blockHeight
+              );
+            } catch (e) {
+              console.error("Failed to fetch Relay Reserve Balances.", e, pool);
+            }
+          }
           return {
             scale,
             pool,
@@ -556,6 +619,10 @@ export const fetchHistoricBalances = async (
         })
       )
     )
+  );
+  // @ts-ignore
+  return res.map(scaleSet =>
+    scaleSet.filter(set => set.reserveBalances && set.smartTokenSupply)
   );
 };
 
@@ -568,37 +635,56 @@ export const getPoolAprs = async (
     const res = await Promise.all(
       positions.map(position =>
         Promise.all(
-          historicBalances.map(async historicBalance => {
-            const poolTokenSupply = historicBalance.smartTokenSupply;
+          historicBalances
+            .filter(historicBalance =>
+              compareString(
+                historicBalance.pool.anchorAddress,
+                position.poolToken
+              )
+            )
+            .map(async historicBalance => {
+              const poolTokenSupply = historicBalance.smartTokenSupply;
 
-            const [
-              tknReserveBalance,
-              opposingTknBalance
-            ] = sortAlongSide(
-              historicBalance.reserveBalances,
-              balance => balance.contract,
-              [position.reserveToken]
-            );
+              const [
+                tknReserveBalance,
+                opposingTknBalance
+              ] = sortAlongSide(
+                historicBalance.reserveBalances,
+                balance => balance.contract,
+                [position.reserveToken]
+              );
 
-            const poolToken = position.poolToken;
-            const reserveToken = position.reserveToken;
-            const reserveAmount = position.reserveAmount;
-            const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
-              .times(2)
-              .toString();
-            const poolRateD = poolTokenSupply;
+              const poolToken = position.poolToken;
+              const reserveToken = position.reserveToken;
+              const reserveAmount = position.reserveAmount;
+              const poolRateN = new BigNumber(tknReserveBalance.weiAmount)
+                .times(2)
+                .toString();
+              const poolRateD = poolTokenSupply;
 
-            const reserveRateN = opposingTknBalance.weiAmount;
-            const reserveRateD = tknReserveBalance.weiAmount;
+              const reserveRateN = opposingTknBalance.weiAmount;
+              const reserveRateD = tknReserveBalance.weiAmount;
 
-            let poolRoi = "";
-            const lpContract = buildLiquidityProtectionContract(
-              liquidityProtectionContract
-            );
+              let poolRoi = "";
+              const lpContract = buildLiquidityProtectionContract(
+                liquidityProtectionContract
+              );
 
-            try {
-              poolRoi = await lpContract.methods
-                .poolROI(
+              try {
+                poolRoi = await lpContract.methods
+                  .poolROI(
+                    poolToken,
+                    reserveToken,
+                    reserveAmount,
+                    poolRateN,
+                    poolRateD,
+                    reserveRateN,
+                    reserveRateD
+                  )
+                  .call();
+              } catch (err) {
+                console.error("getting pool roi failed!", err, {
+                  address: liquidityProtectionContract,
                   poolToken,
                   reserveToken,
                   reserveAmount,
@@ -606,42 +692,30 @@ export const getPoolAprs = async (
                   poolRateD,
                   reserveRateN,
                   reserveRateD
-                )
-                .call();
-            } catch (err) {
-              console.error("getting pool roi failed!", err, {
-                address: liquidityProtectionContract,
-                poolToken,
-                reserveToken,
-                reserveAmount,
-                poolRateN,
-                poolRateD,
-                reserveRateN,
-                reserveRateD
-              });
-            }
+                });
+              }
 
-            const scale = historicBalance.scale;
-            const magnitude =
-              scale.label == "day"
-                ? 365
-                : scale.label == "week"
-                ? 52
-                : 365 / scale.days;
+              const scale = historicBalance.scale;
+              const magnitude =
+                scale.label == "day"
+                  ? 365
+                  : scale.label == "week"
+                  ? 52
+                  : 365 / scale.days;
 
-            const calculatedAprDec = new BigNumber(poolRoi)
-              .div(1000000)
-              .minus(1)
-              .times(magnitude);
+              const calculatedAprDec = new BigNumber(poolRoi)
+                .div(1000000)
+                .minus(1)
+                .times(magnitude);
 
-            return {
-              calculatedAprDec: calculatedAprDec.isNegative()
-                ? "0"
-                : calculatedAprDec.toString(),
-              positionId: position.id,
-              scaleId: historicBalance.scale.label
-            };
-          })
+              return {
+                calculatedAprDec: calculatedAprDec.isNegative()
+                  ? "0"
+                  : calculatedAprDec.toString(),
+                positionId: position.id,
+                scaleId: historicBalance.scale.label
+              };
+            })
         )
       )
     );
@@ -671,6 +745,7 @@ export const getHistoricBalances = async (
   const relevantPools = pools.filter(pool =>
     uniqueAnchors.some(anchor => compareString(pool.anchorAddress, anchor))
   );
+  // @ts-ignore
   return fetchHistoricBalances(timeScales, relevantPools);
 };
 

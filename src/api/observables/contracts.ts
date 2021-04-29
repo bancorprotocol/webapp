@@ -9,16 +9,13 @@ import {
 } from "./customOperators";
 import { networkVars$, networkVersion$ } from "./network";
 import { vxm } from "@/store";
-import {
-  distinctUntilChanged,
-  pluck,
-  share,
-  shareReplay,
-  tap
-} from "rxjs/operators";
+import { distinctUntilChanged, pluck, shareReplay, tap } from "rxjs/operators";
 import { RegisteredContracts } from "@/types/bancor";
 import { isEqual } from "lodash";
 import { getContractAddressesForChainOrThrow } from "@0x/contract-addresses";
+import { buildLiquidityProtectionContract } from "../eth/contractTypes";
+import { compareString } from "../helpers";
+import { combineLatest, timer } from "rxjs";
 
 const zeroXContracts$ = networkVersion$.pipe(
   switchMapIgnoreThrow(async networkVersion =>
@@ -33,6 +30,7 @@ export const exchangeProxy$ = zeroXContracts$.pipe(
 
 export const contractAddresses$ = networkVars$.pipe(
   switchMapIgnoreThrow(networkVariables => {
+    console.log(networkVariables.contractRegistry, "contract registry");
     return fetchContractAddresses(networkVariables.contractRegistry).catch(() =>
       vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
     );
@@ -52,16 +50,20 @@ export const liquidityProtection$ = contractAddresses$.pipe(
   shareReplay(1)
 );
 
-export const liquidityProtectionStore$ = contractAddresses$.pipe(
-  pluck("LiquidityProtectionStore"),
-  optimisticContract("LiquidityProtectionStore"),
+export const liquidityProtectionStore$ = liquidityProtection$.pipe(
+  switchMapIgnoreThrow(liquidityProtection => {
+    const contract = buildLiquidityProtectionContract(liquidityProtection);
+    return contract.methods.store().call();
+  }),
+  distinctUntilChanged(compareString),
+  logger("store"),
   shareReplay(1)
 );
 
 export const bancorConverterRegistry$ = contractAddresses$.pipe(
   pluck("BancorConverterRegistry"),
   optimisticContract("BancorConverterRegistry"),
-  share()
+  shareReplay(1)
 );
 
 export const stakingRewards$ = contractAddresses$.pipe(
@@ -78,3 +80,14 @@ export const settingsContractAddress$ = liquidityProtection$.pipe(
   logger("logger liquidity settings"),
   shareReplay<string>(1)
 );
+
+export const govTokenAddress$ = networkVars$.pipe(
+  pluck("govToken"),
+  shareReplay(1)
+);
+
+const vxmTimer$ = timer(2000);
+
+combineLatest([govTokenAddress$, vxmTimer$]).subscribe(([govToken]) => {
+  vxm.ethBancor.fetchAndSetTokenBalances([govToken]);
+});

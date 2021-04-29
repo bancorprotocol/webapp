@@ -139,6 +139,7 @@ export class RewardsModule extends VuexModule.With({
 
   @action async loadData() {
     try {
+      await wait(1000);
       await this.fetchPoolPrograms();
       await this.fetchAndSetPendingRewards();
       await this.fetchAndSetTotalClaimedRewards();

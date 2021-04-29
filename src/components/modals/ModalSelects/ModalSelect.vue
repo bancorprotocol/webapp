@@ -11,7 +11,7 @@
       <b-row>
         <b-col cols="12">
           <span
-            class="text-uppercase font-w500 font-size-12"
+            class="font-w500 font-size-12"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             {{ subtitle }}

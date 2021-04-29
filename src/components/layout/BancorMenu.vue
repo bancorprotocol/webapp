@@ -13,7 +13,7 @@
     </template>
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
-      <b-dropdown-header class="text-uppercase">Bancor</b-dropdown-header>
+      <b-dropdown-header>Bancor</b-dropdown-header>
       <b-dropdown-item style="width: 230px" disabled>
         <font-awesome-icon icon="info" class="mr-2" fixed-width />
         {{ $t("about") }}
@@ -21,9 +21,7 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group v-if="false" id="dropdown-group-2">
-      <b-dropdown-header class="text-uppercase">{{
-        $t("apps")
-      }}</b-dropdown-header>
+      <b-dropdown-header>{{ $t("apps") }}</b-dropdown-header>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
           <img
@@ -76,7 +74,9 @@
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
       <b-dropdown-header>
-        {{ $t("community_support") }}
+        <div class="font-size-16">
+          {{ $t("community_support") }}
+        </div>
       </b-dropdown-header>
       <b-dropdown-item
         @click="openUrl('https://twitter.com/Bancor')"
@@ -138,7 +138,9 @@
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
       <b-dropdown-header>
-        {{ $t("developers") }}
+        <div class="font-size-16">
+          {{ $t("developers") }}
+        </div>
       </b-dropdown-header>
       <b-dropdown-text>
         <div
@@ -167,16 +169,18 @@
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-group id="dropdown-group-5" class="font-size-12">
+    <b-dropdown-group id="dropdown-group-5" class="font-size-14">
       <b-dropdown-item
         @click="navPrivacy"
         :variant="darkMode ? 'dark' : 'light'"
+        class="font-size-16"
       >
         {{ $t("privacy_policy") }}
       </b-dropdown-item>
       <b-dropdown-item
         @click="navTermsOfUse"
         :variant="darkMode ? 'dark' : 'light'"
+        class="font-size-16"
       >
         {{ $t("terms_of_use") }}
       </b-dropdown-item>
@@ -188,21 +192,17 @@
 import { Component } from "vue-property-decorator";
 import { vxm } from "@/store";
 import BaseComponent from "@/components/BaseComponent.vue";
-
 @Component
 export default class BancorMenu extends BaseComponent {
   get isDataPage() {
     return this.$route.fullPath.includes("data");
   }
-
   navData() {
     const hostbase = window.location.hostname;
     const service = this.$route.params.service;
-
     const isDev = hostbase == "localhost";
     const isStaging = hostbase.includes("staging");
     const isProd = !isDev && !isStaging;
-
     if (isDev) {
       this.openUrl(`http://localhost:8080/${service}/data`);
     } else if (isStaging) {
@@ -213,24 +213,19 @@ export default class BancorMenu extends BaseComponent {
       this.openUrl(`https://swap.bancor.network/${service}/data`);
     }
   }
-
   navSwap() {
     let routeData = this.$router.resolve({ name: "Swap" });
     this.openUrl(routeData.href);
   }
-
   navPrivacy() {
     this.$router.push({ name: "PrivacyPolicy" });
   }
-
   navTermsOfUse() {
     this.$router.push({ name: "TermsOfUse" });
   }
-
   openUrl(url: string) {
     window.open(url, "_blank");
   }
-
   toggleDarkMode() {
     vxm.general.toggleDarkMode();
   }

@@ -46,8 +46,6 @@
   font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1.75;
-  text-transform: uppercase;
-  letter-spacing: 0.0625rem;
 
   small {
     font-size: 1rem;
@@ -89,6 +87,19 @@
   &.block-bordered {
     border: 1px solid $body-bg-dark;
     box-shadow: none;
+  }
+  &.block-rounded-tabs {
+    border-radius: 0 $border-radius $border-radius $border-radius !important;
+
+    > .block-content {
+      &:first-child {
+        @include border-top-radius($border-radius-sm);
+      }
+
+      &:last-child {
+        @include border-bottom-radius($border-radius-sm);
+      }
+    }
   }
 
   &.block-rounded {

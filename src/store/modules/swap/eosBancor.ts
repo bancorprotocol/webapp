@@ -1490,21 +1490,19 @@ export class EosBancorModule
   }
 
   @action async pullEvents() {
-    try {
-      const results = await past24HourTrades();
-
-      const timeNow = dayjs();
-      const oneDay = dayjs.duration(1, "day");
-      const yesterday = timeNow.subtract(oneDay);
-      const withinPastDay = results.filter(result =>
-        dayjs(result.block.timestamp).isSameOrAfter(yesterday)
-      );
-
-      this.setLiquidityHistory(withinPastDay);
-    } catch (error) {
-      console.error("An error occurred in fetching transaction history", error);
-      this.setLiquidityHistoryError(error.message as string);
-    }
+    // try {
+    //   const results = await past24HourTrades();
+    //   const timeNow = dayjs();
+    //   const oneDay = dayjs.duration(1, "day");
+    //   const yesterday = timeNow.subtract(oneDay);
+    //   const withinPastDay = results.filter(result =>
+    //     dayjs(result.block.timestamp).isSameOrAfter(yesterday)
+    //   );
+    //   this.setLiquidityHistory(withinPastDay);
+    // } catch (error) {
+    //   console.error("An error occurred in fetching transaction history", error);
+    //   this.setLiquidityHistoryError(error.message as string);
+    // }
   }
 
   @action async init(param?: ModuleParam) {

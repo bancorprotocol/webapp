@@ -31,12 +31,13 @@ import { removeLeadingZeros, shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
-import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
 import { authenticatedReceiver$ } from "./observables/auth";
 import { EthNetworks, getAlchemyUrl, getInfuraAddress, web3 } from "@/api/web3";
 import { i18n } from "@/i18n";
+import { Duration } from "dayjs/plugin/duration";
+import { Dayjs } from "dayjs";
 
 export enum PositionType {
   single,
@@ -258,7 +259,10 @@ export const calculatePercentageChange = (
   return Number(((numberNow / numberBefore - 1) * 100).toFixed(2));
 };
 
-export const compareString = (stringOne: string, stringTwo: string) => {
+export const compareString = (
+  stringOne: string,
+  stringTwo: string
+): boolean => {
   const strings = [stringOne, stringTwo];
   if (!strings.every(str => typeof str == "string"))
     throw new Error(
@@ -724,13 +728,19 @@ export const calculatePercentIncrease = (
   return profit.div(small).toString();
 };
 
+const walletChecks = [
+  { checkName: "derivationPath" },
+  { checkName: "accounts" },
+  { checkName: "connect" },
+  { checkName: "network" }
+];
+
 export const onboard = Onboard({
   dappId: process.env.VUE_APP_BLOCKNATIVE,
   networkId: 1,
   hideBranding: true,
   subscriptions: {
     address: address => {
-      vxm.ethWallet.accountChange(address);
       authenticatedReceiver$.next(address);
     },
     balance: balance => vxm.ethWallet.nativeBalanceChange(balance),
@@ -749,7 +759,8 @@ export const onboard = Onboard({
   },
   walletSelect: {
     wallets
-  }
+  },
+  walletCheck: walletChecks
 });
 
 export const fetchReserveBalance = async (
@@ -895,7 +906,7 @@ export interface PoolToken {
 }
 
 interface LiqDepth {
-  liqDepth: number;
+  liqDepth?: number;
 }
 
 export const assetToDecNumberString = (asset: Asset): string =>
@@ -907,6 +918,9 @@ export const decNumberStringToAsset = (
 ): Asset => new Asset(`${decNumberString} ${symbolName}`);
 
 export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
+  if (a.liqDepth == undefined && b.liqDepth == undefined) return 0;
+  if (a.liqDepth == undefined) return 1;
+  if (b.liqDepth == undefined) return -1;
   if (isNaN(a.liqDepth) && isNaN(b.liqDepth)) return 0;
   if (isNaN(a.liqDepth)) return 1;
   if (isNaN(b.liqDepth)) return -1;
@@ -914,12 +928,6 @@ export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
 };
 
 export const zeroAddress: string = "0x0000000000000000000000000000000000000000";
-
-export const matchReserveFeed = (reserveFeed: ReserveFeed) => (
-  dict: DictionaryItem
-) =>
-  compareString(dict.smartTokenAddress, reserveFeed.poolId) &&
-  compareString(dict.tokenAddress, reserveFeed.reserveAddress);
 
 export const sortAlongSide = <T>(
   arr: readonly T[],
@@ -1306,34 +1314,35 @@ export const formatDuration = (duration: plugin.Duration): string => {
   const days = duration.days();
   const minutes = duration.minutes();
   const hours = duration.hours();
-  if (days > 0) sentence += i18n.tc("days",days);
-  if (hours > 0) sentence += " " + i18n.tc("hours",hours);
-  if (minutes > 0) sentence += " " + i18n.tc("minutes",minutes);
+  if (days > 0) sentence += i18n.tc("days", days);
+  if (hours > 0) sentence += " " + i18n.tc("hours", hours);
+  if (minutes > 0) sentence += " " + i18n.tc("minutes", minutes);
   return sentence;
 };
 
-export const defaultTableSort = (
-  row: TableItem,
-  sortBy: string,
-  sortZero: boolean = false
-) => {
+export const defaultTableSort = (row: TableItem, sortBy: string) => {
   const value = row[sortBy];
-  let isDefined: boolean;
-  if (!sortZero) {
-    isDefined =
-      value !== 0 && value !== "0" && value !== undefined && value !== null;
-  } else {
-    isDefined = value !== undefined && value !== null;
+  if (!value || isNaN(value)) return null;
+  if (isFinite(value)) {
+    const number = new BigNumber(value);
+    const isBigNumber = BigNumber.isBigNumber(number);
+    if (isBigNumber) return number.toNumber();
   }
-  const number = new BigNumber(value);
-  const isBigNumber = BigNumber.isBigNumber(number);
-  if (isBigNumber) {
-    if (isDefined) return number.toNumber();
-    else return null;
-  } else return value;
+
+  return value;
 };
 
 export const generateEtherscanTxLink = (
   txHash: string,
   ropsten: boolean = false
 ): string => `https://${ropsten ? "ropsten." : ""}etherscan.io/tx/${txHash}`;
+
+export const durationTimer = (
+  duration: Duration,
+  start: Dayjs = dayjs(),
+  format: string = "DD[d:]HH[h:]mm[m]"
+): string => {
+  const end = start.add(duration);
+  const result = dayjs.duration(end.diff(start));
+  return result.format(format);
+};

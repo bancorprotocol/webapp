@@ -33,6 +33,12 @@ export interface ProtectedLiquidity {
   timestamp: string;
 }
 
+export interface RemoveLiquidityReturn {
+  positionId: string;
+  fullLiquidityReturn: PositionReturn;
+  currentLiquidityReturn: PositionReturn;
+  roiDec: string;
+}
 export interface PoolHistoricBalance {
   scale: TimeScale;
   pool: MinimalPool;
@@ -328,8 +334,6 @@ export interface ViewReserve {
   logo: string[];
   symbol: string;
   contract: string;
-  balance?: string;
-  reserveWeight: number;
 }
 
 export interface ViewGroupedPositions {
@@ -434,7 +438,6 @@ export interface RawLiquidityProtectionSettings {
   minProtectionDelay: string;
   maxProtectionDelay: string;
   lockDuration: string;
-  govToken: string;
   networkToken: string;
   defaultNetworkTokenMintingLimit: string;
 }
@@ -444,7 +447,6 @@ export interface LiquidityProtectionSettings {
   minDelay: number;
   maxDelay: number;
   lockedDelay: number;
-  govToken: string;
   networkToken: string;
   defaultNetworkTokenMintingLimit: string;
 }
@@ -672,10 +674,6 @@ export interface CreatePoolModule {
   init: (param: ModuleParam) => Promise<void>;
   readonly newPoolTokenChoices: (networkToken: string) => ModalChoice[];
   readonly newNetworkTokenChoices: ModalChoice[];
-}
-
-export interface HistoryModule {
-  fetchHistoryData: (relayId: string) => Promise<any[]>;
 }
 
 export interface FeeParams {

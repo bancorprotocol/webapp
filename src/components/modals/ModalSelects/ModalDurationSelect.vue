@@ -2,7 +2,11 @@
   <modal-base :title="title" v-model="show" size="sm">
     <b-row class="d-flex justify-content-center">
       <b-col cols="12" class="text-center">
-        <font-awesome-icon icon="clock" class="text-primary" size="3x" />
+        <font-awesome-icon
+          :icon="['far', 'clock']"
+          class="icon-primary"
+          size="3x"
+        />
         <div
           :class="darkMode ? 'text-dark' : 'text-light'"
           class="font-size-20 font-w600"
@@ -17,13 +21,13 @@
         </div>
         <div>
           <b-dropdown
-            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            :variant="darkMode ? 'outline-dark' : 'outline-light-alt'"
             toggle-class="block-rounded"
             :menu-class="
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
             "
             cols="6"
-            class="mt-3"
+            class="mt-3 limited-dropdown"
             style="width: 160px"
           >
             <template
@@ -53,13 +57,13 @@
         </div>
         <div>
           <b-dropdown
-            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            :variant="darkMode ? 'outline-dark' : 'outline-light-alt'"
             toggle-class="block-rounded"
             :menu-class="
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
             "
             cols="6"
-            class="mt-3"
+            class="mt-3 limited-dropdown"
             style="width: 160px"
           >
             <template #button-content>
@@ -67,7 +71,7 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 25"
+              v-for="item in 24"
               :key="item"
               @click="changeHours(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"
@@ -85,13 +89,13 @@
         </div>
         <div>
           <b-dropdown
-            :variant="darkMode ? 'outline-dark' : 'outline-light'"
+            :variant="darkMode ? 'outline-dark' : 'outline-light-alt'"
             toggle-class="block-rounded"
             :menu-class="
               darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'
             "
+            class="mt-3 limited-dropdown"
             cols="6"
-            class="mt-3"
             style="width: 160px"
           >
             <template #button-content>
@@ -99,7 +103,7 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 61"
+              v-for="item in 60"
               :key="item"
               @click="changeMinutes(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"
@@ -163,13 +167,17 @@ export default class ModalDurationSelect extends BaseComponent {
   confirm() {
     this.show = false;
     const days: number = this.selectedDays.asDays();
+    const hours: number = this.selectedHours.asHours();
+    const minutes: number = this.selectedMinutes.asMinutes();
+    if (days === 0 && hours === 0 && minutes === 0) return this.initialDuration;
+
     return dayjs.duration({
       days: days,
-      hours: days === 7 ? 0 : this.selectedHours.asHours(),
-      minutes: days === 7 ? 0 : this.selectedMinutes.asMinutes()
+      hours: days === 7 ? 0 : hours,
+      minutes: days === 7 ? 0 : minutes
     });
   }
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style lang="scss"></style>

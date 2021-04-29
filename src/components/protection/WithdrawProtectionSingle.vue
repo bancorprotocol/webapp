@@ -83,31 +83,55 @@
       :disabled="disableActionButton"
     />
 
-    <modal-base
-      :title="$t('you_will_receive')"
-      v-model="modal"
-      @input="setDefault"
+    <modal-tx-action
+      title="Confirm Withdraw"
+      icon="arrow-up"
+      :tx-meta.sync="txMeta"
+      redirect-on-success="Portfolio"
     >
-      <action-modal-status
-        :error="error"
-        :success="success"
-        msg="BNT withdrawals are subject to a 24h lock period before they can be claimed."
-      />
+      <gray-border-block>
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+          v-text="`${percentage}% of your protected position`"
+        />
+        <div
+          v-if="expectedValue"
+          class="font-size-14 font-w500 mb-1"
+          v-text="
+            `~${prettifyNumber(expectedValue.amount)} ${expectedValue.symbol}`
+          "
+        />
+      </gray-border-block>
+      <div class="mt-3" v-if="outputs.length > 1">
+        <span
+          class="font-size-12"
+          :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+        >
+          You will receive
+        </span>
+        <gray-border-block gray-bg="true" class="mt-1">
+          <label-content-split
+            v-for="output in outputs"
+            :label="output.symbol"
+            :key="output.id"
+            :value="prettifyNumber(output.amount)"
+          />
+        </gray-border-block>
+      </div>
 
-      <main-button
-        @click="onModalClick"
-        class="mt-3"
-        :label="modalConfirmButton"
-        :active="true"
-        :large="true"
-        :disabled="txBusy"
-      />
-    </modal-base>
+      <p
+        class="font-size-12 my-3 text-left pl-3"
+        :class="darkMode ? 'text-muted-dark' : 'text-muted'"
+      >
+        {{ outputInfo }}
+      </p>
+    </modal-tx-action>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import { vxm } from "@/store/";
 import { i18n } from "@/i18n";
 import { TxResponse, ViewAmountDetail, ViewRelay } from "@/types/bancor";
@@ -123,9 +147,11 @@ import LogoAmountSymbol from "@/components/common/LogoAmountSymbol.vue";
 import BigNumber from "bignumber.js";
 import BaseTxAction from "@/components/BaseTxAction.vue";
 import { addNotification } from "@/components/compositions/notifications";
+import ModalTxAction from "@/components/modals/ModalTxAction.vue";
 
 @Component({
   components: {
+    ModalTxAction,
     LogoAmountSymbol,
     ActionModalStatus,
     ModalBase,
@@ -230,32 +256,29 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
   }
 
   async initAction() {
-    this.setDefault();
-    this.modal = true;
-    this.txBusy = true;
-    const [poolId, first, second] = this.$route.params.id.split(":");
-
+    this.openModal();
+    if (this.txMeta.txBusy) return;
+    this.txMeta.txBusy = true;
     try {
-      const txRes = await vxm.ethBancor.removeProtection({
+      this.txMeta.success = await vxm.ethBancor.removeProtection({
         decPercent: Number(this.percentage) / 100,
         id: this.position.id,
         onPrompt: this.onPrompt
       });
-      this.success = txRes;
       this.txMeta.showTxModal = false;
       addNotification({
-        title: this.$tc("notifications.add.unstake.title"),
-        description: this.$tc("notifications.add.unstake.description", 0, {
-          amount: this.prettifyNumber(this.expectedValue!.amount),
-          symbol: this.expectedValue!.symbol,
-          pool: this.pool.name
-        }),
-        txHash: txRes.txId
+        title: "Withdraw Protection",
+        description: `Withdraw ~${this.prettifyNumber(
+          this.expectedValue!.amount
+        )} ${this.expectedValue!.symbol} from your protected position in pool ${
+          this.pool.name
+        }.`,
+        txHash: this.txMeta.success.txId
       });
     } catch (err) {
-      this.error = err.message;
+      this.txMeta.txError = err.message;
     } finally {
-      this.txBusy = false;
+      this.txMeta.txBusy = false;
     }
   }
 

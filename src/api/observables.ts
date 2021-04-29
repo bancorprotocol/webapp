@@ -2,72 +2,71 @@ import { fromPairs, isEqual, uniqWith } from "lodash";
 import { Subject, combineLatest, merge, Observable } from "rxjs";
 import {
   distinctUntilChanged,
+  filter,
   map,
-  startWith,
-  shareReplay,
   pluck,
   share,
-  withLatestFrom,
-  switchMap,
+  shareReplay,
+  startWith,
   throttleTime,
-  tap
+  withLatestFrom
 } from "rxjs/operators";
 import dayjs from "dayjs";
 import { vxm } from "@/store";
-import { EthNetworks, web3 } from "./web3";
+import { EthNetworks } from "./web3";
 import { NewPool, TokenMetaWithReserve } from "./eth/bancorApi";
 import { ppmToDec, Balance } from "@/store/modules/swap/ethBancor";
 import { getNetworkVariables } from "./config";
 import {
-  compareString,
-  findOrThrow,
-  calculateProgressLevel,
   calculatePercentIncrease,
+  calculateProgressLevel,
   sortAlongSide,
   buildPoolNameFromReserves,
-  updateArray
+  updateArray,
+  compareString,
+  findOrThrow
 } from "./helpers";
 import {
   buildStakingRewardsContract,
   buildTokenContract
 } from "./eth/contractTypes";
-import { decToPpm, filterAndWarn } from "./pureHelpers";
+import { decToPpm, expandToken, filterAndWarn } from "./pureHelpers";
 import {
-  ProtectedLiquidityCalculated,
-  ProtectedLiquidity,
-  ViewProtectedLiquidity,
   MinimalPool,
   PoolLiqMiningApr,
+  ProtectedLiquidity,
+  ProtectedLiquidityCalculated,
+  RemoveLiquidityReturn,
+  ViewProtectedLiquidity,
   ViewRelay,
   ViewReserve
 } from "@/types/bancor";
 import {
   fetchLiquidityProtectionSettings,
+  fetchLockedBalances,
   fetchMinLiqForMinting,
+  fetchPoolLiqMiningApr,
   fetchPositionIds,
   fetchPositionsMulti,
+  fetchRewardsMultiplier,
   fetchWhiteListedV1Pools,
-  pendingRewardRewards,
-  removeLiquidityReturn,
   getHistoricBalances,
   getPoolAprs,
-  fetchRewardsMultiplier,
-  fetchLockedBalances,
-  fetchPoolLiqMiningApr
+  pendingRewardRewards,
+  removeLiquidityReturn
 } from "./eth/contractWrappers";
-import { expandToken } from "./pureHelpers";
 import axios, { AxiosResponse } from "axios";
 import { ethReserveAddress } from "./eth/ethAbis";
 import { MinimalPoolWithReserveBalances, shrinkToken } from "./eth/helpers";
 import BigNumber from "bignumber.js";
 import {
-  optimisticPositionIds,
-  switchMapIgnoreThrow,
   compareIdArray,
-  optimisticObservable,
   logger,
+  optimisticObservable,
+  optimisticPositionIds,
   RankItem,
-  rankPriority
+  rankPriority,
+  switchMapIgnoreThrow
 } from "./observables/customOperators";
 import { networkVars$, networkVersion$ } from "./observables/network";
 import { apiData$, minimalPools$, tokens$ } from "./observables/pools";
@@ -174,8 +173,9 @@ export const getTokenMeta = async (currentNetwork: EthNetworks) => {
   return uniqWith(final, (a, b) => compareString(a.id, b.id));
 };
 
-export const fetchPositionsTrigger$ = new Subject<null>();
-fetchPositionsTrigger$.next(null);
+export const fetchPositionsTrigger$ = new Subject<true>();
+const fetchPositionsTrig$ = fetchPositionsTrigger$.pipe(shareReplay(1));
+fetchPositionsTrigger$.next(true);
 
 onLogout$.subscribe(() => {
   vxm.ethBancor.setProtectedViewPositions([]);
@@ -371,7 +371,6 @@ bntSupply$.subscribe(weiSupply => vxm.ethBancor.setBntSupply(weiSupply));
 tokenMeta$.subscribe(tokenMeta => vxm.ethBancor.setTokenMeta(tokenMeta));
 
 export const lockedBalancesTrigger$ = new Subject<null>();
-lockedBalancesTrigger$.next(null);
 
 combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
   .pipe(
@@ -382,6 +381,8 @@ combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
   .subscribe(balances => {
     vxm.ethBancor.setLockedBalances(balances);
   });
+
+lockedBalancesTrigger$.next(null);
 
 export const minNetworkTokenLiquidityForMinting$ = settingsContractAddress$.pipe(
   switchMapIgnoreThrow(settingsContractAddress =>
@@ -403,8 +404,7 @@ const liquiditySettings$ = combineLatest([
 ]).pipe(
   switchMapIgnoreThrow(([protectionContractAddress, settingsContractAddress]) =>
     fetchLiquidityProtectionSettings({
-      settingsContractAddress,
-      protectionContractAddress
+      settingsContractAddress
     }).catch(e =>
       vxm.ethBancor.fetchLiquidityProtectionSettings({
         protectionContractAddress,
@@ -421,9 +421,7 @@ export const liquidityProtectionNetworkToken$ = liquiditySettings$.pipe(
 );
 
 liquiditySettings$.subscribe(settings => {
-  console.log("settings are...", settings);
   vxm.ethBancor.setLiquidityProtectionSettings(settings);
-  vxm.ethBancor.fetchAndSetTokenBalances([settings.govToken]);
 });
 
 const whitelistedPools$ = settingsContractAddress$.pipe(
@@ -436,17 +434,30 @@ whitelistedPools$.subscribe(whitelistedPools => {
   vxm.ethBancor.setWhiteListedPoolsLoading(false);
 });
 
+const doNothing = () => {
+  // seems some observables need to be subscribed too for other observables to receive them?
+  // unknown behavior
+};
+
+onLogin$.subscribe(doNothing);
+liquidityProtectionStore$.subscribe(doNothing);
+fetchPositionsTrig$.subscribe(doNothing);
+
 const localAndRemotePositionIds$ = combineLatest([
   onLogin$,
-  liquidityProtectionStore$
+  liquidityProtectionStore$,
+  fetchPositionsTrig$
 ]).pipe(
   switchMapIgnoreThrow(([currentUser, storeAddress]) =>
     fetchPositionIds(currentUser, storeAddress)
   ),
   optimisticPositionIds(),
   distinctUntilChanged(compareIdArray),
+  filter(positions => positions.length > 0),
   shareReplay(1)
 );
+
+fetchPositionsTrigger$.next(true);
 
 const unVerifiedPositions$ = combineLatest([
   localAndRemotePositionIds$,
@@ -455,7 +466,6 @@ const unVerifiedPositions$ = combineLatest([
   optimisticObservable("positionsss", ([positionIds, storeAddress]) =>
     fetchPositionsMulti(positionIds, storeAddress)
   ),
-  logger("positions"),
   shareReplay(1)
 );
 
@@ -466,12 +476,12 @@ const removeLiquidityReturn$ = combineLatest([
   switchMapIgnoreThrow(([positions, contractAddress]) =>
     Promise.all(
       positions.map(position =>
-        removeLiquidityReturn(position, contractAddress)
+        removeLiquidityReturn(position, contractAddress).catch(() => false)
       )
     )
   ),
-  startWith(undefined),
-  logger("simple")
+  map(positions => positions.filter(Boolean) as RemoveLiquidityReturn[]),
+  startWith(undefined)
 );
 
 const uniquePoolReserves = (
@@ -514,8 +524,14 @@ const historicPoolBalances$ = combineLatest([
   minimalPools$
 ]).pipe(
   withLatestFrom(currentBlock$),
-  switchMapIgnoreThrow(([[unverified, minimal], currentBlock]) => {
-    return getHistoricBalances(unverified, currentBlock.blockNumber, minimal);
+  switchMapIgnoreThrow(async ([[unverified, minimal], currentBlock]) => {
+    const res = await getHistoricBalances(
+      unverified,
+      currentBlock.blockNumber,
+      minimal
+    );
+    console.log(res, "was the res...");
+    return res;
   })
 );
 
@@ -538,15 +554,24 @@ const rewardMultipliers$ = combineLatest([
   switchMapIgnoreThrow(([unVerifiedPositions, currentUser, stakingReward]) => {
     const poolReserves = uniquePoolReserves(unVerifiedPositions);
     return Promise.all(
-      poolReserves.map(async poolReserve => ({
-        ...poolReserve,
-        multiplier: await fetchRewardsMultiplier(
-          poolReserve.poolToken,
-          poolReserve.reserveToken,
-          stakingReward,
-          currentUser
-        )
-      }))
+      poolReserves.map(async poolReserve => {
+        let multiplier = new BigNumber(0);
+        try {
+          multiplier = await fetchRewardsMultiplier(
+            poolReserve.poolToken,
+            poolReserve.reserveToken,
+            stakingReward,
+            currentUser
+          );
+        } catch (e) {
+          console.error("Failed to fetch rewards multiplier", e);
+        }
+
+        return {
+          ...poolReserve,
+          multiplier
+        };
+      })
     );
   }),
   startWith(undefined)
@@ -592,7 +617,7 @@ const fullPositions$ = combineLatest([
             pendingReserveRewards &&
             pendingReserveRewards.find(
               r =>
-                compareString(r.poolId, position.id) &&
+                compareString(r.poolId, position.poolToken) &&
                 compareString(r.reserveId, position.reserveToken)
             );
 
@@ -627,7 +652,7 @@ const fullPositions$ = combineLatest([
             ...(day && { oneDayDec: day.calculatedAprDec }),
             ...(week && { oneWeekDec: week.calculatedAprDec }),
             ...(multiplier && {
-              multiplier: multiplier.multiplier.toNumber()
+              rewardsMultiplier: multiplier.multiplier.toNumber()
             })
           };
         }
@@ -793,6 +818,8 @@ combineLatest([
     vxm.ethBancor.setLoadingPositions(false);
   });
 
+onLogout$.subscribe(() => vxm.ethBancor.wipeTokenBalances());
+
 combineLatest([onLogin$, minimalPools$]).subscribe(
   ([userAddress, minimalPools]) => {
     if (userAddress) {
@@ -938,7 +965,6 @@ const viewRelays$ = combineLatest([
             relay.reserveTokens.map(
               (reserve): ViewReserve => ({
                 id: reserve.contract,
-                reserveWeight: reserve.reserveWeight,
                 reserveId: relay.pool_dlt_id + reserve.contract,
                 logo: [reserve.image],
                 symbol: reserve.symbol,

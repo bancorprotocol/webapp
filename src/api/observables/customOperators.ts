@@ -79,7 +79,11 @@ export const logger = <T>(label: string, hideReturn = false) => (
         }
         console.log(
           `Logger (Next): (${difference} ms): ${label} returned ${
-            hideReturn ? "" : JSON.stringify(data)
+            hideReturn
+              ? Array.isArray(data)
+                ? `${data.length} elements`
+                : ""
+              : JSON.stringify(data)
           }`
         );
         difference = Date.now();
@@ -211,7 +215,12 @@ export const optimisticObservable = <T, Y>(
       tap(data => {
         const isSame = isEqual(parsedData, data);
         if (!isSame) {
-          console.log("data is not the same! setting...", JSON.stringify(data));
+          console.log(
+            "data is not the same! setting...",
+            JSON.stringify(data),
+            "from",
+            parsedData
+          );
           localStorage.setItem(localKey, JSON.stringify(data));
         } else {
           console.log("data is the same, setting");

@@ -33,10 +33,6 @@ export interface StringRfq {
   expiry: string;
   salt: string;
 }
-
-authenticated$.subscribe(x => console.log("regular joe 3", x));
-onLogin$.subscribe(x => console.log(x, "regular joe 2"));
-
 export interface KeeperTokenResponse {
   result: Result;
   message: string;
@@ -184,7 +180,6 @@ const getTokenList = async () => {
 };
 
 const getOrders = async (currentUser: string) => {
-  console.log(currentUser, "get orders triggered");
   const res = await axios.get<OrderResponse>(
     `${baseUrl}/orders?maker=${currentUser}`,
     { transformResponse: res => JSONbig.parse(res) }
