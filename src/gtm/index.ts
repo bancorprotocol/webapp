@@ -1,15 +1,16 @@
 export const googleTagManager = (id: string, name: string | null) => {
   if (window.dataLayer) return;
-  window.dataLayer = [
-    {
-      wallet: {
-        id: id,
-        name: name
+  if (id && name)
+    window.dataLayer = [
+      {
+        wallet: {
+          id: id,
+          name: name
+        }
       }
-    }
-  ];
+    ];
   init(window, document, "script", "dataLayer", "GTM-TCBKR7W");
-  sendGTMPath(window.location.pathname);
+  sendGTMPath(undefined, window.location.pathname);
 };
 
 const init = (w: any, d: any, s: any, l: any, i: any) => {
@@ -28,16 +29,45 @@ const sendGTM = (data: {}) => {
   if (dataLayer) dataLayer.push(data);
 };
 
-export const sendGTMEvent = (event: string, event_properties: {} = {}) =>
+export const sendGTMEvent = (
+  event: string,
+  ga_event_category: string,
+  event_properties: {} = {}
+) =>
   sendGTM({
     event: "CE " + event,
-    event_properties: event_properties
+    event_properties: event_properties,
+    ga_event: {
+      category: ga_event_category
+    }
   });
 
-export const sendGTMPath = (path: string) =>
+export const sendWalletEvent = (
+  event: string,
+  ga_event_category: string,
+  id: string,
+  name: string
+) =>
   sendGTM({
-    event: "VP " + path,
+    event: "CE " + event,
+    ga_event: {
+      category: ga_event_category
+    },
+    user_properties: {
+      wallet_id: id,
+      wallet_name: name
+    },
+    wallet: {
+      id,
+      name
+    }
+  });
+
+export const sendGTMPath = (from: string | undefined, to: string) =>
+  sendGTM({
+    event: "VP " + to,
     page: {
-      path
+      from_path: from,
+      to_path: to
     }
   });

@@ -379,7 +379,7 @@ const setPreferredService = (service: string) => {
 
 router.beforeEach((to, from, next) => {
   if (from.path !== to.path) {
-    sendGTMPath(to.path);
+    sendGTMPath(from.path, to.path);
   }
   if (to.meta && to.meta.feature) {
     const service = services.find(
