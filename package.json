@@ -31,7 +31,7 @@
     "@fortawesome/vue-fontawesome": "^2.0.2",
     "@sentry/browser": "^6.3.1",
     "@sentry/integrations": "^6.3.1",
-    "@sentry/tracing": "^6.3.1",
+    "@sentry/tracing": "^6.3.3",
     "@tweenjs/tween.js": "^18.6.4",
     "@types/lodash.debounce": "^4.0.6",
     "@types/numeral": "^2.0.1",
