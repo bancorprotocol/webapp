@@ -13,7 +13,6 @@ import "bootstrap-vue/dist/bootstrap-vue.css";
 import "@/assets/_scss/main.scss";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fab, fal, fas, far } from "@/assets/fontawesome";
-import './gtm/gtm.ts'
 
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";

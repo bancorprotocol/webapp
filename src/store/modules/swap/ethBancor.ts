@@ -6207,11 +6207,7 @@ export class EthBancorModule
     });
 
     const ethPath = generateEthPath(fromSymbol, relays);
-    const dataLayer = window.dataLayer as {}[];
-    sendGTMEvent({
-      event: "CE Conversion Swap Click",
-      event_properties: {}
-    });
+    sendGTMEvent("Conversion Swap Click");
 
     onUpdate!(1, steps);
     await this.triggerApprovalIfRequired({
@@ -6222,10 +6218,7 @@ export class EthBancorModule
       onPrompt
     });
 
-    sendGTMEvent({
-      event: "CE Conversion Receipt Confirmation Request",
-      event_properties: {}
-    });
+    sendGTMEvent("Conversion Receipt Confirmation Request");
     onUpdate!(2, steps);
 
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
