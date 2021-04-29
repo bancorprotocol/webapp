@@ -215,7 +215,12 @@ export const optimisticObservable = <T, Y>(
       tap(data => {
         const isSame = isEqual(parsedData, data);
         if (!isSame) {
-          console.log("data is not the same! setting...", JSON.stringify(data));
+          console.log(
+            "data is not the same! setting...",
+            JSON.stringify(data),
+            "from",
+            parsedData
+          );
           localStorage.setItem(localKey, JSON.stringify(data));
         } else {
           console.log("data is the same, setting");

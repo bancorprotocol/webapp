@@ -565,9 +565,7 @@ export default class ProtectedTable extends BaseComponent {
         })
         .toString()
     );
-    const routeName = position.single
-      ? "WithdrawProtectionSingle"
-      : "WithdrawProtectionDouble";
+    const routeName = "WithdrawProtectionSingle";
     this.$router.push({
       name: routeName,
       params: { id }
@@ -584,7 +582,7 @@ export default class ProtectedTable extends BaseComponent {
         id: 1,
         key: "pool",
         label: i18n.tc("pool"),
-        tooltip: "Place holder",
+        tooltip: i18n.tc("pool_staked"),
         minWidth: "120px"
       },
       {
@@ -673,7 +671,7 @@ export default class ProtectedTable extends BaseComponent {
       case "currentCoverage":
         return row.coverageDecPercent;
       default:
-        return defaultTableSort(row, sortBy, true);
+        return defaultTableSort(row, sortBy);
     }
   }
 }
