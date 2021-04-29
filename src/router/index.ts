@@ -29,6 +29,7 @@ import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 import LimitOrderTable from "@/components/swap/LimitOrderTable.vue";
 import VoteLegacy from "@/components/vote/VoteLegacy.vue";
+import { sendGTMPath } from "@/gtm";
 
 Vue.use(Router);
 
@@ -377,6 +378,9 @@ const setPreferredService = (service: string) => {
 };
 
 router.beforeEach((to, from, next) => {
+  if (from.path !== to.path) {
+    sendGTMPath(to.path);
+  }
   if (to.meta && to.meta.feature) {
     const service = services.find(
       service => service.namespace == to.params.service

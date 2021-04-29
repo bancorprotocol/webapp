@@ -9,13 +9,7 @@ export const googleTagManager = (id: string, name: string | null) => {
     }
   ];
   init(window, document, "script", "dataLayer", "GTM-TCBKR7W");
-  const dataLayer = window.dataLayer as {}[];
-  dataLayer.push({
-    event: "VP " + window.location.pathname,
-    page: {
-      path: window.location.pathname
-    }
-  });
+  sendGTMPath(window.location.pathname);
 };
 
 const init = (w: any, d: any, s: any, l: any, i: any) => {
@@ -31,7 +25,7 @@ const init = (w: any, d: any, s: any, l: any, i: any) => {
 
 const sendGTM = (data: {}) => {
   const dataLayer = window.dataLayer as {}[];
-  dataLayer.push(data);
+  if (dataLayer) dataLayer.push(data);
 };
 
 export const sendGTMEvent = (event: string, event_properties: {} = {}) =>
@@ -40,8 +34,10 @@ export const sendGTMEvent = (event: string, event_properties: {} = {}) =>
     event_properties: event_properties
   });
 
-export const sendGTMPath = (path: string, event_properties: {} = {}) =>
+export const sendGTMPath = (path: string) =>
   sendGTM({
     event: "VP " + path,
-    event_properties: event_properties
+    page: {
+      path
+    }
   });
