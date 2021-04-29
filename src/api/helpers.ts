@@ -31,7 +31,6 @@ import { removeLeadingZeros, shrinkToken } from "./eth/helpers";
 import { sortByNetworkTokens } from "./sortByNetworkTokens";
 import numeral from "numeral";
 import BigNumber from "bignumber.js";
-import { DictionaryItem } from "@/api/eth/bancorApiRelayDictionary";
 import { pick, zip } from "lodash";
 import dayjs from "@/utils/dayjs";
 import { authenticatedReceiver$ } from "./observables/auth";
@@ -929,12 +928,6 @@ export const sortByLiqDepth = (a: LiqDepth, b: LiqDepth) => {
 };
 
 export const zeroAddress: string = "0x0000000000000000000000000000000000000000";
-
-export const matchReserveFeed = (reserveFeed: ReserveFeed) => (
-  dict: DictionaryItem
-) =>
-  compareString(dict.smartTokenAddress, reserveFeed.poolId) &&
-  compareString(dict.tokenAddress, reserveFeed.reserveAddress);
 
 export const sortAlongSide = <T>(
   arr: readonly T[],

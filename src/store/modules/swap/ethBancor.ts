@@ -127,7 +127,6 @@ import {
   shrinkToken,
   TokenSymbol
 } from "@/api/eth/helpers";
-import { ethBancorApiDictionary } from "@/api/eth/bancorApiRelayDictionary";
 import { sortByNetworkTokens } from "@/api/sortByNetworkTokens";
 import { findNewPath } from "@/api/eos/eosBancorCalc";
 import {
@@ -1132,38 +1131,6 @@ const relayToMinimal = (relay: Relay): MinimalRelay => ({
     ? (relay.anchor as SmartToken).contract
     : (relay.anchor as PoolContainer).poolContainerAddress
 });
-
-const sortSmartTokenAddressesByHighestLiquidity = (
-  tokens: TokenPrice[],
-  smartTokenAddresses: string[]
-): string[] => {
-  const sortedTokens = tokens
-    .slice()
-    .sort((a, b) => b.liquidityDepth - a.liquidityDepth);
-
-  const sortedDictionary = sortedTokens
-    .map(
-      token =>
-        ethBancorApiDictionary.find(dic =>
-          compareString(token.id, dic.tokenId)
-        )!
-    )
-    .filter(Boolean);
-
-  const res = sortAlongSide(
-    smartTokenAddresses,
-    pool => pool,
-    sortedDictionary.map(x => x.smartTokenAddress)
-  );
-
-  const isSame = res.every((item, index) => smartTokenAddresses[index] == item);
-  if (isSame)
-    console.warn(
-      "Sorted by Highest liquidity sorter is returning the same array passed"
-    );
-  return res;
-};
-
 interface TokenWithdrawParam {
   owner: string;
   spender: string;
