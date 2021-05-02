@@ -29,6 +29,7 @@ Please create new features as Pull Requests in new branches forked from `master`
 ![DraftPR](https://github.com/bancorprotocol/webapp/raw/master/docs/media/draftPr.png)
 
 - Always link new PRs to their original issue.
+- Every branch is a feature branch, If the feature is a large change and needs to be splitted into smaller branches, we branch from said feature branch instead of master and return to it when the work is done.
 - Assign Asaf as a reviewer and tag the Bancor v2 project for anything to be reviewed prior to going into production.
 
 ## Project setup

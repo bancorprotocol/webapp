@@ -7,7 +7,7 @@
         v-if="!option.hide"
       >
         <h5
-          class="font-size-14 font-w600 text-uppercase my-2"
+          class="font-size-14 font-w600 my-2"
           :class="darkMode ? 'text-white' : 'text-primary'"
         >
           {{ option.title }}

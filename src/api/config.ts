@@ -11,6 +11,7 @@ interface EthNetworkVariables {
   governanceContractAddress: string;
   etherscanUrl: string;
   alchemyKey: string;
+  govToken: string;
 }
 
 export const getNetworkVariables = (
@@ -22,6 +23,7 @@ export const getNetworkVariables = (
       return {
         contractRegistry: "0x52Ae12ABe5D8BD778BD5397F99cA900624CfADD4",
         bntToken: "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        govToken: "0x48Fb253446873234F2fEBbF9BdeAA72d9d387f94",
         ethToken,
         vBntToken: "0x48Fb253446873234F2fEBbF9BdeAA72d9d387f94",
         liquidityProtectionToken: ethToken,
@@ -35,6 +37,7 @@ export const getNetworkVariables = (
       return {
         contractRegistry: "0xA6DB4B0963C37Bc959CbC0a874B5bDDf2250f26F",
         bntToken: "0xF35cCfbcE1228014F66809EDaFCDB836BFE388f5",
+        govToken: "0x83ec8129b1f54ba5b0f47bd902a79c803e20a249",
         ethToken,
         vBntToken: "0x83ec8129b1f54ba5b0f47bd902a79c803e20a249",
         liquidityProtectionToken: ethToken,

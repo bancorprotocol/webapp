@@ -49,7 +49,6 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import StakeButtons from "@/components/protection/StakeButtons.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { i18n } from "@/i18n";
 
 @Component({
   components: {
@@ -82,11 +81,6 @@ export default class AddProtectionHome extends BaseComponent {
       if (this.singleMode) {
         this.$router.push({
           name: "AddProtectionSingle",
-          params: { id }
-        });
-      } else {
-        this.$router.push({
-          name: "AddProtectionDouble",
           params: { id }
         });
       }

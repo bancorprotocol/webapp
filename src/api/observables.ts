@@ -397,8 +397,7 @@ const liquiditySettings$ = combineLatest([
 ]).pipe(
   switchMapIgnoreThrow(([protectionContractAddress, settingsContractAddress]) =>
     fetchLiquidityProtectionSettings({
-      settingsContractAddress,
-      protectionContractAddress
+      settingsContractAddress
     }).catch(e =>
       vxm.ethBancor.fetchLiquidityProtectionSettings({
         protectionContractAddress,
@@ -415,9 +414,7 @@ export const liquidityProtectionNetworkToken$ = liquiditySettings$.pipe(
 );
 
 liquiditySettings$.subscribe(settings => {
-  console.log("settings are...", settings);
   vxm.ethBancor.setLiquidityProtectionSettings(settings);
-  vxm.ethBancor.fetchAndSetTokenBalances([settings.govToken]);
 });
 
 const whitelistedPools$ = settingsContractAddress$.pipe(

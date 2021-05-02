@@ -145,12 +145,14 @@ export const en = {
   please_refresh: "Please refresh",
   position_vesting_time: "Earliest position vesting time",
   cliff: "Cliff",
-  loss_protection_vesting:
-    "Impermanent loss protection starts vesting immediately when you deposit. But you must be in the pool until the cliff is reached before the protection can be utilized.",
+  loss_protection_vesting_30:
+    "Impermanent loss protection starts vesting immediately when you deposit. But, you must be in the pool for 30 days before the protection can be utilized.",
   coverage_achieved: "Full coverage achieved",
   left_until_coverage: "{time} left until full coverage",
   failed_find_position:
     "Failed to find position of ID {id} from position ids {ids}",
+  pool_staked:
+    "Pools you entered.",
   tokens_originally_staked:
     "Amount of tokens you originally staked in the pool.",
   tokens_can_withdraw:
@@ -162,7 +164,7 @@ export const en = {
   fees: "Fees (24h)",
   fees_stake_earned:
     "Fees and rewards earned by your stake since you entered the pool.",
-  roi__protected_value:
+  roi_protected_value:
     "The ROI of your fully protected value vs. your initial stake.",
   estimated_calculation_annual_returns:
     "Estimated calculation for annual returns based on historical activity (i.e., 7d = 7d fees/liquidity)",
@@ -319,7 +321,7 @@ export const en = {
   countdown_ended: "Countdown ended",
   enter_here: "Enter here",
   left_to_unlock: "left to unlock",
-  full_protection_reached: "Full protection reached",
+  full_protection: "Fully protected",
   custom: "Custom",
   page_of: "Page {current} of {total}",
   add_liquidity_pool_xyz: "Add Liquidity pool xyz",
@@ -357,6 +359,12 @@ export const en = {
   withdraw_reset:
     "Withdrawing will reset your rewards multiplier for all active positions back to x1",
   pool_not_accepting: "This pool is not accepting additional liquidity.",
+  no_positions_found: "No protected positions found.",
+  all_positions: "All positions",
+  fully_protected: "Fully protected",
+  not_fully_protected: "Not Fully protected",
+  all_pools: "All Pools",
+  date_range: "Date range",
   wait_until_space_opens:
     "{token} limit reached. Please wait until some space opens up.",
   market: "Market",
@@ -372,6 +380,9 @@ export const en = {
   current_protection: "Current protection is {amount}",
   roi_protected_split:
     "Your ROI from fees (top) and rewards (bottom). Combined they represent your full ROI.",
+  not_protected: "Not Protected",
+  clear_all_filters: "Clear all filters",
+  multiple_token_pairs: "Multiple Token Pairs",
   days: "1 Day | {count} Days",
   hours: "1 Hour | {count} Hours",
   minutes: "1 Minute | {count} Minutes",
@@ -470,7 +481,6 @@ export const en = {
     order_expired:
       "Expired orders cannot be fulfil, yet they are still available on the contract. In order to remove them from the table, please cancel them."
   },
-  protected_not_found: "No protected positions found.",
   claim_bnt: "Claim your BNT",
   pool_tokens: "Pool tokens",
   rate_below_market:
@@ -481,5 +491,8 @@ export const en = {
   exe_market_rate: "Executing trade on current market rate",
   rate_swap_tokens:
     "Select the rate at which you would like to sell your tokens",
-  powered_by_keeper_dao: "Limit orders are powered by KeeperDAO"
+  powered_by_keeper_dao: "Limit orders are powered by KeeperDAO",
+  filters:"Filters",
+  group_by:"Group By Pool Token",
+  vbnt_read_more: "Read more about vBNT"
 };

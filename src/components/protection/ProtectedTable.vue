@@ -6,62 +6,62 @@
       :collapsable="true"
       :filter="search"
       filter-by="stake"
-      :filter-function="doFilter"
+      :filter-functions="[
+        doFilter,
+        ...(filterFunctions ? filterFunctions : [])
+      ]"
       :sort-function="customSort"
       default-sort="stake"
       default-order="desc"
     >
+      <template #cell(pool)="{ item }">
+        <img
+          :key="item.poolId"
+          class="img-avatar img-avatar20 bg-white logo-shadow"
+          :src="poolLogo(item.poolId, item.symbol)"
+          :alt="$t('token_logo')"
+        />
+
+        <span class="font-w400">
+          {{ item.symbol }}
+          <div
+            class="font-size-12 ml-4 mt-1"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ poolName(item.poolId) }}
+          </div>
+        </span>
+      </template>
+
+      <template #cellCollapsed(pool)="{ item }">
+        <img
+          :key="item.stake.poolId"
+          class="img-avatar img-avatar20 bg-white logo-shadow"
+          :src="poolLogo(item.stake.poolId, item.stake.symbol)"
+          :alt="$t('token_logo')"
+        />
+
+        <span class="font-w400">
+          {{ item.stake.symbol }}
+          <div
+            class="font-size-12 mt-1"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+          >
+            {{ poolName(item.stake.poolId) }}
+          </div>
+        </span>
+      </template>
+
       <template #cell(stake)="{ item, value, isCollapsable }">
-        <div :id="`popover-stake-${item.id}`">
-          <div>
+        <div :id="`popover-stake-${item.id}`" class="text-center py-3">
+          <div class="font-w400">
             {{ `${prettifyNumber(value.amount)} ${item.symbol}` }}
           </div>
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
-          <div class="d-flex align-items-center">
-            <pool-logos-overlapped
-              :pool-id="item.poolId"
-              size="20"
-              class="mr-1"
-            />
-            {{ poolName(item.poolId) }}
-            <div v-if="isCollapsable" class="ml-1 mb-1">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect
-                  x="0.5"
-                  y="0.5"
-                  width="13"
-                  height="13"
-                  rx="3.5"
-                  fill="none"
-                  stroke="#0F59D1"
-                />
-                <mask id="path-2-inside-1" fill="white">
-                  <path
-                    d="M9.72727 6.67631H7.27273V4.28417C7.27273 4.12469 7.16364 4.01837 7 4.01837C6.83636 4.01837 6.72727 4.12469 6.72727 4.28417V6.67631H4.27273C4.10909 6.67631 4 6.78263 4 6.94211C4 7.10158 4.10909 7.2079 4.27273 7.2079H6.72727V9.60005C6.72727 9.75953 6.83636 9.86585 7 9.86585C7.16364 9.86585 7.27273 9.75953 7.27273 9.60005V7.2079H9.72727C9.89091 7.2079 10 7.10158 10 6.94211C10 6.78263 9.89091 6.67631 9.72727 6.67631Z"
-                  />
-                </mask>
-                <path
-                  d="M9.72727 6.67631H7.27273V4.28417C7.27273 4.12469 7.16364 4.01837 7 4.01837C6.83636 4.01837 6.72727 4.12469 6.72727 4.28417V6.67631H4.27273C4.10909 6.67631 4 6.78263 4 6.94211C4 7.10158 4.10909 7.2079 4.27273 7.2079H6.72727V9.60005C6.72727 9.75953 6.83636 9.86585 7 9.86585C7.16364 9.86585 7.27273 9.75953 7.27273 9.60005V7.2079H9.72727C9.89091 7.2079 10 7.10158 10 6.94211C10 6.78263 9.89091 6.67631 9.72727 6.67631Z"
-                  fill="white"
-                />
-                <path
-                  d="M7.27273 6.67631H6.27273V7.67631H7.27273V6.67631ZM6.72727 6.67631V7.67631H7.72727V6.67631H6.72727ZM6.72727 7.2079H7.72727V6.2079H6.72727V7.2079ZM7.27273 7.2079V6.2079H6.27273V7.2079H7.27273ZM9.72727 5.67631H7.27273V7.67631H9.72727V5.67631ZM8.27273 6.67631V4.28417H6.27273V6.67631H8.27273ZM8.27273 4.28417C8.27273 3.96932 8.15996 3.63288 7.89567 3.37531C7.63369 3.11999 7.30146 3.01837 7 3.01837V5.01837C6.86218 5.01837 6.66631 4.96991 6.49978 4.80762C6.33095 4.64307 6.27273 4.43954 6.27273 4.28417H8.27273ZM7 3.01837C6.69855 3.01837 6.36631 3.11999 6.10433 3.37531C5.84004 3.63288 5.72727 3.96932 5.72727 4.28417H7.72727C7.72727 4.43954 7.66905 4.64307 7.50022 4.80762C7.33369 4.96991 7.13782 5.01837 7 5.01837V3.01837ZM5.72727 4.28417V6.67631H7.72727V4.28417H5.72727ZM6.72727 5.67631H4.27273V7.67631H6.72727V5.67631ZM4.27273 5.67631C3.97127 5.67631 3.63904 5.77793 3.37705 6.03326C3.11277 6.29083 3 6.62726 3 6.94211H5C5 7.09748 4.94178 7.30102 4.77295 7.46556C4.60642 7.62785 4.41055 7.67631 4.27273 7.67631V5.67631ZM3 6.94211C3 7.25696 3.11277 7.59339 3.37705 7.85096C3.63904 8.10628 3.97127 8.2079 4.27273 8.2079V6.2079C4.41055 6.2079 4.60642 6.25636 4.77295 6.41866C4.94178 6.5832 5 6.78674 5 6.94211H3ZM4.27273 8.2079H6.72727V6.2079H4.27273V8.2079ZM5.72727 7.2079V9.60005H7.72727V7.2079H5.72727ZM5.72727 9.60005C5.72727 9.9149 5.84004 10.2513 6.10433 10.5089C6.36631 10.7642 6.69855 10.8658 7 10.8658V8.86585C7.13782 8.86585 7.33369 8.91431 7.50022 9.0766C7.66905 9.24114 7.72727 9.44468 7.72727 9.60005H5.72727ZM7 10.8658C7.30146 10.8658 7.63369 10.7642 7.89567 10.5089C8.15996 10.2513 8.27273 9.9149 8.27273 9.60005H6.27273C6.27273 9.44468 6.33095 9.24114 6.49978 9.0766C6.66631 8.91431 6.86218 8.86585 7 8.86585V10.8658ZM8.27273 9.60005V7.2079H6.27273V9.60005H8.27273ZM7.27273 8.2079H9.72727V6.2079H7.27273V8.2079ZM9.72727 8.2079C10.0287 8.2079 10.361 8.10628 10.6229 7.85096C10.8872 7.59339 11 7.25696 11 6.94211H9C9 6.78674 9.05822 6.5832 9.22705 6.41866C9.39358 6.25636 9.58945 6.2079 9.72727 6.2079V8.2079ZM11 6.94211C11 6.62726 10.8872 6.29083 10.6229 6.03326C10.361 5.77793 10.0287 5.67631 9.72727 5.67631V7.67631C9.58945 7.67631 9.39358 7.62785 9.22705 7.46556C9.05822 7.30102 9 7.09748 9 6.94211H11Z"
-                  fill="#0F59D1"
-                  mask="url(#path-2-inside-1)"
-                />
-              </svg>
-            </div>
-          </div>
           <b-popover
             v-if="!isCollapsable"
             :target="`popover-stake-${item.id}`"
@@ -75,23 +75,15 @@
         </div>
       </template>
       <template #cellCollapsed(stake)="{ item, value }">
-        <div :id="`popover-stake-${item.id}`">
-          <div>
+        <div :id="`popover-stake-${item.id}`" class="text-center">
+          <div class="font-w400">
             {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
           </div>
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary"
+            class="font-size-12 font-w400 text-primary mt-1"
           />
-          <div class="d-flex align-items-center">
-            <pool-logos-overlapped
-              :pool-id="value.poolId"
-              size="20"
-              class="mr-1"
-            />
-            {{ poolName(value.poolId) }}
-          </div>
           <b-popover
             :target="`popover-stake-${item.id}`"
             triggers="hover"
@@ -105,95 +97,102 @@
       </template>
 
       <template #cell(fullyProtected)="{ item, value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${item.symbol}`
                 : $t('stale_data')
             "
           />
+
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400 text-primary mt-1"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
       </template>
       <template #cellCollapsed(fullyProtected)="{ value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
                 : $t('stale_data')
             "
           />
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400 text-primary mt-1"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
       </template>
 
       <template #cell(protectedAmount)="{ item, value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${item.symbol}`
                 : $t('please_refresh')
             "
           />
+
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400 text-primary mt-1"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
       </template>
       <template #cellCollapsed(protectedAmount)="{ value }">
-        <div class="d-flex align-items-start">
-          <span
+        <div class="text-center">
+          <div
+            class="font-w400"
             v-text="
               value && typeof value.amount !== 'undefined'
                 ? `${prettifyNumber(value.amount)} ${value.symbol}`
                 : $t('please_refresh')
             "
           />
+          <div
+            v-if="
+              value &&
+              value.usdValue !== undefined &&
+              typeof value.amount !== 'undefined'
+            "
+            v-text="`(~${prettifyNumber(value.usdValue, true)})`"
+            class="font-size-12 font-w400 text-primary mt-1"
+          />
         </div>
-        <span
-          v-if="
-            value &&
-            value.usdValue !== undefined &&
-            typeof value.amount !== 'undefined'
-          "
-          v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-          class="font-size-12 font-w400 text-primary"
-        />
       </template>
 
       <template #cell(fees)="{ item, value }">
-        <div class="text-center" :id="`popover-fees-${item.id}`">
-          {{ `${prettifyNumber(value)} ${item.symbol}` }}
-
+        <div :id="`popover-fees-${item.id}`" class="text-center font-w400">
+          <div>
+            {{ `${prettifyNumber(value)} ${item.symbol}` }}
+          </div>
           <b-badge
             v-if="new BigNumber(item.pendingReserveReward).gt(0)"
             variant="primary"
-            class="badge-version text-primary px-2"
+            class="badge-version text-primary font-w500 p-1"
           >
             {{
               `+ ${prettifyNumber(item.pendingReserveReward)} BNT ${
@@ -203,6 +202,7 @@
               }`
             }}
           </b-badge>
+          <div v-else style="height: 20px !important"></div>
         </div>
         <b-popover
           :target="`popover-fees-${item.id}`"
@@ -215,15 +215,14 @@
         </b-popover>
       </template>
       <template #cellCollapsed(fees)="{ value }">
-        <div class="text-center">
-          <div>
-            {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
-          </div>
+        <div class="font-w400 text-center">
+          {{ `${prettifyNumber(value.amount)} ${value.symbol}` }}
         </div>
+        <div style="height: 20px !important"></div>
       </template>
 
       <template #cell(roi)="{ value, item }">
-        <div class="text-center" :id="`popover-roi-${item.id}`">
+        <div :id="`popover-roi-${item.id}`" class="text-center font-w400">
           <div>
             {{
               value && typeof value.fees !== "undefined"
@@ -234,10 +233,11 @@
           <b-badge
             v-if="value.reserveRewards.gt(0)"
             variant="primary"
-            class="badge-version text-primary px-2"
+            class="badge-version text-primary font-w500 p-1"
           >
             + {{ stringifyPercentage(value.reserveRewards) }}
           </b-badge>
+          <div v-else style="height: 20px !important"></div>
         </div>
         <b-popover
           :target="`popover-roi-${item.id}`"
@@ -250,85 +250,107 @@
         </b-popover>
       </template>
       <template #cellCollapsed(roi)="{ value }">
-        <div class="text-center">
+        <div class="font-w400 text-center">
           {{
             typeof value !== "undefined" ? stringifyPercentage(value) : "N/A"
           }}
         </div>
+        <div style="height: 20px !important"></div>
       </template>
 
       <template #cell(apr)="{ value }">
-        <div class="d-flex align-items-center">
-          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
-          {{
-            typeof value.day !== "undefined"
-              ? stringifyPercentage(value.day)
-              : "N/A"
-          }}
-        </div>
-        <div class="d-flex align-items-center my-1">
-          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
-          {{
-            typeof value.week !== "undefined"
-              ? stringifyPercentage(value.week)
-              : "N/A"
-          }}
+        <div class="d-flex justify-content-center font-w400">
+          <div>
+            <div>
+              {{
+                `D | ${
+                  typeof value.day !== "undefined"
+                    ? stringifyPercentage(value.day)
+                    : "N/A"
+                }`
+              }}
+            </div>
+            <div
+              class="font-size-12 font-w400 my-1"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              {{
+                `W | ${
+                  typeof value.week !== "undefined"
+                    ? stringifyPercentage(value.week)
+                    : "N/A"
+                }`
+              }}
+            </div>
+          </div>
         </div>
       </template>
       <template #cellCollapsed(apr)="{ value }">
-        <div class="d-flex align-items-center">
-          <b-badge class="badge-version text-primary px-2 mr-2">1d</b-badge>
-          {{
-            typeof value.day !== "undefined"
-              ? stringifyPercentage(value.day)
-              : "N/A"
-          }}
-        </div>
-        <div class="d-flex align-items-center my-1">
-          <b-badge class="badge-version text-primary px-2 mr-2">1w</b-badge>
-          {{
-            typeof value.week !== "undefined"
-              ? stringifyPercentage(value.week)
-              : "N/A"
-          }}
+        <div class="d-flex justify-content-center font-w400">
+          <div>
+            <div>
+              {{
+                `D | ${
+                  typeof value.day !== "undefined"
+                    ? stringifyPercentage(value.day)
+                    : "N/A"
+                }`
+              }}
+            </div>
+            <div
+              class="font-size-12 font-w400 my-1"
+              :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
+            >
+              {{
+                `W | ${
+                  typeof value.week !== "undefined"
+                    ? stringifyPercentage(value.week)
+                    : "N/A"
+                }`
+              }}
+            </div>
+          </div>
         </div>
       </template>
 
       <template #cell(currentCoverage)="{ item }">
-        <div class="d-flex flex-column font-size-12 font-w600">
-          <span v-if="item.collapsedData.length" class="font-w500">
-            {{ $t("position_vesting_time") }}
-          </span>
-          {{ stringifyPercentage(item.coverageDecPercent) }}
-          <div
-            v-if="!insuranceStarted(item.insuranceStart)"
-            class="d-flex justify-content-between align-items-center text-danger"
+        <b-progress
+          :value="item.coverageDecPercent"
+          :max="1"
+          class="progress-bar-positive mt-3"
+          style="width: 80% !important"
+        />
+        <div
+          class="d-flex justify-content-between align-items-center"
+          style="width: 140px !important"
+        >
+          <span
+            :id="`popover-currentCoverage-${item.id}`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
-            <div>
-              {{ `${$t("cliff")}:` }}
-              <countdown-timer :date-unix="item.insuranceStart" />
-            </div>
-            <font-awesome-icon
-              icon="info-circle"
-              :id="'popover-cliff-' + item.id"
+            <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
+            <countdown-timer
+              :date-unix="item.fullCoverage"
+              :msg-countdown-ended="$t('full_protection')"
             />
-            <b-popover
-              :target="'popover-cliff-' + item.id"
-              triggers="hover"
-              placement="bottom"
-            >
-              {{ $t("loss_protection_vesting") }}
-            </b-popover>
-          </div>
+          </span>
+          <font-awesome-icon
+            v-if="!insuranceStarted(item.insuranceStart)"
+            :id="'popover-cliff-' + item.id"
+            icon="exclamation-circle"
+            class="text-danger"
+          />
         </div>
 
-        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
-        <countdown-timer
-          :id="`popover-currentCoverage-${item.id}`"
-          :date-unix="item.fullCoverage"
-          :msg-countdown-ended="$t('full_protection_reached')"
-          class="font-size-12"
-        />
+        <b-popover
+          v-if="!insuranceStarted(item.insuranceStart)"
+          :target="'popover-cliff-' + item.id"
+          triggers="hover"
+          placement="bottom"
+        >
+          {{ $t("loss_protection_vesting_30") }}
+        </b-popover>
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
           triggers="hover"
@@ -336,41 +358,48 @@
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          {{ $t("current_protection", { amount: item.fullyProtected.amount }) }}
+          {{
+            $t("current_protection", {
+              amount: stringifyPercentage(item.coverageDecPercent)
+            })
+          }}
         </b-popover>
       </template>
       <template #cellCollapsed(currentCoverage)="{ item }">
-        <div class="d-flex flex-column font-size-12 font-w600">
-          {{ stringifyPercentage(item.coverageDecPercent) }}
-          <div
-            v-if="!insuranceStarted(item.insuranceStart)"
-            class="d-flex justify-content-between align-items-center text-danger"
+        <b-progress
+          :value="item.coverageDecPercent"
+          :max="1"
+          class="progress-bar-positive mt-3"
+          style="width: 80% !important"
+        />
+        <div class="d-flex justify-content-between">
+          <span
+            :id="`popover-currentCoverage-${item.id}`"
+            class="font-size-12 font-w400"
+            :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
-            <div>
-              {{ `${$t("cliff")}:` }}
-              <countdown-timer :date-unix="item.insuranceStart" />
-            </div>
-            <font-awesome-icon
-              icon="info-circle"
-              :id="'popover-cliff-' + item.id"
+            <font-awesome-icon :icon="['far', 'clock']" class="mr-1" />
+            <countdown-timer
+              :date-unix="item.fullCoverage"
+              :msg-countdown-ended="$t('full_protection')"
             />
-            <b-popover
-              :target="'popover-cliff-' + item.id"
-              triggers="hover"
-              placement="bottom"
-            >
-              {{ $t("loss_protection_vesting") }}
-            </b-popover>
-          </div>
+          </span>
+          <font-awesome-icon
+            v-if="!insuranceStarted(item.insuranceStart)"
+            :id="'popover-cliff-' + item.id"
+            icon="exclamation-circle"
+            class="text-danger"
+          />
         </div>
 
-        <b-progress :value="item.coverageDecPercent" :max="1" class="mt-1" />
-        <countdown-timer
-          :id="`popover-currentCoverage-${item.id}`"
-          :date-unix="item.fullCoverage"
-          :msg-countdown-ended="$t('full_protection_reached')"
-          class="font-size-12"
-        />
+        <b-popover
+          v-if="!insuranceStarted(item.insuranceStart)"
+          :target="'popover-cliff-' + item.id"
+          triggers="hover"
+          placement="bottom"
+        >
+          {{ $t("loss_protection_vesting_30") }}
+        </b-popover>
         <b-popover
           :target="`popover-currentCoverage-${item.id}`"
           triggers="hover"
@@ -378,7 +407,11 @@
           class="font-size-12 font-w400"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
-          {{ $t("current_protection", { amount: item.fullyProtected.amount }) }}
+          {{
+            $t("current_protection", {
+              amount: stringifyPercentage(item.coverageDecPercent)
+            })
+          }}
         </b-popover>
       </template>
 
@@ -386,7 +419,7 @@
         <b-btn
           v-if="!isCollapsable"
           @click="goToWithdraw(item.positionId)"
-          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+          :variant="darkMode ? 'circle-gray-dark' : 'circle-gray'"
           class="d-flex align-items-center justify-content-center"
           style="width: 41px; height: 41px"
         >
@@ -405,7 +438,7 @@
         </b-btn>
         <div v-else>
           <b-btn
-            :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+            :variant="darkMode ? 'circle-gray-dark' : 'circle-gray'"
             class="d-flex align-items-center justify-content-center"
             style="width: 41px; height: 41px"
           >
@@ -418,7 +451,7 @@
       <template #cellCollapsed(actions)="{ item }">
         <b-btn
           @click="goToWithdraw(item.id)"
-          :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
+          :variant="darkMode ? 'circle-gray-dark' : 'circle-gray'"
           class="d-flex align-items-center justify-content-center"
           style="width: 41px; height: 41px"
         >
@@ -444,6 +477,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import PoolLogosOverlapped from "@/components/common/PoolLogosOverlapped.vue";
+import { vxm } from "@/store";
 import { i18n } from "@/i18n";
 import {
   buildPoolName,
@@ -458,6 +492,7 @@ import dayjs from "@/utils/dayjs";
 import {
   ViewGroupedPositions,
   ViewProtectedLiquidity,
+  ViewRelay,
   ViewTableField
 } from "@/types/bancor";
 import CountdownTimer from "@/components/common/CountdownTimer.vue";
@@ -476,6 +511,7 @@ import BigNumber from "bignumber.js";
 export default class ProtectedTable extends BaseComponent {
   @Prop({ default: "" }) search!: string;
   @Prop() positions!: ViewProtectedLiquidity[];
+  @Prop() filterFunctions?: Function[];
 
   stringifyPercentage = stringifyPercentage;
   BigNumber = BigNumber;
@@ -489,6 +525,16 @@ export default class ProtectedTable extends BaseComponent {
 
   poolName(id: string): string {
     return buildPoolName(id);
+  }
+
+  poolLogo(id: string, symbol: string) {
+    const pool: ViewRelay = vxm.bancor.relay(id);
+    const res = findOrThrow(pool.reserves, x =>
+      compareString(x.symbol, symbol)
+    );
+    if (res) return res.logo;
+
+    return "";
   }
 
   insuranceStarted(unixTime: number) {
@@ -519,9 +565,7 @@ export default class ProtectedTable extends BaseComponent {
         })
         .toString()
     );
-    const routeName = position.single
-      ? "WithdrawProtectionSingle"
-      : "WithdrawProtectionDouble";
+    const routeName = "WithdrawProtectionSingle";
     this.$router.push({
       name: routeName,
       params: { id }
@@ -536,69 +580,82 @@ export default class ProtectedTable extends BaseComponent {
     return [
       {
         id: 1,
-        key: "stake",
-        label: i18n.tc("initial_stake"),
-        tooltip: i18n.tc("tokens_originally_staked"),
-        minWidth: "170px"
+        key: "pool",
+        label: i18n.tc("pool"),
+        tooltip: i18n.tc("pool_staked"),
+        minWidth: "120px"
       },
       {
         id: 2,
-        key: "fullyProtected",
-        label: i18n.tc("protected"),
-        tooltip: i18n.tc("tokens_can_withdraw"),
-        minWidth: "160px"
+        key: "stake",
+        label: i18n.tc("initial_stake"),
+        tooltip: i18n.tc("tokens_originally_staked"),
+        thClass: "text-center",
+        minWidth: "132px"
       },
       {
         id: 3,
-        key: "protectedAmount",
-        label: i18n.tc("claimable"),
-        tooltip: i18n.tc("tokens_can_withdraw_now"),
-        minWidth: "140px"
+        key: "fullyProtected",
+        label: i18n.tc("protected"),
+        tooltip: i18n.tc("tokens_can_withdraw"),
+        thClass: "text-center",
+        minWidth: "125px"
       },
       {
         id: 4,
-        key: "fees",
-        label: i18n.tc("fees_rewards"),
-        tooltip: i18n.tc("fees_stake_earned"),
-        minWidth: "120px",
-        thClass: "text-center"
+        key: "protectedAmount",
+        label: i18n.tc("claimable"),
+        tooltip: i18n.tc("tokens_can_withdraw_now"),
+        thClass: "text-center",
+        minWidth: "125px"
       },
       {
         id: 5,
-        key: "roi",
-        label: "ROI",
-        tooltip: i18n.tc("roi_protected_value"),
-        minWidth: "75px",
+        key: "fees",
+        label: i18n.tc("fees_rewards"),
+        tooltip: i18n.tc("fees_stake_earned"),
+        minWidth: "165px",
         thClass: "text-center"
       },
       {
         id: 6,
+        key: "roi",
+        label: "ROI",
+        tooltip: i18n.tc("roi_protected_value"),
+        thClass: "text-center",
+        minWidth: "80px"
+      },
+      {
+        id: 7,
         key: "apr",
         label: "APR",
         tooltip: i18n.tc("estimated_calculation_annual_returns"),
         sortable: true,
-        minWidth: "115px"
-      },
-      {
-        id: 7,
-        key: "currentCoverage",
-        label: i18n.tc("current_coverage"),
-        tooltip: i18n.tc("impermanent_loss_protection"),
-        minWidth: "195px"
+        thClass: "text-center",
+        minWidth: "112px"
       },
       {
         id: 8,
+        key: "currentCoverage",
+        label: i18n.tc("current_coverage"),
+        tooltip: i18n.tc("impermanent_loss_protection"),
+        minWidth: "174px"
+      },
+      {
+        id: 9,
         key: "actions",
         label: "",
         sortable: false,
-        minWidth: "70px",
-        maxWidth: "70px"
+        minWidth: "25px",
+        maxWidth: "25px"
       }
     ];
   }
 
-  doFilter(row: ViewGroupedPositions, filter: string) {
-    return (row.symbol as string).toLowerCase().includes(filter.toLowerCase());
+  doFilter(row: ViewGroupedPositions) {
+    return (row.symbol as string)
+      .toLowerCase()
+      .includes(this.search.toLowerCase());
   }
 
   customSort(row: ViewGroupedPositions, sortBy: string) {
@@ -614,7 +671,7 @@ export default class ProtectedTable extends BaseComponent {
       case "currentCoverage":
         return row.coverageDecPercent;
       default:
-        return defaultTableSort(row, sortBy, true);
+        return defaultTableSort(row, sortBy);
     }
   }
 }

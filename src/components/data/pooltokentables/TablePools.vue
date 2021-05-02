@@ -3,7 +3,7 @@
     :fields="fields"
     :items="items"
     :filter="filter"
-    :filter-function="doFilter"
+    :filter-functions="[doFilter]"
     :sort-function="customSort"
     default-sort="liqDepth"
   >
@@ -164,7 +164,7 @@ export default class TablePools extends BaseComponent {
               label: "APR",
               key: "feesVsLiquidity",
               tooltip: i18n.tc("fees_24"),
-              minWidth: "80px"
+              minWidth: "85px"
             }
           ]
         : []),
@@ -184,9 +184,9 @@ export default class TablePools extends BaseComponent {
     return remainingTime < 0;
   }
 
-  doFilter(row: ViewRelay, filter: string) {
+  doFilter(row: ViewRelay) {
     const symbols = row.reserves.map(reserve => reserve.symbol.toLowerCase());
-    return symbols.some(symbol => symbol.includes(filter.toLowerCase()));
+    return symbols.some(symbol => symbol.includes(this.filter.toLowerCase()));
   }
 
   customSort(row: ViewRelay, sortBy: string) {

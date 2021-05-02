@@ -143,6 +143,7 @@ export const he = {
   failed_find_position:
     "{ids} מפוזיציה עם מספר זיהוי {id} נכשל במציאת פוזיציה עם מספר זיהוי",
   tokens_originally_staked: ".כמות של מטבעות שהפקדת במקור בבריכה",
+  pool_staked: "בריכות שהזנת.",
   tokens_can_withdraw: "כמות של מטבעות שאתה יכול למשוך עם 100% הגנה + עמלות",
   initial_stake: "הפקדה התחלתית",
   claimable: "ניתן למשיכה",

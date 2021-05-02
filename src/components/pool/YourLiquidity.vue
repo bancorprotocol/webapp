@@ -6,7 +6,7 @@
         class="d-flex align-items-center justify-content-between"
       >
         <span
-          class="font-size-12 font-w500 text-uppercase"
+          class="font-size-12 font-w500"
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
         >
           {{ $t("your_liquidity") }}
@@ -141,15 +141,6 @@ export default class YourLiquidity extends BaseComponent {
         }
       });
     }
-  }
-
-  goToProtect(id: string) {
-    this.$router.push({
-      name: "AddProtectionDouble",
-      params: {
-        id: id
-      }
-    });
   }
 
   goToRemove(id: string) {
