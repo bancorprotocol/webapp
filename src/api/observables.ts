@@ -368,7 +368,7 @@ export const lockedBalancesTrigger$ = new Subject<null>();
 combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
   .pipe(
     switchMapIgnoreThrow(([storeAddress, currentUser]) =>
-      fetchLockedBalances(storeAddress, vxm.wallet.currentUser)
+      fetchLockedBalances(storeAddress, currentUser)
     )
   )
   .subscribe(balances => {
@@ -442,7 +442,7 @@ const localAndRemotePositionIds$ = combineLatest([
   fetchPositionsTrig$
 ]).pipe(
   switchMapIgnoreThrow(([currentUser, storeAddress]) =>
-    fetchPositionIds(vxm.wallet.currentUser, storeAddress)
+    fetchPositionIds(currentUser, storeAddress)
   ),
   optimisticPositionIds(),
   distinctUntilChanged(compareIdArray),
@@ -502,7 +502,7 @@ const pendingReserveRewards$ = combineLatest([
       uniquePoolReserveIds.map(poolReserve =>
         pendingRewardRewards(
           stakingRewards,
-          vxm.wallet.currentUser,
+          currentUser,
           poolReserve.poolToken,
           poolReserve.reserveToken
         )
@@ -554,7 +554,7 @@ const rewardMultipliers$ = combineLatest([
             poolReserve.poolToken,
             poolReserve.reserveToken,
             stakingReward,
-            vxm.wallet.currentUser
+            currentUser
           );
         } catch (e) {
           console.error("Failed to fetch rewards multiplier", e);
@@ -689,7 +689,7 @@ combineLatest([
         const passedPositions = knownTokenPrecision;
 
         return passedPositions
-          .filter(entry => compareString(entry.owner, vxm.wallet.currentUser))
+          .filter(entry => compareString(entry.owner, currentUser))
           .map(
             (singleEntry): ViewProtectedLiquidity => {
               const isWhiteListed = true;

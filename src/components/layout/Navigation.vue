@@ -3,15 +3,6 @@
     <div id="navigation-top" class="d-flex justify-content-end">
       <b-form-input class="width 800px !important" v-model="user" />
       <b-btn @click="setUser"> SetUser </b-btn>
-      <b-btn
-        @click="loginAction"
-        :variant="darkMode ? 'outline-dark' : 'outline-light'"
-        class="block-rounded"
-        size="sm"
-      >
-        <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
-        <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
-      </b-btn>
       <Notifications />
       <settings-menu />
       <bancor-menu />
@@ -53,6 +44,8 @@ export default class Navigation extends BaseComponent {
 
   setUser() {
     vxm.wallet.setUser(this.user);
+    vxm.ethBancor.onAuthChange(this.user);
+    vxm.ethWallet.setLoggedInAccount(this.user);
     vxm.ethBancor.fetchProtectionPositions();
   }
 
