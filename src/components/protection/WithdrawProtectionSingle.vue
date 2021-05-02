@@ -1,5 +1,8 @@
 <template>
   <div class="mt-3">
+    <label-content-split :label="$t('pool')" class="my-4">
+      <pool-logos @click="poolLogosClick" :pool="pool" />
+    </label-content-split>
     <label-content-split
       :label="$t('claimable_amount')"
       :tooltip="$t('not_include_liquidity_rewards')"
@@ -140,6 +143,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import PoolLogos from "@/components/common/PoolLogos.vue";
 import { compareString, findOrThrow } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -159,7 +163,8 @@ import ModalTxAction from "@/components/modals/ModalTxAction.vue";
     PercentageSlider,
     LabelContentSplit,
     GrayBorderBlock,
-    MainButton
+    MainButton,
+    PoolLogos
   }
 })
 export default class WithdrawProtectionSingle extends BaseTxAction {
