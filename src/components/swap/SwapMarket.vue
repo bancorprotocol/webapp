@@ -76,6 +76,7 @@
     <main-button
       :label="swapButtonLabel"
       @click="initSwap"
+      :error="errorButton"
       :active="true"
       :large="true"
       :loading="rateLoading"
@@ -217,6 +218,10 @@ export default class SwapAction extends BaseTxAction {
     return vxm.bancor.slippageTolerance;
   }
 
+  get errorButton() {
+    return this.slippage && this.slippage > 0.1;
+  }
+
   inverseRate = true;
 
   get rate() {
@@ -255,7 +260,13 @@ export default class SwapAction extends BaseTxAction {
 
   get swapButtonLabel() {
     if (!this.amount1) return i18n.t("enter_amount");
-    else return i18n.t("swap");
+    else if (this.slippage) {
+      if (0.05 < this.slippage && this.slippage < 0.1)
+        return i18n.t("swap_anyway");
+      else if (this.slippage > 0.1) return i18n.t("swap_high_slippage");
+    }
+
+    return i18n.t("swap");
   }
 
   selectFromToken(id: string) {
