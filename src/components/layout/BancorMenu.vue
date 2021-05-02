@@ -146,31 +146,33 @@
           {{ $t("developers") }}
         </div>
       </b-dropdown-item>
-      <b-dropdown-text>
-        <div
-          class="d-flex justify-content-between"
-          style="width: 115px !important"
-        >
+
+      <div
+        class="d-flex justify-content-between align-items-center"
+        style="width: 100px"
+      >
+        <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
           <font-awesome-icon
             icon="book-open"
-            @click="openUrl('https://docs.bancor.network/')"
-            class="mr-2 menu-icon cursor"
+            class="menu-icon cursor"
             fixed-width
           />
+        </b-dropdown-item>
+        <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')">
           <font-awesome-icon
             :icon="['fab', 'github']"
-            @click="openUrl('https://github.com/bancorprotocol/')"
-            class="mr-2 menu-icon cursor"
+            class="menu-icon cursor"
             fixed-width
           />
+        </b-dropdown-item>
+        <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')">
           <font-awesome-icon
             :icon="['fab', 'telegram-plane']"
-            @click="openUrl('https://t.me/BancorDevelopers')"
-            class="mr-2 menu-icon cursor"
+            class="menu-icon cursor"
             fixed-width
           />
-        </div>
-      </b-dropdown-text>
+        </b-dropdown-item>
+      </div>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-5" class="font-size-14">
