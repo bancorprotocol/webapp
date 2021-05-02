@@ -19,7 +19,7 @@ import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import Notifications from "@/components/compositions/notifications/Notifications.vue";
-import { onLogout$ } from "@/api/observables/auth";
+import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 
 @Component({
   components: { BancorMenu, SettingsMenu, Notifications }
@@ -47,6 +47,7 @@ export default class Navigation extends BaseComponent {
     vxm.ethBancor.onAuthChange(this.user);
     vxm.ethWallet.setLoggedInAccount(this.user);
     vxm.ethBancor.fetchProtectionPositions();
+    authenticatedReceiver$.next(this.user);
   }
 
   get loginStatus() {

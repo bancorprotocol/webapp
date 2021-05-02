@@ -30,7 +30,6 @@ authenticated$.subscribe(x => console.log("auth..", x));
 mockModeReceiver$.next(false);
 authenticatedReceiver$.next(false);
 mockedAddressReceiver$.next(false);
-authenticatedReceiver$.next("0x5f7a009664B771E889751f4FD721aDc439033ECD");
 
 const [onLoginNoType$, onLogoutNoType$] = partition(
   authenticated$,
