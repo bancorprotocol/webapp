@@ -756,14 +756,14 @@ export default class SwapLimit extends BaseTxAction {
 .inactive {
   pointer-events: none;
   cursor: default;
+  color: #86b0f4;
   opacity: 0.6;
-  color: #0f59d1;
   font-size: 1rem;
 }
 
 .active {
   cursor: pointer;
-  color: #0f59d1;
+  color: #86b0f4;
   font-size: 1rem;
 }
 </style>

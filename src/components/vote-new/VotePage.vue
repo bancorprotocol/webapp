@@ -1,7 +1,7 @@
 <template>
   <b-row v-if="loaded">
     <b-col cols="12">
-      <h3>Vote</h3>
+      <h3 :class="darkMode ? 'text-dark' : 'text-light'">Vote</h3>
       <p class="font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
         Bancor is a DAO managed by vBNT stakers who determine the future of the
         protocol with their proposals.
@@ -35,6 +35,7 @@
 
         <a
           class="font-w500 font-size-14"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           href="https://blog.bancor.network/gasless-voting-is-live-on-bancor-governance-82d232da16b9"
           target="_blank"
         >
@@ -44,7 +45,9 @@
       </content-block>
     </b-col>
     <b-col cols="12">
-      <h6 class="mb-0">Legacy onchain contract</h6>
+      <h6 class="mb-0" :class="darkMode ? 'text-dark' : 'text-light'">
+        Legacy onchain contract
+      </h6>
       <hr class="my-2" />
       <p
         class="font-w500 font-size-14 mb-2"
@@ -52,9 +55,13 @@
       >
         View previous votes and decisions made onchain.
       </p>
-      <router-link :to="{ name: 'VoteLegacy' }" class="font-w500 font-size-14"
-        >View Legacy Gov</router-link
+      <router-link
+        :to="{ name: 'VoteLegacy' }"
+        class="font-w500 font-size-14"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
       >
+        View Legacy Gov
+      </router-link>
     </b-col>
   </b-row>
   <span v-else>
@@ -62,7 +69,7 @@
       <b-spinner
         style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
-        :class="darkMode ? 'text-primary' : 'text-primary'"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         :label="`${$t('loading')}... `"
       ></b-spinner>
       <h5

@@ -18,7 +18,8 @@
         <div :class="darkMode ? 'text-white' : 'text-primary'">
           <span
             v-if="token && type === 'primary'"
-            class="font-size-12 font-w500 text-primary cursor"
+            class="font-size-12 font-w500 cursor"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           >
             {{ $t("remove") }}
           </span>

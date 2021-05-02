@@ -149,7 +149,8 @@
     </b-form-checkbox-group>
     <div :class="darkMode ? 'seperator-dark' : 'seperator-light'" />
     <div
-      class="text-center text-link font-size-12 font-w400"
+      class="text-center font-size-12 font-w400"
+      :class="darkMode ? 'text-link-dark' : 'text-link-light'"
       @click="clearAllFilters"
     >
       {{ $t("clear_all_filters") }}

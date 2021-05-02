@@ -1,8 +1,11 @@
 <template>
-  <div class="d-flex justify-content-between align-items-center">
+  <div
+    class="d-flex justify-content-between align-items-center"
+    :style="toggleStyle"
+  >
     <span class="font-size-sm">{{ label }}</span>
     <div>
-      <b-button-group class="d-flex">
+      <b-button-group class="d-flex align-items-center">
         <b-button
           class="shadow-none"
           size="sm"
@@ -36,6 +39,8 @@ export default class MenuToggle extends Vue {
   @VModel() status!: boolean;
 
   @Prop({ default: "" }) label?: string;
+
+  @Prop({ default: "height: 30px" }) toggleStyle?: string;
 
   turnOn() {
     this.status = true;

@@ -72,6 +72,14 @@
   color: $text-color-dark !important;
 }
 
+.text-primary-light {
+  color: $primary !important;
+}
+
+.text-primary-dark {
+  color: $primary-dark !important;
+}
+
 .label-muted-light {
   color: $text-muted-light !important;
 }
@@ -93,8 +101,14 @@
   font-weight: 700 !important;
 }
 
-.text-link {
+.text-link-light {
   color: $primary;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-link-dark {
+  color: $primary-dark;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -105,14 +119,6 @@
 
 .text-muted-dark {
   color: $text-muted-dark !important;
-}
-
-.text-link-light {
-  color: $text-link-light !important;
-}
-
-.text-link-dark {
-  color: $text-link-dark !important;
 }
 
 .block-light-blue-light {
@@ -133,11 +139,11 @@
 }
 
 .alert-info-dark {
-  border: 1px $text-info-dark solid !important;
-  background: $bg-info-dark;
+  border: 1px $primary-dark solid !important;
+  background: rgba($gray-border-dark, 0.5);
   border-radius: 8px;
   padding: 1rem;
-  color: $text-info-dark;
+  color: $primary-dark;
 }
 
 .alert-error-light {
@@ -150,7 +156,7 @@
 
 .alert-error-dark {
   border: 1px $text-error-dark solid !important;
-  background: $bg-error-dark;
+  background: rgba($bg-error-dark, 0.5);
   border-radius: 8px;
   padding: 0.5rem;
   color: $text-error-dark;
@@ -166,10 +172,21 @@
 
 .alert-warning-dark {
   border: 1px $text-warning-dark solid !important;
-  background: $bg-warning-dark;
+  background: rbga($bg-warning-dark, 0.2);
   border-radius: 8px;
   padding: 0.5rem;
   color: $text-warning-dark;
+}
+
+.badge-light {
+  color: $primary;
+  background: $bg-btn-outline-light;
+}
+
+.badge-dark {
+  color: black;
+  background: $primary-dark;
+  opacity: 0.65;
 }
 
 .percentage-negative {
@@ -265,6 +282,26 @@
     border-color: $light-white !important;
     background-color: $bg-body-dark !important;
   }
+  &.btn-outline-alt-light:hover {
+    color: $text-color-light !important;
+    border-color: $gray-placeholder !important;
+    background-color: $bg-body-light !important;
+  }
+  &.btn-outline-alt-dark:hover {
+    color: $bg-body-dark !important;
+    border-color: $bg-body-dark !important;
+    background-color: $light-white !important;
+  }
+  &.btn-outline-primary {
+    background-color: $bg-btn-outline-light !important;
+    color: $text-color-light !important;
+  }
+  &.btn-outline-primary-dark {
+    background-color: $text-color-light !important;
+    color: $text-muted-light !important;
+    opacity: 0.6;
+    border: 1px solid $primary !important;
+  }
   &.btn-outline-primary:hover {
     background-color: $bg-btn-outline-light !important;
     color: $text-color-light !important;
@@ -284,9 +321,14 @@
     background-color: $bg-body-light !important;
   }
   &.btn-muted-dark {
-    color: $gray-placeholder !important;
-    border-color: $gray-placeholder !important;
+    color: $gray-placeholder-dark !important;
+    border-color: $gray-placeholder-dark !important;
     background-color: $gray-border-dark !important;
+  }
+  &.btn-muted-alt-dark {
+    color: $gray-placeholder-dark !important;
+    border-color: $gray-placeholder-dark !important;
+    background-color: $bg-body-dark !important;
   }
   &.btn-active-light {
     color: $text-color-light !important;
@@ -606,8 +648,9 @@
       font-weight: 800 !important;
     }
     .in-range {
-      background: $primary !important;
-      color: white !important;
+      color: $bg-body-dark !important;
+      background: $primary-dark !important;
+      opacity: 0.65 !important;
     }
     .active {
       background: $primary !important;
@@ -683,6 +726,12 @@
 }
 
 .custom-input-active {
+  background-color: $primary !important;
+  color: white !important;
+  border: 1px solid white !important;
+}
+
+.custom-input-active-borderless {
   background-color: $primary !important;
   color: white !important;
 }

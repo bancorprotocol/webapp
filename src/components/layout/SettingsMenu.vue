@@ -14,7 +14,14 @@
       <font-awesome-icon icon="cog" fixed-width />
     </template>
     <b-dropdown-group id="dropdown-group-1" v-if="showTx && !showLocale">
-      <b-dropdown-header>{{ $t("transaction_settings") }}</b-dropdown-header>
+      <b-dropdown-header>
+        <div
+          :class="darkMode ? 'text-dark' : 'text-light'"
+          class="font-w500 font-size-16"
+        >
+          {{ $t("transaction_settings") }}
+        </div>
+      </b-dropdown-header>
       <b-dropdown-text
         style="width: 300px"
         :variant="darkMode ? 'dark' : 'light'"
@@ -25,12 +32,20 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="showTx && !showLocale"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-2" v-if="!showLocale">
-      <b-dropdown-header>{{ $t("interface_settings") }}</b-dropdown-header>
+      <b-dropdown-header>
+        <div
+          :class="darkMode ? 'text-dark' : 'text-light'"
+          class="font-w500 font-size-16"
+        >
+          {{ $t("interface_settings") }}
+        </div>
+      </b-dropdown-header>
       <b-dropdown-text :variant="darkMode ? 'dark' : 'light'">
         <MenuToggle
           :label="$t('dark_mode')"
           :value="darkMode"
           @input="darkModeChange"
+          toggleStyle="height: 23px"
         />
         <MenuToggle
           class="padme"
@@ -75,8 +90,14 @@
           <b-btn
             size="sm"
             @click="changeModule('eos')"
-            :variant="currentNetwork === 'eos' ? 'primary' : 'light'"
-            class="border-0 px-4 block-rounded btn-block ml-1"
+            :variant="
+              currentNetwork === 'eos'
+                ? 'primary'
+                : darkMode
+                ? 'muted-alt-dark'
+                : 'muted-light'
+            "
+            class="px-4 block-rounded btn-block ml-1"
           >
             EOS
           </b-btn>

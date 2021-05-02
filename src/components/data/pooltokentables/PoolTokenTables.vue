@@ -31,7 +31,7 @@
       <b-spinner
         style="display: block; width: 1.5rem; height: 1.5rem"
         class="align-self-center align-middle"
-        :class="darkMode ? 'text-primary' : 'text-primary'"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         :label="`${$t('loading')}...`"
       ></b-spinner>
     </div>
