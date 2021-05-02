@@ -31,7 +31,7 @@
           <div v-if="loading" class="d-flex justify-content-center mt-3 pb-3">
             <b-spinner
               style="width: 3rem; height: 3rem"
-              class="text-primary"
+              :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
               :label="`${$t('loading')}... `"
             />
           </div>

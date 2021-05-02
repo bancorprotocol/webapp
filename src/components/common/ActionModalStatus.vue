@@ -42,7 +42,7 @@
         <a
           :href="success.blockExplorerLink"
           target="_blank"
-          class="text-primary"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         >
           {{
             $t("tx_details", {

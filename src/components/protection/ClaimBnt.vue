@@ -21,10 +21,14 @@
         variant="primary"
         @click="click"
         class="font-size-14 font-w500 px-4"
-        >{{ `${$t("claim")} BNT` }}</b-btn>
+        >{{ `${$t("claim")} BNT` }}</b-btn
+      >
     </div>
     <div v-else class="time-left text-center">
-      <div class="text-primary font-size-18">
+      <div
+        class="font-size-18"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      >
         {{ lockDuration }}
       </div>
       <div class="font-size-12 font-w400" :class="textMutedClass">
@@ -56,14 +60,17 @@ export default class ClaimBnt extends BaseComponent {
   countdown(eventTime: number) {
     const currentTime = Date.now() / 1000;
     const diffTime = eventTime - currentTime;
-    let duration = dayjs.duration(diffTime * 1000, "milliseconds");    
+    let duration = dayjs.duration(diffTime * 1000, "milliseconds");
 
     const interval = 1000;
 
-    this.locked = (diffTime > 0) ? true : false;
+    this.locked = diffTime > 0 ? true : false;
 
     const runInterval = setInterval(() => {
-      duration = dayjs.duration(duration.asMilliseconds() - interval, "milliseconds");
+      duration = dayjs.duration(
+        duration.asMilliseconds() - interval,
+        "milliseconds"
+      );
 
       this.lockDuration =
         duration.hours() +

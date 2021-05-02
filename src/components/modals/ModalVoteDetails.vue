@@ -60,7 +60,9 @@
           target="_blank"
           rel="noopener"
           class="font-size-14"
-          >{{ data.item.account }}
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        >
+          {{ data.item.account }}
         </a>
       </template>
 
