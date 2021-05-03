@@ -2477,7 +2477,7 @@ export class EthBancorModule
       try {
         adjustedGas = await this.determineTxGas(tx);
       } catch (e) {
-        console.error("Failed to estimate gas");
+        console.error("Failed to estimate gas", e);
       }
     }
 
