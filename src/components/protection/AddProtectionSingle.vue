@@ -99,7 +99,17 @@
         :href-text="$t('click_here')"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
-        <a id="notify" :href="notificationURL" target="_blank" class="mr-1">
+        <a
+          id="notify"
+          v-if="
+            amountToMakeSpace &&
+            !opposingReserveIsDisabled &&
+            !focusedReserveIsDisabled
+          "
+          :href="notificationURL"
+          target="_blank"
+          class="mr-1"
+        >
           <font-awesome-icon
             icon="bell"
             class="font-size-20 align-bottom"
