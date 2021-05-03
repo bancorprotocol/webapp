@@ -151,8 +151,7 @@ export const en = {
   left_until_coverage: "{time} left until full coverage",
   failed_find_position:
     "Failed to find position of ID {id} from position ids {ids}",
-  pool_staked:
-    "Pools you entered.",
+  pool_staked: "Pools you entered.",
   tokens_originally_staked:
     "Amount of tokens you originally staked in the pool.",
   tokens_can_withdraw:
@@ -492,8 +491,8 @@ export const en = {
   rate_swap_tokens:
     "Select the rate at which you would like to sell your tokens",
   powered_by_keeper_dao: "Limit orders are powered by KeeperDAO",
-  filters:"Filters",
-  group_by:"Group By Pool Token",
+  filters: "Filters",
+  group_by: "Group By Pool Token",
   vbnt_read_more: "Read more about vBNT",
-  notify_me:"Notify Me"
+  notify_space_available: "Notify me when space is available"
 };
