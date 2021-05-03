@@ -17,7 +17,7 @@ import { networkVersion$ } from "./network";
 import { fifteenSeconds$ } from "./timers";
 import { web3 } from "@/api/web3";
 import { compareString, updateArray } from "../helpers";
-import { minimalPoolBalanceReceiver$$ } from "../observables";
+import { minimalPoolBalanceReceiver$ } from "../observables";
 
 const zipAnchorAndConverters = (
   anchorAddresses: string[],
@@ -127,7 +127,7 @@ export const minimalPools$ = pools$.pipe(
 );
 
 minimalPools$.subscribe(pools => {
-  minimalPoolBalanceReceiver$$.next(pools);
+  minimalPoolBalanceReceiver$.next(pools);
 });
 
 export const tokens$ = apiData$.pipe(
