@@ -153,6 +153,8 @@ import { addNotification } from "@/components/compositions/notifications";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 import { compareString } from "@/api/helpers";
 import wait from "waait";
+import { sendGTMEvent } from "@/gtm";
+import { EthNetworks } from "@/api/web3";
 
 @Component({
   components: {
@@ -307,6 +309,22 @@ export default class SwapAction extends BaseTxAction {
   }
 
   async initSwap() {
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: this.token1.symbol + "/" + this.token2.symbol,
+      conversion_from_token: this.token1.symbol,
+      conversion_to_token: this.token2.symbol,
+      conversion_from_amount: this.amount1,
+      conversion_to_amount: this.amount2
+    };
     this.openModal();
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
@@ -336,27 +354,46 @@ export default class SwapAction extends BaseTxAction {
       });
       this.setDefault();
     } catch (e) {
-      //if (e.message.includes('rejected'))
-      // sendGTMEvent({
-      //   "event": "CE Conversion Wallet Confirmation Reject",
-      //   "event_properties": {}
-      // });
-      //else
-      // sendGTMEvent({
-      //   "event": "CE Conversion Failed",
-      //   "event_properties": {}
-      // });
+      if (e.message.includes("User denied"))
+        sendGTMEvent(
+          "Conversion Wallet Confirmation Reject",
+          "Conversion",
+          conversion
+        );
+      else
+        sendGTMEvent("Conversion Failed", "Conversion", {
+          conversion,
+          error: e.message
+        });
+
       this.txMeta.txError = e.message;
     } finally {
       this.txMeta.txBusy = false;
     }
   }
+
   onHide() {
-    // sendGTMEvent({
-    //   "event": "CE Conversion Receipt Confirmation Reject",
-    //   "event_properties": {}
-    // });
-    console.log("HIDED");
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: this.token1.symbol + "/" + this.token2.symbol,
+      conversion_from_token: this.token1.symbol,
+      conversion_to_token: this.token2.symbol,
+      conversion_from_amount: this.amount1,
+      conversion_to_amount: this.amount2
+    };
+    sendGTMEvent(
+      "Conversion Receipt Confirmation Reject",
+      "Conversion",
+      conversion
+    );
   }
 
   lastReturn: { from: ViewAmount; to: ViewAmount } = {

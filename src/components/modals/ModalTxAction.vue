@@ -141,7 +141,7 @@ export default class ModalTxAction extends BaseComponent {
   }
 
   onHideCallBack() {
-    this.onHide();
+    if (this.txMetaData.stepIndex === 1) this.onHide();
   }
 
   async close() {

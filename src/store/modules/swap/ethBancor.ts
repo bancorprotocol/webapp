@@ -2496,9 +2496,11 @@ export class EthBancorModule
             resolve(txHash);
           }
         })
-        .on("confirmation", () => {
-          if (onConfirmation) onConfirmation(txHash);
-          resolve(txHash);
+        .on("confirmation", (confirmationNumber: number) => {
+          if (confirmationNumber === 1) {
+            if (onConfirmation) onConfirmation(txHash);
+            resolve(txHash);
+          }
         })
         .on("error", (error: any) => reject(error));
     });
@@ -6021,9 +6023,25 @@ export class EthBancorModule
       fromId: from.id,
       toId: to.id
     });
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: fromSymbol + "/" + toToken.symbol,
+      conversion_from_token: fromSymbol,
+      conversion_to_token: toToken.symbol,
+      conversion_from_amount: fromAmount,
+      conversion_to_amount: to.amount
+    };
 
     const ethPath = generateEthPath(fromSymbol, relays);
-    sendGTMEvent("Conversion Swap Click", "Conversion");
+    sendGTMEvent("Conversion Swap Click", "Conversion", conversion);
 
     onUpdate!(1, steps);
     await this.triggerApprovalIfRequired({
@@ -6034,7 +6052,11 @@ export class EthBancorModule
       onPrompt
     });
 
-    sendGTMEvent("Conversion Receipt Confirmation Request", "Conversion");
+    sendGTMEvent(
+      "Conversion Receipt Confirmation Request",
+      "Conversion",
+      conversion
+    );
     onUpdate!(2, steps);
 
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
@@ -6052,17 +6074,17 @@ export class EthBancorModule
         0
       ),
       onConfirmation: () => {
-        // sendGTMEvent({
-        //   "event": "CE Conversion Wallet Confirmation Request",
-        //   "event_properties": {}
-        // });
-        console.log("SUCCESS");
+        sendGTMEvent("Conversion Success", "Conversion", conversion);
         return this.spamBalances([fromTokenContract, toTokenContract]);
       },
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
       onHash: () => {
-        console.log("Confirm");
+        sendGTMEvent(
+          "Conversion Wallet Confirmation Request",
+          "Conversion",
+          conversion
+        );
         return onUpdate!(3, steps);
       }
     });
