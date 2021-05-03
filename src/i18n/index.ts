@@ -2,12 +2,14 @@ import Vue from "vue";
 import VueI18n from "vue-i18n";
 import { en } from "./en";
 import { he } from "./he";
+import { pt } from "./pt";
 
 Vue.use(VueI18n);
 
 const messages = {
   en,
-  he
+  he,
+  pt
 };
 
 export const i18n = new VueI18n({
@@ -23,6 +25,8 @@ export const getLanguageByLocale = (locale: string): string => {
       return "English";
     case "he":
       return "עברית";
+    case "pt":
+      return "Português";
     default:
       return "English";
   }
