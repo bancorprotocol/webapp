@@ -210,9 +210,9 @@ export const poolPrograms$ = storeRewards$.pipe(
 
 export const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
 
-export const minimalPoolBalanceReceiver$$ = new Subject<MinimalPool[]>();
+export const minimalPoolBalanceReceiver$ = new Subject<MinimalPool[]>();
 
-const freshReserveBalances$ = minimalPoolBalanceReceiver$$.pipe(
+const freshReserveBalances$ = minimalPoolBalanceReceiver$.pipe(
   throttleTime(5000),
   switchMapIgnoreThrow(minimalPools =>
     vxm.ethBancor.getReserveBalances(minimalPools)
@@ -337,7 +337,7 @@ apiData$.subscribe(data => {
       reserves: pool.reserves.map(r => r.address)
     })
   );
-  minimalPoolBalanceReceiver$$.next(minimalPools);
+  minimalPoolBalanceReceiver$.next(minimalPools);
 });
 
 const bntSupplyApi$ = apiData$.pipe(
