@@ -17,6 +17,7 @@ import { networkVersion$ } from "./network";
 import { fifteenSeconds$ } from "./timers";
 import { web3 } from "@/api/web3";
 import { compareString, updateArray } from "../helpers";
+import { minimalPoolReceiver$ } from "../observables";
 
 const zipAnchorAndConverters = (
   anchorAddresses: string[],
@@ -65,7 +66,7 @@ const anchorAndConverters$ = combineLatest([
     return anchorsAndConverters;
   }),
   startWith([]),
-  share<ConverterAndAnchor[]>()
+  shareReplay<ConverterAndAnchor[]>(1)
 );
 
 const apiPools$ = apiData$.pipe(
@@ -124,6 +125,10 @@ export const minimalPools$ = pools$.pipe(
   distinctUntilChanged<MinimalPool[]>(isEqual),
   shareReplay(1)
 );
+
+minimalPools$.subscribe(pools => {
+  minimalPoolReceiver$.next(pools);
+});
 
 export const tokens$ = apiData$.pipe(
   pluck("tokens"),
