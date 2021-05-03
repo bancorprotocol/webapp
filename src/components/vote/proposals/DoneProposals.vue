@@ -4,7 +4,7 @@
       <b-spinner
         style="display: block; width: 2rem; height: 2rem"
         class="align-self-center align-middle"
-        :class="darkMode ? 'text-primary' : 'text-primary'"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         :label="`${$t('loading')}... `"
       ></b-spinner>
       <h5
@@ -133,6 +133,7 @@
           target="_blank"
           class="font-size-12 font-w500 fix-a"
           :href="getEtherscanUrl(item.proposer)"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         >
           {{ shortAddress(item.proposer) }}
         </a>
@@ -147,6 +148,7 @@
           target="_blank"
           class="font-size-12 font-w500 fix-a"
           :href="getEtherscanUrl(item.executor)"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         >
           {{ shortAddress(item.executor) }}
         </a>
@@ -181,6 +183,7 @@
           :href="getBIPLink(item)"
           target="_blank"
           style="width: 100%; display: inline-block"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         >
           <main-button :small="true" :active="true" class="font-w400 mt-0 mb-0">
             BIP
@@ -192,6 +195,7 @@
           :href="getIPFSUrl(item.hash)"
           target="_blank"
           style="width: 100%; display: inline-block"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         >
           <main-button :small="true" class="font-w400 mt-0 mb-0 ml-3">
             IPFS

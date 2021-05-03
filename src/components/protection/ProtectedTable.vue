@@ -60,7 +60,8 @@
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary mt-1"
+            class="font-size-12 font-w400 mt-1"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           />
           <b-popover
             v-if="!isCollapsable"
@@ -82,7 +83,8 @@
           <div
             v-if="value && value.usdValue !== undefined"
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary mt-1"
+            class="font-size-12 font-w400 mt-1"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           />
           <b-popover
             :target="`popover-stake-${item.id}`"
@@ -114,7 +116,8 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary mt-1"
+            class="font-size-12 font-w400 mt-1"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           />
         </div>
       </template>
@@ -135,7 +138,8 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary mt-1"
+            class="font-size-12 font-w400 mt-1"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           />
         </div>
       </template>
@@ -158,7 +162,8 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary mt-1"
+            class="font-size-12 font-w400 mt-1"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           />
         </div>
       </template>
@@ -179,7 +184,8 @@
               typeof value.amount !== 'undefined'
             "
             v-text="`(~${prettifyNumber(value.usdValue, true)})`"
-            class="font-size-12 font-w400 text-primary mt-1"
+            class="font-size-12 font-w400 mt-1"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           />
         </div>
       </template>
@@ -191,8 +197,8 @@
           </div>
           <b-badge
             v-if="new BigNumber(item.pendingReserveReward).gt(0)"
-            variant="primary"
-            class="badge-version text-primary font-w500 p-1"
+            class="font-size-12 font-w500 p-1"
+            :class="darkMode ? 'badge-dark' : 'badge-light'"
           >
             {{
               `+ ${prettifyNumber(item.pendingReserveReward)} BNT ${
@@ -232,8 +238,8 @@
           </div>
           <b-badge
             v-if="value.reserveRewards.gt(0)"
-            variant="primary"
-            class="badge-version text-primary font-w500 p-1"
+            class="font-size-12 font-w500 p-1"
+            :class="darkMode ? 'badge-dark' : 'badge-light'"
           >
             + {{ stringifyPercentage(value.reserveRewards) }}
           </b-badge>
@@ -565,9 +571,7 @@ export default class ProtectedTable extends BaseComponent {
         })
         .toString()
     );
-    const routeName = position.single
-      ? "WithdrawProtectionSingle"
-      : "WithdrawProtectionDouble";
+    const routeName = "WithdrawProtectionSingle";
     this.$router.push({
       name: routeName,
       params: { id }

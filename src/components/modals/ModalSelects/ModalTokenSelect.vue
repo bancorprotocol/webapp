@@ -27,7 +27,11 @@
     </template>
     <template v-if="allowTokenAdd" #footer>
       <p class="mb-0">{{ $t("cant_find_token") }}</p>
-      <span @click="promptTokenAddModal" class="text-primary cursor font-w600">
+      <span
+        @click="promptTokenAddModal"
+        class="cursor font-w600"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      >
         {{ $t("add_token") }}
       </span>
       <modal-base :title="$t('add_token')" v-model="addTokenModal">

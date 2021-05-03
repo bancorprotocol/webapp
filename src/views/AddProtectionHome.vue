@@ -6,6 +6,7 @@
           <a
             href="https://blog.bancor.network/how-to-stake-liquidity-earn-fees-on-bancor-bff8369274a1"
             target="_blank"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           >
             {{ `${$t("make_money_liquidity")}?` }}
           </a>
@@ -14,6 +15,7 @@
           <a
             href="https://blog.bancor.network/beginners-guide-to-getting-rekt-by-impermanent-loss-7c9510cb2f22"
             target="_blank"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           >
             {{ `${$t("impermanent_loss")}?` }}
           </a>
@@ -22,6 +24,7 @@
           <a
             href="https://bankless.substack.com/p/how-to-protect-yourself-from-impermanent"
             target="_blank"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           >
             {{ `${$t("protect_impermanent_loss")}?` }}
           </a>
@@ -49,7 +52,6 @@ import GrayBorderBlock from "@/components/common/GrayBorderBlock.vue";
 import StakeButtons from "@/components/protection/StakeButtons.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
-import { i18n } from "@/i18n";
 
 @Component({
   components: {
@@ -82,11 +84,6 @@ export default class AddProtectionHome extends BaseComponent {
       if (this.singleMode) {
         this.$router.push({
           name: "AddProtectionSingle",
-          params: { id }
-        });
-      } else {
-        this.$router.push({
-          name: "AddProtectionDouble",
           params: { id }
         });
       }

@@ -143,15 +143,6 @@ export default class YourLiquidity extends BaseComponent {
     }
   }
 
-  goToProtect(id: string) {
-    this.$router.push({
-      name: "AddProtectionDouble",
-      params: {
-        id: id
-      }
-    });
-  }
-
   goToRemove(id: string) {
     this.$router.push({
       name: "PoolAction",

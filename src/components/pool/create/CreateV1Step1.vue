@@ -17,7 +17,8 @@
       <div
         @click="addToken"
         v-else-if="stepOneProps[stepOneProps.length - 1].token"
-        class="font-size-12 font-w500 text-primary text-right mt-3"
+        class="font-size-12 font-w500 text-right mt-3"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
       >
         <span class="cursor">+ {{ $t("add_another_token") }}</span>
       </div>

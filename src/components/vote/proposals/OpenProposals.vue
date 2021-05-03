@@ -12,7 +12,7 @@
         <b-spinner
           style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
-          :class="darkMode ? 'text-primary' : 'text-primary'"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           :label="`${$t('loading')}...`"
         ></b-spinner>
         <h5
@@ -51,6 +51,7 @@
           <a
             target="_blank"
             class="font-size-14 font-w500 pl-2"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
             :href="
               (item.metadata &&
                 item.metadata.payload &&
@@ -68,6 +69,7 @@
           <a
             target="_blank"
             class="font-size-14 font-w500 pl-2"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
             :href="
               (item.metadata &&
                 item.metadata.payload &&
@@ -119,6 +121,7 @@
               <a
                 target="_blank"
                 class="font-size-12 font-w500 fix-a"
+                :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
                 :href="getEtherscanUrl(item.proposer)"
               >
                 {{ shortAddress(item.proposer) }}
@@ -132,6 +135,7 @@
               <a
                 target="_blank"
                 class="font-size-12 font-w500 fix-a"
+                :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
                 :href="getEtherscanUrl(item.executor)"
               >
                 {{ shortAddress(item.executor) }}
