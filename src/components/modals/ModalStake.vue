@@ -68,7 +68,9 @@
       class="text-center"
       :class="darkMode ? 'text-dark' : 'text-light'"
     >
-      <b-spinner variant="primary"></b-spinner>
+      <b-spinner
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      ></b-spinner>
       <h3
         class="font-size-lg mt-4"
         :class="darkMode ? 'text-body-dark' : 'text-body-light'"
@@ -103,7 +105,8 @@
       </div>
       <a
         target="_blank"
-        class="text-primary font-w500 cursor"
+        class="font-w500 cursor"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         :href="getEtherscanUrl()"
         >{{ $t("view_etherscan") }}</a
       >

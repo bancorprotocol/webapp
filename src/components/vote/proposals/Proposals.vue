@@ -7,7 +7,12 @@
   >
     <div>
       <div class="float-right d-flex mt-3 mr-3">
-        <a href="https://discord.gg/EHK8wHbgau" target="_blank" class="mr-2">
+        <a
+          href="https://discord.gg/EHK8wHbgau"
+          target="_blank"
+          class="mr-2"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        >
           <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
             <font-awesome-icon
               :icon="['fab', 'discord']"
@@ -16,7 +21,12 @@
             <span class="d-none d-lg-block ml-2">Discord</span>
           </b-btn>
         </a>
-        <a href="https://gov.bancor.network/" target="_blank" class="mr-2">
+        <a
+          href="https://gov.bancor.network/"
+          target="_blank"
+          class="mr-2"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        >
           <b-btn :variant="ctaBtnVariant" class="proposal-cta-button">
             <img :src="require(`@/assets/media/icons/governance.svg`)" />
             <span class="d-none d-lg-block ml-2">{{ $t("governance") }}</span>
