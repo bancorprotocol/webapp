@@ -438,7 +438,7 @@ export default class SwapLimit extends BaseTxAction {
     }
 
     this.$router.replace({
-      name: "SwapLimit",
+      name: "Swap",
       query: {
         from: id,
         to: to
@@ -455,7 +455,7 @@ export default class SwapLimit extends BaseTxAction {
     }
 
     this.$router.replace({
-      name: "SwapLimit",
+      name: "Swap",
       query: {
         from: from,
         to: id
@@ -465,7 +465,7 @@ export default class SwapLimit extends BaseTxAction {
 
   invertSelection() {
     this.$router.replace({
-      name: "SwapLimit",
+      name: "Swap",
       query: {
         from: this.token2.id,
         to: this.token1.id
@@ -746,7 +746,7 @@ export default class SwapLimit extends BaseTxAction {
       if (this.$route.query.from) defaultQuery.from = this.$route.query.from;
       // @ts-ignore
       if (this.$route.query.to) defaultQuery.to = this.$route.query.to;
-      await this.$router.replace({ name: "SwapLimit", query: defaultQuery });
+      await this.$router.replace({ name: "Swap", query: defaultQuery });
     }
   }
 }
