@@ -6032,7 +6032,7 @@ export class EthBancorModule
           ? "Ropsten"
           : "MainNet",
       conversion_settings:
-        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+        vxm.bancor.slippageTolerance === 0.005 ? "Regular" : "Advanced",
       conversion_token_pair: fromSymbol + "/" + toToken.symbol,
       conversion_from_token: fromSymbol,
       conversion_to_token: toToken.symbol,
@@ -6051,7 +6051,6 @@ export class EthBancorModule
       tokenAddress: fromTokenContract,
       onPrompt
     });
-
     sendGTMEvent(
       "Conversion Receipt Confirmation Request",
       "Conversion",
@@ -6074,7 +6073,18 @@ export class EthBancorModule
         0
       ),
       onConfirmation: () => {
-        sendGTMEvent("Conversion Success", "Conversion", conversion);
+        sendGTMEvent("Conversion Success", "Conversion", {
+          conversion,
+          conversion_success: {
+            conversion_market_eth_usd_rate: "",
+            conversion_market_token_rate: fromToken.price?.toFixed(10)
+          },
+          transaction: {
+            transaction_category: "Conversion",
+            transaction_id: confirmedHash,
+            transaction_revenue: ""
+          }
+        });
         return this.spamBalances([fromTokenContract, toTokenContract]);
       },
       resolveImmediately: true,

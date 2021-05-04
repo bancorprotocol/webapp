@@ -37,6 +37,7 @@ export const sendGTMEvent = (
   sendGTM({
     event: "CE " + event,
     event_properties: event_properties,
+    user_properties: {},
     ga_event: {
       category: ga_event_category
     }
