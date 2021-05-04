@@ -262,7 +262,7 @@ export default class SwapAction extends BaseTxAction {
     if (!this.amount1) return i18n.t("enter_amount");
     else if (this.slippage) {
       if (0.05 < this.slippage && this.slippage < 0.1)
-        return i18n.t("swap_anyway");
+        return i18n.t("swap_slippage");
       else if (this.slippage > 0.1) return i18n.t("swap_high_slippage");
     }
 
