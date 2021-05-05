@@ -32,12 +32,12 @@ const sendGTM = (data: {}) => {
 export const sendGTMEvent = (
   event: string,
   ga_event_category: string,
-  event_properties: {} = {}
+  event_properties: {} | undefined = undefined
 ) =>
   sendGTM({
     event: "CE " + event,
     event_properties: event_properties,
-    user_properties: {},
+    user_properties: undefined,
     ga_event: {
       category: ga_event_category
     }
