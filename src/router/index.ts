@@ -26,6 +26,7 @@ import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 import LimitOrderTable from "@/components/swap/LimitOrderTable.vue";
 import VoteLegacy from "@/components/vote/VoteLegacy.vue";
 import { sendGTMPath } from "@/gtm";
+import { vxm } from "@/store";
 
 Vue.use(Router);
 
@@ -354,7 +355,7 @@ const setPreferredService = (service: string) => {
 
 router.beforeEach((to, from, next) => {
   if (from.path !== to.path) {
-    sendGTMPath(from.path, to.path);
+    sendGTMPath(from.path, to.path, vxm.general.darkMode);
   }
   if (to.meta && to.meta.feature) {
     const service = services.find(

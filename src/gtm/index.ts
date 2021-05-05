@@ -64,7 +64,11 @@ export const sendWalletEvent = (
     }
   });
 
-export const sendGTMPath = (from: string | undefined, to: string) =>
+export const sendGTMPath = (
+  from: string | undefined,
+  to: string,
+  darkMode: boolean = false
+) =>
   sendGTM({
     event: "VP " + to,
     page: {
@@ -72,5 +76,6 @@ export const sendGTMPath = (from: string | undefined, to: string) =>
       to_path: to
     },
     user_properties: undefined,
-    ga_event: undefined
+    ga_event: undefined,
+    theme: darkMode ? "Dark" : "Light"
   });

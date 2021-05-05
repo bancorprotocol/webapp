@@ -79,18 +79,19 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    vxm.ethBancor.updateUserBalances([
-      { balance: fromWei(nativeBalance), id: ethReserveAddress }
-    ]);
+    if (nativeBalance)
+      vxm.ethBancor.updateUserBalances([
+        { balance: fromWei(nativeBalance), id: ethReserveAddress }
+      ]);
   }
 
   @action async checkAlreadySignedIn() {
     const previouslySelectedWallet = localStorage.getItem(selectedWeb3Wallet);
-    googleTagManager(vxm.wallet.currentUser, previouslySelectedWallet);
 
     if (previouslySelectedWallet) {
       await onboard.walletSelect(previouslySelectedWallet);
     }
+    googleTagManager(this.loggedInAccount, previouslySelectedWallet);
   }
 
   @action async getBalance({
