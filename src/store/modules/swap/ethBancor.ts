@@ -6083,7 +6083,7 @@ export class EthBancorModule
         sendGTMEvent("Conversion Success", "Conversion", {
           conversion,
           conversion_success: {
-            conversion_market_eth_usd_rate: "",
+            conversion_market_eth_usd_rate: this.stats.nativeTokenPrice.price,
             conversion_market_token_rate: fromToken.price?.toFixed(10)
           },
           transaction: {
