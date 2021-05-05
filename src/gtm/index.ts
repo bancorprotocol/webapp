@@ -70,5 +70,7 @@ export const sendGTMPath = (from: string | undefined, to: string) =>
     page: {
       from_path: from,
       to_path: to
-    }
+    },
+    user_properties: undefined,
+    ga_event: undefined
   });

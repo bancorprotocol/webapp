@@ -326,7 +326,15 @@ export default class SwapAction extends BaseTxAction {
       conversion_from_amount: this.amount1,
       conversion_to_amount: this.amount2
     };
-    this.openModal();
+    sendGTMEvent("Conversion Swap Click", "Conversion", conversion);
+    const notLoggedIn = this.openModal();
+    if (!notLoggedIn)
+      sendGTMEvent(
+        "Conversion Receipt Confirmation Request",
+        "Conversion",
+        conversion
+      );
+
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {

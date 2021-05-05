@@ -6042,13 +6042,7 @@ export class EthBancorModule
     };
 
     const ethPath = generateEthPath(fromSymbol, relays);
-    sendGTMEvent("Conversion Swap Click", "Conversion", conversion);
 
-    sendGTMEvent(
-      "Conversion Receipt Confirmation Request",
-      "Conversion",
-      conversion
-    );
     onUpdate!(1, steps);
     await this.triggerApprovalIfRequired({
       owner: this.currentUser,
@@ -6081,16 +6075,12 @@ export class EthBancorModule
       ),
       onConfirmation: () => {
         sendGTMEvent("Conversion Success", "Conversion", {
-          conversion,
-          conversion_success: {
-            conversion_market_eth_usd_rate: this.stats.nativeTokenPrice.price,
-            conversion_market_token_rate: fromToken.price?.toFixed(10)
-          },
-          transaction: {
-            transaction_category: "Conversion",
-            transaction_id: confirmedHash,
-            transaction_revenue: ""
-          }
+          ...conversion,
+          conversion_market_eth_usd_rate: this.stats.nativeTokenPrice.price,
+          conversion_market_token_rate: fromToken.price?.toFixed(10),
+          transaction_category: "Conversion",
+          transaction_id: confirmedHash,
+          transaction_revenue: ""
         });
         return this.spamBalances([fromTokenContract, toTokenContract]);
       },
