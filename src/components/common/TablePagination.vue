@@ -14,7 +14,9 @@
             ? darkMode
               ? 'text-muted-dark'
               : 'text-muted-light'
-            : 'text-primary'
+            : darkMode
+            ? 'text-primary-dark'
+            : 'text-primary-light'
         "
       />
     </div>
@@ -33,7 +35,9 @@
             ? darkMode
               ? 'text-muted-dark'
               : 'text-muted-light'
-            : 'text-primary'
+            : darkMode
+            ? 'text-primary-dark'
+            : 'text-primary-light'
         "
       />
     </div>

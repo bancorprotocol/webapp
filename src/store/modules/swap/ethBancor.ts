@@ -186,7 +186,7 @@ import {
   fetchPositionsTrigger$,
   immediateTokenMeta$,
   lockedBalancesTrigger$,
-  minimalPoolReceiver$,
+  minimalPoolBalanceReceiver$,
   newPools$,
   selectedPromptReceiver$,
   usdPriceOfBnt$
@@ -2796,10 +2796,10 @@ export class EthBancorModule
       const addProtectionSupported = liquidityProtection && bntReserve;
 
       const feesGenerated = relay.fees_24h.usd || 0;
-      const feesVsLiquidity = new BigNumber(feesGenerated)
-        .times(365)
-        .div(liqDepth)
-        .toString();
+      const feesVsLiquidity =
+        liqDepth === 0
+          ? "0"
+          : new BigNumber(feesGenerated).times(365).div(liqDepth).toString();
 
       const volume = relay.volume_24h.usd;
 
@@ -2840,7 +2840,7 @@ export class EthBancorModule
         v2: false,
         volume,
         feesGenerated,
-        ...(feesVsLiquidity && { feesVsLiquidity }),
+        feesVsLiquidity,
         aprMiningRewards
       } as ViewRelay;
     });
@@ -6683,7 +6683,7 @@ export class EthBancorModule
       relays: minimalRelays
     });
 
-    minimalPoolReceiver$.next(
+    minimalPoolBalanceReceiver$.next(
       relays.map(
         (relay): MinimalPool => ({
           anchorAddress: relay.anchorAddress,

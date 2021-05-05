@@ -13,7 +13,9 @@
     </template>
 
     <b-dropdown-group v-if="false" id="dropdown-group-1">
-      <b-dropdown-header>Bancor</b-dropdown-header>
+      <b-dropdown-item :variant="darkMode ? 'dark' : 'light'"
+        >Bancor</b-dropdown-item
+      >
       <b-dropdown-item style="width: 230px" disabled>
         <font-awesome-icon icon="info" class="mr-2" fixed-width />
         {{ $t("about") }}
@@ -21,7 +23,9 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group v-if="false" id="dropdown-group-2">
-      <b-dropdown-header>{{ $t("apps") }}</b-dropdown-header>
+      <b-dropdown-item :variant="darkMode ? 'dark' : 'light'">{{
+        $t("apps")
+      }}</b-dropdown-item>
       <b-dropdown-item v-if="isDataPage" @click="navSwap">
         <div class="d-flex align-items-center">
           <img
@@ -73,11 +77,11 @@
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">
-      <b-dropdown-header>
+      <b-dropdown-item :variant="darkMode ? 'dark' : 'light'">
         <div class="font-size-16">
           {{ $t("community_support") }}
         </div>
-      </b-dropdown-header>
+      </b-dropdown-item>
       <b-dropdown-item
         @click="openUrl('https://twitter.com/Bancor')"
         :variant="darkMode ? 'dark' : 'light'"
@@ -137,36 +141,38 @@
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-4">
-      <b-dropdown-header>
+      <b-dropdown-item :variant="darkMode ? 'dark' : 'light'">
         <div class="font-size-16">
           {{ $t("developers") }}
         </div>
-      </b-dropdown-header>
-      <b-dropdown-text>
-        <div
-          class="d-flex justify-content-between"
-          style="width: 115px !important"
-        >
+      </b-dropdown-item>
+
+      <div
+        class="d-flex justify-content-between align-items-center"
+        style="width: 100px"
+      >
+        <b-dropdown-item @click="openUrl('https://docs.bancor.network/')">
           <font-awesome-icon
             icon="book-open"
-            @click="openUrl('https://docs.bancor.network/')"
-            class="mr-2 menu-icon cursor"
+            class="menu-icon cursor"
             fixed-width
           />
+        </b-dropdown-item>
+        <b-dropdown-item @click="openUrl('https://github.com/bancorprotocol/')">
           <font-awesome-icon
             :icon="['fab', 'github']"
-            @click="openUrl('https://github.com/bancorprotocol/')"
-            class="mr-2 menu-icon cursor"
+            class="menu-icon cursor"
             fixed-width
           />
+        </b-dropdown-item>
+        <b-dropdown-item @click="openUrl('https://t.me/BancorDevelopers')">
           <font-awesome-icon
             :icon="['fab', 'telegram-plane']"
-            @click="openUrl('https://t.me/BancorDevelopers')"
-            class="mr-2 menu-icon cursor"
+            class="menu-icon cursor"
             fixed-width
           />
-        </div>
-      </b-dropdown-text>
+        </b-dropdown-item>
+      </div>
     </b-dropdown-group>
     <b-dropdown-divider></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-5" class="font-size-14">

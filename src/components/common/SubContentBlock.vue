@@ -50,7 +50,7 @@ export default class SubContentBlock extends BaseComponent {
 
   .sub-content-header {
     color: $text-muted-dark !important;
-    background-color: $modal-backdrop-bg !important;
+    background-color: $gray-border-dark !important;
     border-bottom: solid 1px $gray-border-dark !important;
   }
 

@@ -1,6 +1,33 @@
 <template>
+  <div v-if="networkNotSupported">
+    <b-row>
+      <b-col cols="12" class="d-flex justify-content-center align-items-center">
+        <img
+          :src="require('@/assets/media/logos/bancor-black.png')"
+          class="mt-5"
+          width="200px"
+        />
+      </b-col>
+      <b-col
+        cols="12"
+        class="d-flex justify-content-center align-items-center mt-3"
+      >
+        <div class="text-primary font-size-24 font-w600">
+          Network not supported
+        </div>
+      </b-col>
+      <b-col
+        cols="12"
+        class="d-flex justify-content-center align-items-center mt-3"
+      >
+        <div class="text-light font-w400">
+          Please switch to Ethereum Mainnet or Ropsten and refresh the site.
+        </div>
+      </b-col>
+    </b-row>
+  </div>
   <div
-    v-if="loading"
+    v-else-if="loading"
     class="loading d-flex justify-content-center align-items-center"
     :class="darkMode ? 'bg-body-dark' : 'bg-body-light'"
   >
@@ -15,7 +42,7 @@
         <b-spinner
           style="display: block; width: 2rem; height: 2rem"
           class="align-self-center align-middle"
-          :class="darkMode ? 'text-primary' : 'text-primary'"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
           :label="`${$t('loading')}... `"
         ></b-spinner>
         <h5
@@ -96,6 +123,14 @@ import { EthNetworks } from "./api/web3";
 export default class App extends BaseComponent {
   loading = true;
   error = false;
+
+  get networkNotSupported() {
+    console.log(vxm.ethBancor.currentNetwork, "is the current network");
+    return !(
+      vxm.ethBancor.currentNetwork == EthNetworks.Mainnet ||
+      vxm.ethBancor.currentNetwork == EthNetworks.Ropsten
+    );
+  }
 
   get isMainNet() {
     return vxm.ethBancor.currentNetwork == EthNetworks.Mainnet;

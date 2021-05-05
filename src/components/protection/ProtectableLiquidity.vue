@@ -24,7 +24,8 @@
         </div>
         <span
           v-text="`(~$${item.usdValue})`"
-          class="font-size-12 font-w400 text-primary mr-2"
+          class="font-size-12 font-w400 mr-2"
+          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
         />
         <b-badge variant="secondary" class="px-3 py-1">
           <font-awesome-icon icon="exclamation-triangle" />

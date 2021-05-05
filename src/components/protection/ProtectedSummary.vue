@@ -20,7 +20,10 @@
             :key="item.key"
             class="text-center"
           >
-            <div class="font-size-14 font-w600 text-primary">
+            <div
+              class="font-size-14 font-w600"
+              :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+            >
               {{ item.value }}
             </div>
             <div class="font-size-14 font-w400">

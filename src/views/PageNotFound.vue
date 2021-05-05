@@ -14,9 +14,12 @@
       cols="12"
       class="d-flex justify-content-center align-items-center mt-3"
     >
-      <span class="text-primary font-size-24 font-w600">{{
-        $t("page_not_found")
-      }}</span>
+      <span
+        class="font-size-24 font-w600"
+        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+      >
+        {{ $t("page_not_found") }}
+      </span>
     </b-col>
     <b-col
       cols="12"
