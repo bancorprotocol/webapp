@@ -45,7 +45,7 @@
           :label="$t('dark_mode')"
           :value="darkMode"
           @input="darkModeChange"
-          toggleStyle="height: 23px"
+          toggle-style="height: 23px"
         />
         <MenuToggle
           class="padme"
@@ -154,6 +154,11 @@ export default class SettingsMenu extends BaseComponent {
   goLocale: boolean = false;
 
   darkModeChange(status: boolean) {
+    this.$gtag.event("dark_mode", {
+      event_category: "user_settings",
+      event_label: "color_schema",
+      event_label: status
+    });
     if (status !== this.darkMode) {
       vxm.general.toggleDarkMode();
     }

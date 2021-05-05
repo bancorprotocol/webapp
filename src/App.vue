@@ -188,6 +188,11 @@ export default class App extends BaseComponent {
   async created() {
     const darkMode = localStorage.getItem("darkMode") === "true";
     const adminMode = localStorage.getItem("adminMode") === "true";
+    this.$gtag.event("dark_mode", {
+      event_category: "user_settings",
+      event_label: "color_schema",
+      event_label: darkMode
+    });
     // const locale = localStorage.getItem("locale");
     // const lang =
     //   navigator.languages && navigator.languages.length
