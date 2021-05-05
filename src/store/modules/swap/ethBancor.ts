@@ -6044,6 +6044,11 @@ export class EthBancorModule
     const ethPath = generateEthPath(fromSymbol, relays);
     sendGTMEvent("Conversion Swap Click", "Conversion", conversion);
 
+    sendGTMEvent(
+      "Conversion Receipt Confirmation Request",
+      "Conversion",
+      conversion
+    );
     onUpdate!(1, steps);
     await this.triggerApprovalIfRequired({
       owner: this.currentUser,
@@ -6052,17 +6057,18 @@ export class EthBancorModule
       tokenAddress: fromTokenContract,
       onPrompt
     });
-    sendGTMEvent(
-      "Conversion Receipt Confirmation Request",
-      "Conversion",
-      conversion
-    );
     onUpdate!(2, steps);
 
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
 
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
+
+    sendGTMEvent(
+      "Conversion Wallet Confirmation Request",
+      "Conversion",
+      conversion
+    );
 
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
@@ -6091,11 +6097,7 @@ export class EthBancorModule
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
       onHash: () => {
-        sendGTMEvent(
-          "Conversion Wallet Confirmation Request",
-          "Conversion",
-          conversion
-        );
+        sendGTMEvent("Conversion Wallet Confirmed", "Conversion", conversion);
         return onUpdate!(3, steps);
       }
     });
