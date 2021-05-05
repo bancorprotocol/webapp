@@ -59,16 +59,16 @@ export class EthereumModule extends VuexModule.With({
 
   @action async connect() {
     try {
-      sendGTMEvent("Wallet Connect Select a Wallet Popup", "Wallet Connect");
+      sendGTMEvent("Wallet Connect Select a Wallet Popup", "Wallet");
       await onboard.walletSelect();
       const state = onboard.getState();
-      sendGTMEvent("Wallet Connect Wallet Icon Click", "Wallet Connect", {
+      sendGTMEvent("Wallet Connect Wallet Icon Click", "Wallet", {
         wallet_name: state.wallet.name
       });
       await onboard.walletCheck();
       sendWalletEvent(
         "Wallet Connect",
-        "Wallet Connect",
+        "Wallet",
         state.address,
         state.wallet.name ?? ""
       );
