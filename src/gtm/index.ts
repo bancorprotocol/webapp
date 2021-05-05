@@ -73,9 +73,9 @@ export const sendGTMPath = (
     event: "VP " + to,
     page: {
       from_path: from,
-      to_path: to
+      to_path: to,
+      theme: darkMode ? "Dark" : "Light"
     },
     user_properties: undefined,
-    ga_event: undefined,
-    theme: darkMode ? "Dark" : "Light"
+    ga_event: undefined
   });
