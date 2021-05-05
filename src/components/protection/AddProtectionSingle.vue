@@ -102,7 +102,7 @@
         <a
           id="notify"
           v-if="
-            amountToMakeSpace &&
+            spaceLTOne &&
             !opposingReserveIsDisabled &&
             !focusedReserveIsDisabled
           "
@@ -131,9 +131,7 @@
           !focusedReserveIsDisabled
         "
         class="mt-2"
-        :label="
-          $t('needed_open_space', { bnt: bnt.symbol, tkn: otherTkn.symbol })
-        "
+        :label="$t('bnt_open_space')"
         :loading="loading"
       >
         <span @click="setAmount(amountToMakeSpace, 0)" class="cursor">{{
@@ -358,6 +356,10 @@ export default class AddProtectionSingle extends BaseTxAction {
     const show = true;
 
     return { show, msg };
+  }
+
+  get spaceLTOne() {
+    return Number(this.maxStakeAmount) < 1;
   }
 
   async initStake() {
