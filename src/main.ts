@@ -18,7 +18,6 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { sync } from "vuex-router-sync";
 import { firebase } from "@firebase/app";
 import "@firebase/analytics";
-import VueGtag from "vue-gtag";
 
 const appVersion = JSON.parse(
   unescape(escape(JSON.stringify(require("../package.json"))))
@@ -58,14 +57,6 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
-Vue.use(
-  VueGtag,
-  {
-    config: { id: "UA-174155472-1" }
-  },
-  router
-);
 
 Vue.use(BootstrapVue);
 
