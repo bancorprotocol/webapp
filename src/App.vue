@@ -163,12 +163,7 @@ export default class App extends BaseComponent {
 
     try {
       await vxm.bancor.init(initParams);
-      // @ts-ignore
       this.loading = false;
-      // @ts-ignore
-      this.$gtag.event("initBancor", {
-        event_category: this.$route.params.service
-      });
     } catch (e) {
       await wait(1000);
       try {
