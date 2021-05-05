@@ -186,7 +186,7 @@ import {
   fetchPositionsTrigger$,
   immediateTokenMeta$,
   lockedBalancesTrigger$,
-  minimalPoolReceiver$,
+  minimalPoolBalanceReceiver$,
   newPools$,
   selectedPromptReceiver$,
   usdPriceOfBnt$
@@ -6637,7 +6637,7 @@ export class EthBancorModule
       relays: minimalRelays
     });
 
-    minimalPoolReceiver$.next(
+    minimalPoolBalanceReceiver$.next(
       relays.map(
         (relay): MinimalPool => ({
           anchorAddress: relay.anchorAddress,
