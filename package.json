@@ -15,7 +15,7 @@
     "build-report": "vue-cli-service build --report"
   },
   "dependencies": {
-    "@0x/contract-addresses": "^6.0.0",
+    "@0x/contract-addresses": "^6.1.0",
     "@0x/protocol-utils": "^1.5.1",
     "@0x/web3-wrapper": "^7.5.3",
     "@dfuse/client": "^0.3.20",
