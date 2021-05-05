@@ -1,46 +1,39 @@
 {
-  "hosting": [ {
-    "target": "production",
-    "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**/*",
-        "headers": [
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "DENY"
-          },
-          {
-            "key": "X-XSS-Protection",
-            "value": "1; mode=block"
-          }
-        ]
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "target": "production",
+      "public": "dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**/*",
+          "headers": [
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            }
+          ]
+        }
+      ]
+    },
     {
       "target": "staging",
       "public": "dist",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
         {
           "source": "**",
@@ -53,7 +46,7 @@
           "headers": [
             {
               "key": "Content-Security-Policy",
-              "value": "frame-ancestors 'self' https://bancor-v2-beta.web.app https://bancor.network https://*.bancor.network; default-src 'self'; connect-src  https://bancor.network https://ropsten-ptdczarhfq-nw.a.run.app/welcome wss://*.blocknative.com https://*.bancor.network https://*.keeperdao.com https://*.sentry.io https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json wss://*.alchemyapi.io; font-src https://fonts.gstatic.com; img-src 'self' data: https://etherscan.io https://*.etherscan.io https://raw.githubusercontent.com https://storage.googleapis.com; script-src 'self' 'unsafe-eval' https://www.google-analytics.com/analytics.js https://www.googletagmanager.com/gtag/js; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/;"
+              "value": "frame-ancestors 'self' https://bancor-v2-beta.web.app https://bancor.network https://*.bancor.network; default-src 'self'; connect-src  https://bancor.network https://ropsten-ptdczarhfq-nw.a.run.app/welcome wss://*.blocknative.com https://*.bancor.network https://*.keeperdao.com https://*.sentry.io https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json wss://*.alchemyapi.io; font-src https://fonts.gstatic.com; img-src 'self' data: https://etherscan.io https://*.etherscan.io https://raw.githubusercontent.com https://storage.googleapis.com; script-src 'self' 'unsafe-eval' https://www.google-analytics.com/analytics.js https://www.googletagmanager.com/gtag/js https://www.googletagmanager.com/gtm.js?id=GTM-TCBKR7W; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/;"
             },
             {
               "key": "X-Content-Type-Options",
