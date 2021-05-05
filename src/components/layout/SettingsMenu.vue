@@ -157,7 +157,7 @@ export default class SettingsMenu extends BaseComponent {
     this.$gtag.event("dark_mode", {
       event_category: "user_settings",
       event_label: "color_schema",
-      event_label: status
+      value: status
     });
     if (status !== this.darkMode) {
       vxm.general.toggleDarkMode();
