@@ -12,14 +12,6 @@
       :links="links"
       @linkClicked="navigateToRoute"
     />
-
-    <div class="sidebar-more">
-      <side-bar-bottom-more
-        :dark-mode="darkMode"
-        :links="links"
-        @linkClicked="navigateToRoute"
-      />
-    </div>
   </div>
 </template>
 
@@ -28,7 +20,7 @@ import { i18n } from "@/i18n";
 import { Component } from "vue-property-decorator";
 import SideBarLeft from "@/components/layout/SideBarLeft.vue";
 import SideBarBottom from "@/components/layout/SideBarBottom.vue";
-import SideBarBottomMore from "@/components/layout/SideBarBottomMore.vue";
+
 import BaseComponent from "@/components/BaseComponent.vue";
 
 export interface ViewSideBarLink {
@@ -42,7 +34,7 @@ export interface ViewSideBarLink {
 }
 
 @Component({
-  components: { SideBarBottom, SideBarBottomMore, SideBarLeft }
+  components: { SideBarBottom, SideBarLeft }
 })
 export default class SideBar extends BaseComponent {
   get links() {
@@ -162,12 +154,5 @@ export default class SideBar extends BaseComponent {
   top: 60px;
   left: 15px;
   z-index: 999;
-}
-
-.sidebar-more {
-  position: absolute;
-  right: 10px;
-  bottom: 60px;
-  z-index: 300;
 }
 </style>

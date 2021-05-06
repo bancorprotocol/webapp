@@ -348,7 +348,7 @@ export const en = {
   choose_language: "Choose your language",
   for_more_information: "For more information",
   click_here: "click here",
-  needed_open_space: "{bnt} needed to open up {tkn} space",
+  bnt_open_space: "BNT needed to open up space",
   available_reserve_only:
     "The selected pool supports adding liquidity using {symbol} only. In order to add liquidity, please select the other reserve.",
   total_fees: "Total Fees",
@@ -494,5 +494,6 @@ export const en = {
   powered_by_keeper_dao: "Limit orders are powered by KeeperDAO",
   filters: "Filters",
   group_by: "Group By Pool Token",
-  vbnt_read_more: "Read more about vBNT"
+  vbnt_read_more: "Read more about vBNT",
+  notify_space_available: "Notify me when space opens up"
 };

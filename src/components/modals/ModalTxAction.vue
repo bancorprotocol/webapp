@@ -1,5 +1,10 @@
 <template>
-  <modal-base v-model="txMetaData.showTxModal" size="sm" @input="close">
+  <modal-base
+    v-model="txMetaData.showTxModal"
+    size="sm"
+    @input="close"
+    @onHide="onHideCallBack"
+  >
     <div
       v-if="showSlotContent"
       class="text-center"
@@ -100,6 +105,7 @@ export default class ModalTxAction extends BaseComponent {
   @Prop({ required: false }) icon?: string;
   @Prop({ default: "primary" }) iconVariant!: string;
   @Prop({ required: false }) redirectOnSuccess?: string;
+  @Prop() onHide!: Function;
 
   get currentStatus() {
     if (this.txMetaData.sections.length)
@@ -134,11 +140,8 @@ export default class ModalTxAction extends BaseComponent {
     selectedPromptReceiver$.next(id);
   }
 
-  async close() {
-    if (this.txMetaData.txBusy) return;
-    if (this.redirectOnSuccess && this.txMetaData.success) {
-      await this.$router.replace({ name: this.redirectOnSuccess });
-    }
+  onHideCallBack() {
+    if (this.txMetaData.stepIndex <= 1) this.onHide();
     this.txMetaData = {
       showTxModal: false,
       txBusy: false,
@@ -148,6 +151,13 @@ export default class ModalTxAction extends BaseComponent {
       stepIndex: 0,
       prompt: null
     };
+  }
+
+  async close() {
+    if (this.txMetaData.txBusy) return;
+    if (this.redirectOnSuccess && this.txMetaData.success) {
+      await this.$router.replace({ name: this.redirectOnSuccess });
+    }
   }
 }
 </script>
