@@ -20,7 +20,7 @@
     "@0x/web3-wrapper": "^7.5.3",
     "@dfuse/client": "^0.3.20",
     "@firebase/analytics": "^0.6.9",
-    "@firebase/app": "^0.6.20",
+    "@firebase/app": "^0.6.21",
     "@fortawesome/fontawesome-pro": "^5.15.3",
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
     "@fortawesome/free-brands-svg-icons": "^5.15.3",
