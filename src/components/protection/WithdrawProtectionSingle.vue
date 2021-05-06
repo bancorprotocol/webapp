@@ -32,6 +32,7 @@
     />
 
     <percentage-slider
+      class="mt-3"
       :label="$t('input')"
       v-model="percentage"
       @input="onPercentUpdate"
@@ -189,14 +190,17 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
 
   get disableActionButton() {
     if (this.vBntWarning) return true;
-    else if (parseFloat(this.percentage) === 0) return true;
+    else if (!this.percentage || parseFloat(this.percentage) === 0) return true;
     else if (this.priceDeviationTooHigh) return true;
     else return this.inputError ? true : false;
   }
 
   get inputError() {
-    if (parseFloat(this.percentage) === 0) return i18n.t("percentage_not_zero");
-    else return "";
+    const percentage = parseFloat(this.percentage);
+    if (percentage === 0) return i18n.t("percentage_not_zero");
+    if (percentage > 100) return i18n.t("percentage_not_100");
+
+    return "";
   }
 
   get outputInfo() {
@@ -236,7 +240,7 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
   }
 
   get sufficientVBnt() {
-    if (this.vBntBalance === null) return true;
+    if (this.vBntBalance === null || !this.percentage) return true;
     if (this.position.givenVBnt) {
       const decPercent = new BigNumber(this.percentage).div(100);
       const proposedWithdraw = new BigNumber(this.position.givenVBnt).times(
