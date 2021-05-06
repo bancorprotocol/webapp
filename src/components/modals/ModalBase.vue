@@ -20,7 +20,7 @@
                 icon="chevron-left"
                 :class="darkMode ? 'text-dark' : 'text-light'"
                 class="cursor"
-                @click="onHide"
+                @click="hide"
               />
             </div>
             <span
@@ -38,7 +38,7 @@
               v-else
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="onHide"
+              @click="hide"
               icon="times"
             />
           </b-col>
@@ -92,6 +92,10 @@ export default class ModalBase extends BaseComponent {
       { "bg-block-dark": this.darkMode },
       { "bg-block-light": !this.darkMode }
     ];
+  }
+
+  hide() {
+    this.show = false;
   }
 
   @Emit("onHide")

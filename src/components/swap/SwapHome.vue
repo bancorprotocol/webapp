@@ -3,7 +3,7 @@
     <b-button-group class="d-flex w-100 text-center mt-2 mb-3 pt-3">
       <b-button
         id="market"
-        @click="$router.push({ name: 'Swap' })"
+        @click="limit = false"
         :variant="
           limit ? 'outline-primary' + (darkMode ? '-dark' : '') : 'primary'
         "
@@ -11,7 +11,7 @@
       </b-button>
       <b-button
         id="limit"
-        @click="$router.push({ name: 'SwapLimit' })"
+        @click="limit = true"
         :variant="
           !limit ? 'outline-primary' + (darkMode ? '-dark' : '') : 'primary'
         "
@@ -36,7 +36,8 @@
     >
       {{ $t("trade_at_pre_det") }}
     </b-popover>
-    <router-view />
+    <swap-limit v-if="limit" />
+    <swap-market v-else />
   </content-block>
 </template>
 
@@ -44,16 +45,18 @@
 import { Component } from "vue-property-decorator";
 import ContentBlock from "@/components/common/ContentBlock.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+import SwapMarket from "@/components/swap/SwapMarket.vue";
+import SwapLimit from "@/components/swap/SwapLimit.vue";
 
 @Component({
   components: {
-    ContentBlock
+    ContentBlock,
+    SwapLimit,
+    SwapMarket
   }
 })
 export default class SwapHome extends BaseComponent {
-  get limit() {
-    return this.$route.name === "SwapLimit";
-  }
+  limit = false;
 }
 </script>
 

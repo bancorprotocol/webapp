@@ -232,6 +232,7 @@ import {
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
+import { sendGTMEvent } from "@/gtm";
 
 keeperTokens$.subscribe(token =>
   vxm.ethBancor.setDaoTokens(token.map(x => x.address))
@@ -2495,9 +2496,11 @@ export class EthBancorModule
             resolve(txHash);
           }
         })
-        .on("confirmation", () => {
-          if (onConfirmation) onConfirmation(txHash);
-          resolve(txHash);
+        .on("confirmation", (confirmationNumber: number) => {
+          if (confirmationNumber === 1) {
+            if (onConfirmation) onConfirmation(txHash);
+            resolve(txHash);
+          }
         })
         .on("error", (error: any) => reject(error));
     });
@@ -6000,7 +6003,6 @@ export class EthBancorModule
         description: "Done!"
       }
     ];
-
     onUpdate!(0, steps);
 
     const fromTokenDecimals = await this.getDecimalsByTokenAddress(
@@ -6022,6 +6024,23 @@ export class EthBancorModule
       toId: to.id
     });
 
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        vxm.bancor.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: fromSymbol + "/" + toToken.symbol,
+      conversion_from_token: fromSymbol,
+      conversion_to_token: toToken.symbol,
+      conversion_from_amount: fromAmount,
+      conversion_to_amount: to.amount
+    };
+
     const ethPath = generateEthPath(fromSymbol, relays);
 
     onUpdate!(1, steps);
@@ -6032,13 +6051,18 @@ export class EthBancorModule
       tokenAddress: fromTokenContract,
       onPrompt
     });
-
     onUpdate!(2, steps);
 
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
 
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
+
+    sendGTMEvent(
+      "Conversion Wallet Confirmation Request",
+      "Conversion",
+      conversion
+    );
 
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
@@ -6049,11 +6073,23 @@ export class EthBancorModule
         zeroAddress,
         0
       ),
-      onConfirmation: () =>
-        this.spamBalances([fromTokenContract, toTokenContract]),
+      onConfirmation: () => {
+        sendGTMEvent("Conversion Success", "Conversion", {
+          ...conversion,
+          conversion_market_eth_usd_rate: this.stats.nativeTokenPrice.price,
+          conversion_market_token_rate: fromToken.price?.toFixed(10),
+          transaction_category: "Conversion",
+          transaction_id: confirmedHash,
+          transaction_revenue: ""
+        });
+        return this.spamBalances([fromTokenContract, toTokenContract]);
+      },
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
-      onHash: () => onUpdate!(3, steps)
+      onHash: () => {
+        sendGTMEvent("Conversion Wallet Confirmed", "Conversion", conversion);
+        return onUpdate!(3, steps);
+      }
     });
     onUpdate!(4, steps);
 
