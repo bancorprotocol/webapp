@@ -29,40 +29,52 @@ const sendGTM = (data: {}) => {
   if (dataLayer) dataLayer.push(data);
 };
 
-export const sendGTMEvent = (
+export const sendConversionEvent = (
   event: string,
-  ga_event_category: string,
   event_properties: {} | undefined = undefined
-) =>
+) => {
   sendGTM({
     event: "CE " + event,
     event_properties: event_properties,
     user_properties: undefined,
     ga_event: {
-      category: ga_event_category
+      category: "Conversion"
     }
   });
+};
 
 export const sendWalletEvent = (
   event: string,
-  ga_event_category: string,
-  id: string,
-  name: string
-) =>
-  sendGTM({
-    event: "CE " + event,
-    ga_event: {
-      category: ga_event_category
-    },
-    user_properties: {
-      wallet_id: id,
-      wallet_name: name
-    },
-    wallet: {
-      id,
-      name
-    }
-  });
+  event_properties: {} | undefined = undefined,
+  id: string = "",
+  name: string = ""
+) => {
+  const wallet = "Wallet";
+  if (id && name)
+    sendGTM({
+      event: "CE " + event,
+      ga_event: {
+        category: wallet
+      },
+      user_properties: {
+        wallet_id: id,
+        wallet_name: name
+      },
+      wallet: {
+        id,
+        name
+      }
+    });
+  else
+    sendGTM({
+      event: "CE " + event,
+      event_properties: event_properties,
+      user_properties: undefined,
+      ga_event: {
+        category: wallet
+      }
+    });
+};
 
 export const sendGTMPath = (
   from: string | undefined,

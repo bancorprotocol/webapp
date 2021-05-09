@@ -154,7 +154,7 @@ import { addNotification } from "@/components/compositions/notifications";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 import { compareString } from "@/api/helpers";
 import wait from "waait";
-import { sendGTMEvent } from "@/gtm";
+import { sendConversionEvent } from "@/gtm";
 import { EthNetworks } from "@/api/web3";
 
 @Component({
@@ -326,12 +326,11 @@ export default class SwapAction extends BaseTxAction {
       conversion_from_amount: this.amount1,
       conversion_to_amount: this.amount2
     };
-    sendGTMEvent("Conversion Swap Click", "Conversion", conversion);
+    sendConversionEvent("Conversion Swap Click", conversion);
     const notLoggedIn = this.openModal();
     if (!notLoggedIn)
-      sendGTMEvent(
+      sendConversionEvent(
         "Conversion Receipt Confirmation Request",
-        "Conversion",
         conversion
       );
 
@@ -364,13 +363,12 @@ export default class SwapAction extends BaseTxAction {
       this.setDefault();
     } catch (e) {
       if (e.message.includes("User denied"))
-        sendGTMEvent(
+        sendConversionEvent(
           "Conversion Wallet Confirmation Reject",
-          "Conversion",
           conversion
         );
       else
-        sendGTMEvent("Conversion Failed", "Conversion", {
+        sendConversionEvent("Conversion Failed", {
           conversion,
           error: e.message
         });
@@ -398,11 +396,7 @@ export default class SwapAction extends BaseTxAction {
       conversion_from_amount: this.amount1,
       conversion_to_amount: this.amount2
     };
-    sendGTMEvent(
-      "Conversion Receipt Confirmation Reject",
-      "Conversion",
-      conversion
-    );
+    sendConversionEvent("Conversion Receipt Confirmation Reject", conversion);
   }
 
   lastReturn: { from: ViewAmount; to: ViewAmount } = {
@@ -588,3 +582,11 @@ export default class SwapAction extends BaseTxAction {
   font-size: 1rem;
 }
 </style>
+
+function event_category(arg0: string, event_category: any, conversion: {
+conversion_type: string; conversion_approve: string; conversion_blockchain:
+string; conversion_blockchain_network: string; conversion_settings: string;
+conversion_token_pair: string; conversion_from_token: string;
+conversion_to_token: string; conversion_from_amount: string;
+conversion_to_amount: string; }) { throw new Error("Function not implemented.");
+}
