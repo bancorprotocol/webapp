@@ -10,7 +10,7 @@
       :fields="fields"
       :items="items"
       :filter="search"
-      :filterFunction="filter"
+      :filter-functions="[filter]"
       :hidePagination="true"
     >
       <template #cell(relay)="{ value }">
@@ -140,11 +140,11 @@ export default class PoolToken extends BaseComponent {
     ];
   }
 
-  filter(row: PoolTokenPosition, filter: string) {
+  filter(row: PoolTokenPosition) {
     const symbols = row.relay.reserves.map(reserve =>
       reserve.symbol.toLowerCase()
     );
-    return symbols.some(symbol => symbol.includes(filter.toLowerCase()));
+    return symbols.some(symbol => symbol.includes(this.search.toLowerCase()));
   }
 
   add(pool: ViewRelay) {

@@ -102,7 +102,7 @@ export default class SideBarBottom extends Vue {
   .side-bar-link {
     padding-left: 0px;
     display: inline-block;
-    width: 100px;
+    width: calc(100% / 4.7);
     height: 100%;
     text-align: center;
     cursor: pointer;

@@ -6,8 +6,6 @@ import Navigation from "@/components/layout/Navigation.vue";
 import { services } from "@/api/helpers";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
-import SwapMarket from "@/components/swap/SwapMarket.vue";
-import SwapLimit from "@/components/swap/SwapLimit.vue";
 import CreateHome from "@/views/CreateHome.vue";
 import DataSummary from "@/components/data/DataSummary.vue";
 import Portfolio from "@/views/Portfolio.vue";
@@ -27,6 +25,8 @@ import RestakeRewards from "@/components/rewards/RestakeRewards.vue";
 import WithdrawRewards from "@/components/rewards/WithdrawRewards.vue";
 import LimitOrderTable from "@/components/swap/LimitOrderTable.vue";
 import VoteLegacy from "@/components/vote/VoteLegacy.vue";
+import { sendGTMPath } from "@/gtm";
+import { vxm } from "@/store";
 
 Vue.use(Router);
 
@@ -224,18 +224,7 @@ export const router = new Router({
         key: "swap",
         feature: "Trade"
       },
-      children: [
-        {
-          path: "",
-          name: "Swap",
-          component: SwapMarket
-        },
-        {
-          path: "limit",
-          name: "SwapLimit",
-          component: SwapLimit
-        }
-      ]
+      name: "Swap"
     },
     {
       path: "/:service/data",
@@ -365,6 +354,9 @@ const setPreferredService = (service: string) => {
 };
 
 router.beforeEach((to, from, next) => {
+  if (from.path !== to.path) {
+    sendGTMPath(from.path, to.path, vxm.general.darkMode);
+  }
   if (to.meta && to.meta.feature) {
     const service = services.find(
       service => service.namespace == to.params.service

@@ -192,6 +192,7 @@ export const en = {
   insufficient_vBNT_balance:
     "Insufficient vBNT balance, you must hold {amount} vBNT before withdrawing position.",
   percentage_not_zero: "Percentage can not be Zero",
+  percentage_not_100: "Percentage can not exceed 100",
   fully_protected_value: "Fully Protected Value",
   havent_reached_protection:
     "You still haven’t reached full protection. There is a risk for impermanent loss and you might receive less than your original stake amount as a result.",
@@ -347,7 +348,7 @@ export const en = {
   choose_language: "Choose your language",
   for_more_information: "For more information",
   click_here: "click here",
-  needed_open_space: "{bnt} needed to open up {tkn} space",
+  bnt_open_space: "BNT needed to open up space",
   available_reserve_only:
     "The selected pool supports adding liquidity using {symbol} only. In order to add liquidity, please select the other reserve.",
   total_fees: "Total Fees",
@@ -495,5 +496,6 @@ export const en = {
   group_by: "Group By Pool Token",
   vbnt_read_more: "Read more about vBNT",
   swap_slippage: "Swap with Slippage",
-  swap_high_slippage: "Swap with High Slippage"
+  swap_high_slippage: "Swap with High Slippage",
+  notify_space_available: "Notify me when space opens up"
 };

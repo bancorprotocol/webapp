@@ -87,6 +87,7 @@
       :title="$t('confirm_token_swap')"
       icon="exchange-alt"
       :tx-meta.sync="txMeta"
+      :onHide="onHide"
     >
       <gray-border-block>
         <label-content-split
@@ -154,6 +155,8 @@ import { addNotification } from "@/components/compositions/notifications";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 import { compareString } from "@/api/helpers";
 import wait from "waait";
+import { sendGTMEvent } from "@/gtm";
+import { EthNetworks } from "@/api/web3";
 
 @Component({
   components: {
@@ -318,8 +321,31 @@ export default class SwapAction extends BaseTxAction {
   }
 
   async initSwap() {
-    // @ts-ignore
-    this.openModal();
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: this.token1.symbol + "/" + this.token2.symbol,
+      conversion_from_token: this.token1.symbol,
+      conversion_to_token: this.token2.symbol,
+      conversion_from_amount: this.amount1,
+      conversion_to_amount: this.amount2
+    };
+    sendGTMEvent("Conversion Swap Click", "Conversion", conversion);
+    const notLoggedIn = this.openModal();
+    if (!notLoggedIn)
+      sendGTMEvent(
+        "Conversion Receipt Confirmation Request",
+        "Conversion",
+        conversion
+      );
+
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {
@@ -348,10 +374,46 @@ export default class SwapAction extends BaseTxAction {
       });
       this.setDefault();
     } catch (e) {
+      if (e.message.includes("User denied"))
+        sendGTMEvent(
+          "Conversion Wallet Confirmation Reject",
+          "Conversion",
+          conversion
+        );
+      else
+        sendGTMEvent("Conversion Failed", "Conversion", {
+          conversion,
+          error: e.message
+        });
+
       this.txMeta.txError = e.message;
     } finally {
       this.txMeta.txBusy = false;
     }
+  }
+
+  onHide() {
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: this.token1.symbol + "/" + this.token2.symbol,
+      conversion_from_token: this.token1.symbol,
+      conversion_to_token: this.token2.symbol,
+      conversion_from_amount: this.amount1,
+      conversion_to_amount: this.amount2
+    };
+    sendGTMEvent(
+      "Conversion Receipt Confirmation Reject",
+      "Conversion",
+      conversion
+    );
   }
 
   lastReturn: { from: ViewAmount; to: ViewAmount } = {

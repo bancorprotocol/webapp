@@ -148,24 +148,8 @@ export default class ModalPoolAction extends BaseComponent {
         txResult = await vxm.bancor.addLiquidity(params);
       else txResult = await vxm.bancor.removeLiquidity(params);
       this.success = txResult;
-      // @ts-ignore
-      this.$gtag.event(
-        this.withdrawLiquidity ? "removeLiquidity" : "addLiquidity",
-        {
-          event_category: "success",
-          event_label: this.$route.params.account
-        }
-      );
     } catch (e) {
       this.error = e.message;
-      // @ts-ignore
-      this.$gtag.event(
-        this.withdrawLiquidity ? "removeLiquidity" : "addLiquidity",
-        {
-          event_category: "error",
-          event_label: this.$route.params.account
-        }
-      );
     } finally {
       this.txBusy = false;
     }

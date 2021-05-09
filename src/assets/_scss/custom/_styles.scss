@@ -747,6 +747,22 @@
   color: white !important;
 }
 
+.icon-primary-light {
+  background-color: white !important;
+  border-radius: 6px !important;
+  border: 1px solid $primary !important;
+  padding: 3px;
+  color: $primary !important;
+}
+
+.icon-primary-dark {
+  background-color: $dropdown-dark !important;
+  border-radius: 6px !important;
+  border: 1px solid $primary-dark !important;
+  padding: 3px;
+  color: $primary-dark !important;
+}
+
 .seperator-dark {
   margin-bottom: 1rem;
   border: 1px solid $gray-border-dark;
