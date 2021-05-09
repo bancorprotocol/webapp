@@ -192,6 +192,7 @@ export const en = {
   insufficient_vBNT_balance:
     "Insufficient vBNT balance, you must hold {amount} vBNT before withdrawing position.",
   percentage_not_zero: "Percentage can not be Zero",
+  percentage_not_100: "Percentage can not exceed 100",
   fully_protected_value: "Fully Protected Value",
   havent_reached_protection:
     "You still haven’t reached full protection. There is a risk for impermanent loss and you might receive less than your original stake amount as a result.",
