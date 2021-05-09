@@ -380,6 +380,10 @@
     border-color: $gray-placeholder !important;
     background-color: white !important;
   }
+  &.btn-error {
+    color: white !important;
+    background-color: $text-error-light !important;
+  }
 }
 
 .modal .modal-content {

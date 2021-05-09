@@ -495,5 +495,7 @@ export const en = {
   filters: "Filters",
   group_by: "Group By Pool Token",
   vbnt_read_more: "Read more about vBNT",
+  swap_slippage: "Swap with Slippage",
+  swap_high_slippage: "Swap with High Slippage",
   notify_space_available: "Notify me when space opens up"
 };
