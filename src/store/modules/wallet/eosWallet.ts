@@ -38,7 +38,7 @@ export class EosTransitModule extends VuexModule.With({
   accessContext = initAccessContext({
     appName,
     network: {
-      host: "nodes.get-scatter.com",
+      host: "eos.greymass.com",
       port: 443,
       protocol: "https",
       chainId:
