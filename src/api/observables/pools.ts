@@ -13,7 +13,7 @@ import { getWelcomeData, WelcomeData } from "../eth/bancorApi";
 import { getAnchors, getConvertersByAnchors } from "../eth/contractWrappers";
 import { bancorConverterRegistry$ } from "./contracts";
 import { logger, switchMapIgnoreThrow } from "./customOperators";
-import { networkVersion$ } from "./network";
+import { supportedNetworkVersion$ } from "./network";
 import { fifteenSeconds$ } from "./timers";
 import { web3 } from "@/api/web3";
 import { compareString, updateArray } from "../helpers";
@@ -34,7 +34,10 @@ const zipAnchorAndConverters = (
   }));
 };
 
-export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
+export const apiData$ = combineLatest([
+  supportedNetworkVersion$,
+  fifteenSeconds$
+]).pipe(
   switchMapIgnoreThrow(([networkVersion]) => getWelcomeData(networkVersion)),
   distinctUntilChanged<WelcomeData>(isEqual),
   share()

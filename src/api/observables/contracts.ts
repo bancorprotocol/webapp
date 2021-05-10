@@ -7,7 +7,7 @@ import {
   optimisticContract,
   switchMapIgnoreThrow
 } from "./customOperators";
-import { networkVars$, networkVersion$ } from "./network";
+import { networkVars$, supportedNetworkVersion$ } from "./network";
 import { vxm } from "@/store";
 import { distinctUntilChanged, pluck, shareReplay, tap } from "rxjs/operators";
 import { RegisteredContracts } from "@/types/bancor";
@@ -17,7 +17,7 @@ import { buildLiquidityProtectionContract } from "../eth/contractTypes";
 import { compareString } from "../helpers";
 import { combineLatest, timer } from "rxjs";
 
-const zeroXContracts$ = networkVersion$.pipe(
+const zeroXContracts$ = supportedNetworkVersion$.pipe(
   switchMapIgnoreThrow(async networkVersion =>
     getContractAddressesForChainOrThrow(networkVersion as number)
   )
