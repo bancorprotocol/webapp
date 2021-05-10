@@ -7,6 +7,7 @@ import {
 } from "rxjs/operators";
 import { getNetworkVariables } from "../config";
 import { EthNetworks } from "../web3";
+import { switchMapIgnoreThrow } from "./customOperators";
 
 export const networkVersionReceiver$ = new Subject<EthNetworks>();
 
@@ -17,6 +18,6 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
 );
 
 export const networkVars$ = networkVersion$.pipe(
-  map(getNetworkVariables),
+  switchMapIgnoreThrow(async network => getNetworkVariables(network)),
   shareReplay(1)
 );
