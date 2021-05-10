@@ -64,16 +64,6 @@
           <span class="ml-3">Bancor X</span>
         </div>
       </b-dropdown-item>
-      <b-dropdown-item @click="openUrl('https://wallet.bancor.network/')">
-        <div class="d-flex align-items-center">
-          <img
-            height="16"
-            width="16"
-            :src="require(`@/assets/media/icons/bancor.svg`)"
-          />
-          <span class="ml-3">Bancor Wallet</span>
-        </div>
-      </b-dropdown-item>
     </b-dropdown-group>
     <b-dropdown-divider v-if="false"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3">

@@ -100,14 +100,6 @@ export default class SideBar extends BaseComponent {
         icon: "bancorx.svg"
       },
       {
-        route: "https://wallet.bancor.network/",
-        key: "wallet",
-        label: "Bancor Wallet",
-        newTab: true,
-        hideMobile: true,
-        icon: "bancor.svg"
-      },
-      {
         route: "https://www.bntee.shop/",
         key: "bntee",
         label: "BNTEE Shop",
