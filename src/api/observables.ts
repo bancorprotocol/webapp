@@ -63,7 +63,11 @@ import {
   rankPriority,
   switchMapIgnoreThrow
 } from "./observables/customOperators";
-import { networkVars$, networkVersion$ } from "./observables/network";
+import {
+  networkVars$,
+  networkVersion$,
+  supportedNetworkVersion$
+} from "./observables/network";
 import { apiData$, minimalPools$, tokens$ } from "./observables/pools";
 import { onLogin$, onLogout$ } from "./observables/auth";
 import {
@@ -174,7 +178,7 @@ onLogout$.subscribe(() => {
   vxm.ethBancor.setProtectedViewPositions([]);
 });
 
-export const tokenMeta$ = networkVersion$.pipe(
+export const tokenMeta$ = supportedNetworkVersion$.pipe(
   switchMapIgnoreThrow(network => getTokenMeta(network)),
   share()
 );
@@ -328,6 +332,7 @@ networkVersion$.subscribe(network => {
     vxm.ethBancor.setNetwork(network);
   }
 });
+
 apiData$.subscribe(data => {
   vxm.ethBancor.setApiData(data);
   const minimalPools = data.pools.map(
