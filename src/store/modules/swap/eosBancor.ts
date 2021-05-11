@@ -1015,28 +1015,32 @@ export class EosBancorModule
             )
           : [...acc, item];
       }, [])
-      .map(token => {
-        const id = token.id as string;
-        const contract = token.contract as string;
-        const symbol = token.symbol as string;
+      .map(
+        (token): ViewToken => {
+          const id = token.id as string;
+          const contract = token.contract as string;
+          const symbol = token.symbol as string;
 
-        const tokenMeta = findOrThrow(this.tokenMeta, token =>
-          compareString(token.id, id)
-        );
-        const tokenBalance = vxm.eosNetwork.balance({
-          contract,
-          symbol
-        });
-        const tokenBalanceString =
-          tokenBalance && new BigNumber(tokenBalance.balance).toString();
-        return {
-          ...token,
-          name: tokenMeta.name,
-          balance: tokenBalanceString,
-          logo: tokenMeta.logo,
-          limitOrderAvailable: false
-        };
-      });
+          const tokenMeta = findOrThrow(this.tokenMeta, token =>
+            compareString(token.id, id)
+          );
+          const tokenBalance = vxm.eosNetwork.balance({
+            contract,
+            symbol
+          });
+          const tokenBalanceString =
+            tokenBalance && new BigNumber(tokenBalance.balance).toString();
+          return {
+            ...token,
+            name: tokenMeta.name,
+            balance: tokenBalanceString,
+            logo: tokenMeta.logo,
+            limitOrderAvailable: false,
+            tradeSupported: true,
+            liquidityProtection: false
+          };
+        }
+      );
   }
 
   get token(): (arg0: string) => ViewToken {
