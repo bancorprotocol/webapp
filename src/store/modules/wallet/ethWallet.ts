@@ -6,7 +6,12 @@ import { fromWei, isAddress, toHex, toWei } from "web3-utils";
 import { shrinkToken } from "@/api/eth/helpers";
 import { vxm } from "@/store";
 import { EthNetworks, getWeb3, Provider, web3 } from "@/api/web3";
-import { sendConversionEvent, googleTagManager, sendWalletEvent } from "@/gtm";
+import {
+  sendConversionEvent,
+  googleTagManager,
+  sendWalletEvent,
+  WalletEvents
+} from "@/gtm";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
@@ -59,15 +64,15 @@ export class EthereumModule extends VuexModule.With({
 
   @action async connect() {
     try {
-      sendWalletEvent("Wallet Connect Select Wallet Popup");
+      sendWalletEvent(WalletEvents.popup);
       await onboard.walletSelect();
       const state = onboard.getState();
-      sendWalletEvent("Wallet Connect Wallet Icon Click", {
+      sendWalletEvent(WalletEvents.click, {
         wallet_name: state.wallet.name
       });
       await onboard.walletCheck();
       sendWalletEvent(
-        "Wallet Connect",
+        WalletEvents.connect,
         undefined,
         state.address,
         state.wallet.name ?? ""

@@ -154,7 +154,7 @@ import { addNotification } from "@/components/compositions/notifications";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 import { compareString } from "@/api/helpers";
 import wait from "waait";
-import { sendConversionEvent } from "@/gtm";
+import { ConversionEvents, sendConversionEvent } from "@/gtm";
 import { EthNetworks } from "@/api/web3";
 
 @Component({
@@ -326,13 +326,10 @@ export default class SwapAction extends BaseTxAction {
       conversion_from_amount: this.amount1,
       conversion_to_amount: this.amount2
     };
-    sendConversionEvent("Conversion Swap Click", conversion);
+    sendConversionEvent(ConversionEvents.click, conversion);
     const notLoggedIn = this.openModal();
     if (!notLoggedIn)
-      sendConversionEvent(
-        "Conversion Receipt Confirmation Request",
-        conversion
-      );
+      sendConversionEvent(ConversionEvents.receipt_req, conversion);
 
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
@@ -363,12 +360,9 @@ export default class SwapAction extends BaseTxAction {
       this.setDefault();
     } catch (e) {
       if (e.message.includes("User denied"))
-        sendConversionEvent(
-          "Conversion Wallet Confirmation Reject",
-          conversion
-        );
+        sendConversionEvent(ConversionEvents.wallet_rej, conversion);
       else
-        sendConversionEvent("Conversion Failed", {
+        sendConversionEvent(ConversionEvents.fail, {
           conversion,
           error: e.message
         });
@@ -396,7 +390,7 @@ export default class SwapAction extends BaseTxAction {
       conversion_from_amount: this.amount1,
       conversion_to_amount: this.amount2
     };
-    sendConversionEvent("Conversion Receipt Confirmation Reject", conversion);
+    sendConversionEvent(ConversionEvents.receipt_rej, conversion);
   }
 
   lastReturn: { from: ViewAmount; to: ViewAmount } = {
