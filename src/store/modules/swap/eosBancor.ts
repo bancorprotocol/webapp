@@ -204,9 +204,28 @@ const dryToTraditionalEdge = (relay: DryRelay): [string, string] => [
   })
 ];
 
-const pureTimesAsset = (asset: Asset, multiplier: number) => {
+const pureTimesAsset = (asset: Asset, multiplier: number): Asset => {
   const newAsset = new Asset(asset.to_string());
-  return newAsset.times(multiplier);
+  const res = newAsset.times(multiplier);
+  if (res.isEqual(newAsset)) {
+    return number_to_asset(
+      asset_to_number(newAsset) * multiplier,
+      newAsset.symbol
+    );
+  } else {
+    return res;
+  }
+};
+
+const splitAsset = (asset: Asset): [Asset, Asset] => {
+  const originalAssetString = asset.to_string();
+  const newAsset = new Asset(originalAssetString);
+  const newAsset2 = new Asset(originalAssetString);
+  const firstAssetNumber = asset_to_number(newAsset) * 0.5;
+  const firstHalfAsset = number_to_asset(firstAssetNumber, newAsset.symbol);
+  const secondHalfAsset = newAsset2.minus(firstHalfAsset);
+
+  return [firstHalfAsset, secondHalfAsset];
 };
 
 const tokenContractSupportsOpen = async (contractName: string) => {
@@ -1689,6 +1708,8 @@ export class EosBancorModule
     onUpdate
   }: LiquidityParams): Promise<TxResponse> {
     const relay = await this.relayById(relayId);
+    if (!relay.isMultiContract)
+      throw new Error("Only adding liquidity to V2 pools are supported");
     const tokenAmounts = await this.viewAmountToTokenAmounts(reserves);
 
     const tokenContractsAndSymbols: BaseToken[] = [
@@ -1870,9 +1891,11 @@ export class EosBancorModule
   }) {
     if (reserveAssets.length !== 2)
       throw new Error("Was expecting only 2 reserve assets");
-    const actions = reserveAssets.map(reserveAsset =>
+    const [firstAsset, secondAsset] = splitAsset(smartTokenAmount);
+
+    const actions = reserveAssets.map((reserveAsset, index) =>
       liquidateAction(
-        pureTimesAsset(smartTokenAmount, 0.5),
+        index == 0 ? firstAsset : secondAsset,
         relay.smartToken.contract,
         number_to_asset(0, reserveAsset.symbol),
         relay.contract,
