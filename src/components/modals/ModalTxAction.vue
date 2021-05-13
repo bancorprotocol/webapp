@@ -146,7 +146,13 @@ export default class ModalTxAction extends BaseComponent {
 
   @Emit("onHide")
   onHideCallBack() {
-    if (this.txMetaData.stepIndex <= 1) return true;
+    if (
+      this.txMetaData.stepIndex <= 1 &&
+      !this.txMetaData.txError &&
+      !this.txMetaData.success
+    )
+      return true;
+    else return false;
   }
 
   async close() {
@@ -154,10 +160,9 @@ export default class ModalTxAction extends BaseComponent {
     if (this.redirectOnSuccess && this.txMetaData.success) {
       await this.$router.replace({ name: this.redirectOnSuccess });
     }
+    this.onHideCallBack();
 
     this.resetTxMeta();
-
-    this.onHideCallBack();
   }
 }
 </script>

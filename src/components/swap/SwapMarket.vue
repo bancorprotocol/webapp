@@ -392,7 +392,9 @@ export default class SwapAction extends BaseTxAction {
     }
   }
 
-  onHide() {
+  onHide(state: boolean) {
+    if (!state) return;
+    console.log("GTM event");
     const conversion = {
       conversion_type: "Market",
       conversion_approve: "Unlimited",

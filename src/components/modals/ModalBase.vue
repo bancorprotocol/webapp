@@ -18,7 +18,7 @@
                 icon="chevron-left"
                 :class="darkMode ? 'text-dark' : 'text-light'"
                 class="cursor"
-                @click="onHide"
+                @click="show = false"
               />
             </div>
             <span
@@ -36,7 +36,7 @@
               v-else
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="onHide"
+              @click="show = false"
               icon="times"
             />
           </b-col>
