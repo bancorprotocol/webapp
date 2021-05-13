@@ -7,8 +7,6 @@
     hide-footer
     :content-class="contentClass"
     :modal-class="fullmodal ? 'full-modal' : ''"
-    @close="onHide"
-    @cancel="onHide"
     @hide="onHide"
   >
     <template slot="modal-header">
@@ -20,7 +18,7 @@
                 icon="chevron-left"
                 :class="darkMode ? 'text-dark' : 'text-light'"
                 class="cursor"
-                @click="hide"
+                @click="onHide"
               />
             </div>
             <span
@@ -38,7 +36,7 @@
               v-else
               class="cursor font-size-lg"
               :class="darkMode ? 'text-dark' : 'text-light'"
-              @click="hide"
+              @click="onHide"
               icon="times"
             />
           </b-col>
@@ -92,10 +90,6 @@ export default class ModalBase extends BaseComponent {
       { "bg-block-dark": this.darkMode },
       { "bg-block-light": !this.darkMode }
     ];
-  }
-
-  hide() {
-    this.show = false;
   }
 
   @Emit("onHide")
