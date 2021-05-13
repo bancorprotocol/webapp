@@ -1655,10 +1655,10 @@
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.6.2.tgz#8578cb1061a83ced4570188be9e225d54e0f27fb"
   integrity sha512-2VXvq/K+n8XMdM4L2xy5bYp2ZXMawJXluUIDzUBvMthVR+lhxK4pfFiqr1mmDbv9ydXvEAuFsD+6DpcZuJcSSw==
 
-"@firebase/app@^0.6.21":
-  version "0.6.21"
-  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.6.21.tgz#ce8f010267b9c680b0295f5d6602910726e85627"
-  integrity sha512-SpWXdy/U06gTOEofSjhcsFGUtYmZim7ty6U4eMUQH0ObtymeVdTiK4tJcohMT5XoihQw4CLS2YvDySwx3+BlWg==
+"@firebase/app@^0.6.22":
+  version "0.6.22"
+  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.6.22.tgz#099f51d2c4302d2c99da82994cd176b5a568cfcc"
+  integrity sha512-9E0KP7Z+LpBOx/oQauLYvf3XleYpbfoi058wStADUtP+eOX5GIImAFNDTOO4ZNuJfLgyrHpKi7Cct6mDdxrz+g==
   dependencies:
     "@firebase/app-types" "0.6.2"
     "@firebase/component" "0.5.0"
