@@ -749,8 +749,10 @@ export const onboard = Onboard({
       if (network == EthNetworks.Mainnet || network == EthNetworks.Ropsten) {
         onboard.config({ networkId: network });
       }
-      networkVersionReceiver$.next(network);
-      vxm.ethWallet.onNetworkChange(network);
+      if (network) {
+        networkVersionReceiver$.next(network);
+        vxm.ethWallet.onNetworkChange(network);
+      }
     },
     wallet: wallet => {
       if (wallet.name) {
