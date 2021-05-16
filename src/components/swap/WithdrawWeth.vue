@@ -72,11 +72,17 @@ export default class WithdrawWeth extends BaseTxAction {
     return wethToken?.balance || "0";
   }
 
-  get output() {
+  get decOutput() {
+    if (this.percentage == "100") return this.balance;
     const percentage = new BigNumber(this.percentage).div(100);
     const amount = new BigNumber(this.balance).times(percentage).toString();
-    return this.prettifyNumber(amount);
+    return amount;
   }
+
+  get output() {
+    return this.prettifyNumber(this.decOutput);
+  }
+
   async withdrawWeth() {
     this.openModal();
 
@@ -84,7 +90,7 @@ export default class WithdrawWeth extends BaseTxAction {
     this.txMeta.txBusy = true;
     try {
       this.txMeta.success = await vxm.ethBancor.withdrawWeth({
-        decAmount: this.output,
+        decAmount: this.decOutput,
         onPrompt: this.onPrompt
       });
       this.txMeta.showTxModal = false;
