@@ -1,10 +1,5 @@
 <template>
-  <modal-base
-    v-model="txMetaData.showTxModal"
-    size="sm"
-    @input="close"
-    @onHide="onHideCallBack"
-  >
+  <modal-base v-model="txMetaData.showTxModal" size="sm" @onHide="close">
     <div
       v-if="showSlotContent"
       class="text-center"
@@ -89,7 +84,7 @@
   </modal-base>
 </template>
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Component, Emit, Prop, PropSync } from "vue-property-decorator";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import { ITxMeta } from "@/types/bancor";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -105,7 +100,6 @@ export default class ModalTxAction extends BaseComponent {
   @Prop({ required: false }) icon?: string;
   @Prop({ default: "primary" }) iconVariant!: string;
   @Prop({ required: false }) redirectOnSuccess?: string;
-  @Prop() onHide!: Function;
 
   get currentStatus() {
     if (this.txMetaData.sections.length)
@@ -140,17 +134,25 @@ export default class ModalTxAction extends BaseComponent {
     selectedPromptReceiver$.next(id);
   }
 
+  resetTxMeta() {
+    this.txMetaData.showTxModal = false;
+    this.txMetaData.txBusy = false;
+    this.txMetaData.success = null;
+    this.txMetaData.txError = "";
+    this.txMetaData.sections = [];
+    this.txMetaData.stepIndex = 0;
+    this.txMetaData.prompt = null;
+  }
+
+  @Emit("onHide")
   onHideCallBack() {
-    if (this.txMetaData.stepIndex <= 1) this.onHide();
-    this.txMetaData = {
-      showTxModal: false,
-      txBusy: false,
-      success: null,
-      txError: "",
-      sections: [],
-      stepIndex: 0,
-      prompt: null
-    };
+    if (
+      this.txMetaData.stepIndex <= 1 &&
+      !this.txMetaData.txError &&
+      !this.txMetaData.success
+    )
+      return true;
+    else return false;
   }
 
   async close() {
@@ -158,6 +160,9 @@ export default class ModalTxAction extends BaseComponent {
     if (this.redirectOnSuccess && this.txMetaData.success) {
       await this.$router.replace({ name: this.redirectOnSuccess });
     }
+    this.onHideCallBack();
+
+    this.resetTxMeta();
   }
 }
 </script>

@@ -87,7 +87,7 @@
       :title="$t('confirm_token_swap')"
       icon="exchange-alt"
       :tx-meta.sync="txMeta"
-      :onHide="onHide"
+      @onHide="onHide"
     >
       <gray-border-block>
         <label-content-split
@@ -392,7 +392,9 @@ export default class SwapAction extends BaseTxAction {
     }
   }
 
-  onHide() {
+  onHide(state: boolean) {
+    if (!state) return;
+    console.log("GTM event");
     const conversion = {
       conversion_type: "Market",
       conversion_approve: "Unlimited",
