@@ -95,8 +95,8 @@ export default class WithdrawWeth extends BaseTxAction {
       });
       this.txMeta.showTxModal = false;
       addNotification({
-        title: this.$tc("notifications.add.widthdraw_weth.title"),
-        description: this.$tc("notifications.add.widthdraw_weth.description"),
+        title: this.$tc("notifications.add.withdraw_weth.title"),
+        description: this.$tc("notifications.add.withdraw_weth.description"),
         txHash: this.txMeta.success!.txId
       });
     } catch (e) {
