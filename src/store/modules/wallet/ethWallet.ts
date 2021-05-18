@@ -93,10 +93,11 @@ export class EthereumModule extends VuexModule.With({
   @action async checkAlreadySignedIn() {
     const previouslySelectedWallet = localStorage.getItem(selectedWeb3Wallet);
 
+    googleTagManager(this.loggedInAccount, previouslySelectedWallet);
+
     if (previouslySelectedWallet) {
       await onboard.walletSelect(previouslySelectedWallet);
     }
-    googleTagManager(this.loggedInAccount, previouslySelectedWallet);
   }
 
   @action async getBalance({
