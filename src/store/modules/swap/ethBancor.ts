@@ -232,7 +232,7 @@ import {
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
-import { sendGTMEvent } from "@/gtm";
+import { ConversionEvents, sendConversionEvent } from "@/gtm";
 
 keeperTokens$.subscribe(token =>
   vxm.ethBancor.setDaoTokens(token.map(x => x.address))
@@ -6056,11 +6056,7 @@ export class EthBancorModule
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
 
-    sendGTMEvent(
-      "Conversion Wallet Confirmation Request",
-      "Conversion",
-      conversion
-    );
+    sendConversionEvent(ConversionEvents.wallet_req, conversion);
 
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
@@ -6072,7 +6068,7 @@ export class EthBancorModule
         0
       ),
       onConfirmation: () => {
-        sendGTMEvent("Conversion Success", "Conversion", {
+        sendConversionEvent(ConversionEvents.success, {
           ...conversion,
           conversion_market_eth_usd_rate: this.stats.nativeTokenPrice.price,
           conversion_market_token_rate: fromToken.price?.toFixed(10),
@@ -6085,7 +6081,7 @@ export class EthBancorModule
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
       onHash: () => {
-        sendGTMEvent("Conversion Wallet Confirmed", "Conversion", conversion);
+        sendConversionEvent(ConversionEvents.wallet_confirm, conversion);
         return onUpdate!(3, steps);
       }
     });
