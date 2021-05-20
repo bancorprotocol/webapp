@@ -1,50 +1,52 @@
 <template>
   <b-row v-if="loaded">
-    <b-col cols="12">
+    <b-col cols="5">
       <h3 :class="darkMode ? 'text-dark' : 'text-light'">Vote</h3>
       <p class="font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
         Bancor is a DAO managed by vBNT stakers who determine the future of the
         protocol with their proposals.
       </p>
     </b-col>
-    <b-col md="7">
-      <stake />
-    </b-col>
-    <b-col md="5">
-      <content-block title="Vote on Snapshot">
-        <p
-          class="font-w500 font-size-14 mt-4"
-          :class="darkMode ? 'text-dark' : 'text-light'"
-        >
-          Following vote #50, governance has been moved to Snapshot for 12
-          months in order to enable gasless voting and increased participation
-          in governance.
-        </p>
+    <b-row>
+      <b-col cols="5">
+        <stake />
+      </b-col>
+      <b-col cols="3 ">
+        <content-block title="Vote on Snapshot">
+          <p
+            class="font-w400 font-size-14 mt-4"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+          >
+            Following vote #50, governance has been moved to Snapshot for 12
+            months in order to enable gasless voting and increased participation
+            in governance.
+          </p>
 
-        <b-btn
-          variant="primary"
-          size="lg"
-          href="https://vote.bancor.network"
-          target="_blank"
-          class="btn-rounded"
-        >
-          Vote
-        </b-btn>
+          <b-btn
+            variant="primary"
+            size="lg"
+            href="https://vote.bancor.network"
+            target="_blank"
+            class="btn-rounded"
+          >
+            Vote
+          </b-btn>
 
-        <hr />
+          <hr />
 
-        <a
-          class="font-w500 font-size-14"
-          :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
-          href="https://blog.bancor.network/gasless-voting-is-live-on-bancor-governance-82d232da16b9"
-          target="_blank"
-        >
-          How to Vote
-          <font-awesome-icon icon="external-link-alt" class="ml-2" />
-        </a>
-      </content-block>
-    </b-col>
-    <b-col cols="12">
+          <a
+            class="font-w500 font-size-14"
+            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+            href="https://blog.bancor.network/gasless-voting-is-live-on-bancor-governance-82d232da16b9"
+            target="_blank"
+          >
+            How to Vote
+            <font-awesome-icon icon="external-link-alt" class="ml-2" />
+          </a>
+        </content-block>
+      </b-col>
+    </b-row>
+    <b-col cols="4">
       <h6 class="mb-0" :class="darkMode ? 'text-dark' : 'text-light'">
         Legacy onchain contract
       </h6>
