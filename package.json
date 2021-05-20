@@ -33,7 +33,7 @@
     "@sentry/integrations": "^6.4.0",
     "@sentry/tracing": "^6.4.0",
     "@tweenjs/tween.js": "^18.6.4",
-    "@vue/composition-api": "^1.0.0-rc.8",
+    "@vue/composition-api": "^1.0.0-rc.9",
     "axios": "^0.21.1",
     "bancorx": "^0.3.0",
     "bignumber.js": "^9.0.0",
