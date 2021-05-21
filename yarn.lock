@@ -9012,10 +9012,10 @@ eosjs@^20.0.0:
     eosjs-ecc "4.0.7"
     text-encoding "0.7.0"
 
-eosjs@^21.0.4:
-  version "21.0.4"
-  resolved "https://registry.yarnpkg.com/eosjs/-/eosjs-21.0.4.tgz#67794a9fbc3c7659de19a7926c2c13cce4515571"
-  integrity sha512-XbuIoidplA1hHIejy7VQ+hmBfC6T28kYFaQMsn6G1DMTg1CFwUzxwzUvZg/dGNPuf7hgPxOpaQvAUsdidTgGhQ==
+eosjs@^22.0.0:
+  version "22.0.0"
+  resolved "https://registry.yarnpkg.com/eosjs/-/eosjs-22.0.0.tgz#254744f233377169e06ecffe4964bb6a76fc8942"
+  integrity sha512-zwNtpcFo58whTve6A+jnaYKMUBVMezY8E4dRuRi7eakvrai6CXpVEMshyX9GlalzjQXoI0UjrY4EM6K0LmbgZg==
   dependencies:
     bn.js "5.2.0"
     elliptic "6.5.4"
