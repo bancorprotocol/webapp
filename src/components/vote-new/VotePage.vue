@@ -1,10 +1,11 @@
 <template>
   <b-row v-if="loaded">
     <b-col cols="5">
-      <h3 :class="darkMode ? 'text-dark' : 'text-light'">Vote</h3>
+      <h3 :class="darkMode ? 'text-dark' : 'text-light'">
+        {{ $t("vote.title") }}
+      </h3>
       <p class="font-w500" :class="darkMode ? 'text-dark' : 'text-light'">
-        Bancor is a DAO managed by vBNT stakers who determine the future of the
-        protocol with their proposals.
+        {{ $t("vote.vbnt_message") }}
       </p>
     </b-col>
     <b-row>
@@ -17,9 +18,7 @@
             class="font-w400 font-size-14 mt-4"
             :class="darkMode ? 'text-dark' : 'text-light'"
           >
-            Following vote #50, governance has been moved to Snapshot for 12
-            months in order to enable gasless voting and increased participation
-            in governance.
+            {{ $t("vote.migration") }}
           </p>
 
           <b-btn
@@ -29,7 +28,7 @@
             target="_blank"
             class="btn-rounded w-50"
           >
-            Vote
+            {{ $t("vote.title") }}
           </b-btn>
 
           <hr />
@@ -40,7 +39,7 @@
             href="https://blog.bancor.network/gasless-voting-is-live-on-bancor-governance-82d232da16b9"
             target="_blank"
           >
-            How to Vote
+            {{ $t("vote.how_to") }}
             <font-awesome-icon icon="external-link-alt" class="ml-2" />
           </a>
         </content-block>
@@ -48,21 +47,21 @@
     </b-row>
     <b-col cols="4">
       <h6 class="mb-0" :class="darkMode ? 'text-dark' : 'text-light'">
-        Legacy onchain contract
+        {{ $t("vote.legacy") }}
       </h6>
       <hr class="my-3" />
       <p
         class="font-w500 font-size-14 mb-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        View previous votes and decisions made onchain.
+        {{ $t("vote.view_votes") }}
       </p>
       <router-link
         :to="{ name: 'VoteLegacy' }"
         class="font-w500 font-size-14"
         :class="darkMode ? 'text-link-dark' : 'text-link-light'"
       >
-        View Legacy Gov
+        {{ $t("vote.legacy_gov") }}
       </router-link>
     </b-col>
   </b-row>
