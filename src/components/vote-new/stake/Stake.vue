@@ -29,7 +29,9 @@
             :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
             class="btn-rounded btn-block"
           >
-            Unstake Tokens
+            <div :class="darkMode ? '' : 'label-muted-dark'">
+              Unstake Tokens
+            </div>
           </b-btn>
           <span v-if="lock.till > Date.now()">
             <remaining-time

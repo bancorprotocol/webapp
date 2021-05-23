@@ -27,7 +27,7 @@
             size="lg"
             href="https://vote.bancor.network"
             target="_blank"
-            class="btn-rounded"
+            class="btn-rounded w-50"
           >
             Vote
           </b-btn>
@@ -50,7 +50,7 @@
       <h6 class="mb-0" :class="darkMode ? 'text-dark' : 'text-light'">
         Legacy onchain contract
       </h6>
-      <hr class="my-2" />
+      <hr class="my-3" />
       <p
         class="font-w500 font-size-14 mb-2"
         :class="darkMode ? 'text-dark' : 'text-light'"
@@ -60,7 +60,7 @@
       <router-link
         :to="{ name: 'VoteLegacy' }"
         class="font-w500 font-size-14"
-        :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
+        :class="darkMode ? 'text-link-dark' : 'text-link-light'"
       >
         View Legacy Gov
       </router-link>
