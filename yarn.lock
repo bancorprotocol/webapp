@@ -20645,10 +20645,10 @@ vue-class-component@^7.2.3:
   resolved "https://registry.yarnpkg.com/vue-class-component/-/vue-class-component-7.2.6.tgz#8471e037b8e4762f5a464686e19e5afc708502e4"
   integrity sha512-+eaQXVrAm/LldalI272PpDe3+i4mPis0ORiMYxF6Ae4hyuCh15W8Idet7wPUEs4N4YptgFHGys4UrgNQOMyO6w==
 
-vue-cli-plugin-i18n@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/vue-cli-plugin-i18n/-/vue-cli-plugin-i18n-2.1.0.tgz#2b6b0e07c42680558bff0ac42b74bce6015f29b8"
-  integrity sha512-YBLaoY61eQP1BoSu29xK5711HghTooLmtYbxdXHNz9pOjN4/kX1MDpl6hMaHNkec4/r2hR3MHDWyJqed51Iuaw==
+vue-cli-plugin-i18n@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/vue-cli-plugin-i18n/-/vue-cli-plugin-i18n-2.1.1.tgz#aa2579cae810ca641662aee33c13b28f11f12d31"
+  integrity sha512-78m6lpAJKygkrgP+Ubp7eU59ib62uy6i3seJ4VNXG5txraq21saGhfl3oacXMiFE9K4TbVQl0qCw3vAh8gSe9A==
   dependencies:
     debug "^4.3.0"
     deepmerge "^4.2.0"
