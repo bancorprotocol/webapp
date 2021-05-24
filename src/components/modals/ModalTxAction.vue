@@ -24,6 +24,8 @@
         {{ titleMsg }}
       </div>
 
+      <slot v-if="noPrompt"></slot>
+
       <slot
         v-if="
           txMetaData.prompt &&
@@ -100,6 +102,7 @@ export default class ModalTxAction extends BaseComponent {
   @Prop({ required: false }) icon?: string;
   @Prop({ default: "primary" }) iconVariant!: string;
   @Prop({ required: false }) redirectOnSuccess?: string;
+  @Prop({ default: false }) noPrompt?: boolean;
 
   get currentStatus() {
     if (this.txMetaData.sections.length)
@@ -146,13 +149,11 @@ export default class ModalTxAction extends BaseComponent {
 
   @Emit("onHide")
   onHideCallBack() {
-    if (
+    return (
       this.txMetaData.stepIndex <= 1 &&
       !this.txMetaData.txError &&
       !this.txMetaData.success
-    )
-      return true;
-    else return false;
+    );
   }
 
   async close() {
