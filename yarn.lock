@@ -32,19 +32,19 @@
     js-sha3 "^0.7.0"
     uuid "^3.3.2"
 
-"@0x/contract-addresses@^6.1.0":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@0x/contract-addresses/-/contract-addresses-6.1.0.tgz#2f7fd90f46ac03067da792f8f8a172ecd8b05c36"
-  integrity sha512-C8TELLAxCB1SsZaNyuPPgE3J+Js9Z/RvMziLyNeE98BdsmYdgo0WkUixXHO0eAaYyqci5z7/S4/hqxIpergHag==
+"@0x/contract-addresses@^6.1.0", "@0x/contract-addresses@^6.2.0":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@0x/contract-addresses/-/contract-addresses-6.2.0.tgz#e5f9514ae55c89be51a11a7f213f275b304e2c92"
+  integrity sha512-zCLJbRVFUNNadWH947rN+AdQlYIT1PDBVHTrpNcgYy+4XjzMo7fAg0j5pUxlIDUrnlQTSKOd5ZIwHGwb3n6wRg==
 
-"@0x/contract-wrappers@^13.16.1":
-  version "13.16.1"
-  resolved "https://registry.yarnpkg.com/@0x/contract-wrappers/-/contract-wrappers-13.16.1.tgz#5671ac37a90dc354d44f461eb71b51b6a6f41b2f"
-  integrity sha512-PMbmOpHx/Pp9Igm1ydRtCBuZWO/zGrZzcJ8vbBVsFWFoMB0bt6rxwENLyTVzwswA3JV7U1f7R+kAf4Zco5CNBQ==
+"@0x/contract-wrappers@^13.16.2":
+  version "13.16.2"
+  resolved "https://registry.yarnpkg.com/@0x/contract-wrappers/-/contract-wrappers-13.16.2.tgz#70d91b9dcc4911294bfa35a4eb168d90261d78fc"
+  integrity sha512-QX5F1Ciin8ZrYJJCEe+EfFa35ekoHCKmfbQl6bf7CPd0U0SJX3PNNlGG4cnNex/xZ1Ksyicc8zQM3mMXq+dWIA==
   dependencies:
     "@0x/assert" "^3.0.27"
     "@0x/base-contract" "^6.4.0"
-    "@0x/contract-addresses" "^6.1.0"
+    "@0x/contract-addresses" "^6.2.0"
     "@0x/json-schemas" "^6.1.3"
     "@0x/types" "^3.3.3"
     "@0x/utils" "^6.4.3"
@@ -62,14 +62,14 @@
     ajv "^6.12.5"
     lodash.values "^4.3.0"
 
-"@0x/protocol-utils@^1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@0x/protocol-utils/-/protocol-utils-1.6.0.tgz#76a434d47c395078b7aec8cfc21c705325d63167"
-  integrity sha512-h2BMLcigCryGe+oR1+PZ0V+jrcTRUboYhk1oaq+H3WxWglr1pEKPpZfmunGvYMkC6/z1gKc/xLjO/7R0DS/6Aw==
+"@0x/protocol-utils@^1.6.1":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@0x/protocol-utils/-/protocol-utils-1.6.1.tgz#a11971f625ced1e8872df55e718a0d7c8f221b77"
+  integrity sha512-DhWHKxeNb4AeK3r5M4KqDfQHuztuWZH2qrncU+XGb3IG7+EaLq/IcSmFijdMZTQDlPeFsGq2imMyS4KFcygUMg==
   dependencies:
     "@0x/assert" "^3.0.27"
-    "@0x/contract-addresses" "^6.1.0"
-    "@0x/contract-wrappers" "^13.16.1"
+    "@0x/contract-addresses" "^6.2.0"
+    "@0x/contract-wrappers" "^13.16.2"
     "@0x/json-schemas" "^6.1.3"
     "@0x/subproviders" "^6.5.3"
     "@0x/utils" "^6.4.3"
@@ -9726,15 +9726,7 @@ ethereumjs-abi@0.6.5:
     bn.js "^4.10.0"
     ethereumjs-util "^4.3.0"
 
-ethereumjs-abi@0.6.8:
-  version "0.6.8"
-  resolved "https://registry.yarnpkg.com/ethereumjs-abi/-/ethereumjs-abi-0.6.8.tgz#71bc152db099f70e62f108b7cdfca1b362c6fcae"
-  integrity sha512-Tx0r/iXI6r+lRsdvkFDlut0N08jWMnKRZ6Gkq+Nmw75lZe4e6o3EkSnkaBP5NF6+m5PTGAr9JP43N3LyeoglsA==
-  dependencies:
-    bn.js "^4.11.8"
-    ethereumjs-util "^6.0.0"
-
-"ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
+ethereumjs-abi@0.6.8, "ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
   version "0.6.8"
   resolved "git+https://github.com/ethereumjs/ethereumjs-abi.git#1a27c59c15ab1e95ee8e5c4ed6ad814c49cc439e"
   dependencies:
