@@ -10,7 +10,6 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   ModalChoice,
-  ModuleParam,
   OnPrompt,
   OnUpdate,
   OpposingLiquid,
@@ -58,7 +57,6 @@ import {
   findChangedReserve,
   findOrThrow,
   generateEtherscanTxLink,
-  isOdd,
   LockedBalance,
   multiSteps,
   PoolContainer,
@@ -92,25 +90,13 @@ import { asciiToHex, fromWei, toHex, toWei } from "web3-utils";
 import Decimal from "decimal.js";
 import { vxm } from "@/store";
 import wait from "waait";
-import {
-  chunk,
-  differenceWith,
-  first,
-  fromPairs,
-  groupBy,
-  last,
-  partition,
-  toPairs,
-  uniqWith,
-  zip
-} from "lodash";
+import { chunk, differenceWith, first, fromPairs, groupBy, last, partition, toPairs, uniqWith, zip } from "lodash";
 import {
   buildAddressLookupContract,
   buildConverterContract,
   buildExchangeProxyContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
-  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSystemStoreContract,
   buildNetworkContract,
   buildRegistryContract,
@@ -144,14 +130,7 @@ import dayjs from "@/utils/dayjs";
 import { getNetworkVariables } from "@/api/config";
 import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import {
-  combineLatest,
-  from,
-  merge,
-  Observable,
-  partition as partitionOb,
-  Subject
-} from "rxjs";
+import { combineLatest, from, merge, Observable, partition as partitionOb, Subject } from "rxjs";
 import {
   buffer,
   bufferTime,
@@ -209,15 +188,8 @@ import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
 import { NewPool, Pool, WelcomeData } from "@/api/eth/bancorApi";
 import { distinctArrayItem } from "@/api/observables/customOperators";
-import {
-  networkVersion$,
-  networkVersionReceiver$
-} from "@/api/observables/network";
-import {
-  bancorConverterRegistry$,
-  exchangeProxy$,
-  govTokenAddress$
-} from "@/api/observables/contracts";
+import { networkVersion$, networkVersionReceiver$ } from "@/api/observables/network";
+import { bancorConverterRegistry$, exchangeProxy$, govTokenAddress$ } from "@/api/observables/contracts";
 import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 import {
   getTxOrigin,
@@ -6226,19 +6198,15 @@ export class EthBancorModule
   }
 
   @action async withdrawWeth({
-    decAmount,
-    onPrompt
+                               decAmount
   }: {
     decAmount: string;
-    onPrompt: OnPrompt;
   }) {
     if (this.currentNetwork !== EthNetworks.Mainnet)
       throw new Error("Ropsten not supported");
 
     const tokenContract = buildWethContract(wethTokenContractAddress);
     const wei = expandToken(decAmount, 18);
-
-    await this.awaitConfirmation(onPrompt);
 
     const txHash = await this.resolveTxOnConfirmation({
       tx: tokenContract.methods.withdraw(wei)
