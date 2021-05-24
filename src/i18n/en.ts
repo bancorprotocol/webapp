@@ -497,5 +497,10 @@ export const en = {
   vbnt_read_more: "Read more about vBNT",
   swap_slippage: "Swap with Slippage",
   swap_high_slippage: "Swap with High Slippage",
-  notify_space_available: "Notify me when space opens up"
+  notify_space_available: "Notify me when space opens up",
+  language_change: "Language Change",
+  translations_community:
+    "Translations are created and supported by our community members.",
+  suggest_edits: "Want to suggest edits and improvements?",
+  press_here_info: "Press here for more info"
 };

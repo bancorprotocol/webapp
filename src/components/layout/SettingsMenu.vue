@@ -136,11 +136,12 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component } from "vue-property-decorator";
+import { Prop, Component, Emit } from "vue-property-decorator";
 import { vxm } from "@/store";
 import SlippageTolerance from "@/components/common/SlippageTolerance.vue";
 import MenuToggle from "@/components/common/MenuToggle.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
+
 import { i18n, getLanguageByLocale } from "@/i18n";
 
 @Component({
@@ -200,7 +201,11 @@ export default class SettingsMenu extends BaseComponent {
 
   switchlocale(locale: string) {
     vxm.general.setLocale(locale);
+    this.showLocaleModal();
   }
+
+  @Emit("showLocaleModal")
+  showLocaleModal() {}
 
   toggleLocale() {
     this.showLocale = !this.showLocale;
