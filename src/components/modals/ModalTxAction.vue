@@ -7,7 +7,12 @@
     >
       <div class="d-flex justify-content-center mb-3">
         <div
-          class="d-flex justify-content-center align-items-center rounded-circle"
+          class="
+            d-flex
+            justify-content-center
+            align-items-center
+            rounded-circle
+          "
           :class="`bg-${iconVariant}`"
           style="width: 60px; height: 60px"
         >
