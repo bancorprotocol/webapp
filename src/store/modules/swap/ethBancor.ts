@@ -90,7 +90,18 @@ import { asciiToHex, fromWei, toHex, toWei } from "web3-utils";
 import Decimal from "decimal.js";
 import { vxm } from "@/store";
 import wait from "waait";
-import { chunk, differenceWith, first, fromPairs, groupBy, last, partition, toPairs, uniqWith, zip } from "lodash";
+import {
+  chunk,
+  differenceWith,
+  first,
+  fromPairs,
+  groupBy,
+  last,
+  partition,
+  toPairs,
+  uniqWith,
+  zip
+} from "lodash";
 import {
   buildAddressLookupContract,
   buildConverterContract,
@@ -130,7 +141,14 @@ import dayjs from "@/utils/dayjs";
 import { getNetworkVariables } from "@/api/config";
 import { EthNetworks, web3 } from "@/api/web3";
 import * as Sentry from "@sentry/browser";
-import { combineLatest, from, merge, Observable, partition as partitionOb, Subject } from "rxjs";
+import {
+  combineLatest,
+  from,
+  merge,
+  Observable,
+  partition as partitionOb,
+  Subject
+} from "rxjs";
 import {
   buffer,
   bufferTime,
@@ -188,8 +206,15 @@ import Web3 from "web3";
 import { nullApprovals } from "@/api/eth/nullApprovals";
 import { NewPool, Pool, WelcomeData } from "@/api/eth/bancorApi";
 import { distinctArrayItem } from "@/api/observables/customOperators";
-import { networkVersion$, networkVersionReceiver$ } from "@/api/observables/network";
-import { bancorConverterRegistry$, exchangeProxy$, govTokenAddress$ } from "@/api/observables/contracts";
+import {
+  networkVersion$,
+  networkVersionReceiver$
+} from "@/api/observables/network";
+import {
+  bancorConverterRegistry$,
+  exchangeProxy$,
+  govTokenAddress$
+} from "@/api/observables/contracts";
 import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 import {
   getTxOrigin,
@@ -6197,11 +6222,7 @@ export class EthBancorModule
     return this.createTxResponse(txHash);
   }
 
-  @action async withdrawWeth({
-                               decAmount
-  }: {
-    decAmount: string;
-  }) {
+  @action async withdrawWeth({ decAmount }: { decAmount: string }) {
     if (this.currentNetwork !== EthNetworks.Mainnet)
       throw new Error("Ropsten not supported");
 
@@ -6211,6 +6232,8 @@ export class EthBancorModule
     const txHash = await this.resolveTxOnConfirmation({
       tx: tokenContract.methods.withdraw(wei)
     });
+
+    this.spamBalances([wethTokenContractAddress]);
 
     return this.createTxResponse(txHash);
   }
