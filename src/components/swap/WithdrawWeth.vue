@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-btn
-      @click="withdrawWeth()"
+      @click="openModal()"
       :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
       size="sm"
     >
@@ -12,6 +12,7 @@
       :title="$t('modal.withdraw_weth.title')"
       icon="arrow-from-bottom"
       :tx-meta="txMeta"
+      :no-prompt="true"
     >
       <label-content-split :label="$t('modal.withdraw_weth.balance')">
         {{ balance }} WETH
@@ -41,6 +42,14 @@
       >
         {{ $t("modal.withdraw_weth.info") }}
       </p>
+
+      <b-btn
+        @click="withdrawWeth()"
+        class="mt-2 rounded py-2 btn-block"
+        variant="primary"
+      >
+        Confirm
+      </b-btn>
     </modal-tx-action>
   </div>
 </template>
@@ -72,25 +81,28 @@ export default class WithdrawWeth extends BaseTxAction {
     return wethToken?.balance || "0";
   }
 
-  get output() {
+  get decOutput() {
+    if (this.percentage == "100") return this.balance;
     const percentage = new BigNumber(this.percentage).div(100);
-    const amount = new BigNumber(this.balance).times(percentage).toString();
-    return this.prettifyNumber(amount);
+    return new BigNumber(this.balance).times(percentage).toString();
   }
+
+  get output() {
+    return this.prettifyNumber(this.decOutput);
+  }
+
   async withdrawWeth() {
     this.openModal();
-
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {
       this.txMeta.success = await vxm.ethBancor.withdrawWeth({
-        decAmount: this.output,
-        onPrompt: this.onPrompt
+        decAmount: this.decOutput
       });
       this.txMeta.showTxModal = false;
       addNotification({
-        title: this.$tc("notifications.add.widthdraw_weth.title"),
-        description: this.$tc("notifications.add.widthdraw_weth.description"),
+        title: this.$tc("notifications.add.withdraw_weth.title"),
+        description: this.$tc("notifications.add.withdraw_weth.description"),
         txHash: this.txMeta.success!.txId
       });
     } catch (e) {

@@ -10,7 +10,6 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   ModalChoice,
-  ModuleParam,
   OnPrompt,
   OnUpdate,
   OpposingLiquid,
@@ -58,7 +57,6 @@ import {
   findChangedReserve,
   findOrThrow,
   generateEtherscanTxLink,
-  isOdd,
   LockedBalance,
   multiSteps,
   PoolContainer,
@@ -110,7 +108,6 @@ import {
   buildExchangeProxyContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
-  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSystemStoreContract,
   buildNetworkContract,
   buildRegistryContract,
@@ -6219,24 +6216,18 @@ export class EthBancorModule
     return this.createTxResponse(txHash);
   }
 
-  @action async withdrawWeth({
-    decAmount,
-    onPrompt
-  }: {
-    decAmount: string;
-    onPrompt: OnPrompt;
-  }) {
+  @action async withdrawWeth({ decAmount }: { decAmount: string }) {
     if (this.currentNetwork !== EthNetworks.Mainnet)
       throw new Error("Ropsten not supported");
 
     const tokenContract = buildWethContract(wethTokenContractAddress);
     const wei = expandToken(decAmount, 18);
 
-    await this.awaitConfirmation(onPrompt);
-
     const txHash = await this.resolveTxOnConfirmation({
       tx: tokenContract.methods.withdraw(wei)
     });
+
+    this.spamBalances([wethTokenContractAddress]);
 
     return this.createTxResponse(txHash);
   }
