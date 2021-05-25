@@ -1762,6 +1762,28 @@
   resolved "https://npm.fontawesome.com/@fortawesome/vue-fontawesome/-/2.0.2/vue-fontawesome-2.0.2.tgz#5b86cd2fb7b4c17e5dede722c1c2855c97eceaea"
   integrity sha512-ecpKSBUWXsxRJVi/dbOds4tkKwEcBQ1JSDZFzE2jTFpF8xIh3OgTX8POIor6bOltjibr3cdEyvnDjecMwUmxhQ==
 
+"@gnosis.pm/safe-apps-provider@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-provider/-/safe-apps-provider-0.3.0.tgz#72f212c6965f73a20e805e42cf91b635a814a8be"
+  integrity sha512-QL9NnhEYxbgmxpMmOfhOL1nyUcah9Qg4aBXf0F6QjRVc8OPUOSCrYa3pL2Uqd8pUIo98zvk/n7QBPaxWk08ZAQ==
+  dependencies:
+    "@gnosis.pm/safe-apps-sdk" "2.3.0"
+    events "^3.3.0"
+
+"@gnosis.pm/safe-apps-sdk@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-sdk/-/safe-apps-sdk-2.3.0.tgz#10813f065dbf94bb7f1da7c8e1f4ceb8667ef21a"
+  integrity sha512-Psu896peovf21k5pBk/+WQnJUE5Jtj82ILumGfSADP7xD20U6DJT7Z8X9jnb+QZnin6Q5gU57ht2tKmc3T+5lQ==
+  dependencies:
+    semver "^7.3.2"
+
+"@gnosis.pm/safe-apps-sdk@^2.3.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-sdk/-/safe-apps-sdk-2.4.0.tgz#51f4eef3deef92e05cd9014ff454b18957b92d2e"
+  integrity sha512-7Xxj8pvtTvWFbM93yo5yARk+uXeDT5tohhDyPMZdi1XH73ubYmG4J7nRZeWKBRfeRd2ojou+w+r2zmk24Hrndg==
+  dependencies:
+    semver "^7.3.2"
+
 "@hapi/address@2.x.x":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@hapi/address/-/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
@@ -2196,7 +2218,7 @@
     "@ledgerhq/errors" "^4.78.0"
     "@ledgerhq/hw-transport" "^4.78.0"
 
-"@ledgerhq/hw-app-eth@^5.21.0":
+"@ledgerhq/hw-app-eth@^5.49.0":
   version "5.52.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-app-eth/-/hw-app-eth-5.52.0.tgz#a84ec35ddabda9d733158ec48427d8660ad01cc6"
   integrity sha512-6lpioYA90zbcee6CaxJxFV6TbKX0mpwnVZ1eZlKe6FqOuCShpMEDNfWkdhFsmrCFqTFGpRsutAIajTWaSd5Q6g==
@@ -3411,7 +3433,7 @@
   dependencies:
     deepmerge "^4.2.2"
 
-"@toruslabs/torus-embed@^1.9.2":
+"@toruslabs/torus-embed@^1.10.11":
   version "1.10.15"
   resolved "https://registry.yarnpkg.com/@toruslabs/torus-embed/-/torus-embed-1.10.15.tgz#9144ebea5079efb167bca28b7173f704acf64c91"
   integrity sha512-5P95yTGO11bmLcaoE9lo7fYkaN2pI1l7TMNqHMtI0JY74OuS9QyrPtZ5v8R3QlrlRnYfM0OuI4hruiQp4qvq+g==
@@ -6345,23 +6367,26 @@ bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.10.0, bn.js@^4.11.0, bn.js@^4.11.1, bn.js@^
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.12.0.tgz#775b3f278efbb9718eec7361f483fb36fbbfea88"
   integrity sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==
 
-bnc-onboard@1.25.0:
-  version "1.25.0"
-  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.25.0.tgz#b8d33b546cf62a30984a022ca747fd9454ee5b90"
-  integrity sha512-ptnCPnNbb6rEVWR7oOb0XtPlcbMqzwLvMhxyQ0vRHR8cdk+yrXocBjQUF2RVYKjS3IIGR2CsJK/Nsdxk8oAsgA==
+bnc-onboard@1.26.0:
+  version "1.26.0"
+  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.26.0.tgz#432247541c79593c3f0ebd38cbb5a16c636c032c"
+  integrity sha512-2ksdVAgfu2y3GljHIUpoVSv9bvcllzBf3/iFYNUpt5Xg4ThwtNwv6j4MKh9nMQmjU5Afc2FKviDQjNWl8gVoVw==
   dependencies:
     "@cvbb/eth-keyring" "^1.1.0"
-    "@ledgerhq/hw-app-eth" "^5.21.0"
+    "@gnosis.pm/safe-apps-provider" "^0.3.0"
+    "@gnosis.pm/safe-apps-sdk" "^2.3.0"
+    "@ledgerhq/hw-app-eth" "^5.49.0"
     "@ledgerhq/hw-transport-u2f" "^5.21.0"
     "@portis/web3" "^4.0.0"
-    "@toruslabs/torus-embed" "^1.9.2"
+    "@toruslabs/torus-embed" "^1.10.11"
     "@walletconnect/web3-provider" "^1.4.1"
     authereum "^0.1.12"
     bignumber.js "^9.0.0"
-    bnc-sdk "^3.2.0"
+    bnc-sdk "^3.3.4"
     bowser "^2.10.0"
     eth-lattice-keyring "^0.2.7"
     eth-provider "^0.6.1"
+    eth-sig-util "^3.0.1"
     ethereumjs-tx "^2.1.2"
     ethereumjs-util "^7.0.3"
     fortmatic "^2.2.1"
@@ -6372,7 +6397,7 @@ bnc-onboard@1.25.0:
     walletlink "^2.1.0"
     web3-provider-engine "^15.0.4"
 
-bnc-sdk@^3.2.0:
+bnc-sdk@^3.3.4:
   version "3.3.4"
   resolved "https://registry.yarnpkg.com/bnc-sdk/-/bnc-sdk-3.3.4.tgz#43e7c0e69be92e0706fce5f42ad6a700296078d9"
   integrity sha512-yBQ1FHBOhPlWGNWHdma5Rx8iHiM0DBxXahyVqmlHdqpX6Idkxzqc1kT6GmV0FnLx/bL8OOcpstPcovn3meu0fQ==
@@ -9631,6 +9656,16 @@ eth-sig-util@^1.4.2:
     ethereumjs-abi "git+https://github.com/ethereumjs/ethereumjs-abi.git"
     ethereumjs-util "^5.1.1"
 
+eth-sig-util@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/eth-sig-util/-/eth-sig-util-3.0.1.tgz#8753297c83a3f58346bd13547b59c4b2cd110c96"
+  integrity sha512-0Us50HiGGvZgjtWTyAI/+qTzYPMLy5Q451D0Xy68bxq1QMWdoOddDwGvsqcFT27uohKgalM9z/yxplyt+mY2iQ==
+  dependencies:
+    ethereumjs-abi "^0.6.8"
+    ethereumjs-util "^5.1.1"
+    tweetnacl "^1.0.3"
+    tweetnacl-util "^0.15.0"
+
 eth-tx-summary@^3.1.2:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/eth-tx-summary/-/eth-tx-summary-3.2.4.tgz#e10eb95eb57cdfe549bf29f97f1e4f1db679035c"
@@ -9753,7 +9788,7 @@ ethereumjs-abi@0.6.5:
     bn.js "^4.10.0"
     ethereumjs-util "^4.3.0"
 
-ethereumjs-abi@0.6.8, "ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
+ethereumjs-abi@0.6.8, ethereumjs-abi@^0.6.8, "ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
   version "0.6.8"
   resolved "git+https://github.com/ethereumjs/ethereumjs-abi.git#ee3994657fa7a427238e6ba92a84d0b529bbcde0"
   dependencies:
@@ -20114,7 +20149,7 @@ tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha1-WuaBd/GS1EViadEIr6k/+HQ/T2Q=
 
-tweetnacl@^1.0.0:
+tweetnacl@^1.0.0, tweetnacl@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
   integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==
