@@ -16,7 +16,7 @@ import _, { differenceWith } from "lodash";
 import { multiContract } from "@/api/eos/multiContractTx";
 import wait from "waait";
 import { Asset, number_to_asset, Sym } from "eos-common";
-import { dfuseClient } from "@/api/eos/rpc";
+import { dfuseClient, rpc } from "@/api/eos/rpc";
 
 export const getTokenBalancesDfuse = async (
   accountName: string
@@ -179,40 +179,108 @@ export class EosNetworkModule
     this.pingTillChange({ originalBalances });
   }
 
+  @action async getTokenBalancesRpc({
+    tokens,
+    currentUser
+  }: {
+    tokens: TokenBalanceParam[];
+    currentUser: string;
+  }): Promise<TokenBalanceReturn[]> {
+    const res = await Promise.all(
+      tokens.map(
+        async (token): Promise<TokenBalanceReturn | false> => {
+          try {
+            const response = (await rpc.get_table_rows({
+              json: true,
+              code: token.contract,
+              table: "accounts",
+              scope: currentUser
+            })) as { rows: any[] };
+            console.log(response, "was response");
+            const foundToken = response.rows[0];
+            if (!foundToken) {
+              if (token.precision) {
+                return {
+                  ...token,
+                  precision: token.precision!,
+                  balance: number_to_asset(
+                    0,
+                    new Sym(token.symbol, token.precision)
+                  ).to_string()
+                };
+              } else {
+                return false;
+              }
+            }
+            const asset = new Asset(foundToken.balance);
+            return {
+              ...token,
+              balance: foundToken.balance,
+              precision: asset.symbol.precision()
+            };
+          } catch (e) {
+            console.error(`Error in fetching rpc ${e}`);
+            return false;
+          }
+        }
+      )
+    );
+
+    return res.filter(Boolean) as TokenBalanceReturn[];
+  }
+
   @action async fetchBulkBalances(
     tokens: GetBalanceParam["tokens"]
   ): Promise<TokenBalanceReturn[]> {
-    const bulkBalances = await getTokenBalancesDfuse(this.currentUser);
+    const currentUser = this.currentUser;
+    const bulkBalances = await getTokenBalancesDfuse(currentUser).catch(
+      () => [] as TokenBalanceReturn[]
+    );
 
     const missingTokens = differenceWith(tokens, bulkBalances, compareToken);
 
     if (missingTokens.length == 0) return bulkBalances;
-    const bulkRequested = await dfuseClient.stateTablesForAccounts<{
-      balance: string;
-    }>(
-      missingTokens.map(x => x.contract),
-      this.currentUser,
-      "accounts"
-    );
-    const dfuseParsed = bulkRequested.tables
-      .filter(table => table.rows.length > 0)
-      .flatMap(table => ({
-        contract: table.account,
-        balance: table.rows[0].json!.balance
-      }));
-    const extraBalances = dfuseParsed.map(
-      (json): TokenBalanceReturn => {
-        const asset = new Asset(json.balance);
-        return {
-          balance: assetToDecNumberString(asset),
-          contract: json.contract,
-          symbol: asset.symbol.code().to_string(),
-          precision: asset.symbol.precision()
-        };
-      }
+
+    let extraBalances: TokenBalanceReturn[] = [];
+    try {
+      const bulkRequested = await dfuseClient.stateTablesForAccounts<{
+        balance: string;
+      }>(
+        missingTokens.map(x => x.contract),
+        currentUser,
+        "accounts"
+      );
+      const dfuseParsed = bulkRequested.tables
+        .filter(table => table.rows.length > 0)
+        .flatMap(table => ({
+          contract: table.account,
+          balance: table.rows[0].json!.balance
+        }));
+      extraBalances = dfuseParsed.map(
+        (json): TokenBalanceReturn => {
+          const asset = new Asset(json.balance);
+          return {
+            balance: assetToDecNumberString(asset),
+            contract: json.contract,
+            symbol: asset.symbol.code().to_string(),
+            precision: asset.symbol.precision()
+          };
+        }
+      );
+    } catch (e) {}
+
+    const missingTokensTwo = differenceWith(
+      extraBalances,
+      missingTokens,
+      compareToken
     );
 
-    return [...bulkBalances, ...extraBalances];
+    const extraBalancesRpc = await this.getTokenBalancesRpc({
+      tokens: missingTokensTwo,
+      currentUser
+    });
+
+    return [...bulkBalances, ...extraBalances, ...extraBalancesRpc];
   }
 
   @mutation clearBalances() {

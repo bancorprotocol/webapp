@@ -320,7 +320,8 @@ export default class SwapLimit extends BaseTxAction {
     dayjs.duration({ hours: 1 }),
     dayjs.duration({ hours: 3 }),
     dayjs.duration({ days: 1 }),
-    dayjs.duration({ days: 7 })
+    dayjs.duration({ days: 7 }),
+    dayjs.duration({ days: 30 })
   ];
   selectedDuration = this.durationList[4];
 

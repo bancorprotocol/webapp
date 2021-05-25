@@ -169,7 +169,7 @@ export default class GatewayProviders extends BaseComponent {
       },
       {
         id: 4,
-        name: "Ramp network",
+        name: "Ramp Network",
         logo: "ramp.svg",
         logoDark: "ramp-dark.svg",
         description:
@@ -181,11 +181,29 @@ export default class GatewayProviders extends BaseComponent {
           "Faster Payments",
           "Debit Card",
           "Credit Card",
-          "ApplePay"
+          "Apple Pay"
         ],
         buyUrl: `https://buy.ramp.network/?hostApiKey=qg4s4spwnm7nahqdxfsjyzsjvtxbbzg8dxnxxrum${
           this.currentUser ? `&userAddress=${this.currentUser}` : ""
         }`
+      },
+      {
+        id: 5,
+        name: "Mercuryo",
+        logo: "mercuryo.svg",
+        logoDark: "mercuryo-dark.svg",
+        description:
+          "Mercuryo is a cross-boarder payment network providing global access to fast and cheap money transfers. Working together with industry leaders, Mercuryo offers a multi-currency widget that allows purchasing and selling crypto securely with the lowest fees.",
+        jurisdictions: ["Global"],
+        depositMethods: [
+          "Credit Card",
+          "Debit Card",
+          "Apple Pay",
+          "Google Pay"
+        ],
+        buyUrl: "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=buy",
+        sellUrl:
+          "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=sell"
       }
     ];
   }

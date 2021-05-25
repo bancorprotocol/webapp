@@ -1,5 +1,6 @@
 import axios from "axios";
 import { EthNetworks } from "../web3";
+
 interface TokenMeta {
   id: string;
   image: string;
@@ -83,7 +84,7 @@ export const getWelcomeData = async (
   try {
     const res = await axios.get<WelcomeData>(
       network == EthNetworks.Mainnet
-        ? "https://api-v2.bancor.network/welcome"
+        ? "http://35.242.151.4:3000/welcome"
         : "https://ropsten-ptdczarhfq-nw.a.run.app/welcome"
     );
     console.info(`API data fetched at ${new Date()}`);

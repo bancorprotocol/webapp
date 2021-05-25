@@ -1,5 +1,8 @@
 <template>
   <div class="mt-3">
+    <label-content-split :label="$t('pool')" class="my-4">
+      <pool-logos @click="poolLogosClick" :pool="pool" />
+    </label-content-split>
     <label-content-split
       :label="$t('claimable_amount')"
       :tooltip="$t('not_include_liquidity_rewards')"
@@ -29,6 +32,7 @@
     />
 
     <percentage-slider
+      class="mt-3"
       :label="$t('input')"
       v-model="percentage"
       @input="onPercentUpdate"
@@ -140,6 +144,7 @@ import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
 import MainButton from "@/components/common/Button.vue";
 import PercentageSlider from "@/components/common/PercentageSlider.vue";
 import AlertBlock from "@/components/common/AlertBlock.vue";
+import PoolLogos from "@/components/common/PoolLogos.vue";
 import { compareString, findOrThrow } from "@/api/helpers";
 import ModalBase from "@/components/modals/ModalBase.vue";
 import ActionModalStatus from "@/components/common/ActionModalStatus.vue";
@@ -159,7 +164,8 @@ import ModalTxAction from "@/components/modals/ModalTxAction.vue";
     PercentageSlider,
     LabelContentSplit,
     GrayBorderBlock,
-    MainButton
+    MainButton,
+    PoolLogos
   }
 })
 export default class WithdrawProtectionSingle extends BaseTxAction {
@@ -184,14 +190,17 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
 
   get disableActionButton() {
     if (this.vBntWarning) return true;
-    else if (parseFloat(this.percentage) === 0) return true;
+    else if (!this.percentage || parseFloat(this.percentage) === 0) return true;
     else if (this.priceDeviationTooHigh) return true;
     else return this.inputError ? true : false;
   }
 
   get inputError() {
-    if (parseFloat(this.percentage) === 0) return i18n.t("percentage_not_zero");
-    else return "";
+    const percentage = parseFloat(this.percentage);
+    if (percentage === 0) return i18n.t("percentage_not_zero");
+    if (percentage > 100) return i18n.t("percentage_not_100");
+
+    return "";
   }
 
   get outputInfo() {
@@ -231,7 +240,7 @@ export default class WithdrawProtectionSingle extends BaseTxAction {
   }
 
   get sufficientVBnt() {
-    if (this.vBntBalance === null) return true;
+    if (this.vBntBalance === null || !this.percentage) return true;
     if (this.position.givenVBnt) {
       const decPercent = new BigNumber(this.percentage).div(100);
       const proposedWithdraw = new BigNumber(this.position.givenVBnt).times(

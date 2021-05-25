@@ -10,7 +10,6 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   ModalChoice,
-  ModuleParam,
   OnPrompt,
   OnUpdate,
   OpposingLiquid,
@@ -58,7 +57,6 @@ import {
   findChangedReserve,
   findOrThrow,
   generateEtherscanTxLink,
-  isOdd,
   LockedBalance,
   multiSteps,
   PoolContainer,
@@ -110,7 +108,6 @@ import {
   buildExchangeProxyContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
-  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSystemStoreContract,
   buildNetworkContract,
   buildRegistryContract,
@@ -232,7 +229,7 @@ import {
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
-import { sendGTMEvent } from "@/gtm";
+import { ConversionEvents, sendConversionEvent } from "@/gtm";
 
 keeperTokens$.subscribe(token =>
   vxm.ethBancor.setDaoTokens(token.map(x => x.address))
@@ -2477,9 +2474,7 @@ export class EthBancorModule
     } else {
       try {
         adjustedGas = await this.determineTxGas(tx);
-      } catch (e) {
-        console.error("Failed to estimate gas");
-      }
+      } catch (e) {}
     }
 
     return new Promise((resolve, reject) => {
@@ -6058,11 +6053,7 @@ export class EthBancorModule
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
 
-    sendGTMEvent(
-      "Conversion Wallet Confirmation Request",
-      "Conversion",
-      conversion
-    );
+    sendConversionEvent(ConversionEvents.wallet_req, conversion);
 
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
@@ -6074,7 +6065,7 @@ export class EthBancorModule
         0
       ),
       onConfirmation: () => {
-        sendGTMEvent("Conversion Success", "Conversion", {
+        sendConversionEvent(ConversionEvents.success, {
           ...conversion,
           conversion_market_eth_usd_rate: this.stats.nativeTokenPrice.price,
           conversion_market_token_rate: fromToken.price?.toFixed(10),
@@ -6087,7 +6078,7 @@ export class EthBancorModule
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
       onHash: () => {
-        sendGTMEvent("Conversion Wallet Confirmed", "Conversion", conversion);
+        sendConversionEvent(ConversionEvents.wallet_confirm, conversion);
         return onUpdate!(3, steps);
       }
     });
@@ -6225,24 +6216,18 @@ export class EthBancorModule
     return this.createTxResponse(txHash);
   }
 
-  @action async withdrawWeth({
-    decAmount,
-    onPrompt
-  }: {
-    decAmount: string;
-    onPrompt: OnPrompt;
-  }) {
+  @action async withdrawWeth({ decAmount }: { decAmount: string }) {
     if (this.currentNetwork !== EthNetworks.Mainnet)
       throw new Error("Ropsten not supported");
 
     const tokenContract = buildWethContract(wethTokenContractAddress);
     const wei = expandToken(decAmount, 18);
 
-    await this.awaitConfirmation(onPrompt);
-
     const txHash = await this.resolveTxOnConfirmation({
       tx: tokenContract.methods.withdraw(wei)
     });
+
+    this.spamBalances([wethTokenContractAddress]);
 
     return this.createTxResponse(txHash);
   }

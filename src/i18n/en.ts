@@ -151,8 +151,7 @@ export const en = {
   left_until_coverage: "{time} left until full coverage",
   failed_find_position:
     "Failed to find position of ID {id} from position ids {ids}",
-  pool_staked:
-    "Pools you entered.",
+  pool_staked: "Pools you entered.",
   tokens_originally_staked:
     "Amount of tokens you originally staked in the pool.",
   tokens_can_withdraw:
@@ -193,6 +192,7 @@ export const en = {
   insufficient_vBNT_balance:
     "Insufficient vBNT balance, you must hold {amount} vBNT before withdrawing position.",
   percentage_not_zero: "Percentage can not be Zero",
+  percentage_not_100: "Percentage can not exceed 100",
   fully_protected_value: "Fully Protected Value",
   havent_reached_protection:
     "You still haven’t reached full protection. There is a risk for impermanent loss and you might receive less than your original stake amount as a result.",
@@ -341,14 +341,14 @@ export const en = {
   insufficient_rewards_balance: "Insufficient rewards balance",
   insufficient_space_available: "Insufficient space available",
   stake_my_rewards: "Stake my rewards",
-  withdrawing_rewards_reset:
-    "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and stake your rewards atomically without resetting your current multipliers, click the “Stake my rewards” button below.",
+  rewards_withdrawing_reset:
+    "Withdrawing rewards will reset your rewards multiplier for all active positions back to x1 and reduce the future rewards you are able to receive. In order to claim and stake your rewards without resetting your current multipliers, click the “Stake my rewards” button below.",
   stake_tokens: "Stake Tokens",
   unstake_tokens: "Unstake Tokens",
   choose_language: "Choose your language",
   for_more_information: "For more information",
   click_here: "click here",
-  needed_open_space: "{bnt} needed to open up {tkn} space",
+  bnt_open_space: "BNT needed to open up space",
   available_reserve_only:
     "The selected pool supports adding liquidity using {symbol} only. In order to add liquidity, please select the other reserve.",
   total_fees: "Total Fees",
@@ -492,7 +492,10 @@ export const en = {
   rate_swap_tokens:
     "Select the rate at which you would like to sell your tokens",
   powered_by_keeper_dao: "Limit orders are powered by KeeperDAO",
-  filters:"Filters",
-  group_by:"Group By Pool Token",
-  vbnt_read_more: "Read more about vBNT"
+  filters: "Filters",
+  group_by: "Group By Pool Token",
+  vbnt_read_more: "Read more about vBNT",
+  swap_slippage: "Swap with Slippage",
+  swap_high_slippage: "Swap with High Slippage",
+  notify_space_available: "Notify me when space opens up"
 };

@@ -518,7 +518,7 @@ describe("Prettify Numbers", () => {
       "2",
       "3",
       "100.12",
-      "123,456,789.12"
+      "123,456,789"
     ];
 
     expect(resultNumbers).toEqual(expectedNumbers);
@@ -545,7 +545,7 @@ describe("Prettify Numbers", () => {
       "2",
       "3",
       "100.12",
-      "123,456,789.12"
+      "123,456,789"
     ];
 
     expect(resultNumbers).toEqual(expectedNumbers);

@@ -1,11 +1,14 @@
 <template>
   <div>
     <label-content-split :label="label">
-      <span
-        :class="darkMode ? 'text-dark' : 'text-light'"
-        class="font-size-16 font-w700"
-        >{{ percentage }} %</span
-      >
+      <multi-input-field
+        style="width: 80px"
+        v-model="percentage"
+        :padding="false"
+        placeholder=""
+        append="%"
+        :format="true"
+      />
     </label-content-split>
     <b-form-input
       id="range-1"
@@ -16,7 +19,7 @@
       debounce="300"
       :disabled="disabled"
       class="my-2"
-    ></b-form-input>
+    />
     <b-row v-if="showButtons">
       <b-col cols="3" v-for="p in percentages" :key="p">
         <b-btn @click="percentage = p" :variant="getVariant(p)" size="xs" block>
@@ -30,11 +33,12 @@
 <script lang="ts">
 import { Component, Prop, VModel } from "vue-property-decorator";
 import LabelContentSplit from "@/components/common/LabelContentSplit.vue";
+import MultiInputField from "@/components/common/MultiInputField.vue";
 import MainButton from "@/components/common/Button.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 @Component({
-  components: { LabelContentSplit, MainButton }
+  components: { LabelContentSplit, MainButton, MultiInputField }
 })
 export default class PercentageSlider extends BaseComponent {
   @Prop() label!: string;

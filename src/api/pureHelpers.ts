@@ -292,6 +292,7 @@ export const prettifyNumber = (
     else return numeral(bigNum).format("$0,0.00");
   } else {
     if (bigNum.lte(0)) return "0";
+    else if (bigNum.gte(1000)) return numeral(bigNum).format("0,0", Math.floor);
     else if (bigNum.gte(2))
       return numeral(bigNum).format("0,0.[00]", Math.floor);
     else if (bigNum.lt(0.000001)) return "< 0.000001";

@@ -87,7 +87,6 @@
       "
       class="mt-3 mb-3"
     />
-
     <gray-border-block
       :gray-bg="true"
       class="my-3"
@@ -100,9 +99,30 @@
         :href-text="$t('click_here')"
         href="https://docs.bancor.network/faqs#why-is-there-no-space-available-for-my-tokens-in-certain-pools"
       >
-        <span @click="setAmount(maxStakeAmount)" class="cursor">{{
-          `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}`
-        }}</span>
+        <a
+          id="notify"
+          v-if="
+            spaceLTOne &&
+            !opposingReserveIsDisabled &&
+            !focusedReserveIsDisabled
+          "
+          :href="notificationURL"
+          target="_blank"
+          class="mr-1"
+        >
+          <font-awesome-icon
+            icon="bell"
+            class="font-size-20 align-bottom"
+            style="width: 20px"
+            :class="darkMode ? 'icon-primary-dark' : 'icon-primary-light'"
+          />
+        </a>
+        <b-popover target="notify" triggers="hover" placement="top">
+          {{ $t("notify_space_available") }}
+        </b-popover>
+        <span @click="setAmount(maxStakeAmount)" class="cursor">
+          {{ `${prettifyNumber(maxStakeAmount)} ${maxStakeSymbol}` }}
+        </span>
       </label-content-split>
       <label-content-split
         v-if="
@@ -111,9 +131,7 @@
           !focusedReserveIsDisabled
         "
         class="mt-2"
-        :label="
-          $t('needed_open_space', { bnt: bnt.symbol, tkn: otherTkn.symbol })
-        "
+        :label="$t('bnt_open_space')"
         :loading="loading"
       >
         <span @click="setAmount(amountToMakeSpace, 0)" class="cursor">{{
@@ -234,6 +252,16 @@ export default class AddProtectionSingle extends BaseTxAction {
     this.amountChanged(this.amount);
   }
 
+  get notificationURL() {
+    return (
+      "https://9000.hal.xyz/recipes/bancor-pool-liquidity-protocol?pool=" +
+      this.pool.id +
+      "&token=" +
+      this.token.symbol +
+      "&value=10000&currency=USD"
+    );
+  }
+
   get token() {
     return this.pool.reserves[this.selectedTokenIndex];
   }
@@ -328,6 +356,10 @@ export default class AddProtectionSingle extends BaseTxAction {
     const show = true;
 
     return { show, msg };
+  }
+
+  get spaceLTOne() {
+    return Number(this.maxStakeAmount) < 1;
   }
 
   async initStake() {
