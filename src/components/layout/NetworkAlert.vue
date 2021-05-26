@@ -27,7 +27,7 @@ export default class NetworkAlert extends BaseComponent {
     switch (network) {
       case EthNetworks.Mainnet:
         return {
-          msg: i18n.t("beta"),
+          msg: "The Infura API on Ethereum is currently experiencing issues which may cause app.bancor.network to load slower than normal. Please bear with us as Infura resolves the issues, at which point app.bancor.network load times will return to normal",
           variant: "primary"
         };
       case EthNetworks.Ropsten:
