@@ -74,7 +74,7 @@
       darkMode ? 'bg-body-dark text-body-dark' : 'bg-body-light text-body-light'
     "
   >
-    <NetworkAlert />
+    <NetworkAlert v-if="!isMainNet" />
     <div name="MainLayout" class="main-layout">
       <side-bar />
       <main
