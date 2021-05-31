@@ -207,8 +207,8 @@ import { nullApprovals } from "@/api/eth/nullApprovals";
 import { NewPool, Pool, WelcomeData } from "@/api/eth/bancorApi";
 import { distinctArrayItem } from "@/api/observables/customOperators";
 import {
-  networkVersion$,
-  networkVersionReceiver$
+  networkVersionReceiver$,
+  supportedNetworkVersion$
 } from "@/api/observables/network";
 import {
   bancorConverterRegistry$,
@@ -5604,7 +5604,7 @@ export class EthBancorModule
       const emittedRelays$ = combineLatest([
         fullRelays$,
         usdPriceOfBnt$,
-        networkVersion$
+        supportedNetworkVersion$
       ]).pipe(
         map(([relay, usdPriceOfBnt, currentNetwork]) => {
           const bntTokenAddress = getNetworkVariables(currentNetwork).bntToken;

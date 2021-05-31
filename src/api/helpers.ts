@@ -38,6 +38,7 @@ import { EthNetworks, getAlchemyUrl, getInfuraAddress, web3 } from "@/api/web3";
 import { i18n } from "@/i18n";
 import { Duration } from "dayjs/plugin/duration";
 import { Dayjs } from "dayjs";
+import { networkVersionReceiver$ } from "./observables/network";
 
 export enum PositionType {
   single,
@@ -747,6 +748,9 @@ export const onboard = Onboard({
     network: (network: EthNetworks) => {
       if (network == EthNetworks.Mainnet || network == EthNetworks.Ropsten) {
         onboard.config({ networkId: network });
+      }
+      if (network) {
+        networkVersionReceiver$.next(network);
         vxm.ethWallet.onNetworkChange(network);
       }
     },

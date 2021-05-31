@@ -1,6 +1,7 @@
 import { Subject } from "rxjs";
 import {
   distinctUntilChanged,
+  filter,
   map,
   shareReplay,
   startWith
@@ -16,7 +17,14 @@ export const networkVersion$ = networkVersionReceiver$.pipe(
   shareReplay(1)
 );
 
-export const networkVars$ = networkVersion$.pipe(
+export const supportedNetworkVersion$ = networkVersion$.pipe(
+  filter(
+    version => version == EthNetworks.Mainnet || version == EthNetworks.Ropsten
+  ),
+  shareReplay(1)
+);
+
+export const networkVars$ = supportedNetworkVersion$.pipe(
   map(getNetworkVariables),
   shareReplay(1)
 );
