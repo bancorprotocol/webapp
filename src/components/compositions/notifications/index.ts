@@ -42,14 +42,8 @@ export const pendingQueue = computed(() =>
 );
 
 export const addNotification = (payload: IAddNotification): void => {
-  const {
-    title,
-    description,
-    status,
-    txHash,
-    showSeconds,
-    alertOnly
-  } = payload;
+  const { title, description, status, txHash, showSeconds, alertOnly } =
+    payload;
 
   const notification: INotificationView = {
     id: Date.now(),
@@ -91,6 +85,8 @@ export const clearAllNotifications = (): void => {
 
 export const getTxStatus = async (hash: string): Promise<boolean | null> => {
   try {
+    console.count("txStatus");
+    console.log("attempting hash", hash);
     const tx = await web3.eth.getTransactionReceipt(hash);
     if (tx) return tx.status;
     else return null;
