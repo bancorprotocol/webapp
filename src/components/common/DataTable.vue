@@ -118,14 +118,13 @@ export default class DataTable extends BaseComponent {
   @Prop() filterBy?: string;
   @Prop() defaultSort?: string;
   @Prop({ default: false }) collapsable!: boolean;
-  @Prop({ default: "desc" }) defaultOrder!: "desc" | "asc";
   @Prop({ default: 10 }) perPage!: number;
   @Prop({ default: false }) hidePagination!: boolean;
   @Prop() filterFunctions?: Function[];
   @Prop() sortFunction?: Function;
 
   sortBy: string = "";
-  descOrder: boolean = this.defaultOrder === "desc";
+  descOrder: boolean = true;
   currentPage = 1;
 
   created() {
