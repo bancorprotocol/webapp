@@ -88,7 +88,7 @@
     "@types/numeral": "^2.0.1",
     "@types/webpack": "^5.28.0",
     "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
+    "@typescript-eslint/parser": "^4.26.0",
     "@vue/cli-plugin-babel": "^4.5.13",
     "@vue/cli-plugin-eslint": "^4.5.13",
     "@vue/cli-plugin-typescript": "^4.5.13",
