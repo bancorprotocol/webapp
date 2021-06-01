@@ -91,7 +91,7 @@ export const getTxStatus = async (hash: string): Promise<boolean | null> => {
     if (tx) return tx.status;
     else return null;
   } catch (e) {
-    console.error("web3 failed: getTransactionReceipt", e);
+    console.error(`web3 failed: getTransactionReceipt(${hash})`, e);
     throw e;
   }
 };
