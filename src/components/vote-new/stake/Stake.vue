@@ -29,7 +29,9 @@
             :variant="darkMode ? 'outline-gray-dark' : 'outline-gray'"
             class="btn-rounded btn-block"
           >
-            Unstake Tokens
+            <div :class="darkMode ? '' : 'label-muted-dark'">
+              Unstake Tokens
+            </div>
           </b-btn>
           <span v-if="lock.till > Date.now()">
             <remaining-time
@@ -45,32 +47,32 @@
       <hr class="my-4" />
       <b-row>
         <b-col sm="6">
+          <div
+            class="font-size-16 font-w700"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+          >
+            {{ prettifyNumber(balance.toNumber()) }} {{ symbol }}
+          </div>
           <span
             class="text-uppercase font-size-12 font-w500"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             {{ $t("your_balance") }}
           </span>
-          <div
-            class="font-size-12 font-w500"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ prettifyNumber(balance.toNumber()) }} {{ symbol }}
-          </div>
         </b-col>
         <b-col sm="6" class="mt-3 mt-sm-0">
+          <div
+            class="font-size-16 font-w700"
+            :class="darkMode ? 'text-dark' : 'text-light'"
+          >
+            {{ prettifyNumber(votes.toNumber()) }} {{ symbol }}
+          </div>
           <span
             class="text-uppercase font-size-12 font-w500"
             :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
           >
             {{ $t("currently_staked") }}
           </span>
-          <div
-            class="font-size-12 font-w500"
-            :class="darkMode ? 'text-dark' : 'text-light'"
-          >
-            {{ prettifyNumber(votes.toNumber()) }} {{ symbol }}
-          </div>
         </b-col>
       </b-row>
     </div>

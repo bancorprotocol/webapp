@@ -79,11 +79,12 @@
       <side-bar />
       <main
         id="main-container"
-        :class="
+        :class="[
           darkMode
             ? 'bg-body-dark text-body-dark main-container'
-            : 'bg-body-light text-body-light main-container'
-        "
+            : 'bg-body-light text-body-light main-container',
+          isVote ? 'bg-cubes' : ''
+        ]"
         style="flex-grow: 1"
       >
         <router-view name="Nav" />
@@ -141,6 +142,10 @@ export default class App extends BaseComponent {
       process.env.NODE_ENV == "development" ||
       window.location.host.includes("staging")
     );
+  }
+
+  get isVote() {
+    return this.$route.meta.feature === "Vote";
   }
 
   async loadBancor() {

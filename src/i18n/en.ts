@@ -74,6 +74,8 @@ export const en = {
   breakdown: "Breakdown",
   vote: {
     title: "Vote",
+    vbnt_message:
+      "Bancor is a DAO managed by vBNT stakers who determine the future of thecprotocol with their proposals.",
     openProposals: {
       tooltip1: {
         p1: "In order for a proposal to be passed, two conditions must be met:",
@@ -82,7 +84,13 @@ export const en = {
         list2:
           "Two-thirds (66.7%) of votes for a given BIP must be in favor in order for the BIP to be approved."
       }
-    }
+    },
+    migration:
+      "Following vote #50, governance has been moved to Snapshot for 12 months in order to enable gasless voting and increased participation in governance.",
+    how_to: "How to Vote",
+    legacy: "Legacy onchain contract",
+    view_votes: "View previous votes and decisions made onchain.",
+    legacy_gov: "View Legacy Gov"
   },
   governance: "Governance",
   new_proposal: "New Proposal",
