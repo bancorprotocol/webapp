@@ -2381,17 +2381,11 @@ export class EthBancorModule
       .filter(balance => dayjs.unix(balance.expirationTime).isBefore(now))
       .sort((a, b) => a.index - b.index);
 
-    const chunked = chunk(availableClaims, 5);
-    const txRes = await Promise.all(
-      chunked.map(arr => {
-        const first = arr[0].index;
-        const second = first + 50;
-        return this.resolveTxOnConfirmation({
-          tx: contract.methods.claimBalance(String(first), String(second))
-        });
-      })
-    );
-    const hash = last(txRes) as string;
+    if (availableClaims.length == 0) throw new Error("Failed finding available locked balance");
+
+    const hash = await this.resolveTxOnConfirmation({
+      tx: contract.methods.claimBalance('0', '1000')
+    });
 
     const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
     this.spamBalances([bntAddress]);
