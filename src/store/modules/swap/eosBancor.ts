@@ -1926,13 +1926,6 @@ export class EosBancorModule
     const percentChunkOfRelay =
       asset_to_number(smartTokenAmount) / asset_to_number(supply.supply);
 
-    const bigPlaya = percentChunkOfRelay > 0.3;
-
-    if (bigPlaya)
-      throw new Error(
-        "This trade makes more than 30% of the pools liquidity, it makes sense use another method for withdrawing liquidity manually due to potential slippage. Please engage us on the Telegram channel for more information."
-      );
-
     const reserveAssets = await this.viewAmountToTokenAmounts(reserves);
     if (reserveAssets.length !== 2)
       throw new Error("Anything other than 2 reserves not supported");
