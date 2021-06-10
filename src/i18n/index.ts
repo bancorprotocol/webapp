@@ -44,15 +44,15 @@ export const getLanguageByLocale = (locale: string): string => {
     case "pt":
       return "Português";
     case "da":
-      return "dansk";
+      return "Dansk";
     case "nl":
       return "Nederlands";
     case "fr":
-      return "français";
+      return "Français";
     case "de":
       return "Deutsch";
     case "ru":
-      return "русский";
+      return "Pусский";
     // case "es":
     //   return "Español";
     case "sv":
