@@ -1,19 +1,11 @@
 <template>
   <modal-base v-model="modal" size="sm">
-    <b-row class="d-flex justify-content-center mb-4">
+    <b-row>
       <b-col class="text-center">
-        <span>
-          <font-awesome-icon
-            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
-            :icon="['fal', 'globe']"
-            size="4x"
-          />
-          <font-awesome-icon
-            :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"
-            :icon="['fal', 'language']"
-            size="3x"
-          />
-        </span>
+        <img
+          :src="require(`@/assets/media/icons/language.svg`)"
+          alt="language"
+        />
         <div
           :class="darkMode ? 'text-dark' : 'text-light'"
           class="font-size-24 font-w600 mb-3"
@@ -22,24 +14,34 @@
         </div>
         <div
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-          class="font-size-16 font-w400 mb-3"
+          class="font-size-16 font-w400 mb-2 text-left mx-3"
         >
           {{ $t("translations_community") }}
+          {{ $t("suggest_edits") }}
+        </div>
+        <div class="text-left ml-3 mb-5">
+          <a
+            href="https://support.bancor.network/hc/en-us/articles/360021725059-How-to-add-new-languages-to-bancor-network"
+            target="_blank"
+            :class="darkMode ? 'text-link-muted-dark' : 'text-link-muted-light'"
+            class="font-size-16 font-w400"
+          >
+            {{ $t("press_here_info") }}
+          </a>
         </div>
         <div
           :class="darkMode ? 'text-muted-dark' : 'text-muted-light'"
-          class="font-size-16 font-w400"
+          class="font-size-14 font-w400"
         >
-          {{ $t("suggest_edits") }}
+          You can change language in the settings menu
         </div>
-        <a
-          href="https://support.bancor.network/hc/en-us/articles/360021725059-How-to-add-new-languages-to-bancor-network"
-          target="_blank"
-          :class="darkMode ? 'text-link-muted-dark' : 'text-link-muted-light'"
-          class="font-size-16 font-w400"
-        >
-          {{ $t("press_here_info") }}
-        </a>
+        <main-button
+          @click="onHide"
+          :label="$t('close')"
+          :large="true"
+          :active="true"
+          class="font-size-14 font-w400 mt-3"
+        />
       </b-col>
     </b-row>
   </modal-base>
