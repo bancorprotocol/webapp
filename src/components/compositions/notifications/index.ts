@@ -42,8 +42,14 @@ export const pendingQueue = computed(() =>
 );
 
 export const addNotification = (payload: IAddNotification): void => {
-  const { title, description, status, txHash, showSeconds, alertOnly } =
-    payload;
+  const {
+    title,
+    description,
+    status,
+    txHash,
+    showSeconds,
+    alertOnly
+  } = payload;
 
   const notification: INotificationView = {
     id: Date.now(),

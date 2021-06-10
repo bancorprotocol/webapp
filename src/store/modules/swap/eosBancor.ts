@@ -2222,10 +2222,9 @@ export class EosBancorModule
     const [reserves, supply, smartUserBalanceString] = await Promise.all([
       this.fetchRelayReservesAsAssets(suggestWithdraw.id),
       fetchTokenStats(relay.smartToken.contract, relay.smartToken.symbol),
-      getBalance(
-        relay.smartToken.contract,
-        relay.smartToken.symbol
-      ) as Promise<string>
+      getBalance(relay.smartToken.contract, relay.smartToken.symbol) as Promise<
+        string
+      >
     ]);
 
     const smartUserBalance = new Asset(smartUserBalanceString);

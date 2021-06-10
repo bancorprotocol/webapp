@@ -107,5 +107,5 @@ export const fas = [
   faArrowFromBottom,
   faCommentExclamation,
   faArrowToBottom,
-  faSliders,
+  faSliders
 ];

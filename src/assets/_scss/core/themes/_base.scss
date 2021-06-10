@@ -3,23 +3,23 @@
 // --------------------------------------------------
 
 // Bootstrap functions
-@import '../../../../../node_modules/bootstrap/scss/functions';
+@import "../../../../../node_modules/bootstrap/scss/functions";
 
 // User variables (your own variable overrides)
-@import '../../custom/variables';
+@import "../../custom/variables";
 
 // Custom Bootstrap variables overrides
-@import '../variables-bootstrap';
+@import "../variables-bootstrap";
 
 // Bootstrap variables
-@import '../../../../../node_modules/bootstrap/scss/variables';
+@import "../../../../../node_modules/bootstrap/scss/variables";
 
 // Bootstrap mixins
-@import '../../../../../node_modules/bootstrap/scss/mixins';
+@import "../../../../../node_modules/bootstrap/scss/mixins";
 
 // Custom mixins and Bootstrap overrides
-@import '../mixins';
+@import "../mixins";
 
 // Custom variables
-@import '../variables';
-@import '../variables-themes';
+@import "../variables";
+@import "../variables-themes";

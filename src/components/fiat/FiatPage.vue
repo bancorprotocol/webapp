@@ -5,8 +5,8 @@
         <span
           class="font-size-20 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"
-         >
-          {{ `Crypto \<> Fiat Gateway Providers` }} 
+        >
+          {{ `Crypto \<> Fiat Gateway Providers` }}
         </span>
       </div>
 
@@ -14,16 +14,18 @@
         class="font-size-14 font-w400 my-3"
         :class="darkMode ? 'text-dark' : 'text-light'"
       >
-        Below is a list of popular crypto<>fiat gateways that can be used to buy or sell crypto with a credit card, bank transfer & more.
+        Below is a list of popular crypto<>fiat gateways that can be used to buy
+        or sell crypto with a credit card, bank transfer & more.
       </p>
     </b-col>
 
     <b-col cols="12">
-      <alert-block
-        class="my-2"
-      >
-        Crypto<>fiat gateway services on Bancor are provided by third-parties. Bancor is not associated with, responsible or liable for the performance of these third-party services. Any claims and questions should be addressed with the selected provider directly.
-      </alert-block>  
+      <alert-block class="my-2">
+        Crypto<>fiat gateway services on Bancor are provided by third-parties.
+        Bancor is not associated with, responsible or liable for the performance
+        of these third-party services. Any claims and questions should be
+        addressed with the selected provider directly.
+      </alert-block>
     </b-col>
 
     <b-col cols="12">
@@ -50,8 +52,7 @@ export default class FiatPage extends BaseComponent {
     return this.$route.params.service === "eth";
   }
 
-  async mounted() {
-  }
+  async mounted() {}
 }
 </script>
 

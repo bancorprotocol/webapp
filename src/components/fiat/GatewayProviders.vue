@@ -201,7 +201,8 @@ export default class GatewayProviders extends BaseComponent {
           "Apple Pay",
           "Google Pay"
         ],
-        buyUrl: "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=buy",
+        buyUrl:
+          "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=buy",
         sellUrl:
           "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=sell"
       }

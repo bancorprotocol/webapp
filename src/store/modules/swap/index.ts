@@ -366,10 +366,9 @@ export class BancorModule extends VuexModule.With({
   @action async getReturn(
     proposedTransaction: ProposedFromTransaction
   ): Promise<ConvertReturn> {
-    return this.dispatcher([
-      "getReturn",
-      proposedTransaction
-    ]) as Promise<ConvertReturn>;
+    return this.dispatcher(["getReturn", proposedTransaction]) as Promise<
+      ConvertReturn
+    >;
   }
 
   @action async addLiquidity(addLiquidityParams: LiquidityParams) {
