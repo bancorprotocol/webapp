@@ -113,6 +113,18 @@
   cursor: pointer;
 }
 
+.text-link-muted-light {
+  color: $gray-border-dark;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-link-muted-dark {
+  color: $gray-border;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .text-muted-light {
   color: $text-muted-light !important;
 }
