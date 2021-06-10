@@ -61,6 +61,10 @@ import MainButton from "@/components/common/Button.vue";
 })
 export default class ModalLanguageChange extends BaseComponent {
   @VModel({ type: Boolean }) modal!: boolean;
+
+  onHide() {
+    this.modal = false;
+  }
 }
 </script>
 <style lang="scss"></style>
