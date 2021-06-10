@@ -191,7 +191,7 @@ export default class App extends BaseComponent {
     if (darkMode) vxm.general.toggleDarkMode();
     if (adminMode) vxm.general.toggleAdminMode();
     if (locale) vxm.general.setLocale(locale);
-    //else vxm.general.setLocale(lang);
+    else vxm.general.setLocale(lang);
 
     await this.loadBancor();
 
