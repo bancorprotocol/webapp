@@ -1,3 +1,5 @@
+import { i18n, getLanguageByLocaleInEnglish } from "@/i18n";
+
 export const googleTagManager = (id: string, name: string | null) => {
   if (window.dataLayer) return;
   if (id && name)
@@ -135,7 +137,8 @@ export const sendGTMPath = (
     page: {
       from_path: from,
       to_path: to,
-      theme: darkMode ? "Dark" : "Light"
+      theme: darkMode ? "Dark" : "Light",
+      lang: getLanguageByLocaleInEnglish(i18n.locale)
     },
     user_properties: undefined,
     ga_event: undefined
