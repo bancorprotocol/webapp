@@ -138,7 +138,8 @@ export const sendGTMPath = (
       from_path: from,
       to_path: to,
       theme: darkMode ? "Dark" : "Light",
-      lang: getLanguageByLocaleInEnglish(i18n.locale)
+      lang: getLanguageByLocaleInEnglish(i18n.locale),
+      currency: "USD"
     },
     user_properties: undefined,
     ga_event: undefined
