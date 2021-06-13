@@ -63,3 +63,32 @@ export const getLanguageByLocale = (locale: string): string => {
       return "English";
   }
 };
+
+export const getLanguageByLocaleInEnglish = (locale: string): string => {
+  switch (locale) {
+    case "en":
+      return "English";
+    case "he":
+      return "Hebrew";
+    case "pt":
+      return "Portuguese";
+    case "da":
+      return "Danish";
+    case "nl":
+      return "Dutch";
+    case "fr":
+      return "French";
+    case "de":
+      return "German";
+    case "ru":
+      return "Russian";
+    // case "es":
+    //   return "Spanish";
+    case "sv":
+      return "Swedish";
+    // case "zh":
+    //   return "Chinese";
+    default:
+      return "English";
+  }
+};
