@@ -11,9 +11,10 @@
         <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
       </b-btn>
       <Notifications />
-      <settings-menu />
+      <settings-menu @showLocaleModal="showLocaleMod" />
       <bancor-menu />
     </div>
+    <modal-language-change v-model="modal" />
   </div>
 </template>
 
@@ -26,12 +27,15 @@ import BancorMenu from "@/components/layout/BancorMenu.vue";
 import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import Notifications from "@/components/compositions/notifications/Notifications.vue";
+import ModalLanguageChange from "@/components/modals/ModalLanguageChange.vue";
 import { onLogout$ } from "@/api/observables/auth";
 
 @Component({
-  components: { BancorMenu, SettingsMenu, Notifications }
+  components: { BancorMenu, SettingsMenu, Notifications, ModalLanguageChange }
 })
 export default class Navigation extends BaseComponent {
+  modal: boolean = false;
+
   get selectedWallet() {
     return vxm.wallet.currentWallet;
   }
@@ -45,6 +49,10 @@ export default class Navigation extends BaseComponent {
     if (account) {
       vxm.bancor.refreshBalances();
     }
+  }
+
+  showLocaleMod() {
+    this.modal = true;
   }
 
   get loginStatus() {
