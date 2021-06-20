@@ -113,6 +113,18 @@
   cursor: pointer;
 }
 
+.text-link-muted-light {
+  color: $gray-border-dark;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-link-muted-dark {
+  color: $gray-border;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .text-muted-light {
   color: $text-muted-light !important;
 }
@@ -379,6 +391,10 @@
     color: $text-color-light !important;
     border-color: $gray-placeholder !important;
     background-color: white !important;
+  }
+  &.btn-error {
+    color: white !important;
+    background-color: $text-error-light !important;
   }
 }
 
@@ -741,6 +757,22 @@
   border-radius: 36px !important;
   border: 8px solid $primary !important;
   color: white !important;
+}
+
+.icon-primary-light {
+  background-color: white !important;
+  border-radius: 6px !important;
+  border: 1px solid $primary !important;
+  padding: 3px;
+  color: $primary !important;
+}
+
+.icon-primary-dark {
+  background-color: $dropdown-dark !important;
+  border-radius: 6px !important;
+  border: 1px solid $primary-dark !important;
+  padding: 3px;
+  color: $primary-dark !important;
 }
 
 .seperator-dark {

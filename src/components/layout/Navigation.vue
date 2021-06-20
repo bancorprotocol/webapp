@@ -4,9 +4,10 @@
       <b-form-input class="width 800px !important" v-model="user" />
       <b-btn @click="setUser"> SetUser </b-btn>
       <Notifications />
-      <settings-menu />
+      <settings-menu @showLocaleModal="showLocaleMod" />
       <bancor-menu />
     </div>
+    <modal-language-change v-model="modal" />
   </div>
 </template>
 
@@ -20,12 +21,15 @@ import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import Notifications from "@/components/compositions/notifications/Notifications.vue";
 import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
+import ModalLanguageChange from "@/components/modals/ModalLanguageChange.vue";
+import { onLogout$ } from "@/api/observables/auth";
 
 @Component({
-  components: { BancorMenu, SettingsMenu, Notifications }
+  components: { BancorMenu, SettingsMenu, Notifications, ModalLanguageChange }
 })
 export default class Navigation extends BaseComponent {
   user = "";
+  modal: boolean = false;
 
   get selectedWallet() {
     return vxm.wallet.currentWallet;
@@ -48,6 +52,9 @@ export default class Navigation extends BaseComponent {
     vxm.ethWallet.setLoggedInAccount(this.user);
     vxm.ethBancor.fetchProtectionPositions();
     authenticatedReceiver$.next(this.user);
+  
+  showLocaleMod() {
+    this.modal = true;
   }
 
   get loginStatus() {

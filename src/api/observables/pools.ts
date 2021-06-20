@@ -13,10 +13,11 @@ import { getWelcomeData, WelcomeData } from "../eth/bancorApi";
 import { getAnchors, getConvertersByAnchors } from "../eth/contractWrappers";
 import { bancorConverterRegistry$ } from "./contracts";
 import { logger, switchMapIgnoreThrow } from "./customOperators";
-import { networkVersion$ } from "./network";
+import { supportedNetworkVersion$ } from "./network";
 import { fifteenSeconds$ } from "./timers";
 import { web3 } from "@/api/web3";
 import { compareString, updateArray } from "../helpers";
+import { minimalPoolBalanceReceiver$ } from "../observables";
 
 const zipAnchorAndConverters = (
   anchorAddresses: string[],
@@ -33,7 +34,10 @@ const zipAnchorAndConverters = (
   }));
 };
 
-export const apiData$ = combineLatest([networkVersion$, fifteenSeconds$]).pipe(
+export const apiData$ = combineLatest([
+  supportedNetworkVersion$,
+  fifteenSeconds$
+]).pipe(
   switchMapIgnoreThrow(([networkVersion]) => getWelcomeData(networkVersion)),
   distinctUntilChanged<WelcomeData>(isEqual),
   share()
@@ -65,7 +69,7 @@ const anchorAndConverters$ = combineLatest([
     return anchorsAndConverters;
   }),
   startWith([]),
-  share<ConverterAndAnchor[]>()
+  shareReplay<ConverterAndAnchor[]>(1)
 );
 
 const apiPools$ = apiData$.pipe(
@@ -124,6 +128,10 @@ export const minimalPools$ = pools$.pipe(
   distinctUntilChanged<MinimalPool[]>(isEqual),
   shareReplay(1)
 );
+
+minimalPools$.subscribe(pools => {
+  minimalPoolBalanceReceiver$.next(pools);
+});
 
 export const tokens$ = apiData$.pipe(
   pluck("tokens"),

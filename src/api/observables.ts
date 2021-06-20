@@ -63,7 +63,11 @@ import {
   rankPriority,
   switchMapIgnoreThrow
 } from "./observables/customOperators";
-import { networkVars$, networkVersion$ } from "./observables/network";
+import {
+  networkVars$,
+  networkVersion$,
+  supportedNetworkVersion$
+} from "./observables/network";
 import { apiData$, minimalPools$, tokens$ } from "./observables/pools";
 import { onLogin$, onLogout$ } from "./observables/auth";
 import {
@@ -174,7 +178,7 @@ onLogout$.subscribe(() => {
   vxm.ethBancor.setProtectedViewPositions([]);
 });
 
-export const tokenMeta$ = networkVersion$.pipe(
+export const tokenMeta$ = supportedNetworkVersion$.pipe(
   switchMapIgnoreThrow(network => getTokenMeta(network)),
   share()
 );
@@ -210,9 +214,9 @@ export const poolPrograms$ = storeRewards$.pipe(
 
 export const immediateTokenMeta$ = tokenMeta$.pipe(startWith(undefined));
 
-export const minimalPoolReceiver$ = new Subject<MinimalPool[]>();
+export const minimalPoolBalanceReceiver$ = new Subject<MinimalPool[]>();
 
-const freshReserveBalances$ = minimalPoolReceiver$.pipe(
+const freshReserveBalances$ = minimalPoolBalanceReceiver$.pipe(
   throttleTime(5000),
   switchMapIgnoreThrow(minimalPools =>
     vxm.ethBancor.getReserveBalances(minimalPools)
@@ -328,6 +332,7 @@ networkVersion$.subscribe(network => {
     vxm.ethBancor.setNetwork(network);
   }
 });
+
 apiData$.subscribe(data => {
   vxm.ethBancor.setApiData(data);
   const minimalPools = data.pools.map(
@@ -337,7 +342,7 @@ apiData$.subscribe(data => {
       reserves: pool.reserves.map(r => r.address)
     })
   );
-  minimalPoolReceiver$.next(minimalPools);
+  minimalPoolBalanceReceiver$.next(minimalPools);
 });
 
 const bntSupplyApi$ = apiData$.pipe(

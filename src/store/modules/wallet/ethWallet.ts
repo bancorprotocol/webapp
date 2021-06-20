@@ -6,6 +6,12 @@ import { fromWei, isAddress, toHex, toWei } from "web3-utils";
 import { shrinkToken } from "@/api/eth/helpers";
 import { vxm } from "@/store";
 import { EthNetworks, getWeb3, Provider, web3 } from "@/api/web3";
+import {
+  sendConversionEvent,
+  googleTagManager,
+  sendWalletEvent,
+  WalletEvents
+} from "@/gtm";
 
 const tx = (data: any) =>
   new Promise((resolve, reject) => {
@@ -58,8 +64,19 @@ export class EthereumModule extends VuexModule.With({
 
   @action async connect() {
     try {
+      sendWalletEvent(WalletEvents.popup);
       await onboard.walletSelect();
+      const state = onboard.getState();
+      sendWalletEvent(WalletEvents.click, {
+        wallet_name: state.wallet.name
+      });
       await onboard.walletCheck();
+      sendWalletEvent(
+        WalletEvents.connect,
+        undefined,
+        state.address,
+        state.wallet.name ?? ""
+      );
     } catch (e) {
       console.error(e, "was the error");
       throw new Error(`error: ${e}`);
@@ -67,13 +84,16 @@ export class EthereumModule extends VuexModule.With({
   }
 
   @action async nativeBalanceChange(nativeBalance: string) {
-    vxm.ethBancor.updateUserBalances([
-      { balance: fromWei(nativeBalance), id: ethReserveAddress }
-    ]);
+    if (nativeBalance)
+      vxm.ethBancor.updateUserBalances([
+        { balance: fromWei(nativeBalance), id: ethReserveAddress }
+      ]);
   }
 
   @action async checkAlreadySignedIn() {
     const previouslySelectedWallet = localStorage.getItem(selectedWeb3Wallet);
+
+    googleTagManager(this.loggedInAccount, previouslySelectedWallet);
 
     if (previouslySelectedWallet) {
       await onboard.walletSelect(previouslySelectedWallet);

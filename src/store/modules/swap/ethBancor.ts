@@ -10,7 +10,6 @@ import {
   LiquidityProtectionSettings,
   MinimalPool,
   ModalChoice,
-  ModuleParam,
   OnPrompt,
   OnUpdate,
   OpposingLiquid,
@@ -58,7 +57,6 @@ import {
   findChangedReserve,
   findOrThrow,
   generateEtherscanTxLink,
-  isOdd,
   LockedBalance,
   multiSteps,
   PoolContainer,
@@ -110,7 +108,6 @@ import {
   buildExchangeProxyContract,
   buildLiquidityProtectionContract,
   buildLiquidityProtectionSettingsContract,
-  buildLiquidityProtectionStoreContract,
   buildLiquidityProtectionSystemStoreContract,
   buildNetworkContract,
   buildRegistryContract,
@@ -186,7 +183,7 @@ import {
   fetchPositionsTrigger$,
   immediateTokenMeta$,
   lockedBalancesTrigger$,
-  minimalPoolReceiver$,
+  minimalPoolBalanceReceiver$,
   newPools$,
   selectedPromptReceiver$,
   usdPriceOfBnt$
@@ -210,8 +207,8 @@ import { nullApprovals } from "@/api/eth/nullApprovals";
 import { NewPool, Pool, WelcomeData } from "@/api/eth/bancorApi";
 import { distinctArrayItem } from "@/api/observables/customOperators";
 import {
-  networkVersion$,
-  networkVersionReceiver$
+  networkVersionReceiver$,
+  supportedNetworkVersion$
 } from "@/api/observables/network";
 import {
   bancorConverterRegistry$,
@@ -232,6 +229,7 @@ import {
 } from "@/api/observables/keeperDao";
 import { createOrder } from "@/api/orderSigning";
 import { tokens$ } from "@/api/observables/pools";
+import { ConversionEvents, sendConversionEvent } from "@/gtm";
 
 keeperTokens$.subscribe(token =>
   vxm.ethBancor.setDaoTokens(token.map(x => x.address))
@@ -2383,17 +2381,11 @@ export class EthBancorModule
       .filter(balance => dayjs.unix(balance.expirationTime).isBefore(now))
       .sort((a, b) => a.index - b.index);
 
-    const chunked = chunk(availableClaims, 5);
-    const txRes = await Promise.all(
-      chunked.map(arr => {
-        const first = arr[0].index;
-        const second = first + 50;
-        return this.resolveTxOnConfirmation({
-          tx: contract.methods.claimBalance(String(first), String(second))
-        });
-      })
-    );
-    const hash = last(txRes) as string;
+    if (availableClaims.length == 0) throw new Error("Failed finding available locked balance");
+
+    const hash = await this.resolveTxOnConfirmation({
+      tx: contract.methods.claimBalance('0', '1000')
+    });
 
     const bntAddress = getNetworkVariables(this.currentNetwork).bntToken;
     this.spamBalances([bntAddress]);
@@ -2476,9 +2468,7 @@ export class EthBancorModule
     } else {
       try {
         adjustedGas = await this.determineTxGas(tx);
-      } catch (e) {
-        console.error("Failed to estimate gas");
-      }
+      } catch (e) {}
     }
 
     return new Promise((resolve, reject) => {
@@ -2495,9 +2485,11 @@ export class EthBancorModule
             resolve(txHash);
           }
         })
-        .on("confirmation", () => {
-          if (onConfirmation) onConfirmation(txHash);
-          resolve(txHash);
+        .on("confirmation", (confirmationNumber: number) => {
+          if (confirmationNumber === 1) {
+            if (onConfirmation) onConfirmation(txHash);
+            resolve(txHash);
+          }
         })
         .on("error", (error: any) => reject(error));
     });
@@ -2793,10 +2785,10 @@ export class EthBancorModule
       const addProtectionSupported = liquidityProtection && bntReserve;
 
       const feesGenerated = relay.fees_24h.usd || 0;
-      const feesVsLiquidity = new BigNumber(feesGenerated)
-        .times(365)
-        .div(liqDepth)
-        .toString();
+      const feesVsLiquidity =
+        liqDepth === 0
+          ? "0"
+          : new BigNumber(feesGenerated).times(365).div(liqDepth).toString();
 
       const volume = relay.volume_24h.usd;
 
@@ -2837,7 +2829,7 @@ export class EthBancorModule
         v2: false,
         volume,
         feesGenerated,
-        ...(feesVsLiquidity && { feesVsLiquidity }),
+        feesVsLiquidity,
         aprMiningRewards
       } as ViewRelay;
     });
@@ -5606,7 +5598,7 @@ export class EthBancorModule
       const emittedRelays$ = combineLatest([
         fullRelays$,
         usdPriceOfBnt$,
-        networkVersion$
+        supportedNetworkVersion$
       ]).pipe(
         map(([relay, usdPriceOfBnt, currentNetwork]) => {
           const bntTokenAddress = getNetworkVariables(currentNetwork).bntToken;
@@ -6000,7 +5992,6 @@ export class EthBancorModule
         description: "Done!"
       }
     ];
-
     onUpdate!(0, steps);
 
     const fromTokenDecimals = await this.getDecimalsByTokenAddress(
@@ -6022,6 +6013,23 @@ export class EthBancorModule
       toId: to.id
     });
 
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        vxm.bancor.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: fromSymbol + "/" + toToken.symbol,
+      conversion_from_token: fromSymbol,
+      conversion_to_token: toToken.symbol,
+      conversion_from_amount: fromAmount,
+      conversion_to_amount: to.amount
+    };
+
     const ethPath = generateEthPath(fromSymbol, relays);
 
     onUpdate!(1, steps);
@@ -6032,13 +6040,14 @@ export class EthBancorModule
       tokenAddress: fromTokenContract,
       onPrompt
     });
-
     onUpdate!(2, steps);
 
     const networkContract = buildNetworkContract(this.contracts.BancorNetwork);
 
     const expectedReturn = to.amount;
     const expectedReturnWei = expandToken(expectedReturn, toTokenDecimals);
+
+    sendConversionEvent(ConversionEvents.wallet_req, conversion);
 
     const confirmedHash = await this.resolveTxOnConfirmation({
       tx: networkContract.methods.convertByPath(
@@ -6049,11 +6058,23 @@ export class EthBancorModule
         zeroAddress,
         0
       ),
-      onConfirmation: () =>
-        this.spamBalances([fromTokenContract, toTokenContract]),
+      onConfirmation: () => {
+        sendConversionEvent(ConversionEvents.success, {
+          ...conversion,
+          conversion_market_eth_usd_rate: this.stats.nativeTokenPrice.price,
+          conversion_market_token_rate: fromToken.price?.toFixed(10),
+          transaction_category: "Conversion",
+          transaction_id: confirmedHash,
+          transaction_revenue: ""
+        });
+        return this.spamBalances([fromTokenContract, toTokenContract]);
+      },
       resolveImmediately: true,
       ...(fromIsEth && { value: fromWei }),
-      onHash: () => onUpdate!(3, steps)
+      onHash: () => {
+        sendConversionEvent(ConversionEvents.wallet_confirm, conversion);
+        return onUpdate!(3, steps);
+      }
     });
     onUpdate!(4, steps);
 
@@ -6189,24 +6210,18 @@ export class EthBancorModule
     return this.createTxResponse(txHash);
   }
 
-  @action async withdrawWeth({
-    decAmount,
-    onPrompt
-  }: {
-    decAmount: string;
-    onPrompt: OnPrompt;
-  }) {
+  @action async withdrawWeth({ decAmount }: { decAmount: string }) {
     if (this.currentNetwork !== EthNetworks.Mainnet)
       throw new Error("Ropsten not supported");
 
     const tokenContract = buildWethContract(wethTokenContractAddress);
     const wei = expandToken(decAmount, 18);
 
-    await this.awaitConfirmation(onPrompt);
-
     const txHash = await this.resolveTxOnConfirmation({
       tx: tokenContract.methods.withdraw(wei)
     });
+
+    this.spamBalances([wethTokenContractAddress]);
 
     return this.createTxResponse(txHash);
   }
@@ -6637,7 +6652,7 @@ export class EthBancorModule
       relays: minimalRelays
     });
 
-    minimalPoolReceiver$.next(
+    minimalPoolBalanceReceiver$.next(
       relays.map(
         (relay): MinimalPool => ({
           anchorAddress: relay.anchorAddress,

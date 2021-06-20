@@ -76,6 +76,7 @@
     <main-button
       :label="swapButtonLabel"
       @click="initSwap"
+      :error="errorButton"
       :active="true"
       :large="true"
       :loading="rateLoading"
@@ -86,6 +87,7 @@
       :title="$t('confirm_token_swap')"
       icon="exchange-alt"
       :tx-meta.sync="txMeta"
+      @onHide="onHide"
     >
       <gray-border-block>
         <label-content-split
@@ -153,6 +155,8 @@ import { addNotification } from "@/components/compositions/notifications";
 import { wethTokenContractAddress } from "@/store/modules/swap/ethBancor";
 import { compareString } from "@/api/helpers";
 import wait from "waait";
+import { ConversionEvents, sendConversionEvent } from "@/gtm";
+import { EthNetworks } from "@/api/web3";
 
 @Component({
   components: {
@@ -217,6 +221,10 @@ export default class SwapAction extends BaseTxAction {
     return vxm.bancor.slippageTolerance;
   }
 
+  get errorButton() {
+    return this.slippage && this.slippage > 0.1;
+  }
+
   inverseRate = true;
 
   get rate() {
@@ -255,7 +263,13 @@ export default class SwapAction extends BaseTxAction {
 
   get swapButtonLabel() {
     if (!this.amount1) return i18n.t("enter_amount");
-    else return i18n.t("swap");
+    else if (this.slippage) {
+      if (0.05 < this.slippage && this.slippage < 0.1)
+        return i18n.t("swap_slippage");
+      else if (this.slippage > 0.1) return i18n.t("swap_high_slippage");
+    }
+
+    return i18n.t("swap");
   }
 
   selectFromToken(id: string) {
@@ -307,8 +321,27 @@ export default class SwapAction extends BaseTxAction {
   }
 
   async initSwap() {
-    // @ts-ignore
-    this.openModal();
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: this.token1.symbol + "/" + this.token2.symbol,
+      conversion_from_token: this.token1.symbol,
+      conversion_to_token: this.token2.symbol,
+      conversion_from_amount: this.amount1,
+      conversion_to_amount: this.amount2
+    };
+    sendConversionEvent(ConversionEvents.click, conversion);
+    const notLoggedIn = this.openModal();
+    if (!notLoggedIn)
+      sendConversionEvent(ConversionEvents.receipt_req, conversion);
+
     if (this.txMeta.txBusy) return;
     this.txMeta.txBusy = true;
     try {
@@ -337,10 +370,40 @@ export default class SwapAction extends BaseTxAction {
       });
       this.setDefault();
     } catch (e) {
+      if (e.message.includes("User denied"))
+        sendConversionEvent(ConversionEvents.wallet_rej, conversion);
+      else
+        sendConversionEvent(ConversionEvents.fail, {
+          conversion,
+          error: e.message
+        });
+
       this.txMeta.txError = e.message;
     } finally {
       this.txMeta.txBusy = false;
     }
+  }
+
+  onHide(state: boolean) {
+    if (!state) return;
+    console.log("GTM event");
+    const conversion = {
+      conversion_type: "Market",
+      conversion_approve: "Unlimited",
+      conversion_blockchain: "ethereum",
+      conversion_blockchain_network:
+        vxm.ethBancor.currentNetwork === EthNetworks.Ropsten
+          ? "Ropsten"
+          : "MainNet",
+      conversion_settings:
+        this.slippageTolerance === 0.005 ? "Regular" : "Advanced",
+      conversion_token_pair: this.token1.symbol + "/" + this.token2.symbol,
+      conversion_from_token: this.token1.symbol,
+      conversion_to_token: this.token2.symbol,
+      conversion_from_amount: this.amount1,
+      conversion_to_amount: this.amount2
+    };
+    sendConversionEvent(ConversionEvents.receipt_rej, conversion);
   }
 
   lastReturn: { from: ViewAmount; to: ViewAmount } = {
@@ -526,3 +589,11 @@ export default class SwapAction extends BaseTxAction {
   font-size: 1rem;
 }
 </style>
+
+function event_category(arg0: string, event_category: any, conversion: {
+conversion_type: string; conversion_approve: string; conversion_blockchain:
+string; conversion_blockchain_network: string; conversion_settings: string;
+conversion_token_pair: string; conversion_from_token: string;
+conversion_to_token: string; conversion_from_amount: string;
+conversion_to_amount: string; }) { throw new Error("Function not implemented.");
+}
