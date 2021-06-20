@@ -22,7 +22,6 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import Notifications from "@/components/compositions/notifications/Notifications.vue";
 import { authenticatedReceiver$, onLogout$ } from "@/api/observables/auth";
 import ModalLanguageChange from "@/components/modals/ModalLanguageChange.vue";
-import { onLogout$ } from "@/api/observables/auth";
 
 @Component({
   components: { BancorMenu, SettingsMenu, Notifications, ModalLanguageChange }
@@ -52,7 +51,8 @@ export default class Navigation extends BaseComponent {
     vxm.ethWallet.setLoggedInAccount(this.user);
     vxm.ethBancor.fetchProtectionPositions();
     authenticatedReceiver$.next(this.user);
-  
+  }
+
   showLocaleMod() {
     this.modal = true;
   }
