@@ -8,9 +8,9 @@ import nl from "./nl.json";
 import fr from "./fr.json";
 import de from "./de.json";
 import ru from "./ru.json";
-//import es from "./es.json";
+import es from "./es.json";
 import sv from "./sv.json";
-//import zh from "./zh.json";
+import zh from "./zh.json";
 
 Vue.use(VueI18n);
 
@@ -23,9 +23,9 @@ const messages = {
   fr,
   de,
   ru,
-  //es,
-  sv
-  //zh
+  es,
+  sv,
+  zh
 };
 
 export const i18n = new VueI18n({
@@ -53,12 +53,12 @@ export const getLanguageByLocale = (locale: string): string => {
       return "Deutsch";
     case "ru":
       return "Pусский";
-    // case "es":
-    //   return "Español";
+    case "es":
+      return "Español";
     case "sv":
       return "Svenska";
-    // case "zh":
-    //   return "中文";
+    case "zh":
+      return "中文";
     default:
       return "English";
   }
