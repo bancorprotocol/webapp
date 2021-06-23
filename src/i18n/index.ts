@@ -77,6 +77,9 @@ export const getLanguageByLocale = (locale: string): string => {
       return "Español";
     case "sv":
       return "Svenska";
+    case "zh":
+      return "中文";
+
     case "ar":
       return "العربية";
     case "cs":
