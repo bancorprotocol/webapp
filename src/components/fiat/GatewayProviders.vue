@@ -133,24 +133,6 @@ export default class GatewayProviders extends BaseComponent {
       },
       {
         id: 2,
-        name: "Simplex",
-        logo: "simplex.svg",
-        logoDark: "simplex-dark.svg",
-        description:
-          "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
-        jurisdictions: ["Global"],
-        depositMethods: [
-          "Wire Transfer",
-          "Credit Card",
-          "Debit Card",
-          "Apple Pay"
-        ],
-        buyUrl: "https://b.buy-crypto-with-simplex.com/?crypto=ETH",
-        sellUrl:
-          "https://www.simplex.com/account/sell?ref=b1990d7be52dfae9fa894a0d56317f28"
-      },
-      {
-        id: 3,
         name: "BANXA",
         logo: "banxa.svg",
         logoDark: "banxa-dark.svg",
@@ -166,6 +148,24 @@ export default class GatewayProviders extends BaseComponent {
           "SEPA"
         ],
         buyUrl: "https://pay.banxa.com"
+      },
+      {
+        id: 3,
+        name: "Simplex",
+        logo: "simplex.svg",
+        logoDark: "simplex-dark.svg",
+        description:
+          "Simplex is the industry leader, providing global on/off ramps to the entire fiat to crypto ecosystem. Working with a vast network of partners, Simplex ensures that crypto is safe and accessible to all.",
+        jurisdictions: ["Global"],
+        depositMethods: [
+          "Wire Transfer",
+          "Credit Card",
+          "Debit Card",
+          "Apple Pay"
+        ],
+        buyUrl: "https://b.buy-crypto-with-simplex.com/?crypto=ETH",
+        sellUrl:
+          "https://www.simplex.com/account/sell?ref=b1990d7be52dfae9fa894a0d56317f28"
       },
       {
         id: 4,
@@ -201,7 +201,8 @@ export default class GatewayProviders extends BaseComponent {
           "Apple Pay",
           "Google Pay"
         ],
-        buyUrl: "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=buy",
+        buyUrl:
+          "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=buy",
         sellUrl:
           "https://exchange.mercuryo.io/?widget_id=d7702dc1-c8ee-4726-a5be-5f18e31849b6&currency=ETH&type=sell"
       }
