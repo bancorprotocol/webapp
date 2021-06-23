@@ -11,6 +11,16 @@ import ru from "./ru.json";
 import es from "./es.json";
 import sv from "./sv.json";
 import zh from "./zh.json";
+import ar from "./ar.json";
+import cs from "./cs.json";
+import fi from "./fi.json";
+import el from "./el.json";
+import hu from "./hu.json";
+import it from "./it.json";
+import ja from "./ja.json";
+import ko from "./ko.json";
+import no from "./no.json";
+import tr from "./tr.json";
 
 Vue.use(VueI18n);
 
@@ -25,7 +35,17 @@ const messages = {
   ru,
   es,
   sv,
-  zh
+  zh,
+  ar,
+  cs,
+  fi,
+  el,
+  hu,
+  it,
+  ja,
+  ko,
+  no,
+  tr
 };
 
 export const i18n = new VueI18n({
@@ -57,8 +77,26 @@ export const getLanguageByLocale = (locale: string): string => {
       return "Español";
     case "sv":
       return "Svenska";
-    case "zh":
-      return "中文";
+    case "ar":
+      return "العربية";
+    case "cs":
+      return "čeština";
+    case "fi":
+      return "Suomi";
+    case "el":
+      return "ελληνικά";
+    case "hu":
+      return "magyar";
+    case "it":
+      return "Italiano";
+    case "ja":
+      return "日本語";
+    case "ko":
+      return "한국어";
+    case "no":
+      return "Norsk";
+    case "tr":
+      return "Türkçe";
     default:
       return "English";
   }
@@ -82,12 +120,32 @@ export const getLanguageByLocaleInEnglish = (locale: string): string => {
       return "German";
     case "ru":
       return "Russian";
-    // case "es":
-    //   return "Spanish";
+    case "es":
+      return "Spanish";
     case "sv":
       return "Swedish";
-    // case "zh":
-    //   return "Chinese";
+    case "zh":
+      return "Chinese";
+    case "ar":
+      return "Arabic";
+    case "cs":
+      return "Czech";
+    case "fi":
+      return "Finnish";
+    case "el":
+      return "Greek";
+    case "hu":
+      return "Hungarian";
+    case "it":
+      return "Italian";
+    case "ja":
+      return "Japanese";
+    case "ko":
+      return "Korean";
+    case "no":
+      return "Norwegian";
+    case "tr":
+      return "Turkish";
     default:
       return "English";
   }
