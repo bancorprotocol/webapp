@@ -234,7 +234,7 @@ export default class AddProtectionSingle extends BaseTxAction {
   preTxError = "";
   outputs: ViewAmountDetail[] = [];
 
-  selectedTokenIndex = 0;
+  selectedTokenIndex = 1;
 
   private interval: any;
 
@@ -432,9 +432,11 @@ export default class AddProtectionSingle extends BaseTxAction {
   }
 
   async loadRecentAverageRate() {
-    await (this.$refs.priceDeviationError as Vue & {
-      loadRecentAverageRate: () => boolean;
-    }).loadRecentAverageRate();
+    await (
+      this.$refs.priceDeviationError as Vue & {
+        loadRecentAverageRate: () => boolean;
+      }
+    ).loadRecentAverageRate();
   }
 
   async selectPool(id: string) {
