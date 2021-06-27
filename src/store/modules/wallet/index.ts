@@ -1,4 +1,4 @@
-import { createModule, action } from "vuex-class-component";
+import { createModule, action, mutation } from "vuex-class-component";
 import { vxm, store } from "@/store";
 
 const VuexModule = createModule({
@@ -6,6 +6,8 @@ const VuexModule = createModule({
 });
 
 export class WalletModule extends VuexModule.With({ namespaced: "wallet/" }) {
+  user = "";
+
   get currentWallet() {
     return vxm.bancor.wallet;
   }
@@ -27,7 +29,12 @@ export class WalletModule extends VuexModule.With({ namespaced: "wallet/" }) {
     }
   }
 
+  @mutation setUser(user: string) {
+    this.user = user;
+  }
+
   get currentUser() {
+    return this.user;
     // @ts-ignore
     return vxm[`${vxm.bancor.wallet}Wallet`].currentUser;
   }
