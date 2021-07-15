@@ -86,6 +86,12 @@ export const govTokenAddress$ = networkVars$.pipe(
   shareReplay(1)
 );
 
+export const bancorNetworkAddress$ = contractAddresses$.pipe(
+  pluck("BancorNetwork"),
+  optimisticContract("BancorNetwork"),
+  shareReplay(1)
+);
+
 const vxmTimer$ = timer(2000);
 
 combineLatest([govTokenAddress$, vxmTimer$]).subscribe(([govToken]) => {
