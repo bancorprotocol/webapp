@@ -6693,6 +6693,10 @@ export class EthBancorModule
       )
     );
 
+    const noLiquidty = sortedPools.every(pool => pool.liquidity.usd === "0");
+    if (noLiquidty) {
+      throw new Error("insufficient_liquidity");
+    }
     interface SpotPriceWithFee {
       rate: string;
       decFee: number;

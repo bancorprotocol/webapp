@@ -459,7 +459,8 @@ export default class SwapAction extends BaseTxAction {
       const raiseError = new BigNumber(this.balance1).isLessThan(amount);
       this.errorToken1 = raiseError ? i18n.tc("insufficient_token") : "";
     } catch (e) {
-      this.errorToken1 = e.message;
+      const translateResult = i18n.tc(e.message);
+      this.errorToken1 = translateResult || e.message;
     } finally {
       this.rateLoading = false;
     }
