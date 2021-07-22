@@ -86,7 +86,7 @@ export const router = new Router({
       components: {
         Nav: Navigation,
         default: PageNotFound
-      }
+      },
     },
     {
       path: "/swap",
@@ -186,7 +186,7 @@ export const router = new Router({
       },
       children: [
         {
-          path: "",
+          path: "/:service/portfolio/stake",
           name: "ProtectionAction",
           component: AddProtectionHome
         },
@@ -235,7 +235,7 @@ export const router = new Router({
       props: true,
       children: [
         {
-          path: "",
+          path: "/:service/data",
           name: "Data",
           component: DataSummary,
           meta: {
@@ -254,7 +254,7 @@ export const router = new Router({
       props: true,
       children: [
         {
-          path: "",
+          path: "/:service/vote",
           name: "Vote",
           component: VotePage,
           meta: {
@@ -273,7 +273,7 @@ export const router = new Router({
       props: true,
       children: [
         {
-          path: "",
+          path: "/:service/vote-legacy",
           name: "VoteLegacy",
           component: VoteLegacy,
           meta: {
@@ -293,7 +293,7 @@ export const router = new Router({
       props: true,
       children: [
         {
-          path: "",
+          path: "/:service/fiat",
           name: "FiatPage",
           component: FiatPage,
           meta: {
