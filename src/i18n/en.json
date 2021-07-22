@@ -450,5 +450,6 @@
   "language_change": "Language Change",
   "translations_community": "Translations are created and supported by our community members.",
   "suggest_edits": "Want to suggest edits and improvements?",
-  "press_here_info": "Press here for more info"
+  "press_here_info": "Press here for more info",
+  "insufficient_liquidity": "This pool has no liquidity."
 }
