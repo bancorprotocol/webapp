@@ -142,6 +142,7 @@ export default class ModalUnstake extends BaseComponent {
 
   step: "unstake" | "unstaking" | "unstaked" = "unstake";
   symbol: string = "";
+  address: string = "";
   etherscanUrl: string = "";
 
   get buttonActive() {
@@ -158,7 +159,8 @@ export default class ModalUnstake extends BaseComponent {
     return {
       id: -1,
       symbol: this.symbol,
-      logo: bntToken ? bntToken.logo : ""
+      logo: bntToken ? bntToken.logo : "",
+      contract: this.address
     };
   }
 
@@ -237,11 +239,13 @@ export default class ModalUnstake extends BaseComponent {
     this.setUnstakeInput();
 
     this.symbol = await vxm.ethGovernance.getSymbol();
+    this.address = await vxm.ethGovernance.getTokenAddress();
     this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
   }
 
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
+    this.address = await vxm.ethGovernance.getTokenAddress();
     await this.update();
   }
 }

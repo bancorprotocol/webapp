@@ -148,6 +148,7 @@ export default class ModalStake extends BaseComponent {
   stakeValue: BigNumber = new BigNumber(0);
   step: "stake" | "staking" | "staked" = "stake";
   symbol: string = "";
+  address: string = "";
   etherscanUrl: string = "";
   maxLock: number = 0;
 
@@ -165,7 +166,8 @@ export default class ModalStake extends BaseComponent {
     return {
       id: -1,
       symbol: this.symbol,
-      logo: bntToken ? bntToken.logo : ""
+      logo: bntToken ? bntToken.logo : "",
+      contract: this.address
     };
   }
 
@@ -244,6 +246,7 @@ export default class ModalStake extends BaseComponent {
     this.setStakeInput();
 
     this.symbol = await vxm.ethGovernance.getSymbol();
+    this.address = await vxm.ethGovernance.getTokenAddress();
     this.etherscanUrl = await vxm.ethGovernance.getEtherscanUrl();
 
     await this.updateMaxLock();
@@ -260,6 +263,7 @@ export default class ModalStake extends BaseComponent {
 
   async mounted() {
     this.symbol = await vxm.ethGovernance.getSymbol();
+    this.address = await vxm.ethGovernance.getTokenAddress();
     await this.update();
   }
 }
