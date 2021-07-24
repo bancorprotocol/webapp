@@ -654,8 +654,8 @@ export const wethTokenContractAddress =
 const calculateSlippage = (
   slippageLessRate: BigNumber,
   slippagedRate: BigNumber
-): BigNumber => {
-  if (slippagedRate.gt(slippageLessRate)) throw new Error("Rates are bad");
+): BigNumber | undefined => {
+  if (slippagedRate.gt(slippageLessRate)) return undefined;
   const result = slippageLessRate.minus(slippagedRate).abs();
   return result.div(slippageLessRate);
 };
@@ -6755,19 +6755,11 @@ export class EthBancorModule
       );
       console.log(userReturnRate.toString(), "is the user return rate");
 
-      let slippage: number | undefined;
-      try {
-        const slippageBigNumber = calculateSlippage(
-          slippageLessReturnRate,
-          userReturnRate
-        );
-
-        const slippageNumber = slippageBigNumber.toNumber();
-        slippage = slippageNumber;
-      } catch (e) {
-        console.error("Failed calculating slippage", e.message);
-      }
-
+      const slippageBigNumber = calculateSlippage(
+        slippageLessReturnRate,
+        userReturnRate
+      );
+      const slippage = slippageBigNumber?.toNumber();
       return {
         amount: shrinkToken(slippageWeiReturn, toTokenDecimals),
         slippage
