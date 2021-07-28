@@ -43,8 +43,12 @@
     <div class="beta">
       <img
         @click="openUrl(`https://beta.bancor.network`)"
-        :src="require(`@/assets/media/logos/beta.png`)"
-        class="mt-1"
+        :src="
+          require(darkMode
+            ? `@/assets/media/logos/cta-dark.svg`
+            : `@/assets/media/logos/cta.svg`)
+        "
+        class="mt-1 beta"
       />
     </div>
   </div>
@@ -76,5 +80,13 @@ export default class SwapHome extends BaseComponent {
 <style lang="scss">
 .popover {
   max-width: 300px;
+}
+
+.beta {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: space-between;
 }
 </style>
