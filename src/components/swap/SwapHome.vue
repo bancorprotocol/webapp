@@ -41,15 +41,16 @@
       <swap-market v-else />
     </content-block>
     <div class="beta">
-      <img
-        @click="openUrl(`https://beta.bancor.network`)"
-        :src="
-          require(darkMode
-            ? `@/assets/media/logos/cta-dark.svg`
-            : `@/assets/media/logos/cta.svg`)
-        "
-        class="mt-1 beta"
-      />
+      <a class="beta" href="https://beta.bancor.network" target="_blank">
+        <img
+          :src="
+            require(darkMode
+              ? `@/assets/media/logos/cta-dark.svg`
+              : `@/assets/media/logos/cta.svg`)
+          "
+          class="mt-1 beta"
+        />
+      </a>
     </div>
   </div>
 </template>
