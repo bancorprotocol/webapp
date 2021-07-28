@@ -735,6 +735,14 @@
   }
 }
 
+.limited-dropdown-settings {
+  .dropdown-menu {
+    max-height: 420px;
+    width: 300px;
+    overflow-y: auto;
+  }
+}
+
 .full-dropdown {
   .dropdown-menu {
     width: 100%;

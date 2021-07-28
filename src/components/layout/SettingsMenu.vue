@@ -4,6 +4,7 @@
     ref="dropdown"
     right
     :variant="darkMode ? 'outline-dark' : 'outline-light'"
+    class="limited-dropdown-settings"
     size="sm"
     toggle-class="block-rounded"
     :menu-class="darkMode ? 'bg-block-dark shadow' : 'bg-block-light shadow'"
@@ -22,10 +23,7 @@
           {{ $t("transaction_settings") }}
         </div>
       </b-dropdown-header>
-      <b-dropdown-text
-        style="width: 300px"
-        :variant="darkMode ? 'dark' : 'light'"
-      >
+      <b-dropdown-text :variant="darkMode ? 'dark' : 'light'">
         <p class="font-size-sm mb-0">{{ $t("slippage_tolerance") }}</p>
         <slippage-tolerance />
       </b-dropdown-text>
@@ -71,13 +69,10 @@
     </b-dropdown-text>
     <b-dropdown-divider v-if="!showLocale"></b-dropdown-divider>
     <b-dropdown-group id="dropdown-group-3" v-if="!showLocale">
-      <b-dropdown-header
-        v-if="showLocale"
-        style="width: 300px !important"
-        @click="goToSettings"
+      <b-dropdown-header v-if="showLocale" @click="goToSettings"
         >{{ $t("blockchains") }}
       </b-dropdown-header>
-      <b-dropdown-text style="width: 300px">
+      <b-dropdown-text>
         <div class="d-flex justify-content-between align-items-end">
           <b-btn
             size="sm"
@@ -107,12 +102,7 @@
         {{ `${$t("version")} ${appVersion}` }}
       </div>
     </b-dropdown-group>
-    <b-dropdown-header
-      v-if="showLocale"
-      style="width: 300px !important"
-      class="cursor"
-      @click="goToSettings"
-    >
+    <b-dropdown-header v-if="showLocale" class="cursor" @click="goToSettings">
       <font-awesome-icon icon="arrow-left" class="mr-2 menu-icon" />
       {{ $t("choose_language") }}
     </b-dropdown-header>

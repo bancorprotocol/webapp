@@ -39,7 +39,7 @@
   "governance_contract": "治理合约",
   "governance_token": "治理代币",
   "create_proposal": "创建提案",
-  "new_proposal_req": "新的提案要求您至少持有 {数量} {符号}，并被锁定 {时间} 小时",
+  "new_proposal_req": "新的提案要求您至少持有 {amount} {symbol}，并被锁定 {time} 小时",
   "discourse_url": "讨论区网址（Url）",
   "title_description": "标题和描述",
   "i_propose": "我想向……提案",
@@ -63,7 +63,7 @@
   "more_about_proposal": "关于提案的更多信息",
   "discussion_forum": "论坛",
   "your_vote": "您的投票",
-  "from_voters": "{百分数}% 来自投票者",
+  "from_voters": "{percentage}% 来自投票者",
   "for": "支持",
   "against": "反对",
   "users": "用户",
@@ -85,7 +85,7 @@
   "history": "历史",
   "vote_for": "投票支持",
   "vote_against": "投票反对",
-  "output_estimated": "预估输出量。如果价格变化超过 {数额}，您的交易将被退回。",
+  "output_estimated": "预估输出量。如果价格变化超过 {amount}，您的交易将被退回。",
   "confirm_token_swap": "确认代币互换",
   "from": "从",
   "to_estimated": "至（预估）",
@@ -115,7 +115,7 @@
   "staking_protecting": "您正在进行质押及保护",
   "price_deviation_high": "价格偏差过大",
   "pool_not_approved": "您所选择的矿池未获得保护资格。您将凭借质押获得 vBNT 投票权，该投票权可以用来进行包括其在内的提案。如果该提案获批，您的原始质押时间将用于行权。",
-  "limit_reached": " {代币} 已达到限额。应对额外的流动性 {对冲代币} 进行质押，从而允许 {代币} 的单边质押。",
+  "limit_reached": "{token} 已达到限额。应对额外的流动性 {opposingToken} 进行质押，从而允许 {token} 的单边质押。",
   "insufficient_store_balance": "商店余额不足",
   "available_claim": "可索取",
   "bnt_to_claim": "没有可索取的 BNT",
@@ -135,7 +135,7 @@
   "cliff": "断崖",
   "loss_protection_vesting_30": "无常损失保护在您存入款项时即刻开启。但是，该项保护必须在您投入矿池 30 天后方可生效。",
   "coverage_achieved": "实现全面覆盖",
-  "left_until_coverage": "离全面覆盖还有 {时间}",
+  "left_until_coverage": "离全面覆盖剩余 {time}",
   "failed_find_position": "未能从位置账号 {ids} 中找到账号 {id}的位置",
   "pool_staked": "您进入的矿池。",
   "tokens_originally_staked": "您最初在矿池中质押的代币数额。",
@@ -164,14 +164,14 @@
   "output_breakdown": "输出分解",
   "you_will_receive": "您将会获得",
   "havent_reached_coverage": "您仍未达到完全保护覆盖。这将有可能为您带来无常损失。",
-  "insufficient_vBNT_balance": "vBNT 余额不足，您必须持有 {数额} vBNT 才能撤消头寸。",
+  "insufficient_vBNT_balance": "vBNT 余额不足，您必须持有 {amount} vBNT 才能撤消头寸。",
   "percentage_not_zero": "百分比不能为零",
   "percentage_not_100": "百分比不能超过 100",
   "fully_protected_value": "完全保护价值",
   "havent_reached_protection": "您仍未达到完全保护。存在无常损失风险，您最终获得的金额可能会抵御初始质押的金额。",
   "bnt_withdrawls": "BNT 币出金申请需经过 24 小时的锁定期方可实现。",
   "part_output_bnt": "您的部分出金来自 BNT 账户。这一数额将经过 24 小时的锁定期方可实现。",
-  "insufficient_vBNT_balance_missing": "vBNT 币余额不足，您必须持有 {金额} 的 vBNT 币才能提取头寸。您缺少 {缺少数额} 的 vBNT 币。",
+  "insufficient_vBNT_balance_missing": "vBNT 币余额不足，您必须持有 {amoun} 的 vBNT 币才能提取头寸。您缺少 {missing} 的 vBNT 币。",
   "pools_with_two": "拥有两个来源的准备金且重量为 50/50 的矿池可以通过投票获得保护。",
   "add_another_token": "添加其他代币",
   "pool_decimals": "十进制矿池",
@@ -217,11 +217,11 @@
   "token_not_found": "未找到代币",
   "select_wallet": "选择一个钱包",
   "cnnection_error": "连接错误",
-  "order_to_vote": "为了获取投票资格，您需要先质押 {符号} 代币。如果您没有 {符号} 代币，则需要先将 BNT 币质押至指定矿池。",
+  "order_to_vote": "为了获取投票资格，您需要先质押 {symbol} 代币。如果您没有 {symbol} 代币，则需要先将 BNT 币质押至指定矿池。",
   "stake_your_tokens": "质押您的代币",
   "balance": "余额",
   "staking": "质押",
-  "enable_vote": "通过质押 {符号} 可获得对提案的投票资格。当锁定期结束，您可以立即解除质押（不超过 {小时数} 小时）",
+  "enable_vote": "通过质押 {symbol} 可获得对提案的投票资格。当锁定期结束，您可以立即解除质押 (不超过 {hours} 小时)",
   "waiting_for_confirmation": "正在等待确认",
   "confirm__transaction_in_wallet": "在您的钱包中确认该项交易",
   "transaction_submitted": "交易申请已提交",
@@ -277,7 +277,7 @@
   "trade": "交易",
   "transaction_failed": "交易失败",
   "error": "错误",
-  "tx_details": "查看 {开发者名称} 账号 {ID} 上的 TX 详细信息。",
+  "tx_details": "查看 {explorerName} 账号 {id} 上的 TX 详细信息。",
   "wait_for_wallet": "等待钱包提示，然后在此继续您的操作",
   "simple": "简单",
   "detailed": "详细",
@@ -286,7 +286,7 @@
   "left_to_unlock": "左滑解锁",
   "full_protection": "完全保护",
   "custom": "自定义",
-  "page_of": "第 {当前页数} 页，共 {总页数} 页",
+  "page_of": "第 {current} 页，共 {total} 页",
   "add_liquidity_pool_xyz": "向矿池 xyz 增加流动性",
   "token_logo": "代币标识",
   "provider_logo": "提供商标识",
@@ -311,7 +311,7 @@
   "for_more_information": "了解更多信息",
   "click_here": "请点击此处",
   "bnt_open_space": "BNT 需要拓展空间",
-  "available_reserve_only": "所选矿池仅支持使用 {符号} 增加流动性。为了增加流动性，请选择其他来源的准备金。",
+  "available_reserve_only": "所选矿池仅支持使用 {symbol} 增加流动性。为了增加流动性，请选择其他来源的准备金。",
   "total_fees": "总费用",
   "creating_proposal": "创建提案",
   "vote_ended": "投票结束",
@@ -325,7 +325,7 @@
   "not_fully_protected": "未完全保护",
   "all_pools": "全部矿池",
   "date_range": "日期范围",
-  "wait_until_space_opens": "{代币} 总量已达到上限。请等待开放更多空间。",
+  "wait_until_space_opens": "{token} 总量已达到上限。请等待开放更多空间。",
   "market": "市场",
   "limit": "限制",
   "expires_in": "过期时间",
@@ -335,14 +335,14 @@
   "value": "价值",
   "data_refreshes_auto": "数据自动更新",
   "multiplier_changes": "您的乘数初始值为 1，每周增加 0.25，直到达到 2。从此时起，您所获得的奖励将是第 1 周的二倍。左侧即为将该项条件纳入后的数值。",
-  "current_protection": "当前头寸为 {金额}",
+  "current_protection": "当前头寸为 {amount}",
   "roi_protected_split": "您的投资回报来自费用（顶部）和奖励（底部）。二者之和代表了您的全部投资回报。",
   "not_protected": "未受保护",
   "clear_all_filters": "清除所有筛选条件",
   "multiple_token_pairs": "多个代币组合",
-  "days": "1 天 | {天数} 天",
-  "hours": "1 小时 | {小时数} 小时",
-  "minutes": "1 分钟 | {分钟数} 分钟",
+  "days": "1 天 | {count} 天",
+  "hours": "1 小时 | {count} 小时",
+  "minutes": "1 分钟 | {count} 分钟",
   "custom_time": "自定义时间",
   "set_up_time": "设置自定义时间段",
   "current_rate": "当前利率",
@@ -355,35 +355,35 @@
     "add": {
       "swap": {
         "title": "互换",
-        "description": "卖出 {金额1} {符号1}，收取 {金额2} {符号2}。"
+        "description": "卖出 {amount1} {symbol1}，收取 {amount2} {symbol2}。"
       },
       "stake": {
         "title": "增加单一流动性",
-        "description": "质押 & 保护矿池内的 {金额} {符号} "
+        "description": "质押 & 保护 {pool} 矿池内的 {amount} {symbol}"
       },
       "unstake": {
         "title": "提取保护",
-        "description": "从 {矿池} 矿池受保护头寸中提取 {金额} {符号}。"
+        "description": "从 {pool} 矿池受保护头寸中提取 {amount} {symbol}。"
       },
       "restake": {
         "title": "质押奖励",
-        "description": "从您的 {矿池} 矿池奖励中质押 {金额} {符号} BNT。"
+        "description": "从您的 {pool} 矿池奖励中质押 {amount} BNT。"
       },
       "withdraw": {
         "title": "提取奖励",
-        "description": "从您的奖励中提取 {金额} BNT。"
+        "description": "从您的奖励中提取 {amount} BNT。"
       },
       "add_liquidity": {
         "title": "增加流动性",
-        "description": "向 {矿池} 矿池中增加 {金额 1} {符号 1}，以及 {金额 2} {符号 2} 的流动性。"
+        "description": "向 {pool} 矿池中增加 {amount1} {symbol1}，以及 {amount2} {symbol2} 的流动性。"
       },
       "remove_liquidity": {
         "title": "清除流动性",
-        "description": "从 {矿池} 矿池中清除 {金额 1} {符号 1}，以及 {金额 2} {符号 2} 的流动性。"
+        "description": "从 {pool} 矿池中清除 {amount1} {symbol1}，以及 {amount2} {symbol2} 的流动性。"
       },
       "withdraw_weth": {
         "title": "提取 Weth",
-        "description": "成功提取 WETH {金额}"
+        "description": "成功提取 {amount} WETH"
       },
       "cancel_order": {
         "title": "取消限额申请单",
@@ -401,7 +401,7 @@
     "limit_order": {
       "title": "交易确认",
       "sub_title": "您正在创建限额申请单",
-      "info_text": "该项交易将于 {时间} 后过期",
+      "info_text": "项交易将于 {timer} 后过期",
       "info_text2": "KeeperDAO 套利者可能无法完成申请单",
       "sell": "卖出",
       "receive": "收取",
@@ -428,7 +428,7 @@
   },
   "button": {
     "confirm": "确认",
-    "withdraw_weth": "提取 WETH {金额}"
+    "withdraw_weth": "提取 {amount} WETH"
   },
   "tooltip": {
     "order_expired": "过期申请单无法处理，但仍存在于合约中。请将其撤销，以便从列表中完全移除。"
