@@ -27,15 +27,22 @@ import { Proposal } from "@/store/modules/governance/ethGovernance";
 import Web3 from "web3";
 import { web3 } from "@/api/web3";
 import { StringRfq } from "@/api/observables/keeperDao";
+import { Contract } from "web3-eth-contract";
 
-const buildContract = (
+interface ContractTyped<T> extends Contract {
+  methods: T;
+}
+
+const buildContract = <T>(
   abi: AbiItem[],
   contractAddress?: string,
   injectedWeb3?: Web3
-) =>
-  contractAddress
+): ContractTyped<T> =>
+  (contractAddress
     ? new (injectedWeb3 || web3).eth.Contract(abi, contractAddress)
-    : new (injectedWeb3 || web3).eth.Contract(abi);
+    : new (injectedWeb3 || web3).eth.Contract(
+        abi
+      )) as unknown as ContractTyped<T>;
 
 interface TokenContractType {
   symbol: () => CallReturn<string>;
