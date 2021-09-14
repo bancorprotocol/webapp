@@ -12,7 +12,7 @@ _All times in UTC_
 
 Daily standups
 
-- 7:45 am
+- 8:30 am
 
 #### Weekday work times
 
