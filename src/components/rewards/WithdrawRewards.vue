@@ -85,7 +85,7 @@ export default class WithdrawRewards extends BaseTxAction {
     return {
       variant: "warning",
       title: i18n.t("important"),
-      msg: i18n.t("withdrawing_rewards_reset")
+      msg: i18n.t("rewards_withdrawing_reset")
     };
   }
 

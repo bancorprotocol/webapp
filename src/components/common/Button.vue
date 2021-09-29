@@ -20,6 +20,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 export default class MainButton extends BaseComponent {
   @Prop({ default: "" }) label!: string;
   @Prop({ default: false }) active!: boolean;
+  @Prop({ default: false }) error!: boolean;
   @Prop({ default: false }) large!: boolean;
   @Prop({ default: false }) disabled!: boolean;
   @Prop({ default: false }) small!: boolean;
@@ -27,7 +28,9 @@ export default class MainButton extends BaseComponent {
   @Prop({ default: true }) block!: boolean;
 
   get variant() {
-    return this.active
+    return this.error
+      ? "error"
+      : this.active
       ? "primary"
       : this.darkMode
       ? "outline-gray-dark"

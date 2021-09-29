@@ -39,7 +39,7 @@
             </template>
 
             <b-dropdown-item
-              v-for="item in 8"
+              v-for="item in maxDays + 1"
               :key="item"
               @click="changeDays(item - 1)"
               :variant="darkMode ? 'dark' : 'light'"
@@ -144,6 +144,7 @@ export default class ModalDurationSelect extends BaseComponent {
   @VModel() show!: boolean;
   @Prop() initialDuration!: plugin.Duration;
   @Prop({ type: String, default: "" }) title!: string;
+  @Prop({ default: 30 }) maxDays!: number;
 
   selectedDays = dayjs.duration({ days: this.initialDuration.days() });
   selectedHours = dayjs.duration({ hours: this.initialDuration.hours() });
@@ -173,8 +174,8 @@ export default class ModalDurationSelect extends BaseComponent {
 
     return dayjs.duration({
       days: days,
-      hours: days === 7 ? 0 : hours,
-      minutes: days === 7 ? 0 : minutes
+      hours: days === this.maxDays ? 0 : hours,
+      minutes: days === this.maxDays ? 0 : minutes
     });
   }
 }
