@@ -675,7 +675,7 @@ const wallets = [
   { walletName: "ledger", rpcUrl: RPC_URL },
   { walletName: "authereum" },
   { walletName: "opera", preferred: true },
-  { walletName: "xdefi", preferred: true },
+  { walletName: "xdefi" },
   { walletName: "operaTouch" },
   { walletName: "torus" },
   { walletName: "status" },
