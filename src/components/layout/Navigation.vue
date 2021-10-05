@@ -1,14 +1,14 @@
 <template>
-  <div class="container-xl px-0">
+  <div class="top-nav">
     <div id="navigation-top" class="d-flex justify-content-end">
       <b-btn
         @click="loginAction"
         :variant="darkMode ? 'outline-dark' : 'outline-light'"
-        class="block-rounded"
+        class="rounded wallet-button"
         size="sm"
       >
-        <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
         <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
+        <span class="d-none d-sm-inline ml-2">{{ loginButtonLabel }}</span>
       </b-btn>
       <Notifications />
       <settings-menu @showLocaleModal="showLocaleMod" />
@@ -123,10 +123,43 @@ export default class Navigation extends BaseComponent {
 <style lang="scss">
 #navigation-top {
   margin-top: 0.2rem;
-  margin-bottom: 0.6rem;
+  margin-right: 1.2rem;
 
   & > * {
     margin-left: 0.75rem;
   }
+  
 }
+.top-nav {
+    height: 60px;
+    background: #fff;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0px 2px 6px rgba(15,49,105,0.15);
+    margin-bottom: 30px;
+
+    .dropdown-toggle.btn-outline-light {
+    border: 0px;
+    background-color: #fff !important;
+    border-radius: 0px !important;
+    color: #444 !important;
+  }
+  .wallet-button {
+     border-radius: 25px !important;
+    color: #444 !important;
+    font-size: 12px;
+    padding: 0px 15px;
+    background: #fff !important;
+  }
+}
+.bg-body-dark{
+  .top-nav{
+    background: #1C344E !important;
+  }
+}
+
 </style>

@@ -5,9 +5,9 @@
       :px0="true"
       :shadow-light="true"
       :padding="false"
-      class="mt-3"
+      class="mt-3 border-radius-20"
     >
-      <div class="d-flex justify-content-between py-2 px-3">
+      <div class="d-flex justify-content-between py-3 px-3">
         <h3
           class="m-0 p-0 my-2 font-size-16 font-w600"
           :class="darkMode ? 'text-dark' : 'text-light'"

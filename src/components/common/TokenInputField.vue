@@ -15,29 +15,17 @@
       </div>
     </label-content-split>
 
-    <b-input-group>
-      <b-form-input
-        v-model="tokenAmount"
-        @blur.native="blur"
-        inputmode="decimal"
-        style="border-right: 0 !important"
-        :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-        :placeholder="$t('enter_amount')"
-        :disabled="disabled"
-        debounce="300"
-        :formatter="formatter"
-      ></b-form-input>
-
+    <b-input-group class="swap-input-group">
       <b-input-group-append :class="{ cursor: pool || dropdown }">
         <div
-          class="rounded-right d-flex align-items-center px-2"
+          class="rounded-right d-flex align-items-center"
           :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
-          style="border-left: 0 !important"
+          style="border: 0 !important"
         >
           <div
             v-if="token"
             @click="openModal"
-            class="d-flex align-items-center"
+            class="d-flex align-items-center swap-dropdown"
           >
             <img
               class="img-avatar img-avatar32 border-colouring bg-white mr-1"
@@ -64,6 +52,18 @@
           </div>
         </div>
       </b-input-group-append>
+      <b-form-input
+        v-model="tokenAmount"
+        @blur.native="blur"
+        inputmode="decimal"
+        :class="darkMode ? 'form-control-alt-dark' : 'form-control-alt-light'"
+        :placeholder="$t('enter_amount')"
+        :disabled="disabled"
+        debounce="300"
+        :formatter="formatter"
+      ></b-form-input>
+
+      
       <alert-block
         v-if="currentUser && errorMsg !== ''"
         variant="error"
@@ -178,4 +178,16 @@ export default class TokenInputField extends BaseComponent {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.swap-input-group {
+  gap: 20px;
+  .swap-dropdown {
+    gap: 5px;
+  }
+  .form-control{
+    border-radius: 15px;
+    border-top-left-radius: 15px !important;
+    border-bottom-left-radius: 15px !important;
+  }
+}
+</style>

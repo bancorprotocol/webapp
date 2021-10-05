@@ -1,12 +1,13 @@
 <template>
-  <div>
+  <div class="swaphome">
     <content-block :no-header="true" class="mb-3" :shadow="true">
-      <b-button-group class="d-flex w-100 text-center mt-2 mb-3 pt-3">
+      <b-button-group class="d-flex w-100 text-center mt-2 mb-3 pt-3 swap-box-button-group">
         <b-button
           id="market"
+          class="border-right"
           @click="limit = false"
           :variant="
-            limit ? 'outline-primary' + (darkMode ? '-dark' : '') : 'primary'
+            limit ? 'noactive' + (darkMode ? '-dark' : '') : 'primary'
           "
           >{{ $t("market") }}
         </b-button>
@@ -14,7 +15,7 @@
           id="limit"
           @click="limit = true"
           :variant="
-            !limit ? 'outline-primary' + (darkMode ? '-dark' : '') : 'primary'
+            !limit ? 'active' + (darkMode ? '-dark' : '') : 'primary'
           "
           >{{ $t("limit") }}
         </b-button>
@@ -89,5 +90,41 @@ export default class SwapHome extends BaseComponent {
   margin-right: auto;
   display: flex;
   justify-content: space-between;
+}
+
+.swaphome{
+  .block.block-rounded {
+    border-radius: 20px;
+  }
+  .swap-box-button-group{
+    .btn-primary {
+      color: #fff;
+      background-color: transparent;
+      border-color: transparent;
+      color: #000;
+      font-size: 20px;
+      &:active{
+      color: #000;
+      background-color: transparent !important;
+      border: none !important;
+      }
+    }
+    .btn.btn-noactive {
+    color: #ddd;
+    }
+  }
+  .btn.btn-active-dark {
+    color: #aaa !important;
+    border: none;
+    background-color: transparent !important;
+  }
+  .bg-block-dark{
+    .swap-box-button-group{
+      .btn-primary {
+        color: #fff;
+      }
+    }
+  }
+  
 }
 </style>

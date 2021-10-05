@@ -244,7 +244,6 @@ h2 {
 .main-container {
   overflow-y: auto;
   overflow-x: hidden !important;
-  padding: 12px;
   @media screen and (max-width: 768px) {
     margin-bottom: 56px;
   }
