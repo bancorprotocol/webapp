@@ -6900,10 +6900,10 @@ bnb-javascript-sdk-nobroadcast@^2.16.14:
     uuid "^3.3.2"
     websocket-stream "^5.5.0"
 
-bnc-onboard@1.35.0:
-  version "1.35.0"
-  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.35.0.tgz#45b30dc74fd714f0d76a762e94582957a62f5be1"
-  integrity sha512-G6IotpeuhOg4vzg2WYXI9JD1CZqO1v/XYlvzEe/oZmQ3oVeS8F1h3DlbEHffXNGC+MrC67NcxEA9nUDpSBFFGw==
+bnc-onboard@1.34.2:
+  version "1.34.2"
+  resolved "https://registry.yarnpkg.com/bnc-onboard/-/bnc-onboard-1.34.2.tgz#f069e55298dc2c8ba73e3d0783092d6c65f99324"
+  integrity sha512-SYDX9y76QKWjRlJp+E7wP5bkesO7vnBGulqYm2MixpXVSpd+XMa7FfoYN7G/q33MDa5q/frwoxYrS9d70Lhjow==
   dependencies:
     "@cvbb/eth-keyring" "^1.1.0"
     "@ensdomains/ensjs" "^2.0.1"
@@ -6935,7 +6935,7 @@ bnc-onboard@1.35.0:
     hdkey "^2.0.1"
     regenerator-runtime "^0.13.7"
     trezor-connect "^8.1.9"
-    walletlink "^2.1.11"
+    walletlink "^2.1.9"
     web3-provider-engine "^15.0.4"
 
 bnc-sdk@^3.4.1:
@@ -21893,7 +21893,7 @@ walker@^1.0.7, walker@~1.0.5:
   dependencies:
     makeerror "1.0.x"
 
-walletlink@^2.1.11:
+walletlink@^2.1.9:
   version "2.1.11"
   resolved "https://registry.yarnpkg.com/walletlink/-/walletlink-2.1.11.tgz#4ed5d53066f4fae8cc43169475e4f9d1f6b8735a"
   integrity sha512-DdnQ2jnVHAdKgQ1IgxPKn3GvVEUbrGCgvgqKqQ7eanxUnyWgRm5T8Ib6NqPDuQ6SNFk6St54uN+uxV7GP6AyZg==
