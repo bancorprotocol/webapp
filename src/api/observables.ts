@@ -78,7 +78,7 @@ import {
 } from "./observables/contracts";
 
 const tokenMetaDataEndpoint =
-  "https://raw.githubusercontent.com/Velua/eth-tokens-registry/master/tokens.json";
+  "https://raw.githubusercontent.com/bancorprotocol/eth-tokens-registry/master/tokens.json";
 
 interface TokenMeta {
   id: string;
