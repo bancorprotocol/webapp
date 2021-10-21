@@ -8,7 +8,7 @@
     <div>
       <div class="float-right d-flex mt-3 mr-3">
         <a
-          href="https://discord.gg/EHK8wHbgau"
+          href="https://discord.gg/CAm3Ncyrxk"
           target="_blank"
           class="mr-2"
           :class="darkMode ? 'text-primary-dark' : 'text-primary-light'"

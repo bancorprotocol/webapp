@@ -106,7 +106,7 @@
         Telegram
       </b-dropdown-item>
       <b-dropdown-item
-        @click="openUrl('https://discord.gg/EHK8wHbgau')"
+        @click="openUrl('https://discord.gg/CAm3Ncyrxk')"
         :variant="darkMode ? 'dark' : 'light'"
       >
         <font-awesome-icon
