@@ -3,7 +3,7 @@ import Router, { Route } from "vue-router";
 import Data from "@/views/Data.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import Navigation from "@/components/layout/Navigation.vue";
-import { services } from "@/api/helpers";
+import { ethService } from "@/api/helpers";
 import PoolActions from "@/components/pool/PoolActions.vue";
 import SwapHome from "@/components/swap/SwapHome.vue";
 import CreateHome from "@/views/CreateHome.vue";
@@ -43,8 +43,7 @@ const detectSubdomain = () => {
   }
 };
 
-export const defaultModule = "eth";
-const PREFERRED_SERVICE = "preferredService";
+export const defaultModule = ethService.namespace;
 
 export const router = new Router({
   mode: "history",
@@ -69,14 +68,7 @@ export const router = new Router({
       path: "/",
       name: "Root",
       redirect: () => {
-        const preferredService = localStorage.getItem(PREFERRED_SERVICE);
         const subdomain = detectSubdomain() || "data";
-        if (preferredService) {
-          const foundService = services.find(
-            service => service.namespace == preferredService
-          );
-          if (foundService) return `/${foundService.namespace}/${subdomain}`;
-        }
         return `/${defaultModule}/${subdomain}`;
       }
     },
@@ -307,10 +299,10 @@ export const router = new Router({
       path: "/:service",
       props: true,
       redirect: (to: Route) => {
-        const foundService = services.find(
-          service => service.namespace == to.params.service
-        );
-        return foundService ? `/${foundService.namespace}/swap` : "/404";
+        if (to.params.service == ethService.namespace) {
+          return `/${ethService.namespace}/swap`;
+        }
+        return "/404";
       }
     },
     {
@@ -336,43 +328,28 @@ export const router = new Router({
     {
       path: "/",
       redirect: () => {
-        const preferredService = localStorage.getItem(PREFERRED_SERVICE);
-        if (preferredService) {
-          const foundService = services.find(
-            service => service.namespace == preferredService
-          );
-          if (foundService) return `/${foundService.namespace}/swap`;
-        }
         return `/${defaultModule}/swap`;
       }
     }
   ]
 });
 
-const setPreferredService = (service: string) => {
-  localStorage.setItem(PREFERRED_SERVICE, service);
-};
-
 router.beforeEach((to, from, next) => {
   if (from.path !== to.path) {
     sendGTMPath(from.path, to.path, vxm.general.darkMode);
   }
   if (to.meta && to.meta.feature) {
-    const service = services.find(
-      service => service.namespace == to.params.service
-    )!;
-    if (!service) {
+    if (ethService.namespace !== to.params.service) {
       next("/404");
       return;
     }
-    setPreferredService(service.namespace);
     switch (to.meta.feature) {
       case "Trade":
-        if (service.features.includes(0)) next();
+        if (ethService.features.includes(0)) next();
         else next("/404");
         break;
       case "Liquidity":
-        if (service.features.includes(2)) next();
+        if (ethService.features.includes(2)) next();
         else next("/404");
         break;
       default:
