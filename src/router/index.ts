@@ -339,6 +339,10 @@ router.beforeEach((to, from, next) => {
     sendGTMPath(from.path, to.path, vxm.general.darkMode);
   }
   if (to.meta && to.meta.feature) {
+    if (to.params.service === "eos") {
+      next(`/${defaultModule}/data`);
+      return;
+    }
     if (ethService.namespace !== to.params.service) {
       next("/404");
       return;
