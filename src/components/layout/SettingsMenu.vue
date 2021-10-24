@@ -72,32 +72,6 @@
       <b-dropdown-header v-if="showLocale" @click="goToSettings"
         >{{ $t("blockchains") }}
       </b-dropdown-header>
-      <b-dropdown-text>
-        <div class="d-flex justify-content-between align-items-end">
-          <b-btn
-            size="sm"
-            @click="changeModule('eth')"
-            :variant="currentNetwork === 'eth' ? 'primary' : 'light'"
-            class="border-0 px-4 block-rounded btn-block mr-1"
-          >
-            ETH
-          </b-btn>
-          <b-btn
-            size="sm"
-            @click="changeModule('eos')"
-            :variant="
-              currentNetwork === 'eos'
-                ? 'primary'
-                : darkMode
-                ? 'muted-alt-dark'
-                : 'muted-light'
-            "
-            class="px-4 block-rounded btn-block ml-1"
-          >
-            EOS
-          </b-btn>
-        </div>
-      </b-dropdown-text>
       <div class="font-size-12 text-muted-light text-center font-w400">
         {{ `${$t("version")} ${appVersion}` }}
       </div>

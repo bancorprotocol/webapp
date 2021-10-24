@@ -480,10 +480,10 @@ const decodeConversionEvent = (
   const txHash = rawEvent.transactionHash;
 
   const [, fromAddress, toAddress, trader] = rawEvent.topics;
-  const picked = (pick(
+  const picked = pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
-  ) as unknown) as {
+  ) as unknown as {
     fromAmount: string;
     toAmount: string;
     conversionFee: string;
@@ -522,10 +522,10 @@ const decodeNetworkConversionEvent = (
   const txHash = rawEvent.transactionHash;
 
   const [, poolToken, fromAddress, toAddress] = rawEvent.topics;
-  const picked = (pick(
+  const picked = pick(
     decoded,
     conversionEventNetworkAbi.map(abi => abi.name)
-  ) as unknown) as { fromAmount: string; toAmount: string; trader: string };
+  ) as unknown as { fromAmount: string; toAmount: string; trader: string };
 
   return {
     blockNumber,
@@ -548,12 +548,11 @@ const decodeNetworkConversionEvent = (
 
 const isTopic = (topic: string) => (event: RawEventResponse) =>
   compareString(event.topics[0], topic);
-const isNotTopics = (topicsToIgnore: string[]) => (
-  rawEvent: RawEventResponse
-) =>
-  !topicsToIgnore.some(topicToIgnore =>
-    compareString(topicToIgnore, rawEvent.topics[0])
-  );
+const isNotTopics =
+  (topicsToIgnore: string[]) => (rawEvent: RawEventResponse) =>
+    !topicsToIgnore.some(topicToIgnore =>
+      compareString(topicToIgnore, rawEvent.topics[0])
+    );
 
 export const getConverterLogs = async (
   network: EthNetworks,
@@ -957,9 +956,9 @@ export const sortAlongSide = <T>(
   return res;
 };
 
-export const reserveIncludedInEosRelay = (reserveId: string) => (
-  relay: EosMultiRelay
-) => relay.reserves.some(reserve => compareString(reserve.id, reserveId));
+export const reserveIncludedInEosRelay =
+  (reserveId: string) => (relay: EosMultiRelay) =>
+    relay.reserves.some(reserve => compareString(reserve.id, reserveId));
 
 export const reserveIncludedInRelay = (reserveId: string) => (relay: Relay) =>
   relay.reserves.some(reserve => compareString(reserve.contract, reserveId));
@@ -1052,21 +1051,10 @@ export interface Service {
   features: Feature[];
 }
 
-export const services: Service[] = [
-  {
-    namespace: "eos",
-    features: [
-      Feature.Trade,
-      Feature.Liquidity,
-      Feature.Wallet,
-      Feature.CreatePool
-    ]
-  },
-  {
-    namespace: "eth",
-    features: [Feature.Trade, Feature.Liquidity, Feature.CreatePool]
-  }
-];
+export const ethService: Service = {
+  namespace: "eth",
+  features: [Feature.Trade, Feature.Liquidity, Feature.CreatePool]
+};
 
 export interface ReserveTableRow {
   contract: string;
@@ -1207,8 +1195,7 @@ const hardCoded: () => TokenMeta[] = () =>
   [
     {
       name: "EOS",
-      logo:
-        "https://storage.googleapis.com/bancor-prod-file-store/images/communities/359b8290-0767-11e8-8744-97748b632eaf.png",
+      logo: "https://storage.googleapis.com/bancor-prod-file-store/images/communities/359b8290-0767-11e8-8744-97748b632eaf.png",
       logo_lg:
         "https://storage.googleapis.com/bancor-prod-file-store/images/communities/359b8290-0767-11e8-8744-97748b632eaf.png",
       symbol: "EOS",
@@ -1217,8 +1204,7 @@ const hardCoded: () => TokenMeta[] = () =>
     },
     {
       name: "Prochain",
-      logo:
-        "https://storage.googleapis.com/bancor-prod-file-store/images/communities/EPRA.png",
+      logo: "https://storage.googleapis.com/bancor-prod-file-store/images/communities/EPRA.png",
       logo_lg:
         "https://storage.googleapis.com/bancor-prod-file-store/images/communities/EPRA.png",
       symbol: "EPRA",
@@ -1227,8 +1213,7 @@ const hardCoded: () => TokenMeta[] = () =>
     },
     {
       name: "Gold Tael",
-      logo:
-        "https://storage.googleapis.com/bancor-prod-file-store/images/communities/f146c8c0-1e6c-11e9-96e6-590b33725e90.jpeg",
+      logo: "https://storage.googleapis.com/bancor-prod-file-store/images/communities/f146c8c0-1e6c-11e9-96e6-590b33725e90.jpeg",
       logo_lg:
         "https://storage.googleapis.com/bancor-prod-file-store/images/communities/f146c8c0-1e6c-11e9-96e6-590b33725e90.jpeg",
       symbol: "TAEL",
@@ -1237,8 +1222,7 @@ const hardCoded: () => TokenMeta[] = () =>
     },
     {
       name: "ZOS",
-      logo:
-        "https://storage.googleapis.com/bancor-prod-file-store/images/communities/636a3e10-328f-11e9-99c6-21750f32c67e.jpeg",
+      logo: "https://storage.googleapis.com/bancor-prod-file-store/images/communities/636a3e10-328f-11e9-99c6-21750f32c67e.jpeg",
       logo_lg:
         "https://storage.googleapis.com/bancor-prod-file-store/images/communities/636a3e10-328f-11e9-99c6-21750f32c67e.jpeg",
       symbol: "ZOS",
@@ -1247,8 +1231,7 @@ const hardCoded: () => TokenMeta[] = () =>
     },
     {
       name: "EQUA",
-      logo:
-        "https://storage.googleapis.com/bancor-prod-file-store/images/communities/d03d3120-cd5b-11e9-923a-f50a5610b222.jpeg",
+      logo: "https://storage.googleapis.com/bancor-prod-file-store/images/communities/d03d3120-cd5b-11e9-923a-f50a5610b222.jpeg",
       logo_lg:
         "https://storage.googleapis.com/bancor-prod-file-store/images/communities/d03d3120-cd5b-11e9-923a-f50a5610b222.jpeg",
       symbol: "EQUA",
@@ -1257,8 +1240,7 @@ const hardCoded: () => TokenMeta[] = () =>
     },
     {
       name: "FINX",
-      logo:
-        "https://storage.googleapis.com/bancor-prod-file-store/images/communities/77c385a0-6675-11e9-9f0e-7591708e99af.jpeg",
+      logo: "https://storage.googleapis.com/bancor-prod-file-store/images/communities/77c385a0-6675-11e9-9f0e-7591708e99af.jpeg",
       logo_lg:
         "https://storage.googleapis.com/bancor-prod-file-store/images/communities/77c385a0-6675-11e9-9f0e-7591708e99af.jpeg",
       symbol: "FINX",
