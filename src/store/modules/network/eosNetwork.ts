@@ -87,13 +87,14 @@ const VuexModule = createModule({
   strict: false
 });
 
-const includedInTokens = (tokens: TokenBalanceParam[]) => (
-  token: TokenBalanceReturn
-) => tokens.some(t => compareToken(token, t));
+const includedInTokens =
+  (tokens: TokenBalanceParam[]) => (token: TokenBalanceReturn) =>
+    tokens.some(t => compareToken(token, t));
 
 export class EosNetworkModule
   extends VuexModule.With({ namespaced: "eosNetwork/" })
-  implements NetworkModule {
+  implements NetworkModule
+{
   tokenBalances: TokenBalanceReturn[] = [];
 
   get balances() {
@@ -187,43 +188,40 @@ export class EosNetworkModule
     currentUser: string;
   }): Promise<TokenBalanceReturn[]> {
     const res = await Promise.all(
-      tokens.map(
-        async (token): Promise<TokenBalanceReturn | false> => {
-          try {
-            const response = (await rpc.get_table_rows({
-              json: true,
-              code: token.contract,
-              table: "accounts",
-              scope: currentUser
-            })) as { rows: any[] };
-            console.log(response, "was response");
-            const foundToken = response.rows[0];
-            if (!foundToken) {
-              if (token.precision) {
-                return {
-                  ...token,
-                  precision: token.precision!,
-                  balance: number_to_asset(
-                    0,
-                    new Sym(token.symbol, token.precision)
-                  ).to_string()
-                };
-              } else {
-                return false;
-              }
+      tokens.map(async (token): Promise<TokenBalanceReturn | false> => {
+        try {
+          const response = (await rpc.get_table_rows({
+            json: true,
+            code: token.contract,
+            table: "accounts",
+            scope: currentUser
+          })) as { rows: any[] };
+          const foundToken = response.rows[0];
+          if (!foundToken) {
+            if (token.precision) {
+              return {
+                ...token,
+                precision: token.precision!,
+                balance: number_to_asset(
+                  0,
+                  new Sym(token.symbol, token.precision)
+                ).to_string()
+              };
+            } else {
+              return false;
             }
-            const asset = new Asset(foundToken.balance);
-            return {
-              ...token,
-              balance: foundToken.balance,
-              precision: asset.symbol.precision()
-            };
-          } catch (e) {
-            console.error(`Error in fetching rpc ${e}`);
-            return false;
           }
+          const asset = new Asset(foundToken.balance);
+          return {
+            ...token,
+            balance: foundToken.balance,
+            precision: asset.symbol.precision()
+          };
+        } catch (e) {
+          console.error(`Error in fetching rpc ${e}`);
+          return false;
         }
-      )
+      })
     );
 
     return res.filter(Boolean) as TokenBalanceReturn[];
@@ -256,17 +254,15 @@ export class EosNetworkModule
           contract: table.account,
           balance: table.rows[0].json!.balance
         }));
-      extraBalances = dfuseParsed.map(
-        (json): TokenBalanceReturn => {
-          const asset = new Asset(json.balance);
-          return {
-            balance: assetToDecNumberString(asset),
-            contract: json.contract,
-            symbol: asset.symbol.code().to_string(),
-            precision: asset.symbol.precision()
-          };
-        }
-      );
+      extraBalances = dfuseParsed.map((json): TokenBalanceReturn => {
+        const asset = new Asset(json.balance);
+        return {
+          balance: assetToDecNumberString(asset),
+          contract: json.contract,
+          symbol: asset.symbol.code().to_string(),
+          precision: asset.symbol.precision()
+        };
+      });
     } catch (e) {}
 
     const missingTokensTwo = differenceWith(

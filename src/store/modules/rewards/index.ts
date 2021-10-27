@@ -61,7 +61,7 @@ export class RewardsModule extends VuexModule.With({
   }
 
   get currentUser() {
-    return vxm.ethBancor.currentUser;
+    return vxm.wallet.currentUser;
   }
 
   @action async stakeRewards({
@@ -139,13 +139,14 @@ export class RewardsModule extends VuexModule.With({
 
   @action async loadData() {
     try {
-      await wait(1000);
-      await this.fetchPoolPrograms();
-      await this.fetchAndSetPendingRewards();
-      await this.fetchAndSetTotalClaimedRewards();
+      if (this.currentUser) {
+        await wait(1000);
+        await this.fetchPoolPrograms();
+        await this.fetchAndSetPendingRewards();
+        await this.fetchAndSetTotalClaimedRewards();
+      }
     } catch (e) {
-      console.error("Threw in load data on rewardsmodule");
-      throw new Error(e);
+      console.error(e);
     }
   }
 

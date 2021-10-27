@@ -365,9 +365,9 @@ export const fetchLiquidityProtectionSettings = async ({
   // @ts-ignore
   const ethMulti = new MultiCall(web3);
 
-  const [[settings]] = ((await ethMulti.all([
+  const [[settings]] = (await ethMulti.all([
     [liquidityProtectionSettingsShape(settingsContractAddress)]
-  ])) as [unknown]) as [RawLiquidityProtectionSettings[]];
+  ])) as [unknown] as [RawLiquidityProtectionSettings[]];
 
   const newSettings = {
     contract: settingsContractAddress,
@@ -591,7 +591,6 @@ export const fetchHistoricBalances = async (
               blockHeight
             );
           } catch (e) {
-            console.log("trying to fetch previous owner..");
             try {
               const previousOwner = await fetchPoolOwner(
                 pool.anchorAddress,
@@ -645,10 +644,7 @@ export const getPoolAprs = async (
             .map(async historicBalance => {
               const poolTokenSupply = historicBalance.smartTokenSupply;
 
-              const [
-                tknReserveBalance,
-                opposingTknBalance
-              ] = sortAlongSide(
+              const [tknReserveBalance, opposingTknBalance] = sortAlongSide(
                 historicBalance.reserveBalances,
                 balance => balance.contract,
                 [position.reserveToken]
@@ -730,10 +726,12 @@ export const getHistoricBalances = async (
   blockNow: number,
   pools: MinimalPool[]
 ): Promise<PoolHistoricBalance[][]> => {
-  const timeScales: TimeScale[] = ([
-    [1, "day"],
-    [7, "week"]
-  ] as [number, string][]).map(([days, label]) => ({
+  const timeScales: TimeScale[] = (
+    [
+      [1, "day"],
+      [7, "week"]
+    ] as [number, string][]
+  ).map(([days, label]) => ({
     blockHeight: rewindBlocksByDays(blockNow, days),
     days,
     label
@@ -789,14 +787,11 @@ export const fetchPoolLiqMiningApr = async (
   protectionStoreAddress: string,
   liquidityNetworkToken: string
 ) => {
-  const ethMulti = new MultiCall(web3, multiCallAddress, [
-    500,
-    300,
-    100,
-    50,
-    20,
-    1
-  ]);
+  const ethMulti = new MultiCall(
+    web3,
+    multiCallAddress,
+    [500, 300, 100, 50, 20, 1]
+  );
 
   const highTierPools = relays.filter(relay =>
     poolPrograms.some(poolProgram =>
@@ -818,9 +813,9 @@ export const fetchPoolLiqMiningApr = async (
     );
   });
 
-  const [protectedReserves] = ((await ethMulti.all([
+  const [protectedReserves] = (await ethMulti.all([
     protectedShapes
-  ])) as unknown[]) as {
+  ])) as unknown[] as {
     anchorAddress: string;
     reserveOneAddress: string;
     reserveTwoAddress: string;
@@ -853,10 +848,7 @@ export const fetchPoolLiqMiningApr = async (
 
     const networkToken = liquidityNetworkToken;
 
-    const [
-      bntReserve,
-      tknReserve
-    ] = sortAlongSide(
+    const [bntReserve, tknReserve] = sortAlongSide(
       poolReserveBalances.reserveBalances,
       reserve => reserve.id,
       [networkToken]
@@ -868,12 +860,11 @@ export const fetchPoolLiqMiningApr = async (
       [networkToken]
     );
 
-    const [
-      bntProtectedShare,
-      tknProtectedShare
-    ] = sortAlongSide(poolProgram.reserves, reserve => reserve.reserveId, [
-      networkToken
-    ]);
+    const [bntProtectedShare, tknProtectedShare] = sortAlongSide(
+      poolProgram.reserves,
+      reserve => reserve.reserveId,
+      [networkToken]
+    );
 
     const poolRewardRate = poolProgram.rewardRate;
 

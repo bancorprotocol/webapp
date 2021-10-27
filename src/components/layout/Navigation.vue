@@ -106,7 +106,6 @@ export default class Navigation extends BaseComponent {
     if (vxm.ethWallet.currentUser) {
       onboard.walletReset();
       localStorage.removeItem("SELECTED_WEB3_WALLET");
-      onLogout$.subscribe(() => console.log("Debug onLogout subscription"));
     } else {
       await vxm.ethWallet.connect();
     }

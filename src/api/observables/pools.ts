@@ -12,7 +12,7 @@ import {
 import { getWelcomeData, WelcomeData } from "../eth/bancorApi";
 import { getAnchors, getConvertersByAnchors } from "../eth/contractWrappers";
 import { bancorConverterRegistry$ } from "./contracts";
-import { logger, switchMapIgnoreThrow } from "./customOperators";
+import { switchMapIgnoreThrow } from "./customOperators";
 import { supportedNetworkVersion$ } from "./network";
 import { fifteenSeconds$ } from "./timers";
 import { web3 } from "@/api/web3";

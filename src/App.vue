@@ -125,7 +125,6 @@ export default class App extends BaseComponent {
   error = false;
 
   get networkNotSupported() {
-    console.log(vxm.ethBancor.currentNetwork, "is the current network");
     return !(
       vxm.ethBancor.currentNetwork == EthNetworks.Mainnet ||
       vxm.ethBancor.currentNetwork == EthNetworks.Ropsten
@@ -182,14 +181,12 @@ export default class App extends BaseComponent {
 
   async created() {
     const darkMode = localStorage.getItem("darkMode") === "true";
-    const adminMode = localStorage.getItem("adminMode") === "true";
     const locale = localStorage.getItem("locale");
     const lang =
       navigator.languages && navigator.languages.length
         ? navigator.languages[0]
         : navigator.language;
     if (darkMode) vxm.general.toggleDarkMode();
-    if (adminMode) vxm.general.toggleAdminMode();
     if (locale) vxm.general.setLocale(locale);
     else vxm.general.setLocale(lang);
 

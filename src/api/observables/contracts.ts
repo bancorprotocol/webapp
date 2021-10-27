@@ -2,11 +2,7 @@ import {
   fetchContractAddresses,
   fetchLiquidityProtectionSettingsContract
 } from "../eth/contractWrappers";
-import {
-  logger,
-  optimisticContract,
-  switchMapIgnoreThrow
-} from "./customOperators";
+import { optimisticContract, switchMapIgnoreThrow } from "./customOperators";
 import { networkVars$, supportedNetworkVersion$ } from "./network";
 import { vxm } from "@/store";
 import { distinctUntilChanged, pluck, shareReplay, tap } from "rxjs/operators";
@@ -30,7 +26,6 @@ export const exchangeProxy$ = zeroXContracts$.pipe(
 
 export const contractAddresses$ = networkVars$.pipe(
   switchMapIgnoreThrow(networkVariables => {
-    console.log(networkVariables.contractRegistry, "contract registry");
     return fetchContractAddresses(networkVariables.contractRegistry).catch(() =>
       vxm.ethBancor.fetchContractAddresses(networkVariables.contractRegistry)
     );
@@ -56,7 +51,6 @@ export const liquidityProtectionStore$ = liquidityProtection$.pipe(
     return contract.methods.store().call();
   }),
   distinctUntilChanged(compareString),
-  logger("store"),
   shareReplay(1)
 );
 
@@ -77,7 +71,6 @@ export const settingsContractAddress$ = liquidityProtection$.pipe(
     fetchLiquidityProtectionSettingsContract(protectionAddress)
   ),
   optimisticContract("LiquiditySettings"),
-  logger("logger liquidity settings"),
   shareReplay<string>(1)
 );
 
