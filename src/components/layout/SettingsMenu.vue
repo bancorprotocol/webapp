@@ -45,13 +45,6 @@
           @input="darkModeChange"
           toggleStyle="height: 23px"
         />
-        <MenuToggle
-          class="padme"
-          v-if="isAdmin"
-          label="Admin Mode"
-          :value="adminMode"
-          @input="adminModeChange"
-        />
       </b-dropdown-text>
     </b-dropdown-group>
     <b-dropdown-text
@@ -122,20 +115,6 @@ export default class SettingsMenu extends BaseComponent {
     if (status !== this.darkMode) {
       vxm.general.toggleDarkMode();
     }
-  }
-
-  get adminMode() {
-    return vxm.general.adminMode;
-  }
-
-  adminModeChange(status: boolean) {
-    if (status !== vxm.general.adminMode) {
-      vxm.general.toggleAdminMode();
-    }
-  }
-
-  get isAdmin() {
-    return localStorage.getItem("IS_ADMIN") == String(true);
   }
 
   get i18n() {
