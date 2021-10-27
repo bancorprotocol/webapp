@@ -25,8 +25,6 @@ export const authenticated$ = combineLatest([
   share()
 );
 
-authenticated$.subscribe(x => console.log("auth..", x));
-
 mockModeReceiver$.next(false);
 authenticatedReceiver$.next(false);
 mockedAddressReceiver$.next(false);
@@ -57,7 +55,7 @@ export const isAdmin$ = onLogin$
   });
 
 export const onLogout$ = onLogoutNoType$.pipe(
-  map(currentUser => (currentUser as unknown) as false),
+  map(currentUser => currentUser as unknown as false),
   share()
 );
 

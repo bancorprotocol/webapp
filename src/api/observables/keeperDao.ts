@@ -229,8 +229,6 @@ export const keeperTokens$ = oneMinute$.pipe(
 export const limitOrderTrigger$ = new Subject<true>();
 limitOrderTrigger$.next(true);
 
-limitOrderTrigger$.subscribe(x => console.log("trigger went out", x));
-
 export const limitOrders$ = combineLatest([
   onLogin$,
   oneMinute$,

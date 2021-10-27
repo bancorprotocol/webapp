@@ -386,7 +386,6 @@ export default class SwapAction extends BaseTxAction {
 
   onHide(state: boolean) {
     if (!state) return;
-    console.log("GTM event");
     const conversion = {
       conversion_type: "Market",
       conversion_approve: "Unlimited",
@@ -418,10 +417,6 @@ export default class SwapAction extends BaseTxAction {
   };
 
   isSmallerThanLastReturn() {}
-
-  async onRateInput(rateInput: string) {
-    console.log("rate input", rateInput);
-  }
 
   async updatePriceReturn(amount: string) {
     if (!amount || amount === "0" || amount === ".") {

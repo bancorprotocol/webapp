@@ -24,102 +24,73 @@ export interface RankItem<T> {
   data: T;
 }
 
-export const rankPriority = () => <T>(source: Observable<RankItem<T>>) =>
-  source.pipe(
-    scan(
-      (lastEmitted, value) => {
-        const betterPriority =
-          !lastEmitted.emittedOnce || value.priority < lastEmitted.lastPriority;
+export const rankPriority =
+  () =>
+  <T>(source: Observable<RankItem<T>>) =>
+    source.pipe(
+      scan(
+        (lastEmitted, value) => {
+          const betterPriority =
+            !lastEmitted.emittedOnce ||
+            value.priority < lastEmitted.lastPriority;
 
-        return betterPriority
-          ? {
-              emit: true,
-              emittedOnce: true,
-              lastPriority: value.priority,
-              toEmit: value.data
-            }
-          : {
-              emit: false,
-              emittedOnce: true,
-              lastPriority: lastEmitted.lastPriority,
-              toEmit: undefined
-            };
-      },
-      {
-        emit: false,
-        emittedOnce: false,
-        lastPriority: 0,
-        toEmit: undefined
-      } as {
-        emit: boolean;
-        emittedOnce: boolean;
-        lastPriority: number;
-        toEmit: undefined | T;
-      }
-    ),
-    filter(emission => emission.emit),
-    pluck("toEmit")
-  ) as Observable<T>;
+          return betterPriority
+            ? {
+                emit: true,
+                emittedOnce: true,
+                lastPriority: value.priority,
+                toEmit: value.data
+              }
+            : {
+                emit: false,
+                emittedOnce: true,
+                lastPriority: lastEmitted.lastPriority,
+                toEmit: undefined
+              };
+        },
+        {
+          emit: false,
+          emittedOnce: false,
+          lastPriority: 0,
+          toEmit: undefined
+        } as {
+          emit: boolean;
+          emittedOnce: boolean;
+          lastPriority: number;
+          toEmit: undefined | T;
+        }
+      ),
+      filter(emission => emission.emit),
+      pluck("toEmit")
+    ) as Observable<T>;
 
 interface DataCache<T> {
   allEmissions: T[];
   newData: T[];
 }
 
-let difference = Date.now();
+export const optimisticContract =
+  (key: string) => (source: Observable<string>) => {
+    const cachedData = localStorage.getItem(key);
 
-export const logger = <T>(label: string, hideReturn = false) => (
-  source: Observable<T>
-): Observable<T> =>
-  source.pipe(
-    tap({
-      next: data => {
-        if (difference) {
-          difference = Date.now() - difference;
-        }
-        console.log(
-          `Logger (Next): (${difference} ms): ${label} returned ${
-            hideReturn
-              ? Array.isArray(data)
-                ? `${data.length} elements`
-                : ""
-              : JSON.stringify(data)
-          }`
-        );
-        difference = Date.now();
-      },
-      error: error => {
-        console.error(
-          `Logger (Error): ${label} has received an error in ${error}`
-        );
-      },
-      complete: () => console.log(`Logger (Complete): ${label} has completed`)
-    })
-  );
-
-export const optimisticContract = (key: string) => (
-  source: Observable<string>
-) => {
-  const cachedData = localStorage.getItem(key);
-
-  if (cachedData) {
-    return source.pipe(
-      startWith(cachedData),
-      distinctUntilChanged(compareString),
-      tap(data => {
-        const isSame = cachedData === data;
-        if (!isSame) {
-          localStorage.setItem(key, data);
-        }
-      })
-    );
-  } else {
-    return source.pipe(
-      distinctUntilChanged(compareString),
-      tap(data => localStorage.setItem(key, data))
-    );
-  }
-};
+    if (cachedData) {
+      return source.pipe(
+        startWith(cachedData),
+        distinctUntilChanged(compareString),
+        tap(data => {
+          const isSame = cachedData === data;
+          if (!isSame) {
+            localStorage.setItem(key, data);
+          }
+        })
+      );
+    } else {
+      return source.pipe(
+        distinctUntilChanged(compareString),
+        tap(data => localStorage.setItem(key, data))
+      );
+    }
+  };
 
 const getCachedPositions = (): string[] | false => {
   const cachedPositionIdsString = localStorage.getItem("positionIds");
@@ -163,76 +134,64 @@ export const optimisticPositionIds = () => (source: Observable<string[]>) => {
   }
 };
 
-export const switchMapIgnoreThrow = <T, Y>(
-  switchMapProm: (data: T) => Promise<Y>
-) => (source: Observable<T>): Observable<Y> =>
-  source.pipe(
-    switchMap(whatever =>
-      switchMapProm(whatever).catch(() => ("DONT THROW" as unknown) as Y)
-    ),
-    filter(x => !(typeof x == "string" && x === "DONT THROW"))
-  );
+export const switchMapIgnoreThrow =
+  <T, Y>(switchMapProm: (data: T) => Promise<Y>) =>
+  (source: Observable<T>): Observable<Y> =>
+    source.pipe(
+      switchMap(whatever =>
+        switchMapProm(whatever).catch(() => "DONT THROW" as unknown as Y)
+      ),
+      filter(x => !(typeof x == "string" && x === "DONT THROW"))
+    );
 
-export const distinctArrayItem = <T>(
-  initialValue: T[],
-  comparator?: (a: T, b: T) => boolean
-) => (source: Observable<T[]>) =>
-  source.pipe(
-    scan(
-      (acc, item) => {
-        const difference = differenceWith(
-          item,
-          acc.allEmissions,
-          comparator || isEqual
-        );
-        return {
-          allEmissions: [...acc.allEmissions, ...difference],
-          newData: difference
-        };
-      },
-      { allEmissions: initialValue, newData: [] } as DataCache<T>
-    ),
-    filter(dataCache => dataCache.newData.length > 0),
-    pluck("newData"),
-    startWith(initialValue)
-  );
+export const distinctArrayItem =
+  <T>(initialValue: T[], comparator?: (a: T, b: T) => boolean) =>
+  (source: Observable<T[]>) =>
+    source.pipe(
+      scan(
+        (acc, item) => {
+          const difference = differenceWith(
+            item,
+            acc.allEmissions,
+            comparator || isEqual
+          );
+          return {
+            allEmissions: [...acc.allEmissions, ...difference],
+            newData: difference
+          };
+        },
+        { allEmissions: initialValue, newData: [] } as DataCache<T>
+      ),
+      filter(dataCache => dataCache.newData.length > 0),
+      pluck("newData"),
+      startWith(initialValue)
+    );
 
 // Will emit stale data from cache
 // Will overwrite cache with remote data
 
-export const optimisticObservable = <T, Y>(
-  localKey: string,
-  remoteCall: (param: Y) => Promise<T>
-) => (source: Observable<Y>): Observable<T> => {
-  const localData = localStorage.getItem(localKey);
-  if (localData) {
-    const parsedData = JSON.parse(localData) as T;
+export const optimisticObservable =
+  <T, Y>(localKey: string, remoteCall: (param: Y) => Promise<T>) =>
+  (source: Observable<Y>): Observable<T> => {
+    const localData = localStorage.getItem(localKey);
+    if (localData) {
+      const parsedData = JSON.parse(localData) as T;
 
-    return source.pipe(
-      switchMapIgnoreThrow(remoteCall),
-      filter(remoteData => !isEqual(remoteData, parsedData)),
-      startWith(parsedData),
-      tap(data => {
-        const isSame = isEqual(parsedData, data);
-        if (!isSame) {
-          console.log(
-            "data is not the same! setting...",
-            JSON.stringify(data),
-            "from",
-            parsedData
-          );
+      return source.pipe(
+        switchMapIgnoreThrow(remoteCall),
+        filter(remoteData => !isEqual(remoteData, parsedData)),
+        startWith(parsedData),
+        tap(data => {
+          const isSame = isEqual(parsedData, data);
+          if (!isSame) localStorage.setItem(localKey, JSON.stringify(data));
+        })
+      );
+    } else {
+      return source.pipe(
+        switchMapIgnoreThrow(remoteCall),
+        tap(data => {
           localStorage.setItem(localKey, JSON.stringify(data));
-        } else {
-          console.log("data is the same, setting");
-        }
-      })
-    );
-  } else {
-    return source.pipe(
-      switchMapIgnoreThrow(remoteCall),
-      tap(data => {
-        localStorage.setItem(localKey, JSON.stringify(data));
-      })
-    );
-  }
-};
+        })
+      );
+    }
+  };

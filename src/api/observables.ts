@@ -56,7 +56,6 @@ import { MinimalPoolWithReserveBalances, shrinkToken } from "./eth/helpers";
 import BigNumber from "bignumber.js";
 import {
   compareIdArray,
-  logger,
   optimisticObservable,
   optimisticPositionIds,
   RankItem,
@@ -193,7 +192,6 @@ export const currentBlockReceiver$ = new Subject<number>();
 export const currentBlock$ = currentBlockReceiver$.pipe(
   distinctUntilChanged(),
   map(block => ({ unixTime: dayjs().unix(), blockNumber: block })),
-  // logger("current block"),
   shareReplay(1)
 );
 
@@ -382,12 +380,13 @@ combineLatest([liquidityProtectionStore$, onLogin$, lockedBalancesTrigger$])
 
 lockedBalancesTrigger$.next(null);
 
-export const minNetworkTokenLiquidityForMinting$ = settingsContractAddress$.pipe(
-  switchMapIgnoreThrow(settingsContractAddress =>
-    fetchMinLiqForMinting(settingsContractAddress)
-  ),
-  share()
-);
+export const minNetworkTokenLiquidityForMinting$ =
+  settingsContractAddress$.pipe(
+    switchMapIgnoreThrow(settingsContractAddress =>
+      fetchMinLiqForMinting(settingsContractAddress)
+    ),
+    share()
+  );
 
 minNetworkTokenLiquidityForMinting$.subscribe(
   minNetworkTokenLiquidityForMinting =>
@@ -528,7 +527,6 @@ const historicPoolBalances$ = combineLatest([
       currentBlock.blockNumber,
       minimal
     );
-    console.log(res, "was the res...");
     return res;
   })
 );
@@ -594,67 +592,62 @@ const fullPositions$ = combineLatest([
       rewardMultipliers,
       poolPrograms
     ]) =>
-      unverifiedPositions.map(
-        (position): ProtectedLiquidityCalculated => {
-          const removeLiq =
-            removeLiquidityReturn &&
-            removeLiquidityReturn.find(r => r.positionId == position.id);
-          const scales =
-            poolReturns &&
-            poolReturns.find(poolReturns =>
-              poolReturns.find(x => x.positionId == position.id)
-            );
+      unverifiedPositions.map((position): ProtectedLiquidityCalculated => {
+        const removeLiq =
+          removeLiquidityReturn &&
+          removeLiquidityReturn.find(r => r.positionId == position.id);
+        const scales =
+          poolReturns &&
+          poolReturns.find(poolReturns =>
+            poolReturns.find(x => x.positionId == position.id)
+          );
 
-          const week =
-            scales &&
-            scales.find(scale => compareString(scale.scaleId, "week"));
-          const day =
-            scales && scales.find(scale => compareString(scale.scaleId, "day"));
+        const week =
+          scales && scales.find(scale => compareString(scale.scaleId, "week"));
+        const day =
+          scales && scales.find(scale => compareString(scale.scaleId, "day"));
 
-          const reserveReward =
-            pendingReserveRewards &&
-            pendingReserveRewards.find(
-              r =>
-                compareString(r.poolId, position.poolToken) &&
-                compareString(r.reserveId, position.reserveToken)
-            );
+        const reserveReward =
+          pendingReserveRewards &&
+          pendingReserveRewards.find(
+            r =>
+              compareString(r.poolId, position.poolToken) &&
+              compareString(r.reserveId, position.reserveToken)
+          );
 
-          const rewardMultiplier =
-            rewardMultipliers &&
-            rewardMultipliers.find(
-              r =>
-                compareString(r.poolToken, position.poolToken) &&
-                compareString(r.reserveToken, position.reserveToken)
-            );
+        const rewardMultiplier =
+          rewardMultipliers &&
+          rewardMultipliers.find(
+            r =>
+              compareString(r.poolToken, position.poolToken) &&
+              compareString(r.reserveToken, position.reserveToken)
+          );
 
-          const multiplier =
-            poolPrograms &&
-            poolPrograms.some(x =>
-              compareString(x.poolToken, position.poolToken)
-            )
-              ? rewardMultiplier
-              : null;
+        const multiplier =
+          poolPrograms &&
+          poolPrograms.some(x => compareString(x.poolToken, position.poolToken))
+            ? rewardMultiplier
+            : null;
 
-          return {
-            ...position,
-            ...(reserveReward && {
-              pendingReserveReward: reserveReward.decBnt.toString()
-            }),
-            ...(removeLiq && {
-              fullLiquidityReturn: removeLiq.fullLiquidityReturn
-            }),
-            ...(removeLiq && {
-              currentLiquidityReturn: removeLiq.currentLiquidityReturn
-            }),
-            ...(removeLiq && { roiDec: removeLiq.roiDec }),
-            ...(day && { oneDayDec: day.calculatedAprDec }),
-            ...(week && { oneWeekDec: week.calculatedAprDec }),
-            ...(multiplier && {
-              rewardsMultiplier: multiplier.multiplier.toNumber()
-            })
-          };
-        }
-      )
+        return {
+          ...position,
+          ...(reserveReward && {
+            pendingReserveReward: reserveReward.decBnt.toString()
+          }),
+          ...(removeLiq && {
+            fullLiquidityReturn: removeLiq.fullLiquidityReturn
+          }),
+          ...(removeLiq && {
+            currentLiquidityReturn: removeLiq.currentLiquidityReturn
+          }),
+          ...(removeLiq && { roiDec: removeLiq.roiDec }),
+          ...(day && { oneDayDec: day.calculatedAprDec }),
+          ...(week && { oneWeekDec: week.calculatedAprDec }),
+          ...(multiplier && {
+            rewardsMultiplier: multiplier.multiplier.toNumber()
+          })
+        };
+      })
   )
 );
 
@@ -695,119 +688,117 @@ combineLatest([
 
         return passedPositions
           .filter(entry => compareString(entry.owner, currentUser))
-          .map(
-            (singleEntry): ViewProtectedLiquidity => {
-              const isWhiteListed = true;
+          .map((singleEntry): ViewProtectedLiquidity => {
+            const isWhiteListed = true;
 
-              const startTime = Number(singleEntry.timestamp);
+            const startTime = Number(singleEntry.timestamp);
 
-              const reserveToken = findOrThrow(tokens, token =>
-                compareString(token.dlt_id, singleEntry.reserveToken)
-              );
-              const reservePrecision = Number(reserveToken.decimals);
+            const reserveToken = findOrThrow(tokens, token =>
+              compareString(token.dlt_id, singleEntry.reserveToken)
+            );
+            const reservePrecision = Number(reserveToken.decimals);
 
-              const reserveTokenDec = shrinkToken(
-                singleEntry.reserveAmount,
+            const reserveTokenDec = shrinkToken(
+              singleEntry.reserveAmount,
+              reservePrecision
+            );
+
+            const pendingReserveReward =
+              singleEntry.pendingReserveReward &&
+              singleEntry.pendingReserveReward.toString();
+
+            const fullyProtectedDec =
+              singleEntry.fullLiquidityReturn &&
+              shrinkToken(
+                singleEntry.fullLiquidityReturn.targetAmount,
                 reservePrecision
               );
 
-              const pendingReserveReward =
-                singleEntry.pendingReserveReward &&
-                singleEntry.pendingReserveReward.toString();
-
-              const fullyProtectedDec =
-                singleEntry.fullLiquidityReturn &&
-                shrinkToken(
-                  singleEntry.fullLiquidityReturn.targetAmount,
-                  reservePrecision
-                );
-
-              const currentProtectedDec =
-                singleEntry.currentLiquidityReturn &&
-                shrinkToken(
-                  singleEntry.currentLiquidityReturn.targetAmount,
-                  reservePrecision
-                );
-
-              const progressPercent = calculateProgressLevel(
-                startTime,
-                startTime + maxDelay
+            const currentProtectedDec =
+              singleEntry.currentLiquidityReturn &&
+              shrinkToken(
+                singleEntry.currentLiquidityReturn.targetAmount,
+                reservePrecision
               );
 
-              const givenVBnt =
-                compareString(reserveToken.dlt_id, networkToken) &&
-                reserveTokenDec;
+            const progressPercent = calculateProgressLevel(
+              startTime,
+              startTime + maxDelay
+            );
 
-              const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
-                reserveTokenDec
-              );
+            const givenVBnt =
+              compareString(reserveToken.dlt_id, networkToken) &&
+              reserveTokenDec;
 
-              const reserveTokenPrice = Number(reserveToken.rate.usd);
+            const feeGenerated = new BigNumber(fullyProtectedDec || 0).minus(
+              reserveTokenDec
+            );
 
-              return {
-                id: `${singleEntry.poolToken}:${singleEntry.id}`,
-                initialProtectedWei: singleEntry.reserveAmount,
-                inititalProtectedToken: singleEntry.reserveToken,
-                whitelisted: isWhiteListed,
-                ...(givenVBnt && { givenVBnt }),
-                single: true,
-                apr: {
-                  day: Number(singleEntry.oneDayDec),
-                  week: Number(singleEntry.oneWeekDec)
-                },
-                insuranceStart: startTime + minDelay,
-                fullCoverage: startTime + maxDelay,
-                stake: {
-                  amount: reserveTokenDec,
+            const reserveTokenPrice = Number(reserveToken.rate.usd);
+
+            return {
+              id: `${singleEntry.poolToken}:${singleEntry.id}`,
+              initialProtectedWei: singleEntry.reserveAmount,
+              inititalProtectedToken: singleEntry.reserveToken,
+              whitelisted: isWhiteListed,
+              ...(givenVBnt && { givenVBnt }),
+              single: true,
+              apr: {
+                day: Number(singleEntry.oneDayDec),
+                week: Number(singleEntry.oneWeekDec)
+              },
+              insuranceStart: startTime + minDelay,
+              fullCoverage: startTime + maxDelay,
+              stake: {
+                amount: reserveTokenDec,
+                symbol: reserveToken.symbol,
+                poolId: singleEntry.poolToken,
+                unixTime: startTime,
+                usdValue: new BigNumber(reserveTokenDec)
+                  .times(reserveTokenPrice)
+                  .toNumber()
+              },
+              ...(fullyProtectedDec && {
+                fullyProtected: {
+                  amount: fullyProtectedDec,
                   symbol: reserveToken.symbol,
-                  poolId: singleEntry.poolToken,
-                  unixTime: startTime,
-                  usdValue: new BigNumber(reserveTokenDec)
+                  id: reserveToken.dlt_id,
+                  usdValue: new BigNumber(fullyProtectedDec)
                     .times(reserveTokenPrice)
                     .toNumber()
-                },
-                ...(fullyProtectedDec && {
-                  fullyProtected: {
-                    amount: fullyProtectedDec,
-                    symbol: reserveToken.symbol,
-                    id: reserveToken.dlt_id,
-                    usdValue: new BigNumber(fullyProtectedDec)
+                }
+              }),
+              ...(currentProtectedDec && {
+                protectedAmount: {
+                  amount: currentProtectedDec,
+                  id: reserveToken.dlt_id,
+                  symbol: reserveToken.symbol,
+                  ...(fullyProtectedDec && {
+                    usdValue: new BigNumber(currentProtectedDec)
                       .times(reserveTokenPrice)
                       .toNumber()
-                  }
-                }),
-                ...(currentProtectedDec && {
-                  protectedAmount: {
-                    amount: currentProtectedDec,
-                    id: reserveToken.dlt_id,
-                    symbol: reserveToken.symbol,
-                    ...(fullyProtectedDec && {
-                      usdValue: new BigNumber(currentProtectedDec)
-                        .times(reserveTokenPrice)
-                        .toNumber()
-                    })
-                  }
-                }),
-                coverageDecPercent: progressPercent,
-                fees: {
-                  amount: feeGenerated.toString(),
-                  symbol: reserveToken.symbol,
-                  id: reserveToken.dlt_id
-                },
-                ...(fullyProtectedDec && {
-                  roi: Number(
-                    calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
-                  )
-                }),
-                ...(pendingReserveReward && { pendingReserveReward }),
-                ...(singleEntry.rewardsMultiplier && {
-                  rewardsMultiplier: singleEntry.rewardsMultiplier
-                }),
-                reserveTokenPrice,
-                bntTokenPrice: usdPriceOfBnt
-              };
-            }
-          );
+                  })
+                }
+              }),
+              coverageDecPercent: progressPercent,
+              fees: {
+                amount: feeGenerated.toString(),
+                symbol: reserveToken.symbol,
+                id: reserveToken.dlt_id
+              },
+              ...(fullyProtectedDec && {
+                roi: Number(
+                  calculatePercentIncrease(reserveTokenDec, fullyProtectedDec)
+                )
+              }),
+              ...(pendingReserveReward && { pendingReserveReward }),
+              ...(singleEntry.rewardsMultiplier && {
+                rewardsMultiplier: singleEntry.rewardsMultiplier
+              }),
+              reserveTokenPrice,
+              bntTokenPrice: usdPriceOfBnt
+            };
+          });
       }
     )
   )

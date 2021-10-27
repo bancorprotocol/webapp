@@ -125,7 +125,6 @@ export default class App extends BaseComponent {
   error = false;
 
   get networkNotSupported() {
-    console.log(vxm.ethBancor.currentNetwork, "is the current network");
     return !(
       vxm.ethBancor.currentNetwork == EthNetworks.Mainnet ||
       vxm.ethBancor.currentNetwork == EthNetworks.Ropsten
