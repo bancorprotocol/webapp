@@ -12,7 +12,7 @@ export const googleTagManager = (id: string, name: string | null) => {
       }
     ];
   init(window, document, "script", "dataLayer", "GTM-TCBKR7W");
-  sendGTMPath(undefined, window.location.pathname);
+  sendGTMPath(undefined, window.location.pathname, true);
 };
 
 const init = (w: any, d: any, s: any, l: any, i: any) => {
@@ -130,6 +130,7 @@ export const sendWalletEvent = (
 export const sendGTMPath = (
   from: string | undefined,
   to: string,
+  firstVP: boolean = true,
   darkMode: boolean = false
 ) =>
   sendGTM({
@@ -141,6 +142,7 @@ export const sendGTMPath = (
       lang: getLanguageByLocaleInEnglish(i18n.locale),
       currency: "USD"
     },
+    class: firstVP ? "App" : undefined,
     user_properties: undefined,
     ga_event: undefined
   });
