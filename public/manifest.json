@@ -1,0 +1,9 @@
+{
+  "name": "Bancor Network",
+  "description": "Bancor Safe Staking",
+  "iconPath": "https://github.com/bancorprotocol/webapp-v2/blob/main/public/logo512.png",
+  "providedBy": {
+    "name": "Bancor Network",
+    "url": "https://bancor.network"
+  }
+}
