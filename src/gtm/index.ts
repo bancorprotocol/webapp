@@ -2,15 +2,19 @@ import { i18n, getLanguageByLocaleInEnglish } from "@/i18n";
 
 export const googleTagManager = (id: string, name: string | null) => {
   if (window.dataLayer) return;
-  if (id && name)
-    window.dataLayer = [
-      {
-        wallet: {
-          id: id,
-          name: name
-        }
-      }
-    ];
+
+  window.dataLayer = [
+    {
+      wallet:
+        id && name
+          ? {
+              id: id,
+              name: name
+            }
+          : {},
+      page: { class: "App" }
+    }
+  ];
   init(window, document, "script", "dataLayer", "GTM-TCBKR7W");
   sendGTMPath(undefined, window.location.pathname);
 };
