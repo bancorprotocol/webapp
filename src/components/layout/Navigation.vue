@@ -1,15 +1,8 @@
 <template>
   <div class="container-xl px-0">
     <div id="navigation-top" class="d-flex justify-content-end">
-      <b-btn
-        @click="loginAction"
-        :variant="darkMode ? 'outline-dark' : 'outline-light'"
-        class="block-rounded"
-        size="sm"
-      >
-        <span class="d-none d-sm-inline mr-2">{{ loginButtonLabel }}</span>
-        <font-awesome-icon :icon="icon" :pulse="spin" fixed-width />
-      </b-btn>
+      <b-form-input class="width 800px !important" v-model="user" />
+      <b-btn @click="setUser"> SetUser </b-btn>
       <Notifications />
       <settings-menu @showLocaleModal="showLocaleMod" />
       <bancor-menu />
@@ -28,13 +21,22 @@ import { onboard, shortenEthAddress } from "@/api/helpers";
 import BaseComponent from "@/components/BaseComponent.vue";
 import Notifications from "@/components/compositions/notifications/Notifications.vue";
 import ModalLanguageChange from "@/components/modals/ModalLanguageChange.vue";
-import { onLogout$ } from "@/api/observables/auth";
+import { authenticatedReceiver$ } from "@/api/observables/auth";
 
 @Component({
   components: { BancorMenu, SettingsMenu, Notifications, ModalLanguageChange }
 })
 export default class Navigation extends BaseComponent {
   modal: boolean = false;
+  user: string = "";
+
+  setUser() {
+    vxm.wallet.setUser(this.user);
+    vxm.ethBancor.onAuthChange(this.user);
+    vxm.ethWallet.setLoggedInAccount(this.user);
+    vxm.ethBancor.fetchProtectionPositions();
+    authenticatedReceiver$.next(this.user);
+  }
 
   get selectedWallet() {
     return vxm.wallet.currentWallet;
